@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# Directories
+.vs/
+bin/
+bin-int/
+
+# visual studio files
+*.user
+*.db
+*.vcxproj
+*.sln
+*.filters
