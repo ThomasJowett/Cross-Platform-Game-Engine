@@ -1,6 +1,5 @@
+#include "stdafx.h"
 #include "Application.h"
-
-
 
 Jupiter::Application::Application()
 {

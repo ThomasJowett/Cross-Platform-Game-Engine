@@ -1,0 +1,3 @@
+[submodule "Engine/vendor/math"]
+	path = Engine/vendor/math
+	url = https://github.com/ThomasJowett/3D-Maths-libraries

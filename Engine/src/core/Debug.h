@@ -1,12 +1,11 @@
 #pragma once
 
-#include <Windows.h>
-
 namespace Debug
 {
 #define DBG_OUTPUT(...) Debug::Output(__FILE__, __LINE__, __VA_ARGS__)
 #define OUTPUT(...) Debug::Output(__VA_ARGS__)
 
+#ifdef JPT_PLATFORM_WINDOWS
 	// wide char output
 	static void Output(const WCHAR* pFormat, ...)
 	{
@@ -68,8 +67,12 @@ namespace Debug
 	
 		OutputDebugString(buffer);
 	}
-	
-	
+
+#else
+#error Target platform not supported
+#endif
+
+
 
 #define HR(x)																\
 	{																		\
