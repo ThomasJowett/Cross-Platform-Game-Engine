@@ -1,17 +1,17 @@
 #pragma once
 
-#ifdef JPT_PLATFORM_WINDOWS
+#ifdef __WINDOWS__
 
-extern Jupiter::Application* Jupiter::CreateApplication();
+extern Application* CreateApplication();
 
-#include "Debug.h"
+#include "Logging/Debug.h"
 
 int main(int argc, char* argv[])
 {
-	OUTPUT("Jupiter Engine Initialised");
-	auto app = Jupiter::CreateApplication();
+	OUTPUT("Engine Initialised");
+	auto app = CreateApplication();
 	app->Run();
 	delete app;
 	return 0;
 }
-#endif // JPt_PLATFORM_WINDOWS
+#endif // __WINDOWS__

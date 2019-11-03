@@ -1,11 +1,12 @@
 #pragma once
+#include "stdafx.h"
 
 namespace Debug
 {
 #define DBG_OUTPUT(...) Debug::Output(__FILE__, __LINE__, __VA_ARGS__)
 #define OUTPUT(...) Debug::Output(__VA_ARGS__)
 
-#ifdef JPT_PLATFORM_WINDOWS
+#ifdef __WINDOWS__
 	// wide char output
 	static void Output(const WCHAR* pFormat, ...)
 	{

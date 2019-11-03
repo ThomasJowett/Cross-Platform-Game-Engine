@@ -1,16 +1,16 @@
 #include "stdafx.h"
 #include "Application.h"
 
-Jupiter::Application::Application()
+Application::Application()
 {
 }
 
 
-Jupiter::Application::~Application()
+Application::~Application()
 {
 }
 
-void Jupiter::Application::Run()
+void Application::Run()
 {
 	while (true);
 }

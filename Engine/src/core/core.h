@@ -1,23 +1,25 @@
 #pragma once
 
-#ifdef JPT_PLATFORM_WINDOWS //windows x64 & x86
-	#ifdef JPT_BUILD_DLL
-		#define JUPITER_API __declspec(dllexport)
+#ifdef __WINDOWS__ //windows x64 & x86
+	#ifdef BUILD_DLL
+		#define DLLIMPEXP_CORE __declspec(dllexport)
 	#else 
-		#define JUPITER_API __declspec(dllimport)
-	#endif // JPT_BUILD_DLL
+		#define DLLIMPEXP_CORE __declspec(dllimport)
+	#endif // BUILD_DLL
 #elif __linux__ 
-	#ifdef JPT_BUILD_DLL
-		#define JUPITER_API __attribute__((visibility("default")))
+	#ifdef BUILD_DLL
+		#define DLLIMPEXP_CORE __attribute__((visibility("default")))
 	#else
-		#define JUPITER_API
-	#endif // JPT_BUILD_DLL
+		#define DLLIMPEXP_CORE
+	#endif // BUILD_DLL
 #elif __APPLE__
-	#ifdef JPT_BUILD_DLL
-		#define JUPITER_API
+	#ifdef BUILD_DLL
+		#define DLLIMPEXP_CORE
 	#else
-		#define JUPITER_API
-	#endif // JPT_BUILD_DLL
+		#define DLLIMPEXP_CORE
+	#endif // BUILD_DLL
 #else
 #error Target platform not supported
 #endif
+
+#define BIT(X) (1 << X)

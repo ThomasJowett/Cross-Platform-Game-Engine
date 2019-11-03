@@ -2,17 +2,15 @@
 
 #include "core.h"
 
-namespace Jupiter
+
+class DLLIMPEXP_CORE Application
 {
-	class JUPITER_API Application
-	{
-	public:
-		Application();
-		virtual ~Application();
+public:
+	Application();
+	virtual ~Application();
 
-		void Run();
-	};
+	void Run();
+};
 
-	// To be defined in CLIENT
-	Application* CreateApplication();
-}
+// To be defined in CLIENT
+Application* CreateApplication();

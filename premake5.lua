@@ -20,7 +20,7 @@ project "Engine"
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "stdafx.h"
-	pchsource "stdafx.cpp"
+	pchsource "Engine/src/stdafx.cpp"
 
 	files
 	{
@@ -30,6 +30,7 @@ project "Engine"
 
 	includedirs
 	{
+		"%{prj.name}/src",
 		"Vendor/math"
 	}
 
@@ -40,8 +41,8 @@ project "Engine"
 
 		defines
 		{
-			"JPT_PLATFORM_WINDOWS",
-			"JPT_BUILD_DLL"
+			"__WINDOWS__",
+			"BUILD_DLL"
 		}
 
 		postbuildcommands
@@ -50,15 +51,15 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
-		defines "JPT_DEBUG"
+		defines "DEBUG"
 		symbols "On"
 
 	filter "configurations:Release"
-		defines "JPT_RELEASE"
+		defines "RELEASE"
 		optimize "On"
 
 	filter "configurations:Distribution"
-		defines "JPT_DIST"
+		defines "DIST"
 		optimize "On"
 
 project "ExampleGame"
@@ -93,17 +94,17 @@ project "ExampleGame"
 
 		defines
 		{
-			"JPT_PLATFORM_WINDOWS"
+			"__WINDOWS__"
 		}
 
 	filter "configurations:Debug"
-		defines "JPT_DEBUG"
+		defines "DEBUG"
 		symbols "On"
 
 	filter "configurations:Release"
-		defines "JPT_RELEASE"
+		defines "RELEASE"
 		optimize "On"
 
 	filter "configurations:Distribution"
-		defines "JPT_DIST"
+		defines "DIST"
 		optimize "On"

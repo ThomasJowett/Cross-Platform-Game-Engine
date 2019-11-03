@@ -6,6 +6,7 @@
 #include <utility>
 #include <vector>
 #include <string>
+#include <sstream>
 #include <functional>
 #include <algorithm>
 #include <unordered_map>
@@ -13,11 +14,8 @@
 #include <math.h>
 #include <float.h>
 
-#ifdef JPT_PLATFORM_WINDOWS
+#ifdef __WINDOWS__
 
 #include <Windows.h>
 
-#endif // JPT_PLATFORM_WINDOWS
-
-// Engine headers
-//#include "Debug.h"
+#endif // __WINDOWS__

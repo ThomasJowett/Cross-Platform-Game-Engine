@@ -1,8 +1,6 @@
-#include <Jupiter.h>
+#include <include.h>
 
-std::string test;
-
-class ExampleGame : public Jupiter::Application
+class ExampleGame : public Application
 {
 public:
 	ExampleGame()
@@ -16,7 +14,8 @@ public:
 	}
 };
 
-Jupiter::Application* Jupiter::CreateApplication()
+/* Entry Point*/
+Application* CreateApplication()
 {
 	return new ExampleGame();
 }
