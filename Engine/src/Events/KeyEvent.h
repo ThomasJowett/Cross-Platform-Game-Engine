@@ -7,7 +7,7 @@ class DLLIMPEXP_CORE KeyEvent : public Event
 public:
 	inline int GetKeyCode() const { return m_keyCode; }
 
-	EVENT_CLASS_CATEGORY(EventCategory::KEYBOARD | EventCategory::INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_KEYBOARD | EventCategory::INPUT)
 	
 protected:
 

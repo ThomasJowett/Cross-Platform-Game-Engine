@@ -19,7 +19,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(EventType::MOUSE_MOTION)
-	EVENT_CLASS_CATEGORY(EventCategory::MOUSE | EventCategory::INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::INPUT)
 private:
 	float m_mouseX, m_mouseY;
 };
@@ -41,7 +41,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(EventType::MOUSE_WHEEL)
-	EVENT_CLASS_CATEGORY(EventCategory::MOUSE | EventCategory::INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::INPUT)
 
 private:
 	float m_XOffset, m_YOffset;
@@ -52,7 +52,7 @@ class DLLIMPEXP_CORE MouseButtonEvent : public Event
 public:
 	inline int GetMouseButton() const { return m_button; }
 
-	EVENT_CLASS_CATEGORY(EventCategory::MOUSE | EventCategory::INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::INPUT)
 protected:
 	MouseButtonEvent(int button)
 		: m_button(button) {}

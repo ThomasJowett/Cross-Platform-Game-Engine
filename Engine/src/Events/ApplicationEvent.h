@@ -19,7 +19,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(EventType::WINDOW_RESIZE)
-	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
 
 
 private:
@@ -32,7 +32,7 @@ public:
 	WindowCloseEvent() {}
 
 	EVENT_CLASS_TYPE(EventType::WINDOW_CLOSE)
-	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
 };
 
 class DLLIMPEXP_CORE AppUpdateEvent : public Event
@@ -41,7 +41,7 @@ public:
 	AppUpdateEvent() {}
 
 	EVENT_CLASS_TYPE(EventType::APP_UPDATE)
-	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
 };
 
 class DLLIMPEXP_CORE AppRenderEvent : public Event
@@ -50,5 +50,5 @@ public:
 	AppRenderEvent() {}
 
 	EVENT_CLASS_TYPE(EventType::APP_RENDER)
-	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
 };

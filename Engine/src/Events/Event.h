@@ -35,12 +35,12 @@ enum class EventType
 
 enum EventCategory
 {
-	NONE = 0,
-	APPLICATION		= BIT(0),
-	INPUT			= BIT(1),
-	KEYBOARD		= BIT(2),
-	MOUSE			= BIT(3),
-	MOUSE_BUTTON	= BIT(4),
+	EC_NONE = 0,
+	EC_APPLICATION		= BIT(0),
+	EC_INPUT			= BIT(1),
+	EC_KEYBOARD			= BIT(2),
+	EC_MOUSE			= BIT(3),
+	EC_MOUSE_BUTTON		= BIT(4),
 };
 
 class DLLIMPEXP_CORE Event
