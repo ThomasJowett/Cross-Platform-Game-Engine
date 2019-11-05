@@ -3,6 +3,8 @@
 
 Application::Application()
 {
+	m_window = std::unique_ptr<Window>(Window::Create());
+
 }
 
 
@@ -12,5 +14,8 @@ Application::~Application()
 
 void Application::Run()
 {
-	while (true);
+	while (m_running)
+	{
+		m_window->OnUpdate();
+	}
 }

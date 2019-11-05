@@ -22,4 +22,13 @@
 #error Target platform not supported
 #endif
 
+#ifdef ENABLE_ASSERTS
+	#define ASSERT(x, ...) {if(!(x)){__debugbreak();}}
+	#define CORE_ASSERT(x,...){if(!(x){__debugbreak();})}
+#else
+	#define ASSERT(x, ...)
+	#define CORE_ASSERT(z, ...)
+#endif // ENABLE_ASSERTS
+
+
 #define BIT(X) (1 << X)

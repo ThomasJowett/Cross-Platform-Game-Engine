@@ -7,7 +7,7 @@ class DLLIMPEXP_CORE KeyEvent : public Event
 public:
 	inline int GetKeyCode() const { return m_keyCode; }
 
-	EVENT_CLASS_CATEGORY(EventCategory::EC_KEYBOARD | EventCategory::INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::EC_KEYBOARD | EventCategory::EC_INPUT)
 	
 protected:
 
@@ -39,6 +39,7 @@ private:
 
 class DLLIMPEXP_CORE KeyReleasedEvent :public KeyEvent
 {
+public:
 	KeyReleasedEvent(int keyCode)
 		:KeyEvent(keyCode) {}
 
@@ -54,6 +55,7 @@ class DLLIMPEXP_CORE KeyReleasedEvent :public KeyEvent
 
 class DLLIMPEXP_CORE KeyTypedEvent : public KeyEvent
 {
+public:
 	KeyTypedEvent(int keyCode)
 		:KeyEvent(keyCode) {}
 
