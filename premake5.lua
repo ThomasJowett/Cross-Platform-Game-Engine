@@ -31,7 +31,7 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"Vendor/math"
+		"%{prj.name}/Vendor"
 	}
 
 	filter "system:windows"
@@ -43,11 +43,6 @@ project "Engine"
 		{
 			"__WINDOWS__",
 			"BUILD_DLL"
-		}
-
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/ExampleGame")
 		}
 
 	filter "configurations:Debug"
@@ -95,6 +90,11 @@ project "ExampleGame"
 		defines
 		{
 			"__WINDOWS__"
+		}
+
+		postbuildcommands
+		{
+			("{COPY} ../bin/" .. outputdir .. "/Engine/Engine.dll ../bin/" .. outputdir .. "/%{prj.name}")
 		}
 
 	filter "configurations:Debug"
