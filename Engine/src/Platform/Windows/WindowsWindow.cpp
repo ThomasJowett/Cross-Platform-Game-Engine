@@ -13,6 +13,7 @@ static void	GLFWErrorCallback(int error, const char* description)
 {
 	DBG_OUTPUT("GLFW Error %i %s", error, description);
 }
+
 Window* Window::Create(const WindowProps& props)
 {
 	return new WindowsWindow(props);
@@ -23,7 +24,6 @@ WindowsWindow::WindowsWindow(const WindowProps& props)
 	Init(props);
 }
 
-
 WindowsWindow::~WindowsWindow()
 {
 	Shutdown();
@@ -31,7 +31,7 @@ WindowsWindow::~WindowsWindow()
 
 void WindowsWindow::OnUpdate()
 {
-	glfwPollEvents();
+	//glfwPollEvents();
 }
 
 void WindowsWindow::SetEventCallback(const EventCallbackFn & callback)
@@ -64,17 +64,24 @@ void WindowsWindow::Init(const WindowProps & props)
 	m_data.PosX = props.PosX;
 	m_data.PosY = props.PosY;
 
-	OUTPUT("Creating window %s %d %d \n", props.Title, props.Width, props.Height);
+	std::string message = "Creating window" + props.Title + std::to_string(props.Width) + std::to_string(props.Height);
+
+	OUTPUT("Creating window %s %d %d \n", props.Title.c_str(), props.Width, props.Height);
+
+	OUTPUT(message.c_str());
+
 
 	if (s_GLFWWindowCount == 0)
 	{
-		OUTPUT("Initializing GLFW");
+		OUTPUT("Initializing GLFW\r\n");
 		int success = glfwInit();
 		CORE_ASSERT(success, "Could not initialize GLFW!");
 		glfwSetErrorCallback(GLFWErrorCallback);
 	}
 
 	m_window = glfwCreateWindow((int)props.Width, (int)props.Height, m_data.Title.c_str(), nullptr, nullptr);
+
+	glfwMakeContextCurrent(m_window);
 
 	glfwSetWindowPos(m_window, (int)props.PosX, (int)props.PosY);
 

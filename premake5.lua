@@ -11,6 +11,8 @@ workspace "Cross Platform Game Engine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
+include "Engine/Vendor/GLFW"
+
 project "Engine"
 	location "Engine"
 	kind "SharedLib"
@@ -31,7 +33,14 @@ project "Engine"
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/Vendor"
+		"%{prj.name}/Vendor",
+		"%{prj.name}/Vendor/GLFW/include"		
+	}
+	
+	links
+	{
+		"GLFW",
+		"opengl32.lib"
 	}
 
 	filter "system:windows"

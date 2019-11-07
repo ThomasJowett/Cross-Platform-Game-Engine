@@ -17,8 +17,8 @@ struct WindowProps
 	WindowProps(const std::string& title = "Example Game",
 		unsigned int width = 1920,
 		unsigned int height = 1080,
-		unsigned int posX = 0,
-		unsigned int posY = 0)
+		unsigned int posX = 20,
+		unsigned int posY = 20)
 		:Title(title), Width(width), Height(height),
 		PosX(posX), PosY(posY)
 	{

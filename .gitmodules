@@ -1,3 +1,6 @@
 [submodule "Engine/vendor/math"]
 	path = Engine/vendor/math
 	url = https://github.com/ThomasJowett/3D-Maths-libraries
+[submodule "Engine/vendor/GLFW"]
+	path = Engine/vendor/GLFW
+	url = https://github.com/TheCherno/GLFW

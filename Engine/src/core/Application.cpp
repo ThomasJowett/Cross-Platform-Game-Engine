@@ -4,7 +4,6 @@
 Application::Application()
 {
 	m_window = std::unique_ptr<Window>(Window::Create());
-
 }
 
 

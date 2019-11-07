@@ -8,7 +8,7 @@ extern Application* CreateApplication();
 
 int main(int argc, char* argv[])
 {
-	OUTPUT("Engine Initialised");
+	OUTPUT("Engine Initialised\r\n");
 	auto app = CreateApplication();
 	app->Run();
 	delete app;
