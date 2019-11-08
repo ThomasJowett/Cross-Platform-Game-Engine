@@ -31,11 +31,7 @@ WindowsWindow::~WindowsWindow()
 
 void WindowsWindow::OnUpdate()
 {
-	//glfwPollEvents();
-}
-
-void WindowsWindow::SetEventCallback(const EventCallbackFn & callback)
-{
+	glfwPollEvents();
 }
 
 void WindowsWindow::SetVSync(bool enabled)
@@ -64,7 +60,7 @@ void WindowsWindow::Init(const WindowProps & props)
 	m_data.PosX = props.PosX;
 	m_data.PosY = props.PosY;
 
-	std::string message = "Creating window" + props.Title + std::to_string(props.Width) + std::to_string(props.Height);
+	std::string message = "Creating window " + props.Title + std::to_string(props.Width) + std::to_string(props.Height);
 
 	OUTPUT("Creating window %s %d %d \n", props.Title.c_str(), props.Width, props.Height);
 
@@ -80,13 +76,14 @@ void WindowsWindow::Init(const WindowProps & props)
 	}
 
 	m_window = glfwCreateWindow((int)props.Width, (int)props.Height, m_data.Title.c_str(), nullptr, nullptr);
+	++s_GLFWWindowCount;
 
 	glfwMakeContextCurrent(m_window);
 
 	glfwSetWindowPos(m_window, (int)props.PosX, (int)props.PosY);
 
 	glfwSetWindowUserPointer(m_window, &m_data);
-	SetVSync(true);
+	//SetVSync(true);
 
 	glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
 		{
@@ -97,21 +94,21 @@ void WindowsWindow::Init(const WindowProps & props)
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
 		});
-
+	
 	glfwSetWindowPosCallback(m_window, [](GLFWwindow* window, int posX, int posY)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.PosX = posX;
 			data.PosY = posY;
 		});
-
+	
 	glfwSetWindowCloseCallback(m_window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
 			data.EventCallback(event);
 		});
-
+	
 	glfwSetKeyCallback(m_window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);

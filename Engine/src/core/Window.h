@@ -18,7 +18,7 @@ struct WindowProps
 		unsigned int width = 1920,
 		unsigned int height = 1080,
 		unsigned int posX = 20,
-		unsigned int posY = 20)
+		unsigned int posY = 50)
 		:Title(title), Width(width), Height(height),
 		PosX(posX), PosY(posY)
 	{

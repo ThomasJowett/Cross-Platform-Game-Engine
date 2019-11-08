@@ -20,7 +20,7 @@ public:
 	inline unsigned int GetPosX() const override { return m_data.PosX; }
 	inline unsigned int GetPosY() const override { return m_data.PosY; }
 
-	void SetEventCallback(const EventCallbackFn& callback) override;
+	void SetEventCallback(const EventCallbackFn& callback) override { m_data.EventCallback = callback; }
 	void SetVSync(bool enabled) override;
 	bool IsVSync() const override;
 

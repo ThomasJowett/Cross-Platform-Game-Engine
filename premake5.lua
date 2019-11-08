@@ -53,6 +53,11 @@ project "Engine"
 			"__WINDOWS__",
 			"BUILD_DLL"
 		}
+		
+		postbuildcommands
+		{
+			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/ExampleGame")
+		}
 
 	filter "configurations:Debug"
 		defines "DEBUG"
