@@ -12,6 +12,8 @@ workspace "Cross Platform Game Engine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 include "Engine/Vendor/GLFW"
+include "Engine/Vendor/GLAD"
+include "Engine/Vendor/imgui"
 
 project "Engine"
 	location "Engine"
@@ -34,24 +36,29 @@ project "Engine"
 	{
 		"%{prj.name}/src",
 		"%{prj.name}/Vendor",
-		"%{prj.name}/Vendor/GLFW/include"		
+		"%{prj.name}/Vendor/GLFW/include",
+		"%{prj.name}/Vendor/GLAD/include",
+		"%{prj.name}/Vendor/imgui"
 	}
 	
 	links
 	{
 		"GLFW",
+		"GLAD",
+		"ImGui",
 		"opengl32.lib"
 	}
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "Off"
 		systemversion "latest"
 
 		defines
 		{
 			"__WINDOWS__",
-			"BUILD_DLL"
+			"BUILD_DLL",
+			"GLFW_INCLUDE_NONE"
 		}
 		
 		postbuildcommands
@@ -60,7 +67,12 @@ project "Engine"
 		}
 
 	filter "configurations:Debug"
-		defines "DEBUG"
+		defines 
+		{
+			"DEBUG",
+			"ENABLE_ASSERTS"
+		}
+		
 		symbols "On"
 
 	filter "configurations:Release"

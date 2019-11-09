@@ -8,8 +8,9 @@ extern Application* CreateApplication();
 
 int main(int argc, char* argv[])
 {
-	OUTPUT("Engine Initialised\r\n");
 	auto app = CreateApplication();
+	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
+	OUTPUT("Engine Initialised\r\n");
 	app->Run();
 	delete app;
 	return 0;

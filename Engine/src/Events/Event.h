@@ -28,20 +28,20 @@ enum class EventType
 	MOUSE_WHEEL
 };
 
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return type; }\
+enum EventCategory
+{
+	EC_NONE			= 0,
+	EC_APPLICATION	= BIT(0),
+	EC_INPUT		= BIT(1),
+	EC_KEYBOARD		= BIT(2),
+	EC_MOUSE		= BIT(3),
+	EC_MOUSE_BUTTON	= BIT(4),
+};
+
+#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::##type; }\
 								virtual EventType GetEventType() const override { return GetStaticType(); }\
 								virtual const char* GetName() const override { return #type; }
 #define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
-
-enum EventCategory
-{
-	EC_NONE = 0,
-	EC_APPLICATION		= BIT(0),
-	EC_INPUT			= BIT(1),
-	EC_KEYBOARD			= BIT(2),
-	EC_MOUSE			= BIT(3),
-	EC_MOUSE_BUTTON		= BIT(4),
-};
 
 class DLLIMPEXP_CORE Event
 {

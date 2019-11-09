@@ -18,8 +18,8 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::MOUSE_MOTION)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::EC_INPUT)
+	EVENT_CLASS_TYPE(MOUSE_MOTION)
+	EVENT_CLASS_CATEGORY(EC_MOUSE | EC_INPUT)
 private:
 	float m_mouseX, m_mouseY;
 };
@@ -40,8 +40,8 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::MOUSE_WHEEL)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::EC_INPUT)
+	EVENT_CLASS_TYPE(MOUSE_WHEEL)
+	EVENT_CLASS_CATEGORY(EC_MOUSE | EC_INPUT)
 
 private:
 	float m_XOffset, m_YOffset;
@@ -52,7 +52,7 @@ class DLLIMPEXP_CORE MouseButtonEvent : public Event
 public:
 	inline int GetMouseButton() const { return m_button; }
 
-	EVENT_CLASS_CATEGORY(EventCategory::EC_MOUSE | EventCategory::EC_INPUT)
+	EVENT_CLASS_CATEGORY(EC_MOUSE | EC_INPUT)
 protected:
 	MouseButtonEvent(int button)
 		: m_button(button) {}
@@ -73,7 +73,7 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::MOUSE_BUTTON_PRESSED)
+	EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
 };
 
 class DLLIMPEXP_CORE MouseButtonReleasedEvent : public MouseButtonEvent
@@ -89,5 +89,5 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::MOUSE_BUTTON_RELEASED)
+	EVENT_CLASS_TYPE(MOUSE_BUTTON_RELEASED)
 };

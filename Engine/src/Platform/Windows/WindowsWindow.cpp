@@ -7,6 +7,8 @@
 
 #include "Logging/Debug.h"
 
+#include <GLAD/glad.h>
+
 static uint8_t s_GLFWWindowCount = 0;
 
 static void	GLFWErrorCallback(int error, const char* description)
@@ -32,6 +34,7 @@ WindowsWindow::~WindowsWindow()
 void WindowsWindow::OnUpdate()
 {
 	glfwPollEvents();
+	glfwSwapBuffers(m_window);
 }
 
 void WindowsWindow::SetVSync(bool enabled)
@@ -79,11 +82,13 @@ void WindowsWindow::Init(const WindowProps & props)
 	++s_GLFWWindowCount;
 
 	glfwMakeContextCurrent(m_window);
+	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+	CORE_ASSERT(status, "Failed to initialize GLAD");
 
 	glfwSetWindowPos(m_window, (int)props.PosX, (int)props.PosY);
 
 	glfwSetWindowUserPointer(m_window, &m_data);
-	//SetVSync(true);
+	SetVSync(true);
 
 	glfwSetWindowSizeCallback(m_window, [](GLFWwindow* window, int width, int height)
 		{

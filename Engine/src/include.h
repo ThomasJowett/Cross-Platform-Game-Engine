@@ -2,8 +2,9 @@
 
 // For including in applications
 
-#include "Core/core.h"
+#include "Core/Layer.h"
 #include "Core/Application.h"
 #include "Core/EntryPoint.h"
 #include "Logging/Debug.h"
 
+#include "ImGui/ImGuiLayer.h"

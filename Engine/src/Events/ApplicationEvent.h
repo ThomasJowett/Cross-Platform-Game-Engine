@@ -18,8 +18,8 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::WINDOW_RESIZE)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
+	EVENT_CLASS_TYPE(WINDOW_RESIZE)
+	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 
 
 private:
@@ -31,8 +31,8 @@ class DLLIMPEXP_CORE WindowCloseEvent : public Event
 public:
 	WindowCloseEvent() {}
 
-	EVENT_CLASS_TYPE(EventType::WINDOW_CLOSE)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
+	EVENT_CLASS_TYPE(WINDOW_CLOSE)
+	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 };
 
 class DLLIMPEXP_CORE AppUpdateEvent : public Event
@@ -40,8 +40,8 @@ class DLLIMPEXP_CORE AppUpdateEvent : public Event
 public:
 	AppUpdateEvent() {}
 
-	EVENT_CLASS_TYPE(EventType::APP_UPDATE)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
+	EVENT_CLASS_TYPE(APP_UPDATE)
+	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 };
 
 class DLLIMPEXP_CORE AppRenderEvent : public Event
@@ -49,6 +49,6 @@ class DLLIMPEXP_CORE AppRenderEvent : public Event
 public:
 	AppRenderEvent() {}
 
-	EVENT_CLASS_TYPE(EventType::APP_RENDER)
-	EVENT_CLASS_CATEGORY(EventCategory::EC_APPLICATION)
+	EVENT_CLASS_TYPE(APP_RENDER)
+	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 };

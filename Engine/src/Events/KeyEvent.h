@@ -7,7 +7,7 @@ class DLLIMPEXP_CORE KeyEvent : public Event
 public:
 	inline int GetKeyCode() const { return m_keyCode; }
 
-	EVENT_CLASS_CATEGORY(EventCategory::EC_KEYBOARD | EventCategory::EC_INPUT)
+	EVENT_CLASS_CATEGORY(EC_KEYBOARD | EC_INPUT)
 	
 protected:
 
@@ -31,7 +31,7 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::KEY_PRESSED)
+	EVENT_CLASS_TYPE(KEY_PRESSED)
 
 private:
 	int m_repeatCount;
@@ -50,7 +50,7 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::KEY_RELEASED)
+	EVENT_CLASS_TYPE(KEY_RELEASED)
 };
 
 class DLLIMPEXP_CORE KeyTypedEvent : public KeyEvent
@@ -66,5 +66,5 @@ public:
 		return ss.str();
 	}
 
-	EVENT_CLASS_TYPE(EventType::KEY_TYPED)
+	EVENT_CLASS_TYPE(KEY_TYPED)
 };
