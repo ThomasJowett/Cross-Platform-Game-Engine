@@ -2,9 +2,6 @@
 #include "Application.h"
 
 #include <GLAD/glad.h>
-//#include <GLFW/glfw3.h>
-
-#define BIND_EVENT_FN(x) std::bind(&Application::x, this, std::placeholders::_1)
 
 Application* Application::s_Instance = nullptr;
 
@@ -13,7 +10,7 @@ Application::Application()
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
 	s_Instance = this;
 	m_window = std::unique_ptr<Window>(Window::Create());
-	m_window->SetEventCallback(BIND_EVENT_FN(OnEvent));
+	m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 }
 
 
@@ -40,9 +37,7 @@ void Application::Run()
 void Application::OnEvent(Event & e)
 {
 	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(OnWindowClose));
-
-	std::cout << e << std::endl;
+	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 
 	for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
 	{

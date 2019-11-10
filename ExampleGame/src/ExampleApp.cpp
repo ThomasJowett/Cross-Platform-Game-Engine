@@ -10,12 +10,10 @@ public:
 
 	void OnUpdate() override
 	{
-		std::cout << "ExampleLayer::Upsdate\n";
 	}
 
 	void OnEvent(Event& e) override
 	{
-		//std::cout << e <<std::endl;
 	}
 };
 

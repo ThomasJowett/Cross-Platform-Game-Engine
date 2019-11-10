@@ -42,3 +42,6 @@ bin-int/
 *.vcxproj
 *.sln
 *.filters
+
+# configuration files
+*.ini
