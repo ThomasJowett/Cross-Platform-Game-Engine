@@ -16,7 +16,7 @@
 	#ifdef BUILD_DLL
 		#define DLLIMPEXP_CORE
 	#else
-		#define DLLIMPEXP_CORE
+		#define DLLIMPEXP_CORE __attribute__((visibility("default")))
 	#endif // BUILD_DLL
 #elif __ANDROID__
 	#ifdef BUILD_DLL

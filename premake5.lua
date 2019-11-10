@@ -11,9 +11,12 @@ workspace "Cross Platform Game Engine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
-include "Engine/Vendor/GLFW"
-include "Engine/Vendor/GLAD"
-include "Engine/Vendor/imgui"
+group "Dependencies"
+	include "Engine/Vendor/GLFW"
+	include "Engine/Vendor/GLAD"
+	include "Engine/Vendor/imgui"
+	
+group ""
 
 project "Engine"
 	location "Engine"
@@ -63,7 +66,7 @@ project "Engine"
 		
 		postbuildcommands
 		{
-			("{COPY} %{cfg.buildtarget.relpath} ../bin/" .. outputdir .. "/ExampleGame")
+			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/ExampleGame/\"")
 		}
 
 	filter "configurations:Debug"
@@ -72,15 +75,17 @@ project "Engine"
 			"DEBUG",
 			"ENABLE_ASSERTS"
 		}
-		
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RELEASE"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Distribution"
 		defines "DIST"
+		runtime "Release"
 		optimize "On"
 
 project "ExampleGame"
@@ -110,7 +115,7 @@ project "ExampleGame"
 
 	filter "system:windows"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "Off"
 		systemversion "latest"
 
 		defines
@@ -125,12 +130,15 @@ project "ExampleGame"
 
 	filter "configurations:Debug"
 		defines "DEBUG"
+		runtime "Debug"
 		symbols "On"
 
 	filter "configurations:Release"
 		defines "RELEASE"
+		runtime "Release"
 		optimize "On"
 
 	filter "configurations:Distribution"
 		defines "DIST"
+		runtime "Release"
 		optimize "On"
