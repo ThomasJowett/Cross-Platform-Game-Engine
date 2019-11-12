@@ -10,6 +10,10 @@ public:
 
 	void OnUpdate() override
 	{
+		if (Input::IsKeyPressed(KEY_TAB))
+		{
+			std::cout << "Tab is pressed" << std::endl;
+		}
 	}
 
 	void OnEvent(Event& e) override
