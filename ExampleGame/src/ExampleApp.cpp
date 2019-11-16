@@ -1,5 +1,7 @@
 #include <include.h>
 
+#include "imgui/imgui.h"
+
 class ExampleLayer :public Layer
 {
 public:
@@ -18,6 +20,13 @@ public:
 
 	void OnEvent(Event& e) override
 	{
+	}
+
+	void OnImGuiRender() override
+	{
+		ImGui::Begin("Settings");
+		ImGui::Text("Hello World");
+		ImGui::End();
 	}
 };
 

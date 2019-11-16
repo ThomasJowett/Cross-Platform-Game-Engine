@@ -8,6 +8,11 @@ workspace "Cross Platform Game Engine"
 		"Release",
 		"Distribution"
 	}
+	
+	flags		
+	{		
+		"MultiProcessorCompile"		
+	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
@@ -20,8 +25,9 @@ group ""
 
 project "Engine"
 	location "Engine"
-	kind "SharedLib"
+	kind "StaticLib"
 	language "C++"
+	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -105,7 +111,8 @@ project "ExampleGame"
 
 	includedirs
 	{
-		"Engine/src"
+		"Engine/src",
+		"Engine/vendor"
 	}
 	
 	links

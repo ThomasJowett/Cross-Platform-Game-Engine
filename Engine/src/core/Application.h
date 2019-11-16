@@ -6,6 +6,8 @@
 #include "Events/ApplicationEvent.h"
 #include "Window.h"
 
+#include "imgui/ImGuiLayer.h"
+
 class DLLIMPEXP_CORE Application
 {
 public:
@@ -26,6 +28,7 @@ private:
 	bool OnWindowClose(WindowCloseEvent& e);
 
 	std::unique_ptr<Window> m_window;
+	ImGuiLayer* m_ImGuiLayer;
 	bool m_running = true;
 	LayerStack m_layerStack;
 

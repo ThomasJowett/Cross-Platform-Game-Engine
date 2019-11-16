@@ -30,6 +30,13 @@ void Application::Run()
 			layer->OnUpdate();
 		}
 
+		m_ImGuiLayer->Begin();
+		for each(Layer* layer in m_layerStack)
+		{
+			layer->OnImGuiRender();
+		}
+		m_ImGuiLayer->End();
+
 		m_window->OnUpdate();
 	}
 }
