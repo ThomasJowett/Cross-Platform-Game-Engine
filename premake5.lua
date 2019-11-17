@@ -66,13 +66,7 @@ project "Engine"
 		defines
 		{
 			"__WINDOWS__",
-			"BUILD_DLL",
 			"GLFW_INCLUDE_NONE"
-		}
-		
-		postbuildcommands
-		{
-			("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/ExampleGame/\"")
 		}
 
 	filter "configurations:Debug"
@@ -81,6 +75,7 @@ project "Engine"
 			"DEBUG",
 			"ENABLE_ASSERTS"
 		}
+		
 		runtime "Debug"
 		symbols "On"
 
@@ -88,6 +83,7 @@ project "Engine"
 		defines "RELEASE"
 		runtime "Release"
 		optimize "On"
+		symbols "Off"
 
 	filter "configurations:Distribution"
 		defines "DIST"
@@ -130,11 +126,6 @@ project "ExampleGame"
 			"__WINDOWS__"
 		}
 
-		postbuildcommands
-		{
-			("{COPY} ../bin/" .. outputdir .. "/Engine/Engine.dll ../bin/" .. outputdir .. "/%{prj.name}")
-		}
-
 	filter "configurations:Debug"
 		defines "DEBUG"
 		runtime "Debug"
@@ -144,6 +135,7 @@ project "ExampleGame"
 		defines "RELEASE"
 		runtime "Release"
 		optimize "On"
+		symbols "Off"
 
 	filter "configurations:Distribution"
 		defines "DIST"

@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-class DLLIMPEXP_CORE MouseMotionEvent : public Event
+class MouseMotionEvent : public Event
 {
 public:
 	MouseMotionEvent(float x, float y)
@@ -24,7 +24,7 @@ private:
 	float m_mouseX, m_mouseY;
 };
 
-class DLLIMPEXP_CORE MouseWheelEvent : public Event
+class MouseWheelEvent : public Event
 {
 public:
 	MouseWheelEvent(float xOffset, float yOffset)
@@ -47,7 +47,7 @@ private:
 	float m_XOffset, m_YOffset;
 };
 
-class DLLIMPEXP_CORE MouseButtonEvent : public Event
+class MouseButtonEvent : public Event
 {
 public:
 	inline int GetMouseButton() const { return m_button; }
@@ -60,7 +60,7 @@ protected:
 	int m_button;
 };
 
-class DLLIMPEXP_CORE MouseButtonPressedEvent : public MouseButtonEvent
+class MouseButtonPressedEvent : public MouseButtonEvent
 {
 public:
 	MouseButtonPressedEvent(int button)
@@ -76,7 +76,7 @@ public:
 	EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
 };
 
-class DLLIMPEXP_CORE MouseButtonReleasedEvent : public MouseButtonEvent
+class MouseButtonReleasedEvent : public MouseButtonEvent
 {
 public:
 	MouseButtonReleasedEvent(int button)

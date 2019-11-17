@@ -4,7 +4,7 @@
 #include "Events/KeyEvent.h"
 #include "Events/ApplicationEvent.h"
 
-class DLLIMPEXP_CORE ImGuiLayer :
+class ImGuiLayer :
 	public Layer
 {
 public:

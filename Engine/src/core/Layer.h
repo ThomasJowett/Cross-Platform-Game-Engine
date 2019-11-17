@@ -3,7 +3,7 @@
 #include "Core/core.h"
 #include "Events/Event.h"
 
-class DLLIMPEXP_CORE Layer
+class Layer
 {
 public:
 	Layer(const std::string& name = "Layer");

@@ -22,7 +22,7 @@ void Application::Run()
 {
 	while (m_running)
 	{
-		glClearColor(0.4, 0.4, 0.4, 1);
+		glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		for each(Layer* layer in m_layerStack)

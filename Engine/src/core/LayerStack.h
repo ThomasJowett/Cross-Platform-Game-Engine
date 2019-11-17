@@ -2,7 +2,7 @@
 #include "Core/core.h"
 #include "Layer.h"
 
-class DLLIMPEXP_CORE LayerStack
+class LayerStack
 {
 public:
 	LayerStack();

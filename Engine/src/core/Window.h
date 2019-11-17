@@ -26,7 +26,7 @@ struct WindowProps
 };
 
 // Desktop system window
-class DLLIMPEXP_CORE Window
+class Window
 {
 public:
 	using EventCallbackFn = std::function<void(Event&)>;

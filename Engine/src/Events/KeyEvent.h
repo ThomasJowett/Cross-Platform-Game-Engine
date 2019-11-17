@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-class DLLIMPEXP_CORE KeyEvent : public Event
+class KeyEvent : public Event
 {
 public:
 	inline int GetKeyCode() const { return m_keyCode; }
@@ -16,7 +16,7 @@ protected:
 	int m_keyCode;
 };
 
-class DLLIMPEXP_CORE KeyPressedEvent : public KeyEvent
+class KeyPressedEvent : public KeyEvent
 {
 public:
 	KeyPressedEvent(int keycode, int repeatCount)
@@ -37,7 +37,7 @@ private:
 	int m_repeatCount;
 };
 
-class DLLIMPEXP_CORE KeyReleasedEvent :public KeyEvent
+class KeyReleasedEvent :public KeyEvent
 {
 public:
 	KeyReleasedEvent(int keyCode)
@@ -53,7 +53,7 @@ public:
 	EVENT_CLASS_TYPE(KEY_RELEASED)
 };
 
-class DLLIMPEXP_CORE KeyTypedEvent : public KeyEvent
+class KeyTypedEvent : public KeyEvent
 {
 public:
 	KeyTypedEvent(int keyCode)

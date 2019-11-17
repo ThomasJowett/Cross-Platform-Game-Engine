@@ -2,7 +2,7 @@
 
 #include "Event.h"
 
-class DLLIMPEXP_CORE WindowResizeEvent : public Event
+class WindowResizeEvent : public Event
 {
 public:
 	WindowResizeEvent(unsigned int width, unsigned int height)
@@ -26,7 +26,7 @@ private:
 	unsigned int m_width, m_height;
 };
 
-class DLLIMPEXP_CORE WindowCloseEvent : public Event
+class WindowCloseEvent : public Event
 {
 public:
 	WindowCloseEvent() {}
@@ -35,7 +35,7 @@ public:
 	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 };
 
-class DLLIMPEXP_CORE AppUpdateEvent : public Event
+class AppUpdateEvent : public Event
 {
 public:
 	AppUpdateEvent() {}
@@ -44,7 +44,7 @@ public:
 	EVENT_CLASS_CATEGORY(EC_APPLICATION)
 };
 
-class DLLIMPEXP_CORE AppRenderEvent : public Event
+class AppRenderEvent : public Event
 {
 public:
 	AppRenderEvent() {}

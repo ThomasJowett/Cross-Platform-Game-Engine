@@ -8,7 +8,7 @@
 
 #include "imgui/ImGuiLayer.h"
 
-class DLLIMPEXP_CORE Application
+class Application
 {
 public:
 	Application();
