@@ -3,6 +3,7 @@
 #include "stdafx.h"
 
 #include "Core/Window.h"
+#include "Renderer/GraphicsContext.h"
 
 #include "GLFW/glfw3.h"
 
@@ -42,5 +43,7 @@ private:
 
 	GLFWwindow* m_window;
 	WindowData m_data;
+
+	GraphicsContext* m_context;
 };
 
