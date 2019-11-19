@@ -33,6 +33,8 @@ private:
 	LayerStack m_layerStack;
 
 	static Application* s_Instance;
+
+	unsigned int m_vertexarray, m_vertexbuffer, m_indexBuffer;
 };
 
 // To be defined in CLIENT
