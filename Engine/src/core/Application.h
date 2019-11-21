@@ -4,6 +4,7 @@
 #include "LayerStack.h"
 #include "Events/Event.h"
 #include "Events/ApplicationEvent.h"
+#include "Renderer/Shader.h"
 #include "Window.h"
 
 #include "imgui/ImGuiLayer.h"
@@ -35,6 +36,8 @@ private:
 	static Application* s_Instance;
 
 	unsigned int m_vertexarray, m_vertexbuffer, m_indexBuffer;
+
+	std::unique_ptr<Shader> m_shader;
 };
 
 // To be defined in CLIENT
