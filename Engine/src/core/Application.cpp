@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Application.h"
+#include "Platform/OpenGL/OpenGLBuffer.h"
 
 #include <GLAD/glad.h>
 
@@ -9,14 +10,11 @@ Application::Application()
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
 	s_Instance = this;
-	m_window = std::unique_ptr<Window>(Window::Create());
-	m_window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+	m_Window = std::unique_ptr<Window>(Window::Create());
+	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-	glGenVertexArrays(1, &m_vertexarray);
-	glBindVertexArray(m_vertexarray);
-
-	glGenBuffers(1, &m_vertexbuffer);
-	glBindBuffer(GL_ARRAY_BUFFER, m_vertexbuffer);
+	glGenVertexArrays(1, &m_VertexArray);
+	glBindVertexArray(m_VertexArray);
 
 	float vertices[3 * 3] =
 	{
@@ -25,16 +23,13 @@ Application::Application()
 		  0.f,  0.6f, 0.0f
 	};
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	unsigned int indices[3] = { 0,1,2 };
+
+	m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+	m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
 
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-
-	glGenBuffers(1, &m_indexBuffer);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_indexBuffer);
-
-	unsigned int indices[3] = { 0,1,2 };
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 	std::string vertexSrc = R"(
 		#version 330 core
@@ -62,7 +57,7 @@ Application::Application()
 		}
 	)";
 
-	m_shader.reset(new Shader(vertexSrc, fragmentSrc));
+	m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
 }
 
 
@@ -72,28 +67,28 @@ Application::~Application()
 
 void Application::Run()
 {
-	while (m_running)
+	while (m_Running)
 	{
 		glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		m_shader->Bind();
-		glBindVertexArray(m_vertexarray);
-		glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, nullptr);
+		m_Shader->Bind();
+		glBindVertexArray(m_VertexArray);
+		glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
 
-		for each(Layer* layer in m_layerStack)
+		for each(Layer* layer in m_LayerStack)
 		{
 			layer->OnUpdate();
 		}
 
 		m_ImGuiLayer->Begin();
-		for each(Layer* layer in m_layerStack)
+		for each(Layer* layer in m_LayerStack)
 		{
 			layer->OnImGuiRender();
 		}
 		m_ImGuiLayer->End();
 
-		m_window->OnUpdate();
+		m_Window->OnUpdate();
 	}
 }
 
@@ -102,7 +97,7 @@ void Application::OnEvent(Event & e)
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 
-	for (auto it = m_layerStack.end(); it != m_layerStack.begin();)
+	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 	{
 		(*--it)->OnEvent(e);
 		if (e.Handled)
@@ -112,18 +107,18 @@ void Application::OnEvent(Event & e)
 
 void Application::PushLayer(Layer * layer)
 {
-	m_layerStack.PushLayer(layer);
+	m_LayerStack.PushLayer(layer);
 	layer->OnAttach();
 }
 
 void Application::PushOverlay(Layer * layer)
 {
-	m_layerStack.PushOverlay(layer);
+	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
 }
 
 bool Application::OnWindowClose(WindowCloseEvent & e)
 {
-	m_running = false;
+	m_Running = false;
 	return true;
 }

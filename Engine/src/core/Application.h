@@ -5,6 +5,7 @@
 #include "Events/Event.h"
 #include "Events/ApplicationEvent.h"
 #include "Renderer/Shader.h"
+#include "Renderer/Buffer.h"
 #include "Window.h"
 
 #include "imgui/ImGuiLayer.h"
@@ -23,21 +24,24 @@ public:
 	void PushOverlay(Layer* layer);
 
 	static inline Application& Get() { return *s_Instance; }
-	inline Window& GetWindow() { return *m_window; }
+	inline Window& GetWindow() { return *m_Window; }
 
 private:
 	bool OnWindowClose(WindowCloseEvent& e);
 
-	std::unique_ptr<Window> m_window;
+	std::unique_ptr<Window> m_Window;
 	ImGuiLayer* m_ImGuiLayer;
-	bool m_running = true;
-	LayerStack m_layerStack;
+	bool m_Running = true;
+	LayerStack m_LayerStack;
 
 	static Application* s_Instance;
 
-	unsigned int m_vertexarray, m_vertexbuffer, m_indexBuffer;
+	std::unique_ptr<Shader> m_Shader;
 
-	std::unique_ptr<Shader> m_shader;
+	uint32_t m_VertexArray;
+
+	std::unique_ptr<VertexBuffer> m_VertexBuffer;
+	std::unique_ptr<IndexBuffer> m_IndexBuffer;
 };
 
 // To be defined in CLIENT
