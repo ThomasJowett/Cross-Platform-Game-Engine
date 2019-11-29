@@ -6,6 +6,30 @@
 
 Application* Application::s_Instance = nullptr;
 
+// Temporary function
+static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
+{
+	switch (type)
+	{
+	case ShaderDataType::Float:		return GL_FLOAT;
+	case ShaderDataType::Float2:	return GL_FLOAT;
+	case ShaderDataType::Float3:	return GL_FLOAT;
+	case ShaderDataType::Float4:	return GL_FLOAT;
+	case ShaderDataType::Mat3:		return GL_FLOAT;
+	case ShaderDataType::Mat4:		return GL_FLOAT;
+	case ShaderDataType::Int:		return GL_INT;
+	case ShaderDataType::Int2:		return GL_INT;
+	case ShaderDataType::Int3:		return GL_INT;
+	case ShaderDataType::Int4:		return GL_INT;
+	case ShaderDataType::Bool:		return GL_BOOL;
+	default:
+		break;
+	}
+
+	CORE_ASSERT(false, "Shader Data type not recognised");
+	return 0;
+}
+
 Application::Application()
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
@@ -16,11 +40,11 @@ Application::Application()
 	glGenVertexArrays(1, &m_VertexArray);
 	glBindVertexArray(m_VertexArray);
 
-	float vertices[3 * 3] =
+	float vertices[3 * 7] =
 	{
-		-0.6f, -0.4f, 0.0f,
-		 0.4f, -0.6f, 0.0f,
-		  0.f,  0.6f, 0.0f
+		-0.6f, -0.4f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		 0.4f, -0.6f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+		  0.f,  0.6f, 0.0f, 0.0f,  1.0f, 0.0f,  1.0f
 	};
 
 	unsigned int indices[3] = { 0,1,2 };
@@ -28,20 +52,39 @@ Application::Application()
 	m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 	m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
 
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+	BufferLayout layout = {
+		{ShaderDataType::Float3, "a_position"},
+		{ShaderDataType::Float4, "a_colour"}
+	};
+
+	m_VertexBuffer->SetLayout(layout);
+
+	uint32_t index = 0;
+	for (const auto& element : m_VertexBuffer->GetLayout())
+	{
+		glEnableVertexAttribArray(index);
+		glVertexAttribPointer(index, element.Count(), 
+			ShaderDataTypeToOpenGLBaseType(element.Type), 
+			element.Normalized ? GL_TRUE : GL_FALSE, 
+			layout.GetStride(), 
+			(const void*)element.Offset);
+		index++;
+	}
 
 	std::string vertexSrc = R"(
 		#version 330 core
 
 		layout(location = 0) in vec3 a_position;
+		layout(location = 1) in vec4 a_colour;
 
 		out vec3 v_position;
+		out vec4 v_colour;
 
 		void main()
 		{
 			v_position = a_position;
 			gl_Position = vec4(a_position, 1.0);
+			v_colour = a_colour;
 		}
 	)";
 
@@ -49,11 +92,13 @@ Application::Application()
 		#version 330 core
 
 		in vec3 v_position;
+		in vec4 v_colour;
+
 		layout(location = 0) out vec4 frag_colour;
 
 		void main()
 		{
-			frag_colour = vec4(v_position * 0.5 + 0.5, 1.0);
+			frag_colour = vec4(v_colour);
 		}
 	)";
 
