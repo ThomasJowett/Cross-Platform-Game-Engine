@@ -6,30 +6,6 @@
 
 Application* Application::s_Instance = nullptr;
 
-// Temporary function
-static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
-{
-	switch (type)
-	{
-	case ShaderDataType::Float:		return GL_FLOAT;
-	case ShaderDataType::Float2:	return GL_FLOAT;
-	case ShaderDataType::Float3:	return GL_FLOAT;
-	case ShaderDataType::Float4:	return GL_FLOAT;
-	case ShaderDataType::Mat3:		return GL_FLOAT;
-	case ShaderDataType::Mat4:		return GL_FLOAT;
-	case ShaderDataType::Int:		return GL_INT;
-	case ShaderDataType::Int2:		return GL_INT;
-	case ShaderDataType::Int3:		return GL_INT;
-	case ShaderDataType::Int4:		return GL_INT;
-	case ShaderDataType::Bool:		return GL_BOOL;
-	default:
-		break;
-	}
-
-	CORE_ASSERT(false, "Shader Data type not recognised");
-	return 0;
-}
-
 Application::Application()
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
@@ -37,39 +13,32 @@ Application::Application()
 	m_Window = std::unique_ptr<Window>(Window::Create());
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-	glGenVertexArrays(1, &m_VertexArray);
-	glBindVertexArray(m_VertexArray);
+
+	m_VertexArray.reset(VertexArray::Create());
 
 	float vertices[3 * 7] =
 	{
-		-0.6f, -0.4f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		-0.6f, -0.4f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
 		 0.4f, -0.6f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
 		  0.f,  0.6f, 0.0f, 0.0f,  1.0f, 0.0f,  1.0f
 	};
 
 	unsigned int indices[3] = { 0,1,2 };
 
-	m_VertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-	m_IndexBuffer.reset(IndexBuffer::Create(indices, 3));
+	std::shared_ptr<VertexBuffer> vertexBuffer;
+	vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+	std::shared_ptr<IndexBuffer> indexBuffer;
+	indexBuffer.reset(IndexBuffer::Create(indices, 3));
 
 	BufferLayout layout = {
 		{ShaderDataType::Float3, "a_position"},
 		{ShaderDataType::Float4, "a_colour"}
 	};
 
-	m_VertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(layout);
 
-	uint32_t index = 0;
-	for (const auto& element : m_VertexBuffer->GetLayout())
-	{
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, element.Count(), 
-			ShaderDataTypeToOpenGLBaseType(element.Type), 
-			element.Normalized ? GL_TRUE : GL_FALSE, 
-			layout.GetStride(), 
-			(const void*)element.Offset);
-		index++;
-	}
+	m_VertexArray->AddVertexBuffer(vertexBuffer);
+	m_VertexArray->SetIndexBuffer(indexBuffer);
 
 	std::string vertexSrc = R"(
 		#version 330 core
@@ -118,8 +87,8 @@ void Application::Run()
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		m_Shader->Bind();
-		glBindVertexArray(m_VertexArray);
-		glDrawElements(GL_TRIANGLES, m_IndexBuffer->GetCount(), GL_UNSIGNED_INT, nullptr);
+		m_VertexArray->Bind();
+		glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
 
 		for each(Layer* layer in m_LayerStack)
 		{

@@ -6,6 +6,7 @@
 #include "Events/ApplicationEvent.h"
 #include "Renderer/Shader.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/VertexArray.h"
 #include "Window.h"
 
 #include "imgui/ImGuiLayer.h"
@@ -38,10 +39,7 @@ private:
 
 	std::unique_ptr<Shader> m_Shader;
 
-	uint32_t m_VertexArray;
-
-	std::unique_ptr<VertexBuffer> m_VertexBuffer;
-	std::unique_ptr<IndexBuffer> m_IndexBuffer;
+	std::shared_ptr<VertexArray> m_VertexArray;
 };
 
 // To be defined in CLIENT
