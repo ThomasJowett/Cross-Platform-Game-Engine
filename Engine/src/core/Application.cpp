@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "Application.h"
-#include "Platform/OpenGL/OpenGLBuffer.h"
 
-#include <GLAD/glad.h>
+#include "Platform/OpenGL/OpenGLBuffer.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/RenderCommand.h"
 
 Application* Application::s_Instance = nullptr;
 
@@ -83,12 +84,13 @@ void Application::Run()
 {
 	while (m_Running)
 	{
-		glClearColor(0.4f, 0.4f, 0.4f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		RenderCommand::SetClearColour(0.4f, 0.4f, 0.4f, 1.0f);
+		RenderCommand::Clear();
 
+		Renderer::BeginScene();
 		m_Shader->Bind();
-		m_VertexArray->Bind();
-		glDrawElements(GL_TRIANGLES, m_VertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+		Renderer::Submit(m_VertexArray);
+		Renderer::EndScene();
 
 		for each(Layer* layer in m_LayerStack)
 		{

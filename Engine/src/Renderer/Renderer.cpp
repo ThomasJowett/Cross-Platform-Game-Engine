@@ -1,9 +1,16 @@
 #include "stdafx.h"
 #include "Renderer.h"
+#include "RenderCommand.h"
 
-RendererAPI Renderer::s_RendererAPI = RendererAPI::OpenGL;
-
-void Renderer::SetAPI(RendererAPI api)
+void Renderer::BeginScene()
 {
-	s_RendererAPI = api;
+}
+
+void Renderer::EndScene()
+{
+}
+
+void Renderer::Submit(const std::shared_ptr<VertexArray>& vertexArray)
+{
+	RenderCommand::DrawIndexed(vertexArray);
 }

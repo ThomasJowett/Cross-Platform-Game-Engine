@@ -10,21 +10,21 @@ IndexBuffer * IndexBuffer::Create(uint32_t * indices, uint32_t size)
 {
 	switch (Renderer::GetAPI())	
 	{
-	case RendererAPI::None:
+	case RendererAPI::API::None:
 		break;
-	case RendererAPI::OpenGL:
+	case RendererAPI::API::OpenGL:
 		return new OpenGLIndexBuffer(indices, size);
 #ifdef __WINDOWS__
-	case RendererAPI::Directx11:
+	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create index buffer: DirectX is not currently supported")
 			return nullptr;
-#endif // _Windows_
+#endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::Metal:
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__
-	case RendererAPI::Vulkan:
+	case RendererAPI::API::Vulkan:
 		CORE_ASSERT(false, "Could not create index buffer: Vulkan is not currently supported")
 			return nullptr;
 	default:
@@ -39,22 +39,22 @@ VertexBuffer * VertexBuffer::Create(float * vertices, uint32_t size)
 {
 	switch (Renderer::GetAPI())
 	{
-	case RendererAPI::None:
+	case RendererAPI::API::None:
 		CORE_ASSERT(false, "Could not create vertex buffer: None Renderer API is not supported")
 		return nullptr;
-	case RendererAPI::OpenGL:
+	case RendererAPI::API::OpenGL:
 		return new OpenGLVertexBuffer(vertices, size);
 #ifdef __WINDOWS__
-	case RendererAPI::Directx11:
+	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create vertex buffer: DirectX is not currently supported")
 		return nullptr;
-#endif // _Windows_
+#endif // __WINDOWS__
 #ifdef __APPLE__
-	case RendererAPI::Metal:
+	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported")
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::Vulkan:
+	case RendererAPI::API::Vulkan:
 		CORE_ASSERT(false, "Could not create vertex buffer: Vulkan is not currently supported")
 		return nullptr;
 	default:

@@ -8,21 +8,21 @@ VertexArray * VertexArray::Create()
 {
 	switch (Renderer::GetAPI())
 	{
-	case RendererAPI::None:
+	case RendererAPI::API::None:
 		break;
-	case RendererAPI::OpenGL:
+	case RendererAPI::API::OpenGL:
 		return new OpenGLVertexArray();
 #ifdef __WINDOWS__
-	case RendererAPI::Directx11:
+	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")
 			return nullptr;
-#endif // _Windows_
+#endif // __WINDOWS__
 #ifdef __APPLE__
-	case RendererAPI::Metal:
+	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create Vertex Array: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__
-	case RendererAPI::Vulkan:
+	case RendererAPI::API::Vulkan:
 		CORE_ASSERT(false, "Could not create Vertex Array: Vulkan is not currently supported")
 			return nullptr;
 	default:
