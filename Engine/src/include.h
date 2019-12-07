@@ -13,3 +13,12 @@
 #include "Logging/Debug.h"
 
 #include "ImGui/ImGuiLayer.h"
+
+#include "Renderer/Camera.h"
+#include "Renderer/Shader.h"
+#include "Renderer/VertexArray.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/Buffer.h"
+#include "Renderer/GraphicsContext.h"
+#include "Renderer/RendererAPI.h"

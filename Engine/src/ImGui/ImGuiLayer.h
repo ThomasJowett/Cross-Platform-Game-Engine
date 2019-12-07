@@ -18,7 +18,5 @@ public:
 
 	void Begin();
 	void End();
-private:
-	float m_time = 0.0f;
 };
 

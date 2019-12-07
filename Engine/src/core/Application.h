@@ -1,17 +1,9 @@
 #pragma once
 
-#include "core.h"
 #include "LayerStack.h"
-#include "Events/Event.h"
-#include "Events/ApplicationEvent.h"
-#include "Renderer/Shader.h"
-#include "Renderer/Buffer.h"
-#include "Renderer/VertexArray.h"
 #include "Window.h"
 
 #include "imgui/ImGuiLayer.h"
-
-#include "Renderer/OrthographicCamera.h"
 
 class Application
 {
@@ -32,18 +24,13 @@ public:
 private:
 	bool OnWindowClose(WindowCloseEvent& e);
 
+private:
 	std::unique_ptr<Window> m_Window;
 	ImGuiLayer* m_ImGuiLayer;
 	bool m_Running = true;
 	LayerStack m_LayerStack;
 
 	static Application* s_Instance;
-
-	std::shared_ptr<Shader> m_Shader;
-
-	std::shared_ptr<VertexArray> m_VertexArray;
-
-	OrthographicCamera m_Camera;
 };
 
 // To be defined in CLIENT

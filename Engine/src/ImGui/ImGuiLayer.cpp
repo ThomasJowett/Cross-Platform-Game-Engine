@@ -8,6 +8,7 @@
 #include "examples/imgui_impl_opengl3.h"
 
 //TEMPORARY
+//TODO: remove dependencies on GLAD and GLFW
 #include "GLFW/glfw3.h"
 #include "GLAD/glad.h"
 
@@ -55,7 +56,7 @@ void ImGuiLayer::OnDetach()
 void ImGuiLayer::OnImGuiRender()
 {
 	static bool showDemoWindow = true;
-	ImGui::ShowDemoWindow(&showDemoWindow);
+	//ImGui::ShowDemoWindow(&showDemoWindow);
 }
 
 void ImGuiLayer::Begin()
