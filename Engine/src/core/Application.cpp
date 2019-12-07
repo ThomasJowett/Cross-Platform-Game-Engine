@@ -4,10 +4,12 @@
 #include "Platform/OpenGL/OpenGLBuffer.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/OrthographicCamera.h"
 
 Application* Application::s_Instance = nullptr;
 
 Application::Application()
+	:m_Camera(-1.6f, 1.6f, -0.9f, 0.9f)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
 	s_Instance = this;
@@ -17,19 +19,20 @@ Application::Application()
 
 	m_VertexArray.reset(VertexArray::Create());
 
-	float vertices[3 * 7] =
+	float vertices[4 * 7] =
 	{
-		-0.6f, -0.4f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-		 0.4f, -0.6f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		  0.f,  0.6f, 0.0f, 0.0f,  1.0f, 0.0f,  1.0f
+		-1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+		 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+		  1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,  1.0f,
+		  -1.0f,  1.0f, 0.0f, 1.0f,  0.0f, 1.0f,  1.0f
 	};
 
-	unsigned int indices[3] = { 0,1,2 };
+	unsigned int indices[] = { 0,1,2, 0,2,3 };
 
 	std::shared_ptr<VertexBuffer> vertexBuffer;
 	vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
 	std::shared_ptr<IndexBuffer> indexBuffer;
-	indexBuffer.reset(IndexBuffer::Create(indices, 3));
+	indexBuffer.reset(IndexBuffer::Create(indices, 6));
 
 	BufferLayout layout = {
 		{ShaderDataType::Float3, "a_position"},
@@ -47,13 +50,15 @@ Application::Application()
 		layout(location = 0) in vec3 a_position;
 		layout(location = 1) in vec4 a_colour;
 
+		uniform mat4 u_ViewProjection;
+
 		out vec3 v_position;
 		out vec4 v_colour;
 
 		void main()
 		{
 			v_position = a_position;
-			gl_Position = vec4(a_position, 1.0);
+			gl_Position = u_ViewProjection * vec4(a_position, 1.0);
 			v_colour = a_colour;
 		}
 	)";
@@ -84,12 +89,14 @@ void Application::Run()
 {
 	while (m_Running)
 	{
+		m_Camera.SetPosition(m_Camera.GetPosition() + Vector3f{0.001f, 0.001f, 0.0f});
+		m_Camera.SetRotation(m_Camera.GetRotation() + Vector3f{ 0.0f, 0.0f, 0.01f });
+
 		RenderCommand::SetClearColour(0.4f, 0.4f, 0.4f, 1.0f);
 		RenderCommand::Clear();
 
-		Renderer::BeginScene();
-		m_Shader->Bind();
-		Renderer::Submit(m_VertexArray);
+		Renderer::BeginScene(m_Camera);
+		Renderer::Submit(m_Shader, m_VertexArray);
 		Renderer::EndScene();
 
 		for each(Layer* layer in m_LayerStack)

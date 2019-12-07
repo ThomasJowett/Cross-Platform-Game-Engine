@@ -118,3 +118,9 @@ void Shader::UnBind() const
 {
 	glUseProgram(0);
 }
+
+void Shader::UploadUniformMat4(const char* name, const Matrix4x4 & matrix, bool transpose)
+{
+	uint32_t location = glGetUniformLocation(m_rendererID, name);
+	glUniformMatrix4fv(location, 1, transpose, &matrix.m[0][0]);
+}

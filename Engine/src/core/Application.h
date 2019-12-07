@@ -11,6 +11,8 @@
 
 #include "imgui/ImGuiLayer.h"
 
+#include "Renderer/OrthographicCamera.h"
+
 class Application
 {
 public:
@@ -37,9 +39,11 @@ private:
 
 	static Application* s_Instance;
 
-	std::unique_ptr<Shader> m_Shader;
+	std::shared_ptr<Shader> m_Shader;
 
 	std::shared_ptr<VertexArray> m_VertexArray;
+
+	OrthographicCamera m_Camera;
 };
 
 // To be defined in CLIENT
