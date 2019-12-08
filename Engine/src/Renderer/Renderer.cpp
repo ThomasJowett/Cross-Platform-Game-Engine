@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "Renderer.h"
 #include "RenderCommand.h"
+#include "Platform/OpenGL/OpenGLShader.h"
 
 Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
@@ -13,10 +14,11 @@ void Renderer::EndScene()
 {
 }
 
-void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray)
+void Renderer::Submit(const std::shared_ptr<Shader>& shader, const std::shared_ptr<VertexArray>& vertexArray, const Matrix4x4& transform)
 {
 	shader->Bind();
-	shader->UploadUniformMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix, true);
+	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix, true);
+	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformMat4("u_ModelMatrix", transform, true);
 
 	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);

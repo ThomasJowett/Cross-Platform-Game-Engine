@@ -3,16 +3,13 @@
 
 #include "math/Matrix.h"
 
-class Shader
+interface Shader
 {
 public:
-	Shader(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
-	~Shader();
+	~Shader() = default;
 
-	void Bind() const;
-	void UnBind() const;
+	virtual void Bind() const = 0;
+	virtual void UnBind() const = 0;
 
-	void UploadUniformMat4(const char* name, const Matrix4x4& matrix, bool transpose);
-private:
-	uint32_t m_rendererID;
+	static Shader* Create(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
 };

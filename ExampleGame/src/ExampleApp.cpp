@@ -2,6 +2,8 @@
 
 #include "imgui/imgui.h"
 
+#include "Platform/OpenGL/OpenGLShader.h"
+
 class ExampleLayer :public Layer
 {
 public:
@@ -10,12 +12,12 @@ public:
 	{
 		m_VertexArray.reset(VertexArray::Create());
 
-		float vertices[4 * 7] =
+		float vertices[3 * 4] =
 		{
-			-1.0f, -1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			 1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-			  1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f,  1.0f,
-			  -1.0f,  1.0f, 0.0f, 1.0f,  0.0f, 1.0f,  1.0f
+			-1.0f, -1.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f,
+			-1.0f,  1.0f, 0.0f
 		};
 
 		unsigned int indices[] = { 0,1,2, 0,2,3 };
@@ -26,8 +28,7 @@ public:
 		indexBuffer.reset(IndexBuffer::Create(indices, 6));
 
 		BufferLayout layout = {
-			{ShaderDataType::Float3, "a_position"},
-			{ShaderDataType::Float4, "a_colour"}
+			{ShaderDataType::Float3, "a_position"}
 		};
 
 		vertexBuffer->SetLayout(layout);
@@ -39,40 +40,36 @@ public:
 		#version 330 core
 
 		layout(location = 0) in vec3 a_position;
-		layout(location = 1) in vec4 a_colour;
 
 		uniform mat4 u_ViewProjection;
-
-		out vec3 v_position;
-		out vec4 v_colour;
+		uniform mat4 u_ModelMatrix;
 
 		void main()
 		{
-			v_position = a_position;
-			gl_Position = u_ViewProjection * vec4(a_position, 1.0);
-			v_colour = a_colour;
+			gl_Position = u_ViewProjection * u_ModelMatrix *vec4(a_position, 1.0);
 		}
 	)";
 
 		std::string fragmentSrc = R"(
 		#version 330 core
 
-		in vec3 v_position;
-		in vec4 v_colour;
+		uniform vec4 u_colour;
 
 		layout(location = 0) out vec4 frag_colour;
 
 		void main()
 		{
-			frag_colour = vec4(v_colour);
+			frag_colour = vec4(u_colour);
 		}
 	)";
 
-		m_Shader.reset(new Shader(vertexSrc, fragmentSrc));
+		m_Shader.reset(Shader::Create(vertexSrc, fragmentSrc));
 	}
 
 	void OnUpdate(float deltaTime) override
 	{
+		std::dynamic_pointer_cast<OpenGLShader>(m_Shader)->Bind();
+
 		//moving the camera with the arrow keys
 		if (Input::IsKeyPressed(KEY_TAB))
 		{
@@ -102,8 +99,10 @@ public:
 		RenderCommand::SetClearColour(0.4f, 0.4f, 0.4f, 1.0f);
 		RenderCommand::Clear();
 
+		std::dynamic_pointer_cast<OpenGLShader>(m_Shader)->UploadUniformFloat4("u_colour", colour[0], colour[1], colour[2], colour[4]);
+
 		Renderer::BeginScene(m_Camera);
-		Renderer::Submit(m_Shader, m_VertexArray);
+		Renderer::Submit(m_Shader, m_VertexArray, Matrix4x4::Scale({ 2.0f, 1.0f, 1.0f }));
 		Renderer::EndScene();
 	}
 
@@ -114,7 +113,7 @@ public:
 	void OnImGuiRender() override
 	{
 		ImGui::Begin("Settings");
-		ImGui::Text("Hello World");
+		ImGui::ColorEdit4("Square Colour", colour);
 		ImGui::End();
 	}
 
@@ -122,6 +121,8 @@ private:
 	Camera m_Camera;
 	std::shared_ptr<Shader> m_Shader;
 	std::shared_ptr<VertexArray> m_VertexArray;
+
+	float colour[4] = { 1.0f,1.0f,1.0f, 1.0f };
 };
 
 class ExampleGame : public Application
