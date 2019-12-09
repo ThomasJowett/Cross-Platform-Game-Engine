@@ -7,5 +7,5 @@ class OpenGLRendererAPI : public RendererAPI
 	virtual void SetClearColour(float red, float green, float blue, float alpha) override;
 	virtual void Clear() override;
 
-	virtual void DrawIndexed(const std::shared_ptr<VertexArray>& vertexArray) override;
+	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) override;
 };

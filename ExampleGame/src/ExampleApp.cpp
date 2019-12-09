@@ -22,9 +22,9 @@ public:
 
 		unsigned int indices[] = { 0,1,2, 0,2,3 };
 
-		std::shared_ptr<VertexBuffer> vertexBuffer;
+		Ref<VertexBuffer> vertexBuffer;
 		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
-		std::shared_ptr<IndexBuffer> indexBuffer;
+		Ref<IndexBuffer> indexBuffer;
 		indexBuffer.reset(IndexBuffer::Create(indices, 6));
 
 		BufferLayout layout = {
@@ -119,8 +119,8 @@ public:
 
 private:
 	Camera m_Camera;
-	std::shared_ptr<Shader> m_Shader;
-	std::shared_ptr<VertexArray> m_VertexArray;
+	Ref<Shader> m_Shader;
+	Ref<VertexArray> m_VertexArray;
 
 	float colour[4] = { 1.0f,1.0f,1.0f, 1.0f };
 };
