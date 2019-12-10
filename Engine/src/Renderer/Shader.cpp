@@ -4,7 +4,7 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 
-Shader * Shader::Create(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
+Shader* Shader::Create(const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
 {
 	switch (Renderer::GetAPI())
 	{

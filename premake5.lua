@@ -38,7 +38,8 @@ project "Engine"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/stb/stb_image.cpp"
 	}
 
 	includedirs

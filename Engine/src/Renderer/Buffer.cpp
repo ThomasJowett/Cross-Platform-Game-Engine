@@ -6,14 +6,14 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
 
-IndexBuffer * IndexBuffer::Create(uint32_t * indices, uint32_t size)
+Ref<IndexBuffer> IndexBuffer::Create(uint32_t * indices, uint32_t size)
 {
 	switch (Renderer::GetAPI())	
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return new OpenGLIndexBuffer(indices, size);
+		return std::make_shared<OpenGLIndexBuffer>(indices, size);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create index buffer: DirectX is not currently supported")
@@ -35,7 +35,7 @@ IndexBuffer * IndexBuffer::Create(uint32_t * indices, uint32_t size)
 	return nullptr;
 }
 
-VertexBuffer * VertexBuffer::Create(float * vertices, uint32_t size)
+Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 {
 	switch (Renderer::GetAPI())
 	{
@@ -43,7 +43,7 @@ VertexBuffer * VertexBuffer::Create(float * vertices, uint32_t size)
 		CORE_ASSERT(false, "Could not create vertex buffer: None Renderer API is not supported")
 		return nullptr;
 	case RendererAPI::API::OpenGL:
-		return new OpenGLVertexBuffer(vertices, size);
+		return std::make_shared<OpenGLVertexBuffer>(vertices, size);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create vertex buffer: DirectX is not currently supported")

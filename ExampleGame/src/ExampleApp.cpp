@@ -12,23 +12,24 @@ public:
 	{
 		m_VertexArray.reset(VertexArray::Create());
 
-		float vertices[3 * 4] =
+		float vertices[] =
 		{
-			-1.0f, -1.0f, 0.0f,
-			 1.0f, -1.0f, 0.0f,
-			 1.0f,  1.0f, 0.0f,
-			-1.0f,  1.0f, 0.0f
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			 1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			 1.0f,  1.0f, 0.0f, 1.0f, 1.0f,
+			-1.0f,  1.0f, 0.0f, 0.0f, 1.0f
 		};
 
 		unsigned int indices[] = { 0,1,2, 0,2,3 };
 
 		Ref<VertexBuffer> vertexBuffer;
-		vertexBuffer.reset(VertexBuffer::Create(vertices, sizeof(vertices)));
+		vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
 		Ref<IndexBuffer> indexBuffer;
-		indexBuffer.reset(IndexBuffer::Create(indices, 6));
+		indexBuffer = IndexBuffer::Create(indices, 6);
 
 		BufferLayout layout = {
-			{ShaderDataType::Float3, "a_position"}
+			{ShaderDataType::Float3, "a_position"},
+			{ShaderDataType::Float2, "a_texCoord"}
 		};
 
 		vertexBuffer->SetLayout(layout);
@@ -40,12 +41,16 @@ public:
 		#version 330 core
 
 		layout(location = 0) in vec3 a_position;
+		layout(location = 1) in vec2 a_texCoord;
+
+		out vec2 v_texCoord;
 
 		uniform mat4 u_ViewProjection;
 		uniform mat4 u_ModelMatrix;
 
 		void main()
 		{
+			v_texCoord = a_texCoord;
 			gl_Position = u_ViewProjection * u_ModelMatrix *vec4(a_position, 1.0);
 		}
 	)";
@@ -53,17 +58,22 @@ public:
 		std::string fragmentSrc = R"(
 		#version 330 core
 
-		uniform vec4 u_colour;
+		uniform sampler2D u_texture;
+
+		in vec2 v_texCoord;
 
 		layout(location = 0) out vec4 frag_colour;
 
 		void main()
 		{
-			frag_colour = vec4(u_colour);
+			frag_colour = texture(u_texture,v_texCoord);
 		}
 	)";
 
 		m_Shader.reset(Shader::Create(vertexSrc, fragmentSrc));
+		m_Texture = Texture2D::Create("resources/Controller.png");
+
+		std::dynamic_pointer_cast<OpenGLShader>(m_Shader)->UploadUniformInteger("u_texture", 0);
 	}
 
 	void OnUpdate(float deltaTime) override
@@ -102,6 +112,7 @@ public:
 		std::dynamic_pointer_cast<OpenGLShader>(m_Shader)->UploadUniformFloat4("u_colour", colour[0], colour[1], colour[2], colour[4]);
 
 		Renderer::BeginScene(m_Camera);
+		m_Texture->Bind();
 		Renderer::Submit(m_Shader, m_VertexArray, Matrix4x4::Scale({ 2.0f, 1.0f, 1.0f }));
 		Renderer::EndScene();
 	}
@@ -121,6 +132,8 @@ private:
 	Camera m_Camera;
 	Ref<Shader> m_Shader;
 	Ref<VertexArray> m_VertexArray;
+
+	Ref<Texture2D> m_Texture;
 
 	float colour[4] = { 1.0f,1.0f,1.0f, 1.0f };
 };

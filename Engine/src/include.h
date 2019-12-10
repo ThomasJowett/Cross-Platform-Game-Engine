@@ -22,3 +22,4 @@
 #include "Renderer/Buffer.h"
 #include "Renderer/GraphicsContext.h"
 #include "Renderer/RendererAPI.h"
+#include "Renderer/Texture.h"

@@ -119,13 +119,13 @@ void OpenGLShader::UnBind() const
 	glUseProgram(0);
 }
 
-void OpenGLShader::UploadVector2(const char * name, const Vector2f & vector)
+void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform2f(location, vector.x, vector.y);
 }
 
-void OpenGLShader::UploadInteger(const char * name, const int & integer)
+void OpenGLShader::UploadUniformInteger(const char * name, const int & integer)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform1i(location, integer);
