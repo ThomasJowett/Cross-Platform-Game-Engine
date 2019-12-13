@@ -71,7 +71,7 @@ public:
 	)";
 
 		m_Shader.reset(Shader::Create(vertexSrc, fragmentSrc));
-		m_Texture = Texture2D::Create("resources/Controller.png");
+		m_Texture = Texture2D::Create("resources/circle.png");
 
 		std::dynamic_pointer_cast<OpenGLShader>(m_Shader)->UploadUniformInteger("u_texture", 0);
 	}
@@ -83,8 +83,8 @@ public:
 		//moving the camera with the arrow keys
 		if (Input::IsKeyPressed(KEY_TAB))
 		{
-		}
 			m_Camera.SetRotation(m_Camera.GetRotation() + Vector3f( 0.0f, 0.0f, 0.1f  ) * deltaTime);
+		}
 
 		if (Input::IsKeyPressed(KEY_LEFT))
 		{
@@ -113,7 +113,7 @@ public:
 
 		Renderer::BeginScene(m_Camera);
 		m_Texture->Bind();
-		Renderer::Submit(m_Shader, m_VertexArray, Matrix4x4::Scale({ 2.0f, 1.0f, 1.0f }));
+		Renderer::Submit(m_Shader, m_VertexArray, Matrix4x4::Scale({ 5.0f, 5.0f, 1.0f }));
 		Renderer::EndScene();
 	}
 

@@ -7,6 +7,7 @@
 class Renderer
 {
 public:
+	static bool Init();
 	static void BeginScene(Camera& camera);
 	static void EndScene();
 

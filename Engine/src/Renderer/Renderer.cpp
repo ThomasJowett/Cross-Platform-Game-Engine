@@ -5,6 +5,11 @@
 
 Renderer::SceneData* Renderer::m_SceneData = new Renderer::SceneData;
 
+bool Renderer::Init()
+{
+	return RenderCommand::Init();
+}
+
 void Renderer::BeginScene(Camera& camera)
 {
 	m_SceneData->ViewProjectionMatrix = camera.GetViewProjectionMatrix();

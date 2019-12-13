@@ -3,6 +3,15 @@
 
 #include <GLAD/glad.h>
 
+bool OpenGLRendererAPI::Init()
+{
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	return false;
+}
+
 void OpenGLRendererAPI::SetClearColour(float red, float green, float blue, float alpha)
 {
 	glClearColor(red, green, blue, alpha);

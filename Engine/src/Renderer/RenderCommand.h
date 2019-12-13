@@ -5,6 +5,10 @@
 class RenderCommand
 {
 public:
+	inline static bool Init()
+	{
+		return s_RendererAPI->Init();
+	}
 	inline static void SetClearColour(float red, float green, float blue, float alpha)
 	{
 		s_RendererAPI->SetClearColour(red, green, blue, alpha);

@@ -1,5 +1,5 @@
 workspace "Cross Platform Game Engine"
-	architecture "x64"
+	architecture "x86_64"
 	startproject "ExampleGame"
 
 	configurations
@@ -17,9 +17,9 @@ workspace "Cross Platform Game Engine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 group "Dependencies"
-	include "Engine/Vendor/GLFW"
-	include "Engine/Vendor/GLAD"
-	include "Engine/Vendor/imgui"
+	include "Engine/vendor/GLFW"
+	include "Engine/vendor/GLAD"
+	include "Engine/vendor/imgui"
 	
 group ""
 
@@ -39,16 +39,18 @@ project "Engine"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
-		"%{prj.name}/vendor/stb/stb_image.cpp"
+		"%{prj.name}/vendor/stb/**.h",
+		"%{prj.name}/vendor/stb/**.cpp"
 	}
 
 	includedirs
 	{
 		"%{prj.name}/src",
-		"%{prj.name}/Vendor",
-		"%{prj.name}/Vendor/GLFW/include",
-		"%{prj.name}/Vendor/GLAD/include",
-		"%{prj.name}/Vendor/imgui"
+		"%{prj.name}/vendor",
+		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/vendor/GLAD/include",
+		"%{prj.name}/vendor/imgui",
+		"%{prj.name}/vendor/stb"
 	}
 	
 	links

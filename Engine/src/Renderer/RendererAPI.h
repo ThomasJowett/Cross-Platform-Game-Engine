@@ -15,6 +15,7 @@ public:
 	};
 
 public:
+	virtual bool Init() = 0;
 	virtual void SetClearColour(float red, float green, float blue, float alpha) = 0;
 	virtual void Clear() = 0;
 
