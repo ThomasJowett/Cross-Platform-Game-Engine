@@ -5,6 +5,7 @@
 #include <memory>
 #include <utility>
 #include <vector>
+#include <array>
 #include <string>
 #include <sstream>
 #include <functional>

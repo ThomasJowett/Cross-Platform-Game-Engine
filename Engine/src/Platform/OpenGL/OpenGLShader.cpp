@@ -24,12 +24,14 @@ static GLenum ShaderTypeToGLShaderType(const Shader::ShaderTypes& type)
 	}
 }
 
-OpenGLShader::OpenGLShader(const std::string & filepath)
+OpenGLShader::OpenGLShader(const std::string& name, const std::string & fileDirectory)
+	:m_Name(name)
 {
-	Compile(LoadShaderSources(filepath));
+	Compile(LoadShaderSources(fileDirectory + name));
 }
 
-OpenGLShader::OpenGLShader(const std::string & vertexSource, const std::string & fragmentSource)
+OpenGLShader::OpenGLShader(const std::string& name, const std::string & vertexSource, const std::string & fragmentSource)
+	:m_Name(name)
 {
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
@@ -78,39 +80,41 @@ void OpenGLShader::UploadUniformMat4(const char* name, const Matrix4x4 & matrix,
 	glUniformMatrix4fv(location, 1, transpose, &matrix.m[0][0]);
 }
 
-std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSources(const std::string& shaderName)
+std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSources(const std::string& filepath)
 {
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
-	if (std::filesystem::exists(shaderName + ".vert"))
+	if (std::filesystem::exists(filepath + ".vert"))
 	{
-		shaderSources[VERTEX] = ReadFile(shaderName + ".vert");
+		shaderSources[VERTEX] = ReadFile(filepath + ".vert");
 	}
 
-	if (std::filesystem::exists(shaderName + ".tesc"))
+	if (std::filesystem::exists(filepath + ".tesc"))
 	{
-		shaderSources[TESS_HULL] = ReadFile(shaderName + ".tesc");
+		shaderSources[TESS_HULL] = ReadFile(filepath + ".tesc");
 	}
 
-	if (std::filesystem::exists(shaderName + ".tese"))
+	if (std::filesystem::exists(filepath + ".tese"))
 	{
-		shaderSources[TESS_DOMAIN] = ReadFile(shaderName + ".tese");
+		shaderSources[TESS_DOMAIN] = ReadFile(filepath + ".tese");
 	}
 
-	if (std::filesystem::exists(shaderName + ".geom"))
+	if (std::filesystem::exists(filepath + ".geom"))
 	{
-		shaderSources[GEOMETRY] = ReadFile(shaderName + ".geom");
+		shaderSources[GEOMETRY] = ReadFile(filepath + ".geom");
 	}
 
-	if (std::filesystem::exists(shaderName + ".frag"))
+	if (std::filesystem::exists(filepath + ".frag"))
 	{
-		shaderSources[PIXEL] = ReadFile(shaderName + ".frag");
+		shaderSources[PIXEL] = ReadFile(filepath + ".frag");
 	}
 
-	if (std::filesystem::exists(shaderName + ".comp"))
+	if (std::filesystem::exists(filepath + ".comp"))
 	{
-		shaderSources[COMPUTE] = ReadFile(shaderName + ".comp");
+		shaderSources[COMPUTE] = ReadFile(filepath + ".comp");
 	}
+
+	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!")
 
 	return shaderSources;
 }
@@ -118,7 +122,7 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 std::string OpenGLShader::ReadFile(const std::string & filepath)
 {
 	std::string result;
-	std::ifstream file(filepath, std::ios::in, std::ios::binary);
+	std::ifstream file(filepath, std::ios::in | std::ios::binary);
 	if (file)
 	{
 		file.seekg(0, std::ios::end);
@@ -134,7 +138,10 @@ std::string OpenGLShader::ReadFile(const std::string & filepath)
 void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::string> shaderSources)
 {
 	GLuint program = glCreateProgram();
-	std::vector<GLenum> GLShaderIDs;
+	CORE_ASSERT(shaderSources.size() <= 6, "There can only be 6 shaders in a shader program");
+
+	std::array<GLenum, 6> GLShaderIDs;
+	int glShaderIndex = 0;
 	for (auto&& [key,value] : shaderSources)
 	{
 		GLenum type = ShaderTypeToGLShaderType(key);
@@ -154,7 +161,7 @@ void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::st
 
 		// Attach our shaders to our program
 		glAttachShader(program, shader);
-		GLShaderIDs.push_back(shader);
+		GLShaderIDs[glShaderIndex++] = shader;
 	}
 
 	m_rendererID = program;
