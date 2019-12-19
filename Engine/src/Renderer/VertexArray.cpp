@@ -4,14 +4,14 @@
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
 
-VertexArray * VertexArray::Create()
+Ref<VertexArray> VertexArray::Create()
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return new OpenGLVertexArray();
+		return CreateRef<OpenGLVertexArray>();
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")

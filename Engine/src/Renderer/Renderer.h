@@ -8,6 +8,7 @@ class Renderer
 {
 public:
 	static bool Init();
+	static void OnWindowResize(uint32_t width, uint32_t height);
 	static void BeginScene(Camera& camera);
 	static void EndScene();
 
@@ -20,5 +21,5 @@ private:
 		Matrix4x4 ViewProjectionMatrix;
 	};
 
-	static SceneData* m_SceneData;
+	static Scope<SceneData> m_SceneData;
 };

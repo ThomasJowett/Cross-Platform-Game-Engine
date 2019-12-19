@@ -3,14 +3,29 @@
 
 #ifdef __WINDOWS__ //windows x64 & x86
 
-#elif __linux__ 
+#elif defined(__linux__)
+	#error "Linux is not supported!"
 
-#elif __APPLE__
+#elif defined(__APPLE__) || defined(__MACH__)
+	#include <TargetConditionals.h>
+	#if TARGET_IPHONE_SIMULATOR == 1
+		#error "IOS simulator is not yet supported!"
+	#elif TARGET_OS_IPHONE == 1
+		#define PLATFORM_IOS
+		#error "IOS is not supported!"
+	#elif TARGET_OS_MAC == 1
+		#define TARGET_OS_MAC == 1
+		#define PLATFORM_MACOS
+	#error "MACOS isnot supported!"
+	#else
+		#error "Unkown Apple Platform!"
+#endif
 
-#elif __ANDROID__
+#elif defined(__ANDROID__)
+	#error "Android is not supported!"
 
 #else
-#error Target platform not supported
+	#error Target platform not supported
 #endif
 
 #ifdef ENABLE_ASSERTS
@@ -28,6 +43,16 @@
 
 template<typename T>
 using Scope = std::unique_ptr<T>;
+template<typename T, typename ... Args>
+constexpr Scope<T> CreateScope(Args&& ... args)
+{
+	return std::make_unique<T>(std::forward<Args>(args)...);
+}
 
 template<typename T>
 using Ref = std::shared_ptr<T>;
+template<typename T, typename ... Args>
+constexpr Ref<T> CreateRef(Args&& ... args)
+{
+	return std::make_shared<T>(std::forward<Args>(args)...);
+}

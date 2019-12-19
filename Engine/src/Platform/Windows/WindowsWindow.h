@@ -44,6 +44,6 @@ private:
 	GLFWwindow* m_window;
 	WindowData m_data;
 
-	GraphicsContext* m_context;
+	Scope<GraphicsContext> m_context;
 };
 

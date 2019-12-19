@@ -39,11 +39,13 @@ void Application::Run()
 
 		while (accumulator >= deltaTime)
 		{
-			for each(Layer* layer in m_LayerStack)
+			if (!m_Minimized)
 			{
-				layer->OnUpdate((float)deltaTime);
+				for each(Layer* layer in m_LayerStack)
+				{
+					layer->OnUpdate((float)deltaTime);
+				}
 			}
-
 			accumulator -= deltaTime;
 		}
 
@@ -62,6 +64,7 @@ void Application::OnEvent(Event & e)
 {
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
 	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
 	{
@@ -87,4 +90,16 @@ bool Application::OnWindowClose(WindowCloseEvent & e)
 {
 	m_Running = false;
 	return true;
+}
+
+bool Application::OnWindowResize(WindowResizeEvent & e)
+{
+	if (e.GetWidth() == 0 || e.GetHeight() == 0)
+	{
+		m_Minimized = true;
+		return false;
+	}
+	m_Minimized = false;
+	Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
+	return false;
 }

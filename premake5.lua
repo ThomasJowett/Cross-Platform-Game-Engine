@@ -27,7 +27,6 @@ project "Engine"
 	location "Engine"
 	kind "StaticLib"
 	language "C++"
-	staticruntime "on"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -110,6 +109,7 @@ project "ExampleGame"
 
 	includedirs
 	{
+		"ExampleGame/src",
 		"Engine/src",
 		"Engine/vendor"
 	}

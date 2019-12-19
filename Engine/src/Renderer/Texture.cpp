@@ -11,7 +11,7 @@ Ref<Texture2D> Texture2D::Create(const std::string & path)
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return std::make_shared<OpenGLTexture2D>(path);
+		return CreateRef<OpenGLTexture2D>(path);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")

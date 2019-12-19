@@ -56,8 +56,8 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer Layout has no elements");
 
 	uint32_t index = 0;
-	const auto& layout = vertexBuffer->GetLayout();
-	for (const auto& element : layout)
+	const BufferLayout& layout = vertexBuffer->GetLayout();
+	for (const BufferElement& element : layout)
 	{
 		glEnableVertexAttribArray(index);
 		glVertexAttribPointer(index, element.Count(),

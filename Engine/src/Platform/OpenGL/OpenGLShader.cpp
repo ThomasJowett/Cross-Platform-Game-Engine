@@ -181,6 +181,7 @@ void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::st
 	for each (GLuint shader in GLShaderIDs)
 	{
 		glDetachShader(m_rendererID, shader);
+		glDeleteShader(shader);
 	}
 }
 

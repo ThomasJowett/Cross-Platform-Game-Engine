@@ -5,7 +5,7 @@
 
 #include "Core/Application.h"
 
-Input* Input::s_Instance = new WindowsInput();
+Scope<Input> Input::s_Instance = CreateScope<WindowsInput>();
 
 bool WindowsInput::IsKeyPressedImpl(int keycode)
 {

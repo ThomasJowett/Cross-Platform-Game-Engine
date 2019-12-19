@@ -11,7 +11,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDire
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return std::make_shared<OpenGLShader>(name, fileDirectory);
+		return CreateRef<OpenGLShader>(name, fileDirectory);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
@@ -40,7 +40,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return std::make_shared<OpenGLShader>(vertexShaderSrc, fragmentShaderSrc);
+		return CreateRef<OpenGLShader>(vertexShaderSrc, fragmentShaderSrc);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
