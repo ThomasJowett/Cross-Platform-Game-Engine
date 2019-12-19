@@ -6,9 +6,9 @@ class ExampleGame : public Application
 {
 public:
 	ExampleGame();
-
-
 	~ExampleGame() = default;
+
+	virtual void OnUpdate() override;
 };
 
 /* Entry Point*/

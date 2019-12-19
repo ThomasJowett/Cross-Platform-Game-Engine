@@ -4,6 +4,14 @@
 
 ExampleGame::ExampleGame()
 {
+	RenderCommand::SetClearColour(0.4f, 0.4f, 0.4f, 1.0f);
+
 	PushLayer(new ExampleLayer3D());
+	PushLayer(new ExampleLayer2D());
 	PushOverlay(new ImGuiLayer());
+}
+
+void ExampleGame::OnUpdate()
+{
+	RenderCommand::Clear();
 }

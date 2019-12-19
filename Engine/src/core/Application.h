@@ -14,6 +14,7 @@ public:
 	void Run();
 
 	void OnEvent(Event& e);
+	virtual void OnUpdate() = 0;
 
 	void PushLayer(Layer* layer);
 	void PushOverlay(Layer* layer);

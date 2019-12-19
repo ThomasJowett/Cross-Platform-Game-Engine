@@ -214,4 +214,3 @@ void OpenGLShader::CheckShaderError(uint32_t shader, uint32_t flag, bool isProgr
 		CORE_ASSERT(false, "Shader Error!");
 	}
 }
-

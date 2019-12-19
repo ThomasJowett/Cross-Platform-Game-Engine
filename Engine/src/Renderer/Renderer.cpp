@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Renderer.h"
+#include "Renderer2D.h"
 #include "RenderCommand.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 
@@ -7,6 +8,7 @@ Scope<Renderer::SceneData> Renderer::m_SceneData = CreateScope<Renderer::SceneDa
 
 bool Renderer::Init()
 {
+	Renderer2D::Init();
 	return RenderCommand::Init();
 }
 

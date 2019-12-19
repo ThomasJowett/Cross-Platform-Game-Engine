@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 
 #include "Renderer/Renderer.h"
+#include "Renderer/RenderCommand.h"
 
 Application* Application::s_Instance = nullptr;
 
@@ -31,6 +32,8 @@ void Application::Run()
 
 	while (m_Running)
 	{
+		OnUpdate();
+
 		double newTime = glfwGetTime();
 		double frameTime = newTime - currentTime;
 		currentTime = newTime;
