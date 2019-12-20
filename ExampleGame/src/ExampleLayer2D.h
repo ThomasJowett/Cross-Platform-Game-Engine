@@ -17,5 +17,8 @@ private:
 	Ref<VertexArray> m_VertexArray;
 	float m_Colour[4] = { 1.0f,1.0f,1.0f, 1.0f };
 	float m_Position[2] = { 0.0f,0.0f };
+	float m_Rotation = 0.0f;
 	float m_Size[2] = { 1.0f, 1.0f };
+
+	Ref<Texture2D> m_Texture;
 };

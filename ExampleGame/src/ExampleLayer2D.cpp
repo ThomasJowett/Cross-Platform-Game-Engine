@@ -8,6 +8,7 @@ ExampleLayer2D::ExampleLayer2D()
 
 void ExampleLayer2D::OnAttach()
 {
+	m_Texture = Texture2D::Create("resources/UVChecker.png");
 }
 
 void ExampleLayer2D::OnDetach()
@@ -19,7 +20,8 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
-	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Colour);
+	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
+	Renderer2D::DrawQuad({ m_Position[0] + 1.0f, m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Texture);
 	Renderer2D::EndScene();
 }
 
@@ -35,5 +37,6 @@ void ExampleLayer2D::OnImGuiRender()
 	ImGui::ColorEdit4("Square Colour", m_Colour);
 	ImGui::DragFloat2("Square Position", m_Position, 0.01f);
 	ImGui::DragFloat2("Square Size", m_Size, 0.01f);
+	ImGui::DragFloat("Square Rotation", &m_Rotation, 0.001f);
 	ImGui::End();
 }

@@ -66,6 +66,11 @@ void OpenGLShader::SetFloat4(const char * name, const float r, const float g, co
 	UploadUniformFloat4(name, r, g, b, a);
 }
 
+void OpenGLShader::SetInt(const char * name, const int value)
+{
+	UploadUniformInteger(name, value);
+}
+
 void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);

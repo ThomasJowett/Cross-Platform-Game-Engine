@@ -45,3 +45,6 @@ bin-int/
 
 # configuration files
 *.ini
+
+#makefiles
+makefile

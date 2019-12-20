@@ -70,7 +70,7 @@ void ExampleLayer3D::OnAttach()
 	m_VertexArray->AddVertexBuffer(vertexBuffer);
 	m_VertexArray->SetIndexBuffer(indexBuffer);
 
-	Ref<Shader> shader = m_ShaderLibrary.Load("BasicShader");
+	Ref<Shader> shader = m_ShaderLibrary.Load("Texture");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 }
 
@@ -80,7 +80,7 @@ void ExampleLayer3D::OnDetach()
 
 void ExampleLayer3D::OnUpdate(float deltaTime)
 {
-	Ref<Shader> shader = m_ShaderLibrary.Get("BasicShader");
+	Ref<Shader> shader = m_ShaderLibrary.Get("Texture");
 	std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
 
 	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformInteger("u_texture", 0);

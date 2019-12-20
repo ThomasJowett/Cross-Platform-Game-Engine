@@ -28,7 +28,7 @@ private:
 	bool OnWindowResized(WindowResizeEvent& event);
 private:
 	float  m_AspectRatio;
-	float  m_ZoomLevel = 1.0f;
+	float  m_ZoomLevel = 2.0f;
 	float m_TranslationSpeed = 1.0f;
 	OrthographicCamera m_Camera;
 

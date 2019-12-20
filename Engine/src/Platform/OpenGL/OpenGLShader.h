@@ -14,6 +14,7 @@ public:
 
 	virtual void SetMat4(const char* name, const Matrix4x4& value, bool transpose) override;
 	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
+	virtual void SetInt(const char* name, const int value) override;
 
 	void UploadUniformVector2(const char* name, const Vector2f& vector);
 	void UploadUniformInteger(const char* name, const int& integer);

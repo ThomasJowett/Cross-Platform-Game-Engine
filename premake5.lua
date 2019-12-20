@@ -56,8 +56,7 @@ project "Engine"
 	{
 		"GLFW",
 		"GLAD",
-		"ImGui",
-		"opengl32.lib"
+		"ImGui"
 	}
 
 	filter "system:windows"
@@ -70,6 +69,33 @@ project "Engine"
 			"__WINDOWS__",
 			"GLFW_INCLUDE_NONE"
 		}
+		
+		links
+		{
+			"opengl32.lib"
+		}
+	
+	filter "system:linux"
+		pic "on"
+		cppdialect "C++17"
+		staticruntime "Off"
+		systemversion "latest"
+		
+		links
+		{
+			"xrandr",
+			"xi",
+			"GLEW",
+			"GLU",
+			"GL",
+			"X11"
+		}
+		
+		defines
+		{
+			"__linux__"
+		}
+		
 
 	filter "configurations:Debug"
 		defines 
