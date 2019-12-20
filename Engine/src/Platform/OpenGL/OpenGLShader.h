@@ -12,6 +12,9 @@ public:
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
 
+	virtual void SetMat4(const char* name, const Matrix4x4& value, bool transpose) override;
+	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
+
 	void UploadUniformVector2(const char* name, const Vector2f& vector);
 	void UploadUniformInteger(const char* name, const int& integer);
 	void UploadUniformFloat4(const char* name, const float& r, const float& g, const float& b, const float& a);
@@ -26,5 +29,4 @@ private:
 private:
 	uint32_t m_rendererID;
 	std::string m_Name;
-	
 };

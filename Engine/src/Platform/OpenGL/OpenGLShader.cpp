@@ -56,6 +56,16 @@ void OpenGLShader::UnBind() const
 	glUseProgram(0);
 }
 
+void OpenGLShader::SetMat4(const char * name, const Matrix4x4 & value, bool transpose)
+{
+	UploadUniformMat4(name, value, transpose);
+}
+
+void OpenGLShader::SetFloat4(const char * name, const float r, const float g, const float b, const float a)
+{
+	UploadUniformFloat4(name, r, g, b, a);
+}
+
 void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
