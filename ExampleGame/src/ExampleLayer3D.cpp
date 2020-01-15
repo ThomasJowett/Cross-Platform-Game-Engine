@@ -72,6 +72,8 @@ void ExampleLayer3D::OnAttach()
 
 	Ref<Shader> shader = m_ShaderLibrary.Load("Texture");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
+
+
 }
 
 void ExampleLayer3D::OnDetach()
