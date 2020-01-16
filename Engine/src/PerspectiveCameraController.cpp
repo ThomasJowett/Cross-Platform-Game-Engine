@@ -8,7 +8,7 @@ PerspectiveCameraController::PerspectiveCameraController(float aspectRatio, floa
 	:m_Camera(fovY, aspectRatio), m_AspectRatio(aspectRatio), m_FovY(fovY), m_Forward(forward), m_Up(up)
 {
 	SetPosition(position);
-	m_Right = Vector3f::Cross(m_Up, m_Forward);
+	m_Right = Vector3f::Cross(m_Forward, m_Up);
 }
 
 PerspectiveCameraController::~PerspectiveCameraController()
@@ -35,7 +35,7 @@ void PerspectiveCameraController::OnUpdate(float deltaTime)
 
 	if (Input::IsKeyPressed(KEY_S))
 	{
-		movement.y - +1.0f;
+		movement.y -= +1.0f;
 	}
 
 	movement.Normalize();
@@ -72,6 +72,8 @@ void PerspectiveCameraController::OnUpdate(float deltaTime)
 	{
 		Pitch(-1.0f);
 	}
+
+	Matrix4x4 view = Matrix4x4::LookAt(m_CameraPosition, m_CameraPosition + m_Forward, m_Up);
 }
 
 void PerspectiveCameraController::OnEvent(Event & event)
@@ -89,7 +91,7 @@ bool PerspectiveCameraController::OnMouseWheel(MouseWheelEvent & event)
 
 bool PerspectiveCameraController::OnWindowResized(WindowResizeEvent & event)
 {
-	SetAspectRatio(event.GetWidth() / event.GetHeight());
+	SetAspectRatio((float)(event.GetWidth() / event.GetHeight()));
 	return false;
 }
 
@@ -112,4 +114,29 @@ void PerspectiveCameraController::Strafe(float d)
 void PerspectiveCameraController::Raise(float d)
 {
 	SetPosition((d * m_Up) + m_CameraPosition);
+}
+
+void PerspectiveCameraController::Pitch(float angle)
+{
+	SetRotation(m_CameraRotation + Vector3f(0.0f, angle, 0.0f));
+}
+
+void PerspectiveCameraController::Yaw(float angle)
+{
+	SetRotation(m_CameraRotation + Vector3f(0.0f, 0.0f, angle));
+}
+
+void PerspectiveCameraController::LookAt(Vector3f focalPoint)
+{
+	//TODO: rotate vectors to look at a point
+}
+
+void PerspectiveCameraController::SetFovY(const float & aspectRatio) const
+{
+	//TODO: set fovY
+}
+
+void PerspectiveCameraController::SetAspectRatio(const float & aspectRatio)
+{
+	//TODO: set aspect ratio
 }

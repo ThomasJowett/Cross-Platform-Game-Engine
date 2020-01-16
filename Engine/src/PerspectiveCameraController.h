@@ -17,7 +17,7 @@ public:
 	void SetPosition(const Vector3f& position) { m_CameraPosition = position; m_Camera.SetPosition(m_CameraPosition); }
 	Vector3f GetPosition() { return m_CameraPosition; }
 
-	void SetRotation(const Quaternion& rotation) { m_CameraRotation = rotation; m_Camera.SetRotation(m_CameraRotation.EulerAngles()); }
+	void SetRotation(const Vector3f& rotation) { m_CameraRotation = rotation; m_Camera.SetRotation(m_CameraRotation); }
 	Quaternion GetRotation() { return m_CameraRotation; }
 
 	PerspectiveCamera GetCamera() { return m_Camera; }
@@ -47,7 +47,7 @@ private:
 	PerspectiveCamera m_Camera;
 
 	Vector3f m_CameraPosition;
-	Quaternion m_CameraRotation;
+	Vector3f m_CameraRotation;
 
 	Vector3f m_Up;
 	Vector3f m_Right;

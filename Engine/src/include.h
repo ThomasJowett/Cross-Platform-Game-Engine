@@ -9,6 +9,7 @@
 #include "Core/KeyCodes.h"
 #include "Core/MouseButtonCodes.h"
 #include "OrthoGrpahicCameraController.h"
+#include "PerspectiveCameraController.h"
 
 #include "Logging/Debug.h"
 

@@ -33,7 +33,7 @@ protected:
 	float m_FarDepth;
 
 	Vector3f m_Position;
-	Vector3f m_Rotation = { 0.0f, 0.0f, 0.0f };
+	Vector3f m_Rotation = { 0.0f, 0.0f, 0.0f };//roll, pitch, yaw
 };
 
 class OrthographicCamera : public Camera

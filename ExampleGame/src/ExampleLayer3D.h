@@ -23,6 +23,4 @@ private:
 
 	float m_Position[3] = { -2.0f, 0.0f, 0.0f };
 	float m_Rotation[3] = { 0.0f, 0.0f, 0.0f };
-
-	Ref<VertexArray> m_GridVertexArray;
 };
