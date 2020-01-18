@@ -1,5 +1,4 @@
 #include "ExampleLayer3D.h"
-#include "Platform/OpenGL/OpenGLShader.h"
 #include "ImGui/imgui.h"
 
 ExampleLayer3D::ExampleLayer3D()
@@ -81,9 +80,10 @@ void ExampleLayer3D::OnDetach()
 void ExampleLayer3D::OnUpdate(float deltaTime)
 {
 	Ref<Shader> shader = m_ShaderLibrary.Get("Texture");
-	std::dynamic_pointer_cast<OpenGLShader>(shader)->Bind();
+	shader->Bind();
 
-	std::dynamic_pointer_cast<OpenGLShader>(shader)->UploadUniformInteger("u_texture", 0);
+	shader->SetInt("u_texture", 0);
+	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
 
 	m_CameraController.OnUpdate(deltaTime);
 

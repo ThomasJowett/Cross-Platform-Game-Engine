@@ -9,8 +9,8 @@
 struct Renderer2DStorage
 {
 	Ref<VertexArray> vertexArray;
-	Ref<Shader> flatColourShader;
-	Ref<Shader> textureShader;
+	Ref<Shader> shader;
+	Ref<Texture> whiteTexture;
 };
 
 static Renderer2DStorage* s_Data;
@@ -46,12 +46,15 @@ bool Renderer2D::Init()
 	s_Data->vertexArray->AddVertexBuffer(vertexBuffer);
 	s_Data->vertexArray->SetIndexBuffer(indexBuffer);
 
-	s_Data->flatColourShader = Shader::Create("FlatColour");
-	s_Data->textureShader = Shader::Create("Texture");
-	s_Data->textureShader->Bind();
-	s_Data->textureShader->SetInt("u_texture", 0);
+	s_Data->whiteTexture = Texture2D::Create(1, 1);
+	uint32_t whiteTextureData = 0xffffffff;
+	s_Data->whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-	return s_Data->flatColourShader == nullptr;
+	s_Data->shader = Shader::Create("Texture");
+	s_Data->shader->Bind();
+	s_Data->shader->SetInt("u_texture", 0);
+
+	return s_Data->shader == nullptr;
 }
 
 void Renderer2D::Shutdown()
@@ -64,78 +67,63 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 }
 
 void Renderer2D::BeginScene(const OrthographicCamera & camera)
-{
-	s_Data->flatColourShader->Bind();
-	s_Data->flatColourShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
-	
-	s_Data->textureShader->Bind();
-	s_Data->textureShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
+{	
+	s_Data->shader->Bind();
+	s_Data->shader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
 }
 
 void Renderer2D::EndScene()
 {
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float* colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, colour);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, rotation, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float* colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
 {
-	s_Data->flatColourShader->Bind();
-	s_Data->flatColourShader->SetFloat4("u_colour", colour[0], colour[1], colour[2], colour[3]);
+	s_Data->shader->SetFloat4("u_colour", colour);
+	texture->Bind();
 
-	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(size.x, size.y, 1.0f));
-	s_Data->flatColourShader->SetMat4("u_ModelMatrix", transform, true);
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
+	s_Data->shader->SetMat4("u_ModelMatrix", transform, true);
 	s_Data->vertexArray->Bind();
 	RenderCommand::DrawIndexed(s_Data->vertexArray);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float & rotation, const float * colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float & rotation, const Colour colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, rotation, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const float * colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const Colour colour)
 {
-	s_Data->flatColourShader->Bind();
-	s_Data->flatColourShader->SetFloat4("u_colour", colour[0], colour[1], colour[2], colour[3]);
+	s_Data->shader->SetFloat4("u_colour", colour);
+	s_Data->whiteTexture->Bind();
 
-	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale(Vector3f(size.x, size.y, 1.0f));
-	s_Data->flatColourShader->SetMat4("u_ModelMatrix", transform, true);
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
+	s_Data->shader->SetMat4("u_ModelMatrix", transform, true);
 	s_Data->vertexArray->Bind();
 	RenderCommand::DrawIndexed(s_Data->vertexArray);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour colour)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour colour)
 {
-	s_Data->textureShader->Bind();
-	texture->Bind();
-
-	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(size.x, size.y, 1.0f));
-	s_Data->flatColourShader->SetMat4("u_ModelMatrix", transform, true);
-	s_Data->vertexArray->Bind();
-	RenderCommand::DrawIndexed(s_Data->vertexArray);
+	DrawQuad(position, size, texture, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float & rotation, const Ref<Texture2D>& texture)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Colour colour)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, rotation, texture);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const Ref<Texture2D>& texture)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Colour colour)
 {
-	s_Data->textureShader->Bind();
-	texture->Bind();
-
-	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale(Vector3f(size.x, size.y, 1.0f));
-	s_Data->flatColourShader->SetMat4("u_ModelMatrix", transform, true);
-	s_Data->vertexArray->Bind();
-	RenderCommand::DrawIndexed(s_Data->vertexArray);
+	DrawQuad(position, size, 0.0f, colour);
 }

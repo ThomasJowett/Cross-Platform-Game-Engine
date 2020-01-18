@@ -1,6 +1,8 @@
 #include "ExampleLayer2D.h"
 #include "imgui/imgui.h"
 
+#define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) {m_ProfileResults.push_back(profileResult); })
+
 ExampleLayer2D::ExampleLayer2D()
 	:Layer("Example 2D"),m_CameraController(16.0f/9.0f)
 {
@@ -17,11 +19,13 @@ void ExampleLayer2D::OnDetach()
 
 void ExampleLayer2D::OnUpdate(float deltaTime)
 {
+	PROFILE_SCOPE("Example2D::OnUpdate()");
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
 	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
-	Renderer2D::DrawQuad({ m_Position[0] + 1.0f, m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Texture);
+	Renderer2D::DrawQuad(Vector2f( m_Position[0] + 1.0f, m_Position[1] ), Vector2f(m_Size[0], m_Size[1] ), m_Texture,  m_Rotation, m_Colour);
+	Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1]+ 1.0f), Vector2f(m_Size[0], m_Size[1]), m_Texture, m_Rotation);
 	Renderer2D::EndScene();
 }
 
@@ -34,9 +38,28 @@ void ExampleLayer2D::OnImGuiRender()
 {
 	ImGui::Begin("Settings 2D");
 	ImGui::Text(std::to_string(m_CameraController.GetZoom()).c_str());
-	ImGui::ColorEdit4("Square Colour", m_Colour);
+	ImGui::ColorEdit4("Square Colour", &m_Colour.r);
 	ImGui::DragFloat2("Square Position", m_Position, 0.01f);
 	ImGui::DragFloat2("Square Size", m_Size, 0.01f);
 	ImGui::DragFloat("Square Rotation", &m_Rotation, 0.001f);
+
+	bool colourClicked = ImGui::Button("Random Colour");
+
+	if (colourClicked)
+	{
+		m_ColourName += 1;
+		m_Colour.SetColour((Colour::ColourDatabase)m_ColourName);
+	}
+
+	for (auto& result : m_ProfileResults)
+	{
+		char label[50];
+
+		strcpy_s(label, result.Name);
+		strcat_s(label, " %.3fms");
+		ImGui::Text(label, result.Time);
+	}
+
+	m_ProfileResults.clear();
 	ImGui::End();
 }

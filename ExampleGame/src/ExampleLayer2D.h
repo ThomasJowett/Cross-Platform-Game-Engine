@@ -15,10 +15,20 @@ public:
 private:
 	OrthogrpahicCameraController m_CameraController;
 	Ref<VertexArray> m_VertexArray;
-	float m_Colour[4] = { 1.0f,1.0f,1.0f, 1.0f };
+	Colour m_Colour = Colour::RED;
+
+	int m_ColourName = 0;
 	float m_Position[2] = { 0.0f,0.0f };
 	float m_Rotation = 0.0f;
 	float m_Size[2] = { 1.0f, 1.0f };
 
 	Ref<Texture2D> m_Texture;
+
+	struct ProfileResult
+	{
+		const char* Name;
+		double Time;
+	};
+
+	std::vector<ProfileResult> m_ProfileResults;
 };

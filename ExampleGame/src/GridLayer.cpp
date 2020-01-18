@@ -2,7 +2,7 @@
 
 
 GridLayer::GridLayer()
-	:Layer("Grid"), m_CameraController(16.0f / 9.0f, 0.25f * PI, { 0.0f, 0.0f, 1.0f })
+	:Layer("Grid"), m_CameraController(16.0f / 9.0f, 0.25f * (float)PI, { 0.0f, 0.0f, 1.0f })
 {
 }
 

@@ -66,6 +66,11 @@ void OpenGLShader::SetFloat4(const char * name, const float r, const float g, co
 	UploadUniformFloat4(name, r, g, b, a);
 }
 
+void OpenGLShader::SetFloat4(const char * name, const Colour colour)
+{
+	UploadUniformFloat4(name, colour.r, colour.g, colour.b, colour.a);
+}
+
 void OpenGLShader::SetInt(const char * name, const int value)
 {
 	UploadUniformInteger(name, value);
