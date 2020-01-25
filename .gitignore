@@ -48,3 +48,6 @@ bin-int/
 
 #makefiles
 makefile
+/ExampleGame/Profile-Runtime.json
+/ExampleGame/Profile-Shutdown.json
+/ExampleGame/Profile-Startup.json

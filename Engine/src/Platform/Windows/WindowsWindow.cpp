@@ -5,6 +5,8 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
+#include "Renderer/Renderer.h"
+
 #include "Logging/Debug.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
@@ -13,7 +15,7 @@ static uint8_t s_GLFWWindowCount = 0;
 
 static void	GLFWErrorCallback(int error, const char* description)
 {
-	DBG_OUTPUT("GLFW Error %i %s", error, description);
+	DBG_OUTPUT(std::string("GLFW Error %i " + std::string(description)).c_str(), error, description);
 }
 
 Window* Window::Create(const WindowProps& props)
@@ -23,22 +25,27 @@ Window* Window::Create(const WindowProps& props)
 
 WindowsWindow::WindowsWindow(const WindowProps& props)
 {
+	PROFILE_FUNCTION();
 	Init(props);
 }
 
 WindowsWindow::~WindowsWindow()
 {
+	PROFILE_FUNCTION();
 	Shutdown();
 }
 
 void WindowsWindow::OnUpdate()
 {
+	PROFILE_FUNCTION();
 	glfwPollEvents();
 	m_context->SwapBuffers();
 }
 
 void WindowsWindow::SetVSync(bool enabled)
 {
+	PROFILE_FUNCTION();
+
 	if (enabled)
 	{
 		glfwSwapInterval(1);
@@ -57,30 +64,33 @@ bool WindowsWindow::IsVSync() const
 
 void WindowsWindow::Init(const WindowProps & props)
 {
+	PROFILE_FUNCTION();
+
 	m_data.Title = props.Title;
 	m_data.Width = props.Width;
 	m_data.Height = props.Height;
 	m_data.PosX = props.PosX;
 	m_data.PosY = props.PosY;
 
-	std::string message = "Creating window " + props.Title + std::to_string(props.Width) + std::to_string(props.Height);
-
-	OUTPUT("Creating window %s %d %d \n", props.Title.c_str(), props.Width, props.Height);
-
-	OUTPUT(message.c_str());
-
+	OUTPUT(std::string("Creating Window " + props.Title + " %d %d \n").c_str(), props.Width, props.Height);
 
 	if (s_GLFWWindowCount == 0)
 	{
+		PROFILE_SCOPE("glfw init");
 		OUTPUT("Initializing GLFW\r\n");
 		int success = glfwInit();
 		CORE_ASSERT(success, "Could not initialize GLFW!");
 		glfwSetErrorCallback(GLFWErrorCallback);
 	}
-
-	m_window = glfwCreateWindow((int)props.Width, (int)props.Height, m_data.Title.c_str(), nullptr, nullptr);
-	++s_GLFWWindowCount;
-
+	{
+		PROFILE_SCOPE("glfw create window");
+#ifdef DEBUG
+		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif // DEBUG
+		m_window = glfwCreateWindow((int)props.Width, (int)props.Height, m_data.Title.c_str(), nullptr, nullptr);
+		++s_GLFWWindowCount;
+	}
 	m_context = CreateScope<OpenGLContext>(m_window);
 
 	m_context->Init();
@@ -189,6 +199,8 @@ void WindowsWindow::Init(const WindowProps & props)
 
 void WindowsWindow::Shutdown()
 {
+	PROFILE_FUNCTION();
+
 	glfwDestroyWindow(m_window);
 
 	if (--s_GLFWWindowCount == 0)

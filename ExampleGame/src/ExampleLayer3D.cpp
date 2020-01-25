@@ -79,6 +79,8 @@ void ExampleLayer3D::OnDetach()
 
 void ExampleLayer3D::OnUpdate(float deltaTime)
 {
+	PROFILE_FUNCTION();
+
 	Ref<Shader> shader = m_ShaderLibrary.Get("Texture");
 	shader->Bind();
 

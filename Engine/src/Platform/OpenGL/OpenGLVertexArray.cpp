@@ -29,27 +29,31 @@ static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)
 
 OpenGLVertexArray::OpenGLVertexArray()
 {
+	PROFILE_FUNCTION();
 	glGenVertexArrays(1, &m_RendererID);
-	glBindVertexArray(m_RendererID);
 }
 
 OpenGLVertexArray::~OpenGLVertexArray()
 {
+	PROFILE_FUNCTION();
 	glDeleteVertexArrays(1, &m_RendererID);
 }
 
 void OpenGLVertexArray::Bind() const
 {
+	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
 }
 
 void OpenGLVertexArray::UnBind() const
 {
+	PROFILE_FUNCTION();
 	glBindVertexArray(0);
 }
 
 void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 {
+	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
 	vertexBuffer->Bind();
 
@@ -73,6 +77,7 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 
 void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
 {
+	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
 	indexBuffer->Bind();
 

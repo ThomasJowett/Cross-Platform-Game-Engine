@@ -27,12 +27,14 @@ static GLenum ShaderTypeToGLShaderType(const Shader::ShaderTypes& type)
 OpenGLShader::OpenGLShader(const std::string& name, const std::string & fileDirectory)
 	:m_Name(name)
 {
+	PROFILE_FUNCTION();
 	Compile(LoadShaderSources(fileDirectory + name));
 }
 
 OpenGLShader::OpenGLShader(const std::string& name, const std::string & vertexSource, const std::string & fragmentSource)
 	:m_Name(name)
 {
+	PROFILE_FUNCTION();
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
 	shaderSources[VERTEX] = vertexSource;
@@ -43,65 +45,77 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::string & vertexSo
 
 OpenGLShader::~OpenGLShader()
 {
+	PROFILE_FUNCTION();
 	glDeleteProgram(m_rendererID);
 }
 
 void OpenGLShader::Bind() const
 {
+	PROFILE_FUNCTION();
 	glUseProgram(m_rendererID);
 }
 
 void OpenGLShader::UnBind() const
 {
+	PROFILE_FUNCTION();
 	glUseProgram(0);
 }
 
 void OpenGLShader::SetMat4(const char * name, const Matrix4x4 & value, bool transpose)
 {
+	PROFILE_FUNCTION();
 	UploadUniformMat4(name, value, transpose);
 }
 
 void OpenGLShader::SetFloat4(const char * name, const float r, const float g, const float b, const float a)
 {
+	PROFILE_FUNCTION();
 	UploadUniformFloat4(name, r, g, b, a);
 }
 
 void OpenGLShader::SetFloat4(const char * name, const Colour colour)
 {
+	PROFILE_FUNCTION();
 	UploadUniformFloat4(name, colour.r, colour.g, colour.b, colour.a);
 }
 
 void OpenGLShader::SetInt(const char * name, const int value)
 {
+	PROFILE_FUNCTION();
 	UploadUniformInteger(name, value);
 }
 
 void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
 {
+	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform2f(location, vector.x, vector.y);
 }
 
 void OpenGLShader::UploadUniformInteger(const char * name, const int & integer)
 {
+	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform1i(location, integer);
 }
 
 void OpenGLShader::UploadUniformFloat4(const char * name, const float & r, const float & g, const float & b, const float & a)
 {
+	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform4f(location, r, g, b, a);
 }
 
 void OpenGLShader::UploadUniformMat4(const char* name, const Matrix4x4 & matrix, bool transpose)
 {
+	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniformMatrix4fv(location, 1, transpose, &matrix.m[0][0]);
 }
 
 std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSources(const std::string& filepath)
 {
+	PROFILE_FUNCTION();
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
 	if (std::filesystem::exists(filepath + ".vert"))
@@ -141,6 +155,7 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 
 std::string OpenGLShader::ReadFile(const std::string & filepath)
 {
+	PROFILE_FUNCTION();
 	std::string result;
 	std::ifstream file(filepath, std::ios::in | std::ios::binary);
 	if (file)
@@ -157,6 +172,7 @@ std::string OpenGLShader::ReadFile(const std::string & filepath)
 
 void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::string> shaderSources)
 {
+	PROFILE_FUNCTION();
 	GLuint program = glCreateProgram();
 	CORE_ASSERT(shaderSources.size() <= 6, "There can only be 6 shaders in a shader program");
 
@@ -198,15 +214,16 @@ void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::st
 	CheckShaderError(m_rendererID, GL_VALIDATE_STATUS, true, "ERROR: Program is invalid: ");
 
 	// Always detach shaders after a successful link.
-	for each (GLuint shader in GLShaderIDs)
+	for(int i = 0; i < shaderSources.size(); i++)
 	{
-		glDetachShader(m_rendererID, shader);
-		glDeleteShader(shader);
+		glDetachShader(m_rendererID, GLShaderIDs[i]);
+		glDeleteShader(GLShaderIDs[i]);
 	}
 }
 
 void OpenGLShader::CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram, const char * errorMessage)
 {
+	PROFILE_FUNCTION();
 	GLint success = 0;
 	char error[1024] = { 0 };
 	if (isProgram)

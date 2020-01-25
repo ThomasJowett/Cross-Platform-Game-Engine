@@ -15,6 +15,8 @@ OrthogrpahicCameraController::~OrthogrpahicCameraController()
 
 void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 {
+	PROFILE_FUNCTION();
+
 	//moving the camera with the arrow keys
 
 	if (Input::IsKeyPressed(KEY_A))
@@ -42,6 +44,8 @@ void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 
 void OrthogrpahicCameraController::OnEvent(Event & event)
 {
+	PROFILE_FUNCTION();
+
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<MouseWheelEvent>(BIND_EVENT_FN(OrthogrpahicCameraController::OnMouseWheel));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OrthogrpahicCameraController::OnWindowResized));
@@ -49,6 +53,8 @@ void OrthogrpahicCameraController::OnEvent(Event & event)
 
 bool OrthogrpahicCameraController::OnMouseWheel(MouseWheelEvent & event)
 {
+	PROFILE_FUNCTION();
+
 	m_ZoomLevel -= event.GetYOffset() / 4.0f;
 	m_ZoomLevel = max(m_ZoomLevel, 0.25f);
 	m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
@@ -59,6 +65,8 @@ bool OrthogrpahicCameraController::OnMouseWheel(MouseWheelEvent & event)
 
 bool OrthogrpahicCameraController::OnWindowResized(WindowResizeEvent & event)
 {
+	PROFILE_FUNCTION();
+
 	m_AspectRatio = (float)event.GetWidth() / (float)event.GetHeight();
 	m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 	return false;

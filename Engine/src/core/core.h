@@ -12,11 +12,11 @@
 		#error "IOS simulator is not yet supported!"
 	#elif TARGET_OS_IPHONE == 1
 		#define PLATFORM_IOS
-		#error "IOS is not supported!"
+		#error "IOS is not yet supported!"
 	#elif TARGET_OS_MAC == 1
 		#define TARGET_OS_MAC == 1
 		#define PLATFORM_MACOS
-	#error "MACOS isnot supported!"
+	#error "MACOS is not yet supported!"
 	#else
 		#error "Unkown Apple Platform!"
 #endif

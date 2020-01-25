@@ -3,8 +3,13 @@
 
 namespace Debug
 {
-#define DBG_OUTPUT(...) Debug::Output(__FILE__, __LINE__, __VA_ARGS__)
-#define OUTPUT(...) Debug::Output(__VA_ARGS__)
+#ifdef DEBUG
+	#define DBG_OUTPUT(...) Debug::Output(__FILE__, __LINE__, __VA_ARGS__)
+	#define OUTPUT(...) Debug::Output(__VA_ARGS__)
+#else
+	#define DBG_OUTPUT(...)
+	#define OUTPUT(...)
+#endif // DEBUG
 
 #ifdef __WINDOWS__
 	// wide char output

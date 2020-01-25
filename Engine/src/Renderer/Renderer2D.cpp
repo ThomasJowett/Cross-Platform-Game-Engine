@@ -17,6 +17,7 @@ static Renderer2DStorage* s_Data;
 
 bool Renderer2D::Init()
 {
+	PROFILE_FUNCTION();
 	s_Data = new Renderer2DStorage();
 
 	s_Data->vertexArray = VertexArray::Create();
@@ -68,12 +69,14 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer2D::BeginScene(const OrthographicCamera & camera)
 {	
+	PROFILE_FUNCTION();
 	s_Data->shader->Bind();
 	s_Data->shader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
 }
 
 void Renderer2D::EndScene()
 {
+	PROFILE_FUNCTION();
 }
 
 void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
@@ -83,6 +86,7 @@ void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, cons
 
 void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
 {
+	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
 	texture->Bind();
 
@@ -99,6 +103,7 @@ void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, cons
 
 void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const Colour colour)
 {
+	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
 	s_Data->whiteTexture->Bind();
 

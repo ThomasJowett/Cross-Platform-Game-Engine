@@ -4,13 +4,13 @@
 
 LayerStack::LayerStack()
 {
-	m_layerInsert = m_layers.begin();
+	m_LayerInsert = m_Layers.begin();
 }
 
 
 LayerStack::~LayerStack()
 {
-	for each(Layer* layer in m_layers)
+	for each(Layer* layer in m_Layers)
 	{
 		layer->OnDetach();
 		delete layer;
@@ -19,29 +19,29 @@ LayerStack::~LayerStack()
 
 void LayerStack::PushLayer(Layer * layer)
 {
-	m_layerInsert = m_layers.emplace(m_layerInsert, layer);
+	m_LayerInsert = m_Layers.emplace(m_LayerInsert, layer);
 }
 
 void LayerStack::PushOverlay(Layer * overlay)
 {
-	m_layers.emplace_back(overlay);
+	m_Layers.emplace_back(overlay);
 }
 
 void LayerStack::PopLayer(Layer * layer)
 {
-	auto it = std::find(m_layers.begin(), m_layers.end(), layer);
-	if (it != m_layers.end())
+	auto it = std::find(m_Layers.begin(), m_Layers.end(), layer);
+	if (it != m_Layers.end())
 	{
-		m_layers.erase(it);
-		m_layerInsert--;
+		m_Layers.erase(it);
+		m_LayerInsert--;
 	}
 }
 
 void LayerStack::PopOverlay(Layer * overlay)
 {
-	auto it = std::find(m_layers.begin(), m_layers.end(), overlay);
-	if (it != m_layers.end())
+	auto it = std::find(m_Layers.begin(), m_Layers.end(), overlay);
+	if (it != m_Layers.end())
 	{
-		m_layers.erase(it);
+		m_Layers.erase(it);
 	}
 }

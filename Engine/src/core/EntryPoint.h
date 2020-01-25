@@ -13,11 +13,21 @@ int main(int argc, char* argv[])
 	if (AnotherInstance())
 		return 1;
 
+	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
+
 	Application* app = CreateApplication();
+
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
 	OUTPUT("Engine Initialised\r\n");
+	PROFILE_END_SESSION();
+
+	PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
 	app->Run();
+	PROFILE_END_SESSION();
+
+	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	delete app;
+	PROFILE_END_SESSION();
 	return 0;
 }
 

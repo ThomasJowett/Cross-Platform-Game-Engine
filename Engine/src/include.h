@@ -14,6 +14,7 @@
 
 #include "Logging/Debug.h"
 #include "Logging/Timer.h"
+#include "Logging/Instrumentor.h"
 
 #include "ImGui/ImGuiLayer.h"
 

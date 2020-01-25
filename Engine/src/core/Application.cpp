@@ -25,6 +25,8 @@ Application::~Application()
 
 void Application::Run()
 {
+	PROFILE_FUNCTION();
+
 	const double deltaTime = 0.01f; // fixed update delta time of 10ms seconds (100 times a second)
 
 	double currentTime = glfwGetTime();
@@ -32,6 +34,8 @@ void Application::Run()
 
 	while (m_Running)
 	{
+		PROFILE_SCOPE("Run Loop");
+
 		OnUpdate();
 
 		double newTime = glfwGetTime();
@@ -42,6 +46,8 @@ void Application::Run()
 
 		while (accumulator >= deltaTime)
 		{
+			PROFILE_SCOPE("Layer Stack Update");
+
 			if (!m_Minimized)
 			{
 				for each(Layer* layer in m_LayerStack)
@@ -65,13 +71,15 @@ void Application::Run()
 
 void Application::OnEvent(Event & e)
 {
+	PROFILE_FUNCTION();
+
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 
-	for (auto it = m_LayerStack.end(); it != m_LayerStack.begin();)
+	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{
-		(*--it)->OnEvent(e);
+		(*it)->OnEvent(e);
 		if (e.Handled)
 			break;
 	}
@@ -79,12 +87,16 @@ void Application::OnEvent(Event & e)
 
 void Application::PushLayer(Layer * layer)
 {
+	PROFILE_FUNCTION();
+
 	m_LayerStack.PushLayer(layer);
 	layer->OnAttach();
 }
 
 void Application::PushOverlay(Layer * layer)
 {
+	PROFILE_FUNCTION();
+
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
 }
@@ -97,6 +109,8 @@ bool Application::OnWindowClose(WindowCloseEvent & e)
 
 bool Application::OnWindowResize(WindowResizeEvent & e)
 {
+	PROFILE_FUNCTION();
+
 	if (e.GetWidth() == 0 || e.GetHeight() == 0)
 	{
 		m_Minimized = true;

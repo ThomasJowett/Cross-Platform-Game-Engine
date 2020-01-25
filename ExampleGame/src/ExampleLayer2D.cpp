@@ -1,8 +1,6 @@
 #include "ExampleLayer2D.h"
 #include "imgui/imgui.h"
 
-#define PROFILE_SCOPE(name) Timer timer##__LINE__(name, [&](ProfileResult profileResult) {m_ProfileResults.push_back(profileResult); })
-
 ExampleLayer2D::ExampleLayer2D()
 	:Layer("Example 2D"),m_CameraController(16.0f/9.0f)
 {
@@ -19,7 +17,7 @@ void ExampleLayer2D::OnDetach()
 
 void ExampleLayer2D::OnUpdate(float deltaTime)
 {
-	PROFILE_SCOPE("Example2D::OnUpdate()");
+	PROFILE_FUNCTION();
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
@@ -50,16 +48,5 @@ void ExampleLayer2D::OnImGuiRender()
 		m_ColourName += 1;
 		m_Colour.SetColour((Colour::ColourDatabase)m_ColourName);
 	}
-
-	for (auto& result : m_ProfileResults)
-	{
-		char label[50];
-
-		strcpy_s(label, result.Name);
-		strcat_s(label, " %.3fms");
-		ImGui::Text(label, result.Time);
-	}
-
-	m_ProfileResults.clear();
 	ImGui::End();
 }

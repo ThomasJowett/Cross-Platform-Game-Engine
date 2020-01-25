@@ -23,12 +23,4 @@ private:
 	float m_Size[2] = { 1.0f, 1.0f };
 
 	Ref<Texture2D> m_Texture;
-
-	struct ProfileResult
-	{
-		const char* Name;
-		double Time;
-	};
-
-	std::vector<ProfileResult> m_ProfileResults;
 };
