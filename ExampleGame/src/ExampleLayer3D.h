@@ -11,6 +11,7 @@ public:
 	void ExampleLayer3D::OnDetach() override;
 
 	void OnUpdate(float deltaTime) override;
+	void OnFixedUpdate() override;
 	void OnEvent(Event& e) override;
 	void OnImGuiRender() override;
 

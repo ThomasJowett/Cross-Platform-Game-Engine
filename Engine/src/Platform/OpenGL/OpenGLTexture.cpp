@@ -54,8 +54,6 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 	m_InternalFormat = internalFormat;
 	m_DataFormat = dataFormat;
 
-	//glGenTextures(1, &m_RendererID);
-	//glBindTexture(GL_TEXTURE_2D, m_RendererID);
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 

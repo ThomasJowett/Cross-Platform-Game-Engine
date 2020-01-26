@@ -11,6 +11,10 @@ ExampleGame::ExampleGame()
 	PushLayer(new ExampleLayer3D());
 	PushLayer(new ExampleLayer2D());
 	PushOverlay(new ImGuiLayer());
+
+	Application::Get().GetWindow().SetIcon("resources/Circle.png");
+
+	Application::Get().GetWindow().SetWindowMode(WindowMode::WINDOWED, 1920, 1080);
 }
 
 void ExampleGame::OnUpdate()

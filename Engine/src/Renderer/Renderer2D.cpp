@@ -79,15 +79,16 @@ void Renderer2D::EndScene()
 	PROFILE_FUNCTION();
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour, float tilingFactor)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, rotation, colour);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, rotation, colour, tilingFactor);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour, float tilingFactor)
 {
 	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
+	s_Data->shader->SetFloat("u_tilingFactor", tilingFactor);
 	texture->Bind();
 
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
@@ -105,6 +106,7 @@ void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, cons
 {
 	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
+	s_Data->shader->SetFloat("u_tilingFactor", 1.0f);
 	s_Data->whiteTexture->Bind();
 
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });

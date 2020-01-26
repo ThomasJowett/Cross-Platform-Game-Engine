@@ -85,30 +85,38 @@ void OpenGLShader::SetInt(const char * name, const int value)
 	UploadUniformInteger(name, value);
 }
 
-void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
+void OpenGLShader::SetFloat(const char * name, const float value)
 {
 	PROFILE_FUNCTION();
+	UploadUniformFloat(name, value);
+}
+
+void OpenGLShader::UploadUniformVector2(const char * name, const Vector2f & vector)
+{
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform2f(location, vector.x, vector.y);
 }
 
 void OpenGLShader::UploadUniformInteger(const char * name, const int & integer)
 {
-	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform1i(location, integer);
 }
 
+void OpenGLShader::UploadUniformFloat(const char * name, const float & Float)
+{
+	uint32_t location = glGetUniformLocation(m_rendererID, name);
+	glUniform1f(location, Float);
+}
+
 void OpenGLShader::UploadUniformFloat4(const char * name, const float & r, const float & g, const float & b, const float & a)
 {
-	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform4f(location, r, g, b, a);
 }
 
 void OpenGLShader::UploadUniformMat4(const char* name, const Matrix4x4 & matrix, bool transpose)
 {
-	PROFILE_FUNCTION();
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniformMatrix4fv(location, 1, transpose, &matrix.m[0][0]);
 }

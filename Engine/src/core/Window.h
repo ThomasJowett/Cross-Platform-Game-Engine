@@ -5,6 +5,13 @@
 #include "core.h"
 #include "Events/Event.h"
 
+enum WindowMode
+{
+	WINDOWED = 0,
+	FULL_SCREEN,
+	BORDERLESS
+};
+
 struct WindowProps
 {
 	std::string Title;
@@ -14,13 +21,17 @@ struct WindowProps
 	unsigned int PosX;
 	unsigned int PosY;
 
+	WindowMode Mode;
+
 	WindowProps(const std::string& title = "Example Game",
 		unsigned int width = 1920,
 		unsigned int height = 1080,
 		unsigned int posX = 20,
-		unsigned int posY = 50)
+		unsigned int posY = 50,
+		WindowMode mode = WindowMode::WINDOWED)
 		:Title(title), Width(width), Height(height),
-		PosX(posX), PosY(posY)
+		PosX(posX), PosY(posY),
+		Mode(mode)
 	{
 	}
 };
@@ -45,6 +56,10 @@ public:
 	virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
 	virtual void SetVSync(bool enabled) = 0;
 	virtual bool IsVSync() const = 0;
+
+	virtual void SetIcon(const std::string& path) = 0;
+
+	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) = 0;
 
 	virtual void* GetNativeWindow() const = 0;
 	

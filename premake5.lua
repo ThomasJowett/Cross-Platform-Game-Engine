@@ -154,6 +154,23 @@ project "ExampleGame"
 		{
 			"__WINDOWS__"
 		}
+		
+	filter "system:linux"
+		links
+		{
+			"GLFW",
+			"Glad",
+			"ImGui",
+			"Xrandr",
+			"Xi",
+			"GLEW",
+			"GLU",
+			"GL",
+			"X11",
+			"dl",
+			"pTread",
+			"stdc++fs"
+		}
 
 	filter "configurations:Debug"
 		defines "DEBUG"

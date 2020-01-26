@@ -16,8 +16,8 @@ public:
 	static void EndScene();
 
 	//primitives
-	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE });
-	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE });
+	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE }, float tilingFactor = 1.0f);
+	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE }, float tilingFactor = 1.0f);
 
 	static void DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE });
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const float& rotation = 0.0f, const Colour colour = { Colour::WHITE });

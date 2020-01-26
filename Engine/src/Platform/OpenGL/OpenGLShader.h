@@ -16,9 +16,11 @@ public:
 	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
 	virtual void SetFloat4(const char * name, const Colour) override;
 	virtual void SetInt(const char* name, const int value) override;
+	virtual void SetFloat(const char* name, const float value) override;
 
 	void UploadUniformVector2(const char* name, const Vector2f& vector);
 	void UploadUniformInteger(const char* name, const int& integer);
+	void UploadUniformFloat(const char* name, const float& Float);
 	void UploadUniformFloat4(const char* name, const float& r, const float& g, const float& b, const float& a);
 	void UploadUniformMat4(const char* name, const Matrix4x4& matrix, bool transpose);
 

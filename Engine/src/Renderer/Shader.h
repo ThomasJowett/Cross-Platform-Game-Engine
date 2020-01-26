@@ -19,6 +19,7 @@ public:
 	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) = 0;
 	virtual void SetFloat4(const char * name, const Colour colour) = 0;
 	virtual void SetInt(const char* name, const int value) = 0;
+	virtual void SetFloat(const char* name, const float value) = 0;
 
 	// Create Shader from file
 	static Ref<Shader> Create(const std::string& name, const std::string& fileDirectory = SHADER_DIRECTORY);

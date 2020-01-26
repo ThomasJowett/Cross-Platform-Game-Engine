@@ -86,20 +86,24 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 
 	shader->SetInt("u_texture", 0);
 	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
+	shader->SetFloat("u_tilingFactor", 1.0f);
 
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer::BeginScene(m_CameraController.GetCamera());
 	m_Texture->Bind();
 
-	m_Rotation[0] += 0.001f;
-	m_Rotation[1] += 0.001f;
-	m_Rotation[2] += 0.001f;
-
 	Renderer::Submit(shader, m_VertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] }) 
 		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
 
 	Renderer::EndScene();
+}
+
+void ExampleLayer3D::OnFixedUpdate()
+{
+	m_Rotation[0] += 0.001f;
+	m_Rotation[1] += 0.001f;
+	m_Rotation[2] += 0.001f;
 }
 
 void ExampleLayer3D::OnEvent(Event& e)
