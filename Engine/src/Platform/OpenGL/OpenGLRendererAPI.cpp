@@ -29,9 +29,9 @@ bool OpenGLRendererAPI::Init()
 	return false;
 }
 
-void OpenGLRendererAPI::SetClearColour(float red, float green, float blue, float alpha)
+void OpenGLRendererAPI::SetClearColour(const Colour& colour)
 {
-	glClearColor(red, green, blue, alpha);
+	glClearColor(colour.r, colour.g, colour.b, colour.a);
 }
 
 void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)

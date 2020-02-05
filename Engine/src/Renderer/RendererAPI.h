@@ -1,6 +1,7 @@
 #pragma once
 
 #include "VertexArray.h"
+#include "Core/Colour.h"
 
 class RendererAPI
 {
@@ -16,7 +17,7 @@ public:
 
 public:
 	virtual bool Init() = 0;
-	virtual void SetClearColour(float red, float green, float blue, float alpha) = 0;
+	virtual void SetClearColour(const Colour& colour) = 0;
 	virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 	virtual void Clear() = 0;
 

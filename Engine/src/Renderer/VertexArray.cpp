@@ -3,6 +3,10 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLVertexArray.h"
+#ifdef __WINDOWS__
+#include "Platform/DirectX/DirectX11VertexArray.h"
+#endif // __WINDOWS__
+
 
 Ref<VertexArray> VertexArray::Create()
 {
@@ -15,7 +19,7 @@ Ref<VertexArray> VertexArray::Create()
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")
-			return nullptr;
+			return	CreateRef<DirectX11VertexArray>();
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

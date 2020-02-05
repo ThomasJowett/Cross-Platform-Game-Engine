@@ -3,6 +3,10 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
+#ifdef __WINDOWS__
+#include "Platform/DirectX/DirectX11Shader.h"
+#endif // __WINDOWS__
+
 
 Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDirectory)
 {
@@ -15,7 +19,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDire
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
-			return nullptr;
+			return CreateRef<DirectX11Shader>(name, fileDirectory);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -44,7 +48,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
-			return nullptr;
+			return CreateRef<DirectX11Shader>(vertexShaderSrc, fragmentShaderSrc);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

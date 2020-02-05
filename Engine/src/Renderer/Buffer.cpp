@@ -5,6 +5,10 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
+#ifdef __WINDOWS__
+#include "Platform/DirectX/DirectX11Buffer.h"
+#endif // __WINDOWS__
+
 
 Ref<IndexBuffer> IndexBuffer::Create(uint32_t * indices, uint32_t size)
 {
@@ -17,7 +21,7 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t * indices, uint32_t size)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create index buffer: DirectX is not currently supported")
-			return nullptr;
+			return CreateRef<DirectX11IndexBuffer>(indices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::Metal:
@@ -47,7 +51,7 @@ Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create vertex buffer: DirectX is not currently supported")
-		return nullptr;
+		return CreateRef<DirectX11VertexBuffer>(vertices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

@@ -54,7 +54,7 @@ public:
 		case Colour::MAGENTA:		r = 1.00f, g = 0.00f, b = 1.00f, a = 1.0f;	break;
 		case Colour::YELLOW:		r = 1.00f, g = 1.00f, b = 0.00f, a = 1.0f;	break;
 		case Colour::SILVER:		r = 0.75f, g = 0.75f, b = 0.75f, a = 1.0f;	break;
-		case Colour::GREY:			r = 0.50f, g = 0.50f, b = 0.50f, a = 1.0f;	break;
+		case Colour::GREY:			r = 0.40f, g = 0.40f, b = 0.40f, a = 1.0f;	break;
 		case Colour::MAROON:		r = 0.50f, g = 0.00f, b = 0.00f, a = 1.0f;	break;
 		case Colour::OLIVE:			r = 0.50f, g = 0.50f, b = 0.00f, a = 1.0f;	break;
 		case Colour::GREEN:			r = 0.00f, g = 0.50f, b = 0.50f, a = 1.0f;	break;

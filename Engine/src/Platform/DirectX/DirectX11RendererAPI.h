@@ -2,7 +2,9 @@
 
 #include "Renderer/RendererAPI.h"
 
-class OpenGLRendererAPI : public RendererAPI
+#include <d3d11.h>
+
+class DirectX11RendererAPI : public RendererAPI
 {
 	virtual bool Init() override;
 	virtual void SetClearColour(const Colour& colour) override;
@@ -10,4 +12,10 @@ class OpenGLRendererAPI : public RendererAPI
 	virtual void Clear() override;
 
 	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) override;
+
+private:
+	D3D11_VIEWPORT m_Viewport;
+	ID3D11DeviceContext* m_ImmediateContext;
+
+	Colour m_ClearColour;
 };

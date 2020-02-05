@@ -155,7 +155,7 @@ private:
 	bool m_Stopped;
 };
 
-#define PROFILE 1
+//#define PROFILE 1
 
 #ifdef PROFILE
 	// Resolve which function signature macro will be used. Note that this only

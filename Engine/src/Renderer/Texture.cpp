@@ -3,6 +3,10 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
+#ifdef __WINDOWS__
+#include "Platform/DirectX/DirectX11Texture.h"
+#endif // __WINDOWS__
+
 
 Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 {
@@ -15,7 +19,7 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Texture: DirectX is not currently supported")
-			return nullptr;
+			return CreateRef<DirectX11Texture2D>(width, height);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -44,7 +48,7 @@ Ref<Texture2D> Texture2D::Create(const std::string & path)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Texture: DirectX is not currently supported")
-			return nullptr;
+			return CreateRef<DirectX11Texture2D>(path);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

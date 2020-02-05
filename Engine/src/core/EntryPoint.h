@@ -22,15 +22,15 @@ int main(int argc, char* argv[])
 
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
 	OUTPUT("Engine Initialised\r\n");
-	PROFILE_END_SESSION();
+	PROFILE_END_SESSION("Startup");
 
 	PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
 	app->Run();
-	PROFILE_END_SESSION();
+	PROFILE_END_SESSION("Runtime");
 
 	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	delete app;
-	PROFILE_END_SESSION();
+	PROFILE_END_SESSION("Shutdown");
 	return 0;
 }
 
