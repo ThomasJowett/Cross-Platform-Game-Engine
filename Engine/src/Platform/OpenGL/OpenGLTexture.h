@@ -6,6 +6,7 @@
 class OpenGLTexture2D : public Texture2D
 {
 public:
+	OpenGLTexture2D();
 	OpenGLTexture2D(uint32_t width, uint32_t height);
 	OpenGLTexture2D(const std::string& path);
 	virtual ~OpenGLTexture2D();
@@ -17,6 +18,8 @@ public:
 
 	virtual void Bind(uint32_t slot) const override;
 private:
+	// sets the texture to be the null texture
+	void NullTexture();
 	std::string m_Path;
 	uint32_t m_Width, m_Height;
 
