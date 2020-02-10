@@ -5,7 +5,7 @@
 class ExampleGame : public Application
 {
 public:
-	ExampleGame();
+	ExampleGame(const WindowProps& props);
 	~ExampleGame() = default;
 
 	virtual void OnUpdate() override;
@@ -14,5 +14,5 @@ public:
 /* Entry Point*/
 Application* CreateApplication()
 {
-	return new ExampleGame();
+	return new ExampleGame(WindowProps("Example Game", 426, 240, 100, 100, WindowMode::WINDOWED));
 }

@@ -3,7 +3,8 @@
 #include "GridLayer.h"
 #include "ExampleApp.h"
 
-ExampleGame::ExampleGame()
+ExampleGame::ExampleGame(const WindowProps& props)
+	:Application(props)
 {
 	RenderCommand::SetClearColour(Colours::GREY);
 
@@ -14,7 +15,7 @@ ExampleGame::ExampleGame()
 
 	Application::Get().GetWindow().SetIcon("resources/Circle.png");
 
-	Application::Get().GetWindow().SetWindowMode(WindowMode::WINDOWED, 1920, 1080);
+	Application::Get().GetWindow().SetWindowMode(props.Mode, props.Width, props.Height);
 }
 
 void ExampleGame::OnUpdate()

@@ -8,7 +8,7 @@
 class Application
 {
 public:
-	Application();
+	Application(const WindowProps& props);
 	virtual ~Application();
 
 	void Run();

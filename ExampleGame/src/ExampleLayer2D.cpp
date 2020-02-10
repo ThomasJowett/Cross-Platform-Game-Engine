@@ -45,8 +45,7 @@ void ExampleLayer2D::OnImGuiRender()
 
 	if (colourClicked)
 	{
-		m_ColourName += 1;
-		m_Colour.SetColour((Colours)m_ColourName);
+		m_Colour.SetColour(Colours::RANDOM);
 	}
 	ImGui::End();
 }
