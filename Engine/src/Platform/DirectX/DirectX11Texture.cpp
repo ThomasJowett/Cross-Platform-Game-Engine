@@ -20,3 +20,8 @@ void DirectX11Texture2D::SetData(void * data, uint32_t size)
 void DirectX11Texture2D::Bind(uint32_t slot) const
 {
 }
+
+std::string DirectX11Texture2D::GetName() const
+{
+	return m_Path;
+}

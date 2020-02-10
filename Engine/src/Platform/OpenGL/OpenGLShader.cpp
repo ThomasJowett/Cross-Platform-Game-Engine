@@ -37,8 +37,8 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::string & vertexSo
 	PROFILE_FUNCTION();
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
-	shaderSources[VERTEX] = vertexSource;
-	shaderSources[PIXEL] = fragmentSource;
+	shaderSources[Shader::ShaderTypes::VERTEX] = vertexSource;
+	shaderSources[Shader::ShaderTypes::PIXEL] = fragmentSource;
 
 	Compile(shaderSources);
 }
@@ -128,32 +128,32 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 
 	if (std::filesystem::exists(filepath + ".vert"))
 	{
-		shaderSources[VERTEX] = ReadFile(filepath + ".vert");
+		shaderSources[Shader::ShaderTypes::VERTEX] = ReadFile(filepath + ".vert");
 	}
 
 	if (std::filesystem::exists(filepath + ".tesc"))
 	{
-		shaderSources[TESS_HULL] = ReadFile(filepath + ".tesc");
+		shaderSources[Shader::ShaderTypes::TESS_HULL] = ReadFile(filepath + ".tesc");
 	}
 
 	if (std::filesystem::exists(filepath + ".tese"))
 	{
-		shaderSources[TESS_DOMAIN] = ReadFile(filepath + ".tese");
+		shaderSources[Shader::ShaderTypes::TESS_DOMAIN] = ReadFile(filepath + ".tese");
 	}
 
 	if (std::filesystem::exists(filepath + ".geom"))
 	{
-		shaderSources[GEOMETRY] = ReadFile(filepath + ".geom");
+		shaderSources[Shader::ShaderTypes::GEOMETRY] = ReadFile(filepath + ".geom");
 	}
 
 	if (std::filesystem::exists(filepath + ".frag"))
 	{
-		shaderSources[PIXEL] = ReadFile(filepath + ".frag");
+		shaderSources[Shader::ShaderTypes::PIXEL] = ReadFile(filepath + ".frag");
 	}
 
 	if (std::filesystem::exists(filepath + ".comp"))
 	{
-		shaderSources[COMPUTE] = ReadFile(filepath + ".comp");
+		shaderSources[Shader::ShaderTypes::COMPUTE] = ReadFile(filepath + ".comp");
 	}
 
 	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!")

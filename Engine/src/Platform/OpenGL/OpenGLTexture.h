@@ -17,9 +17,13 @@ public:
 	virtual void SetData(void* data, uint32_t size) override;
 
 	virtual void Bind(uint32_t slot) const override;
+
+	virtual std::string GetName()const override;
 private:
 	// sets the texture to be the null texture
 	void NullTexture();
+
+	bool LoadTextureFromFile();
 	std::string m_Path;
 	uint32_t m_Width, m_Height;
 

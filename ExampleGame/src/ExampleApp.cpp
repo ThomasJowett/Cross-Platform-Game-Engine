@@ -5,7 +5,7 @@
 
 ExampleGame::ExampleGame()
 {
-	RenderCommand::SetClearColour(Colour::GREY);
+	RenderCommand::SetClearColour(Colours::GREY);
 
 	//PushLayer(new GridLayer());
 	PushLayer(new ExampleLayer3D());

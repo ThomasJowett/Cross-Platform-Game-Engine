@@ -214,7 +214,7 @@ protected:
 class BehaviorTree : public Node
 {
 public:
-    BehaviorTree() : m_Blackboard(std::make_shared<Blackboard>()) {}
+    BehaviorTree() : m_Blackboard(CreateRef<Blackboard>()), m_NodeRunning(false) {}
     BehaviorTree(const Ref<Node> &rootNode) : BehaviorTree() { m_Root = rootNode; }
     
 	Status update(float deltaTime) override

@@ -5,7 +5,7 @@
 #include "core.h"
 #include "Events/Event.h"
 
-enum WindowMode
+enum class WindowMode
 {
 	WINDOWED = 0,
 	FULL_SCREEN,

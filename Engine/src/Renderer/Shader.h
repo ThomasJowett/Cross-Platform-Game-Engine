@@ -28,7 +28,7 @@ public:
 
 	virtual std::string GetName()const = 0;
 
-	enum ShaderTypes
+	enum class ShaderTypes
 	{
 		VERTEX = 0,
 		TESS_HULL,
@@ -37,7 +37,6 @@ public:
 		PIXEL,
 		COMPUTE
 	};
-
 };
 
 class ShaderLibrary

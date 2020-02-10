@@ -68,13 +68,16 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
-	auto& name = shader->GetName();
+	std::string& name = shader->GetName();
 	CORE_ASSERT(!Exists(name), "Shader already exists!");
 	m_Shaders[name] = shader;
 }
 
 Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& fileDirectory)
 {
+	if (Exists(name))
+		return m_Shaders[name];
+
 	Ref<Shader> shader = Shader::Create(name, fileDirectory);
 	Add(shader);
 	return shader;

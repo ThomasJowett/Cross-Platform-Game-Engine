@@ -15,12 +15,12 @@ public:
 private:
 	OrthogrpahicCameraController m_CameraController;
 	Ref<VertexArray> m_VertexArray;
-	Colour m_Colour = Colour::RED;
+	Colour m_Colour = Colours::RED;
 
 	int m_ColourName = 0;
 	float m_Position[2] = { 0.0f,0.0f };
 	float m_Rotation = 0.0f;
 	float m_Size[2] = { 1.0f, 1.0f };
 
-	Ref<Texture2D> m_Texture;
+	TextureLibrary2D m_TextureLibrary;
 };

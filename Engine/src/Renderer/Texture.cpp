@@ -65,3 +65,31 @@ Ref<Texture2D> Texture2D::Create(const std::string & path)
 	CORE_ASSERT(true, "Could not create Texture: Invalid Renderer API")
 		return nullptr;
 }
+
+void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
+{
+	std::string& name = texture->GetName();
+	CORE_ASSERT(!Exists(name), "Texture already exists!");
+	m_Textures[name] = texture;
+}
+
+Ref<Texture2D> TextureLibrary2D::Load(const std::string& path)
+{
+	if (Exists(path))
+		return m_Textures[path];
+
+	Ref<Texture2D> texture = Texture2D::Create(path);
+	Add(texture);
+	return texture;
+}
+
+Ref<Texture2D> TextureLibrary2D::Get(const std::string& name)
+{
+	CORE_ASSERT(Exists(name), "Texture does not exist!");
+	return m_Textures[name];
+}
+
+bool TextureLibrary2D::Exists(const std::string& name) const
+{
+	return m_Textures.find(name) != m_Textures.end();
+}

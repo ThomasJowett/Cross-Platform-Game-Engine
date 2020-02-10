@@ -69,7 +69,7 @@ void ExampleLayer3D::OnAttach()
 	m_VertexArray->AddVertexBuffer(vertexBuffer);
 	m_VertexArray->SetIndexBuffer(indexBuffer);
 
-	Ref<Shader> shader = m_ShaderLibrary.Load("Texture");
+	m_ShaderLibrary.Load("Texture");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 }
 
