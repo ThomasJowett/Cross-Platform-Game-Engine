@@ -102,7 +102,7 @@ namespace Astar
 
 		void SetDiagonalMovement(bool enable);
 		void SetHeuristic(HeuristicFunction function);
-		std::vector<Vector2f> FindPath(Vector2f source, Vector2f goal);
+		std::vector<Vector2f> FindPath(Vector2f source, Vector2f goal, AstarGrid* grid);
 
 	private:
 		HeuristicFunction m_Heuristic;

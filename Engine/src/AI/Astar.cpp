@@ -81,9 +81,79 @@ namespace Astar
 		m_Heuristic = std::bind(function, std::placeholders::_1, std::placeholders::_2);
 	}
 
-	std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal)
+	std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal, AstarGrid* grid)
 	{
-		//TODO: find path
+		std::vector<Vector2f> path;
+
+		GridCoord sourceCoords, goalCoords;
+
+		if (!grid->PositionToGridCoord(source, sourceCoords))
+			return path;
+
+		if (!grid->PositionToGridCoord(goal, goalCoords))
+			return path;
+
+		Node* current = nullptr;
+		NodeSet openSet, closedSet;
+
+		openSet.insert(new Node(sourceCoords));
+
+		while (!openSet.empty())
+		{
+			current = *openSet.begin();
+			for (Node* node : openSet)
+			{
+				if (node->GetScore() <= current->GetScore())
+				{
+					current = node;
+				}
+			}
+
+			if (current->m_Coordinates == goalCoords)
+			{
+				break; // found the goal so exit
+			}
+
+			closedSet.insert(current);
+			openSet.erase(std::find(openSet.begin(), openSet.end(), current));
+
+			for (uint32_t i = 0; i < m_Directions; i++)
+			{
+				GridCoord newCoords(current->m_Coordinates + m_Direction[i]);
+
+				if (grid->DetectCollision(newCoords) || FindNodeOnList(closedSet, newCoords))
+					continue;
+
+				uint32_t totalcost = current->G + ((i < 4) ? 10 : 14);
+
+				Node* successor = FindNodeOnList(openSet, newCoords);
+
+				if (successor == nullptr)
+				{
+					successor = new Node(newCoords, current);
+					successor->G = totalcost;
+					successor->H = m_Heuristic(successor->m_Coordinates, goalCoords);
+					openSet.insert(successor);
+				}
+				else if (totalcost < successor->G)
+				{
+					successor->m_Parent = current;
+					successor->G = totalcost;
+				}
+			}
+		}
+
+		while (current != nullptr)
+		{
+			/*convert coordinates back into world positions*/
+			Vector2f position;
+			grid->GridCoordToPosition(current->m_Coordinates, position);
+			path.push_back(position);
+			current = current->m_Parent;
+		}
+
+		ReleaseNodes(openSet);
+		ReleaseNodes(closedSet);
 		return std::vector<Vector2f>();
 	}
 
