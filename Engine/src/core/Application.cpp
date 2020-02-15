@@ -10,9 +10,9 @@ Application* Application::s_Instance = nullptr;
 
 Application::Application(const WindowProps& props)
 {
-	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications")
-		s_Instance = this;
-	m_Window = CreateScope<Window>(Window::Create(props));
+	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
+	s_Instance = this;
+	m_Window = Scope<Window>(Window::Create(props));
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	Renderer::Init();

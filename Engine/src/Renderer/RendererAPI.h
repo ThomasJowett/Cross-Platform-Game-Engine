@@ -3,6 +3,13 @@
 #include "VertexArray.h"
 #include "Core/Colour.h"
 
+enum class DrawMode
+{
+	POINTS,
+	WIREFRAME,
+	FILL
+};
+
 class RendererAPI
 {
 public:
@@ -21,7 +28,7 @@ public:
 	virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) = 0;
 	virtual void Clear() = 0;
 
-	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) = 0;
+	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMode drawMode = DrawMode::FILL) = 0;
 
 	inline static API GetAPI() { return s_API; }
 private:

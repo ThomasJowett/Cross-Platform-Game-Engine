@@ -21,17 +21,13 @@ struct WindowProps
 	unsigned int PosX;
 	unsigned int PosY;
 
-	WindowMode Mode;
-
 	WindowProps(const std::string& title = "Example Game",
 		unsigned int width = 1920,
 		unsigned int height = 1080,
 		unsigned int posX = 20,
-		unsigned int posY = 50,
-		WindowMode mode = WindowMode::WINDOWED)
+		unsigned int posY = 50)
 		:Title(title), Width(width), Height(height),
-		PosX(posX), PosY(posY),
-		Mode(mode)
+		PosX(posX), PosY(posY)
 	{
 	}
 };
@@ -63,6 +59,6 @@ public:
 
 	virtual void* GetNativeWindow() const = 0;
 	
-	static Window* Create(const WindowProps& props = WindowProps());
+	static Scope<Window> Create(const WindowProps& props = WindowProps());
 };
 

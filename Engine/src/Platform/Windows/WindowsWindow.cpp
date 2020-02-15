@@ -20,11 +20,6 @@ static void	GLFWErrorCallback(int error, const char* description)
 	DBG_OUTPUT(std::string("GLFW Error %i " + std::string(description)).c_str(), error, description);
 }
 
-Window* Window::Create(const WindowProps& props)
-{
-	return new WindowsWindow(props);
-}
-
 WindowsWindow::WindowsWindow(const WindowProps& props)
 {
 	PROFILE_FUNCTION();
@@ -139,7 +134,7 @@ void WindowsWindow::Init(const WindowProps & props)
 	m_Data.Height = props.Height;
 	m_Data.PosX = props.PosX;
 	m_Data.PosY = props.PosY;
-	//m_Data.Mode = props.Mode;
+	m_Data.Mode = WindowMode::WINDOWED;
 
 	OUTPUT(std::string("Creating Window " + props.Title + " %d %d \n").c_str(), props.Width, props.Height);
 
@@ -291,8 +286,6 @@ void WindowsWindow::Init(const WindowProps & props)
 			MouseMotionEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
 		});
-
-	SetWindowMode(props.Mode, 0, 0);
 }
 
 void WindowsWindow::Shutdown()

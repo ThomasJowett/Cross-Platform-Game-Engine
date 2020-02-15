@@ -79,12 +79,12 @@ void Renderer2D::EndScene()
 	PROFILE_FUNCTION();
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour& colour, float tilingFactor)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, rotation, colour, tilingFactor);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const float & rotation, const Colour& colour, float tilingFactor)
 {
 	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
@@ -97,12 +97,12 @@ void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, cons
 	RenderCommand::DrawIndexed(s_Data->vertexArray);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float & rotation, const Colour colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const float & rotation, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, rotation, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const Colour colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const float & rotation, const Colour& colour)
 {
 	PROFILE_FUNCTION();
 	s_Data->shader->SetFloat4("u_colour", colour);
@@ -115,22 +115,42 @@ void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, cons
 	RenderCommand::DrawIndexed(s_Data->vertexArray);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Ref<Texture2D>& texture, const Colour& colour)
 {
 	DrawQuad(position, size, texture, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Colour colour)
+void Renderer2D::DrawQuad(const Vector2f & position, const Vector2f & size, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, 0.0f, colour);
 }
 
-void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Colour colour)
+void Renderer2D::DrawQuad(const Vector3f & position, const Vector2f & size, const Colour& colour)
 {
 	DrawQuad(position, size, 0.0f, colour);
+}
+
+void Renderer2D::DrawLine(const Vector2f & start, Vector2f & end, const float & thickness, const Colour & colour)
+{
+	//TODO: draw line
+}
+
+void Renderer2D::DrawLine(const Vector2f & start, Vector2f & end, const Colour & colour)
+{
+	DrawLine(start, end, 1.0f, colour);
+}
+
+void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float & thickness, const Colour & colour)
+{
+	//TODO draw polyline
+}
+
+void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const Colour & colour)
+{
+	DrawPolyline(points, 1.0f, colour);
 }

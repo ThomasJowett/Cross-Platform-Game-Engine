@@ -57,6 +57,15 @@ void ImGuiLayer::OnDetach()
 	ImGui::DestroyContext();
 }
 
+void ImGuiLayer::OnEvent(Event & event)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (io.WantCaptureMouse)
+	{
+		event.Handled = true;
+	}
+}
+
 void ImGuiLayer::OnImGuiRender()
 {
 	static bool showDemoWindow = true;

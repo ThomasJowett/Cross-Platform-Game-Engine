@@ -11,7 +11,7 @@ class DirectX11RendererAPI : public RendererAPI
 	virtual void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) override;
 	virtual void Clear() override;
 
-	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray) override;
+	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMode drawMode = DrawMode::FILL) override;
 
 private:
 	D3D11_VIEWPORT m_Viewport;

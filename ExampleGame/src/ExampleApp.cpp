@@ -13,9 +13,9 @@ ExampleGame::ExampleGame(const WindowProps& props)
 	PushLayer(new ExampleLayer2D());
 	PushOverlay(new ImGuiLayer());
 
-	Application::Get().GetWindow().SetIcon("resources/Circle.png");
+	Application::GetWindow().SetIcon("resources/Circle.png");
 
-	Application::Get().GetWindow().SetWindowMode(props.Mode, props.Width, props.Height);
+	Application::GetWindow().SetWindowMode(WindowMode::BORDERLESS, 256, 144);
 }
 
 void ExampleGame::OnUpdate()

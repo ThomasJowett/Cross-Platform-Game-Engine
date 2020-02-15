@@ -5,13 +5,13 @@
 
 #include "imgui/ImGuiLayer.h"
 
+int main(int argc, char* argv[]);
+
 class Application
 {
 public:
 	Application(const WindowProps& props);
 	virtual ~Application();
-
-	void Run();
 
 	void OnEvent(Event& e);
 	virtual void OnUpdate() = 0;
@@ -23,6 +23,7 @@ public:
 	inline Window& GetWindow() { return *m_Window; }
 
 private:
+	void Run();
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
 
@@ -34,6 +35,7 @@ private:
 	LayerStack m_LayerStack;
 
 	static Application* s_Instance;
+	friend int::main(int argc, char* argv[]);
 };
 
 // To be defined in CLIENT
