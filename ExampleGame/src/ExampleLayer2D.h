@@ -14,7 +14,7 @@ public:
 	virtual void OnImGuiRender() override;
 private:
 	OrthogrpahicCameraController m_CameraController;
-	Ref<VertexArray> m_VertexArray;
+	Ref<VertexArray> m_CubeVertexArray;
 	Colour m_Colour = Colours::RED;
 
 	float m_Position[2] = { 0.0f,0.0f };

@@ -31,6 +31,8 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 	shader->SetMat4("u_ViewProjection", m_SceneData->ViewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);
 
+	CORE_ASSERT(vertexArray, "No data in vertex array");
+
 	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);
 }

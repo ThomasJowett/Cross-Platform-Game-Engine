@@ -8,68 +8,11 @@ ExampleLayer3D::ExampleLayer3D()
 
 void ExampleLayer3D::OnAttach()
 {
-	m_VertexArray = VertexArray::Create();
+	m_CubeVertexArray = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
+	m_SphereVertexArray = GeometryGenerator::CreateSphere(0.5f, 50, 50);
+	m_GridVertexArray = GeometryGenerator::CreateGrid(10.0f, 10.0f, 5, 5, 2.0f, 2.0f);
 
-	float vertices[] =
-	{
-		//front face
-		-0.5f, -0.5f, 0.5f, 0.0f, 0.0f,//0
-		 0.5f, -0.5f, 0.5f, 1.0f, 0.0f,
-		 0.5f,  0.5f, 0.5f, 1.0f, 1.0f,
-		-0.5f,  0.5f, 0.5f, 0.0f, 1.0f,
-		//back face
-		-0.5f, -0.5f, -0.5f, 1.0f, 0.0f,//4
-		 0.5f, -0.5f, -0.5f, 0.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-		//right face
-		 0.5f, -0.5f,  0.5f, 0.0f, 0.0f,//8
-		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-		 0.5f,  0.5f,  0.5f, 0.0f, 1.0f,
-		 //left face
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,//12
-		-0.5f, -0.5f,  0.5f, 1.0f, 0.0f,
-		-0.5f,  0.5f,  0.5f, 1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-		//top face
-		-0.5f,  0.5f,  0.5f, 0.0f, 0.0f,//16
-		 0.5f,  0.5f,  0.5f, 1.0f, 0.0f,
-		 0.5f,  0.5f, -0.5f, 1.0f, 1.0f,
-		-0.5f,  0.5f, -0.5f, 0.0f, 1.0f,
-	   //bottom face
-		-0.5f, -0.5f, -0.5f, 0.0f, 0.0f,//20
-		 0.5f, -0.5f, -0.5f, 1.0f, 0.0f,
-		 0.5f, -0.5f,  0.5f, 1.0f, 1.0f,
-		-0.5f, -0.5f,  0.5f, 0.0f, 1.0f
-	};
-
-	unsigned int indices[] = 
-	{ 
-		0,1,2, 0,2,3, 
-		4,5,6, 4,6,7,
-		8,9,10, 8,10,11,
-		12,13,14, 12,14,15,
-		16,17,18, 16,18,19,
-		20,21,22, 20,22,23
-	};
-
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(indices, 36);
-
-	BufferLayout layout = {
-		{ShaderDataType::Float3, "a_position"},
-		{ShaderDataType::Float2, "a_texCoord"}
-	};
-
-	vertexBuffer->SetLayout(layout);
-
-	m_VertexArray->AddVertexBuffer(vertexBuffer);
-	m_VertexArray->SetIndexBuffer(indexBuffer);
-
-	m_ShaderLibrary.Load("Texture");
+	m_ShaderLibrary.Load("NormalMap");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 }
 
@@ -81,7 +24,7 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("Texture");
+	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
 	shader->Bind();
 
 	shader->SetInt("u_texture", 0);
@@ -93,7 +36,13 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 	Renderer::BeginScene(m_CameraController.GetCamera());
 	m_Texture->Bind();
 
-	Renderer::Submit(shader, m_VertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] }) 
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1]-1.0f, m_Position[2] }) 
+		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
+	
+	Renderer::Submit(shader, m_SphereVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1]+1.0f, m_Position[2] })
+		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
+	
+	Renderer::Submit(shader, m_GridVertexArray, Matrix4x4::Translate({ m_Position[0] +1.0f, m_Position[1] + 1.0f, m_Position[2] })
 		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
 
 	Renderer::EndScene();
@@ -101,9 +50,9 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 
 void ExampleLayer3D::OnFixedUpdate()
 {
-	m_Rotation[0] += 0.001f;
-	m_Rotation[1] += 0.001f;
-	m_Rotation[2] += 0.001f;
+	//m_Rotation[0] += 0.001f;
+	//m_Rotation[1] += 0.001f;
+	//m_Rotation[2] += 0.001f;
 }
 
 void ExampleLayer3D::OnEvent(Event& e)
@@ -115,7 +64,7 @@ void ExampleLayer3D::OnImGuiRender()
 {
 	ImGui::Begin("Settings 3D");
 	ImGui::Text(std::to_string(m_CameraController.GetZoom()).c_str());
-	ImGui::DragFloat3("Square Position", m_Position,0.01f);
-	ImGui::DragFloat3("Square Rotation", m_Rotation, 0.001f);
+	ImGui::DragFloat3("Cube Position", m_Position,0.01f);
+	ImGui::DragFloat3("Cube Rotation", m_Rotation, 0.001f);
 	ImGui::End();
 }

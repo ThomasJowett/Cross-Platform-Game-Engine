@@ -14,5 +14,5 @@ public:
 /* Entry Point*/
 Application* CreateApplication()
 {
-	return new ExampleGame(WindowProps("Example Game", 426, 240, 100, 100));
+	return new ExampleGame(WindowProps("Example Game", 1920, 1080, 100, 100));
 }

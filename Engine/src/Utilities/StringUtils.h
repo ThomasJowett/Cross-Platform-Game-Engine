@@ -26,9 +26,9 @@ static std::vector<std::string> SplitString(const std::string &s, char delim)
 	std::vector<std::string> elems;
 
 	const char* cstr = s.c_str();
-	unsigned int strLength = s.length();
-	unsigned int start = 0;
-	unsigned int end = 0;
+	size_t strLength = s.length();
+	size_t start = 0;
+	size_t end = 0;
 
 	while (end <= strLength)
 	{

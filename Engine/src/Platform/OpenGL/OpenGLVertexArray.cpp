@@ -63,13 +63,13 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 	const BufferLayout& layout = vertexBuffer->GetLayout();
 	for (const BufferElement& element : layout)
 	{
-		glEnableVertexAttribArray(index);
-		glVertexAttribPointer(index, element.Count(),
+		glEnableVertexAttribArray(m_VertexBufferIndex);
+		glVertexAttribPointer(m_VertexBufferIndex, element.Count(),
 			ShaderDataTypeToOpenGLBaseType(element.Type),
 			element.Normalized ? GL_TRUE : GL_FALSE,
 			layout.GetStride(),
 			(const void*)element.Offset);
-		index++;
+		m_VertexBufferIndex++;
 	}
 
 	m_VertexBuffers.push_back(vertexBuffer);

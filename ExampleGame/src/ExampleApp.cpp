@@ -15,7 +15,7 @@ ExampleGame::ExampleGame(const WindowProps& props)
 
 	Application::GetWindow().SetIcon("resources/Circle.png");
 
-	Application::GetWindow().SetWindowMode(WindowMode::BORDERLESS, 256, 144);
+	Application::GetWindow().SetWindowMode(WindowMode::WINDOWED, 1920, 1080);
 }
 
 void ExampleGame::OnUpdate()

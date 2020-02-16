@@ -18,7 +18,9 @@ public:
 private:
 	ShaderLibrary m_ShaderLibrary;
 	OrthogrpahicCameraController m_CameraController;
-	Ref<VertexArray> m_VertexArray;
+	Ref<VertexArray> m_CubeVertexArray;
+	Ref<VertexArray> m_SphereVertexArray;
+	Ref<VertexArray> m_GridVertexArray;
 
 	Ref<Texture2D> m_Texture;
 

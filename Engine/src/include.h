@@ -28,3 +28,7 @@
 #include "Renderer/GraphicsContext.h"
 #include "Renderer/RendererAPI.h"
 #include "Renderer/Texture.h"
+
+#include "Utilities/GeometryGenerator.h"
+#include "Utilities/Random.h"
+#include "Utilities/StringUtils.h"

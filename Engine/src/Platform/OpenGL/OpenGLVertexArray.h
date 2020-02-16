@@ -23,5 +23,6 @@ private:
 	Ref<IndexBuffer> m_IndexBuffer;
 
 	uint32_t m_RendererID;
+	uint32_t m_VertexBufferIndex = 0;
 	
 };
