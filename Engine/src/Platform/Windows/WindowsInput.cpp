@@ -9,14 +9,14 @@ Scope<Input> Input::s_Instance = CreateScope<WindowsInput>();
 
 bool WindowsInput::IsKeyPressedImpl(int keycode)
 {
-	GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+	GLFWwindow* window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 	int state = glfwGetKey(window, keycode);
 	return (state == GLFW_PRESS) || (state == GLFW_REPEAT);
 }
 
 bool WindowsInput::IsMouseButtonPressedImpl(int button)
 {
-	GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+	GLFWwindow* window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 	int state = glfwGetMouseButton(window, button);
 	return state == GLFW_PRESS;
 }
@@ -24,7 +24,7 @@ bool WindowsInput::IsMouseButtonPressedImpl(int button)
 std::pair<double, double> WindowsInput::GetMousePosImpl()
 {
 	double x, y;
-	GLFWwindow* window = static_cast<GLFWwindow*>(Application::Get().GetWindow().GetNativeWindow());
+	GLFWwindow* window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 	glfwGetCursorPos(window, &x, &y);
 	return { x, y };
 }

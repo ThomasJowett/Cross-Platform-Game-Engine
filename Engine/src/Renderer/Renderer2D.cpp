@@ -6,6 +6,24 @@
 
 #include "RenderCommand.h"
 
+static const size_t MaxQuadCount = 1000;
+static const size_t MaxVertexCount = MaxQuadCount * 4;
+static const size_t MaxIndexCount = MaxQuadCount * 6;
+static const size_t MaxTextures = 32; //TODO query the hardware to calculate the maximum number of textures
+
+struct Vertex
+{
+	Vector3f Position;
+	Colour colour;
+	Vector2f TexCoords;
+	float TexIndex;
+};
+
+struct RendererData
+{
+
+};
+
 struct Renderer2DStorage
 {
 	Ref<VertexArray> vertexArray;

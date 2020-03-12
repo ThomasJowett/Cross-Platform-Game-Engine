@@ -18,7 +18,7 @@ public:
 private:
 
 	ShaderLibrary m_ShaderLibrary;
-	PerspectiveCameraController m_CameraController;
+	OrthogrpahicCameraController m_CameraController;
 
 	Ref<VertexArray> m_CubeVertexArray;
 

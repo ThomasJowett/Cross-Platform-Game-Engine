@@ -16,6 +16,8 @@ Application::Application(const WindowProps& props)
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	Renderer::Init();
+
+	PushOverlay(new ImGuiLayer());
 }
 
 
@@ -70,13 +72,15 @@ void Application::Run()
 			}
 		}
 
-		m_ImGuiLayer->Begin();
-		for each(Layer* layer in m_LayerStack)
+		if (m_ImGuiLayer)
 		{
-			layer->OnImGuiRender();
+			m_ImGuiLayer->Begin();
+			for each (Layer * layer in m_LayerStack)
+			{
+				layer->OnImGuiRender();
+			}
+			m_ImGuiLayer->End();
 		}
-		m_ImGuiLayer->End();
-
 		m_Window->OnUpdate();
 	}
 }

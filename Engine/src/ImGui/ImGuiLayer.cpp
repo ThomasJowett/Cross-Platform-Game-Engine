@@ -13,7 +13,7 @@
 #include "GLAD/glad.h"
 
 ImGuiLayer::ImGuiLayer()
-	:Layer("ImGui")
+	:Layer("ImGui"), m_UsingImGui(false)
 {
 }
 
@@ -39,13 +39,12 @@ void ImGuiLayer::OnAttach()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	Application& app = Application::Get();
-	GLFWwindow* window = static_cast<GLFWwindow*>(app.GetWindow().GetNativeWindow());
+	GLFWwindow* window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 
 	//Setup Platform/Renderer bindings
 
-	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 460");
+	if (ImGui_ImplGlfw_InitForOpenGL(window, true))
+		m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 }
 
 void ImGuiLayer::OnDetach()
@@ -57,7 +56,7 @@ void ImGuiLayer::OnDetach()
 	ImGui::DestroyContext();
 }
 
-void ImGuiLayer::OnEvent(Event & event)
+void ImGuiLayer::OnEvent(Event& event)
 {
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.WantCaptureMouse)
@@ -75,7 +74,6 @@ void ImGuiLayer::OnImGuiRender()
 void ImGuiLayer::Begin()
 {
 	PROFILE_FUNCTION();
-
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();

@@ -20,9 +20,10 @@ public:
 	void PushOverlay(Layer* layer);
 
 	static inline Application& Get() { return *s_Instance; }
-	inline Window& GetWindow() { return *m_Window; }
+	static Window& GetWindow() { return Get().GetWindowImpl(); }
 
 private:
+	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);

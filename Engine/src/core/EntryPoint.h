@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	delete app;
 	PROFILE_END_SESSION("Shutdown");
-	return 0;
+	return EXIT_SUCCESS;
 }
 
 //Checks if another instance of the game is already running
@@ -51,5 +51,4 @@ bool AnotherInstance()
 	}
 	return false;
 }
-
 #endif // __WINDOWS__

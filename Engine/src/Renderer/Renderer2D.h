@@ -38,4 +38,12 @@ public:
 	static void DrawPolyline(const std::vector<Vector2f>& points, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
 	static void DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour = Colours::WHITE);
 
+	struct Stats
+	{
+		uint32_t DrawCount = 0;
+		uint32_t QuadCount = 0;
+	};
+
+	static const Stats& GetStats();
+	static void ResetStats();
 };
