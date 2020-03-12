@@ -33,6 +33,7 @@
 
 # Directories
 .vs/
+.vscode/
 bin/
 bin-int/
 

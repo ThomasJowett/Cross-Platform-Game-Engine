@@ -1,2 +1,3 @@
 cd $(dirname$0)
-./vendor/bin/premake5 gmake2
+chmod +x vendor/bin/premake/premake5
+./vendor/bin/premake/premake5 gmake2
