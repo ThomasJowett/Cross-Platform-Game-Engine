@@ -48,7 +48,7 @@ bin-int/
 *.ini
 
 #makefiles
-makefile
+Makefile
 /ExampleGame/Profile-Runtime.json
 /ExampleGame/Profile-Shutdown.json
 /ExampleGame/Profile-Startup.json
