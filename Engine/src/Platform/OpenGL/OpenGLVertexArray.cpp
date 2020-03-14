@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLVertexArray.h"
 
-#include <GLAD/glad.h>
+#include <glad/glad.h>
 
 // Temporary function
 static GLenum ShaderDataTypeToOpenGLBaseType(ShaderDataType type)

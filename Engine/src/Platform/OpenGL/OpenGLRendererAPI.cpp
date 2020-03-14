@@ -2,7 +2,7 @@
 #include "OpenGLRendererAPI.h"
 #include "Logging/Debug.h"
 
-#include <GLAD/glad.h>
+#include <glad/glad.h>
 
 void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity,
 	int length, const char* message, const void* userParam)

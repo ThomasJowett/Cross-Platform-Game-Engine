@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLBuffer.h"
 
-#include <GLAD/glad.h>
+#include <glad/glad.h>
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(float * vertices, uint32_t size)
 {

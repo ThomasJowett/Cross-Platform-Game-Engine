@@ -2,7 +2,7 @@
 #include "OpenGLShader.h"
 
 #include "Core/core.h"
-#include"GLAD/glad.h"
+#include"glad/glad.h"
 
 #include <fstream>
 #include <filesystem>

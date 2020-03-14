@@ -10,7 +10,7 @@
 //TEMPORARY
 //TODO: remove dependencies on GLAD and GLFW
 #include "GLFW/glfw3.h"
-#include "GLAD/glad.h"
+#include "glad/glad.h"
 
 ImGuiLayer::ImGuiLayer()
 	:Layer("ImGui"), m_UsingImGui(false)

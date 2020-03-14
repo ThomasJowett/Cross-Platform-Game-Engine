@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLContext.h"
 
-#include <GLAD/glad.h>
+#include <glad/glad.h>
 
 OpenGLContext::OpenGLContext(GLFWwindow * windowHandle)
 	:m_windowHandle(windowHandle)
