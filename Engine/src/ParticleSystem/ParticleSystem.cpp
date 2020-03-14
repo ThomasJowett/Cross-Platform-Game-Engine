@@ -12,7 +12,7 @@ ParticleSystem::~ParticleSystem()
 
 void ParticleSystem::OnUpdate(float deltaTime)
 {
-	for each (Particle particle in m_ParticlePool)
+	for (Particle particle : m_ParticlePool)
 	{
 		if (!particle.Active)
 			continue;

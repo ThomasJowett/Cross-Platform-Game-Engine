@@ -1,6 +1,6 @@
 #pragma once
 #include <include.h>
-#include "Core/EntryPoint.h"
+#include "Core/EntryPoint.cpp"
 
 class ExampleGame : public Application
 {

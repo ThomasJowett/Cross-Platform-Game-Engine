@@ -52,7 +52,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				for each(Layer* layer in m_LayerStack)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
 				}
@@ -65,7 +65,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				for each(Layer* layer in m_LayerStack)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnUpdate((float)frameTime);
 				}
@@ -75,7 +75,7 @@ void Application::Run()
 		if (m_ImGuiLayer)
 		{
 			m_ImGuiLayer->Begin();
-			for each (Layer * layer in m_LayerStack)
+			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnImGuiRender();
 			}
@@ -85,7 +85,7 @@ void Application::Run()
 	}
 }
 
-void Application::OnEvent(Event & e)
+void Application::OnEvent(Event& e)
 {
 	PROFILE_FUNCTION();
 
@@ -101,7 +101,7 @@ void Application::OnEvent(Event & e)
 	}
 }
 
-void Application::PushLayer(Layer * layer)
+void Application::PushLayer(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -109,7 +109,7 @@ void Application::PushLayer(Layer * layer)
 	layer->OnAttach();
 }
 
-void Application::PushOverlay(Layer * layer)
+void Application::PushOverlay(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -117,13 +117,13 @@ void Application::PushOverlay(Layer * layer)
 	layer->OnAttach();
 }
 
-bool Application::OnWindowClose(WindowCloseEvent & e)
+bool Application::OnWindowClose(WindowCloseEvent& e)
 {
 	m_Running = false;
 	return true;
 }
 
-bool Application::OnWindowResize(WindowResizeEvent & e)
+bool Application::OnWindowResize(WindowResizeEvent& e)
 {
 	PROFILE_FUNCTION();
 

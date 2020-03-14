@@ -381,7 +381,7 @@ public:
     {
         ASSERT(hasChildren(), "Composite has no children");
 
-		for each(Ref<Node> child in m_Children)
+		for (Ref<Node> child : m_Children)
 		{
 			Node::Status status = child->tick(deltaTime);
 
@@ -409,7 +409,7 @@ public:
     {
         ASSERT(hasChildren(), "Composite has no children");
 
-		for each(Ref<Node> child in m_Children)
+		for (Ref<Node> child : m_Children)
 		{
 			Node::Status status = child->tick(deltaTime);
 

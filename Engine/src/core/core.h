@@ -4,7 +4,7 @@
 #ifdef __WINDOWS__ //windows x64 & x86
 
 #elif defined(__linux__)
-	#error "Linux is not supported!"
+	#error "Linux is not yet supported!"
 
 #elif defined(__APPLE__) || defined(__MACH__)
 	#include <TargetConditionals.h>
@@ -29,8 +29,13 @@
 #endif
 
 #ifdef ENABLE_ASSERTS
-	#define ASSERT(x, ...) {if(!(x)){__debugbreak();}}
-	#define CORE_ASSERT(x,...){if(!(x)){__debugbreak();}}
+	#ifdef _MSC_VER
+		#define ASSERT(x, ...) {if(!(x)){__debugbreak();}}
+		#define CORE_ASSERT(x,...){if(!(x)){__debugbreak();}}
+	#else
+		#define ASSERT(x, ...) {if(!(x)){__builtin_trap();}}
+		#define CORE_ASSERT(x,...){if(!(x)){__builtin_trap();}}
+	#endif
 #else
 	#define ASSERT(x, ...)
 	#define CORE_ASSERT(z, ...)

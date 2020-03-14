@@ -1,4 +1,3 @@
-#pragma once
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
