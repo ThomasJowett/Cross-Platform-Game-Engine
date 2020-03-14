@@ -26,7 +26,7 @@ namespace Astar
 	uint32_t Heuristic::Octagonal(GridCoord source, GridCoord goal)
 	{
 		auto delta = std::move(GetDelta(source, goal));
-		return static_cast <uint32_t>(10 * (delta.x + delta.y) + (-6) * min(delta.x, delta.y));
+		return static_cast <uint32_t>(10 * (delta.x + delta.y) + (-6) * ((delta.x < delta.y) ? delta.x : delta.y));
 	}
 
 	Generator::Generator()
@@ -40,7 +40,7 @@ namespace Astar
 		};
 	}
 
-	Node * Generator::FindNodeOnList(NodeSet & nodes, GridCoord coordinates)
+	Node* Generator::FindNodeOnList(NodeSet& nodes, GridCoord coordinates)
 	{
 		for (Node* node : nodes)
 		{
@@ -52,17 +52,17 @@ namespace Astar
 		return nullptr;
 	}
 
-	void Generator::ReleaseNodes(NodeSet & nodes)
+	void Generator::ReleaseNodes(NodeSet& nodes)
 	{
 		for (auto it = nodes.begin(); it != nodes.end();)
 		{
-			delete *it;
+			delete* it;
 			it = nodes.erase(it);
 
 		}
 	}
 
-	Generator * Generator::GetInstance()
+	Generator* Generator::GetInstance()
 	{
 		if (instance == 0)
 		{
@@ -157,7 +157,7 @@ namespace Astar
 		return std::vector<Vector2f>();
 	}
 
-	Node::Node(GridCoord coordinates, Node * parent)
+	Node::Node(GridCoord coordinates, Node* parent)
 		:m_Parent(parent), m_Coordinates(coordinates)
 	{
 		G = H = 0;

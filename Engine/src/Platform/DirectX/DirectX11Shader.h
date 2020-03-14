@@ -1,5 +1,5 @@
 #pragma once
-
+#ifdef __WINDOWS__
 #include "Renderer/Shader.h"
 
 #include <d3d11_1.h>
@@ -27,3 +27,4 @@ private:
 
 	ID3D11VertexShader* m_VertexShader;
 };
+#endif

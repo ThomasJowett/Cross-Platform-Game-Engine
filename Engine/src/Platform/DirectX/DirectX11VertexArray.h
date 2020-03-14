@@ -1,4 +1,5 @@
 #pragma once
+#ifdef __WINDOWS__
 
 #include "Renderer/VertexArray.h"
 
@@ -22,3 +23,4 @@ private:
 	std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 	Ref<IndexBuffer> m_IndexBuffer;
 };
+#endif

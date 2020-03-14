@@ -1,4 +1,5 @@
 #include "stdafx.h"
+#ifdef __WINDOWS__
 #include "DirectX11Shader.h"
 
 DirectX11Shader::DirectX11Shader(const std::string & name, const std::string & fileDirectory)
@@ -40,3 +41,4 @@ void DirectX11Shader::SetInt(const char * name, const int value)
 void DirectX11Shader::SetFloat(const char * name, const float value)
 {
 }
+#endif

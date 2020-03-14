@@ -45,7 +45,6 @@ enum EventCategory
 
 class Event
 {
-	friend class Event;
 public:
 	virtual EventType GetEventType() const = 0;
 	virtual const char* GetName() const = 0;

@@ -3,7 +3,7 @@
 #include "LayerStack.h"
 #include "Window.h"
 
-#include "imgui/ImGuiLayer.h"
+#include "ImGui/ImGuiLayer.h"
 
 int main(int argc, char* argv[]);
 
