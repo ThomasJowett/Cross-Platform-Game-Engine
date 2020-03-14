@@ -1,5 +1,4 @@
 #pragma once
-#ifdef __WINDOWS__
 
 #include "Renderer/Texture.h"
 
@@ -23,4 +22,3 @@ private:
 	std::string m_Path;
 	uint32_t m_Width, m_Height;
 };
-#endif

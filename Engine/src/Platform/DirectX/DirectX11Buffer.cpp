@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef __WINDOWS__
 #include "DirectX11Buffer.h"
 
 DirectX11IndexBuffer::DirectX11IndexBuffer(uint32_t * indices, uint32_t count)
@@ -33,4 +32,3 @@ void DirectX11VertexBuffer::Bind() const
 void DirectX11VertexBuffer::UnBind() const
 {
 }
-#endif

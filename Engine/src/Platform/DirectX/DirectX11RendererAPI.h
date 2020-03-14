@@ -1,5 +1,4 @@
 #pragma once
-#ifdef __WINDOWS__
 
 #include "Renderer/RendererAPI.h"
 
@@ -20,4 +19,3 @@ private:
 
 	Colour m_ClearColour;
 };
-#endif

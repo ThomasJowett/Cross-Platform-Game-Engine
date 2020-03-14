@@ -1,5 +1,4 @@
 #pragma once
-#ifdef __WINDOWS__
 #include <d3d11_1.h>
 
 #include "Core/core.h"
@@ -18,4 +17,3 @@ private:
 
 	IDXGISwapChain* m_SwapChain;
 };
-#endif

@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef __WINDOWS__
 #include "DirectX11RendererAPI.h"
 
 bool DirectX11RendererAPI::Init()
@@ -70,4 +69,3 @@ void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, Draw
 	m_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_ImmediateContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);
 }
-#endif

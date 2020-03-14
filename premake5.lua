@@ -74,6 +74,18 @@ project "Engine"
 		{
 			"opengl32.lib"
 		}
+		
+		excludes
+		{
+			"%{prj.name}/src/Platform/Android**.h",
+			"%{prj.name}/src/Platform/Android**.cpp",
+			"%{prj.name}/src/Platform/iOS**.h",
+			"%{prj.name}/src/Platform/iOS**.cpp",
+			"%{prj.name}/src/Platform/Linux**.h",
+			"%{prj.name}/src/Platform/Linux**.cpp",
+			"%{prj.name}/src/Platform/Mac OS**.h",
+			"%{prj.name}/src/Platform/Mac OS**.cpp"
+		}
 	
 	filter "system:linux"
 		pic "on"
@@ -85,10 +97,20 @@ project "Engine"
 		{
 			"xrandr",
 			"xi",
-			"GLEW",
-			"GLU",
 			"GL",
 			"X11"
+		}
+		
+		excludes
+		{
+			"%{prj.name}/src/Platform/Android**.h",
+			"%{prj.name}/src/Platform/Android**.cpp",
+			"%{prj.name}/src/Platform/DirectX**.h",
+			"%{prj.name}/src/Platform/DirectX**.cpp",
+			"%{prj.name}/src/Platform/iOS**.h",
+			"%{prj.name}/src/Platform/iOS**.cpp",
+			"%{prj.name}/src/Platform/Mac OS**.h",
+			"%{prj.name}/src/Platform/Mac OS**.cpp"
 		}
 		
 		defines
@@ -159,17 +181,20 @@ project "ExampleGame"
 		links
 		{
 			"GLFW",
-			"Glad",
+			"GLAD",
 			"ImGui",
 			"Xrandr",
 			"Xi",
-			"GLEW",
-			"GLU",
 			"GL",
 			"X11",
 			"dl",
-			"pTread",
+			"pthread",
 			"stdc++fs"
+		}
+		
+		defines
+		{
+			"__linux__"
 		}
 
 	filter "configurations:Debug"

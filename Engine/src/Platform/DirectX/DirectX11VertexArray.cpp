@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef __WINDOWS__
 #include "DirectX11VertexArray.h"
 
 DirectX11VertexArray::DirectX11VertexArray()
@@ -45,4 +44,3 @@ const Ref<IndexBuffer>& DirectX11VertexArray::GetIndexBuffer() const
 {
 	return m_IndexBuffer;
 }
-#endif

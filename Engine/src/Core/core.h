@@ -2,7 +2,6 @@
 #include <memory>
 
 #ifdef __WINDOWS__ //windows x64 & x86
-	#define NOMINMAX
 
 #elif defined(__linux__)
 	#error "Linux is not yet supported!"

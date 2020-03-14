@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#ifdef __WINDOWS__
 #include "DirectX11Texture.h"
 
 DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
@@ -26,4 +25,3 @@ std::string DirectX11Texture2D::GetName() const
 {
 	return m_Path;
 }
-#endif
