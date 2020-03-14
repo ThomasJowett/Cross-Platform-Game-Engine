@@ -1,3 +1,5 @@
+#include "stdafx.h"
+#include "Application.h"
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
