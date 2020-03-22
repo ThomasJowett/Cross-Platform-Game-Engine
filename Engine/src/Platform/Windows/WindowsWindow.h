@@ -29,7 +29,7 @@ public:
 
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0);
 
-	inline virtual void* GetNativeWindow() const override { return m_Window; }
+	inline virtual std::any GetNativeWindow() const override { return m_Window; }
 
 private:
 	virtual void Init(const WindowProps& props);

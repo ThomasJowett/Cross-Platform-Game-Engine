@@ -39,7 +39,7 @@ void ImGuiLayer::OnAttach()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	GLFWwindow* window = static_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
+	GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 
 	//Setup Platform/Renderer bindings
 
