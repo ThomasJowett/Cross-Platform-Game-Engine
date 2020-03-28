@@ -3,24 +3,32 @@
 
 #include "imgui.h"
 
-void ImGuiConsole::AddMessage(Ref<Message> message)
+uint16_t ImGuiConsole::s_MessageBufferCapacity = 200;
+uint16_t ImGuiConsole::s_MessageBufferSize = 0;
+uint16_t ImGuiConsole::s_MessageBufferBegin = 0;
+std::vector<Ref<ImGuiConsole::Message>> ImGuiConsole::s_MessageBuffer(s_MessageBufferCapacity);
+
+void ImGuiConsole::AddMessage(const std::string& message, Message::Level level)
 {
-	if (message->m_Level == Message::Level::Invalid)
+	Ref<Message> messageRef = CreateRef<Message>(message, level);
+
+	if (messageRef->m_Level == Message::Level::Invalid)
 		return;
-	*(s_MessageBuffer.begin() + s_MessageBufferBegin) = message;
+	*(s_MessageBuffer.begin() + s_MessageBufferBegin) = messageRef;
 
 	if (++s_MessageBufferBegin == s_MessageBufferCapacity)
 		s_MessageBufferBegin = 0;
 	if (s_MessageBufferSize < s_MessageBufferCapacity)
 		s_MessageBufferSize++;
 
-	s_RequestScrollToBottom = s_AllowScrollingToBottom;
+	//m_RequestScrollToBottom = m_AllowScrollingToBottom;
 }
 
 void ImGuiConsole::Clear()
 {
 	for (auto message = s_MessageBuffer.begin(); message != s_MessageBuffer.end(); message++)
 		(*message) = std::make_shared<Message>();
+
 	s_MessageBufferBegin = 0;
 }
 
@@ -29,14 +37,23 @@ void ImGuiConsole::OnImGuiRender(bool* show)
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	ImGui::Begin("Console", show);
 	{
-		ImGuiRendering::ImGuiRenderHeader();
+		ImGuiRenderHeader();
 		ImGui::Separator();
-		ImGuiRendering::ImGuiRenderMessages();
+		ImGuiRenderMessages();
 	}
 	ImGui::End();
 }
 
-void ImGuiConsole::ImGuiRendering::ImGuiRenderHeader()
+ImGuiConsole::ImGuiConsole()
+{
+	m_DisplayScale = 1.0f;
+
+	m_MessageBufferRenderFilter = Message::Level::Trace;
+	m_AllowScrollingToBottom = true;
+	m_RequestScrollToBottom = false;
+}
+
+void ImGuiConsole::ImGuiRenderHeader()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	const float spacing = style.ItemInnerSpacing.x;
@@ -50,7 +67,7 @@ void ImGuiConsole::ImGuiRendering::ImGuiRenderHeader()
 	// Button to quickly change level left
 	if (ImGui::ArrowButton("##MessageRenderFilter_L", ImGuiDir_Left))
 	{
-		s_MessageBufferRenderFilter = Message::GetLowerLevel(s_MessageBufferRenderFilter);
+		m_MessageBufferRenderFilter = Message::GetLowerLevel(m_MessageBufferRenderFilter);
 	}
 
 	ImGui::SameLine(0.0f, spacing);
@@ -59,14 +76,14 @@ void ImGuiConsole::ImGuiRendering::ImGuiRenderHeader()
 	ImGui::PushItemWidth(ImGui::CalcTextSize("Critical").x * 1.36f);
 	if (ImGui::BeginCombo(
 		"##MessageRenderFilter",
-		Message::GetLevelName(s_MessageBufferRenderFilter),
+		Message::GetLevelName(m_MessageBufferRenderFilter),
 		ImGuiComboFlags_NoArrowButton))
 	{
 		for (auto level = Message::s_Levels.begin(); level != Message::s_Levels.end(); level++)
 		{
-			bool is_selected = (s_MessageBufferRenderFilter == *level);
+			bool is_selected = (m_MessageBufferRenderFilter == *level);
 			if (ImGui::Selectable(Message::GetLevelName(*level), is_selected))
-				s_MessageBufferRenderFilter = *level;
+				m_MessageBufferRenderFilter = *level;
 			if (is_selected)
 				ImGui::SetItemDefaultFocus();
 		}
@@ -79,7 +96,7 @@ void ImGuiConsole::ImGuiRendering::ImGuiRenderHeader()
 	// Buttons to quickly change level right
 	if (ImGui::ArrowButton("##MessageRenderFilter_R", ImGuiDir_Right))
 	{
-		s_MessageBufferRenderFilter = Message::GetHigherLevel(s_MessageBufferRenderFilter);
+		m_MessageBufferRenderFilter = Message::GetHigherLevel(m_MessageBufferRenderFilter);
 	}
 
 	ImGui::SameLine(0.0f, spacing);
@@ -94,3 +111,145 @@ void ImGuiConsole::ImGuiRendering::ImGuiRenderHeader()
 		ImGui::EndPopup();
 	}
 }
+
+void ImGuiConsole::ImGuiRenderSettings()
+{
+	const float maxWidth = ImGui::CalcTextSize("Scroll to bottom").x * 1.1f;
+	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x + ImGui::CalcTextSize(" ").x;
+
+	// checkbox for scrolling lock
+	ImGui::AlignFirstTextHeightToWidgets();
+	ImGui::Text("Scroll to bottom");
+	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Scroll to bottom").x);
+	ImGui::Checkbox("##ScrollToBottom", &m_AllowScrollingToBottom);
+
+	ImGui::SameLine(0.0f, spacing);
+
+	// Button to clear the console
+	ImGui::SameLine(0.0f, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Clear console").x + 1.0f);
+	if (ImGui::Button("Clear Console"))
+		Clear();
+
+	// Slider for font scale
+	ImGui::AlignFirstTextHeightToWidgets();
+	ImGui::Text("Display scale");
+	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Display Scale").x);
+	ImGui::PushItemWidth(maxWidth * 1.25f / 1.1f);
+	ImGui::SliderFloat("##DisplayScale", &m_DisplayScale, 0.5f, 4.0f, "%.1f");
+	ImGui::PopItemWidth();
+}
+
+void ImGuiConsole::ImGuiRenderMessages()
+{
+	ImGui::BeginChild("ScrollRegion", ImVec2(0, 0), false, ImGuiWindowFlags_HorizontalScrollbar);
+	{
+		ImGui::SetWindowFontScale(m_DisplayScale);
+
+		auto messageStart = s_MessageBuffer.begin() + s_MessageBufferBegin;
+		if (*messageStart)// If contains old message here
+			for (auto message = messageStart; message != s_MessageBuffer.end(); message++)
+				(*message)->OnImGuiRender(m_MessageBufferRenderFilter);
+		if (s_MessageBufferBegin != 0) // Skipped first message in vector
+			for (auto message = s_MessageBuffer.begin(); message != messageStart; message++)
+				(*message)->OnImGuiRender(m_MessageBufferRenderFilter);
+
+		if (m_RequestScrollToBottom && ImGui::GetScrollMaxY() > 0)
+		{
+			ImGui::SetScrollY(ImGui::GetScrollMaxY());
+			m_RequestScrollToBottom = false;
+		}
+	}
+	ImGui::EndChild();
+}
+
+std::vector<ImGuiConsole::Message::Level> ImGuiConsole::Message::s_Levels
+{
+	ImGuiConsole::Message::Level::Trace,
+	//ImGuiConsole::Message::Level::Debug,
+	ImGuiConsole::Message::Level::Info,
+	ImGuiConsole::Message::Level::Warn,
+	ImGuiConsole::Message::Level::Error,
+	ImGuiConsole::Message::Level::Critical,
+	ImGuiConsole::Message::Level::Off
+};
+
+ImGuiConsole::Message::Message(const std::string& message, Level level)
+	:m_Message(message), m_Level(level)
+{
+
+}
+
+void ImGuiConsole::Message::OnImGuiRender(Message::Level filter)
+{
+	if (m_Level != Level::Invalid && m_Level >= filter)
+	{
+		Colour colour = GetRenderColour(m_Level);
+		ImGui::PushStyleColor(ImGuiCol_Text, { colour.r, colour.g, colour.b, colour.a });
+		ImGui::TextUnformatted(m_Message.c_str());
+		ImGui::PopStyleColor();
+	}
+}
+
+ImGuiConsole::Message::Level ImGuiConsole::Message::GetLowerLevel(Level level)
+{
+	switch (level)
+	{
+	case ImGuiConsole::Message::Level::Off:			return ImGuiConsole::Message::Level::Critical;
+	case ImGuiConsole::Message::Level::Critical:	return ImGuiConsole::Message::Level::Error;
+	case ImGuiConsole::Message::Level::Error:		return ImGuiConsole::Message::Level::Warn;
+	case ImGuiConsole::Message::Level::Warn:		//return ImGuiConsole::Message::Level::Debug;
+	case ImGuiConsole::Message::Level::Debug:		return ImGuiConsole::Message::Level::Info;
+	case ImGuiConsole::Message::Level::Info:
+	case ImGuiConsole::Message::Level::Trace:		return ImGuiConsole::Message::Level::Trace;
+	default:
+		return ImGuiConsole::Message::Level::Invalid;
+	}
+}
+
+ImGuiConsole::Message::Level ImGuiConsole::Message::GetHigherLevel(Level level)
+{
+	switch (level)
+	{
+	case ImGuiConsole::Message::Level::Trace:		return ImGuiConsole::Message::Level::Info;
+	case ImGuiConsole::Message::Level::Info:		//return ImGuiConsole::Message::Level::Debug;
+	case ImGuiConsole::Message::Level::Debug:		return ImGuiConsole::Message::Level::Warn;
+	case ImGuiConsole::Message::Level::Warn:
+	case ImGuiConsole::Message::Level::Error:		return ImGuiConsole::Message::Level::Error;
+	case ImGuiConsole::Message::Level::Critical:	return ImGuiConsole::Message::Level::Critical;
+	case ImGuiConsole::Message::Level::Off:			return ImGuiConsole::Message::Level::Off;
+	default:
+		return ImGuiConsole::Message::Level::Invalid;
+	}
+}
+
+const char* ImGuiConsole::Message::GetLevelName(Level level)
+{
+	switch (level)
+	{
+	case ImGuiConsole::Message::Level::Trace: return "Trace";
+	case ImGuiConsole::Message::Level::Info: return "Info";
+	case ImGuiConsole::Message::Level::Debug:return "Debug";
+	case ImGuiConsole::Message::Level::Warn:return "Warn";
+	case ImGuiConsole::Message::Level::Error:return "Error";
+	case ImGuiConsole::Message::Level::Critical:return "Critical";
+	case ImGuiConsole::Message::Level::Off: return "None";
+	default:
+		return "Unknown Level";
+	}
+}
+
+Colour ImGuiConsole::Message::GetRenderColour(Level level)
+{
+	switch (level)
+	{
+	case ImGuiConsole::Message::Level::Trace: return Colours::GREY;
+	case ImGuiConsole::Message::Level::Info: return Colours::GREEN;
+	case ImGuiConsole::Message::Level::Debug:return Colours::CYAN;
+	case ImGuiConsole::Message::Level::Warn:return Colours::YELLOW;
+	case ImGuiConsole::Message::Level::Error:return Colours::RED;
+	case ImGuiConsole::Message::Level::Critical:return Colours::WHITE;
+	default:
+		return Colours::SILVER;
+	}
+}
+

@@ -4,6 +4,8 @@
 #include "Events/KeyEvent.h"
 #include "Events/ApplicationEvent.h"
 
+#include "ImGuiConsole.h"
+
 class ImGuiLayer :
 	public Layer
 {
@@ -22,5 +24,7 @@ public:
 
 private:
 	bool m_UsingImGui;
+
+	ImGuiConsole m_Console;
 };
 

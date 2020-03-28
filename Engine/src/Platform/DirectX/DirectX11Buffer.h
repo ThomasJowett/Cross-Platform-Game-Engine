@@ -5,11 +5,14 @@ class DirectX11VertexBuffer :
 	public VertexBuffer
 {
 public:
+	DirectX11VertexBuffer(uint32_t size);
 	DirectX11VertexBuffer(float* vertices, uint32_t size);
 	~DirectX11VertexBuffer();
 
 	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 	virtual const BufferLayout& GetLayout() override { return m_Layout; }
+
+	virtual void SetData(const void* data, uint32_t size) override;
 
 	virtual void Bind() const override;
 	virtual void UnBind() const override;

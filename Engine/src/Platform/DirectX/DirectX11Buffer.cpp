@@ -17,11 +17,19 @@ void DirectX11IndexBuffer::UnBind() const
 {
 }
 
+DirectX11VertexBuffer::DirectX11VertexBuffer(uint32_t size)
+{
+}
+
 DirectX11VertexBuffer::DirectX11VertexBuffer(float * vertices, uint32_t size)
 {
 }
 
 DirectX11VertexBuffer::~DirectX11VertexBuffer()
+{
+}
+
+void DirectX11VertexBuffer::SetData(const void* data, uint32_t size)
 {
 }
 

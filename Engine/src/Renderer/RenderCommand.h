@@ -24,9 +24,9 @@ public:
 		s_RendererAPI->Clear();
 	}
 
-	inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMode drawMode = DrawMode::FILL)
+	inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0, DrawMode drawMode = DrawMode::FILL)
 	{
-		s_RendererAPI->DrawIndexed(vertexArray, drawMode);
+		s_RendererAPI->DrawIndexed(vertexArray, indexCount, drawMode);
 	}
 private:
 	static Scope<RendererAPI> s_RendererAPI;

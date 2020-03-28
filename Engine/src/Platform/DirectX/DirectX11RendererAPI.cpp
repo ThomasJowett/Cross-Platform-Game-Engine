@@ -64,7 +64,7 @@ void DirectX11RendererAPI::Clear()
 	//m_ImmediateContext->ClearDepthStencilView()
 }
 
-void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMode drawMode)
+void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode)
 {
 	m_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	m_ImmediateContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);

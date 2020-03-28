@@ -1,6 +1,8 @@
 #pragma once
 #include "stdafx.h"
 
+#include "ImGui/ImGuiConsole.h"
+
 namespace Debug
 {
 #ifdef DEBUG
@@ -22,6 +24,10 @@ namespace Debug
 		va_end(args);
 	
 		OutputDebugString(buffer);
+
+		std::wstring ws(buffer);
+
+		ImGuiConsole::AddMessage(std::string(ws.begin(), ws.end()), ImGuiConsole::Message::Level::Debug);
 	}
 
 	// char output
@@ -40,6 +46,10 @@ namespace Debug
 		va_end(args);
 	
 		OutputDebugString(buffer);
+
+		std::wstring ws(buffer);
+
+		ImGuiConsole::AddMessage(std::string(ws.begin(), ws.end()), ImGuiConsole::Message::Level::Debug);
 	}
 
 	// wide char output with file and line number
@@ -54,6 +64,10 @@ namespace Debug
 		va_end(args);
 
 		OutputDebugString(buffer);
+
+		std::wstring ws(buffer);
+
+		ImGuiConsole::AddMessage(std::string(ws.begin(), ws.end()), ImGuiConsole::Message::Level::Debug);
 	}
 
 	// char output with file and line number
@@ -72,6 +86,10 @@ namespace Debug
 		va_end(args);
 	
 		OutputDebugString(buffer);
+
+		std::wstring ws(buffer);
+
+		ImGuiConsole::AddMessage(std::string(ws.begin(), ws.end()), ImGuiConsole::Message::Level::Debug);
 	}
 
 #else

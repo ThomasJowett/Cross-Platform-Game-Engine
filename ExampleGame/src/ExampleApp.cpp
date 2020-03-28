@@ -8,7 +8,7 @@ ExampleGame::ExampleGame(const WindowProps& props)
 {
 	RenderCommand::SetClearColour(Colours::GREY);
 
-	PushLayer(new GridLayer());
+	//PushLayer(new GridLayer());
 	PushLayer(new ExampleLayer3D());
 	PushLayer(new ExampleLayer2D());
 	

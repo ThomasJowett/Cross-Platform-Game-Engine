@@ -6,6 +6,8 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 
+#include "Logging/Logger.h"
+
 Application* Application::s_Instance = nullptr;
 
 Application::Application(const WindowProps& props)

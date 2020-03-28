@@ -7,13 +7,15 @@
 #include "examples/imgui_impl_glfw.h"
 #include "examples/imgui_impl_opengl3.h"
 
+#include "ImGuiConsole.h"
+
 //TEMPORARY
 //TODO: remove dependencies on GLAD and GLFW
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
 
 ImGuiLayer::ImGuiLayer()
-	:Layer("ImGui"), m_UsingImGui(false)
+	:Layer("ImGui"), m_UsingImGui(false), m_Console()
 {
 }
 
@@ -69,6 +71,8 @@ void ImGuiLayer::OnImGuiRender()
 {
 	static bool showDemoWindow = true;
 	//ImGui::ShowDemoWindow(&showDemoWindow);
+	static bool showConsole = true;
+	m_Console.OnImGuiRender(&showConsole);
 }
 
 void ImGuiLayer::Begin()

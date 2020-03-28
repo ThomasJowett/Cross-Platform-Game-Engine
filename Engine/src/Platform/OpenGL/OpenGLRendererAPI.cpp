@@ -44,7 +44,7 @@ void OpenGLRendererAPI::Clear()
 	glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMode drawMode)
+void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode)
 {
 	vertexArray->Bind();
 	GLuint mode;
@@ -56,5 +56,7 @@ void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, DrawMod
 	default: mode = GL_TRIANGLES; break;
 	}
 
-	glDrawElements(mode, vertexArray->GetIndexBuffer()->GetCount(), GL_UNSIGNED_INT, nullptr);
+	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+
+	glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
 }
