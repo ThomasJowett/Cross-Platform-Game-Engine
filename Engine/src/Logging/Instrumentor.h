@@ -8,6 +8,8 @@
 #include <mutex>
 #include <thread>
 
+#include "Logger.h"
+
 using FloatingPointMicroSeconds = std::chrono::duration<double, std::micro>;
 
 struct ProfileResult
@@ -54,7 +56,7 @@ public:
 		}
 		else
 		{
-			std::cout << "Instrumentor could not open Results file: " + filepath << std::endl;
+			ENGINE_ERROR("Instrumentor could not open Results file: {0}", filepath);
 		}
 	}
 

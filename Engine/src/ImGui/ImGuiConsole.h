@@ -38,11 +38,12 @@ public:
 
 public:
 	static void AddMessage(const std::string& message, Message::Level level);
+	static void AddMessage(Ref<Message> message);
 	static void Clear();
 
+	ImGuiConsole();
 	~ImGuiConsole() = default;
 	void OnImGuiRender(bool* show);
-	ImGuiConsole();
 protected:
 private:
 	void ImGuiRenderHeader();
@@ -53,7 +54,7 @@ private:
 	float m_DisplayScale;
 	Message::Level m_MessageBufferRenderFilter;
 	bool m_AllowScrollingToBottom;
-	bool m_RequestScrollToBottom;
+	uint16_t m_LastBufferSize;
 
 	static uint16_t s_MessageBufferCapacity;
 	static uint16_t s_MessageBufferSize;

@@ -4,7 +4,6 @@
 #include <GLFW/glfw3.h>
 
 #include "Core/Application.h"
-#include "Logging/Debug.h"
 
 Scope<Input> Input::s_Instance = CreateScope<WindowsInput>();
 
@@ -18,7 +17,7 @@ bool WindowsInput::IsKeyPressedImpl(int keycode)
 	}
 	catch (const std::bad_any_cast & e)
 	{
-		DBG_OUTPUT(e.what());
+		ENGINE_ERROR(e.what());
 		return false;
 	}
 }
@@ -33,7 +32,7 @@ bool WindowsInput::IsMouseButtonPressedImpl(int button)
 	}
 	catch (const std::bad_any_cast & e)
 	{
-		DBG_OUTPUT(e.what());
+		ENGINE_ERROR(e.what());
 		return false;
 	}
 }
@@ -49,7 +48,7 @@ std::pair<double, double> WindowsInput::GetMousePosImpl()
 	}
 	catch (const std::bad_any_cast & e)
 	{
-		DBG_OUTPUT(e.what());
+		ENGINE_ERROR(e.what());
 		return { 0.0f, 0.0f };
 	}
 }

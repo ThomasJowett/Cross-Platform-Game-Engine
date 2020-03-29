@@ -10,11 +10,14 @@ std::vector<Ref<ImGuiConsole::Message>> ImGuiConsole::s_MessageBuffer(s_MessageB
 
 void ImGuiConsole::AddMessage(const std::string& message, Message::Level level)
 {
-	Ref<Message> messageRef = CreateRef<Message>(message, level);
+	AddMessage(CreateRef<Message>(message, level));
+}
 
-	if (messageRef->m_Level == Message::Level::Invalid)
+void ImGuiConsole::AddMessage(Ref<Message> message)
+{
+	if (message->m_Level == Message::Level::Invalid)
 		return;
-	*(s_MessageBuffer.begin() + s_MessageBufferBegin) = messageRef;
+	*(s_MessageBuffer.begin() + s_MessageBufferBegin) = message;
 
 	if (++s_MessageBufferBegin == s_MessageBufferCapacity)
 		s_MessageBufferBegin = 0;
@@ -50,7 +53,8 @@ ImGuiConsole::ImGuiConsole()
 
 	m_MessageBufferRenderFilter = Message::Level::Trace;
 	m_AllowScrollingToBottom = true;
-	m_RequestScrollToBottom = false;
+
+	m_LastBufferSize = 0;
 }
 
 void ImGuiConsole::ImGuiRenderHeader()
@@ -153,10 +157,10 @@ void ImGuiConsole::ImGuiRenderMessages()
 			for (auto message = s_MessageBuffer.begin(); message != messageStart; message++)
 				(*message)->OnImGuiRender(m_MessageBufferRenderFilter);
 
-		if (m_RequestScrollToBottom && ImGui::GetScrollMaxY() > 0)
+		if (m_AllowScrollingToBottom && m_LastBufferSize < s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
 		{
 			ImGui::SetScrollY(ImGui::GetScrollMaxY());
-			m_RequestScrollToBottom = false;
+			m_LastBufferSize = s_MessageBufferSize;
 		}
 	}
 	ImGui::EndChild();
@@ -176,7 +180,6 @@ std::vector<ImGuiConsole::Message::Level> ImGuiConsole::Message::s_Levels
 ImGuiConsole::Message::Message(const std::string& message, Level level)
 	:m_Message(message), m_Level(level)
 {
-
 }
 
 void ImGuiConsole::Message::OnImGuiRender(Message::Level filter)

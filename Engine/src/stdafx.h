@@ -32,3 +32,4 @@
 
 // Debug
 #include "Logging/Instrumentor.h"
+#include "Logging/Logger.h"

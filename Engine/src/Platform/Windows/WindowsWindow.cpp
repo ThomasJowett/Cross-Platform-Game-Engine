@@ -17,7 +17,7 @@ static uint8_t s_GLFWWindowCount = 0;
 
 static void	GLFWErrorCallback(int error, const char* description)
 {
-	DBG_OUTPUT(std::string("GLFW Error %i " + std::string(description)).c_str(), error, description);
+	ENGINE_ERROR("GLFW Error {0} {1}", error, description);
 }
 
 WindowsWindow::WindowsWindow(const WindowProps& props)
@@ -136,12 +136,12 @@ void WindowsWindow::Init(const WindowProps & props)
 	m_Data.PosY = props.PosY;
 	m_Data.Mode = WindowMode::WINDOWED;
 
-	OUTPUT(std::string("Creating Window " + props.Title + " %d %d \n").c_str(), props.Width, props.Height);
+	ENGINE_INFO("Creating Window {0} {1} {2}", props.Title, props.Width, props.Height);
 
 	if (s_GLFWWindowCount == 0)
 	{
 		PROFILE_SCOPE("glfw init");
-		OUTPUT("Initializing GLFW\r\n");
+		ENGINE_INFO("Initializing GLFW");
 		int success = glfwInit();
 		CORE_ASSERT(success, "Could not initialize GLFW!");
 		glfwSetErrorCallback(GLFWErrorCallback);
@@ -296,7 +296,7 @@ void WindowsWindow::Shutdown()
 
 	if (--s_GLFWWindowCount == 0)
 	{
-		OUTPUT("Terminating GLFW");
+		ENGINE_INFO("Terminating GLFW");
 		glfwTerminate();
 	}
 }

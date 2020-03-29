@@ -52,3 +52,6 @@ Makefile
 /ExampleGame/Profile-Runtime.json
 /ExampleGame/Profile-Shutdown.json
 /ExampleGame/Profile-Startup.json
+
+#log
+/ExampleGame/Log.txt

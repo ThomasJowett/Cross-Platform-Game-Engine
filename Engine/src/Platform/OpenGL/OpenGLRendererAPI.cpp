@@ -7,7 +7,14 @@
 void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned severity,
 	int length, const char* message, const void* userParam)
 {
-	DBG_OUTPUT(std::string(std::string(message) + "\n").c_str());
+	if (type == GL_DEBUG_TYPE_ERROR)
+	{
+		ENGINE_ERROR("GL CALLBACK: {0} type = 0x{1} severity = 0x{2} message = {3}", type, severity, message);
+	}
+	else
+	{
+		ENGINE_WARN("GL CALLBACK: {0} type = 0x{1} severity = 0x{2} message = {3}", type, severity, message);
+	}
 }
 
 bool OpenGLRendererAPI::Init()

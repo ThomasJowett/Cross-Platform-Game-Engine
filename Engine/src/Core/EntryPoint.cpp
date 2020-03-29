@@ -17,12 +17,14 @@ int main(int argc, char* argv[])
 	if (AnotherInstance())
 		return 1;
 
+	Logger::Init();
+
 	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 
 	Application* app = CreateApplication();
 
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
-	OUTPUT("Engine Initialised\r\n");
+	ENGINE_INFO("Engine Initialised");
 	PROFILE_END_SESSION("Startup");
 
 	PROFILE_BEGIN_SESSION("Runtime", "Profile-Runtime.json");
@@ -43,7 +45,7 @@ bool AnotherInstance()
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
 		//TODO: use second instance as a client to the first server instance
-		DBG_OUTPUT("Error: Application Already Open\n");
+		ENGINE_ERROR("Application already open");
 		return true;
 	}
 	else

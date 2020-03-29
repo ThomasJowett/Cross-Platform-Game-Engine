@@ -49,7 +49,8 @@ project "Engine"
 		"%{prj.name}/vendor/GLFW/include",
 		"%{prj.name}/vendor/GLAD/include",
 		"%{prj.name}/vendor/imgui",
-		"%{prj.name}/vendor/stb"
+		"%{prj.name}/vendor/stb",
+		"%{prj.name}/vendor/spdlog/include"
 	}
 	
 	links
@@ -159,7 +160,8 @@ project "ExampleGame"
 	{
 		"ExampleGame/src",
 		"Engine/src",
-		"Engine/vendor"
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include"
 	}
 	
 	links
