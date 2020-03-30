@@ -13,13 +13,16 @@ Ref<spdlog::logger> Logger::s_ClientLogger;
 void Logger::Init()
 {
 	std::vector<spdlog::sink_ptr>logSinks;
-	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>()); // std::cout
-	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Log.txt", true)); // file
-	logSinks.emplace_back(std::make_shared<ImGuiConsoleSink_mt>()); // ImGuiConsole
-	logSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());// msvc output
+	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());					// std::cout
+	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Log.txt", true));	// file
+	logSinks.emplace_back(std::make_shared<ImGuiConsoleSink_mt>());									// ImGuiConsole
+#ifdef _MSC_VER
+	logSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());							// msvc output
+	logSinks[3]->set_pattern("%n: %v");
+#endif
 
 	logSinks[0]->set_pattern("%^[%T] %n: %v%$");
-	logSinks[1]->set_pattern("[%T] [%l] %n: %v");
+	logSinks[1]->set_pattern("[%d/%m/%Y] [%T] [%l] %n: %v");
 	logSinks[2]->set_pattern("%^[%T] [%l] %n: %v%$");
 
 	s_EngineLogger = std::make_shared<spdlog::logger>("ENGINE", begin(logSinks), end(logSinks));

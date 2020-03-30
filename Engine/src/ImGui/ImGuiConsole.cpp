@@ -23,8 +23,6 @@ void ImGuiConsole::AddMessage(Ref<Message> message)
 		s_MessageBufferBegin = 0;
 	if (s_MessageBufferSize < s_MessageBufferCapacity)
 		s_MessageBufferSize++;
-
-	//m_RequestScrollToBottom = m_AllowScrollingToBottom;
 }
 
 void ImGuiConsole::Clear()
@@ -169,7 +167,7 @@ void ImGuiConsole::ImGuiRenderMessages()
 std::vector<ImGuiConsole::Message::Level> ImGuiConsole::Message::s_Levels
 {
 	ImGuiConsole::Message::Level::Trace,
-	//ImGuiConsole::Message::Level::Debug,
+	ImGuiConsole::Message::Level::Debug,
 	ImGuiConsole::Message::Level::Info,
 	ImGuiConsole::Message::Level::Warn,
 	ImGuiConsole::Message::Level::Error,
@@ -245,8 +243,8 @@ Colour ImGuiConsole::Message::GetRenderColour(Level level)
 {
 	switch (level)
 	{
-	case ImGuiConsole::Message::Level::Trace: return Colours::GREY;
-	case ImGuiConsole::Message::Level::Info: return Colours::GREEN;
+	case ImGuiConsole::Message::Level::Trace: return Colours::SILVER;
+	case ImGuiConsole::Message::Level::Info: return Colours::LIME_GREEN;
 	case ImGuiConsole::Message::Level::Debug:return Colours::CYAN;
 	case ImGuiConsole::Message::Level::Warn:return Colours::YELLOW;
 	case ImGuiConsole::Message::Level::Error:return Colours::RED;

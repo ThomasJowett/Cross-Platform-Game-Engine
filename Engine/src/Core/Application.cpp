@@ -20,12 +20,6 @@ Application::Application(const WindowProps& props)
 	Renderer::Init();
 
 	PushOverlay(new ImGuiLayer());
-
-	ENGINE_INFO("Test info");
-	ENGINE_CRITICAL("Critical");
-	ENGINE_ERROR("Error message");
-	ENGINE_TRACE("Trace logger");
-	ENGINE_WARN("Dont do that");
 }
 
 
