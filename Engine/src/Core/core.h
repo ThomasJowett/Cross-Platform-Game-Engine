@@ -30,11 +30,11 @@
 
 #ifdef ENABLE_ASSERTS
 	#ifdef _MSC_VER
-		#define ASSERT(x, ...) {if(!(x)){__debugbreak();}}
-		#define CORE_ASSERT(x,...){if(!(x)){__debugbreak();}}
+		#define ASSERT(x, ...) {if(!(x)){CLIENT_ERROR("Assertion failed: {0}", __VA_ARGS__);__debugbreak();}}
+		#define CORE_ASSERT(x,...){if(!(x)){ENGINE_ERROR("Assertion failed: {0}", __VA_ARGS__);__debugbreak();}}
 	#else
-		#define ASSERT(x, ...) {if(!(x)){__builtin_trap();}}
-		#define CORE_ASSERT(x,...){if(!(x)){__builtin_trap();}}
+		#define ASSERT(x, ...) {if(!(x)){CLIENT_ERROR("Assertion failed: {0}", __VA_ARGS__);__builtin_trap();}}
+		#define CORE_ASSERT(x,...){if(!(x)){ENGINE_ERROR("Assertion failed: {0}", __VA_ARGS__);__builtin_trap();}}
 	#endif
 #else
 	#define ASSERT(x, ...)
