@@ -15,7 +15,7 @@
 #include "glad/glad.h"
 
 ImGuiLayer::ImGuiLayer()
-	:Layer("ImGui"), m_UsingImGui(false), m_Console()
+	:Layer("ImGui"), m_UsingImGui(false)
 {
 }
 
@@ -70,9 +70,18 @@ void ImGuiLayer::OnEvent(Event& event)
 void ImGuiLayer::OnImGuiRender()
 {
 	static bool showDemoWindow = true;
-	//ImGui::ShowDemoWindow(&showDemoWindow);
-	static bool showConsole = true;
-	m_Console.OnImGuiRender(&showConsole);
+	ImGui::ShowDemoWindow(&showDemoWindow);
+
+	bool p_open = true;
+
+	ImGui::Begin("FPS", &p_open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
+		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
+		| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+		| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+		| ImGuiWindowFlags_NoNav);
+
+	ImGui::Text("%.1f", ImGui::GetIO().Framerate);
+	ImGui::End();
 }
 
 void ImGuiLayer::Begin()

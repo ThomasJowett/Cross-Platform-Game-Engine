@@ -1,7 +1,11 @@
 #pragma once
 #include "Core/core.h"
 #include "Core/Colour.h"
+
+#include "Core/Layer.h"
+
 class ImGuiConsole
+	:public Layer
 {
 public:
 	class Message
@@ -41,16 +45,17 @@ public:
 	static void AddMessage(Ref<Message> message);
 	static void Clear();
 
-	ImGuiConsole();
+	ImGuiConsole(bool * show);
 	~ImGuiConsole() = default;
-	void OnImGuiRender(bool* show);
-protected:
+	void OnImGuiRender() override;
 private:
 	void ImGuiRenderHeader();
 	void ImGuiRenderSettings();
 	void ImGuiRenderMessages();
 
 private:
+	bool* m_Show;
+
 	float m_DisplayScale;
 	Message::Level m_MessageBufferRenderFilter;
 	bool m_AllowScrollingToBottom;

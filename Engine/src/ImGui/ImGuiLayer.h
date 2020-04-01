@@ -24,7 +24,5 @@ public:
 
 private:
 	bool m_UsingImGui;
-
-	ImGuiConsole m_Console;
 };
 

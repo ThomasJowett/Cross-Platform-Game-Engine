@@ -33,20 +33,25 @@ void ImGuiConsole::Clear()
 	s_MessageBufferBegin = 0;
 }
 
-void ImGuiConsole::OnImGuiRender(bool* show)
+void ImGuiConsole::OnImGuiRender()
 {
-	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	ImGui::Begin("Console", show);
+	if (*m_Show)
 	{
-		ImGuiRenderHeader();
-		ImGui::Separator();
-		ImGuiRenderMessages();
+		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
+		ImGui::Begin("Console", m_Show);
+		{
+			std::cout << *m_Show;
+			ImGuiRenderHeader();
+			ImGui::Separator();
+			ImGuiRenderMessages();
+		}
+		ImGui::End();
 	}
-	ImGui::End();
 }
 
-ImGuiConsole::ImGuiConsole()
+ImGuiConsole::ImGuiConsole(bool* show)
 {
+	m_Show = show;
 	m_DisplayScale = 1.0f;
 
 	m_MessageBufferRenderFilter = Message::Level::Trace;
