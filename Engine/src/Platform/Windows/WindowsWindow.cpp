@@ -7,8 +7,6 @@
 
 #include "Renderer/Renderer.h"
 
-#include "Logging/Debug.h"
-
 #include "Platform/OpenGL/OpenGLContext.h"
 
 #include "stb_image.h"

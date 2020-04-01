@@ -42,9 +42,10 @@ public:
 		std::lock_guard lock(m_Mutex);
 		if (m_CurrentSession)
 		{
+			ENGINE_WARN("Begining new session before last has ended. Force ending last session...");
 			// If there is already a current session, then close it before beginning a new one.
-			// Subsequent profiling output meant for the original session will and up in the new one instead.
-			InternalEndSession();
+			// Subsequent profiling output meant for the original session will end up in the new one instead.
+			InternalEndSession(m_CurrentSession->Name);
 		}
 
 		m_OutputStream.open(filepath);
@@ -60,10 +61,10 @@ public:
 		}
 	}
 
-	void EndSession()
+	void EndSession(const std::string& name)
 	{
 		std::lock_guard lock(m_Mutex);
-		InternalEndSession();
+		InternalEndSession(name);
 	}
 
 	void WriteProfile(const ProfileResult& result)
@@ -111,10 +112,14 @@ private:
 		m_OutputStream.flush();
 	}
 
-	void InternalEndSession()
+	void InternalEndSession(const std::string& name)
 	{
 		if (m_CurrentSession)
 		{
+			if (m_CurrentSession->Name != name)
+			{
+				ENGINE_WARN("Attempting to end session \"{0}\" but does not macth current session \"{1}\"", name, m_CurrentSession->Name);
+			}
 			WriteFooter();
 			m_OutputStream.close();
 			delete m_CurrentSession;
@@ -155,7 +160,7 @@ private:
 	bool m_Stopped;
 };
 
-//#define PROFILE 1
+#define PROFILE 1
 
 #ifdef PROFILE
 	// Resolve which function signature macro will be used. Note that this only
@@ -180,7 +185,7 @@ private:
 #endif
 
 #define PROFILE_BEGIN_SESSION(name, filepath) ::Instrumentor::Get().BeginSession(name, filepath)
-#define PROFILE_END_SESSION() ::Instrumentor::Get().EndSession()
+#define PROFILE_END_SESSION(name) ::Instrumentor::Get().EndSession(name)
 #define PROFILE_SCOPE(name) ::InstrumentationTimer timer##__LINE__(name);
 #define PROFILE_FUNCTION() PROFILE_SCOPE(FUNC_SIG)
 #else

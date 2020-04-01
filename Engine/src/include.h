@@ -12,7 +12,7 @@
 #include "OrthoGrpahicCameraController.h"
 #include "PerspectiveCameraController.h"
 
-#include "Logging/Debug.h"
+#include "Logging/Logger.h"
 #include "Logging/Timer.h"
 #include "Logging/Instrumentor.h"
 

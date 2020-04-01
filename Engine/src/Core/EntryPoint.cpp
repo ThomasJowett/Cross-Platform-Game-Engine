@@ -10,16 +10,14 @@ extern Application* CreateApplication();
 
 bool AnotherInstance();
 
-#include "Logging/Debug.h"
-
 int main(int argc, char* argv[])
 {
 	if (AnotherInstance())
 		return 1;
 
-	Logger::Init();
-
 	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
+
+	Logger::Init();
 
 	Application* app = CreateApplication();
 
