@@ -40,7 +40,6 @@ void ImGuiConsole::OnImGuiRender()
 		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 		ImGui::Begin("Console", m_Show);
 		{
-			std::cout << *m_Show;
 			ImGuiRenderHeader();
 			ImGui::Separator();
 			ImGuiRenderMessages();

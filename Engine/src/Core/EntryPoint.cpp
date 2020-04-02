@@ -1,5 +1,8 @@
 #include "stdafx.h"
 #include "Application.h"
+#include "InputParser.h"
+#include "Core/Version.h"
+
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
@@ -15,12 +18,37 @@ int main(int argc, char* argv[])
 	if (AnotherInstance())
 		return 1;
 
+	InputParser input(argc, argv);
+
+	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
+	{
+		std::cout << "usage:"
+			<< " [--help] "
+			<< " [--version] "
+			<< std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	if (input.CmdOptionExists("--version") || input.CmdOptionExists("-v"))
+	{
+		std::cout << VERSION << std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	if (!input.HasFoundAllArguments())
+	{
+		std::cout << "Not a valid input" << std::endl;
+		return EXIT_FAILURE;
+	}
+
 	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 
 	Logger::Init();
 
-	Application* app = CreateApplication();
+	ENGINE_INFO("Version: {0}", VERSION);
 
+	Application* app = CreateApplication();
+	
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
 	ENGINE_INFO("Engine Initialised");
 	PROFILE_END_SESSION("Startup");
