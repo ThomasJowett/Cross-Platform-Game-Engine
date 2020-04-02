@@ -214,3 +214,77 @@ project "ExampleGame"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+		
+project "Editor"
+	location "Editor"
+	kind "ConsoleApp"
+
+	language "C++"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+
+	includedirs
+	{
+		"Editor/src",
+		"Engine/src",
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include"
+	}
+	
+	links
+	{
+		"Engine"
+	}
+
+	filter "system:windows"
+		cppdialect "C++17"
+		staticruntime "Off"
+		systemversion "latest"
+
+		defines
+		{
+			"__WINDOWS__"
+		}
+		
+	filter "system:linux"
+		links
+		{
+			"GLFW",
+			"GLAD",
+			"ImGui",
+			"Xrandr",
+			"Xi",
+			"GL",
+			"X11",
+			"dl",
+			"pthread",
+			"stdc++fs"
+		}
+		
+		defines
+		{
+			"__linux__"
+		}
+
+	filter "configurations:Debug"
+		defines "DEBUG"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "RELEASE"
+		runtime "Release"
+		optimize "On"
+		symbols "Off"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"
