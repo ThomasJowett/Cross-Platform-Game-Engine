@@ -85,6 +85,12 @@ void OpenGLShader::SetInt(const char * name, const int value)
 	UploadUniformInteger(name, value);
 }
 
+void OpenGLShader::SetIntArray(const char* name, const int values[], uint32_t count)
+{
+	PROFILE_FUNCTION();
+	UploadUniformIntegerArray(name, values, count);
+}
+
 void OpenGLShader::SetFloat(const char * name, const float value)
 {
 	PROFILE_FUNCTION();
@@ -101,6 +107,12 @@ void OpenGLShader::UploadUniformInteger(const char * name, const int & integer)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform1i(location, integer);
+}
+
+void OpenGLShader::UploadUniformIntegerArray(const char* name, const int* integers, uint32_t count)
+{
+	uint32_t location = glGetUniformLocation(m_rendererID, name);
+	glUniform1iv(location, count, integers);
 }
 
 void OpenGLShader::UploadUniformFloat(const char * name, const float & Float)

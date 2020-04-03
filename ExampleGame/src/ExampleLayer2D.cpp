@@ -21,11 +21,11 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
-	//Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
-	//Renderer2D::DrawQuad(Vector2f( m_Position[0] + 1.0f, m_Position[1] ), Vector2f(m_Size[0], m_Size[1] ), m_TextureLibrary.Get("resources/UVChecker.png"),  m_Rotation, m_Colour);
-	//Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1]+ 1.0f), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("resources/UVChecker.png"), m_Rotation);
+	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
+	Renderer2D::DrawQuad(Vector2f( m_Position[0] + 1.0f, m_Position[1] ), Vector2f(m_Size[0], m_Size[1] ), m_TextureLibrary.Get("resources/UVChecker.png"),  m_Rotation, m_Colour);
+	Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1]+ 1.0f), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("resources/UVChecker.png"), m_Rotation);
 
-	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Colour);
+	Renderer2D::DrawQuad({ m_Position[0] + 1.0f , m_Position[1] + 1.0f }, { m_Size[0], m_Size[1] }, m_TextureLibrary.Get("resources/UVChecker.png"), 1.0f, m_Colour, 10.0f);
 	Renderer2D::EndScene();
 }
 

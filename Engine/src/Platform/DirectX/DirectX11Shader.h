@@ -17,6 +17,7 @@ public:
 	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
 	virtual void SetFloat4(const char * name, const Colour colour) override;
 	virtual void SetInt(const char* name, const int value) override;
+	virtual void SetIntArray(const char* name, const int values[], uint32_t count);
 	virtual void SetFloat(const char* name, const float value) override;
 
 	virtual std::string GetName()const override { return m_Name; }

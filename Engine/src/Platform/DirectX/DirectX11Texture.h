@@ -17,6 +17,11 @@ public:
 	virtual void Bind(uint32_t slot) const override;
 
 	virtual std::string GetName() const override;
+
+	virtual uint32_t GetRendererID() const override;
+
+
+	virtual bool operator==(const Texture& other) const;
 private:
 
 	std::string m_Path;

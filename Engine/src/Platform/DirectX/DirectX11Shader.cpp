@@ -37,6 +37,10 @@ void DirectX11Shader::SetInt(const char * name, const int value)
 {
 }
 
+void DirectX11Shader::SetIntArray(const char* name, const int values[], uint32_t count)
+{
+}
+
 void DirectX11Shader::SetFloat(const char * name, const float value)
 {
 }

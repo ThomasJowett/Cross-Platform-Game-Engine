@@ -33,6 +33,9 @@ struct Renderer2DData
 	uint32_t QuadIndexCount = 0;
 	QuadVertex* QuadVertexBufferBase = nullptr;
 	QuadVertex* QuadVertexBufferPtr = nullptr;
+
+	std::array<Ref<Texture>, MaxTextures> TextureSlots;
+	uint32_t TextureSlotIndex = 1;
 };
 
 static Renderer2DData s_Data;
@@ -81,9 +84,16 @@ bool Renderer2D::Init()
 	uint32_t whiteTextureData = 0xffffffff;
 	s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
+	int32_t samplers[MaxTextures];
+	for (uint32_t i = 0; i < MaxTextures; i++)
+		samplers[i] = i;
+
 	s_Data.Shader = Shader::Create("Texture");
 	s_Data.Shader->Bind();
-	s_Data.Shader->SetInt("u_texture", 0);
+	s_Data.Shader->SetIntArray("u_textures", samplers, MaxTextures);
+
+	// set the texture slot at [0] to white texture
+	s_Data.TextureSlots[0] = s_Data.WhiteTexture;
 
 	return s_Data.Shader == nullptr;
 }
@@ -104,6 +114,8 @@ void Renderer2D::BeginScene(const OrthographicCamera& camera)
 
 	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 	s_Data.QuadIndexCount = 0;
+
+	s_Data.TextureSlotIndex = 1;
 }
 
 void Renderer2D::EndScene()
@@ -116,6 +128,10 @@ void Renderer2D::EndScene()
 
 void Renderer2D::Flush()
 {
+	for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
+	{
+		s_Data.TextureSlots[i]->Bind(i);
+	}
 	RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 }
 
@@ -127,14 +143,55 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	PROFILE_FUNCTION();
-	s_Data.Shader->SetFloat4("u_colour", colour);
-	s_Data.Shader->SetFloat("u_tilingFactor", tilingFactor);
-	texture->Bind();
 
-	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-	s_Data.Shader->SetMat4("u_ModelMatrix", transform, true);
-	s_Data.QuadVertexArray->Bind();
-	RenderCommand::DrawIndexed(s_Data.QuadVertexArray);
+	Vector2f halfSize = 0.5f * size;
+
+	float textureIndex = 0.0f;
+
+	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+	{
+		if (*s_Data.TextureSlots[i].get() == *texture.get())
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+	if (textureIndex == 0.0f)
+	{
+		textureIndex = (float)s_Data.TextureSlotIndex;
+		s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+		s_Data.TextureSlotIndex++;
+	}
+
+	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y - halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->colour = colour;
+	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f( 0.0f, 0.0f );
+	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadVertexBufferPtr++;
+
+	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y - halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->colour = colour;
+	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(1.0f, 0.0f );
+	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadVertexBufferPtr++;
+
+	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->colour = colour;
+	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(1.0f, 1.0f );
+	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadVertexBufferPtr++;
+
+	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->colour = colour;
+	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(0.0f, 1.0f );
+	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+	s_Data.QuadVertexBufferPtr++;
+
+	s_Data.QuadIndexCount += 6;
+
+	// TODO: rotations
+	// Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
+
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation, const Colour& colour)
@@ -151,36 +208,33 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y - halfSize.y, position.z };
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 0.0f, 0.0f };
-	s_Data.QuadVertexBufferPtr->TexIndex = 1.0f;
+	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y - halfSize.y, position.z };
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 1.0f, 0.0f };
-	s_Data.QuadVertexBufferPtr->TexIndex = 1.0f;
+	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y + halfSize.y, position.z };
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 1.0f, 1.0f };
-	s_Data.QuadVertexBufferPtr->TexIndex = 1.0f;
+	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 0.0f, 1.0f };
-	s_Data.QuadVertexBufferPtr->TexIndex = 1.0f;
+	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 6;
 
-	s_Data.Shader->SetFloat("u_tilingFactor", 1.0f);
-	s_Data.WhiteTexture->Bind();
+	// TODO: rotations
+	// Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
 
-	/*Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-	s_Data.Shader->SetMat4("u_ModelMatrix", transform, true);
-	s_Data.QuadVertexArray->Bind();
-	RenderCommand::DrawIndexed(s_Data.QuadVertexArray);*/
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)

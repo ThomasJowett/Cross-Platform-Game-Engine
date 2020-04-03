@@ -80,6 +80,16 @@ std::string OpenGLTexture2D::GetName() const
 	return m_Path;
 }
 
+uint32_t OpenGLTexture2D::GetRendererID() const
+{
+	return m_RendererID;
+}
+
+bool OpenGLTexture2D::operator==(const Texture& other) const
+{
+	return m_RendererID == ((OpenGLTexture2D&)other).GetRendererID();
+}
+
 void OpenGLTexture2D::NullTexture()
 {
 	m_Path = "NULL";

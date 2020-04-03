@@ -7,6 +7,7 @@ layout(location = 3) in float a_texIndex;
 
 out vec4 v_colour;
 out vec2 v_texCoord;
+out float v_texIndex;
 
 uniform mat4 u_ViewProjection;
 
@@ -14,5 +15,6 @@ void main()
 {
 	v_texCoord = a_texCoord;
 	v_colour = a_colour;
+	v_texIndex = a_texIndex;
 	gl_Position = u_ViewProjection *vec4(a_position, 1.0);
 }
