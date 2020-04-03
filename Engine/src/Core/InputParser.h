@@ -38,6 +38,17 @@ public:
 		return false;
 	}
 
+	std::string OpenFile()const
+	{
+		std::ifstream file;
+		file.open(m_Tokens[0]);
+
+		if (file.good())
+			return m_Tokens[0];
+		else
+			return std::string();
+	}
+
 	bool HasFoundAllArguments()
 	{
 		return m_TokensFound == m_Tokens.size();

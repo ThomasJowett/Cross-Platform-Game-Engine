@@ -12,8 +12,6 @@ Ref<spdlog::logger> Logger::s_ClientLogger;
 
 void Logger::Init()
 {
-	PROFILE_FUNCTION();
-
 	std::vector<spdlog::sink_ptr>logSinks;
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());					// std::cout
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Log.txt", true));	// file

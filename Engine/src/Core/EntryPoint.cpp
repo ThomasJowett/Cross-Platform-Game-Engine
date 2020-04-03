@@ -18,6 +18,10 @@ int main(int argc, char* argv[])
 	if (AnotherInstance())
 		return 1;
 
+	Logger::Init();
+
+	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
+
 	InputParser input(argc, argv);
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
@@ -37,13 +41,15 @@ int main(int argc, char* argv[])
 
 	if (!input.HasFoundAllArguments())
 	{
-		std::cout << "Not a valid input" << std::endl;
+		std::string file = input.OpenFile();
+		if (!file.empty())
+		{
+			ENGINE_INFO("Opening file: {0}", file);
+		}
+
+		ENGINE_ERROR("Not a valid input parameter");
 		return EXIT_FAILURE;
 	}
-
-	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
-
-	Logger::Init();
 
 	ENGINE_INFO("Version: {0}", VERSION);
 
