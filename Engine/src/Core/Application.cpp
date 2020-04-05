@@ -5,6 +5,7 @@
 
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
+#include "Core/Joysticks.h"
 
 #include "Logging/Logger.h"
 
@@ -18,6 +19,9 @@ Application::Application(const WindowProps& props)
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	Renderer::Init();
+
+	Joysticks::Init();
+	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	PushOverlay(new ImGuiLayer());
 }
@@ -94,6 +98,17 @@ void Application::OnEvent(Event& e)
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+
+	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected& event)
+		{
+			ENGINE_INFO("Controller Connected");
+			return false;
+		});
+	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected& event)
+		{
+			ENGINE_INFO("Controller Disonnected");
+			return false;
+		});
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{

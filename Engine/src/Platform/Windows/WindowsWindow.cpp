@@ -5,6 +5,8 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
+#include "Core/Joysticks.h"
+
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
@@ -283,6 +285,28 @@ void WindowsWindow::Init(const WindowProps & props)
 
 			MouseMotionEvent event((float)xPos, (float)yPos);
 			data.EventCallback(event);
+		});
+
+	for (int jid = GLFW_JOYSTICK_1;  jid <= GLFW_JOYSTICK_LAST; jid++)
+	{
+		if (glfwJoystickPresent(jid))
+			Joysticks::AddJoystick(jid);
+	}
+
+	glfwSetJoystickCallback([](int jid, int e)
+		{
+			if (e == GLFW_CONNECTED)
+			{
+				Joysticks::AddJoystick(jid);
+				JoystickConnected event(jid);
+				Joysticks::CallEvent(event);
+			}
+			else if (e == GLFW_DISCONNECTED)
+			{
+				Joysticks::RemoveJoystick(jid);
+				JoystickDisconnected event(jid);
+				Joysticks::CallEvent(event);
+			}
 		});
 }
 

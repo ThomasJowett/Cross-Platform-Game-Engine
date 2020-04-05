@@ -10,4 +10,6 @@ protected:
 	std::pair<double, double> GetMousePosImpl() override;
 	double GetMouseYImpl() override;
 	double GetMouseXImpl() override;
+	bool IsJoystickButtonPressedImpl(int joystick, int button) override;
+	double GetJoystickAxisImpl(int joystick, int axis) override;
 };

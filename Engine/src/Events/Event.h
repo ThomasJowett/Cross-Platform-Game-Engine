@@ -25,7 +25,10 @@ enum class EventType
 	MOUSE_BUTTON_PRESSED,
 	MOUSE_BUTTON_RELEASED,
 	MOUSE_MOTION,
-	MOUSE_WHEEL
+	MOUSE_WHEEL,
+
+	JOYSTICK_CONNECTED,
+	JOYSTICK_DISCONNECTED
 };
 
 enum EventCategory
@@ -36,6 +39,7 @@ enum EventCategory
 	EC_KEYBOARD		= BIT(2),
 	EC_MOUSE		= BIT(3),
 	EC_MOUSE_BUTTON	= BIT(4),
+	EC_JOYSTICK		= BIT(5)
 };
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\

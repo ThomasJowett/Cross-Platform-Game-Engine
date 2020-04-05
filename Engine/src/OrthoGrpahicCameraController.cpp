@@ -2,6 +2,7 @@
 #include "OrthoGrpahicCameraController.h"
 #include "Core/Input.h"
 #include "Core/KeyCodes.h"
+#include "Core/Joysticks.h"
 
 OrthogrpahicCameraController::OrthogrpahicCameraController(float aspectRatio)
 	:m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
@@ -29,6 +30,7 @@ void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 		m_CameraPosition.x += m_TranslationSpeed * deltaTime;
 	}
 
+
 	if (Input::IsKeyPressed(KEY_W))
 	{
 		m_CameraPosition.y += m_TranslationSpeed * deltaTime;
@@ -38,6 +40,9 @@ void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 	{
 		m_CameraPosition.y -= m_TranslationSpeed * deltaTime;
 	}
+
+	m_CameraPosition.x += Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_X) * deltaTime;
+	m_CameraPosition.y -= Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_Y) * deltaTime;
 
 	m_Camera.SetPosition(m_CameraPosition);
 }

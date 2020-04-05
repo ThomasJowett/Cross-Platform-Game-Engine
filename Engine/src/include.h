@@ -6,6 +6,7 @@
 #include "Core/Application.h"
 
 #include "Core/Input.h"
+#include "Core/Joysticks.h"
 #include "Core/KeyCodes.h"
 #include "Core/MouseButtonCodes.h"
 #include "Core/Colour.h"
