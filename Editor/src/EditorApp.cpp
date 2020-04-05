@@ -2,6 +2,7 @@
 
 #include "ImGui/ImGuiDockSpace.h"
 #include "ImGui/ImGuiConsole.h"
+#include "ImGui/ImGuiJoystickInfo.h"
 
 Editor::Editor(const WindowProps& props)
 	:Application(props)
@@ -12,6 +13,7 @@ Editor::Editor(const WindowProps& props)
 
 	PushOverlay(dockSpace);
 	PushOverlay(new ImGuiConsole(dockSpace->GetShowConsole()));
+	PushOverlay(new ImGuiJoystickInfo(dockSpace->GetShowJoystickInfo()));
 
 }
 

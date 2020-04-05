@@ -20,7 +20,6 @@ Application::Application(const WindowProps& props)
 
 	Renderer::Init();
 
-	Joysticks::Init();
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	PushOverlay(new ImGuiLayer());

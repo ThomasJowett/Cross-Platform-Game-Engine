@@ -290,14 +290,26 @@ void WindowsWindow::Init(const WindowProps & props)
 	for (int jid = GLFW_JOYSTICK_1;  jid <= GLFW_JOYSTICK_LAST; jid++)
 	{
 		if (glfwJoystickPresent(jid))
-			Joysticks::AddJoystick(jid);
+		{
+			Joysticks::Joystick joystick;
+			joystick.ID = jid;
+			glfwGetJoystickAxes(joystick.ID, &joystick.axes);
+			glfwGetJoystickButtons(joystick.ID, &joystick.buttons);
+			glfwGetJoystickHats(joystick.ID, &joystick.hats);
+			Joysticks::AddJoystick(joystick);
+		}
 	}
 
 	glfwSetJoystickCallback([](int jid, int e)
 		{
 			if (e == GLFW_CONNECTED)
 			{
-				Joysticks::AddJoystick(jid);
+				Joysticks::Joystick joystick;
+				joystick.ID = jid;
+				glfwGetJoystickAxes(joystick.ID, &joystick.axes);
+				glfwGetJoystickButtons(joystick.ID, &joystick.buttons);
+				glfwGetJoystickHats(joystick.ID, &joystick.hats);
+				Joysticks::AddJoystick(joystick);
 				JoystickConnected event(jid);
 				Joysticks::CallEvent(event);
 			}

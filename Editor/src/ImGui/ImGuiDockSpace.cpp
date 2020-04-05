@@ -3,6 +3,7 @@
 #include "ImGui/imgui.h"
 
 ImGuiDockSpace::ImGuiDockSpace()
+    :Layer("Dockspace")
 {
     m_Show = true;
     m_ShowConsole = false;
@@ -11,6 +12,7 @@ ImGuiDockSpace::ImGuiDockSpace()
     m_ShowProperties = false;
     m_ShowHierachy = false;
     m_ShowContentExplorer = false;
+    m_ShowJoystickInfo = false;
 }
 
 void ImGuiDockSpace::OnAttach()
@@ -109,6 +111,7 @@ void ImGuiDockSpace::OnImGuiRender()
             ImGui::MenuItem("Conosole", "", &m_ShowConsole);
             ImGui::MenuItem("Error List", "", &m_ShowErrorList);
             ImGui::MenuItem("Task List", "", &m_ShowTaskList);
+            ImGui::MenuItem("Joystick Info", "", &m_ShowJoystickInfo);
             ImGui::EndMenu();
         }
 

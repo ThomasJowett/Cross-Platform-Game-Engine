@@ -1,16 +1,20 @@
 #include "stdafx.h"
 #include "Joysticks.h"
 
-int Joysticks::s_Joysticks[MAX_JOYSTICKS];
+Joysticks::Joystick Joysticks::s_Joysticks[MAX_JOYSTICKS];
 int Joysticks::s_JoystickCount = 0;
 
 double Joysticks::s_DeadZone = 0.1f;
 
 Joysticks::EventCallbackFn Joysticks::s_EventCallback;
 
-void Joysticks::Init()
+Joysticks::Joystick Joysticks::GetJoystick(int joystickSlot)
 {
-	memset(s_Joysticks, 0, sizeof(s_Joysticks));
+	if (joystickSlot < s_JoystickCount && joystickSlot >= 0)
+	{
+		return s_Joysticks[joystickSlot];
+	}
+	return Joystick();
 }
 
 void Joysticks::SetEventCallback(const EventCallbackFn& callback)

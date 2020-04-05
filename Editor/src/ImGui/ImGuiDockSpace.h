@@ -21,6 +21,7 @@ public:
 	bool* GetShowProperties() { return &m_ShowProperties; }
 	bool* GetShowHierachy() { return &m_ShowHierachy; }
 	bool* GetShowContentExplorer() { return &m_ShowContentExplorer; }
+	bool* GetShowJoystickInfo() { return &m_ShowJoystickInfo; }
 
 private:
 	bool m_Show;
@@ -30,4 +31,5 @@ private:
 	bool m_ShowProperties;
 	bool m_ShowHierachy;
 	bool m_ShowContentExplorer;
+	bool m_ShowJoystickInfo;
 };

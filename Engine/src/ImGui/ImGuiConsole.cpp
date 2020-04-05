@@ -49,8 +49,8 @@ void ImGuiConsole::OnImGuiRender()
 }
 
 ImGuiConsole::ImGuiConsole(bool* show)
+	:Layer("Console"), m_Show(show)
 {
-	m_Show = show;
 	m_DisplayScale = 1.0f;
 
 	m_MessageBufferRenderFilter = Message::Level::Trace;

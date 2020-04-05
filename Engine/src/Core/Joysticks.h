@@ -7,22 +7,28 @@
 class Joysticks
 {
 public:
+
+	struct Joystick
+	{
+		int ID = 0;
+		int axes = 0;
+		int buttons = 0;
+		int hats = 0;
+	};
 	using EventCallbackFn = std::function<void(Event&)>;
 
-	static void Init();
-
-	static void AddJoystick(int jid)
+	static void AddJoystick(Joystick joystick)
 	{
-		s_Joysticks[s_JoystickCount++] = jid;
+		s_Joysticks[s_JoystickCount++] = joystick;
 	}
 
-	static void RemoveJoystick(int jid)
+	static void RemoveJoystick(uint32_t joystickID)
 	{
 		int i;
 
 		for (i = 0; i < s_JoystickCount; i++)
 		{
-			if (s_Joysticks[i] == jid)
+			if (s_Joysticks[i].ID == joystickID)
 				break;
 		}
 
@@ -33,7 +39,7 @@ public:
 	}
 
 	static int GetJoystickCount() { return s_JoystickCount; }
-	static int GetJoystick(int joystick) { return joystick < MAX_JOYSTICKS && joystick >= 0 ? s_Joysticks[joystick] : s_Joysticks[0]; }
+	static Joystick GetJoystick(int joystickSlot);
 	static double GetDeadZone() { return s_DeadZone; }
 
 	static void SetEventCallback(const EventCallbackFn& callback);
@@ -42,7 +48,7 @@ public:
 	static void CallEvent(JoystickDisconnected event);
 
 private:
-	static int s_Joysticks[MAX_JOYSTICKS];
+	static Joystick s_Joysticks[MAX_JOYSTICKS];
 	static int s_JoystickCount;
 
 	static EventCallbackFn s_EventCallback;
