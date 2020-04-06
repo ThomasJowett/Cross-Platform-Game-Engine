@@ -10,10 +10,12 @@ public:
 
 	struct Joystick
 	{
+		const char* Name;
+		bool IsMapped = false;
 		int ID = 0;
-		int axes = 0;
-		int buttons = 0;
-		int hats = 0;
+		int Axes = 0;
+		int Buttons = 0;
+		int Hats = 0;
 	};
 	using EventCallbackFn = std::function<void(Event&)>;
 

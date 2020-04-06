@@ -291,11 +291,14 @@ void WindowsWindow::Init(const WindowProps & props)
 	{
 		if (glfwJoystickPresent(jid))
 		{
+			GLFWgamepadstate state;
 			Joysticks::Joystick joystick;
 			joystick.ID = jid;
-			glfwGetJoystickAxes(joystick.ID, &joystick.axes);
-			glfwGetJoystickButtons(joystick.ID, &joystick.buttons);
-			glfwGetJoystickHats(joystick.ID, &joystick.hats);
+			joystick.Name = glfwGetJoystickName(joystick.ID);
+			joystick.IsMapped = glfwGetGamepadState(joystick.ID, &state);
+			glfwGetJoystickAxes(joystick.ID, &joystick.Axes);
+			glfwGetJoystickButtons(joystick.ID, &joystick.Buttons);
+			glfwGetJoystickHats(joystick.ID, &joystick.Hats);
 			Joysticks::AddJoystick(joystick);
 		}
 	}
@@ -304,11 +307,14 @@ void WindowsWindow::Init(const WindowProps & props)
 		{
 			if (e == GLFW_CONNECTED)
 			{
+				GLFWgamepadstate state;
 				Joysticks::Joystick joystick;
 				joystick.ID = jid;
-				glfwGetJoystickAxes(joystick.ID, &joystick.axes);
-				glfwGetJoystickButtons(joystick.ID, &joystick.buttons);
-				glfwGetJoystickHats(joystick.ID, &joystick.hats);
+				joystick.Name = glfwGetJoystickName(joystick.ID);
+				joystick.IsMapped = glfwGetGamepadState(joystick.ID, &state);
+				glfwGetJoystickAxes(joystick.ID, &joystick.Axes);
+				glfwGetJoystickButtons(joystick.ID, &joystick.Buttons);
+				glfwGetJoystickHats(joystick.ID, &joystick.Hats);
 				Joysticks::AddJoystick(joystick);
 				JoystickConnected event(jid);
 				Joysticks::CallEvent(event);

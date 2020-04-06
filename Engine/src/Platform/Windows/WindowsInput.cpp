@@ -68,13 +68,24 @@ double WindowsInput::GetMouseXImpl()
 
 bool WindowsInput::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 {
-	GLFWgamepadstate state;
-
-	if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).ID, &state) && button <= GLFW_GAMEPAD_BUTTON_LAST)
+	Joysticks::Joystick joystick = Joysticks::GetJoystick(joystickSlot);
+	if (joystick.IsMapped)
 	{
-		return state.buttons[button] == GLFW_PRESS;
-	}
+		GLFWgamepadstate state;
 
+		if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).ID, &state) && button <= GLFW_GAMEPAD_BUTTON_LAST)
+		{
+			return state.buttons[button] == GLFW_PRESS;
+		}
+	}
+	else
+	{
+		int button_count;
+		const unsigned char* buttons = glfwGetJoystickButtons(joystickSlot, &button_count);
+
+		if (button < button_count)
+			return buttons[button];
+	}
 	return false;
 }
 
@@ -87,6 +98,12 @@ double WindowsInput::GetJoystickAxisImpl(int joystickSlot, int axis)
 		if (state.axes[axis] >= Joysticks::GetDeadZone() || state.axes[axis] <= -Joysticks::GetDeadZone())
 			return state.axes[axis];
 	}
+
+	int axes_count;
+	const float* axes = glfwGetJoystickAxes(joystickSlot, &axes_count);
+
+	if(axis < axes_count)
+		return axes[axis];
 
 	return 0.0f;
 }
