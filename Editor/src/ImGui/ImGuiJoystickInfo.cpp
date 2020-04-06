@@ -14,7 +14,7 @@ void ImGuiJoystickInfo::OnImGuiRender()
 	if (*m_Show)
 	{
 		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-		ImGui::Begin("Joystick Info", m_Show);
+		if(ImGui::Begin("Joystick Info", m_Show))
 		{
 			for (int i = 0; i < Joysticks::GetJoystickCount(); i++)
 			{
