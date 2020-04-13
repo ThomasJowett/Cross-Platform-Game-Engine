@@ -17,6 +17,7 @@ Editor::Editor(const WindowProps& props)
 	PushOverlay(new ImGuiConsole(dockSpace->GetShowConsole()));
 	PushOverlay(new ImGuiJoystickInfo(dockSpace->GetShowJoystickInfo()));
 
+	Application::GetWindow().SetIcon("resources/Icons/Logo.png");
 }
 
 void Editor::OnUpdate()

@@ -20,24 +20,31 @@ int main(int argc, char* argv[])
 
 	Logger::Init();
 
-	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
-
 	InputParser input(argc, argv);
+
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{
 		std::cout << "usage:"
 			<< " [--help] "
 			<< " [--version] "
+			<< " [--profile] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
 
-	if (input.CmdOptionExists("--version") || input.CmdOptionExists("-v"))
+	if (input.CmdOptionExists("-v") || input.CmdOptionExists("--version"))
 	{
 		std::cout << VERSION << std::endl;
 		return EXIT_SUCCESS;
 	}
+
+	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
+	{
+		Instrumentor::Enable();
+	}
+
+	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 
 	if (!input.HasFoundAllArguments())
 	{

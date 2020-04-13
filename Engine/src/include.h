@@ -18,6 +18,7 @@
 #include "Logging/Instrumentor.h"
 
 #include "ImGui/ImGuiLayer.h"
+#include "ImGui/ImGuiUtilites.h"
 
 #include "Renderer/Camera.h"
 #include "Renderer/Shader.h"

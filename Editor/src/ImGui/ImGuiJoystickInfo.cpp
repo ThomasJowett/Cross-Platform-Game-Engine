@@ -58,6 +58,8 @@ void ImGuiJoystickInfo::OnImGuiRender()
 						ImGui::Button(button_names[j]);
 						ImGui::PopStyleColor();
 					}
+
+					//TODO:: show D-pad
 				}
 				else
 				{

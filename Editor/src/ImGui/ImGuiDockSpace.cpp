@@ -6,12 +6,12 @@ ImGuiDockSpace::ImGuiDockSpace()
     :Layer("Dockspace")
 {
     m_Show = true;
-    m_ShowConsole = false;
+    m_ShowConsole = true;
     m_ShowErrorList = false;
     m_ShowTaskList = false;
     m_ShowProperties = false;
     m_ShowHierachy = false;
-    m_ShowContentExplorer = false;
+    m_ShowContentExplorer = true;
     m_ShowJoystickInfo = false;
 }
 

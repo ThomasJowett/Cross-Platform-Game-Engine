@@ -6,11 +6,6 @@
 
 #include "RenderCommand.h"
 
-static const size_t MaxQuadCount = 1000;
-static const size_t MaxVertexCount = MaxQuadCount * 4;
-static const size_t MaxIndexCount = MaxQuadCount * 6;
-static const size_t MaxTextures = 32; //TODO query the hardware to calculate the maximum number of textures
-
 struct QuadVertex
 {
 	Vector3f Position;
@@ -24,6 +19,7 @@ struct Renderer2DData
 	const uint32_t MaxQuads = 10000;
 	const uint32_t MaxVertices = MaxQuads * 4;
 	const uint32_t MaxIndices = MaxQuads * 6;
+	static const size_t MaxTexturesSlots = 32; //TODO query the hardware to calculate the maximum number of textures
 
 	Ref<VertexArray> QuadVertexArray;
 	Ref<VertexBuffer> QuadVertexBuffer;
@@ -34,8 +30,10 @@ struct Renderer2DData
 	QuadVertex* QuadVertexBufferBase = nullptr;
 	QuadVertex* QuadVertexBufferPtr = nullptr;
 
-	std::array<Ref<Texture>, MaxTextures> TextureSlots;
+	std::array<Ref<Texture>, MaxTexturesSlots> TextureSlots;
 	uint32_t TextureSlotIndex = 1;
+
+	Vector3f QuadVertexPositions[4];
 };
 
 static Renderer2DData s_Data;
@@ -84,16 +82,22 @@ bool Renderer2D::Init()
 	uint32_t whiteTextureData = 0xffffffff;
 	s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-	int32_t samplers[MaxTextures];
-	for (uint32_t i = 0; i < MaxTextures; i++)
+	int32_t samplers[s_Data.MaxTexturesSlots];
+	for (uint32_t i = 0; i < s_Data.MaxTexturesSlots; i++)
 		samplers[i] = i;
 
 	s_Data.Shader = Shader::Create("Texture");
 	s_Data.Shader->Bind();
-	s_Data.Shader->SetIntArray("u_textures", samplers, MaxTextures);
+	s_Data.Shader->SetIntArray("u_textures", samplers, s_Data.MaxTexturesSlots);
 
 	// set the texture slot at [0] to white texture
 	s_Data.TextureSlots[0] = s_Data.WhiteTexture;
+
+	s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f };
+	s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f };
+	s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f };
+	s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
+
 
 	return s_Data.Shader == nullptr;
 }
@@ -144,8 +148,6 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 {
 	PROFILE_FUNCTION();
 
-	Vector2f halfSize = 0.5f * size;
-
 	float textureIndex = 0.0f;
 
 	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
@@ -163,35 +165,33 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 		s_Data.TextureSlotIndex++;
 	}
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y - halfSize.y, position.z };
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
+
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f( 0.0f, 0.0f );
 	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y - halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(1.0f, 0.0f );
 	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(1.0f, 1.0f );
 	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * Vector2f(0.0f, 1.0f );
 	s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 6;
-
-	// TODO: rotations
-	// Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation, const Colour& colour)
@@ -203,38 +203,33 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 {
 	PROFILE_FUNCTION();
 
-	Vector2f halfSize = 0.5f * size;
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y - halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[0];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 0.0f, 0.0f };
 	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y - halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[1];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 1.0f, 0.0f };
 	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x + halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[2];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 1.0f, 1.0f };
 	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
-	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
-	s_Data.QuadVertexBufferPtr->Position = { position.x - halfSize.x, position.y + halfSize.y, position.z };
+	s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[3];
 	s_Data.QuadVertexBufferPtr->colour = colour;
 	s_Data.QuadVertexBufferPtr->TexCoords = { 0.0f, 1.0f };
 	s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 6;
-
-	// TODO: rotations
-	// Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)

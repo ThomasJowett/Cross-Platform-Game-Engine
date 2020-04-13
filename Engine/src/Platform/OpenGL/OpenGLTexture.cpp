@@ -34,7 +34,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
 
 	bool isValid = std::filesystem::exists(path);
 
-	CORE_ASSERT(isValid, "Image does not exist!");
+	CORE_ASSERT(isValid, "Image does not exist! {0}", path);
 
 	if (isValid)
 	{

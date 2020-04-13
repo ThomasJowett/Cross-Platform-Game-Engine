@@ -31,6 +31,8 @@ private:
 	std::mutex m_Mutex;
 	InstrumentationSession* m_CurrentSession;
 	std::ofstream m_OutputStream;
+
+	bool m_IsEnabled = false;
 public:
 	Instrumentor()
 		: m_CurrentSession(nullptr)
@@ -39,6 +41,9 @@ public:
 
 	void BeginSession(const std::string& name, const std::string& filepath = "results.json")
 	{
+		if (!m_IsEnabled)
+			return;
+
 		std::lock_guard lock(m_Mutex);
 		if (m_CurrentSession)
 		{
@@ -63,12 +68,17 @@ public:
 
 	void EndSession(const std::string& name)
 	{
+		if (!m_IsEnabled)
+			return;
 		std::lock_guard lock(m_Mutex);
 		InternalEndSession(name);
 	}
 
 	void WriteProfile(const ProfileResult& result)
 	{
+
+		if (!m_IsEnabled)
+			return;
 		std::stringstream json;
 
 		std::string name = result.Name;
@@ -99,6 +109,21 @@ public:
 		return instance;
 	}
 
+	static void Enable()
+	{
+		Get().EnableImpl();
+	}
+
+	static void Disable()
+	{
+		Get().DisableImpl();
+	}
+
+	static bool IsEnabled()
+	{
+		return Get().IsEnabledImpl();
+	}
+
 private:
 	void WriteHeader()
 	{
@@ -126,6 +151,21 @@ private:
 			m_CurrentSession = nullptr;
 		}
 	}
+
+	void EnableImpl()
+	{
+		m_IsEnabled = true;
+	}
+
+	void DisableImpl()
+	{
+		m_IsEnabled = false;
+	}
+
+	bool IsEnabledImpl()
+	{
+		return m_IsEnabled;
+	}
 };
 
 class InstrumentationTimer
@@ -134,13 +174,19 @@ public:
 	InstrumentationTimer(const char* name)
 		: m_Name(name), m_Stopped(false)
 	{
-		m_StartTimepoint = std::chrono::steady_clock::now();
+		if (Instrumentor::IsEnabled())
+		{
+			m_StartTimepoint = std::chrono::steady_clock::now();
+		}
 	}
 
 	~InstrumentationTimer()
 	{
-		if (!m_Stopped)
-			Stop();
+		if (Instrumentor::IsEnabled())
+		{
+			if (!m_Stopped)
+				Stop();
+		}
 	}
 
 	void Stop()
@@ -160,9 +206,7 @@ private:
 	bool m_Stopped;
 };
 
-#define PROFILE 1
-
-#ifdef PROFILE
+#ifndef DEBUG // You should only profile an application in release
 	// Resolve which function signature macro will be used. Note that this only
 	// is resolved when the (pre)compiler starts, so the syntax highlighting
 	// could mark the wrong one in your editor!

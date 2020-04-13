@@ -62,8 +62,9 @@ bool WindowsWindow::IsVSync() const
 void WindowsWindow::SetIcon(const std::string & path)
 {
 	int width, height, channels;
-	stbi_set_flip_vertically_on_load(1);
+	stbi_set_flip_vertically_on_load(0);
 	stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+	ASSERT(data, "Failed to load image!");
 	ASSERT(channels == 4, "Icon must be RGBA");
 
 	GLFWimage images[1];
