@@ -10,7 +10,7 @@ public:
 
 	struct Joystick
 	{
-		const char* Name;
+		const char* Name = "";
 		bool IsMapped = false;
 		int ID = 0;
 		int Axes = 0;

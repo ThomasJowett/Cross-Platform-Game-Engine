@@ -3,12 +3,13 @@
 #include <algorithm>
 #include <include.h>
 
-std::vector<std::filesystem::path> Directory::GetDirectories(const char* directoryName, Sorting sorting)
+std::vector<std::filesystem::path> Directory::GetDirectories(const std::filesystem::path& path, Sorting sorting)
 {
 	std::vector<std::filesystem::path> result;
+
 	try
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(directoryName))
+		for (const auto& entry : std::filesystem::directory_iterator(path))
 		{
 			if (entry.is_directory())
 				result.push_back(entry.path());
@@ -24,12 +25,12 @@ std::vector<std::filesystem::path> Directory::GetDirectories(const char* directo
 	return result;
 }
 
-std::vector<std::filesystem::path> Directory::GetFiles(const char* directoryName, Sorting sorting)
+std::vector<std::filesystem::path> Directory::GetFiles(const std::filesystem::path& path, Sorting sorting)
 {
 	std::vector<std::filesystem::path> result;
 	try
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(directoryName))
+		for (const auto& entry : std::filesystem::directory_iterator(path))
 		{
 			if (entry.is_regular_file())
 				result.push_back(entry.path());

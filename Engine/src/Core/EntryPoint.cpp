@@ -58,7 +58,7 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	ENGINE_INFO("Version: {0}", VERSION);
+	ENGINE_INFO("Engine Version: {0}", VERSION);
 
 	Application* app = CreateApplication();
 	
