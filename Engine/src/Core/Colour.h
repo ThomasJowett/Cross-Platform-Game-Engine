@@ -44,6 +44,10 @@ public:
 	{
 		SetColour(colour);
 	}
+	Colour(int hexValue)
+	{
+		SetColour(hexValue);
+	}
 	~Colour() = default;
 
 	void SetColour(Colours colour)
@@ -81,4 +85,59 @@ public:
 		default:					r = 0.00f, g = 0.00f, b = 0.00f, a = 1.0f;	break;
 		}
 	}
+
+	// Hex Value in the form 0xRRGGBBAA
+	void SetColour(int hexValue)
+	{
+		r = ((hexValue >> 24) & 0x0FF) / 255.0f;
+		g = ((hexValue >> 16) & 0x0FF) / 255.0f;
+		b = ((hexValue >> 8) & 0xFF) / 255.0f;
+		a = ((hexValue) & 0xFF) / 255.0f;
+	}
+
+	void SetColour(std::string hex)
+	{
+		std::stringstream stream;
+
+		//Drop a hash if the value has one
+		if (hex[0] == '#')
+			hex.erase(0, 1);
+
+		stream << std::hex << hex;
+
+		if (hex.size() == 6)
+		{
+			stream << std::hex << 255;
+		}
+		else if (hex.size() != 8)
+		{
+			ENGINE_ERROR("Invalid Hex Code #{0}", hex);
+			return;
+		}
+		int hexValue;
+		stream >> hexValue;
+		SetColour(hexValue);
+	}
+
+	// Get a formatted Hex Code string
+	std::string HexCode()
+	{
+		int red = (int)(r * 255);
+		int green = (int)(g * 255);
+		int blue = (int)(b * 255);
+		int alpha = (int)(a * 255);
+		std::stringstream stream;
+		stream << "#" << std::hex << red << green << blue << alpha;
+		return stream.str();
+	}
+
+	std::string to_string()
+	{
+		return std::string("r:" + std::to_string(r) + " g:" + std::to_string(g) + " b:" + std::to_string(b) + " a:" + std::to_string(a));
+	}
 };
+
+inline std::ostream& operator<<(std::ostream& os, Colour& c)
+{
+	return os << c.to_string();
+}
