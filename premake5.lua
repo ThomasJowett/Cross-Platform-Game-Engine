@@ -227,7 +227,10 @@ project "Editor"
 	files
 	{
 		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/Editor.rc",
+		"%{prj.name}/resource.h",
+		"%{prj.name}/Icon.ico"
 	}
 
 	includedirs

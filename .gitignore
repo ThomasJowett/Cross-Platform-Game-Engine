@@ -43,19 +43,22 @@ bin-int/
 *.vcxproj
 *.sln
 *.filters
+*.aps
 
 # configuration files
 *.ini
 
-#makefiles
+# makefiles
 Makefile
+
+# profile jsons
 /ExampleGame/Profile-Runtime.json
 /ExampleGame/Profile-Shutdown.json
 /ExampleGame/Profile-Startup.json
-
-#log
-/ExampleGame/Log.txt
 /Editor/Profile-Startup.json
 /Editor/Profile-Shutdown.json
 /Editor/Profile-Runtime.json
+
+# log
+/ExampleGame/Log.txt
 /Editor/Log.txt
