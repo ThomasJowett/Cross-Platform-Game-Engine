@@ -2,7 +2,7 @@
 
 #include "Core/Input.h"
 
-class WindowsInput : public Input
+class glfwInput : public Input
 {
 protected:
 	bool IsKeyPressedImpl(int keycode) override;

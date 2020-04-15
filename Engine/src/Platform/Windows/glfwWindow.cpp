@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "WindowsWindow.h"
+#include "glfwWindow.h"
 
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
@@ -20,26 +20,26 @@ static void	GLFWErrorCallback(int error, const char* description)
 	ENGINE_ERROR("GLFW Error {0} {1}", error, description);
 }
 
-WindowsWindow::WindowsWindow(const WindowProps& props)
+glfwWindow::glfwWindow(const WindowProps& props)
 {
 	PROFILE_FUNCTION();
 	Init(props);
 }
 
-WindowsWindow::~WindowsWindow()
+glfwWindow::~glfwWindow()
 {
 	PROFILE_FUNCTION();
 	Shutdown();
 }
 
-void WindowsWindow::OnUpdate()
+void glfwWindow::OnUpdate()
 {
 	PROFILE_FUNCTION();
 	glfwPollEvents();
 	m_context->SwapBuffers();
 }
 
-void WindowsWindow::SetVSync(bool enabled)
+void glfwWindow::SetVSync(bool enabled)
 {
 	PROFILE_FUNCTION();
 
@@ -54,12 +54,12 @@ void WindowsWindow::SetVSync(bool enabled)
 	m_Data.VSync = enabled;
 }
 
-bool WindowsWindow::IsVSync() const
+bool glfwWindow::IsVSync() const
 {
 	return m_Data.VSync;
 }
 
-void WindowsWindow::SetIcon(const std::string & path)
+void glfwWindow::SetIcon(const std::string & path)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(0);
@@ -75,7 +75,7 @@ void WindowsWindow::SetIcon(const std::string & path)
 	stbi_image_free(data);
 }
 
-void WindowsWindow::SetWindowMode(const WindowMode & mode, unsigned int width, unsigned int height)
+void glfwWindow::SetWindowMode(const WindowMode & mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
 		return;
@@ -126,7 +126,7 @@ void WindowsWindow::SetWindowMode(const WindowMode & mode, unsigned int width, u
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.XPos, m_OldWindowedParams.YPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
-void WindowsWindow::Init(const WindowProps & props)
+void glfwWindow::Init(const WindowProps & props)
 {
 	PROFILE_FUNCTION();
 
@@ -329,7 +329,7 @@ void WindowsWindow::Init(const WindowProps & props)
 		});
 }
 
-void WindowsWindow::Shutdown()
+void glfwWindow::Shutdown()
 {
 	PROFILE_FUNCTION();
 

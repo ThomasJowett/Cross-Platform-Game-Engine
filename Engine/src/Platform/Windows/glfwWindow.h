@@ -7,11 +7,11 @@
 
 #include "GLFW/glfw3.h"
 
-class WindowsWindow : public Window
+class glfwWindow : public Window
 {
 public:
-	WindowsWindow(const WindowProps& props);
-	virtual ~WindowsWindow();
+	glfwWindow(const WindowProps& props);
+	virtual ~glfwWindow();
 
 	void OnUpdate() override;
 

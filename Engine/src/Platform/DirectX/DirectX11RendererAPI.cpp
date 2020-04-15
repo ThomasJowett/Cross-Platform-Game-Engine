@@ -60,12 +60,30 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 
 void DirectX11RendererAPI::Clear()
 {
-	//m_ImmediateContext->ClearRenderTargetView()
-	//m_ImmediateContext->ClearDepthStencilView()
+	m_ImmediateContext->ClearRenderTargetView(m_RenderTargetView, &m_ClearColour.a);
+	m_ImmediateContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode)
 {
+	vertexArray->Bind();
+
+	switch (drawMode)
+	{
+	case DrawMode::POINTS:
+		m_ImmediateContext->RSSetState(m_RSPoints);
+		break;
+	case DrawMode::WIREFRAME:
+		m_ImmediateContext->RSSetState(m_RSWireFrame);
+		break;
+	case DrawMode::FILL:
+		m_ImmediateContext->RSSetState(m_RSFill);
+		break;
+	default:
+		break;
+	}
+
 	m_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	m_ImmediateContext->DrawIndexed(vertexArray->GetIndexBuffer()->GetCount(), 0, 0);
+	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
+	m_ImmediateContext->DrawIndexed(count, 0, 0);
 }

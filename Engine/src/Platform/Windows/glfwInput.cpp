@@ -1,14 +1,14 @@
 #include "stdafx.h"
-#include "WindowsInput.h"
+#include "glfwInput.h"
 
 #include <GLFW/glfw3.h>
 
 #include "Core/Application.h"
 #include "Core/Joysticks.h"
 
-Scope<Input> Input::s_Instance = CreateScope<WindowsInput>();
+Scope<Input> Input::s_Instance = CreateScope<glfwInput>();
 
-bool WindowsInput::IsKeyPressedImpl(int keycode)
+bool glfwInput::IsKeyPressedImpl(int keycode)
 {
 	try
 	{
@@ -23,7 +23,7 @@ bool WindowsInput::IsKeyPressedImpl(int keycode)
 	}
 }
 
-bool WindowsInput::IsMouseButtonPressedImpl(int button)
+bool glfwInput::IsMouseButtonPressedImpl(int button)
 {
 	try
 	{
@@ -38,7 +38,7 @@ bool WindowsInput::IsMouseButtonPressedImpl(int button)
 	}
 }
 
-std::pair<double, double> WindowsInput::GetMousePosImpl()
+std::pair<double, double> glfwInput::GetMousePosImpl()
 {
 	try
 	{
@@ -54,19 +54,19 @@ std::pair<double, double> WindowsInput::GetMousePosImpl()
 	}
 }
 
-double WindowsInput::GetMouseYImpl()
+double glfwInput::GetMouseYImpl()
 {
 	auto [x, y] = GetMousePosImpl();
 	return y;
 }
 
-double WindowsInput::GetMouseXImpl()
+double glfwInput::GetMouseXImpl()
 {
 	auto [x, y] = GetMousePosImpl();
 	return x;
 }
 
-bool WindowsInput::IsJoystickButtonPressedImpl(int joystickSlot, int button)
+bool glfwInput::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 {
 	Joysticks::Joystick joystick = Joysticks::GetJoystick(joystickSlot);
 	if (joystick.IsMapped)
@@ -89,7 +89,7 @@ bool WindowsInput::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 	return false;
 }
 
-double WindowsInput::GetJoystickAxisImpl(int joystickSlot, int axis)
+double glfwInput::GetJoystickAxisImpl(int joystickSlot, int axis)
 {
 	GLFWgamepadstate state;
 
