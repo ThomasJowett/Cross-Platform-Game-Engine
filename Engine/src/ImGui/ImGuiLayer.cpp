@@ -3,9 +3,17 @@
 
 #include "Core/Application.h"
 
+#include "Renderer/RendererAPI.h"
+
 #include "imgui.h"
 #include "examples/imgui_impl_glfw.h"
 #include "examples/imgui_impl_opengl3.h"
+
+#ifdef __WINDOWS__
+#include "Platform/DirectX/DirectX11RendererAPI.h"
+#include "examples/imgui_impl_dx11.h"
+#include "examples/imgui_impl_win32.h"
+#endif // __WINDOWS__
 
 #include "ImGuiConsole.h"
 
@@ -41,19 +49,43 @@ void ImGuiLayer::OnAttach()
 		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
 	}
 
-	GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::Directx11)
+	{
+		HWND windowHandle = std::any_cast<HWND>(Application::GetWindow().GetNativeWindow());
+		//ImGui_ImplWin32_Init(windowHandle);
 
-	//Setup Platform/Renderer bindings
+		//ImGui_ImplDX11_Init(_pd3dDevice, _pImmediateContext);
+	}
+	else if (api == RendererAPI::API::OpenGL)
+	{
+		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 
-	if (ImGui_ImplGlfw_InitForOpenGL(window, true))
-		m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
+		//Setup Platform/Renderer bindings
+
+		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
+			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
+	}
+	else
+	{
+		ENGINE_CRITICAL("Could not initialise ImGui");
+	}
 }
 
 void ImGuiLayer::OnDetach()
 {
 	PROFILE_FUNCTION();
 
-	ImGui_ImplOpenGL3_Shutdown();
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::Directx11)
+	{
+		ImGui_ImplDX11_Shutdown();
+	}
+	else if (api == RendererAPI::API::OpenGL)
+	{
+		ImGui_ImplOpenGL3_Shutdown();
+	}
+
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
@@ -87,8 +119,17 @@ void ImGuiLayer::OnImGuiRender()
 void ImGuiLayer::Begin()
 {
 	PROFILE_FUNCTION();
-	ImGui_ImplOpenGL3_NewFrame();
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::Directx11)
+	{
+		ImGui_ImplDX11_NewFrame();
+	}
+	else if (api == RendererAPI::API::OpenGL)
+	{
+		ImGui_ImplOpenGL3_NewFrame();
+	}
 	ImGui_ImplGlfw_NewFrame();
+
 	ImGui::NewFrame();
 }
 
@@ -102,7 +143,16 @@ void ImGuiLayer::End()
 
 	//Rendering
 	ImGui::Render();
-	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::Directx11)
+	{
+		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+	}
+	else if (api == RendererAPI::API::OpenGL)
+	{
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{

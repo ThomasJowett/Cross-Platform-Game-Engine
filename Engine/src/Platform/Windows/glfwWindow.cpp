@@ -150,21 +150,29 @@ void glfwWindow::Init(const WindowProps & props)
 
 	m_BaseVideoMode = *(glfwGetVideoMode(glfwGetPrimaryMonitor()));
 
+	RendererAPI::API api = Renderer::GetAPI();
+
 	{
 		PROFILE_SCOPE("glfw create window");
 #ifdef DEBUG
-		if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+		if (api == RendererAPI::API::OpenGL)
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // DEBUG
-
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-		glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-		glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		if (api == RendererAPI::API::OpenGL)
+		{
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		}
 
 		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		++s_GLFWWindowCount;
 	}
-	m_context = CreateScope<OpenGLContext>(m_Window);
+
+	if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+	{
+		m_context = CreateScope<OpenGLContext>(m_Window);
+	}
 
 	m_context->Init();
 

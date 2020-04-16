@@ -4,6 +4,8 @@
 #include "Renderer/GraphicsContext.h"
 #include <Windows.h>
 
+static uint8_t s_Win32WindowCount = 0;
+
 class Win32Window : public Window
 {
 public:
@@ -32,6 +34,7 @@ private:
 	virtual void Shutdown();
 
 private:
+	HWND m_Window;
 	struct WindowData
 	{
 		std::string Title;
@@ -43,7 +46,8 @@ private:
 	};
 
 	HINSTANCE m_Instance;
-	HWND m_Window;
 
 	WindowData m_Data;
+
+	Scope<GraphicsContext> m_context;
 };

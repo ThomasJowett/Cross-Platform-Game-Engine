@@ -3,11 +3,11 @@
 
 #include "Renderer/RendererAPI.h"
 
-#ifdef __WINDOWS__
 #include "Platform/Windows/glfwWindow.h"
+
+#ifdef __WINDOWS__
 #include "Platform/Windows/Win32Window.h"
 #endif // __WINDOWS__
-
 
 Scope<Window> Window::Create(const WindowProps & props)
 {

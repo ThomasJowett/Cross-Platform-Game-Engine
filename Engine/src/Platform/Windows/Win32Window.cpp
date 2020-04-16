@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "Win32Window.h"
 
+#include "Platform/DirectX/DirectX11Context.h"
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	PAINTSTRUCT ps;
@@ -26,12 +28,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 Win32Window::Win32Window(const WindowProps& props)
 {
-	RECT rc;
-	GetClientRect(m_Window, &rc);
+	PROFILE_FUNCTION();
+	if (FAILED(Init(props)))
+	{
+		CORE_ASSERT(false, "Win32 Window failed to initialise");
+	}
 }
 
 Win32Window::~Win32Window()
 {
+	Shutdown();
 }
 
 void Win32Window::OnUpdate()
@@ -61,6 +67,8 @@ void Win32Window::SetWindowMode(const WindowMode& mode, unsigned int width, unsi
 
 HRESULT Win32Window::Init(const WindowProps& props)
 {
+	m_Instance = GetModuleHandle(0);
+
 	//Register class
 	WNDCLASSEX wcex;
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -69,11 +77,13 @@ HRESULT Win32Window::Init(const WindowProps& props)
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
 	wcex.hInstance = m_Instance;
+	wcex.hIcon = nullptr;
 	//wcex.hIcon = LoadIcon(m_Instance, (LPCTSTR)IDI_ICON1)//TODO:: generate the resource file and include to here to get the Icon.ico
 	wcex.hCursor = LoadCursor(NULL, IDC_ARROW); // TODO: make a cursor management class to allow the switching of the cursor from the default arrow
 	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	wcex.lpszMenuName = nullptr;
 	wcex.lpszClassName = L"EngineWindowClass";
+	wcex.hIconSm = nullptr;
 	//wcex.hIconSm = LoadIcon(wcex.hInstance, (LPSTR)IDI_ICON1);
 	if (!RegisterClassEx(&wcex))
 		return E_FAIL;
@@ -90,16 +100,25 @@ HRESULT Win32Window::Init(const WindowProps& props)
 	RECT rc = { 0,0, (LONG)props.Width, (LONG)props.Height };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	m_Window = CreateWindow(wcex.lpszClassName, wTitle.c_str(), WS_OVERLAPPEDWINDOW,
-		CW_DEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
+		props.PosX, props.PosY, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
 
 	if (!m_Window)
 		return E_FAIL;
 
+	ENGINE_INFO("Creating Window {0} {1} {2}", props.Title, props.Width, props.Height);
+
 	ShowWindow(m_Window, 1);
+
+	++s_Win32WindowCount;
+
+	m_context = CreateScope<DirectX11Context>(m_Window);
+
+	m_context->Init();
 
 	return S_OK;
 }
 
 void Win32Window::Shutdown()
 {
+	--s_Win32WindowCount;
 }

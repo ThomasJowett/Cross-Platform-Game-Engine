@@ -7,7 +7,6 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
 
-#ifdef __WINDOWS__
 
 extern Application* CreateApplication();
 
@@ -15,13 +14,12 @@ bool AnotherInstance();
 
 int main(int argc, char* argv[])
 {
+	InputParser input(argc, argv);
+
 	if (AnotherInstance())
 		return 1;
 
 	Logger::Init();
-
-	InputParser input(argc, argv);
-
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{
@@ -93,4 +91,3 @@ bool AnotherInstance()
 	}
 	return false;
 }
-#endif // __WINDOWS__

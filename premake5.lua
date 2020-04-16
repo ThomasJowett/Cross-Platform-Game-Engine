@@ -73,7 +73,8 @@ project "Engine"
 		
 		links
 		{
-			"opengl32.lib"
+			"opengl32.lib",
+			"d3d11.lib"
 		}
 		
 		excludes
