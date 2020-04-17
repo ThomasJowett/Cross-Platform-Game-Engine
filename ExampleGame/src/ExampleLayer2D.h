@@ -21,5 +21,7 @@ private:
 	float m_Rotation = 0.0f;
 	float m_Size[2] = { 1.0f, 1.0f };
 
+	float m_Gridsize = 10.0f;
+
 	TextureLibrary2D m_TextureLibrary;
 };

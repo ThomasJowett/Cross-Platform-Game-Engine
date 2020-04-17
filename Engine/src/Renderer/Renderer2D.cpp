@@ -34,6 +34,8 @@ struct Renderer2DData
 	uint32_t TextureSlotIndex = 1;
 
 	Vector3f QuadVertexPositions[4];
+
+	Renderer2D::Stats Statistics;
 };
 
 static Renderer2DData s_Data;
@@ -137,6 +139,17 @@ void Renderer2D::Flush()
 		s_Data.TextureSlots[i]->Bind(i);
 	}
 	RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
+	s_Data.Statistics.DrawCalls++;
+}
+
+void Renderer2D::FlushAndReset()
+{
+	EndScene();
+
+	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+	s_Data.QuadIndexCount = 0;
+
+	s_Data.TextureSlotIndex = 1;
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
@@ -147,6 +160,11 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+	{
+		FlushAndReset();
+	}
 
 	float textureIndex = 0.0f;
 
@@ -192,6 +210,8 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 6;
+
+	s_Data.Statistics.QuadCount++;
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation, const Colour& colour)
@@ -202,6 +222,11 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const float& rotation, const Colour& colour)
 {
 	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+	{
+		FlushAndReset();
+	}
 
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
 
@@ -230,6 +255,8 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 	s_Data.QuadVertexBufferPtr++;
 
 	s_Data.QuadIndexCount += 6;
+
+	s_Data.Statistics.QuadCount++;
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)
@@ -270,4 +297,14 @@ void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float& 
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour)
 {
 	DrawPolyline(points, 1.0f, colour);
+}
+
+const Renderer2D::Stats& Renderer2D::GetStats()
+{
+	return s_Data.Statistics;
+}
+
+void Renderer2D::ResetStats()
+{
+	memset(&s_Data.Statistics, 0, sizeof(Stats));
 }
