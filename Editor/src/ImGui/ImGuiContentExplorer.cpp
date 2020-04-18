@@ -57,7 +57,7 @@ public:
 				return false;
 		}
 		paths.push_back(fi);
-		currentPathIndex = paths.size() - 1;
+		currentPathIndex = (int)paths.size() - 1;
 		return true;
 	}
 };

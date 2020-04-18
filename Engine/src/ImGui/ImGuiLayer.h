@@ -22,6 +22,9 @@ public:
 	void Begin();
 	void End();
 
+	bool IsUsing() { return m_UsingImGui; }
+	void SetIsUsing(bool isUsing) { m_UsingImGui = isUsing; }
+
 private:
 	bool m_UsingImGui;
 };

@@ -22,6 +22,9 @@ public:
 	static inline Application& Get() { return *s_Instance; }
 	static Window& GetWindow() { return Get().GetWindowImpl(); }
 
+	static void ShowImGui(bool showImgui) { Get().m_ImGuiLayer->SetIsUsing(showImgui); }
+	static void ToggleImGui() { Get().m_ImGuiLayer->SetIsUsing(!Get().m_ImGuiLayer->IsUsing()); }
+
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();

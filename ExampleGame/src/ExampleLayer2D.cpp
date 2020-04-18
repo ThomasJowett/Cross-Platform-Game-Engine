@@ -26,7 +26,7 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	{
 		for (float x = -m_Gridsize; x <= m_Gridsize; x += 0.2f)
 		{
-			Colour colour = { (x + m_Gridsize) / 10.0f, 0.4f, (y + m_Gridsize) / 10.0f, 1.0f };
+			Colour colour = { (x + m_Gridsize/2) / m_Gridsize, 0.4f, (y + m_Gridsize/2) / m_Gridsize, 1.0f };
 			Renderer2D::DrawQuad({ x,y }, { 0.1f, 0.1f }, x / 3.14f, colour);
 		}
 	}
@@ -43,6 +43,14 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 void ExampleLayer2D::OnEvent(Event & e)
 {
 	m_CameraController.OnEvent(e);
+
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<KeyPressedEvent>([](KeyPressedEvent& event)
+		{
+			if (event.GetKeyCode() == KEY_F11)
+				Application::ToggleImGui();
+			return false;
+		});
 }
 
 void ExampleLayer2D::OnImGuiRender()

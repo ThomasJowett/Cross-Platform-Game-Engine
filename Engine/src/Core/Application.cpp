@@ -22,7 +22,9 @@ Application::Application(const WindowProps& props)
 
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-	PushOverlay(new ImGuiLayer());
+	m_ImGuiLayer = new ImGuiLayer();
+
+	PushOverlay(m_ImGuiLayer);
 }
 
 
@@ -77,7 +79,7 @@ void Application::Run()
 			}
 		}
 
-		if (m_ImGuiLayer)
+		if (m_ImGuiLayer->IsUsing())
 		{
 			m_ImGuiLayer->Begin();
 			for (Layer* layer : m_LayerStack)
