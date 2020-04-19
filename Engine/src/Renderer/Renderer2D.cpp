@@ -81,7 +81,7 @@ bool Renderer2D::Init()
 
 
 	s_Data.WhiteTexture = Texture2D::Create(1, 1);
-	uint32_t whiteTextureData = 0xffffffff;
+	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
 	s_Data.WhiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 	int32_t samplers[s_Data.MaxTexturesSlots];

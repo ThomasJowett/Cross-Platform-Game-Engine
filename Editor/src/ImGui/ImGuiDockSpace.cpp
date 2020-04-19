@@ -12,7 +12,7 @@ ImGuiDockSpace::ImGuiDockSpace()
     m_ShowProperties = false;
     m_ShowHierachy = false;
     m_ShowContentExplorer = true;
-    m_ShowJoystickInfo = false;
+    m_ShowJoystickInfo = true;
 }
 
 void ImGuiDockSpace::OnAttach()
@@ -24,6 +24,10 @@ void ImGuiDockSpace::OnDetach()
 }
 
 void ImGuiDockSpace::OnEvent(Event& event)
+{
+}
+
+void ImGuiDockSpace::OnUpdate(float deltaTime)
 {
 }
 

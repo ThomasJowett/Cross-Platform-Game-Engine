@@ -131,6 +131,19 @@ public:
 		return stream.str();
 	}
 
+	int HexValue()
+	{
+		int red = (int)(r * 255);
+		int green = (int)(g * 255);
+		int blue = (int)(b * 255);
+		int alpha = (int)(a * 255);
+		std::stringstream stream;
+		stream << std::hex << red << green << blue << alpha;
+		int hexValue;
+		stream >> hexValue;
+		return hexValue;
+	}
+
 	std::string to_string()
 	{
 		return std::string("r:" + std::to_string(r) + " g:" + std::to_string(g) + " b:" + std::to_string(b) + " a:" + std::to_string(a));
