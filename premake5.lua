@@ -39,7 +39,8 @@ project "Engine"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/stb/**.h",
-		"%{prj.name}/vendor/stb/**.cpp"
+		"%{prj.name}/vendor/stb/**.cpp",
+		"%{prj.name}/vendor/simpleini/**.h"
 	}
 
 	includedirs
@@ -50,7 +51,8 @@ project "Engine"
 		"%{prj.name}/vendor/GLAD/include",
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/stb",
-		"%{prj.name}/vendor/spdlog/include"
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/simpleini"
 	}
 	
 	links
