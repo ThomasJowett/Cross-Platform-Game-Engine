@@ -13,6 +13,8 @@
 
 #include "stb_image.h"
 
+#include "Core/Input.h"
+
 static uint8_t s_GLFWWindowCount = 0;
 
 static void	GLFWErrorCallback(int error, const char* description)
@@ -36,7 +38,7 @@ void glfwWindow::OnUpdate()
 {
 	PROFILE_FUNCTION();
 	glfwPollEvents();
-	m_context->SwapBuffers();
+	m_Context->SwapBuffers();
 }
 
 void glfwWindow::SetVSync(bool enabled)
@@ -128,6 +130,7 @@ void glfwWindow::SetWindowMode(const WindowMode & mode, unsigned int width, unsi
 
 void glfwWindow::Init(const WindowProps & props)
 {
+	Input::SetInput(RendererAPI::GetAPI());
 	PROFILE_FUNCTION();
 
 	m_Data.Title = props.Title;
@@ -171,10 +174,10 @@ void glfwWindow::Init(const WindowProps & props)
 
 	if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 	{
-		m_context = CreateScope<OpenGLContext>(m_Window);
+		m_Context = CreateRef<OpenGLContext>(m_Window);
 	}
 
-	m_context->Init();
+	m_Context->Init();
 
 	m_OldWindowedParams.width = props.Width;
 	m_OldWindowedParams.Height = props.Height;
@@ -199,6 +202,9 @@ void glfwWindow::Init(const WindowProps & props)
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			data.PosX = posX;
 			data.PosY = posY;
+
+			WindowMoveEvent event(posX, posY);
+			data.EventCallback(event);
 		});
 	
 	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)

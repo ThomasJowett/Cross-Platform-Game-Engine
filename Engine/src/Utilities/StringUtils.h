@@ -46,3 +46,12 @@ static std::vector<std::string> SplitString(const std::string &s, char delim)
 
 	return elems;
 }
+
+static wchar_t* ConvertToWideChar(std::string& s)
+{
+	wchar_t* wideString = new wchar_t[s.length() + 1];
+	std::copy(s.begin(), s.end(), wideString);
+	wideString[s.length()] = 0;
+
+	return wideString;
+}

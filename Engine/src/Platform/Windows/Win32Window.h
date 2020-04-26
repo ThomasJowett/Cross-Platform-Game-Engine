@@ -25,6 +25,7 @@ public:
 	bool IsVSync() const override;
 
 	inline virtual std::any GetNativeWindow() const override { return m_Window; }
+	inline virtual Ref<GraphicsContext> GetContext() const override { return m_Context; }
 
 	virtual void SetIcon(const std::string& path) override;
 
@@ -33,6 +34,9 @@ private:
 	virtual HRESULT Init(const WindowProps& props);
 	virtual void Shutdown();
 
+	void MessageLoop();
+
+	static LRESULT WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 private:
 	HWND m_Window;
 	struct WindowData
@@ -49,5 +53,7 @@ private:
 
 	WindowData m_Data;
 
-	Scope<GraphicsContext> m_context;
+	Ref<GraphicsContext> m_Context;
+
+	
 };

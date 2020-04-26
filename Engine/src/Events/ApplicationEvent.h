@@ -26,6 +26,28 @@ private:
 	unsigned int m_width, m_height;
 };
 
+class WindowMoveEvent : public Event
+{
+public:
+	WindowMoveEvent(unsigned int x, unsigned int y)
+		:m_XPosition(x), m_YPosition(y) {}
+
+	inline unsigned int GetTopLeftX() const { return m_XPosition; }
+	inline unsigned int GetTopLeftY() const { return m_YPosition; }
+
+	std::string to_string() const override
+	{
+		std::stringstream ss;
+		ss << "WindowMoveEvent: " << m_XPosition << ", " << m_YPosition;
+		return ss.str();
+	}
+
+	EVENT_CLASS_TYPE(WINDOW_MOVED);
+	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+private:
+	unsigned int m_XPosition, m_YPosition;
+};
+
 class WindowFocusLostEvent : public Event
 {
 public:

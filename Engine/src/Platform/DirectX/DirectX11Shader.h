@@ -21,9 +21,19 @@ public:
 	virtual void SetFloat(const char* name, const float value) override;
 
 	virtual std::string GetName()const override { return m_Name; }
-
+private:
+	HRESULT CompileShaderFromFile(WCHAR* szFilename, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
+	HRESULT CompileShaders(std::string filename);
 private:
 	std::string m_Name;
 
+	ID3D11DeviceContext* m_ImmediateContext;
+
 	ID3D11VertexShader* m_VertexShader;
+	ID3D11HullShader* m_HullShader;
+	ID3D11DomainShader* m_DomainShader;
+	ID3D11GeometryShader* m_GeometryShader;
+	ID3D11PixelShader* m_PixelShader;
+
+	static const char* shaderVersion;
 };

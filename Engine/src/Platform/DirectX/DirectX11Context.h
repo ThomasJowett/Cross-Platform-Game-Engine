@@ -14,9 +14,17 @@ public:
 	~DirectX11Context();
 	virtual void Init()override;
 	virtual void SwapBuffers()override;
+
+	ID3D11Device* GetDevice() { return m_D3dDevice; }
+	ID3D11DeviceContext* GetDeviceContext() { return m_ImmediateContext; }
+	ID3D11RenderTargetView* GetRenderTargetView() { return m_RenderTargetView; }
+	ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }
 private:
 	HWND m_WindowHandle;
 	IDXGISwapChain* m_SwapChain;
+	ID3D11RenderTargetView* m_RenderTargetView;
+	ID3D11DepthStencilView* m_DepthStencilView;
+	ID3D11Texture2D* m_DepthStencilBuffer;
 
 	ID3D11DeviceContext* m_ImmediateContext;
 	D3D_DRIVER_TYPE m_DriverType;

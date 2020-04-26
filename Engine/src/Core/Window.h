@@ -4,6 +4,7 @@
 
 #include "core.h"
 #include "Events/Event.h"
+#include "Renderer/GraphicsContext.h"
 
 enum class WindowMode
 {
@@ -58,6 +59,7 @@ public:
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) = 0;
 
 	virtual std::any GetNativeWindow() const = 0;
+	virtual Ref<GraphicsContext> GetContext() const = 0;
 	
 	static Scope<Window> Create(const WindowProps& props = WindowProps());
 };

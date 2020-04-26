@@ -2,11 +2,16 @@
 #include "DirectX11RendererAPI.h"
 #include "Core/Application.h"
 #include "Platform/Windows/Win32Window.h"
+#include "DirectX11Context.h"
 
 #include <d3d11.h>
 
 bool DirectX11RendererAPI::Init()
 {
+	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get());
+	m_ImmediateContext = context->GetDeviceContext();
+	m_RenderTargetView = context->GetRenderTargetView();
+	m_DepthStencilView = context->GetDepthStencilView();
 	return true;
 }
 
@@ -21,13 +26,14 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 	m_Viewport.Height = (FLOAT)height;
 	m_Viewport.MaxDepth = 1.0f;
 	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.TopLeftX = 0;
-	m_Viewport.TopLeftY = 0;
+	m_Viewport.TopLeftX = x;
+	m_Viewport.TopLeftY = y;
+	m_ImmediateContext->RSSetViewports(1, &m_Viewport);
 }
 
 void DirectX11RendererAPI::Clear()
 {
-	m_ImmediateContext->ClearRenderTargetView(m_RenderTargetView, &m_ClearColour.a);
+	m_ImmediateContext->ClearRenderTargetView(m_RenderTargetView, &m_ClearColour.r);
 	m_ImmediateContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 

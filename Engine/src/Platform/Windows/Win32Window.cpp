@@ -3,8 +3,20 @@
 
 #include "Platform/DirectX/DirectX11Context.h"
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+#include "Events/ApplicationEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+
+#include "Core/Application.h"
+
+#include "Core/Input.h"
+
+LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	WindowData* data = (WindowData*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+	if (data == nullptr)
+		return DefWindowProc(hWnd, message, wParam, lParam);
+
 	PAINTSTRUCT ps;
 	HDC hdc;
 
@@ -18,6 +30,48 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	case WM_SIZE:
+	{
+		int width = LOWORD(lParam);
+		int height = HIWORD(lParam);
+
+		data->Width = width;
+		data->Height = height;
+
+		WindowResizeEvent event(width, height);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_CLOSE:
+	{
+		WindowCloseEvent event;
+		data->EventCallback(event);
+		break;
+	}
+	case WM_SETFOCUS:
+	{
+		WindowFocusEvent event;
+		data->EventCallback(event);
+		break;
+	}
+	case WM_KILLFOCUS:
+	{
+		WindowFocusLostEvent event;
+		data->EventCallback(event);
+		break;
+	}
+	case WM_MOVE:
+	{
+		int posX = LOWORD(lParam);
+		int posY = HIWORD(lParam);
+
+		data->PosX = posX;
+		data->PosY = posY;
+
+		WindowMoveEvent event(posX, posY);
+		data->EventCallback(event);
+		break;
+	}
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -42,6 +96,8 @@ Win32Window::~Win32Window()
 
 void Win32Window::OnUpdate()
 {
+	MessageLoop();
+	m_Context->SwapBuffers();
 }
 
 void Win32Window::SetVSync(bool enabled)
@@ -67,7 +123,15 @@ void Win32Window::SetWindowMode(const WindowMode& mode, unsigned int width, unsi
 
 HRESULT Win32Window::Init(const WindowProps& props)
 {
+	Input::SetInput(RendererAPI::GetAPI());
 	m_Instance = GetModuleHandle(0);
+
+	m_Data.Title = props.Title;
+	m_Data.Width = props.Width;
+	m_Data.Height = props.Height;
+	m_Data.PosX = props.PosX;
+	m_Data.PosY = props.PosY;
+	m_Data.Mode = WindowMode::WINDOWED;
 
 	//Register class
 	WNDCLASSEX wcex;
@@ -89,31 +153,33 @@ HRESULT Win32Window::Init(const WindowProps& props)
 		return E_FAIL;
 
 	int len;
-	int slength = (int)props.Title.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, props.Title.c_str(), slength, 0, 0);
+	int slength = (int)m_Data.Title.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, m_Data.Title.c_str(), slength, 0, 0);
 	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, props.Title.c_str(), slength, buf, len);
+	MultiByteToWideChar(CP_ACP, 0, m_Data.Title.c_str(), slength, buf, len);
 	std::wstring wTitle(buf);
 	delete[] buf;
 
 	//create the window
-	RECT rc = { 0,0, (LONG)props.Width, (LONG)props.Height };
+	RECT rc = { 0,0, (LONG)m_Data.Width, (LONG)m_Data.Height };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	m_Window = CreateWindow(wcex.lpszClassName, wTitle.c_str(), WS_OVERLAPPEDWINDOW,
-		props.PosX, props.PosY, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
+		m_Data.PosX, m_Data.PosY, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
 
 	if (!m_Window)
 		return E_FAIL;
 
-	ENGINE_INFO("Creating Window {0} {1} {2}", props.Title, props.Width, props.Height);
+
+	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.Title, m_Data.Width, m_Data.Height);
 
 	ShowWindow(m_Window, 1);
+	SetWindowLongPtr(m_Window, GWLP_USERDATA, (LONG_PTR)&m_Data);
 
 	++s_Win32WindowCount;
 
-	m_context = CreateScope<DirectX11Context>(m_Window);
+	m_Context = CreateRef<DirectX11Context>(m_Window);
 
-	m_context->Init();
+	m_Context->Init();
 
 	return S_OK;
 }
@@ -121,4 +187,37 @@ HRESULT Win32Window::Init(const WindowProps& props)
 void Win32Window::Shutdown()
 {
 	--s_Win32WindowCount;
+}
+
+void Win32Window::MessageLoop()
+{
+	MSG msg = { 0 };
+	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+	{
+		bool handled = false;
+		if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
+		{
+			KeyPressedEvent event(msg.message, 0);
+			m_Data.EventCallback(event);
+			handled = true;
+		}
+		else if (msg.message == WM_QUIT)
+		{
+			WindowCloseEvent event;
+			m_Data.EventCallback(event);
+			handled = true;
+		}
+		else if (msg.message == WM_SETFOCUS)
+		{
+			WindowFocusEvent event;
+			m_Data.EventCallback(event);
+			handled = true;
+		}
+
+		if (!handled)
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 }
