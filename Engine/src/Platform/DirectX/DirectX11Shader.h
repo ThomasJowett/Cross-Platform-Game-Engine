@@ -35,5 +35,5 @@ private:
 	ID3D11GeometryShader* m_GeometryShader;
 	ID3D11PixelShader* m_PixelShader;
 
-	static const char* shaderVersion;
+	static std::string shaderVersion;
 };

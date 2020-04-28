@@ -8,7 +8,7 @@
 #include "Core/Application.h"
 #include "DirectX11Context.h"
 
-const char* DirectX11Shader::shaderVersion = "vs_5_0";
+std::string DirectX11Shader::shaderVersion = "_5_0";
 
 DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& fileDirectory)
 	:m_Name(name)
@@ -129,27 +129,27 @@ HRESULT DirectX11Shader::CompileShaders(std::string filename)
 	ID3D11Device* pd3dDevice = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get())->GetDevice();
 
 	// Vertex Shader
-	hr = CompileShaderFromFile(wFilename, "vertexShader", shaderVersion, &pBlob);
+	hr = CompileShaderFromFile(wFilename, "vertexShader", ("vs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = pd3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_VertexShader);
 
 	// Hull Shader
-	hr = CompileShaderFromFile(wFilename, "hullShader", shaderVersion, &pBlob);
+	hr = CompileShaderFromFile(wFilename, "hullShader", ("hs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = pd3dDevice->CreateHullShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_HullShader);
 
 	//Domain Shader
-	hr = CompileShaderFromFile(wFilename, "domainShader", shaderVersion, &pBlob);
+	hr = CompileShaderFromFile(wFilename, "domainShader", ("ds" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = pd3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
 
 	//Geometry Shader
-	hr = CompileShaderFromFile(wFilename, "geometryShader", shaderVersion, &pBlob);
+	hr = CompileShaderFromFile(wFilename, "geometryShader", ("gs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = pd3dDevice->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_GeometryShader);
 
 	//Pixel Shader
-	hr = CompileShaderFromFile(wFilename, "pixelShader", shaderVersion, &pBlob);
+	hr = CompileShaderFromFile(wFilename, "pixelShader", ("ps" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = pd3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_PixelShader);
 

@@ -1,3 +1,7 @@
+Texture3D u_textures : register(t0);
+
+SamplerState samLinear : register(s0);
+
 struct VS_INPUT
 {
 	float3 a_position : POSITION;
@@ -24,4 +28,9 @@ VS_OUTPUT vertexShader(VS_INPUT input)
 
 	output.v_position = float4(input.a_position, 1.0f);
 	return output;
+}
+
+float4 pixelShader(VS_OUTPUT input) : SV_Target
+{
+	return u_textures.Sample(samLinear, float3(input.v_texcoord, input.v_texIndex)) * input.v_colour;
 }
