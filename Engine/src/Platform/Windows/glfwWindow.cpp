@@ -14,6 +14,7 @@
 #include "stb_image.h"
 
 #include "Core/Input.h"
+#include "Core/Settings.h"
 
 static uint8_t s_GLFWWindowCount = 0;
 
@@ -53,6 +54,8 @@ void glfwWindow::SetVSync(bool enabled)
 	{
 		glfwSwapInterval(0);
 	}
+
+	Settings::SetBool("Display", "V-Sync", enabled);
 	m_Data.VSync = enabled;
 }
 
@@ -61,7 +64,7 @@ bool glfwWindow::IsVSync() const
 	return m_Data.VSync;
 }
 
-void glfwWindow::SetIcon(const std::string & path)
+void glfwWindow::SetIcon(const std::string& path)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(0);
@@ -77,7 +80,7 @@ void glfwWindow::SetIcon(const std::string & path)
 	stbi_image_free(data);
 }
 
-void glfwWindow::SetWindowMode(const WindowMode & mode, unsigned int width, unsigned int height)
+void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
 		return;
@@ -123,21 +126,22 @@ void glfwWindow::SetWindowMode(const WindowMode & mode, unsigned int width, unsi
 		m_Data.EventCallback(event);
 	}
 
+	Settings::SetInt("Display", "Window_Mode", (int)mode);
 	m_Data.Mode = mode;
 
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.XPos, m_OldWindowedParams.YPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
-void glfwWindow::Init(const WindowProps & props)
+void glfwWindow::Init(const WindowProps& props)
 {
 	Input::SetInput(RendererAPI::GetAPI());
 	PROFILE_FUNCTION();
 
 	m_Data.Title = props.Title;
-	m_Data.Width = props.Width;
-	m_Data.Height = props.Height;
-	m_Data.PosX = props.PosX;
-	m_Data.PosY = props.PosY;
+	m_Data.Width = Settings::GetInt("Display", "Screen_Width");
+	m_Data.Height = Settings::GetInt("Display", "Screen_Height");
+	m_Data.PosX = Settings::GetInt("Display", "Window_Position_X");
+	m_Data.PosY = Settings::GetInt("Display", "Window_Position_Y");
 	m_Data.Mode = WindowMode::WINDOWED;
 
 	ENGINE_INFO("Creating Window {0} {1} {2}", props.Title, props.Width, props.Height);
@@ -168,7 +172,7 @@ void glfwWindow::Init(const WindowProps & props)
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
-		m_Window = glfwCreateWindow((int)props.Width, (int)props.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
 		++s_GLFWWindowCount;
 	}
 
@@ -179,13 +183,14 @@ void glfwWindow::Init(const WindowProps & props)
 
 	m_Context->Init();
 
-	m_OldWindowedParams.width = props.Width;
-	m_OldWindowedParams.Height = props.Height;
-	glfwSetWindowPos(m_Window, (int)props.PosX, (int)props.PosY);
+	m_OldWindowedParams.width = m_Data.Width;
+	m_OldWindowedParams.Height = m_Data.Height;
+	glfwSetWindowPos(m_Window, (int)m_Data.PosX, (int)m_Data.PosY);
 	glfwGetWindowPos(m_Window, &(m_OldWindowedParams.XPos), &(m_OldWindowedParams.YPos));
 
 	glfwSetWindowUserPointer(m_Window, &m_Data);
-	SetVSync(true);
+	SetVSync(Settings::GetBool("Display", "V-Sync"));
+	SetWindowMode((WindowMode)Settings::GetInt("Display", "Window_Mode"));
 
 	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
@@ -196,7 +201,7 @@ void glfwWindow::Init(const WindowProps & props)
 			WindowResizeEvent event(width, height);
 			data.EventCallback(event);
 		});
-	
+
 	glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int posX, int posY)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -206,7 +211,7 @@ void glfwWindow::Init(const WindowProps & props)
 			WindowMoveEvent event(posX, posY);
 			data.EventCallback(event);
 		});
-	
+
 	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -229,7 +234,7 @@ void glfwWindow::Init(const WindowProps & props)
 				data.EventCallback(event);
 			}
 		});
-	
+
 	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
@@ -302,7 +307,7 @@ void glfwWindow::Init(const WindowProps & props)
 			data.EventCallback(event);
 		});
 
-	for (int jid = GLFW_JOYSTICK_1;  jid <= GLFW_JOYSTICK_LAST; jid++)
+	for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
 	{
 		if (glfwJoystickPresent(jid))
 		{

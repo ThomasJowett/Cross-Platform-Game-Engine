@@ -53,7 +53,7 @@ OpenGLTexture2D::~OpenGLTexture2D()
 	glDeleteTextures(1, &m_RendererID);
 }
 
-void OpenGLTexture2D::SetData(void * data, uint32_t size)
+void OpenGLTexture2D::SetData(void* data, uint32_t size)
 {
 	PROFILE_FUNCTION();
 
@@ -130,9 +130,9 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 		data = stbi_load(m_Path.c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image!");
+	CORE_ASSERT(data, "Failed to load image: ", stbi_failure_reason());
 
-	if(!data)
+	if (!data)
 		return false;
 
 	m_Width = (uint32_t)width;
@@ -148,6 +148,11 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	{
 		internalFormat = GL_RGB8;
 		dataFormat = GL_RGB;
+	}
+	else if (channels == 1)
+	{
+		internalFormat = GL_R8;
+		dataFormat = GL_RED;
 	}
 
 	CORE_ASSERT(internalFormat && dataFormat, "Format not supported");
@@ -165,8 +170,18 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	if (m_Width % 8 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+	else if (m_Width % 4 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	else if (m_Width % 2 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	else
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	
 	stbi_image_free(data);
+
 	return true;
 }

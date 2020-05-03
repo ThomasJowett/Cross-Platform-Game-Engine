@@ -164,7 +164,8 @@ project "ExampleGame"
 		"ExampleGame/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include"
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/simpleini",
 	}
 	
 	links
@@ -241,7 +242,8 @@ project "Editor"
 		"Editor/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include"
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/simpleini",
 	}
 	
 	links

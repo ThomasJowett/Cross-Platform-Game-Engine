@@ -10,6 +10,8 @@
 #include "Core/KeyCodes.h"
 #include "Core/MouseButtonCodes.h"
 #include "Core/Colour.h"
+#include "Core/Settings.h"
+
 #include "OrthoGrpahicCameraController.h"
 #include "PerspectiveCameraController.h"
 

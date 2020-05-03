@@ -6,6 +6,7 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
 #include "Core/Joysticks.h"
+#include "Settings.h"
 
 #include "Logging/Logger.h"
 
@@ -15,6 +16,9 @@ Application::Application(const WindowProps& props)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
+
+	SetDefaultSettings(props);
+
 	m_Window = Scope<Window>(Window::Create(props));
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
@@ -30,6 +34,17 @@ Application::Application(const WindowProps& props)
 
 Application::~Application()
 {
+	Settings::SaveSettings();
+}
+
+void Application::AddLayer(Layer* layer)
+{
+	m_WaitingLayers.push_back(layer);
+}
+
+void Application::AddOverlay(Layer* layer)
+{
+	m_WaitingOverlays.push_back(layer);
 }
 
 void Application::Run()
@@ -89,6 +104,19 @@ void Application::Run()
 			m_ImGuiLayer->End();
 		}
 		m_Window->OnUpdate();
+
+		for (Layer* layer : m_WaitingLayers)
+		{
+			PushLayer(layer);
+		}
+
+		for (Layer* overlay : m_WaitingOverlays)
+		{
+			PushOverlay(overlay);
+		}
+
+		m_WaitingLayers.clear();
+		m_WaitingOverlays.clear();
 	}
 }
 
@@ -99,6 +127,7 @@ void Application::OnEvent(Event& e)
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
+	dispatcher.Dispatch<WindowMoveEvent>(BIND_EVENT_FN(Application::OnWindowMove));
 
 	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected& event)
 		{
@@ -151,6 +180,30 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 		return false;
 	}
 	m_Minimized = false;
+
+	Settings::SetInt("Display", "Screen_Width", e.GetWidth());
+	Settings::SetInt("Display", "Screen_Height", e.GetHeight());
+
 	Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 	return false;
+}
+
+bool Application::OnWindowMove(WindowMoveEvent& e)
+{
+	Settings::SetInt("Display", "Window_Position_X", e.GetTopLeftX());
+	Settings::SetInt("Display", "Window_Position_Y", e.GetTopLeftY());
+	return false;
+}
+
+void Application::SetDefaultSettings(const WindowProps& props)
+{
+	const char* display = "Display";
+	const char* audio = "Audio";
+
+	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
+	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
+	Settings::SetDefaultInt(display, "Window_Position_X", props.PosX);
+	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
+	Settings::SetDefaultInt(display, "Window_Mode", 0);
+	Settings::SetDefaultBool(display, "V-Sync", true);
 }
