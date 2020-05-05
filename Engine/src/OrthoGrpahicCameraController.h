@@ -22,7 +22,7 @@ public:
 	OrthographicCamera GetCamera() { return m_Camera; }
 
 	float GetZoom() const { return m_ZoomLevel; }
-	float SetZoom() { m_ZoomLevel; }
+	void SetZoom() { m_ZoomLevel; }
 private:
 	bool OnMouseWheel(MouseWheelEvent& event);
 	bool OnWindowResized(WindowResizeEvent& event);

@@ -61,7 +61,7 @@ bool OrthogrpahicCameraController::OnMouseWheel(MouseWheelEvent & event)
 	PROFILE_FUNCTION();
 
 	m_ZoomLevel -= event.GetYOffset() / 4.0f;
-	m_ZoomLevel = max(m_ZoomLevel, 0.25f);
+	m_ZoomLevel = std::clamp(m_ZoomLevel, 0.25f, 1000.0f);
 	m_Camera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 
 	m_TranslationSpeed = m_ZoomLevel;
