@@ -27,6 +27,7 @@ project "Engine"
 	location "Engine"
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -61,16 +62,19 @@ project "Engine"
 		"GLAD",
 		"ImGui"
 	}
+	
+	defines
+	{
+		"GLFW_INCLUDE_NONE"
+	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		staticruntime "Off"
 		systemversion "latest"
 
 		defines
 		{
-			"__WINDOWS__",
-			"GLFW_INCLUDE_NONE"
+			"__WINDOWS__"
 		}
 		
 		links
@@ -147,6 +151,7 @@ project "Engine"
 project "ExampleGame"
 	location "ExampleGame"
 	kind "ConsoleApp"
+	cppdialect "C++17"
 
 	language "C++"
 
@@ -174,7 +179,6 @@ project "ExampleGame"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		staticruntime "Off"
 		systemversion "latest"
 
@@ -222,6 +226,7 @@ project "ExampleGame"
 project "Editor"
 	location "Editor"
 	kind "ConsoleApp"
+	cppdialect "C++17"
 
 	language "C++"
 
@@ -252,7 +257,6 @@ project "Editor"
 	}
 
 	filter "system:windows"
-		cppdialect "C++17"
 		staticruntime "Off"
 		systemversion "latest"
 
