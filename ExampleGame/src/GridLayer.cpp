@@ -1,5 +1,5 @@
 #include "GridLayer.h"
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 
 GridLayer::GridLayer()
 	:Layer("Grid"), m_CameraController(16.0f / 9.0f)

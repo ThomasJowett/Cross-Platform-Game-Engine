@@ -7,13 +7,13 @@ public:
 	ExampleLayer3D();
 	~ExampleLayer3D() = default;
 
-	void ExampleLayer3D::OnAttach() override;
-	void ExampleLayer3D::OnDetach() override;
+	virtual void OnAttach() override;
+	virtual void OnDetach() override;
 
-	void OnUpdate(float deltaTime) override;
-	void OnFixedUpdate() override;
-	void OnEvent(Event& e) override;
-	void OnImGuiRender() override;
+	virtual void OnUpdate(float deltaTime) override;
+	virtual void OnFixedUpdate() override;
+	virtual void OnEvent(Event& e) override;
+	virtual void OnImGuiRender() override;
 
 private:
 	ShaderLibrary m_ShaderLibrary;

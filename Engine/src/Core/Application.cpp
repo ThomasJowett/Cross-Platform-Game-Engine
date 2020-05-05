@@ -204,6 +204,6 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
 	Settings::SetDefaultInt(display, "Window_Position_X", props.PosX);
 	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
-	Settings::SetDefaultInt(display, "Window_Mode", 0);
+	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "V-Sync", true);
 }

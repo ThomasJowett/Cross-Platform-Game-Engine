@@ -62,5 +62,5 @@ private:
 private:
 	CSimpleIniA* m_Ini;
 
-	std::map<std::pair<const char*, const char*>, const char*> m_DefaultValues;
+	std::map<std::pair<std::string, std::string>, std::string> m_DefaultValues;
 };

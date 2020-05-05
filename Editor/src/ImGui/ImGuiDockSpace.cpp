@@ -1,6 +1,6 @@
 #include "ImGuiDockSpace.h"
 
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 
 ImGuiDockSpace::ImGuiDockSpace()
     :Layer("Dockspace")
@@ -17,10 +17,31 @@ ImGuiDockSpace::ImGuiDockSpace()
 
 void ImGuiDockSpace::OnAttach()
 {
+    Settings::SetDefaultBool("Windows", "Console", false);
+    Settings::SetDefaultBool("Windows", "ContentExplorer", true);
+    Settings::SetDefaultBool("Windows", "JoystickInfo", false);
+    Settings::SetDefaultBool("Windows", "Hierachy", true);
+    Settings::SetDefaultBool("Windows", "Properties", true);
+    Settings::SetDefaultBool("Windows", "ErrorList", true);
+
+    m_ShowConsole = Settings::GetBool("Windows", "Console");
+    m_ShowContentExplorer = Settings::GetBool("Windows", "ContentExplorer");
+    m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
+    m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
+    m_ShowProperties = Settings::GetBool("Windows", "Properties");
+    m_ShowHierachy = Settings::GetBool("Windows", "Hierachy");
 }
 
 void ImGuiDockSpace::OnDetach()
 {
+    Settings::SetBool("Windows", "Console", m_ShowConsole);
+    Settings::SetBool("Windows", "ContentExplorer", m_ShowContentExplorer);
+    Settings::SetBool("Windows", "JoystickInfo", m_ShowJoystickInfo);
+    Settings::SetBool("Windows", "Hierachy", m_ShowHierachy);
+    Settings::SetBool("Windows", "Properties", m_ShowProperties);
+    Settings::SetBool("Windows", "ErrorList", m_ShowErrorList);
+
+    Settings::SaveSettings();
 }
 
 void ImGuiDockSpace::OnEvent(Event& event)

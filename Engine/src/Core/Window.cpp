@@ -19,7 +19,7 @@ Scope<Window> Window::Create(const WindowProps & props)
 #elif __APPLE__
 	#error "Apple Not yet supported!"
 #elif __linux__
-	#error "Linux is not Supported"
+	return CreateScope<glfwWindow>(props);
 #endif
 	return nullptr;
 }

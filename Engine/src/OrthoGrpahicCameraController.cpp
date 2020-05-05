@@ -41,8 +41,8 @@ void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 		m_CameraPosition.y -= m_TranslationSpeed * deltaTime;
 	}
 
-	m_CameraPosition.x += Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_X) * deltaTime;
-	m_CameraPosition.y -= Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_Y) * deltaTime;
+	m_CameraPosition.x += (float)Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_X) * deltaTime;
+	m_CameraPosition.y -= (float)Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_Y) * deltaTime;
 
 	m_Camera.SetPosition(m_CameraPosition);
 }

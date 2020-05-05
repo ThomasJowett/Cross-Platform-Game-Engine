@@ -1,6 +1,6 @@
 #include "ImGuiContentExplorer.h"
 
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 
 #include <Windows.h>
 

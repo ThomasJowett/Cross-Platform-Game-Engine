@@ -26,8 +26,8 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 	m_Viewport.Height = (FLOAT)height;
 	m_Viewport.MaxDepth = 1.0f;
 	m_Viewport.MinDepth = 0.0f;
-	m_Viewport.TopLeftX = x;
-	m_Viewport.TopLeftY = y;
+	m_Viewport.TopLeftX = (FLOAT)x;
+	m_Viewport.TopLeftY = (FLOAT)y;
 	m_ImmediateContext->RSSetViewports(1, &m_Viewport);
 }
 

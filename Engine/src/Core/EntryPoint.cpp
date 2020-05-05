@@ -77,6 +77,7 @@ int main(int argc, char* argv[])
 //Checks if another instance of the game is already running
 bool AnotherInstance()
 {
+#ifdef __WINDOWS__
 	HANDLE ourMutex;
 	ourMutex = CreateMutex(NULL, true, L"Use_a_different_string_here_for_each_program_48161-XYZZY");
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
@@ -89,5 +90,6 @@ bool AnotherInstance()
 	{
 		//TODO: create the server
 	}
+#endif // __WINDOWS__
 	return false;
 }

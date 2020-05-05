@@ -121,7 +121,7 @@ const char* Settings::GetValueImpl(const char* section, const char* key)
 		return m_Ini->GetValue(section, key);
 	}
 
-	return m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }));
+	return m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
 }
 
 bool Settings::GetBoolImpl(const char* section, const char* key)
@@ -143,7 +143,7 @@ double Settings::GetDoubleImpl(const char* section, const char* key)
 		return m_Ini->GetDoubleValue(section, key);
 	}
 
-	return m_Ini->GetDoubleValue(section, key, atof(m_DefaultValues.at({ section, key })));
+	return m_Ini->GetDoubleValue(section, key, atof(m_DefaultValues.at({ section, key }).c_str()));
 }
 
 int Settings::GetIntImpl(const char* section, const char* key)
@@ -153,7 +153,7 @@ int Settings::GetIntImpl(const char* section, const char* key)
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 		return m_Ini->GetLongValue(section, key);
 	}
-	return m_Ini->GetLongValue(section, key, atoi(m_DefaultValues.at({ section, key })));
+	return m_Ini->GetLongValue(section, key, atoi(m_DefaultValues.at({ section, key }).c_str()));
 }
 
 Vector2f Settings::GetVector2fImpl(const char* section, const char* key)
@@ -163,7 +163,7 @@ Vector2f Settings::GetVector2fImpl(const char* section, const char* key)
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 	}
 
-	const char* vector = m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }));
+	const char* vector = m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
 
 	std::vector<std::string> splitVector = SplitString(vector, ',');
 	if (splitVector.size() == 2)
@@ -180,7 +180,7 @@ Vector3f Settings::GetVector3fImpl(const char* section, const char* key)
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 	}
 
-	const char* vector = m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }));
+	const char* vector = m_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
 
 	std::vector<std::string> splitVector = SplitString(vector, ',');
 	if (splitVector.size() == 3)
@@ -202,22 +202,22 @@ void Settings::SetDefaultBoolImpl(const char* section, const char* key, const bo
 
 void Settings::SetDefaultDoubleImpl(const char* section, const char* key, const double value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value).c_str();
+	m_DefaultValues[{section, key}] = std::to_string(value);
 }
 
 void Settings::SetDefaultIntImpl(const char* section, const char* key, const int value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value).c_str();
+	m_DefaultValues[{section, key}] = std::to_string(value);
 }
 
 void Settings::SetDefaultVector2fImpl(const char* section, const char* key, const Vector2f& value)
 {
-	m_DefaultValues[{section, key}] = (std::to_string(value.x) + ',' + std::to_string(value.y)).c_str();
+	m_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y);
 }
 
 void Settings::SetDefaultVector3fImpl(const char* section, const char* key, const Vector3f& value)
 {
-	m_DefaultValues[{section, key}] = (std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z)).c_str();
+	m_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z);
 }
 
 void Settings::SaveFile()

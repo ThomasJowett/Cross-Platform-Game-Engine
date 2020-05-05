@@ -8,12 +8,12 @@ public:
 	GridLayer();
 	~GridLayer() = default;
 
-	void GridLayer::OnAttach() override;
-	void OnDetach() override;
+	virtual void OnAttach() override;
+	virtual void OnDetach() override;
 
-	void OnUpdate(float deltaTime) override;
-	void OnEvent(Event& e) override;
-	void OnImGuiRender() override;
+	virtual void OnUpdate(float deltaTime) override;
+	virtual void OnEvent(Event& e) override;
+	virtual void OnImGuiRender() override;
 
 private:
 

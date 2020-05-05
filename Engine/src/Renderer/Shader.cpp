@@ -18,7 +18,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDire
 		return CreateRef<OpenGLShader>(name, fileDirectory);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
+		//CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
 			return CreateRef<DirectX11Shader>(name, fileDirectory);
 #endif // __WINDOWS__
 #ifdef __APPLE__
@@ -68,9 +68,8 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
-	std::string& name = shader->GetName();
-	CORE_ASSERT(!Exists(name), "Shader already exists!");
-	m_Shaders[name] = shader;
+	CORE_ASSERT(!Exists(shader->GetName()), "Shader already exists!");
+	m_Shaders[shader->GetName()] = shader;
 }
 
 Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& fileDirectory)

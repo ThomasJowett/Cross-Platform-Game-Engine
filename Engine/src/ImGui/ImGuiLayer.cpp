@@ -19,8 +19,8 @@
 
 //TEMPORARY
 //TODO: remove dependencies on GLAD and GLFW
-#include "GLFW/glfw3.h"
 #include "glad/glad.h"
+#include "GLFW/glfw3.h"
 
 ImGuiLayer::ImGuiLayer()
 	:Layer("ImGui"), m_UsingImGui(false)
@@ -52,10 +52,12 @@ void ImGuiLayer::OnAttach()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
+#ifdef __WINDOWS__
 		HWND windowHandle = std::any_cast<HWND>(Application::GetWindow().GetNativeWindow());
 		//ImGui_ImplWin32_Init(windowHandle);
 
 		//ImGui_ImplDX11_Init(_pd3dDevice, _pImmediateContext);
+#endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -79,7 +81,9 @@ void ImGuiLayer::OnDetach()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
+#ifdef __WINDOWS__
 		ImGui_ImplDX11_Shutdown();
+#endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -120,7 +124,9 @@ void ImGuiLayer::Begin()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
+#ifdef __WINDOWS__
 		ImGui_ImplDX11_NewFrame();
+#endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -145,7 +151,9 @@ void ImGuiLayer::End()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
+#ifdef __WINDOWS__
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
+#endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
