@@ -2,8 +2,6 @@
 
 #include "imgui/imgui.h"
 
-#include <Windows.h>
-
 #include "Renderer/Texture.h"
 
 #include "Viewers/ImGuiTextureView.h"
@@ -339,6 +337,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 std::string ImGuiContentExplorer::FileDialog(const wchar_t* title, const wchar_t* filter)
 {
+#ifdef __WINDOWS__
 	wchar_t filename[MAX_PATH];
 
 	OPENFILENAME ofn;
@@ -377,4 +376,7 @@ std::string ImGuiContentExplorer::FileDialog(const wchar_t* title, const wchar_t
 
 	std::wstring ws(filename);
 	return std::string(ws.begin(), ws.end());
+#endif // __WINDOWS__
+
+	return std::string();
 }
