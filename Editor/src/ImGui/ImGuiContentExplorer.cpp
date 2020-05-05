@@ -203,7 +203,10 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 						if (std::filesystem::is_regular_file(inputBuffer))
 						{
-							currentPath._Remove_filename_and_separator();
+							currentPath.remove_filename();
+							std::string path = currentPath.string();
+							path.pop_back();
+							currentPath = path;
 						}
 						currentSplitPath = SplitString(currentPath.string(), '\\');
 						editLocationCheckButtonPressed = false;
