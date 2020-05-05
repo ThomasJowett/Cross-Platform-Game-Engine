@@ -56,7 +56,7 @@ struct Renderer2DData
 
 	Vector3f QuadVertexPositions[4];
 
-	const Matrix4x4* ViewProjectionMatrix = nullptr;
+	Matrix4x4 ViewProjectionMatrix;
 	uint32_t ScreenWidth = 1920, ScreenHeight = 1080;
 
 	Renderer2D::Stats Statistics;
@@ -180,7 +180,7 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer2D::BeginScene(const OrthographicCamera& camera)
 {
 	PROFILE_FUNCTION();
-	s_Data.ViewProjectionMatrix = &camera.GetViewProjectionMatrix();
+	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	s_Data.QuadShader->Bind();
 	s_Data.QuadShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
 
@@ -348,8 +348,8 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 		FlushAndReset();
 
 	//world to clip
-	Vector3f clipI = *s_Data.ViewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
-	Vector3f clipJ = *s_Data.ViewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
+	Vector3f clipI = s_Data.ViewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
+	Vector3f clipJ = s_Data.ViewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
 
 	//clip to pixel
 	Vector2f pixelStart, pixelEnd;
