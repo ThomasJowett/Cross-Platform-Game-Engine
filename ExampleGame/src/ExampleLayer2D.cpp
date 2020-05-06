@@ -2,7 +2,7 @@
 #include "imgui/imgui.h"
 
 ExampleLayer2D::ExampleLayer2D()
-	:Layer("Example 2D"),m_CameraController(16.0f/9.0f)
+	:Layer("Example 2D")
 {
 }
 

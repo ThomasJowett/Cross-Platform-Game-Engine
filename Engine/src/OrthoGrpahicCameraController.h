@@ -7,7 +7,7 @@
 class OrthogrpahicCameraController
 {
 public:
-	OrthogrpahicCameraController(float aspectRatio);
+	OrthogrpahicCameraController();
 	~OrthogrpahicCameraController();
 
 	void OnUpdate(float deltaTime);

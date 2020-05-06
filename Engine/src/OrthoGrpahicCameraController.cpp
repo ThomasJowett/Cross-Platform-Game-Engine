@@ -3,9 +3,11 @@
 #include "Core/Input.h"
 #include "Core/KeyCodes.h"
 #include "Core/Joysticks.h"
+#include "Core/Settings.h"
 
-OrthogrpahicCameraController::OrthogrpahicCameraController(float aspectRatio)
-	:m_AspectRatio(aspectRatio), m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
+OrthogrpahicCameraController::OrthogrpahicCameraController()
+	:m_AspectRatio((float)(Settings::GetInt("Display", "Screen_Width")) / (float)(Settings::GetInt("Display", "Screen_Height"))),
+	m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
 {
 }
 

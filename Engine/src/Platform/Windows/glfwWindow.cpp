@@ -144,7 +144,7 @@ void glfwWindow::Init(const WindowProps& props)
 	m_Data.PosY = Settings::GetInt("Display", "Window_Position_Y");
 	m_Data.Mode = WindowMode::WINDOWED;
 
-	ENGINE_INFO("Creating Window {0} {1} {2}", props.Title, props.Width, props.Height);
+	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.Title, m_Data.Width, m_Data.Height);
 
 	if (s_GLFWWindowCount == 0)
 	{
@@ -167,9 +167,10 @@ void glfwWindow::Init(const WindowProps& props)
 #endif // DEBUG
 		if (api == RendererAPI::API::OpenGL)
 		{
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+			//Minimum version that is supported is 2.1
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+			//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
