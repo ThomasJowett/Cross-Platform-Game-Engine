@@ -6,7 +6,7 @@
 	url = https://github.com/TheCherno/GLFW
 [submodule "Engine/vendor/imgui"]
 	path = Engine/vendor/imgui
-	url = https://github.com/TheCherno/imgui
+	url = https://github.com/ocornut/imgui
 [submodule "Engine/vendor/spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog

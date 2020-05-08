@@ -24,4 +24,5 @@ private:
 	float m_Gridsize = 10.0f;
 
 	TextureLibrary2D m_TextureLibrary;
+	Ref<SubTexture2D> m_SubTexture;
 };

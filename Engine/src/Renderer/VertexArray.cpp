@@ -18,7 +18,7 @@ Ref<VertexArray> VertexArray::Create()
 		return CreateRef<OpenGLVertexArray>();
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")
+		//CORE_ASSERT(false, "Could not create Vertex Array: DirectX is not currently supported")
 			return	CreateRef<DirectX11VertexArray>();
 #endif // __WINDOWS__
 #ifdef __APPLE__
