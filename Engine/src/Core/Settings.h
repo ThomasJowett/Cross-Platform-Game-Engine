@@ -1,8 +1,9 @@
 #pragma once
 
 #include "stdafx.h"
+#include <map>
 
-#include "simpleini.h"
+//#include "simpleini/simpleini.h"
 
 class Settings
 {
@@ -60,7 +61,6 @@ private:
 
 	void SaveFile();
 private:
-	CSimpleIniA* m_Ini;
 
 	std::map<std::pair<std::string, std::string>, std::string> m_DefaultValues;
 };

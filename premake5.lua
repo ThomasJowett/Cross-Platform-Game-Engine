@@ -17,9 +17,7 @@ workspace "Cross Platform Game Engine"
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 group "Dependencies"
-	include "Engine/vendor/GLFW"
-	include "Engine/vendor/GLAD"
-	include "Engine/vendor/imgui"
+	include "Engine/vendor"
 	
 group ""
 
@@ -169,8 +167,7 @@ project "ExampleGame"
 		"ExampleGame/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include",
-		"Engine/vendor/simpleini",
+		"Engine/vendor/spdlog/include"
 	}
 	
 	links
@@ -247,8 +244,7 @@ project "Editor"
 		"Editor/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include",
-		"Engine/vendor/simpleini",
+		"Engine/vendor/spdlog/include"
 	}
 	
 	links

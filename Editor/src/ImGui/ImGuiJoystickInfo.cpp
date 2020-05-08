@@ -94,12 +94,12 @@ void ImGuiJoystickInfo::OnImGuiRender()
 						const float angles[] =
 						{
 							0.f,        0.f,
-							PI * 1.5f,  PI * 1.75f,
-							PI,         0.f,
-							PI * 1.25f, 0.f,
-							PI * 0.5f,  PI * 0.25f,
+							(float)PI * 1.5f,  (float)PI * 1.75f,
+							(float)PI,         0.f,
+							(float)PI * 1.25f, 0.f,
+							(float)PI * 0.5f,  (float)PI * 0.25f,
 							0.f,        0.f,
-							PI * 0.75f, 0.f,
+							(float)PI * 0.75f, 0.f,
 						};
 
 						const float cosa = cos(angles[hat]);
