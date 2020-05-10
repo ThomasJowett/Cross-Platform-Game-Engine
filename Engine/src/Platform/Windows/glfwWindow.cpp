@@ -161,12 +161,12 @@ void glfwWindow::Init(const WindowProps& props)
 
 	{
 		PROFILE_SCOPE("glfw create window");
-#ifdef DEBUG
-		if (api == RendererAPI::API::OpenGL)
-			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
-#endif // DEBUG
 		if (api == RendererAPI::API::OpenGL)
 		{
+#ifdef DEBUG
+			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+#endif // DEBUG
+
 			//Minimum version that is supported is 2.1
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);

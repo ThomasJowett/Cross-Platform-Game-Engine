@@ -31,8 +31,8 @@ public:
 
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) override;
 private:
-	virtual HRESULT Init(const WindowProps& props);
-	virtual void Shutdown();
+	HRESULT Init(const WindowProps& props);
+	void Shutdown();
 
 	void MessageLoop();
 

@@ -10,7 +10,7 @@ void GridLayer::OnAttach()
 {
 	m_CubeVertexArray = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
 
-	Ref<Shader> shader = m_ShaderLibrary.Load("NormalMap");
+	m_ShaderLibrary.Load("NormalMap");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 }
 

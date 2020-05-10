@@ -11,6 +11,7 @@ class Application
 {
 public:
 	Application(const WindowProps& props);
+	Application(const Application&) = delete;
 	virtual ~Application();
 
 	void OnEvent(Event& e);

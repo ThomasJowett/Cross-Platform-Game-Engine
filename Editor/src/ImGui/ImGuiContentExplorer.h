@@ -65,7 +65,7 @@ class ImGuiContentExplorer
 	:public Layer
 {
 public:
-	ImGuiContentExplorer(bool* show);
+	explicit ImGuiContentExplorer(bool* show);
 	~ImGuiContentExplorer() = default;
 
 	void OnAttach() override;
@@ -80,17 +80,17 @@ private:
 
 	TextureLibrary2D m_TextureLibrary;
 
-	std::vector<std::filesystem::path> dirs, files;
-	std::filesystem::path currentPath;
-	std::vector<std::string> currentSplitPath;
+	std::vector<std::filesystem::path> m_Dirs, m_Files;
+	std::filesystem::path m_CurrentPath;
+	std::vector<std::string> m_CurrentSplitPath;
 
-	Sorting sortingMode = Sorting::ALPHABETIC;
-	History history;
+	Sorting m_SortingMode = Sorting::ALPHABETIC;
+	History m_History;
 
-	bool editLocationCheckButtonPressed = false;
-	bool forceRescan = true;
+	bool m_EditLocationCheckButtonPressed = false;
+	bool m_ForceRescan = true;
 
-	int totalNumBrowsingEntries;
-	int numBrowsingColumns;
-	int numBrowsingEntriesPerColumn;
+	int m_TotalNumBrowsingEntries;
+	int m_NumBrowsingColumns;
+	int m_NumBrowsingEntriesPerColumn;
 };

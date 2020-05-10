@@ -94,7 +94,7 @@ namespace Astar
 	class Generator
 	{
 		Generator();
-		Node* FindNodeOnList(NodeSet& nodes, GridCoord coordinates);
+		Node* FindNodeOnList(const NodeSet& nodes, GridCoord coordinates);
 		void ReleaseNodes(NodeSet& nodes);
 
 	public:

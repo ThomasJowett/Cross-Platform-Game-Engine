@@ -65,12 +65,6 @@ Ref<Texture2D> Texture2D::Create(const std::string & path)
 		return nullptr;
 }
 
-const Vector2f* Texture2D::GetTextureCoords()
-{
-	Vector2f texCoords[4] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
-	return texCoords;
-}
-
 void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
 {
 	CORE_ASSERT(!Exists(texture->GetName()), "Texture already exists!");

@@ -130,7 +130,7 @@ bool Renderer2D::Init()
 		
 		lineIndices[i + 3] = offset + 2;
 		lineIndices[i + 4] = offset + 3;
-		lineIndices[i + 4] = offset + 0;
+		lineIndices[i + 5] = offset + 0;
 
 		offset += 4;
 	}

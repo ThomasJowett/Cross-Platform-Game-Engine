@@ -4,11 +4,6 @@
 #include <stb/stb_image.h>
 #include <filesystem>
 
-OpenGLTexture2D::OpenGLTexture2D()
-{
-	NullTexture();
-}
-
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 	:m_Width(width), m_Height(height)
 {
@@ -28,7 +23,7 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
-	:m_Path(path)
+	:m_Path(path), m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
 {
 	PROFILE_FUNCTION();
 
@@ -111,7 +106,7 @@ void OpenGLTexture2D::NullTexture()
 	{
 		for (int j = 0; j < 4; j++)
 		{
-			textureData[i][j] = (i + j) % 2 ? 0xffff00ff : 0xff000000;
+			textureData[i][j] = ((i + j) % 2) ? 0xffff00ff : 0xff000000;
 		}
 	}
 
@@ -180,7 +175,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
 	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
-	
+
 	stbi_image_free(data);
 
 	return true;

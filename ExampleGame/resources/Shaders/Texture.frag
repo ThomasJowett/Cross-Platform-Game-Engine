@@ -1,5 +1,5 @@
 #version 330 core
-uniform sampler2D u_textures[32];
+uniform sampler2D u_textures[gl_MaxTextureUnits];
 
 in vec4 v_colour;
 in vec2 v_texCoord;

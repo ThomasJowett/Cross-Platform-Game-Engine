@@ -30,7 +30,7 @@ public:
 private:
 	std::unordered_map<Shader::ShaderTypes, std::string> LoadShaderSources(const std::string& filepath);
 	std::string ReadFile(const std::string& filepath);
-	void Compile(const std::unordered_map<Shader::ShaderTypes, std::string> shaderSources);
+	void Compile(const std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources);
 	void CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram, const char* errorMessage);
 private:
 	uint32_t m_rendererID;

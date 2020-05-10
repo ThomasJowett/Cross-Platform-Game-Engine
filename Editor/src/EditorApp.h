@@ -5,7 +5,7 @@
 class Editor : public Application
 {
 public:
-	Editor(const WindowProps& props);
+	explicit Editor(const WindowProps& props);
 	~Editor() = default;
 
 	virtual void OnUpdate() override;

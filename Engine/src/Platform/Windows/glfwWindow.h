@@ -33,8 +33,8 @@ public:
 	inline virtual Ref<GraphicsContext> GetContext() const override { return m_Context; }
 
 private:
-	virtual void Init(const WindowProps& props);
-	virtual void Shutdown();
+	void Init(const WindowProps& props);
+	void Shutdown();
 private:
 
 	struct WindowData

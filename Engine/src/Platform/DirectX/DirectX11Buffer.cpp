@@ -2,6 +2,7 @@
 #include "DirectX11Buffer.h"
 
 DirectX11IndexBuffer::DirectX11IndexBuffer(uint32_t * indices, uint32_t count)
+	:m_Count(count)
 {
 }
 

@@ -6,7 +6,7 @@ class ImGuiJoystickInfo
 	:public Layer
 {
 public:
-	ImGuiJoystickInfo(bool* show);
+	explicit ImGuiJoystickInfo(bool* show);
 	~ImGuiJoystickInfo() = default;
 	void OnImGuiRender() override;
 private:

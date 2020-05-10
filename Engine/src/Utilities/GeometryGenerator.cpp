@@ -179,8 +179,6 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(indices, (uint32_t)indicesList.size());
 
-	auto size = sizeof(vertices) * verticesList.size();
-
 	vertexBuffer->SetLayout(layout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);

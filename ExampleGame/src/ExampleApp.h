@@ -5,7 +5,7 @@
 class ExampleGame : public Application
 {
 public:
-	ExampleGame(const WindowProps& props);
+	explicit ExampleGame(const WindowProps& props);
 	~ExampleGame() = default;
 
 	virtual void OnUpdate() override;

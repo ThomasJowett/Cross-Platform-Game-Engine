@@ -21,7 +21,7 @@ std::vector<std::filesystem::path> Directory::GetDirectories(const std::filesyst
 	{
 		CLIENT_ERROR(e.what());
 	}
-	
+
 	return result;
 }
 
@@ -51,7 +51,7 @@ std::vector<std::filesystem::path> Directory::GetFiles(const char* directoryName
 
 	try
 	{
-		if (wantedExtensions != "")
+		if (strcmp(wantedExtensions, "") != 0)
 		{
 			std::vector<std::string> extensions = SplitString(wantedExtensions, ';');
 			for (const auto& entry : std::filesystem::directory_iterator(directoryName))
@@ -116,7 +116,7 @@ bool SortingHelper::CompareModificationInverse(std::filesystem::path& first, std
 }
 
 bool SortingHelper::CompareSize(std::filesystem::path& first, std::filesystem::path& second)
-{	
+{
 	return std::filesystem::file_size(first) < std::filesystem::file_size(second);
 }
 

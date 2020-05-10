@@ -22,7 +22,7 @@ public:
 	OrthographicCamera GetCamera() { return m_Camera; }
 
 	float GetZoom() const { return m_ZoomLevel; }
-	void SetZoom() { m_ZoomLevel; }
+	void SetZoom(float zoom) { m_ZoomLevel = std::clamp(zoom, 0.25f, 1000.0f); }
 private:
 	bool OnMouseWheel(MouseWheelEvent& event);
 	bool OnWindowResized(WindowResizeEvent& event);

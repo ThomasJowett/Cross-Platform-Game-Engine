@@ -103,8 +103,8 @@ void ImGuiLayer::OnEvent(Event& event)
 
 void ImGuiLayer::OnImGuiRender()
 {
-	static bool showDemoWindow = true;
-	ImGui::ShowDemoWindow(&showDemoWindow);
+	//static bool showDemoWindow = true;
+	//ImGui::ShowDemoWindow(&showDemoWindow);
 
 	bool p_open = true;
 

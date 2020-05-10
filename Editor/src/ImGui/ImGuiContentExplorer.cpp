@@ -4,7 +4,9 @@
 
 #include "Renderer/Texture.h"
 
-#include "Viewers/ImGuiTextureView.h"
+#include "Viewers/ViewerManager.h"
+
+#include "Viewers/ImGuiScriptView.h"
 
 
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
@@ -12,7 +14,7 @@ std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 	std::string path;
 	for (int i = 0; i <= index; i++)
 	{
-		path += currentSplitPath[i];
+		path += m_CurrentSplitPath[i];
 		if (i != index)
 			path += '\\';
 	}
@@ -30,36 +32,39 @@ void ImGuiContentExplorer::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 			numLinesThatFit = 1;
 		approxNumEntriesPerColumn = numLinesThatFit;
 	}
-	numBrowsingColumns = totalNumBrowsingEntries / approxNumEntriesPerColumn;
+	m_NumBrowsingColumns = std::ceil((float)m_TotalNumBrowsingEntries / (float)approxNumEntriesPerColumn);
 
-	if (numBrowsingColumns <= 0)
+	if (m_NumBrowsingColumns <= 0)
 	{
-		numBrowsingColumns = 1;
-		numBrowsingEntriesPerColumn = approxNumEntriesPerColumn;
+		m_NumBrowsingColumns = 1;
+		m_NumBrowsingEntriesPerColumn = approxNumEntriesPerColumn;
 		return;
 	}
 
-	if (totalNumBrowsingEntries % approxNumEntriesPerColumn > (approxNumEntriesPerColumn / 2))
-		++numBrowsingColumns;
+	if (m_TotalNumBrowsingEntries % approxNumEntriesPerColumn > (approxNumEntriesPerColumn / 2))
+		++m_NumBrowsingColumns;
 
 	int maxNumBrowsingColumns = (childWindowSize.x > 0) ? (int)(childWindowSize.x / 100) : 6;
 
 	if (maxNumBrowsingColumns < 1)
 		maxNumBrowsingColumns = 1;
 
-	if (numBrowsingColumns > maxNumBrowsingColumns)
-		numBrowsingColumns = maxNumBrowsingColumns;
+	if (m_NumBrowsingColumns > maxNumBrowsingColumns)
+		m_NumBrowsingColumns = maxNumBrowsingColumns;
 
-	numBrowsingEntriesPerColumn = totalNumBrowsingEntries / numBrowsingColumns;
+	m_NumBrowsingEntriesPerColumn = m_TotalNumBrowsingEntries / m_NumBrowsingColumns;
 
-	if (totalNumBrowsingEntries % numBrowsingColumns != 0)
-		++numBrowsingEntriesPerColumn;
+	if (m_TotalNumBrowsingEntries % m_NumBrowsingColumns != 0)
+		++m_NumBrowsingEntriesPerColumn;
 }
 
 
 ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
 	:m_Show(show), Layer("ContentExplorer")
 {
+	m_TotalNumBrowsingEntries = 0;
+	m_NumBrowsingColumns = 0;
+	m_NumBrowsingEntriesPerColumn = 0;
 }
 
 void ImGuiContentExplorer::OnAttach()
@@ -79,24 +84,24 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 	static char inputBuffer[1024] = "";
 
-	if (forceRescan)
+	if (m_ForceRescan)
 	{
-		forceRescan = false;
+		m_ForceRescan = false;
 
-		if (currentPath == "")
+		if (m_CurrentPath == "")
 		{
-			currentPath = std::filesystem::absolute(".");
+			m_CurrentPath = std::filesystem::absolute(".");
 		}
 
 		//set the input buffer as the current path
 		memset(inputBuffer, 0, sizeof(inputBuffer));
-		for (int i = 0; i < currentPath.string().length(); i++)
+		for (int i = 0; i < m_CurrentPath.string().length(); i++)
 		{
-			inputBuffer[i] = currentPath.string()[i];
+			inputBuffer[i] = m_CurrentPath.string()[i];
 		}
 
-		dirs = Directory::GetDirectories(currentPath, sortingMode);
-		files = Directory::GetFiles(currentPath, sortingMode);
+		m_Dirs = Directory::GetDirectories(m_CurrentPath, m_SortingMode);
+		m_Files = Directory::GetFiles(m_CurrentPath, m_SortingMode);
 	}
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Content Explorer", m_Show))
@@ -113,8 +118,8 @@ void ImGuiContentExplorer::OnImGuiRender()
 		ImGui::PushID("historyDirectoriesID");
 		{
 
-			const bool historyCanGoBack = history.CanGoBack();
-			const bool historyCanGoForward = history.CanGoForward();
+			const bool historyCanGoBack = m_History.CanGoBack();
+			const bool historyCanGoForward = m_History.CanGoForward();
 
 			if (!historyCanGoBack)
 			{
@@ -147,31 +152,31 @@ void ImGuiContentExplorer::OnImGuiRender()
 		{
 			if (historyBackClicked)
 			{
-				if (history.GoBack())
-					forceRescan = true;
+				if (m_History.GoBack())
+					m_ForceRescan = true;
 			}
 			else if (historyForwardClicked)
 			{
-				if (history.GoForward())
-					forceRescan = true;
+				if (m_History.GoForward())
+					m_ForceRescan = true;
 			}
 
-			currentPath = *history.GetCurrentFolder();
+			m_CurrentPath = *m_History.GetCurrentFolder();
 		}
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
-		const std::filesystem::path* fi = history.GetCurrentFolder();
+		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;
 		{
 			bool mustValidateInputPath = false;
-			ImGui::PushStyleColor(ImGuiCol_Button, editLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
 			ImGui::SameLine();
 			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]))
 			{
-				editLocationCheckButtonPressed = !editLocationCheckButtonPressed;
-				if (editLocationCheckButtonPressed)
+				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
+				if (m_EditLocationCheckButtonPressed)
 				{
 					ImGui::SetKeyboardFocusHere();
 				}
@@ -180,7 +185,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			ImGui::PopStyleColor();
 
 
-			if (editLocationCheckButtonPressed)
+			if (m_EditLocationCheckButtonPressed)
 			{
 				ImGui::SameLine();
 				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
@@ -199,19 +204,19 @@ void ImGuiContentExplorer::OnImGuiRender()
 				{
 					if (std::filesystem::exists(inputBuffer))
 					{
-						currentPath = inputBuffer;
+						m_CurrentPath = inputBuffer;
 
 						if (std::filesystem::is_regular_file(inputBuffer))
 						{
-							currentPath.remove_filename();
-							std::string path = currentPath.string();
+							m_CurrentPath.remove_filename();
+							std::string path = m_CurrentPath.string();
 							path.pop_back();
-							currentPath = path;
+							m_CurrentPath = path;
 						}
-						currentSplitPath = SplitString(currentPath.string(), '\\');
-						editLocationCheckButtonPressed = false;
-						forceRescan = true;
-						history.SwitchTo(currentPath);
+						m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
+						m_EditLocationCheckButtonPressed = false;
+						m_ForceRescan = true;
+						m_History.SwitchTo(m_CurrentPath);
 					}
 				}
 				catch (const std::exception& e)
@@ -223,14 +228,14 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 		//----------------------------------------------------------------------------------------------------
 		// Split path control
-		if (!editLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
+		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
 		{
 			bool mustSwitchSplitPath = false;
 
 			//Split Path
 			// tab:
 			{
-				const int numTabs = (int)currentSplitPath.size();
+				const int numTabs = (int)m_CurrentSplitPath.size();
 
 				int pushpop = 0;
 
@@ -246,7 +251,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 					ImGui::PushID(t);
 					ImGui::SameLine();
 
-					const bool pressed = ImGui::Button(currentSplitPath[t].c_str());
+					const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
 					if (t != numTabs - 1)
 					{
 						ImGui::SameLine();
@@ -258,22 +263,22 @@ void ImGuiContentExplorer::OnImGuiRender()
 					{
 						if (t == numTabs - 1)
 						{
-							editLocationCheckButtonPressed = true;
+							m_EditLocationCheckButtonPressed = true;
 							ImGui::PopStyleColor(3);
 							continue;
 						}
 
-						history.SwitchTo(GetPathForSplitPathIndex(t));
-						forceRescan = true;
+						m_History.SwitchTo(GetPathForSplitPathIndex(t));
+						m_ForceRescan = true;
 
-						currentPath = *history.GetCurrentFolder();
+						m_CurrentPath = *m_History.GetCurrentFolder();
 					}
 					if (t == numTabs - 1) {
 						ImGui::PopStyleColor(3);
 					}
 				}
 
-				currentSplitPath = SplitString(currentPath.string(), '\\');
+				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
 
 				ImGui::Separator();
 			}
@@ -285,29 +290,30 @@ void ImGuiContentExplorer::OnImGuiRender()
 		{
 			if (ImGui::BeginChild("BrowsingFrame"))
 			{
+				m_TotalNumBrowsingEntries = m_Dirs.size() + m_Files.size();
 				CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
 
-				ImGui::Columns(numBrowsingColumns);
+				ImGui::Columns(m_NumBrowsingColumns);
 
 				static int id;
 				ImGui::PushID(&id);
 				int cntEntries = 0;
 				//Directories -------------------------------------------------------------------------------
-				if (dirs.size() > 0)
+				if (m_Dirs.size() > 0)
 				{
-					for (int i = 0; i < dirs.size(); i++)
+					for (int i = 0; i < m_Dirs.size(); i++)
 					{
-						std::string dirName = SplitString(dirs[i].string(), '\\').back();
+						std::string dirName = SplitString(m_Dirs[i].string(), '\\').back();
 						if (ImGui::SmallButton(dirName.c_str()))
 						{
 							//change dirctory on click
-							history.SwitchTo(dirs[i]);
-							currentPath = *history.GetCurrentFolder();
-							forceRescan = true;
+							m_History.SwitchTo(m_Dirs[i]);
+							m_CurrentPath = *m_History.GetCurrentFolder();
+							m_ForceRescan = true;
 						}
 						++cntEntries;
 						//TODO:: switch on view zoom
-						if (cntEntries == numBrowsingEntriesPerColumn)
+						if (cntEntries == m_NumBrowsingEntriesPerColumn)
 						{
 							cntEntries = 0;
 							ImGui::NextColumn();
@@ -316,16 +322,18 @@ void ImGuiContentExplorer::OnImGuiRender()
 				}
 
 				//Files -----------------------------------------------------------------------------------
-				if (files.size() > 0)
+				if (m_Files.size() > 0)
 				{
-					for (int i = 0; i < files.size(); i++)
+					for (int i = 0; i < m_Files.size(); i++)
 					{
-						if (ImGui::SmallButton(files[i].filename().string().c_str()))
+						if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
 						{
+							ViewerManager::OpenViewer(ViewerManager::GetAssetViewer(m_Files[i]));
 							//open file on click
 
 							static bool showTextureView = true;
-							Application::Get().AddLayer(new ImGuiTextureView(&showTextureView, files[i]));
+							//Application::Get().AddLayer(new ImGuiTextureView(&showTextureView, m_Files[i]));
+							Application::Get().AddOverlay(new ImGuiScriptView(&showTextureView, m_Files[i]));
 						}
 					}
 				}

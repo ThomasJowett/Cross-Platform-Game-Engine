@@ -16,7 +16,7 @@ void ImGuiTextureView::OnImGuiRender()
 	if (!*m_Show)
 		return;
 
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
 	{
 		ImGui::Image(m_Texture, ImVec2((float)m_Texture->GetWidth(), (float)m_Texture->GetHeight()));
 	}

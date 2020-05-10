@@ -40,7 +40,7 @@ namespace Astar
 		};
 	}
 
-	Node* Generator::FindNodeOnList(NodeSet& nodes, GridCoord coordinates)
+	Node* Generator::FindNodeOnList(const NodeSet& nodes, GridCoord coordinates)
 	{
 		for (Node* node : nodes)
 		{
