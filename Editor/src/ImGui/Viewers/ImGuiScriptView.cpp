@@ -1,4 +1,5 @@
 #include "ImGuiScriptView.h"
+#include "Fonts/Fonts.h"
 
 ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
 	:m_Show(show), m_FilePath(filepath)
@@ -27,6 +28,9 @@ void ImGuiScriptView::OnImGuiRender()
 {
 	if (!*m_Show)
 		return;
+
+	ImGui::PushFont(Fonts::Consolas);
+
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar))
 	{
@@ -88,6 +92,7 @@ void ImGuiScriptView::OnImGuiRender()
 		m_TextEditor.Render("TextEditor");
 	}
 	ImGui::End();
+	ImGui::PopFont();
 }
 
 TextEditor::LanguageDefinition ImGuiScriptView::DetermineLanguageDefinition()

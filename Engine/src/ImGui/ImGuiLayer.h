@@ -6,6 +6,8 @@
 
 #include "ImGuiConsole.h"
 
+class ImFont;
+
 class ImGuiLayer :
 	public Layer
 {
@@ -27,5 +29,6 @@ public:
 
 private:
 	bool m_UsingImGui;
+	ImFont* pFont;
 };
 

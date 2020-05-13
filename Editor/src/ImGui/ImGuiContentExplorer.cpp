@@ -326,6 +326,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				{
 					for (int i = 0; i < m_Files.size(); i++)
 					{
+						ImGui::BeginGroup();
 						if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
 						{
 							ViewerManager::OpenViewer(ViewerManager::GetAssetViewer(m_Files[i]));
@@ -335,6 +336,13 @@ void ImGuiContentExplorer::OnImGuiRender()
 							//Application::Get().AddLayer(new ImGuiTextureView(&showTextureView, m_Files[i]));
 							Application::Get().AddOverlay(new ImGuiScriptView(&showTextureView, m_Files[i]));
 						}
+						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+						{
+							ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
+							ImGui::Text(m_Files[i].filename().string().c_str());
+							ImGui::EndDragDropSource();
+						}
+						ImGui::EndGroup();
 					}
 				}
 
