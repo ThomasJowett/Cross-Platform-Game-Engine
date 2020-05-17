@@ -2,7 +2,7 @@
 #include "Fonts/Fonts.h"
 
 ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
-	:m_Show(show), m_FilePath(filepath)
+	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
 {
 }
 
@@ -101,8 +101,10 @@ TextEditor::LanguageDefinition ImGuiScriptView::DetermineLanguageDefinition()
 
 	if (ext == ".lua")
 		return TextEditor::LanguageDefinition::Lua();
-	else if (ext == ".cpp" || ext == ".h" || ext == ".c" || ext == ".hpp")
+	else if (ext == ".cpp" || ext == ".hpp")
 		return TextEditor::LanguageDefinition::CPlusPlus();
+	else if (ext == ".h" || ext == ".c")
+		return TextEditor::LanguageDefinition::C();
 	else if (ext == ".hlsl" || ext == ".fx")
 		return TextEditor::LanguageDefinition::HLSL();
 	else if (ext == ".glsl" || ext == ".frag" || ext == ".vert" || ext == ".tesc" || ext == ".tese" || ext == ".geom" || ext == ".comp")

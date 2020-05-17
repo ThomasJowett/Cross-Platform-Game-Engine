@@ -1,14 +1,13 @@
 #include "include.h"
 
+#define MAX_ASSET_VIEWERS 2
+
 class ViewerManager
 {
 public:
-	static Ref<Layer> GetAssetViewer(std::filesystem::path assetPath);
-
-	static void OpenViewer(Ref<Layer> viewer);
-	static void CloseViewer(Ref<Layer> viewer);
+	static void OpenViewer(std::filesystem::path assetPath);
 
 private:
 
-	static std::unordered_map<std::filesystem::path, Ref<Layer>> s_AssetViewers;
+	static std::map<std::filesystem::path, std::pair<Layer*, bool*>> s_AssetViewers;
 };

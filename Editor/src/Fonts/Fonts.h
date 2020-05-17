@@ -1,9 +1,5 @@
 #pragma once
-
-#include "imgui/imgui.h"
-
-#include "Fonts/DroidSans.cpp"
-#include "Fonts/Consolas.cpp"
+struct ImFont;
 
 class Fonts
 {

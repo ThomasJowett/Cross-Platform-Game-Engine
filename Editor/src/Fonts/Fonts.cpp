@@ -1,5 +1,10 @@
 #include "Fonts.h"
 
+#include "imgui/imgui.h"
+
+#include "Fonts/DroidSans.cpp"
+#include "Fonts/Consolas.cpp"
+
 ImFont* Fonts::Consolas = nullptr;
 ImFont* Fonts::DroidSans = nullptr;
 

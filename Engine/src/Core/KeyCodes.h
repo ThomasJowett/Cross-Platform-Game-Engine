@@ -4,6 +4,7 @@
 #define KEY_UNKNOWN            -1
 
 /* Printable keys */
+// these can be tested for with their character e.g 'A'
 #define KEY_SPACE              32
 #define KEY_APOSTROPHE         39  /* ' */
 #define KEY_COMMA              44  /* , */
@@ -49,11 +50,11 @@
 #define KEY_Y                  89
 #define KEY_Z                  90
 #define KEY_LEFT_BRACKET       91  /* [ */
-#define KEY_BACKSLASH          92  /* \ */
+#define KEY_BACKSLASH          92  /* \  if using ISO keyboard this will be #*/
 #define KEY_RIGHT_BRACKET      93  /* ] */
 #define KEY_GRAVE_ACCENT       96  /* ` */
 #define KEY_WORLD_1            161 /* non-US #1 */
-#define KEY_WORLD_2            162 /* non-US #2 */
+#define KEY_WORLD_2            162 /* non-US #2 if using an ISO keyboard this will be a backslash*/
 
 /* Function keys */
 #define KEY_ESCAPE             256

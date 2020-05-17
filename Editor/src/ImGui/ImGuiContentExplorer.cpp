@@ -6,9 +6,6 @@
 
 #include "Viewers/ViewerManager.h"
 
-#include "Viewers/ImGuiScriptView.h"
-
-
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -69,10 +66,16 @@ ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
 
 void ImGuiContentExplorer::OnAttach()
 {
-	m_TextureLibrary.Load("resources/Icons/Folder.png");
+	//TODO: Have an Icon manager or something that loads the correct size icon bitmaps
+	//then have that texture built into the binary
+	m_TextureLibrary.Load("resources/Icons/Folder16.png");
 	m_TextureLibrary.Load("resources/Icons/Arrow_Right.png");
 	m_TextureLibrary.Load("resources/Icons/Arrow_Left.png");
 	m_TextureLibrary.Load("resources/Icons/Arrow_Up.png");
+}
+
+void ImGuiContentExplorer::OnUpdate(float deltaTime)
+{
 }
 
 void ImGuiContentExplorer::OnImGuiRender()
@@ -172,8 +175,9 @@ void ImGuiContentExplorer::OnImGuiRender()
 		{
 			bool mustValidateInputPath = false;
 			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+			
 			ImGui::SameLine();
-			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]))
+			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder16.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]))
 			{
 				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
 				if (m_EditLocationCheckButtonPressed)
@@ -329,12 +333,8 @@ void ImGuiContentExplorer::OnImGuiRender()
 						ImGui::BeginGroup();
 						if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
 						{
-							ViewerManager::OpenViewer(ViewerManager::GetAssetViewer(m_Files[i]));
 							//open file on click
-
-							static bool showTextureView = true;
-							//Application::Get().AddLayer(new ImGuiTextureView(&showTextureView, m_Files[i]));
-							Application::Get().AddOverlay(new ImGuiScriptView(&showTextureView, m_Files[i]));
+							ViewerManager::OpenViewer(m_Files[i]);
 						}
 						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 						{

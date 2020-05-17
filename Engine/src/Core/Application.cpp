@@ -47,6 +47,16 @@ void Application::AddOverlay(Layer* layer)
 	m_WaitingOverlays.push_back(layer);
 }
 
+void Application::RemoveLayer(Layer* layer)
+{
+	m_DeadLayers.push_back(layer);
+}
+
+void Application::RemoveOverlay(Layer* layer)
+{
+	m_DeadOverlays.push_back(layer);
+}
+
 void Application::Run()
 {
 	PROFILE_FUNCTION();
@@ -115,8 +125,21 @@ void Application::Run()
 			PushOverlay(overlay);
 		}
 
+		for (Layer* layer : m_DeadLayers)
+		{
+			PopLayer(layer);
+		}
+
+		for (Layer* layer : m_DeadOverlays)
+		{
+			PopOverlay(layer);
+		}
+
 		m_WaitingLayers.clear();
 		m_WaitingOverlays.clear();
+
+		m_DeadLayers.clear();
+		m_DeadOverlays.clear();
 	}
 }
 
@@ -126,6 +149,8 @@ void Application::OnEvent(Event& e)
 
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
+	if (!m_Running)
+		return;
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 	dispatcher.Dispatch<WindowMoveEvent>(BIND_EVENT_FN(Application::OnWindowMove));
 
@@ -162,6 +187,24 @@ void Application::PushOverlay(Layer* layer)
 
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
+}
+
+void Application::PopLayer(Layer* layer)
+{
+	PROFILE_FUNCTION();
+
+	m_LayerStack.PopLayer(layer);
+	layer->OnDetach();
+	delete layer;
+}
+
+void Application::PopOverlay(Layer* layer)
+{
+	PROFILE_FUNCTION();
+
+	m_LayerStack.PopOverlay(layer);
+	layer->OnDetach();
+	delete layer;
 }
 
 bool Application::OnWindowClose(WindowCloseEvent& e)

@@ -25,6 +25,8 @@ public:
 
 	void AddLayer(Layer* layer);
 	void AddOverlay(Layer* layer);
+	void RemoveLayer(Layer* layer);
+	void RemoveOverlay(Layer* layer);
 
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
@@ -45,12 +47,18 @@ private:
 	std::vector<Layer*> m_WaitingLayers;
 	std::vector<Layer*> m_WaitingOverlays;
 
+	std::vector<Layer*> m_DeadLayers;
+	std::vector<Layer*> m_DeadOverlays;
+
 	static Application* s_Instance;
 	friend int::main(int argc, char* argv[]);
 
 protected:
 	void PushLayer(Layer* layer);
 	void PushOverlay(Layer* layer);
+
+	void PopLayer(Layer* layer);
+	void PopOverlay(Layer* layer);
 };
 
 // To be defined in CLIENT

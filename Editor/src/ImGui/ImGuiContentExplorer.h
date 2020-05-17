@@ -69,6 +69,7 @@ public:
 	~ImGuiContentExplorer() = default;
 
 	void OnAttach() override;
+	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);

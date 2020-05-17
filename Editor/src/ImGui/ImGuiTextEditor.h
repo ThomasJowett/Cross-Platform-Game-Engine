@@ -267,7 +267,7 @@ public:
 
 	bool SaveTextToFile(const std::filesystem::path& filepath);
 
-	const std::filesystem::path& const GetFilePath() { return mFilePath; }
+	const std::filesystem::path& GetFilePath() { return mFilePath; }
 	void SetFilePath(const std::filesystem::path& filepath) { mFilePath = filepath; }
 
 	static const Palette& GetDarkPalette();
