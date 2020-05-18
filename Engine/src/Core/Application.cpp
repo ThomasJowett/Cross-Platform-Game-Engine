@@ -63,7 +63,7 @@ void Application::Run()
 
 	const double deltaTime = 0.01f; // fixed update delta time of 10ms seconds (100 times a second)
 
-	double currentTime = glfwGetTime();
+	double currentTime = GetTime();
 	double accumulator = 0.0f;
 
 	while (m_Running)
@@ -72,7 +72,7 @@ void Application::Run()
 
 		OnUpdate();
 
-		double newTime = glfwGetTime();
+		double newTime = GetTime();
 		double frameTime = newTime - currentTime;
 		currentTime = newTime;
 
@@ -249,4 +249,26 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "V-Sync", true);
+}
+
+double Application::GetTime()
+{
+#ifdef __WINDOWS__
+	static LARGE_INTEGER s_frequency;
+	//check to see if the application can read the frequency
+	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
+	if (s_use_qpc) {
+		//most accurate method of getting system time
+		LARGE_INTEGER now;
+		QueryPerformanceCounter(&now);
+		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart);
+	}
+	else
+	{
+		//same value but only updates 64 times a second
+		return (double)GetTickCount();
+	}
+#endif // __WINDOWS__
+
+	return glfwGetTime();
 }

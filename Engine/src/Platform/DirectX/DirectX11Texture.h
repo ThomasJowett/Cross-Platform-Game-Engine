@@ -23,7 +23,12 @@ public:
 
 	virtual bool operator==(const Texture& other) const;
 private:
+	// sets the texture to be the null texture
+	void NullTexture();
 
+	bool LoadTextureFromFile();
 	std::string m_Path;
 	uint32_t m_Width, m_Height;
+
+	ID3D11ShaderResourceView* m_ShaderResourceView;
 };

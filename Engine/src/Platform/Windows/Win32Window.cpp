@@ -8,9 +8,10 @@
 #include "Events/MouseEvent.h"
 
 #include "Core/Application.h"
-
+#include "Core/Settings.h"
 #include "Core/Input.h"
 
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	WindowData* data = (WindowData*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -127,10 +128,10 @@ HRESULT Win32Window::Init(const WindowProps& props)
 	m_Instance = GetModuleHandle(0);
 
 	m_Data.Title = props.Title;
-	m_Data.Width = props.Width;
-	m_Data.Height = props.Height;
-	m_Data.PosX = props.PosX;
-	m_Data.PosY = props.PosY;
+	m_Data.Width = Settings::GetInt("Display", "Screen_Width");
+	m_Data.Height = Settings::GetInt("Display", "Screen_Height");
+	m_Data.PosX = Settings::GetInt("Display", "Window_Position_X");
+	m_Data.PosY = Settings::GetInt("Display", "Window_Position_Y");
 	m_Data.Mode = WindowMode::WINDOWED;
 
 	//Register class
@@ -192,6 +193,10 @@ void Win32Window::Shutdown()
 void Win32Window::MessageLoop()
 {
 	MSG msg = { 0 };
+
+	if (ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam))
+		return;
+
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 	{
 		bool handled = false;

@@ -18,13 +18,9 @@ private:
 
 	Colour m_ClearColour;
 
-	ID3D11DeviceContext* m_ImmediateContext;
-
 	ID3D11RasterizerState* m_RSWireFrame;
 	ID3D11RasterizerState* m_RSFill;
 	ID3D11RasterizerState* m_RSPoints;
 	ID3D11RenderTargetView* m_RenderTargetView;
 	ID3D11DepthStencilView* m_DepthStencilView;
-
-
 };

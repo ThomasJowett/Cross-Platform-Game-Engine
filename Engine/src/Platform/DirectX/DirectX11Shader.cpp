@@ -10,11 +10,13 @@
 
 std::string DirectX11Shader::shaderVersion = "_5_0";
 
+extern ID3D11Device* g_D3dDevice;
+extern ID3D11DeviceContext* g_ImmediateContext;
+
 DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& fileDirectory)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
-	m_ImmediateContext = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get())->GetDeviceContext();
 
 	m_VertexShader = nullptr;
 	m_HullShader = nullptr;
@@ -27,8 +29,6 @@ DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& fil
 
 DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
 {
-	m_ImmediateContext = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get())->GetDeviceContext();
-
 	m_VertexShader = nullptr;
 	m_HullShader = nullptr;
 	m_DomainShader = nullptr;
@@ -47,20 +47,20 @@ DirectX11Shader::~DirectX11Shader()
 
 void DirectX11Shader::Bind() const
 {
-	if (m_VertexShader) m_ImmediateContext->VSSetShader(m_VertexShader, nullptr, 0);
-	if (m_HullShader) m_ImmediateContext->HSSetShader(m_HullShader, nullptr, 0);
-	if (m_DomainShader) m_ImmediateContext->DSSetShader(m_DomainShader, nullptr, 0);
-	if (m_GeometryShader) m_ImmediateContext->GSSetShader(m_GeometryShader, nullptr, 0);
-	if (m_PixelShader) m_ImmediateContext->PSSetShader(m_PixelShader, nullptr, 0);
+	if (m_VertexShader) g_ImmediateContext->VSSetShader(m_VertexShader, nullptr, 0);
+	if (m_HullShader) g_ImmediateContext->HSSetShader(m_HullShader, nullptr, 0);
+	if (m_DomainShader) g_ImmediateContext->DSSetShader(m_DomainShader, nullptr, 0);
+	if (m_GeometryShader) g_ImmediateContext->GSSetShader(m_GeometryShader, nullptr, 0);
+	if (m_PixelShader) g_ImmediateContext->PSSetShader(m_PixelShader, nullptr, 0);
 }
 
 void DirectX11Shader::UnBind() const
 {
-	if (m_VertexShader) m_ImmediateContext->VSSetShader(nullptr, nullptr, 0);
-	if (m_HullShader) m_ImmediateContext->HSSetShader(nullptr, nullptr, 0);
-	if (m_DomainShader) m_ImmediateContext->DSSetShader(nullptr, nullptr, 0);
-	if (m_GeometryShader) m_ImmediateContext->GSSetShader(nullptr, nullptr, 0);
-	if (m_PixelShader) m_ImmediateContext->PSSetShader(nullptr, nullptr, 0);
+	if (m_VertexShader) g_ImmediateContext->VSSetShader(nullptr, nullptr, 0);
+	if (m_HullShader) g_ImmediateContext->HSSetShader(nullptr, nullptr, 0);
+	if (m_DomainShader) g_ImmediateContext->DSSetShader(nullptr, nullptr, 0);
+	if (m_GeometryShader) g_ImmediateContext->GSSetShader(nullptr, nullptr, 0);
+	if (m_PixelShader) g_ImmediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
 void DirectX11Shader::SetMat4(const char* name, const Matrix4x4& value, bool transpose)
@@ -126,32 +126,30 @@ HRESULT DirectX11Shader::CompileShaders(std::string filename)
 
 	WCHAR* wFilename = ConvertToWideChar(filename);
 
-	ID3D11Device* pd3dDevice = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get())->GetDevice();
-
 	// Vertex Shader
 	hr = CompileShaderFromFile(wFilename, "vertexShader", ("vs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
-		hr = pd3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_VertexShader);
+		hr = g_D3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_VertexShader);
 
 	// Hull Shader
 	hr = CompileShaderFromFile(wFilename, "hullShader", ("hs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
-		hr = pd3dDevice->CreateHullShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_HullShader);
+		hr = g_D3dDevice->CreateHullShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_HullShader);
 
 	//Domain Shader
 	hr = CompileShaderFromFile(wFilename, "domainShader", ("ds" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
-		hr = pd3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
+		hr = g_D3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
 
 	//Geometry Shader
 	hr = CompileShaderFromFile(wFilename, "geometryShader", ("gs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
-		hr = pd3dDevice->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_GeometryShader);
+		hr = g_D3dDevice->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_GeometryShader);
 
 	//Pixel Shader
 	hr = CompileShaderFromFile(wFilename, "pixelShader", ("ps" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
-		hr = pd3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_PixelShader);
+		hr = g_D3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_PixelShader);
 
 	if (FAILED(hr))
 	{

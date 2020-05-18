@@ -20,7 +20,7 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 		return CreateRef<OpenGLVertexBuffer>(size);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		CORE_ASSERT(false, "Could not create vertex buffer: DirectX is not currently supported")
+		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
 			return CreateRef<DirectX11VertexBuffer>(size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
@@ -50,7 +50,7 @@ Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 		return CreateRef<OpenGLVertexBuffer>(vertices, size);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		CORE_ASSERT(false, "Could not create vertex buffer: DirectX is not currently supported")
+		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
 		return CreateRef<DirectX11VertexBuffer>(vertices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
@@ -79,7 +79,7 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		return CreateRef<OpenGLIndexBuffer>(indices, size);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		CORE_ASSERT(false, "Could not create index buffer: DirectX is not currently supported")
+		ENGINE_WARN("Could not create index buffer: DirectX is not currently supported");
 			return CreateRef<DirectX11IndexBuffer>(indices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__

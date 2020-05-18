@@ -37,6 +37,7 @@ private:
 
 	void SetDefaultSettings(const WindowProps& props);
 
+	double GetTime();
 private:
 	Scope<Window> m_Window;
 	ImGuiLayer* m_ImGuiLayer;

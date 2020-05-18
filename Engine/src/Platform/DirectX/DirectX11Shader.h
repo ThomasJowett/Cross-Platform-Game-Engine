@@ -27,8 +27,6 @@ private:
 private:
 	std::string m_Name;
 
-	ID3D11DeviceContext* m_ImmediateContext;
-
 	ID3D11VertexShader* m_VertexShader;
 	ID3D11HullShader* m_HullShader;
 	ID3D11DomainShader* m_DomainShader;

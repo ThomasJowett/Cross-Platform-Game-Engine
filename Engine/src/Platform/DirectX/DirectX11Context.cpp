@@ -3,13 +3,15 @@
 #include "DirectX11RendererAPI.h"
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
+#include "Core/Settings.h"
+
+extern ID3D11Device* g_D3dDevice = nullptr;
+extern ID3D11DeviceContext* g_ImmediateContext = nullptr;
 
 DirectX11Context::DirectX11Context(HWND windowHandle)
 	:m_WindowHandle(windowHandle)
 {
 	m_SwapChain = nullptr;
-	m_ImmediateContext = nullptr;
-	m_D3dDevice = nullptr;
 
 	m_RenderTargetView = nullptr;
 	m_DepthStencilBuffer = nullptr;
@@ -28,8 +30,8 @@ DirectX11Context::~DirectX11Context()
 
 void DirectX11Context::Init()
 {
-	int renderWidth = 1920;// TODO: get the width height values from somewhere else
-	int renderHeight = 1080;
+	int renderWidth = Settings::GetInt("Display", "Screen_Width");
+	int renderHeight = Settings::GetInt("Display", "Screen_Height");;
 
 	HRESULT hr = S_OK;
 
@@ -77,7 +79,7 @@ void DirectX11Context::Init()
 	{
 		m_DriverType = driverTypes[driverTypeIndex];
 		hr = D3D11CreateDeviceAndSwapChain(nullptr, m_DriverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &sd, &m_SwapChain, &m_D3dDevice, &m_FeatureLevel, &m_ImmediateContext);
+			D3D11_SDK_VERSION, &sd, &m_SwapChain, &g_D3dDevice, &m_FeatureLevel, &g_ImmediateContext);
 	
 		if (SUCCEEDED(hr))
 			break;
@@ -85,6 +87,7 @@ void DirectX11Context::Init()
 
 	if (FAILED(hr))
 	{
+		CORE_ASSERT(FAILED(hr), "Failed to create swap chain");
 		ENGINE_CRITICAL("Failed to create Device and swap chain: {0}", hr);
 	}
 
@@ -97,7 +100,7 @@ void DirectX11Context::Init()
 		ENGINE_CRITICAL("Failed to retrieve back buffer from swap chain: {0}", hr);
 	}
 
-	hr = m_D3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_RenderTargetView);
+	hr = g_D3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &m_RenderTargetView);
 	pBackBuffer->Release();
 
 	if (FAILED(hr))
@@ -119,8 +122,8 @@ void DirectX11Context::Init()
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.MiscFlags = 0;
 
-	m_D3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &m_DepthStencilBuffer);
-	m_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
+	g_D3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &m_DepthStencilBuffer);
+	g_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
 }
 
 void DirectX11Context::SwapBuffers()

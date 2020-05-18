@@ -11,8 +11,12 @@
 
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
+#include "Platform/DirectX/DirectX11Context.h"
 #include "examples/imgui_impl_dx11.h"
 #include "examples/imgui_impl_win32.h"
+
+extern ID3D11Device* g_D3dDevice;
+extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // __WINDOWS__
 
 #include "ImGuiConsole.h"
@@ -43,14 +47,6 @@ void ImGuiLayer::OnAttach()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-	//pFont = io.Fonts->AddFontFromFileTTF("DroidSans.ttf", 16.0f);
-	//unsigned char* pixels;
-	//int width, height, bytes_per_pixels;
-	//io.Fonts->GetTexDataAsAlpha8(&pixels, &width, &height, &bytes_per_pixels);
-	//Ref<Texture2D> texture = Texture2D::Create(width, height);
-	//texture->SetData(pixels, sizeof(uint32_t) * width * height);
-	//io.Fonts->SetTexID((void*)texture->GetRendererID());
 	
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -129,24 +125,25 @@ void ImGuiLayer::OnAttach()
 		style.WindowBorderSize = 1.0f;*/
 	}
 
+	//Setup Platform/Renderer bindings
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
 #ifdef __WINDOWS__
 		HWND windowHandle = std::any_cast<HWND>(Application::GetWindow().GetNativeWindow());
-		//ImGui_ImplWin32_Init(windowHandle);
 
-		//ImGui_ImplDX11_Init(_pd3dDevice, _pImmediateContext);
+		if (ImGui_ImplWin32_Init(windowHandle))
+		{
+			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
+		}
 #endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 
-		//Setup Platform/Renderer bindings
-
-		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
-			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
+		//if (ImGui_ImplGlfw_InitForOpenGL(window, true))
+		//	m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
 	else
 	{
@@ -163,14 +160,15 @@ void ImGuiLayer::OnDetach()
 	{
 #ifdef __WINDOWS__
 		ImGui_ImplDX11_Shutdown();
+		ImGui_ImplWin32_Shutdown();
 #endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		ImGui_ImplOpenGL3_Shutdown();
+		//ImGui_ImplOpenGL3_Shutdown();
+		//ImGui_ImplGlfw_Shutdown();
 	}
 
-	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 }
 
@@ -206,13 +204,14 @@ void ImGuiLayer::Begin()
 	{
 #ifdef __WINDOWS__
 		ImGui_ImplDX11_NewFrame();
+		ImGui_ImplWin32_NewFrame();
 #endif // __WINDOWS__
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		ImGui_ImplOpenGL3_NewFrame();
+		//ImGui_ImplOpenGL3_NewFrame();
+		//ImGui_ImplGlfw_NewFrame();
 	}
-	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
 }
@@ -236,14 +235,14 @@ void ImGuiLayer::End()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		GLFWwindow* backup_current_context = glfwGetCurrentContext();
+	//	GLFWwindow* backup_current_context = glfwGetCurrentContext();
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		glfwMakeContextCurrent(backup_current_context);
+	//	glfwMakeContextCurrent(backup_current_context);
 	}
 }

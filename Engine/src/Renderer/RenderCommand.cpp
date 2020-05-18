@@ -6,6 +6,6 @@
 #endif // __WINDOWS__
 
 
-Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
+//Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
 
-//Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope <DirectX11RendererAPI>();
+Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope <DirectX11RendererAPI>();
