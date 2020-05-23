@@ -17,8 +17,11 @@ public:
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
 private:
-	uint32_t m_RendererID;
 	BufferLayout m_Layout;
+
+	ID3D11Buffer* m_VertexBuffer;
+
+	UINT m_Offset;
 };
 
 class DirectX11IndexBuffer : public IndexBuffer
@@ -32,6 +35,6 @@ public:
 
 	virtual uint32_t GetCount() const override { return m_Count; }
 private:
-	uint32_t m_RendererID;
+	ID3D11Buffer* m_IndexBuffer;
 	uint32_t m_Count;
 };

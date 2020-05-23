@@ -6,6 +6,8 @@
 class RenderCommand
 {
 public:
+	static void CreateRendererAPI();
+
 	inline static bool Init()
 	{
 		return s_RendererAPI->Init();

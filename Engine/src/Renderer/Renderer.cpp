@@ -12,8 +12,9 @@ SceneData s_Data;
 
 bool Renderer::Init()
 {
-	Renderer2D::Init();
-	return RenderCommand::Init();
+	if(RenderCommand::Init())
+		return Renderer2D::Init();
+	return false;
 }
 
 void Renderer::OnWindowResize(uint32_t width, uint32_t height)

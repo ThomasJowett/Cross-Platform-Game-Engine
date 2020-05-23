@@ -1,4 +1,4 @@
 #include "stdafx.h"
 #include "RendererAPI.h"
 
-RendererAPI::API RendererAPI::s_API = RendererAPI::API::Directx11;
+RendererAPI::API RendererAPI::s_API = RendererAPI::API::None;

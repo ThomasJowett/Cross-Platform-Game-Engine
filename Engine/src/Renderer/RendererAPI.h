@@ -12,6 +12,7 @@ enum class DrawMode
 
 class RendererAPI
 {
+	friend class RenderCommand;
 public:
 	enum class API
 	{
@@ -31,6 +32,6 @@ public:
 	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0, DrawMode drawMode = DrawMode::FILL) = 0;
 
 	inline static API GetAPI() { return s_API; }
-private:
+protected:
 		static API s_API;
 };

@@ -59,7 +59,7 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 
 	CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer Layout has no elements");
 
-	uint32_t index = 0;
+	//uint32_t index = 0;
 	const BufferLayout& layout = vertexBuffer->GetLayout();
 	for (const BufferElement& element : layout)
 	{

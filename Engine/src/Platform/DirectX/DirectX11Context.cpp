@@ -26,6 +26,8 @@ DirectX11Context::DirectX11Context(HWND windowHandle)
 DirectX11Context::~DirectX11Context()
 {
 	if (m_SwapChain) m_SwapChain->Release();
+	if (g_D3dDevice) g_D3dDevice->Release();
+	if (g_ImmediateContext) g_ImmediateContext->Release();
 }
 
 void DirectX11Context::Init()

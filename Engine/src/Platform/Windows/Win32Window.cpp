@@ -11,7 +11,7 @@
 #include "Core/Settings.h"
 #include "Core/Input.h"
 
-extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	WindowData* data = (WindowData*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -194,8 +194,8 @@ void Win32Window::MessageLoop()
 {
 	MSG msg = { 0 };
 
-	if (ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam))
-		return;
+	//if (ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam))
+	//	return;
 
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 	{

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DirectX11Shader.h"
 
-#include <d3dcompiler.h>
 #include <filesystem>
 
 #include "Utilities/StringUtils.h"

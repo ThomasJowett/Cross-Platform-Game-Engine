@@ -1,11 +1,43 @@
 #include "stdafx.h"
 #include "RenderCommand.h"
+#include "Core/Settings.h"
+
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #endif // __WINDOWS__
 
+Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
-//Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope<OpenGLRendererAPI>();
+void RenderCommand::CreateRendererAPI()
+{
+	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
 
-Scope<RendererAPI> RenderCommand::s_RendererAPI = CreateScope <DirectX11RendererAPI>();
+	std::string api = Settings::GetValue("Renderer", "API");
+	if (api == "OpenGL")
+	{
+		RendererAPI::s_API = RendererAPI::API::OpenGL;
+		s_RendererAPI = CreateScope<OpenGLRendererAPI>();
+		return;
+	}
+	else if(api == "DirectX11")
+	{
+		RendererAPI::s_API = RendererAPI::API::Directx11;
+		s_RendererAPI = CreateScope <DirectX11RendererAPI>();
+		return;
+	}
+	else if (api == "Metal")
+	{
+		RendererAPI::s_API = RendererAPI::API::Metal;
+		CORE_ASSERT(false, "Metal not yet supported!");
+		s_RendererAPI = nullptr;
+		return;
+	}
+	else if (api == "Vulkan")
+	{
+		RendererAPI::s_API = RendererAPI::API::Vulkan;
+		CORE_ASSERT(false, "Vulkan not yet supported!");
+		s_RendererAPI = nullptr;
+		return;
+	}
+}

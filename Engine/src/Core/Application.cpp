@@ -19,6 +19,8 @@ Application::Application(const WindowProps& props)
 
 	SetDefaultSettings(props);
 
+	RenderCommand::CreateRendererAPI();
+
 	m_Window = Scope<Window>(Window::Create(props));
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
@@ -261,7 +263,7 @@ double Application::GetTime()
 		//most accurate method of getting system time
 		LARGE_INTEGER now;
 		QueryPerformanceCounter(&now);
-		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart);
+		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart)/1000.0;
 	}
 	else
 	{

@@ -21,4 +21,6 @@ public:
 private:
 	std::vector<Ref<VertexBuffer>> m_VertexBuffers;
 	Ref<IndexBuffer> m_IndexBuffer;
+
+	ID3D11InputLayout* m_VertexLayout;
 };

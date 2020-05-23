@@ -1,6 +1,8 @@
 #include "ExampleLayer2D.h"
 #include "imgui/imgui.h"
 
+#include "GLFW/include/GLFW/glfw3.h"
+
 ExampleLayer2D::ExampleLayer2D()
 	:Layer("Example 2D")
 {

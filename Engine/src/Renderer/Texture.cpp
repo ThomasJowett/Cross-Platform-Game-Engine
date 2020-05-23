@@ -17,7 +17,6 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 		return CreateRef<OpenGLTexture2D>(width, height);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		//CORE_ASSERT(false, "Could not create Texture: DirectX is not currently supported")
 			return CreateRef<DirectX11Texture2D>(width, height);
 #endif // __WINDOWS__
 #ifdef __APPLE__
@@ -46,7 +45,6 @@ Ref<Texture2D> Texture2D::Create(const std::string & path)
 		return CreateRef<OpenGLTexture2D>(path);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		//CORE_ASSERT(false, "Could not create Texture: DirectX is not currently supported")
 			return CreateRef<DirectX11Texture2D>(path);
 #endif // __WINDOWS__
 #ifdef __APPLE__
