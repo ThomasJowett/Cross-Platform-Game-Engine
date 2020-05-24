@@ -11,4 +11,8 @@ namespace GeometryGenerator
 	Ref<VertexArray> CreateGrid(float width, float length, unsigned int widthLines, unsigned int lengthLines, float tileU, float tileV);
 
 	Ref<VertexArray> CreateFullScreenQuad();
+
+	Ref<VertexArray> CreateCylinder(float bottomRadius, float topRadius, float height, int sliceCount, int stackCount);
+
+	Ref<VertexArray> CreateTorus(float diameter, float thickness, int segments);
 }
