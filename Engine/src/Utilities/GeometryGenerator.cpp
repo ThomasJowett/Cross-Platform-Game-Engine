@@ -13,6 +13,8 @@ static BufferLayout layout = {
 
 Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	float w2 = 0.5f * width;
@@ -89,6 +91,8 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 
 Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int longitudeLines, unsigned int latitudeLines)
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (longitudeLines < 3)
@@ -146,7 +150,7 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 	}
 
 
-	std::vector<unsigned int> indicesList;
+	std::vector<uint32_t> indicesList;
 
 	for (unsigned int i = 0; i <= latitudeLines; i++)
 	{
@@ -177,6 +181,8 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 
 Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsigned int widthLines, unsigned int lengthLines, float tileU, float tileV)
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (widthLines < 2)
@@ -263,11 +269,16 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsign
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
+	delete[] indices;
+	delete[] vertices;
+
 	return returnModel;
 }
 
 Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	float vertices[] =
@@ -299,6 +310,8 @@ Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 
 Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, int sliceCount, int stackCount)
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (sliceCount < 3)
@@ -365,7 +378,7 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 	uint32_t ringVertexCount = sliceCount + 1;
 
-	std::vector<unsigned int> indicesList;
+	std::vector<uint32_t> indicesList;
 
 	//compute the indices for each stack
 	for (size_t i = 0; i < stackCount; i++)
@@ -516,6 +529,8 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, int segments)
 {
+	PROFILE_FUNCTION();
+
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (segments < 3)
@@ -524,12 +539,12 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 	size_t stride = segments + 1;
 
 	std::vector<float> verticesList;
-	std::vector<unsigned int> indicesList;
+	std::vector<uint32_t> indicesList;
 
 	for (size_t i = 0; i <= segments; i++)
 	{
 		float u = 1.0f - float(i) / segments;
-		float outerAngle = (i * PI / segments - (PI / 2.0f))*2;
+		float outerAngle = (i * PI / segments - (PI / 2.0f)) * 2;
 
 		Matrix4x4 transform = Matrix4x4::RotateY(outerAngle) * Matrix4x4::Translate({ diameter / 2.0f, 0.0f, 0.0f });
 
@@ -537,7 +552,7 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 		{
 			float v = 1 - (float)(j) / segments;
 
-			float innerAngle = (j * PI / segments + PI)*2;
+			float innerAngle = (j * PI / segments + PI) * 2;
 			float dx = cos(innerAngle);
 			float dy = sin(innerAngle);
 

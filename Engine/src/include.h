@@ -35,6 +35,7 @@
 #include "Renderer/RendererAPI.h"
 #include "Renderer/Texture.h"
 #include "Renderer/SubTexture2D.h"
+#include "Renderer/Mesh.h"
 
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Random.h"
