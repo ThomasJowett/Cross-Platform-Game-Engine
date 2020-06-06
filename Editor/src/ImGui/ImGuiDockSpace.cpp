@@ -114,7 +114,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem("New Project", "Ctrl + Shift + N");
 			ImGui::MenuItem("Open Project", "Ctrl + O");
 			ImGui::MenuItem("Save", "Ctrl + S");
-			ImGui::MenuItem("Exit", "Alt + F4");
+			if(ImGui::MenuItem("Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 

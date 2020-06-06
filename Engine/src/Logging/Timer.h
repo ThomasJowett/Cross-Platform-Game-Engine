@@ -1,8 +1,7 @@
 #pragma once
 #include <iostream>
-#include "Debug.h"
-
 #include <chrono>
+
 template<typename Fn>
 class Timer
 {

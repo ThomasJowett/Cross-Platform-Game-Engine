@@ -80,6 +80,7 @@ void Application::Run()
 
 		accumulator += frameTime;
 
+		// On Fixed update
 		while (accumulator >= deltaTime)
 		{
 			PROFILE_SCOPE("Layer Stack Fixed Update");
@@ -94,6 +95,7 @@ void Application::Run()
 			accumulator -= deltaTime;
 		}
 
+		// On Update
 		{
 			PROFILE_SCOPE("Layer Stack Update");
 
@@ -106,6 +108,7 @@ void Application::Run()
 			}
 		}
 
+		// Render the imgui of each of the layers
 		if (m_ImGuiLayer->IsUsing())
 		{
 			m_ImGuiLayer->Begin();
@@ -115,8 +118,10 @@ void Application::Run()
 			}
 			m_ImGuiLayer->End();
 		}
+
 		m_Window->OnUpdate();
 
+		// Push any layers that were created during the update to the stack
 		for (Layer* layer : m_WaitingLayers)
 		{
 			PushLayer(layer);
@@ -127,6 +132,10 @@ void Application::Run()
 			PushOverlay(overlay);
 		}
 
+		m_WaitingLayers.clear();
+		m_WaitingOverlays.clear();
+
+		// Remove any layers that were deleted during the update
 		for (Layer* layer : m_DeadLayers)
 		{
 			PopLayer(layer);
@@ -136,9 +145,6 @@ void Application::Run()
 		{
 			PopOverlay(layer);
 		}
-
-		m_WaitingLayers.clear();
-		m_WaitingOverlays.clear();
 
 		m_DeadLayers.clear();
 		m_DeadOverlays.clear();

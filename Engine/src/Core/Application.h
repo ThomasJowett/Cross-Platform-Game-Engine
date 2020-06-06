@@ -28,6 +28,8 @@ public:
 	void RemoveLayer(Layer* layer);
 	void RemoveOverlay(Layer* layer);
 
+	void Close() { m_Running = false; }
+
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();

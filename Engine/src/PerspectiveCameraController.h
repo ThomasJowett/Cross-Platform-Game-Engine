@@ -7,8 +7,8 @@
 class PerspectiveCameraController
 {
 public:
-	PerspectiveCameraController(float aspectRatio, float fovY, 
-		Vector3f position = Vector3f(), Vector3f forward = { 0.0f,0.0f,-1.0f }, Vector3f up = { 0.0f, 1.0f, 0.0f });
+	PerspectiveCameraController(float fovY = PI * 0.5f,
+		Vector3f position = Vector3f(), Vector3f forward = { 0.0f,0.0f, -1.0f }, Vector3f up = { 0.0f, 1.0f, 0.0f });
 	~PerspectiveCameraController();
 
 	void OnUpdate(float deltaTime);
@@ -23,7 +23,9 @@ public:
 	PerspectiveCamera GetCamera() { return m_Camera; }
 
 	float GetFovY() const { return m_FovY; }
-	void SetFovY(const float& aspectRatio) const;
+	void SetFovY(const float& fovY);
+
+	void SetNearAndFarDepth(const float& nearDepth, const float& farDepth);
 
 	float GetAspectRatio() const { return m_AspectRatio; }
 	void SetAspectRatio(const float& aspectRatio);
@@ -43,6 +45,7 @@ private:
 private:
 	float m_AspectRatio;
 	float m_FovY;
+	float m_NearDepth, m_FarDepth;
 	float m_TranslationSpeed = 1.0f;
 	PerspectiveCamera m_Camera;
 

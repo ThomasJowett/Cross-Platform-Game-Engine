@@ -21,9 +21,16 @@ public:
 	void SetRotation(const Vector3f& rotation) { m_Rotation = rotation; RecalculateViewMatrix(); }
 	Vector3f GetRotation() { return m_Rotation; }
 
+	void SetPositionAndRotation(const Vector3f& position, const Vector3f& rotation) 
+	{
+		m_Position = position;  
+		m_Rotation = rotation;
+		RecalculateViewMatrix();
+	}
+
 protected:
-	void RecalculateViewMatrix();
 	void SetProjectionMatrix(const Matrix4x4& matrix) { m_ProjectionMatrix = matrix; }
+	void RecalculateViewMatrix();
 protected:
 	Matrix4x4 m_ProjectionMatrix;
 	Matrix4x4 m_ViewMatrix;
@@ -40,7 +47,7 @@ class OrthographicCamera : public Camera
 {
 public:
 	OrthographicCamera(float left, float right, float bottom, float top, float nearDepth = -1.0f, float farDepth = 1.0f)
-		:Camera(Matrix4x4::Orthographic(left, right, bottom, top, nearDepth, farDepth), Matrix4x4())
+		:Camera(Matrix4x4::OrthographicRH(left, right, bottom, top, nearDepth, farDepth), Matrix4x4())
 	{
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
@@ -49,7 +56,7 @@ public:
 	void SetProjection(float left, float right, float bottom, float top, float nearDepth = -1.0f, float farDepth = 1.0f)
 	{
 		PROFILE_FUNCTION();
-		Camera::SetProjectionMatrix(Matrix4x4::Orthographic(left, right, bottom, top, nearDepth, farDepth));
+		Camera::SetProjectionMatrix(Matrix4x4::OrthographicRH(left, right, bottom, top, nearDepth, farDepth));
 
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
@@ -60,7 +67,7 @@ class PerspectiveCamera : public Camera
 {
 public:
 	PerspectiveCamera(float fovY, float aspectRatio, float nearDepth = 0.0f, float farDepth = 100.0f)
-		:Camera(Matrix4x4::Perspective(fovY, aspectRatio, nearDepth, farDepth), Matrix4x4())
+		:Camera(Matrix4x4::PerspectiveRH(fovY, aspectRatio, nearDepth, farDepth), Matrix4x4())
 	{
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
@@ -69,7 +76,7 @@ public:
 	void SetProjection(float fovY, float aspectRatio, float nearDepth = 0.0f, float farDepth = 100.0f)
 	{
 		PROFILE_FUNCTION();
-		Camera::SetProjectionMatrix(Matrix4x4::Perspective(fovY, aspectRatio, nearDepth, farDepth));
+		Camera::SetProjectionMatrix(Matrix4x4::PerspectiveRH(fovY, aspectRatio, nearDepth, farDepth));
 
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;

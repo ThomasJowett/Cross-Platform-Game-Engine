@@ -3,6 +3,8 @@
 #include "Renderer2D.h"
 #include "RenderCommand.h"
 
+#include "FrameBuffer.h"
+
 struct SceneData
 {
 	Matrix4x4 ViewProjectionMatrix;

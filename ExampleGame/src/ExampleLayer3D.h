@@ -17,15 +17,20 @@ public:
 
 private:
 	ShaderLibrary m_ShaderLibrary;
-	OrthogrpahicCameraController m_CameraController;
+	//OrthogrpahicCameraController m_CameraController;
+	PerspectiveCameraController m_CameraController;
 	Ref<VertexArray> m_CubeVertexArray;
 	Ref<VertexArray> m_SphereVertexArray;
 	Ref<VertexArray> m_GridVertexArray;
 	Ref<VertexArray> m_CylinderVertexArray;
 	Ref<VertexArray> m_TorusVertexArray;
+	Ref<VertexArray> m_TorusVertexArray2;
 
 	Ref<Texture2D> m_Texture;
 
 	float m_Position[3] = { -2.0f, 0.0f, 0.0f };
 	float m_Rotation[3] = { 0.0f, 0.0f, 0.0f };
+
+	float* m_FOV;
+	float m_Nearfar[2] = { 1.0f, -1.0f };
 };
