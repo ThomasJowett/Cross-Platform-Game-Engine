@@ -58,8 +58,8 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
 
 	//Grid
-	Renderer::Submit(shader, m_GridVertexArray, Matrix4x4::Translate({ m_Position[0] + 1.0f, m_Position[1] + 1.0f, m_Position[2] - 0.5f })
-		* Matrix4x4::Rotate(Vector3f(PI / 2.0f, 0.0f, m_Rotation[2])));
+	Renderer::Submit(shader, m_GridVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] - 0.5f })
+		* Matrix4x4::Rotate(Vector3f(PI / 2.0f, 0.0f, 0.0f)));
 
 	//Torus
 	Renderer::Submit(shader, m_TorusVertexArray, Matrix4x4::Translate({ m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] })

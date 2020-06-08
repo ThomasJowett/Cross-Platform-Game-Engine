@@ -9,10 +9,8 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 
 DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
-	:m_Width(width), m_Height(height)
+	:m_Width(width), m_Height(height), m_Path("NO DATA")
 {
-	m_Path = "NO DATA";
-
 	m_ShaderResourceView = nullptr;
 }
 

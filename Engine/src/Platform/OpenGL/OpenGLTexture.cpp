@@ -5,11 +5,9 @@
 #include <filesystem>
 
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
-	:m_Width(width), m_Height(height)
+	:m_Width(width), m_Height(height), m_Path("NO DATA")
 {
 	PROFILE_FUNCTION();
-
-	m_Path = "NO DATA";
 
 	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
 

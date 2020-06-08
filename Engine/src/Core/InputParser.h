@@ -27,7 +27,7 @@ public:
 
 	bool CmdOptionExists(const std::string& option) const
 	{
-		if (m_Tokens.size() == (0 || m_TokensFound))
+		if (m_Tokens.size() == 0 || m_Tokens.size() == m_TokensFound)
 			return false;
 
 		auto itr = std::find(this->m_Tokens.begin(), this->m_Tokens.end(), option);

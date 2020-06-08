@@ -146,7 +146,6 @@ void PerspectiveCameraController::LookAt(Vector3f focalPoint)
 
 void PerspectiveCameraController::SetFovY(const float & fovY)
 {
-	//TODO: set fovY
 	m_FovY = fovY;
 	m_Camera.SetProjection(fovY, m_AspectRatio, m_NearDepth, m_FarDepth);
 }

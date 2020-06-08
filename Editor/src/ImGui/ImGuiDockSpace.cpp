@@ -114,7 +114,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem("New Project", "Ctrl + Shift + N");
 			ImGui::MenuItem("Open Project", "Ctrl + O");
 			ImGui::MenuItem("Save", "Ctrl + S");
-			if(ImGui::MenuItem("Exit", "Alt + F4")) Application::Get().Close();
+			if (ImGui::MenuItem("Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 
@@ -160,7 +160,16 @@ void ImGuiDockSpace::OnImGuiRender()
 		if (ImGui::BeginMenu("Help"))
 		{
 			ImGui::MenuItem("About", "");
-			ImGui::MenuItem("Documentation", "");
+			if (ImGui::MenuItem("Documentation", ""))
+			{
+#ifdef __WINDOWS__
+				ShellExecute(0, 0, L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki", 0, 0, SW_SHOW);
+#elif __linux__
+				system("xdg-open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
+#elif __APPLE__
+				system("open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
+#endif
+			}
 			ImGui::EndMenu();
 		}
 

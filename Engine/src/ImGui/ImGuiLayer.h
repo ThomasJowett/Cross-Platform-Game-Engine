@@ -29,6 +29,5 @@ public:
 
 private:
 	bool m_UsingImGui;
-	ImFont* pFont;
 };
 
