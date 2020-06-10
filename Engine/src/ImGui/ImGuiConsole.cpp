@@ -130,7 +130,7 @@ void ImGuiConsole::ImGuiRenderSettings()
 	ImGui::SameLine(0.0f, spacing);
 
 	// Button to clear the console
-	ImGui::SameLine(0.0f, ImGui::GetContentRegionAvail().x - ImGui::CalcTextSize("Clear console").x + 1.0f);
+	ImGui::SameLine();
 	if (ImGui::Button("Clear Console"))
 		Clear();
 

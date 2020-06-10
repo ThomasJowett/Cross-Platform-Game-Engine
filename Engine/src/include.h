@@ -2,8 +2,6 @@
 
 // For including in applications
 
-#define NOMINMAX
-
 #include "Core/Layer.h"
 #include "Core/Application.h"
 

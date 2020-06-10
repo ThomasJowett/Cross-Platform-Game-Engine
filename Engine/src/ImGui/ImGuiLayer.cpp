@@ -51,11 +51,11 @@ void ImGuiLayer::OnAttach()
 	ImGuiStyle& style = ImGui::GetStyle();
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		style.WindowRounding = 2.0f;
-		style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-		style.FrameRounding = 2.0f;
-		style.ChildRounding = 2.0f;
-		style.GrabRounding = 2.0f;
+		//style.WindowRounding = 2.0f;
+		//style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		//style.FrameRounding = 2.0f;
+		//style.ChildRounding = 2.0f;
+		//style.GrabRounding = 2.0f;
 
 /*#define HI(v)   ImVec4(0.502f, 0.075f, 0.256f, v)
 #define MED(v)  ImVec4(0.455f, 0.198f, 0.301f, v)

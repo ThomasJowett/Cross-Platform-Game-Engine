@@ -7,15 +7,15 @@
 #include "Platform/DirectX/DirectX11FrameBuffer.h"
 #endif // __WINDOWS__
 
-Ref<FrameBuffer> FrameBuffer::Create()
+Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& specification)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create Frame Buffer: DirectX is not currently supported");
-		return CreateRef<DirectX11FrameBuffer>();
+		return CreateRef<DirectX11FrameBuffer>(specification);
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLFrameBuffer>();
+		return CreateRef<OpenGLFrameBuffer>(specification);
 	default:
 		break;
 	}

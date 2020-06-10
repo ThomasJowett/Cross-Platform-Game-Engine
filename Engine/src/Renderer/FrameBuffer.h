@@ -1,17 +1,27 @@
 #pragma once
+
+struct FrameBufferSpecification
+{
+	uint32_t Width, Height;
+	uint32_t Samples = 1;
+
+	bool SwapChainTarget = false;
+};
+
 class FrameBuffer
 {
 public:
-	virtual void Bind() const = 0;
-	virtual void UnBind() const = 0;
+	virtual void Bind() = 0;
+	virtual void UnBind() = 0;
 
-	virtual void Generate(uint32_t width, uint32_t  height) = 0;
+	virtual void Generate() = 0;
 	virtual void Destroy() = 0;
 
 	virtual void SetTextureSize(uint32_t width, uint32_t height) = 0;
 
-	virtual uint32_t GetTextureID() = 0;
+	virtual uint32_t GetColourAttachment() = 0;
 
-	static Ref<FrameBuffer>Create();
+	virtual const FrameBufferSpecification& GetSpecification() const = 0;
+
+	static Ref<FrameBuffer>Create(const FrameBufferSpecification& specification);
 };
-

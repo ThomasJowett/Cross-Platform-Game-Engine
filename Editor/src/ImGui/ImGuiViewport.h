@@ -3,14 +3,16 @@
 #include "include.h"
 #include "imgui/imgui.h"
 
-class Viewport
+class ImGuiViewportPanel
+	:public Layer
 {
 public: 
-	explicit Viewport();
-	~Viewport();
+	explicit ImGuiViewportPanel(bool* show, Ref<FrameBuffer> framebuffer);
+	~ImGuiViewportPanel() = default;
 
-	void Render(const char* title, const ImVec2& size = ImVec2());
+	void OnImGuiRender() override;
 private:
+	bool* m_Show;
 	ImVec2 m_WindowSize;
 	Ref<FrameBuffer> m_FrameBuffer;
 };

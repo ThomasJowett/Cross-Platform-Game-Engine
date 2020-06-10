@@ -187,8 +187,8 @@ void Renderer2D::BeginScene(const OrthographicCamera& camera)
 	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 	s_Data.QuadIndexCount = 0;
 
-	s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-	s_Data.LineIndexCount = 0;
+	//s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+	//s_Data.LineIndexCount = 0;
 
 	s_Data.TextureSlotIndex = 1;
 }
@@ -199,8 +199,8 @@ void Renderer2D::EndScene()
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
 	s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
 
-	dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-	s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
+	//dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+	//s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
 	Flush();
 }
@@ -216,10 +216,10 @@ void Renderer2D::Flush()
 	s_Data.QuadVertexArray->Bind();
 	RenderCommand::DrawIndexed(s_Data.QuadVertexArray, s_Data.QuadIndexCount);
 
-	s_Data.LineVertexBuffer->Bind();
-	s_Data.LineShader->Bind();
-	s_Data.LineVertexArray->Bind();
-	RenderCommand::DrawIndexed(s_Data.LineVertexArray, s_Data.LineIndexCount);
+	//s_Data.LineVertexBuffer->Bind();
+	//s_Data.LineShader->Bind();
+	//s_Data.LineVertexArray->Bind();
+	//RenderCommand::DrawIndexed(s_Data.LineVertexArray, s_Data.LineIndexCount);
 
 	s_Data.Statistics.DrawCalls++;
 }
@@ -231,8 +231,8 @@ void Renderer2D::FlushAndReset()
 	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 	s_Data.QuadIndexCount = 0;
 
-	s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-	s_Data.LineIndexCount = 0;
+	//s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+	//s_Data.LineIndexCount = 0;
 
 	s_Data.TextureSlotIndex = 1;
 }

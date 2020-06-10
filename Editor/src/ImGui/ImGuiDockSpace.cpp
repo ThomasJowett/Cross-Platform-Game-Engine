@@ -8,6 +8,8 @@ ImGuiDockSpace::ImGuiDockSpace()
 	:Layer("Dockspace")
 {
 	m_Show = true;
+	m_ShowEditorPreferences = false;
+	m_ShowViewport = true;
 	m_ShowConsole = true;
 	m_ShowErrorList = false;
 	m_ShowTaskList = false;
@@ -21,14 +23,18 @@ void ImGuiDockSpace::OnAttach()
 {
 	Fonts::LoadFonts();
 
+	Settings::SetDefaultBool("Windows", "Viewport", true);
 	Settings::SetDefaultBool("Windows", "Console", false);
 	Settings::SetDefaultBool("Windows", "ContentExplorer", true);
 	Settings::SetDefaultBool("Windows", "JoystickInfo", false);
 	Settings::SetDefaultBool("Windows", "Hierachy", true);
 	Settings::SetDefaultBool("Windows", "Properties", true);
 	Settings::SetDefaultBool("Windows", "ErrorList", true);
+	Settings::SetDefaultBool("Windows", "EditorPreferences", false);
 
+	m_ShowViewport = Settings::GetBool("Windows", "Viewport");
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
+	m_ShowEditorPreferences = Settings::GetBool("Windows", "EditorPreferences");
 	m_ShowContentExplorer = Settings::GetBool("Windows", "ContentExplorer");
 	m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
@@ -38,6 +44,8 @@ void ImGuiDockSpace::OnAttach()
 
 void ImGuiDockSpace::OnDetach()
 {
+	Settings::SetBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
+	Settings::SetBool("Windows", "Viewport", m_ShowViewport);
 	Settings::SetBool("Windows", "Console", m_ShowConsole);
 	Settings::SetBool("Windows", "ContentExplorer", m_ShowContentExplorer);
 	Settings::SetBool("Windows", "JoystickInfo", m_ShowJoystickInfo);
@@ -126,7 +134,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem("Copy", "Ctrl + C");
 			ImGui::MenuItem("Paste", "Ctrl + V");
 			ImGui::MenuItem("Duplicate", "Ctrl + D");
-			ImGui::MenuItem("Preferences", "");
+			ImGui::MenuItem("Preferences", "", &m_ShowEditorPreferences);
 			ImGui::MenuItem("Project Settings", "");
 			ImGui::EndMenu();
 		}
@@ -136,7 +144,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem("Properties", "", &m_ShowProperties);
 			ImGui::MenuItem("Heirachy", "", &m_ShowHierachy);
 			ImGui::MenuItem("Content Explorer", "", &m_ShowContentExplorer);
-			ImGui::MenuItem("View port", "");
+			ImGui::MenuItem("Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem("Conosole", "", &m_ShowConsole);
 			ImGui::MenuItem("Error List", "", &m_ShowErrorList);
 			ImGui::MenuItem("Task List", "", &m_ShowTaskList);

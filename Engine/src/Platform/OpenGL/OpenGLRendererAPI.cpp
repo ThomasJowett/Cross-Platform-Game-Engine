@@ -12,7 +12,7 @@ void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned
 	}
 	else
 	{
-		ENGINE_WARN("GL CALLBACK: {0} type = 0x{1} severity = 0x{2} message = {3}", type, severity, message);
+		ENGINE_WARN("GL CALLBACK: {0}", message);
 	}
 }
 

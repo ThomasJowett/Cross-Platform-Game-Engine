@@ -1,13 +1,24 @@
 #include "ImGuiViewport.h"
 
-void Viewport::Render(const char* title, const ImVec2& size)
+ImGuiViewportPanel::ImGuiViewportPanel(bool* show, Ref<FrameBuffer> framebuffer)
+    :m_Show(show), Layer("Viewport")
 {
+    m_FrameBuffer = framebuffer;
+}
+
+void ImGuiViewportPanel::OnImGuiRender()
+{
+    if (!*m_Show)
+    {
+        return;
+    }
+
     ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGui::SetNextWindowSize(size);
     ImGuiWindowFlags flags = ImGuiTabBarFlags_NoTooltip;
     ImGui::Begin("Viewport", NULL, flags);
     {
+        ImVec2 size = ImGui::GetWindowSize();
         if (m_WindowSize.x != size.x || m_WindowSize.y != size.y)
         {
             m_WindowSize = size;
@@ -18,7 +29,7 @@ void Viewport::Render(const char* title, const ImVec2& size)
         ImVec2 mouse_pos = ImGui::GetMousePos();
 
         //m_RelativeMousePosition = { mouse_pos.x - ImGui::GetWindowPos().x - 1.0f, mouse_pos.y - ImGui::GetWindowPos().y - 8.0f - ImGui::GetFontSize() };
-        auto tex = m_FrameBuffer->GetTextureID();
+        auto tex = m_FrameBuffer->GetColourAttachment();
 
         ImGui::GetWindowDrawList()->AddImage(
             (void*)tex,

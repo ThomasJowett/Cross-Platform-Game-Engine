@@ -17,6 +17,8 @@ public:
 
 	virtual void OnImGuiRender() override;
 
+	bool* GetShowEditorPreferences() { return &m_ShowEditorPreferences; }
+	bool* GetShowViewport() { return &m_ShowViewport; }
 	bool* GetShowConsole() { return &m_ShowConsole; }
 	bool* GetShowErrorList() { return &m_ShowErrorList; }
 	bool* GetShowTaskList() { return &m_ShowTaskList; }
@@ -27,6 +29,10 @@ public:
 
 private:
 	bool m_Show;
+
+	bool m_ShowEditorPreferences;
+
+	bool m_ShowViewport;
 	bool m_ShowConsole;
 	bool m_ShowErrorList;
 	bool m_ShowTaskList;

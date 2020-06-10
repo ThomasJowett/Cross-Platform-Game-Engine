@@ -1,0 +1,123 @@
+[Alpha]
+1.000
+[WindowPadding]
+6.000 6.000
+[WindowMinSize]
+32.000 32.000
+[FramePadding]
+5.000 2.000
+[FrameRounding]
+2.000
+[ItemSpacing]
+8.000 4.000
+[ItemInnerSpacing]
+4.000 4.000
+[TouchExtraPadding]
+0.000 0.000
+[WindowRounding]
+7.000
+[ColumnsMinSpacing]
+6.000
+[ScrollBarSize]
+16.000
+[Text]
+1.000 1.000 1.000 1.000
+[TextDisabled]
+0.500 0.500 0.500 1.000
+[WindowBg]
+0.059 0.059 0.059 0.941
+[ChildBg]
+0.000 0.000 0.000 0.000
+[PopupBg]
+0.080 0.080 0.080 0.940
+[Border]
+0.430 0.430 0.500 0.500
+[BorderShadow]
+0.000 0.000 0.000 0.000
+[FrameBg]
+0.160 0.290 0.480 0.540
+[FrameBgHovered]
+0.260 0.590 0.980 0.400
+[FrameBgActive]
+0.260 0.590 0.980 0.670
+[TitleBg]
+0.040 0.040 0.040 1.000
+[TitleBgActive]
+0.160 0.290 0.480 1.000
+[TitleBgCollapsed]
+0.000 0.000 0.000 0.510
+[MenuBarBg]
+0.140 0.140 0.140 1.000
+[ScrollbarBg]
+0.020 0.020 0.020 0.530
+[ScrollbarGrab]
+0.310 0.310 0.310 1.000
+[ScrollbarGrabHovered]
+0.410 0.410 0.410 1.000
+[ScrollbarGrabActive]
+0.510 0.510 0.510 1.000
+[CheckMark]
+0.260 0.590 0.980 1.000
+[SliderGrab]
+0.240 0.520 0.880 1.000
+[SliderGrabActive]
+0.260 0.590 0.980 1.000
+[Button]
+0.260 0.590 0.980 0.400
+[ButtonHovered]
+0.260 0.590 0.980 1.000
+[ButtonActive]
+0.060 0.530 0.980 1.000
+[Header]
+0.260 0.590 0.980 0.310
+[HeaderHovered]
+0.260 0.590 0.980 0.800
+[HeaderActive]
+0.260 0.590 0.980 1.000
+[Separator]
+0.430 0.430 0.500 0.500
+[SeparatorHovered]
+0.100 0.400 0.750 0.780
+[SeparatorActive]
+0.100 0.400 0.750 1.000
+[ResizeGrip]
+0.260 0.590 0.980 0.250
+[ResizeGripHovered]
+0.260 0.590 0.980 0.670
+[ResizeGripActive]
+0.260 0.590 0.980 0.950
+[Tab]
+0.180 0.350 0.580 0.862
+[TabHovered]
+0.260 0.590 0.980 0.800
+[TabActive]
+0.200 0.410 0.680 1.000
+[TabUnfocused]
+0.068 0.102 0.148 0.972
+[TabUnfocusedActive]
+0.136 0.262 0.424 1.000
+[DockingPreview]
+0.260 0.590 0.980 0.700
+[DockingEmptyBg]
+0.200 0.200 0.200 1.000
+[PlotLines]
+0.610 0.610 0.610 1.000
+[PlotLinesHovered]
+1.000 0.430 0.350 1.000
+[PlotHistogram]
+0.900 0.700 0.000 1.000
+[PlotHistogramHovered]
+1.000 0.600 0.000 1.000
+[TextSelectedBg]
+0.260 0.590 0.980 0.350
+[DragDropTarget]
+1.000 1.000 0.000 0.900
+[NavHighlight]
+0.260 0.590 0.980 1.000
+[NavWindowingHighlight]
+1.000 1.000 1.000 0.700
+[NavWindowingDimBg]
+0.800 0.800 0.800 0.200
+[ModalWindowDimBg]
+0.800 0.800 0.800 0.350
+

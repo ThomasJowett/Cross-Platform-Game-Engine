@@ -1,7 +1,7 @@
 #include "ImGuiJoystickInfo.h"
 
 #include "imgui/imgui.h"
-#include "ImGui/imgui_internal.h"
+#include "imgui/imgui_internal.h"
 
 #include "include.h"
 

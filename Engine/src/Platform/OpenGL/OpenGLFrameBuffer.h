@@ -4,17 +4,24 @@ class OpenGLFrameBuffer :
     public FrameBuffer
 {
 public:
-    virtual void Bind() const override;
-    virtual void UnBind() const override;
+    OpenGLFrameBuffer(const FrameBufferSpecification& specification);
+    virtual ~OpenGLFrameBuffer();
+    virtual void Bind() override;
+    virtual void UnBind() override;
 
-    virtual void Generate(uint32_t width, uint32_t height) override;
+    virtual void Generate() override;
     virtual void Destroy() override;
 
     virtual void SetTextureSize(uint32_t width, uint32_t height) override;
 
-    virtual uint32_t GetTextureID() override;
+    virtual uint32_t GetColourAttachment() override;
+
+    virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 private:
-    uint32_t m_FrameBufferObject;
-    uint32_t m_Texture;
+    uint32_t m_RendererID;
+    uint32_t m_ColourAttachment;
+    uint32_t m_DepthAttachment;
+
+    FrameBufferSpecification m_Specification;
 };
 

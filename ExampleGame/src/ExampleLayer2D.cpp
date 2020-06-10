@@ -12,6 +12,12 @@ void ExampleLayer2D::OnAttach()
 {
 	m_TextureLibrary.Load("resources/UVChecker.png");
 	m_SubTexture = SubTexture2D::Create(m_TextureLibrary.Get("resources/UVChecker.png"), { 1, 1 }, { 102, 102 }, { 1, 2 });
+
+	FrameBufferSpecification fbSpec;
+	fbSpec.Width = 1920;
+	fbSpec.Height = 1080;
+
+	m_Framebuffer = FrameBuffer::Create(fbSpec);
 }
 
 void ExampleLayer2D::OnDetach()
@@ -22,8 +28,11 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 	m_CameraController.OnUpdate(deltaTime);
-
 	Renderer2D::ResetStats();
+
+	m_Framebuffer->Bind();
+	RenderCommand::Clear();
+
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
 	for (float y = -m_Gridsize; y <= m_Gridsize; y += 0.2f)
 	{
@@ -51,6 +60,7 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 
 	//Renderer2D::DrawLine(Vector2f( -0.3f,-0.4f ), Vector2f( -0.3f, 0.4f ), 1.0f);
 	Renderer2D::EndScene();
+	m_Framebuffer->UnBind();
 }
 
 void ExampleLayer2D::OnEvent(Event& e)
@@ -90,5 +100,7 @@ void ExampleLayer2D::OnImGuiRender()
 	ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
 	ImGui::SliderFloat("Grid Size", &m_Gridsize, 1.0f, 100.0f);
+
+	ImGui::Image((void*)m_Framebuffer->GetColourAttachment(), ImVec2(1920, 1080), ImVec2(0, 1), ImVec2(1, 0));
 	ImGui::End();
 }

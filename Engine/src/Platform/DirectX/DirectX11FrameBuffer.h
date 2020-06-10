@@ -4,14 +4,22 @@ class DirectX11FrameBuffer :
     public FrameBuffer
 {
 public:
-    virtual void Bind() const override;
-    virtual void UnBind() const override;
+    DirectX11FrameBuffer(const FrameBufferSpecification& specification);
+    ~DirectX11FrameBuffer();
 
-    virtual void Generate(uint32_t width, uint32_t height) override;
+    virtual void Bind() override;
+    virtual void UnBind() override;
+
+    virtual void Generate() override;
     virtual void Destroy() override;
 
     virtual void SetTextureSize(uint32_t width, uint32_t height) override;
 
-    virtual uint32_t GetTextureID() override;
+    virtual uint32_t GetColourAttachment() override;
+
+    virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification;  }
+private:
+
+    FrameBufferSpecification m_Specification;
 };
 
