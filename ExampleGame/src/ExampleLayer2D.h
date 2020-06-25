@@ -25,6 +25,4 @@ private:
 
 	TextureLibrary2D m_TextureLibrary;
 	Ref<SubTexture2D> m_SubTexture;
-
-	Ref<FrameBuffer> m_Framebuffer;
 };

@@ -12,12 +12,6 @@ void ExampleLayer2D::OnAttach()
 {
 	m_TextureLibrary.Load("resources/UVChecker.png");
 	m_SubTexture = SubTexture2D::Create(m_TextureLibrary.Get("resources/UVChecker.png"), { 1, 1 }, { 102, 102 }, { 1, 2 });
-
-	FrameBufferSpecification fbSpec;
-	fbSpec.Width = 1920;
-	fbSpec.Height = 1080;
-
-	m_Framebuffer = FrameBuffer::Create(fbSpec);
 }
 
 void ExampleLayer2D::OnDetach()
@@ -30,18 +24,7 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	m_CameraController.OnUpdate(deltaTime);
 	Renderer2D::ResetStats();
 
-	m_Framebuffer->Bind();
-	RenderCommand::Clear();
-
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
-	for (float y = -m_Gridsize; y <= m_Gridsize; y += 0.2f)
-	{
-		for (float x = -m_Gridsize; x <= m_Gridsize; x += 0.2f)
-		{
-			Colour colour = { (x + m_Gridsize/2) / m_Gridsize, 0.4f, (y + m_Gridsize/2) / m_Gridsize, 1.0f };
-			Renderer2D::DrawQuad({ x,y }, { 0.1f, 0.1f }, x / 3.14f, colour);
-		}
-	}
 
 	//A coloured quad in the center of the screen
 	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
@@ -58,9 +41,17 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	//A textured quad with fixed rotation
 	Renderer2D::DrawQuad({ m_Position[0] + 1.0f , m_Position[1] + 1.0f }, { m_Size[0], m_Size[1] }, m_TextureLibrary.Get("resources/UVChecker.png"), 1.0f, m_Colour, 10.0f);
 
+	for (float y = -m_Gridsize; y <= m_Gridsize; y += 0.2f)
+	{
+		for (float x = -m_Gridsize; x <= m_Gridsize; x += 0.2f)
+		{
+			Colour colour = { (x + m_Gridsize/2) / m_Gridsize, 0.4f, (y + m_Gridsize/2) / m_Gridsize, 1.0f };
+			Renderer2D::DrawQuad({ x,y }, { 0.1f, 0.1f }, x / 3.14f, colour);
+		}
+	}
+
 	//Renderer2D::DrawLine(Vector2f( -0.3f,-0.4f ), Vector2f( -0.3f, 0.4f ), 1.0f);
 	Renderer2D::EndScene();
-	m_Framebuffer->UnBind();
 }
 
 void ExampleLayer2D::OnEvent(Event& e)
@@ -100,7 +91,5 @@ void ExampleLayer2D::OnImGuiRender()
 	ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 
 	ImGui::SliderFloat("Grid Size", &m_Gridsize, 1.0f, 100.0f);
-
-	ImGui::Image((void*)m_Framebuffer->GetColourAttachment(), ImVec2(1920, 1080), ImVec2(0, 1), ImVec2(1, 0));
 	ImGui::End();
 }

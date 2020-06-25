@@ -131,7 +131,7 @@ public:
 		return stream.str();
 	}
 
-	int HexValue()
+	uint32_t HexValue()
 	{
 		int red = (int)(r * 255);
 		int green = (int)(g * 255);
@@ -139,7 +139,7 @@ public:
 		int alpha = (int)(a * 255);
 		std::stringstream stream;
 		stream << std::hex << red << green << blue << alpha;
-		int hexValue;
+		uint32_t hexValue;
 		stream >> hexValue;
 		return hexValue;
 	}
