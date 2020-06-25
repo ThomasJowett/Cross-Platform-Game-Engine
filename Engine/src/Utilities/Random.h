@@ -19,7 +19,7 @@ public:
 	// random float in range with uniform distribution
 	static float FloatInRange(float min, float max)
 	{
-		return (Float() * max) + min;
+		return min + (Float() * (max - min));
 	}
 
 	// random float using gaussian normal distribution

@@ -17,6 +17,8 @@ Application::Application(const WindowProps& props)
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
 
+	Random::Init();
+
 	SetDefaultSettings(props);
 
 	RenderCommand::CreateRendererAPI();

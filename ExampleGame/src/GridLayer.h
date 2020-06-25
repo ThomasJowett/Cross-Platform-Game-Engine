@@ -16,9 +16,10 @@ public:
 	virtual void OnImGuiRender() override;
 
 private:
+	void GeneratePositions();
 
 	ShaderLibrary m_ShaderLibrary;
-	OrthogrpahicCameraController m_CameraController;
+	PerspectiveCameraController m_CameraController;
 
 	Ref<VertexArray> m_CubeVertexArray;
 
@@ -27,5 +28,9 @@ private:
 	float m_Position[3] = { 0.0f, 0.0f, 0.0f };
 
 	Ref<VertexArray> m_GridVertexArray;
+
+	std::vector<Vector3f> m_Positions;
+	int m_NumberOfPositions = 20;
+	float m_MinimumDistance = 0.01;
 };
 

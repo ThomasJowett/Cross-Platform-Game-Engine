@@ -36,8 +36,15 @@ public:
 
 	void Pitch(float angle);
 	void Yaw(float angle);
-	
+
 	void LookAt(Vector3f focalPoint);
+
+	Vector3f GetForward() const { return m_Forward; }
+	Vector3f GetRight() const { return m_Right; }
+	Vector3f GetUp() const { return m_Up; }
+
+	float GetTranslationSpeed() const { return m_TranslationSpeed; }
+
 private:
 	bool OnMouseWheel(MouseWheelEvent& event);
 	bool OnWindowResized(WindowResizeEvent& event);
@@ -46,7 +53,7 @@ private:
 	float m_AspectRatio;
 	float m_FovY;
 	float m_NearDepth, m_FarDepth;
-	float m_TranslationSpeed = 1.0f;
+	float m_TranslationSpeed = 5.0f;
 	PerspectiveCamera m_Camera;
 
 	Vector3f m_CameraPosition;
@@ -55,5 +62,9 @@ private:
 	Vector3f m_Up;
 	Vector3f m_Right;
 	Vector3f m_Forward;
+
+	std::pair<double, double> m_LastMousePosition;
+	Vector2f m_MouseRelativeVelocity;
+	float m_Sensitivity = 0.1f;
 };
 

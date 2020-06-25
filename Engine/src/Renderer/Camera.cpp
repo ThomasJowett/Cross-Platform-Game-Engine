@@ -11,7 +11,7 @@ void Camera::RecalculateViewMatrix()
 {
 	PROFILE_FUNCTION();
 
-	Matrix4x4 transform = Matrix4x4::Rotate(Quaternion(m_Rotation)) * Matrix4x4::Translate(m_Position);
+	Matrix4x4 transform = Matrix4x4::Translate(m_Position) * Matrix4x4::Rotate(Quaternion(m_Rotation));
 	m_ViewMatrix = Matrix4x4::Inverse(transform);
 	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 }

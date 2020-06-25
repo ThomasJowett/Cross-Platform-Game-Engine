@@ -6,8 +6,6 @@
 #include "Core/Application.h"
 #include "Core/Joysticks.h"
 
-//Scope<Input> Input::s_Instance = CreateScope<glfwInput>();
-
 bool glfwInput::IsKeyPressedImpl(int keycode)
 {
 	try

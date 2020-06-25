@@ -32,6 +32,9 @@ public:
 	inline virtual std::any GetNativeWindow() const override { return m_Window; }
 	inline virtual Ref<GraphicsContext> GetContext() const override { return m_Context; }
 
+	virtual void DisableCursor() override;
+	virtual void EnableCursor() override;
+
 private:
 	void Init(const WindowProps& props);
 	void Shutdown();

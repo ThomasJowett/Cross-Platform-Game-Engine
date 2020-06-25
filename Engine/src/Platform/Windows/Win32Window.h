@@ -29,6 +29,9 @@ public:
 
 	virtual void SetIcon(const std::string& path) override;
 
+	virtual void DisableCursor() override;
+	virtual void EnableCursor() override;
+
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) override;
 private:
 	HRESULT Init(const WindowProps& props);

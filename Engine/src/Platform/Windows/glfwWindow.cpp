@@ -132,6 +132,16 @@ void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsig
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.XPos, m_OldWindowedParams.YPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
+void glfwWindow::DisableCursor()
+{
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+}
+
+void glfwWindow::EnableCursor()
+{
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
 void glfwWindow::Init(const WindowProps& props)
 {
 	Input::SetInput(RendererAPI::GetAPI());
