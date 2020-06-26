@@ -1,5 +1,6 @@
 #include "ExampleLayer2D.h"
 #include "ExampleLayer3D.h"
+#include "MonteCarloLayer.h"
 #include "GridLayer.h"
 #include "ImGui/ImGuiConsole.h"
 #include "ExampleApp.h"
@@ -10,9 +11,10 @@ ExampleGame::ExampleGame(const WindowProps& props)
 	// Sets the clear colour of the screen, by default is black
 	RenderCommand::SetClearColour(Colours::GREY);
 
-	PushLayer(new GridLayer());
-	PushLayer(new ExampleLayer3D());
-	PushLayer(new ExampleLayer2D());
+	//PushLayer(new GridLayer());
+	//PushLayer(new ExampleLayer3D());
+	//PushLayer(new ExampleLayer2D());
+	PushLayer(new MonteCarloLayer());
 	//static bool showConsole = true;
 	//PushOverlay(new ImGuiConsole(&showConsole));
 	

@@ -66,14 +66,14 @@ public:
 class PerspectiveCamera : public Camera
 {
 public:
-	PerspectiveCamera(float fovY, float aspectRatio, float nearDepth = 0.0f, float farDepth = 100.0f)
+	PerspectiveCamera(float fovY, float aspectRatio, float nearDepth = 1.0f, float farDepth = -1.0f)
 		:Camera(Matrix4x4::PerspectiveRH(fovY, aspectRatio, nearDepth, farDepth), Matrix4x4())
 	{
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
 	}
 
-	void SetProjection(float fovY, float aspectRatio, float nearDepth = 0.0f, float farDepth = 100.0f)
+	void SetProjection(float fovY, float aspectRatio, float nearDepth = 1.0f, float farDepth = -1.0f)
 	{
 		PROFILE_FUNCTION();
 		Camera::SetProjectionMatrix(Matrix4x4::PerspectiveRH(fovY, aspectRatio, nearDepth, farDepth));

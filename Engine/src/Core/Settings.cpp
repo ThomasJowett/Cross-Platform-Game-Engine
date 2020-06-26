@@ -10,10 +10,10 @@ static Settings* s_Instance = nullptr;
 static CSimpleIniA* s_Ini = nullptr;
 const char* Settings::s_Filename = "Settings.ini";
 
-Settings::Settings()
-{
-	s_Instance = this;
+std::map<std::pair<std::string, std::string>, std::string> Settings::s_DefaultValues = {};
 
+void Settings::Init()
+{
 	s_Ini = new CSimpleIniA();
 
 	s_Ini->SetUnicode();
@@ -37,20 +37,7 @@ Settings::Settings()
 	s_Ini->LoadFile(s_Filename);
 }
 
-Settings::~Settings()
-{
-	s_Ini->SaveFile(s_Filename);
-}
-
-Settings* Settings::Get()
-{
-	if (s_Instance == nullptr)
-		return new Settings();
-
-	return s_Instance;
-}
-
-void Settings::SetValueImpl(const char* section, const char* key, const char* value)
+void Settings::SetValue(const char* section, const char* key, const char* value)
 {
 	SI_Error rc = s_Ini->SetValue(section, key, value);
 
@@ -60,7 +47,7 @@ void Settings::SetValueImpl(const char* section, const char* key, const char* va
 	}
 }
 
-void Settings::SetBoolImpl(const char* section, const char* key, const bool value)
+void Settings::SetBool(const char* section, const char* key, const bool value)
 {
 	SI_Error rc = s_Ini->SetBoolValue(section, key, value);
 
@@ -70,7 +57,7 @@ void Settings::SetBoolImpl(const char* section, const char* key, const bool valu
 	}
 }
 
-void Settings::SetDoubleImpl(const char* section, const char* key, const double value)
+void Settings::SetDouble(const char* section, const char* key, const double value)
 {
 	SI_Error rc = s_Ini->SetDoubleValue(section, key, value);
 
@@ -80,7 +67,7 @@ void Settings::SetDoubleImpl(const char* section, const char* key, const double 
 	}
 }
 
-void Settings::SetIntImpl(const char* section, const char* key, const int value)
+void Settings::SetInt(const char* section, const char* key, const int value)
 {
 	SI_Error rc = s_Ini->SetLongValue(section, key, value);
 
@@ -90,7 +77,7 @@ void Settings::SetIntImpl(const char* section, const char* key, const int value)
 	}
 }
 
-void Settings::SetVector2fImpl(const char* section, const char* key, const Vector2f& value)
+void Settings::SetVector2f(const char* section, const char* key, const Vector2f& value)
 {
 	std::string valueString = std::to_string(value.x) + "," + std::to_string(value.y);
 
@@ -102,7 +89,7 @@ void Settings::SetVector2fImpl(const char* section, const char* key, const Vecto
 	}
 }
 
-void Settings::SetVector3fImpl(const char* section, const char* key, const Vector3f& value)
+void Settings::SetVector3f(const char* section, const char* key, const Vector3f& value)
 {
 	std::string valueString = std::to_string(value.x) + "," + std::to_string(value.y) + "," + std::to_string(value.z);
 
@@ -114,57 +101,57 @@ void Settings::SetVector3fImpl(const char* section, const char* key, const Vecto
 	}
 }
 
-const char* Settings::GetValueImpl(const char* section, const char* key)
+const char* Settings::GetValue(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting set for: [{0}] {1}", section, key);
 		return s_Ini->GetValue(section, key);
 	}
 
-	return s_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
+	return s_Ini->GetValue(section, key, s_DefaultValues.at({ section, key }).c_str());
 }
 
-bool Settings::GetBoolImpl(const char* section, const char* key)
+bool Settings::GetBool(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 		return s_Ini->GetBoolValue(section, key);
 	}
 
-	return s_Ini->GetBoolValue(section, key, m_DefaultValues.at({ section, key }) == "true");
+	return s_Ini->GetBoolValue(section, key, s_DefaultValues.at({ section, key }) == "true");
 }
 
-double Settings::GetDoubleImpl(const char* section, const char* key)
+double Settings::GetDouble(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 		return s_Ini->GetDoubleValue(section, key);
 	}
 
-	return s_Ini->GetDoubleValue(section, key, atof(m_DefaultValues.at({ section, key }).c_str()));
+	return s_Ini->GetDoubleValue(section, key, atof(s_DefaultValues.at({ section, key }).c_str()));
 }
 
-int Settings::GetIntImpl(const char* section, const char* key)
+int Settings::GetInt(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 		return s_Ini->GetLongValue(section, key);
 	}
-	return s_Ini->GetLongValue(section, key, atoi(m_DefaultValues.at({ section, key }).c_str()));
+	return s_Ini->GetLongValue(section, key, atoi(s_DefaultValues.at({ section, key }).c_str()));
 }
 
-Vector2f Settings::GetVector2fImpl(const char* section, const char* key)
+Vector2f Settings::GetVector2f(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 	}
 
-	const char* vector = s_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
+	const char* vector = s_Ini->GetValue(section, key, s_DefaultValues.at({ section, key }).c_str());
 
 	std::vector<std::string> splitVector = SplitString(vector, ',');
 	if (splitVector.size() == 2)
@@ -174,14 +161,14 @@ Vector2f Settings::GetVector2fImpl(const char* section, const char* key)
 	return Vector2f();
 }
 
-Vector3f Settings::GetVector3fImpl(const char* section, const char* key)
+Vector3f Settings::GetVector3f(const char* section, const char* key)
 {
-	if (m_DefaultValues.find({ section, key }) == m_DefaultValues.end())
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
 	}
 
-	const char* vector = s_Ini->GetValue(section, key, m_DefaultValues.at({ section, key }).c_str());
+	const char* vector = s_Ini->GetValue(section, key, s_DefaultValues.at({ section, key }).c_str());
 
 	std::vector<std::string> splitVector = SplitString(vector, ',');
 	if (splitVector.size() == 3)
@@ -191,37 +178,37 @@ Vector3f Settings::GetVector3fImpl(const char* section, const char* key)
 	return Vector3f();
 }
 
-void Settings::SetDefaultValueImpl(const char* section, const char* key, const char* value)
+void Settings::SetDefaultValue(const char* section, const char* key, const char* value)
 {
-	m_DefaultValues[{section, key}] = value;
+	s_DefaultValues[{section, key}] = value;
 }
 
-void Settings::SetDefaultBoolImpl(const char* section, const char* key, const bool value)
+void Settings::SetDefaultBool(const char* section, const char* key, const bool value)
 {
-	m_DefaultValues[{section, key}] = value ? "true" : "false";
+	s_DefaultValues[{section, key}] = value ? "true" : "false";
 }
 
-void Settings::SetDefaultDoubleImpl(const char* section, const char* key, const double value)
+void Settings::SetDefaultDouble(const char* section, const char* key, const double value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value);
+	s_DefaultValues[{section, key}] = std::to_string(value);
 }
 
-void Settings::SetDefaultIntImpl(const char* section, const char* key, const int value)
+void Settings::SetDefaultInt(const char* section, const char* key, const int value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value);
+	s_DefaultValues[{section, key}] = std::to_string(value);
 }
 
-void Settings::SetDefaultVector2fImpl(const char* section, const char* key, const Vector2f& value)
+void Settings::SetDefaultVector2f(const char* section, const char* key, const Vector2f& value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y);
+	s_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y);
 }
 
-void Settings::SetDefaultVector3fImpl(const char* section, const char* key, const Vector3f& value)
+void Settings::SetDefaultVector3f(const char* section, const char* key, const Vector3f& value)
 {
-	m_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z);
+	s_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z);
 }
 
-void Settings::SaveFile()
+void Settings::SaveSettings()
 {
 	SI_Error rc = s_Ini->SaveFile(s_Filename);
 

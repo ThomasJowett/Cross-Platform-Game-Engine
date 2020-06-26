@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Win32Input.h"
 
-//Scope<Input> Input::s_Instance = CreateScope<Win32Input>();
-
 bool Win32Input::IsKeyPressedImpl(int keycode)
 {
 	return GetAsyncKeyState(keycode);
