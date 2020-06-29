@@ -235,18 +235,18 @@ void ImGuiEditorPreferences::ShowStyleEditor()
 bool ImGuiEditorPreferences::ShowStyleSelector()
 {
 	static int style_idx = -1;
-	if (ImGui::Combo("Colours##Selector", &style_idx, "Blue - Dark\0Blue - Light\0Cherry\0Military Grey\0Sepia\0Mono - Dark\0Green - Light\0Gold"))
+	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark"))
 	{
 		switch (style_idx)
 		{
-		case 0: EditorStyles::Dark(); break;
-		case 1: EditorStyles::BlueLight(); break;
+		case 0: EditorStyles::Phthalo(); break;
+		case 1: EditorStyles::Majorelle(); break;
 		case 2: EditorStyles::Cherry(); break;
-		case 3: EditorStyles::MilitaryGrey(); break;
-		case 4: EditorStyles::Sepia(); break;
+		case 3: EditorStyles::Xiketic(); break;
+		case 4: EditorStyles::Onyx(); break;
 		case 5: EditorStyles::Mono(); break;
-		case 6: EditorStyles::GreenLight(); break;
-		case 7: EditorStyles::Gold(); break;
+		case 6: EditorStyles::Emerald(); break;
+		case 7: EditorStyles::Ochre(); break;
 		}
 		return true;
 	}

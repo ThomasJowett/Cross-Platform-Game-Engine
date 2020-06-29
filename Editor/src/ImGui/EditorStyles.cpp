@@ -3,10 +3,9 @@
 ImVec4 ImLerp(const ImVec4& a, const ImVec4& b, float t) { return ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t); }
 ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs) { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
 
-void EditorStyles::Dark()
+void EditorStyles::Phthalo()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
@@ -60,10 +59,9 @@ void EditorStyles::Dark()
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
 
-void EditorStyles::BlueLight()
+void EditorStyles::Majorelle()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -119,8 +117,7 @@ void EditorStyles::BlueLight()
 
 void EditorStyles::Cherry()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.860f, 0.930f, 0.890f, 0.78f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.860f, 0.930f, 0.890f, 0.28f);
@@ -168,10 +165,9 @@ void EditorStyles::Cherry()
 	colors[ImGuiCol_SeparatorActive] = ImVec4(0.455f, 0.198f, 0.301f, 0.69f);
 }
 
-void EditorStyles::MilitaryGrey()
+void EditorStyles::Xiketic()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 0.90f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -220,10 +216,9 @@ void EditorStyles::MilitaryGrey()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 }
 
-void EditorStyles::Sepia()
+void EditorStyles::Onyx()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
 	colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
@@ -275,6 +270,7 @@ void EditorStyles::Sepia()
 void EditorStyles::Mono()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
+
 	colors[ImGuiCol_Text] = ImVec4(1.00f, 1.00f, 1.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
 	colors[ImGuiCol_WindowBg] = ImVec4(0.06f, 0.06f, 0.06f, 0.94f);
@@ -326,10 +322,9 @@ void EditorStyles::Mono()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 }
 
-void EditorStyles::GreenLight()
+void EditorStyles::Emerald()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.60f, 0.60f, 0.60f, 1.00f);
@@ -382,10 +377,9 @@ void EditorStyles::GreenLight()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 }
 
-void EditorStyles::Gold()
+void EditorStyles::Ochre()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
-	ImVec4* colors = style->Colors;
+	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.92f, 0.92f, 0.92f, 1.00f);
 	colors[ImGuiCol_TextDisabled] = ImVec4(0.44f, 0.44f, 0.44f, 1.00f);

@@ -5,12 +5,12 @@
 class EditorStyles
 {
 public:
-	static void Dark();
-	static void BlueLight();
+	static void Phthalo();
+	static void Majorelle();
 	static void Cherry();
-	static void MilitaryGrey();
-	static void Sepia();
+	static void Xiketic();
+	static void Onyx();
 	static void Mono();
-	static void GreenLight();
-	static void Gold();
+	static void Emerald();
+	static void Ochre();
 };
