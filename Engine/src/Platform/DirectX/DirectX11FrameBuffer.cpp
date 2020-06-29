@@ -31,7 +31,7 @@ void DirectX11FrameBuffer::Destroy()
 	//TODO: directx frame buffer destroy
 }
 
-void DirectX11FrameBuffer::SetTextureSize(uint32_t width, uint32_t height)
+void DirectX11FrameBuffer::Resize(uint32_t width, uint32_t height)
 {
 }
 

@@ -2,6 +2,8 @@
 
 #include "include.h"
 
+#include "ViewportCameraController.h"
+
 class TestLayer :public Layer
 {
 public:

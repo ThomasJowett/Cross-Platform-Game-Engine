@@ -19,7 +19,7 @@
 #include "Logging/Timer.h"
 #include "Logging/Instrumentor.h"
 
-#include "ImGui/ImGuiLayer.h"
+#include "ImGui/ImGuiManager.h"
 #include "ImGui/ImGuiUtilites.h"
 
 #include "Renderer/Camera.h"

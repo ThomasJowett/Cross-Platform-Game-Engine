@@ -30,7 +30,7 @@ private:
 	Ref<VertexArray> m_GridVertexArray;
 
 	std::vector<Vector3f> m_Positions;
-	int m_NumberOfPositions = 20;
+	int m_NumberOfPositions = 300;
 	float m_MinimumDistance = 0.01;
 };
 

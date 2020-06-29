@@ -12,7 +12,7 @@ void TestLayer::OnAttach()
 	m_ShaderLibrary.Load("NormalMap");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 
-	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+	//m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 }
 
 void TestLayer::OnDetach()
@@ -53,4 +53,6 @@ void TestLayer::OnFixedUpdate()
 void TestLayer::OnEvent(Event& e)
 {
 	m_CameraController.OnEvent(e);
+
+	//m_CameraController.SetAspectRatio(m_Framebuffer->GetSpecification().Width / m_Framebuffer->GetSpecification().Height);
 }

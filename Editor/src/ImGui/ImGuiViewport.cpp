@@ -13,16 +13,14 @@ void ImGuiViewportPanel::OnImGuiRender()
         return;
     }
 
-    ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-    ImGuiWindowFlags flags = ImGuiTabBarFlags_NoTooltip;
-    ImGui::Begin("Viewport", NULL, flags);
+    if(ImGui::Begin("Viewport", m_Show));
     {
-        ImVec2 size = ImGui::GetWindowSize();
+        ImVec2 size = ImGui::GetContentRegionAvail();
         if (m_WindowSize.x != size.x || m_WindowSize.y != size.y)
         {
             m_WindowSize = size;
-            m_FrameBuffer->SetTextureSize(m_WindowSize.x, m_WindowSize.y);
+            m_FrameBuffer->Resize(m_WindowSize.x, m_WindowSize.y);
         }
 
         ImVec2 pos = ImGui::GetCursorScreenPos();
@@ -38,6 +36,5 @@ void ImGuiViewportPanel::OnImGuiRender()
             ImVec2(0, 1), ImVec2(1, 0));
     }
     ImGui::End();
-    ImGui::PopStyleVar();
     ImGui::PopStyleVar();
 }

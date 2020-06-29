@@ -3,7 +3,7 @@
 #include "LayerStack.h"
 #include "Window.h"
 
-#include "ImGui/ImGuiLayer.h"
+#include "ImGui/ImGuiManager.h"
 
 int main(int argc, char* argv[]);
 
@@ -42,7 +42,7 @@ private:
 	double GetTime();
 private:
 	Scope<Window> m_Window;
-	ImGuiLayer* m_ImGuiLayer;
+	ImGuiManager* m_ImGuiLayer;
 	bool m_Running = true;
 	bool m_Minimized = false;
 	LayerStack m_LayerStack;

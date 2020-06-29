@@ -19,7 +19,7 @@ public:
 	virtual void Generate() = 0;
 	virtual void Destroy() = 0;
 
-	virtual void SetTextureSize(uint32_t width, uint32_t height) = 0;
+	virtual void Resize(uint32_t width, uint32_t height) = 0;
 
 	virtual uint32_t GetColourAttachment() = 0;
 

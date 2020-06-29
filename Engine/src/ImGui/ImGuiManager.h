@@ -8,18 +8,15 @@
 
 class ImFont;
 
-class ImGuiLayer :
-	public Layer
+class ImGuiManager
 {
 public:
-	ImGuiLayer();
-	virtual ~ImGuiLayer() = default;
+	ImGuiManager();
+	virtual ~ImGuiManager() = default;
 
-	virtual void OnAttach() override;
-	virtual void OnDetach() override;
-	virtual void OnEvent(Event& event) override;
-	
-	virtual void OnImGuiRender() override;
+	virtual void Init();
+	virtual void Shutdown();
+	virtual void OnEvent(Event& event);
 
 	void Begin();
 	void End();
@@ -30,4 +27,3 @@ public:
 private:
 	bool m_UsingImGui;
 };
-

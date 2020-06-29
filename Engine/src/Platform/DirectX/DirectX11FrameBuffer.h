@@ -13,7 +13,7 @@ public:
     virtual void Generate() override;
     virtual void Destroy() override;
 
-    virtual void SetTextureSize(uint32_t width, uint32_t height) override;
+    virtual void Resize(uint32_t width, uint32_t height) override;
 
     virtual uint32_t GetColourAttachment() override;
 

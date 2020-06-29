@@ -76,9 +76,9 @@ public:
 
 	void WriteProfile(const ProfileResult& result)
 	{
-
 		if (!m_IsEnabled)
 			return;
+
 		std::stringstream json;
 
 		std::string name = result.Name;

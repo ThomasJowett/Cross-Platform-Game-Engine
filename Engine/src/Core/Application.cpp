@@ -31,14 +31,15 @@ Application::Application(const WindowProps& props)
 
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-	m_ImGuiLayer = new ImGuiLayer();
+	m_ImGuiLayer = new ImGuiManager();
 
-	PushOverlay(m_ImGuiLayer);
+	m_ImGuiLayer->Init();
 }
 
 
 Application::~Application()
 {
+	m_ImGuiLayer->Shutdown();
 	Settings::SaveSettings();
 }
 
@@ -175,6 +176,8 @@ void Application::OnEvent(Event& e)
 			ENGINE_INFO("Controller Disonnected");
 			return false;
 		});
+
+	m_ImGuiLayer->OnEvent(e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{

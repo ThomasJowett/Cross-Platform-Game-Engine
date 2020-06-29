@@ -16,6 +16,7 @@ public:
 	virtual void OnDetach() override;
 private:
 	void ShowStyleEditor();
+	bool ShowStyleSelector();
 private:
 	bool* m_Show;
 	ImGuiStyle m_Style;

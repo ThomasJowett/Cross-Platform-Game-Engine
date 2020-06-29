@@ -122,26 +122,18 @@ public:
 	// Get a formatted Hex Code string
 	std::string HexCode()
 	{
-		int red = (int)(r * 255);
-		int green = (int)(g * 255);
-		int blue = (int)(b * 255);
-		int alpha = (int)(a * 255);
 		std::stringstream stream;
-		stream << "#" << std::hex << red << green << blue << alpha;
+		stream << "#" << std::hex << HexValue();
 		return stream.str();
 	}
 
-	uint32_t HexValue()
+	int HexValue()
 	{
 		int red = (int)(r * 255);
 		int green = (int)(g * 255);
 		int blue = (int)(b * 255);
 		int alpha = (int)(a * 255);
-		std::stringstream stream;
-		stream << std::hex << red << green << blue << alpha;
-		uint32_t hexValue;
-		stream >> hexValue;
-		return hexValue;
+		return ((red & 0xff) << 24) + ((green & 0xff) << 16) + ((blue & 0xff) << 8) + (alpha & 0xff);
 	}
 
 	std::string to_string()

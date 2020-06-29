@@ -8,14 +8,16 @@ GridLayer::GridLayer()
 
 void GridLayer::OnAttach()
 {
-	m_CubeVertexArray = GeometryGenerator::CreateCube(0.05f, 0.05f, 0.1f);
+	m_CubeVertexArray = GeometryGenerator::CreateCube(0.05f, 0.1f, 0.05f);
 
 	m_ShaderLibrary.Load("NormalMap");
-	m_Texture = Texture2D::Create("resources/UVChecker.png");
+
+	m_Texture = Texture2D::Create(1,1);
+	uint32_t textureData = Colour(Colours::WHITE).HexValue();
+
+	m_Texture->SetData(&textureData, sizeof(uint32_t));
 
 	GeneratePositions();
-
-	//m_CameraController.SetRotation({ PI / 2, 0.0f,0.0f });
 }
 
 void GridLayer::OnDetach()
@@ -37,6 +39,8 @@ void GridLayer::OnUpdate(float deltaTime)
 	m_Texture->Bind();
 
 	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] }));
+
+	shader->SetFloat4("u_colour", 1.0f, 1.0f, 0.0f, 1.0f);
 
 	for (Vector3f position : m_Positions)
 	{
@@ -68,11 +72,11 @@ void GridLayer::GeneratePositions()
 	m_Positions.clear();
 
 	double UpperXLimit = -4.0;
-	double UpperYLimit = 10.0;
-	double UpperZLimit = 0.2;
+	double UpperZLimit = 10.0;
+	double UpperYLimit = 0.2;
 	double LowerXLimit = -10.0;
-	double LowerYLimit = -10.0;
-	double LowerZLimit = 0.1;
+	double LowerZLimit = -10.0;
+	double LowerYLimit = 0.1;
 	double incline = 0.1;
 
 	if (m_MinimumDistance == 0.0f)
@@ -80,8 +84,8 @@ void GridLayer::GeneratePositions()
 		for (size_t i = 0; i < m_NumberOfPositions; i++)
 		{
 			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
-			float y = Random::FloatInRange(LowerYLimit, UpperYLimit);
-			float z = Random::FloatInRange(LowerZLimit, LowerZLimit) - x * incline;
+			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) -x * incline;
+			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
 
 			m_Positions.push_back(Vector3f(x, y, z));
 		}
@@ -102,8 +106,8 @@ void GridLayer::GeneratePositions()
 			attempts++;
 
 			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
-			float y = Random::FloatInRange(LowerYLimit, UpperYLimit);
-			float z = Random::FloatInRange(LowerZLimit, LowerZLimit) - x * incline;
+			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) - x * incline;
+			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
 
 			bool tooClose = false;
 			for (Vector3f otherPosition: m_Positions)

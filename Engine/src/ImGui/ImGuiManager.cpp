@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "ImGuiLayer.h"
+#include "ImGuiManager.h"
 
 #include "Core/Application.h"
 
@@ -28,12 +28,12 @@ extern ID3D11DeviceContext* g_ImmediateContext;
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-ImGuiLayer::ImGuiLayer()
-	:Layer("ImGui"), m_UsingImGui(false)
+ImGuiManager::ImGuiManager()
+	:m_UsingImGui(false)
 {
 }
 
-void ImGuiLayer::OnAttach()
+void ImGuiManager::Init()
 {
 	PROFILE_FUNCTION();
 
@@ -150,7 +150,7 @@ void ImGuiLayer::OnAttach()
 	}
 }
 
-void ImGuiLayer::OnDetach()
+void ImGuiManager::Shutdown()
 {
 	PROFILE_FUNCTION();
 
@@ -169,33 +169,35 @@ void ImGuiLayer::OnDetach()
 	}
 
 	ImGui::DestroyContext();
+
+	m_UsingImGui = false;
 }
 
-void ImGuiLayer::OnEvent(Event& event)
+void ImGuiManager::OnEvent(Event& event)
 {
 	ImGuiIO& io = ImGui::GetIO();
 	event.Handled |= event.IsInCategory(EventCategory::EC_MOUSE) & io.WantCaptureMouse;
 	event.Handled |= event.IsInCategory(EventCategory::EC_KEYBOARD) & io.WantCaptureKeyboard;
 }
 
-void ImGuiLayer::OnImGuiRender()
-{
-	static bool showDemoWindow = true;
-	ImGui::ShowDemoWindow(&showDemoWindow);
+//void ImGuiManager::OnImGuiRender()
+//{
+//	static bool showDemoWindow = true;
+//	ImGui::ShowDemoWindow(&showDemoWindow);
+//
+//	bool p_open = true;
+//
+//	ImGui::Begin("FPS", &p_open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
+//		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
+//		| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+//		| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+//		| ImGuiWindowFlags_NoNav);
+//
+//	ImGui::Text("%.1f", ImGui::GetIO().Framerate);
+//	ImGui::End();
+//}
 
-	bool p_open = true;
-
-	ImGui::Begin("FPS", &p_open, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
-		| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
-		| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-		| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-		| ImGuiWindowFlags_NoNav);
-
-	ImGui::Text("%.1f", ImGui::GetIO().Framerate);
-	ImGui::End();
-}
-
-void ImGuiLayer::Begin()
+void ImGuiManager::Begin()
 {
 	PROFILE_FUNCTION();
 	RendererAPI::API api = RendererAPI::GetAPI();
@@ -215,7 +217,7 @@ void ImGuiLayer::Begin()
 	ImGui::NewFrame();
 }
 
-void ImGuiLayer::End()
+void ImGuiManager::End()
 {
 	PROFILE_FUNCTION();
 	ImGuiIO& io = ImGui::GetIO();

@@ -6,6 +6,8 @@
 
 #include "FileSystem/FileDialog.h"
 
+#include "EditorStyles.h"
+
 ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
@@ -19,8 +21,29 @@ void ImGuiEditorPreferences::OnImGuiRender()
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Editor Preferences", m_Show))
+	if (ImGui::Begin("Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
 	{
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				if (ImGui::MenuItem("Load Style"))
+				{
+					ImGui::LoadStyle(FileDialog(L"Choose style...", L"Style Files\0*.style\0Any File\0*.*\0").c_str(), m_Style);
+
+					ImGuiStyle& style = ImGui::GetStyle();
+
+					style = m_Style;
+				}
+
+				if (ImGui::MenuItem("Save Style As"))
+					ImGui::SaveStyle(SaveAsDialog(L"Save style as...", L"Style Files\0*.style\0Any File\0*.*\0").c_str(), m_Style);
+
+				ImGui::EndMenu();
+			}
+
+			ImGui::EndMenuBar();
+		}
 		if (ImGui::TreeNode("Style"))
 		{
 			ShowStyleEditor();
@@ -33,6 +56,10 @@ void ImGuiEditorPreferences::OnImGuiRender()
 void ImGuiEditorPreferences::OnAttach()
 {
 	ImGui::LoadStyle("styles\\Editor.style", m_Style);
+
+	ImGuiStyle& style = ImGui::GetStyle();
+
+	style = m_Style;
 }
 
 void ImGuiEditorPreferences::OnDetach()
@@ -42,27 +69,20 @@ void ImGuiEditorPreferences::OnDetach()
 
 void ImGuiEditorPreferences::ShowStyleEditor()
 {
-	// You can pass in a reference ImGuiStyle structure to compare to, revert to and save to
-	// (without a reference style pointer, we will use one compared locally as a reference)
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	style = m_Style;
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
 
-	if (ImGui::ShowStyleSelector("Colors##Selector"))
+	if (ShowStyleSelector())
 		m_Style = style;
-	ImGui::ShowFontSelector("Fonts##Selector");
 
 	{ bool border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &border)) { style.WindowBorderSize = border ? 1.0f : 0.0f; } }
 	ImGui::SameLine();
 	{ bool border = (style.FrameBorderSize > 0.0f);  if (ImGui::Checkbox("FrameBorder", &border)) { style.FrameBorderSize = border ? 1.0f : 0.0f; } }
 	ImGui::SameLine();
 	{ bool border = (style.PopupBorderSize > 0.0f);  if (ImGui::Checkbox("PopupBorder", &border)) { style.PopupBorderSize = border ? 1.0f : 0.0f; } }
-
-	// Save/Revert button
-	if (ImGui::Button("Load Style"))
-		ImGui::LoadStyle(FileDialog(L"Choose Style", L"Style Files\0*.style\0Any File\0*.*\0").c_str(), style);
 
 	ImGui::Separator();
 
@@ -113,26 +133,7 @@ void ImGuiEditorPreferences::ShowStyleEditor()
 		{
 			static int output_dest = 0;
 			static bool output_only_modified = true;
-			/*if (ImGui::Button("Export"))
-			{
-				if (output_dest == 0)
-					ImGui::LogToClipboard();
-				else
-					ImGui::LogToTTY();
-				ImGui::LogText("ImVec4* colors = ImGui::GetStyle().Colors;\r\n");
-				for (int i = 0; i < ImGuiCol_COUNT; i++)
-				{
-					const ImVec4& col = style.Colors[i];
-					const char* name = ImGui::GetStyleColorName(i);
-					if (!output_only_modified || memcmp(&col, &ref->Colors[i], sizeof(ImVec4)) != 0)
-						ImGui::LogText("colors[ImGuiCol_%s]%*s= ImVec4(%.2ff, %.2ff, %.2ff, %.2ff);\r\n",
-							name, 23 - (int)strlen(name), "", col.x, col.y, col.z, col.w);
-				}
-				ImGui::LogFinish();
-			}*/
-			//ImGui::SameLine(); ImGui::SetNextItemWidth(120); ImGui::Combo("##output_type", &output_dest, "To Clipboard\0To TTY\0");
-			//ImGui::SameLine(); ImGui::Checkbox("Only Modified Colors", &output_only_modified);
-
+			
 			static ImGuiTextFilter filter;
 			filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
 
@@ -229,4 +230,25 @@ void ImGuiEditorPreferences::ShowStyleEditor()
 	ImGui::PopItemWidth();
 
 	m_Style = style;
+}
+
+bool ImGuiEditorPreferences::ShowStyleSelector()
+{
+	static int style_idx = -1;
+	if (ImGui::Combo("Colours##Selector", &style_idx, "Blue - Dark\0Blue - Light\0Cherry\0Military Grey\0Sepia\0Mono - Dark\0Green - Light\0Gold"))
+	{
+		switch (style_idx)
+		{
+		case 0: EditorStyles::Dark(); break;
+		case 1: EditorStyles::BlueLight(); break;
+		case 2: EditorStyles::Cherry(); break;
+		case 3: EditorStyles::MilitaryGrey(); break;
+		case 4: EditorStyles::Sepia(); break;
+		case 5: EditorStyles::Mono(); break;
+		case 6: EditorStyles::GreenLight(); break;
+		case 7: EditorStyles::Gold(); break;
+		}
+		return true;
+	}
+	return false;
 }

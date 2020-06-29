@@ -19,6 +19,7 @@ void OpenGLFrameBuffer::Bind()
 	PROFILE_FUNCTION();
 
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
+	glViewport(0, 0, m_Specification.Width, m_Specification.Height);
 }
 
 void OpenGLFrameBuffer::UnBind()
@@ -31,6 +32,15 @@ void OpenGLFrameBuffer::UnBind()
 void OpenGLFrameBuffer::Generate()
 {
 	PROFILE_FUNCTION();
+
+	if (m_RendererID)
+		Destroy();
+
+	if (m_Specification.Height == 0 || m_Specification.Width == 0)
+	{
+		Destroy();
+		return;
+	}
 
 	glCreateFramebuffers(1, &m_RendererID);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_RendererID);
@@ -62,7 +72,7 @@ void OpenGLFrameBuffer::Destroy()
 	glDeleteTextures(1, &m_DepthAttachment);
 }
 
-void OpenGLFrameBuffer::SetTextureSize(uint32_t width, uint32_t height)
+void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
 {
 	m_Specification.Width = width;
 	m_Specification.Height = height;

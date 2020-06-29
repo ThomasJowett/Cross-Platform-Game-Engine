@@ -46,14 +46,14 @@ protected:
 class OrthographicCamera : public Camera
 {
 public:
-	OrthographicCamera(float left, float right, float bottom, float top, float nearDepth = -1.0f, float farDepth = 1.0f)
+	OrthographicCamera(float left, float right, float bottom, float top, float nearDepth = 1.0f, float farDepth = -1.0f)
 		:Camera(Matrix4x4::OrthographicRH(left, right, bottom, top, nearDepth, farDepth), Matrix4x4())
 	{
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
 	}
 
-	void SetProjection(float left, float right, float bottom, float top, float nearDepth = -1.0f, float farDepth = 1.0f)
+	void SetProjection(float left, float right, float bottom, float top, float nearDepth = 1.0f, float farDepth = -1.0f)
 	{
 		PROFILE_FUNCTION();
 		Camera::SetProjectionMatrix(Matrix4x4::OrthographicRH(left, right, bottom, top, nearDepth, farDepth));

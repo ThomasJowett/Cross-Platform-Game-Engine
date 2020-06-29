@@ -14,7 +14,6 @@ void ExampleLayer3D::OnAttach()
 	m_GridVertexArray = GeometryGenerator::CreateGrid(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
 	m_CylinderVertexArray = GeometryGenerator::CreateCylinder(0.25f, 0.1f, 1.0f, 20, 1);
 	m_TorusVertexArray = GeometryGenerator::CreateTorus(0.7f, 0.25f, 30);
-	m_TorusVertexArray2 = GeometryGenerator::CreateTorus(0.7f, 0.1f, 30);
 
 	m_ShaderLibrary.Load("NormalMap");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
