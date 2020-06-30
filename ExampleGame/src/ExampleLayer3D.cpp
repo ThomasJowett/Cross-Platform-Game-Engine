@@ -32,8 +32,7 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
 	shader->Bind();
 
-	shader->SetInt("u_texture", 0);
-	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
+	shader->SetFloat4("u_colour", Colours::WHITE);
 	shader->SetFloat("u_tilingFactor", 1.0f);
 
 	m_CameraController.SetFovY(*m_FOV);

@@ -29,8 +29,7 @@ void GridLayer::OnUpdate(float deltaTime)
 	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
 	shader->Bind();
 
-	shader->SetInt("u_texture", 0);
-	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
+	shader->SetFloat4("u_colour", Colours::WHITE);
 	shader->SetFloat("u_tilingFactor", 1.0f);
 
 	m_CameraController.OnUpdate(deltaTime);
@@ -40,7 +39,7 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] }));
 
-	shader->SetFloat4("u_colour", 1.0f, 1.0f, 0.0f, 1.0f);
+	shader->SetFloat4("u_colour", Colours::BLUE);
 
 	for (Vector3f position : m_Positions)
 	{
@@ -73,7 +72,7 @@ void GridLayer::GeneratePositions()
 
 	double UpperXLimit = -4.0;
 	double UpperZLimit = 10.0;
-	double UpperYLimit = 0.2;
+	double UpperYLimit = 2.0;
 	double LowerXLimit = -10.0;
 	double LowerZLimit = -10.0;
 	double LowerYLimit = 0.1;
@@ -84,7 +83,7 @@ void GridLayer::GeneratePositions()
 		for (size_t i = 0; i < m_NumberOfPositions; i++)
 		{
 			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
-			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) -x * incline;
+			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) + abs(x) * incline;
 			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
 
 			m_Positions.push_back(Vector3f(x, y, z));
@@ -92,10 +91,6 @@ void GridLayer::GeneratePositions()
 
 		return;
 	}
-
-	int gridWidth = std::ceil((UpperXLimit - LowerXLimit) / (2.0 * m_MinimumDistance));
-	int gridHeight = std::ceil((UpperYLimit - LowerYLimit) / (2.0 * m_MinimumDistance));
-
 
 	for (size_t i = 0; i < m_NumberOfPositions; i++)
 	{

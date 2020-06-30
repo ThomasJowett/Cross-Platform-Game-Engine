@@ -12,6 +12,8 @@ MonteCarloLayer::~MonteCarloLayer()
 
 void MonteCarloLayer::OnAttach()
 {
+	m_CameraController.SetPosition({ 0.0f, 0.5f, 0.0f });
+	m_CameraController.SetZoom(0.7f);
 	RunMonteCarlo();
 }
 
@@ -21,7 +23,7 @@ void MonteCarloLayer::OnDetach()
 
 void MonteCarloLayer::OnUpdate(float deltaTime)
 {
-	m_CameraController.OnUpdate(deltaTime);
+	//m_CameraController.OnUpdate(deltaTime);
 
 	Renderer2D::BeginScene(m_CameraController.GetCamera());
 

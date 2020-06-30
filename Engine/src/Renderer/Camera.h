@@ -60,6 +60,8 @@ public:
 
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
+
+		RecalculateViewMatrix();
 	}
 };
 
@@ -80,5 +82,7 @@ public:
 
 		m_NearDepth = nearDepth;
 		m_FarDepth = farDepth;
+
+		RecalculateViewMatrix();
 	}
 };
