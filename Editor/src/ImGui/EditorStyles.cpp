@@ -1,9 +1,11 @@
 #include "EditorStyles.h"
 
+#include "ImGui/ImGuiConsole.h"
+
 ImVec4 ImLerp(const ImVec4& a, const ImVec4& b, float t) { return ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t); }
 ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs) { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
 
-void EditorStyles::Phthalo()
+bool EditorStyles::Phthalo()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
@@ -57,10 +59,13 @@ void EditorStyles::Phthalo()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+
+	return true;
 }
 
-void EditorStyles::Majorelle()
+bool EditorStyles::Majorelle()
 {
+	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -113,10 +118,13 @@ void EditorStyles::Majorelle()
 	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(0.70f, 0.70f, 0.70f, 0.70f);
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
+
+	return false;
 }
 
-void EditorStyles::Cherry()
+bool EditorStyles::Cherry()
 {
+	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.860f, 0.930f, 0.890f, 0.78f);
@@ -163,10 +171,13 @@ void EditorStyles::Cherry()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 	colors[ImGuiCol_SeparatorHovered] = ImVec4(0.455f, 0.198f, 0.301f, 0.78f);
 	colors[ImGuiCol_SeparatorActive] = ImVec4(0.455f, 0.198f, 0.301f, 0.69f);
+
+	return true;
 }
 
-void EditorStyles::Xiketic()
+bool EditorStyles::Xiketic()
 {
+	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 0.90f);
@@ -214,9 +225,11 @@ void EditorStyles::Xiketic()
 	colors[ImGuiCol_SeparatorActive] = ImVec4(0.65f, 0.65f, 0.65f, 1.00f);
 	colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+
+	return true;
 }
 
-void EditorStyles::Onyx()
+bool EditorStyles::Onyx()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
@@ -265,9 +278,11 @@ void EditorStyles::Onyx()
 	colors[ImGuiCol_TabUnfocusedActive] = ImLerp(colors[ImGuiCol_TabActive], colors[ImGuiCol_TitleBg], 0.40f);
 	colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+
+	return true;
 }
 
-void EditorStyles::Mono()
+bool EditorStyles::Mono()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
@@ -320,9 +335,11 @@ void EditorStyles::Mono()
 	colors[ImGuiCol_TabUnfocusedActive] = ImLerp(colors[ImGuiCol_TabActive], colors[ImGuiCol_TitleBg], 0.40f);
 	colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+
+	return true;
 }
 
-void EditorStyles::Emerald()
+bool EditorStyles::Emerald()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
@@ -375,9 +392,11 @@ void EditorStyles::Emerald()
 	colors[ImGuiCol_TabUnfocusedActive] = ImLerp(colors[ImGuiCol_TabActive], colors[ImGuiCol_TitleBg], 0.40f);
 	colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+
+	return false;
 }
 
-void EditorStyles::Ochre()
+bool EditorStyles::Ochre()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
@@ -431,4 +450,6 @@ void EditorStyles::Ochre()
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 	colors[ImGuiCol_DockingPreview] = colors[ImGuiCol_HeaderActive] * ImVec4(1.0f, 1.0f, 1.0f, 0.7f);
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
+
+	return true;
 }

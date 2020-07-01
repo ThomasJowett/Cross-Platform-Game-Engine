@@ -8,6 +8,8 @@ uint16_t ImGuiConsole::s_MessageBufferSize = 0;
 uint16_t ImGuiConsole::s_MessageBufferBegin = 0;
 std::vector<Ref<ImGuiConsole::Message>> ImGuiConsole::s_MessageBuffer(s_MessageBufferCapacity);
 
+bool ImGuiConsole::Message::s_DarkTheme = false;
+
 void ImGuiConsole::AddMessage(const std::string& message, Message::Level level)
 {
 	AddMessage(CreateRef<Message>(message, level));
@@ -31,6 +33,11 @@ void ImGuiConsole::Clear()
 		(*message) = std::make_shared<Message>();
 
 	s_MessageBufferBegin = 0;
+}
+
+void ImGuiConsole::SetDarkTheme(bool darktheme)
+{
+	Message::s_DarkTheme = darktheme;
 }
 
 void ImGuiConsole::OnImGuiRender()
@@ -242,16 +249,33 @@ const char* ImGuiConsole::Message::GetLevelName(Level level)
 
 Colour ImGuiConsole::Message::GetRenderColour(Level level)
 {
-	switch (level)
+	if (s_DarkTheme)
 	{
-	case ImGuiConsole::Message::Level::Trace: return Colours::SILVER;
-	case ImGuiConsole::Message::Level::Info: return Colours::LIME_GREEN;
-	case ImGuiConsole::Message::Level::Debug:return Colours::CYAN;
-	case ImGuiConsole::Message::Level::Warn:return Colours::YELLOW;
-	case ImGuiConsole::Message::Level::Error:return Colours::RED;
-	case ImGuiConsole::Message::Level::Critical:return Colours::WHITE;
-	default:
-		return Colours::SILVER;
+		switch (level)
+		{
+		case ImGuiConsole::Message::Level::Trace: return Colours::SILVER;
+		case ImGuiConsole::Message::Level::Info: return Colours::LIME_GREEN;
+		case ImGuiConsole::Message::Level::Debug:return Colours::CYAN;
+		case ImGuiConsole::Message::Level::Warn:return Colours::YELLOW;
+		case ImGuiConsole::Message::Level::Error:return Colours::RED;
+		case ImGuiConsole::Message::Level::Critical:return Colours::WHITE;
+		default:
+			return Colours::SILVER;
+		}
+	}
+	else
+	{
+		switch (level)
+		{
+		case ImGuiConsole::Message::Level::Trace: return Colours::GREY;
+		case ImGuiConsole::Message::Level::Info: return Colours::FOREST_GREEN;
+		case ImGuiConsole::Message::Level::Debug:return Colours::INDIGO;
+		case ImGuiConsole::Message::Level::Warn:return Colours::MUSTARD;
+		case ImGuiConsole::Message::Level::Error:return Colours::RED;
+		case ImGuiConsole::Message::Level::Critical:return Colours::BLACK;
+		default:
+			return Colours::GREY;
+		}
 	}
 }
 

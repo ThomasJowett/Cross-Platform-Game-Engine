@@ -16,6 +16,7 @@ enum class Colours
 	LIME_GREEN,
 	MAGENTA,
 	MAROON,
+	MUSTARD,
 	NAVY,
 	OLIVE,
 	ORANGE,
@@ -67,6 +68,7 @@ public:
 		case Colours::LIME_GREEN:	r = 0.00f, g = 1.00f, b = 0.00f, a = 1.0f;	break;
 		case Colours::MAGENTA:		r = 1.00f, g = 0.00f, b = 1.00f, a = 1.0f;	break;
 		case Colours::MAROON:		r = 0.50f, g = 0.00f, b = 0.00f, a = 1.0f;	break;
+		case Colours::MUSTARD:		r = 0.60f, g = 0.60f, b = 0.00f, a = 1.0f;	break;
 		case Colours::NAVY:			r = 0.00f, g = 0.00f, b = 0.50f, a = 1.0f;	break;
 		case Colours::OLIVE:		r = 0.50f, g = 0.50f, b = 0.00f, a = 1.0f;	break;
 		case Colours::ORANGE:		r = 1.00f, g = 0.64f, b = 0.50f, a = 1.0f;	break;

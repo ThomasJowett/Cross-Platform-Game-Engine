@@ -8,6 +8,8 @@
 
 #include "EditorStyles.h"
 
+#include "ImGui/ImGuiConsole.h"
+
 ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
@@ -60,6 +62,8 @@ void ImGuiEditorPreferences::OnAttach()
 	ImGuiStyle& style = ImGui::GetStyle();
 
 	style = m_Style;
+
+	ImGuiConsole::SetDarkTheme(style.Colors[ImGuiCol_WindowBg].x + style.Colors[ImGuiCol_WindowBg].y + style.Colors[ImGuiCol_WindowBg].z < 1.5f);
 }
 
 void ImGuiEditorPreferences::OnDetach()
@@ -237,17 +241,19 @@ bool ImGuiEditorPreferences::ShowStyleSelector()
 	static int style_idx = -1;
 	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark"))
 	{
+		bool isDarkTheme = true;
 		switch (style_idx)
 		{
-		case 0: EditorStyles::Phthalo(); break;
-		case 1: EditorStyles::Majorelle(); break;
-		case 2: EditorStyles::Cherry(); break;
-		case 3: EditorStyles::Xiketic(); break;
-		case 4: EditorStyles::Onyx(); break;
-		case 5: EditorStyles::Mono(); break;
-		case 6: EditorStyles::Emerald(); break;
-		case 7: EditorStyles::Ochre(); break;
+		case 0: isDarkTheme = EditorStyles::Phthalo(); break;
+		case 1: isDarkTheme = EditorStyles::Majorelle(); break;
+		case 2: isDarkTheme = EditorStyles::Cherry(); break;
+		case 3: isDarkTheme = EditorStyles::Xiketic(); break;
+		case 4: isDarkTheme = EditorStyles::Onyx(); break;
+		case 5: isDarkTheme = EditorStyles::Mono(); break;
+		case 6: isDarkTheme = EditorStyles::Emerald(); break;
+		case 7: isDarkTheme = EditorStyles::Ochre(); break;
 		}
+		ImGuiConsole::SetDarkTheme(isDarkTheme);
 		return true;
 	}
 	return false;

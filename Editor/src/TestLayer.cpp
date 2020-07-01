@@ -13,6 +13,14 @@ void TestLayer::OnAttach()
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 
 	//m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+
+	// Test usage of the logger
+	CLIENT_CRITICAL("[Test Critical] The game is about to crash!");
+	CLIENT_ERROR("[Test Error] Something went wrong!");
+	CLIENT_WARN("[Test Warning] Something may have gone wrong...");
+	CLIENT_INFO("[Test Information] Normal stuff happened");
+	CLIENT_DEBUG("[Test Debug] Diagnostic information");
+	CLIENT_TRACE("[Test Trace] Very fine detailed diagnostic information");
 }
 
 void TestLayer::OnDetach()

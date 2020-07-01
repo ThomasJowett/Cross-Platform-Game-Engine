@@ -130,7 +130,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
 			}
-			historyBackClicked = ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Arrow_Left.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[2]);
+			historyBackClicked = ImGui::ArrowButton("##BackButton", ImGuiDir_Left);
 
 			if (!historyCanGoBack) {
 				ImGui::PopStyleColor(3);
@@ -143,7 +143,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
 			}
 			ImGui::SameLine();
-			historyForwardClicked = ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Arrow_Right.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]);
+			historyForwardClicked = ImGui::ArrowButton("##ForwardButton", ImGuiDir_Right);
 
 			if (!historyCanGoForward) {
 				ImGui::PopStyleColor(3);

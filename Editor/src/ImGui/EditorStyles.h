@@ -5,12 +5,12 @@
 class EditorStyles
 {
 public:
-	static void Phthalo();
-	static void Majorelle();
-	static void Cherry();
-	static void Xiketic();
-	static void Onyx();
-	static void Mono();
-	static void Emerald();
-	static void Ochre();
+	static bool Phthalo();
+	static bool Majorelle();
+	static bool Cherry();
+	static bool Xiketic();
+	static bool Onyx();
+	static bool Mono();
+	static bool Emerald();
+	static bool Ochre();
 };

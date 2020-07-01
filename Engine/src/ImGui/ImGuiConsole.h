@@ -38,12 +38,14 @@ public:
 		std::string m_Message;
 		const Level m_Level;
 		static std::vector<Level> s_Levels;
+		static bool s_DarkTheme;
 	};
 
 public:
 	static void AddMessage(const std::string& message, Message::Level level);
 	static void AddMessage(Ref<Message> message);
 	static void Clear();
+	static void SetDarkTheme(bool darktheme);
 
 	ImGuiConsole(bool * show);
 	~ImGuiConsole() = default;
