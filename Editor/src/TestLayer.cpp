@@ -12,7 +12,7 @@ void TestLayer::OnAttach()
 	m_ShaderLibrary.Load("NormalMap");
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 
-	//m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 
 	// Test usage of the logger
 	CLIENT_CRITICAL("[Test Critical] The game is about to crash!");
