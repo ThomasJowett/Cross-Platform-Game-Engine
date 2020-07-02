@@ -77,8 +77,6 @@ private:
 private:
 	bool* m_Show;
 
-	std::string FileDialog(const wchar_t* title, const wchar_t* filter);
-
 	TextureLibrary2D m_TextureLibrary;
 
 	std::vector<std::filesystem::path> m_Dirs, m_Files;

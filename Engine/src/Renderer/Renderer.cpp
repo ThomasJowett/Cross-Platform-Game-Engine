@@ -31,10 +31,14 @@ void Renderer::BeginScene(const Camera& camera)
 
 void Renderer::EndScene()
 {
+	//TODO: frustum culling
+	//TODO: sort the opaque objects front to back
+	//TODO: sort the transparent objects back to front
 }
 
 void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
 {
+	//TODO: sumbit the vertex array to a render queue
 	shader->Bind();
 	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);

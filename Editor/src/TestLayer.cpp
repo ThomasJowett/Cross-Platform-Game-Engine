@@ -62,5 +62,5 @@ void TestLayer::OnEvent(Event& e)
 {
 	m_CameraController.OnEvent(e);
 
-	//m_CameraController.SetAspectRatio(m_Framebuffer->GetSpecification().Width / m_Framebuffer->GetSpecification().Height);
+	m_CameraController.SetAspectRatio(m_Framebuffer->GetSpecification().Width / m_Framebuffer->GetSpecification().Height);
 }

@@ -69,9 +69,6 @@ void ImGuiContentExplorer::OnAttach()
 	//TODO: Have an Icon manager or something that loads the correct size icon bitmaps
 	//then have that texture built into the binary
 	m_TextureLibrary.Load("resources/Icons/Folder16.png");
-	m_TextureLibrary.Load("resources/Icons/Arrow_Right.png");
-	m_TextureLibrary.Load("resources/Icons/Arrow_Left.png");
-	m_TextureLibrary.Load("resources/Icons/Arrow_Up.png");
 }
 
 void ImGuiContentExplorer::OnUpdate(float deltaTime)
@@ -343,6 +340,14 @@ void ImGuiContentExplorer::OnImGuiRender()
 							ImGui::EndDragDropSource();
 						}
 						ImGui::EndGroup();
+
+						++cntEntries;
+						//TODO:: switch on view zoom
+						if (cntEntries == m_NumBrowsingEntriesPerColumn)
+						{
+							cntEntries = 0;
+							ImGui::NextColumn();
+						}
 					}
 				}
 

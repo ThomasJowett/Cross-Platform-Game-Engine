@@ -10,7 +10,7 @@ public:
 	explicit ImGuiViewportPanel(bool* show, Ref<FrameBuffer> framebuffer);
 	~ImGuiViewportPanel() = default;
 
-	void OnUpdate(float deltaTime) override;
+	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
 private:
 	bool* m_Show;
