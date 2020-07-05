@@ -20,6 +20,12 @@ public:
 	{
 		return currentPathIndex >= 0 && currentPathIndex < (int)paths.size() - 1;
 	}
+	inline bool CanGoUp()
+	{
+		if(paths.size() > 0)
+			return SplitString(paths[currentPathIndex].string(), '\\').size() > 1;
+		return false;
+	}
 
 	bool GoBack()
 	{
@@ -37,6 +43,19 @@ public:
 		if (CanGoForward())
 		{
 			++currentPathIndex;
+			return true;
+		}
+		return false;
+	}
+
+	bool GoUp()
+	{
+		if (CanGoUp())
+		{
+			std::string path = paths[currentPathIndex].string();
+			std::string newPath  = path.substr(0, path.find_last_of('\\'));
+
+			SwitchTo(newPath);
 			return true;
 		}
 		return false;

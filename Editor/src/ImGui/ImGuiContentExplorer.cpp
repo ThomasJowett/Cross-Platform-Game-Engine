@@ -91,6 +91,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 		if (m_CurrentPath == "")
 		{
 			m_CurrentPath = std::filesystem::absolute(".");
+			m_History.SwitchTo(m_CurrentPath);
 		}
 
 		//set the input buffer as the current path
@@ -120,6 +121,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 			const bool historyCanGoBack = m_History.CanGoBack();
 			const bool historyCanGoForward = m_History.CanGoForward();
+			const bool historyCanGoUp = m_History.CanGoUp();
 
 			if (!historyCanGoBack)
 			{
@@ -145,10 +147,24 @@ void ImGuiContentExplorer::OnImGuiRender()
 			if (!historyCanGoForward) {
 				ImGui::PopStyleColor(3);
 			}
+
+			if (!historyCanGoUp)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
+				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
+				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
+			}
+
+			ImGui::SameLine();
+			levelUpClicked = ImGui::ArrowButton("##UpButton", ImGuiDir_Up);
+
+			if (!historyCanGoUp) {
+				ImGui::PopStyleColor(3);
+			}
 		}
 		ImGui::PopID();
 
-		if (historyBackClicked || historyForwardClicked)
+		if (historyBackClicked || historyForwardClicked || levelUpClicked)
 		{
 			if (historyBackClicked)
 			{
@@ -158,6 +174,11 @@ void ImGuiContentExplorer::OnImGuiRender()
 			else if (historyForwardClicked)
 			{
 				if (m_History.GoForward())
+					m_ForceRescan = true;
+			}
+			else if (levelUpClicked)
+			{
+				if (m_History.GoUp())
 					m_ForceRescan = true;
 			}
 
@@ -172,28 +193,37 @@ void ImGuiContentExplorer::OnImGuiRender()
 		{
 			bool mustValidateInputPath = false;
 			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
-			
+
 			ImGui::SameLine();
 			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder16.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]))
 			{
 				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
-				if (m_EditLocationCheckButtonPressed)
-				{
-					ImGui::SetKeyboardFocusHere();
-				}
+			}
+
+			static bool hasFocus = false;
+			if (m_EditLocationCheckButtonPressed != hasFocus)
+			{
+				hasFocus = !hasFocus;
+				ImGui::SetKeyboardFocusHere();
 			}
 
 			ImGui::PopStyleColor();
 
-
 			if (m_EditLocationCheckButtonPressed)
 			{
 				ImGui::SameLine();
-				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
 
-				ImGui::SetKeyboardFocusHere();
+				static bool once = false;
+				if (!ImGui::IsItemActive())
+				{
+					editlocationInputTextReturnPressed = once;
+					once = true;
+				}
+
 				if (editlocationInputTextReturnPressed)
 				{
+					once = false;
 					mustValidateInputPath = true;
 				}
 				else ImGui::Separator();
@@ -215,10 +245,14 @@ void ImGuiContentExplorer::OnImGuiRender()
 							m_CurrentPath = path;
 						}
 						m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
-						m_EditLocationCheckButtonPressed = false;
 						m_ForceRescan = true;
 						m_History.SwitchTo(m_CurrentPath);
 					}
+					else
+					{
+						m_ForceRescan = false;
+					}
+					m_EditLocationCheckButtonPressed = false;
 				}
 				catch (const std::exception& e)
 				{
