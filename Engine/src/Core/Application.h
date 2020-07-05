@@ -20,8 +20,8 @@ public:
 	static inline Application& Get() { return *s_Instance; }
 	static Window& GetWindow() { return Get().GetWindowImpl(); }
 
-	static void ShowImGui(bool showImgui) { Get().m_ImGuiLayer->SetIsUsing(showImgui); }
-	static void ToggleImGui() { Get().m_ImGuiLayer->SetIsUsing(!Get().m_ImGuiLayer->IsUsing()); }
+	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
+	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 
 	void AddLayer(Layer* layer);
 	void AddOverlay(Layer* layer);
@@ -42,7 +42,7 @@ private:
 	double GetTime();
 private:
 	Scope<Window> m_Window;
-	ImGuiManager* m_ImGuiLayer;
+	ImGuiManager* m_ImGuiManager;
 	bool m_Running = true;
 	bool m_Minimized = false;
 	LayerStack m_LayerStack;

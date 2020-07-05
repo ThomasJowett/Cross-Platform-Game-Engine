@@ -2007,6 +2007,7 @@ void TextEditor::Duplicate()
 	else
 	{
 		TextEditor::Line& line = mLines[mState.mCursorPosition.mLine];
+		if (line.empty()) return;
 		Coordinates start = Coordinates(mState.mCursorPosition.mLine, 0);
 		Coordinates end = Coordinates(mState.mCursorPosition.mLine, line.size());
 		duplicatedText = GetText(start, end);

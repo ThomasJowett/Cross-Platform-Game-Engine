@@ -31,15 +31,15 @@ Application::Application(const WindowProps& props)
 
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
-	m_ImGuiLayer = new ImGuiManager();
+	m_ImGuiManager = new ImGuiManager();
 
-	m_ImGuiLayer->Init();
+	m_ImGuiManager->Init();
 }
 
 
 Application::~Application()
 {
-	m_ImGuiLayer->Shutdown();
+	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
 }
 
@@ -113,14 +113,14 @@ void Application::Run()
 		}
 
 		// Render the imgui of each of the layers
-		if (m_ImGuiLayer->IsUsing())
+		if (m_ImGuiManager->IsUsing())
 		{
-			m_ImGuiLayer->Begin();
+			m_ImGuiManager->Begin();
 			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnImGuiRender();
 			}
-			m_ImGuiLayer->End();
+			m_ImGuiManager->End();
 		}
 
 		m_Window->OnUpdate();
@@ -177,7 +177,7 @@ void Application::OnEvent(Event& e)
 			return false;
 		});
 
-	m_ImGuiLayer->OnEvent(e);
+	m_ImGuiManager->OnEvent(e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{

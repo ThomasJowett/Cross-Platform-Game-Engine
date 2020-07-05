@@ -9,14 +9,16 @@ public:
 	~ViewportCameraController();
 
 	void OnUpdate(float deltaTime);
-	void OnEvent(Event& event);
 
-	//void SetPosition(const Vector3f& position) { m_CameraPosition; }
+	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position;  m_CurrrentCamera->SetPosition(position); }
+
+	void SetAspectRatio(const float& aspectRatio);
 
 	Camera* GetCamera() const { return m_CurrrentCamera; }
+
+	void OnMouseMotion(Vector2f mousePosition);
+	void OnMouseWheel(float mouseWheel);
 private:
-	bool OnMouseWheel(MouseWheelEvent& event);
-	bool OnMouseMotion(MouseMotionEvent& event);
 
 	void SwitchCamera();
 
@@ -28,16 +30,16 @@ private:
 	void Yaw(float angle);
 
 private:
-	OrthographicCamera m_2DCamera;
-	PerspectiveCamera m_3DCamera;
 
 	Vector3f m_3DCameraPosition;
+	Vector3f m_3DCameraRotation;
+
 	Vector3f m_2DCameraPosition;
 
 	Camera* m_CurrrentCamera;
 	bool m_Is3DCamera;
 
-	float m_AspectRatio;
+	float m_AspectRatio = 16.0f/9.0f;
 	float m_ZoomLevel = 2.0f;
 	float m_TranslationSpeed = 1.0f;
 
@@ -45,7 +47,14 @@ private:
 	float m_NearDepth = 1.0f;
 	float m_FarDepth = -1.0f;
 
-	Vector3f m_Up;
-	Vector3f m_Right;
-	Vector3f m_Forward;
+	Vector3f m_Up = { 0.0,1.0,0.0 };
+	Vector3f m_Right = { 1.0, 0.0, 0.0 };
+	Vector3f m_Forward = { 0.0, 0.0, -1.0 };
+
+	Vector2f m_MouseRelativeVelocity;
+	Vector2f m_MouseLastPosition;
+	float m_Sensitivity = 0.1f;
+
+	OrthographicCamera m_2DCamera;
+	PerspectiveCamera m_3DCamera;
 };

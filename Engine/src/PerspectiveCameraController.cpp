@@ -99,8 +99,6 @@ void PerspectiveCameraController::OnUpdate(float deltaTime)
 	Vector3f up = Vector3f::Cross(m_Right, m_Forward).GetNormalized();
 	m_Right = Vector3f::Cross(m_Forward, up).GetNormalized();
 
-	Matrix4x4 view = Matrix4x4::LookAt(m_CameraPosition, m_CameraPosition + m_Forward, m_Up);
-
 	m_Camera.SetPositionAndRotation(m_CameraPosition, m_CameraRotation);
 
 	m_MouseRelativeVelocity = Vector2f();
