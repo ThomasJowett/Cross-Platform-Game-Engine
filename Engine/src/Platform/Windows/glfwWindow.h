@@ -26,6 +26,7 @@ public:
 	bool IsVSync() const override;
 
 	void SetIcon(const std::string& path) override;
+	void SetCursor(Cursors cursorType) override;
 
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0);
 
@@ -62,5 +63,7 @@ private:
 	WindowModeParams m_OldWindowedParams;
 
 	Ref<GraphicsContext> m_Context;
+
+	GLFWcursor* m_SystemCursors[(int)Cursors::NumCursors] = {};
 };
 

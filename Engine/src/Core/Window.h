@@ -5,6 +5,7 @@
 #include "core.h"
 #include "Events/Event.h"
 #include "Renderer/GraphicsContext.h"
+#include "Cursor.h"
 
 enum class WindowMode
 {
@@ -55,6 +56,7 @@ public:
 	virtual bool IsVSync() const = 0;
 
 	virtual void SetIcon(const std::string& path) = 0;
+	virtual void SetCursor(Cursors cursorType) = 0;
 
 	virtual void DisableCursor() = 0;
 	virtual void EnableCursor() = 0;

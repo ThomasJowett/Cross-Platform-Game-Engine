@@ -39,13 +39,13 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 		Application::GetWindow().DisableCursor();
 		cursorDisabled = true;
 	}
-	else if(cursorDisabled && !Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	else if (cursorDisabled && !Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 	{
 		cursorDisabled = false;
 		Application::GetWindow().EnableCursor();
 	}
 
-	if(cursorDisabled)
+	if (cursorDisabled)
 		m_CameraController.OnUpdate(deltaTime);
 
 	//TODO: have a scene object that will be traversed here instead of creating a scene manually
@@ -108,7 +108,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 
 		auto tex = m_Framebuffer->GetColourAttachment();
 
-		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0,1), ImVec2(1,0));
+		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
@@ -181,17 +181,16 @@ void ImGuiViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
+	if (ImGui::IsWindowHovered())
+	{
+		if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+		{
+			Application::GetWindow().SetCursor(Cursors::CrossHair);
+		}
+	}
+
 	if (ImGui::IsWindowFocused())
 	{
-		if (ImGui::IsWindowHovered())
-		{
-			ImGui::SetMouseCursor(ImGuiMouseCursor_None);
-			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-			{
-				ImGui::GetForegroundDrawList()->AddRectFilled(ImVec2(io.MousePos.x - 10, io.MousePos.y - 1), ImVec2(io.MousePos.x + 10, io.MousePos.y + 1), Colour(Colours::WHITE).HexValue());
-				ImGui::GetForegroundDrawList()->AddRectFilled(ImVec2(io.MousePos.x - 1, io.MousePos.y - 10), ImVec2(io.MousePos.x + 1, io.MousePos.y + 10), Colour(Colours::WHITE).HexValue());
-			}
-		}
 
 		if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
 			Undo();

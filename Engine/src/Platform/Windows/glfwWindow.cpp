@@ -80,6 +80,42 @@ void glfwWindow::SetIcon(const std::string& path)
 	stbi_image_free(data);
 }
 
+void glfwWindow::SetCursor(Cursors cursorType)
+{
+	PROFILE_FUNCTION();
+
+	if (!m_SystemCursors[(int)cursorType])
+	{
+		switch (cursorType)
+		{
+		case Cursors::Arrow:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_ARROW_CURSOR); break;
+		case Cursors::IBeam:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_IBEAM_CURSOR); break;
+		case Cursors::CrossHair:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_CROSSHAIR_CURSOR); break;
+		case Cursors::PointingHand:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_POINTING_HAND_CURSOR); break;
+		case Cursors::ResizeEW:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_RESIZE_EW_CURSOR); break;
+		case Cursors::ResizeNS:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_RESIZE_NS_CURSOR); break;
+		case Cursors::ResizeNWSE:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_RESIZE_NWSE_CURSOR); break;
+		case Cursors::ResizeNESW:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_RESIZE_NESW_CURSOR); break;
+		case Cursors::ResizeAll:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_RESIZE_ALL_CURSOR); break;
+		case Cursors::NotAllowed:
+			m_SystemCursors[(int)cursorType] = glfwCreateStandardCursor(GLFW_NOT_ALLOWED_CURSOR); break;
+		default:
+			return;
+		}
+	}
+
+	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
+}
+
 void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
@@ -363,6 +399,12 @@ void glfwWindow::Shutdown()
 {
 	PROFILE_FUNCTION();
 
+	for (size_t i = 0; i < (size_t)Cursors::NumCursors; i++)
+	{
+		if (m_SystemCursors[i])
+			glfwDestroyCursor(m_SystemCursors[i]);
+	}
+
 	glfwDestroyWindow(m_Window);
 
 	if (--s_GLFWWindowCount == 0)
@@ -370,4 +412,5 @@ void glfwWindow::Shutdown()
 		ENGINE_INFO("Terminating GLFW");
 		glfwTerminate();
 	}
+
 }

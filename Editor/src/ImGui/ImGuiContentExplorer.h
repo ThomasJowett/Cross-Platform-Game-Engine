@@ -101,6 +101,9 @@ private:
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));
 	void HandleKeyboardInputs();
 	void HandleMouseInputs();
+	void RightClickMenu();
+
+	void OpenAllSelectedItems();
 private:
 	bool* m_Show;
 

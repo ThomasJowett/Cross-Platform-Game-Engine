@@ -93,21 +93,47 @@ void ImGuiContentExplorer::HandleKeyboardInputs()
 void ImGuiContentExplorer::HandleMouseInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	auto shift = io.KeyShift;
-	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
-	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+	bool shift = io.KeyShift;
+	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
+	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
 	if (ImGui::IsWindowHovered())
 	{
 		if (!shift && !alt)
 		{
-			auto click = ImGui::IsMouseClicked(0);
-			auto doubleClick = ImGui::IsMouseDoubleClicked(0);
+			bool click = ImGui::IsMouseClicked(0);
+			bool doubleClick = ImGui::IsMouseDoubleClicked(0);
+			bool rightClick = ImGui::IsMouseClicked(1);
 
 			if (doubleClick)
 			{
 			}
 		}
+	}
+}
+
+void ImGuiContentExplorer::RightClickMenu()
+{
+	ImGuiStyle* style = &ImGui::GetStyle();
+
+	ImGui::PushStyleColor(ImGuiCol_Button, style->Colors[ImGuiCol_PopupBg]);
+	ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
+	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+	if (ImGui::Selectable("New Folder"))
+		CLIENT_DEBUG("new folder");
+	if (ImGui::Selectable("New Object"))
+		CLIENT_DEBUG("new folder");
+	ImGui::PopStyleColor();
+	ImGui::PopStyleVar(3);
+}
+
+void ImGuiContentExplorer::OpenAllSelectedItems()
+{
+	for (size_t i = 0; i < m_Files.size(); i++)
+	{
+		if (m_SelectedFiles[i])
+			ViewerManager::OpenViewer(m_Files[i]);
 	}
 }
 
@@ -165,13 +191,23 @@ void ImGuiContentExplorer::OnImGuiRender()
 		m_SelectedFiles.resize(m_Files.size());
 	}
 
-	
+
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Content Explorer", m_Show))
 	{
 		HandleKeyboardInputs();
-		HandleMouseInputs();
+
+		if (ImGui::IsWindowHovered())
+		{
+			if (ImGui::IsMouseClicked(1))
+				ImGui::OpenPopup("Right click menu");
+		}
+		if (ImGui::BeginPopup("Right click menu"))
+		{
+			RightClickMenu();
+			ImGui::EndPopup();
+		}
 
 		const ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
@@ -389,84 +425,86 @@ void ImGuiContentExplorer::OnImGuiRender()
 		// MAIN BROWSING WINDOW
 		//----------------------------------------------------------------------------------------------------
 		{
-			if (ImGui::BeginChild("BrowsingFrame"))
+			m_TotalNumBrowsingEntries = m_Dirs.size() + m_Files.size();
+			CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
+
+			ImGui::Columns(m_NumBrowsingColumns);
+
+			static int id;
+			ImGui::PushID(&id);
+			int cntEntries = 0;
+			//Directories -------------------------------------------------------------------------------
+			if (m_Dirs.size() > 0)
 			{
-				m_TotalNumBrowsingEntries = m_Dirs.size() + m_Files.size();
-				CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
-
-				ImGui::Columns(m_NumBrowsingColumns);
-
-				static int id;
-				ImGui::PushID(&id);
-				int cntEntries = 0;
-				//Directories -------------------------------------------------------------------------------
-				if (m_Dirs.size() > 0)
+				for (int i = 0; i < m_Dirs.size(); i++)
 				{
-					for (int i = 0; i < m_Dirs.size(); i++)
+					std::string dirName = SplitString(m_Dirs[i].string(), '\\').back();
+					if (ImGui::SmallButton(dirName.c_str()))
 					{
-						std::string dirName = SplitString(m_Dirs[i].string(), '\\').back();
-						if (ImGui::SmallButton(dirName.c_str()))
-						{
-							//change dirctory on click
-							m_History.SwitchTo(m_Dirs[i]);
-							m_CurrentPath = *m_History.GetCurrentFolder();
-							m_ForceRescan = true;
-						}
-						++cntEntries;
-						//TODO:: switch on view zoom
-						if (cntEntries == m_NumBrowsingEntriesPerColumn)
-						{
-							cntEntries = 0;
-							ImGui::NextColumn();
-						}
+						//change dirctory on click
+						m_History.SwitchTo(m_Dirs[i]);
+						m_CurrentPath = *m_History.GetCurrentFolder();
+						m_ForceRescan = true;
+					}
+					++cntEntries;
+					//TODO:: switch on view zoom
+					if (cntEntries == m_NumBrowsingEntriesPerColumn)
+					{
+						cntEntries = 0;
+						ImGui::NextColumn();
 					}
 				}
-
-				//Files -----------------------------------------------------------------------------------
-				if (m_Files.size() > 0)
-				{
-					for (int i = 0; i < m_Files.size(); i++)
-					{
-						ImGui::BeginGroup();
-						if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i]))
-						{
-							if (!ImGui::GetIO().KeyCtrl)
-							{
-								m_SelectedFiles.clear();
-								m_SelectedFiles.resize(m_Files.size());
-							}
-							if (ImGui::IsMouseDoubleClicked(0))
-								ViewerManager::OpenViewer(m_Files[i]);
-							else
-								m_SelectedFiles[i] = true;
-						}
-
-						//if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
-						//{
-						//	//open file on click
-						//	ViewerManager::OpenViewer(m_Files[i]);
-						//}
-						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-						{
-							ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
-							ImGui::Text(m_Files[i].filename().string().c_str());
-							ImGui::EndDragDropSource();
-						}
-						ImGui::EndGroup();
-
-						++cntEntries;
-						//TODO:: switch on view zoom
-						if (cntEntries == m_NumBrowsingEntriesPerColumn)
-						{
-							cntEntries = 0;
-							ImGui::NextColumn();
-						}
-					}
-				}
-
-				ImGui::PopID();
 			}
-			ImGui::EndChild();
+
+			//Files -----------------------------------------------------------------------------------
+			if (m_Files.size() > 0)
+			{
+				for (int i = 0; i < m_Files.size(); i++)
+				{
+					ImGui::BeginGroup();
+					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
+					{
+						if (!ImGui::GetIO().KeyCtrl)
+						{
+							m_SelectedFiles.clear();
+							m_SelectedFiles.resize(m_Files.size());
+
+
+							if (ImGui::IsMouseDoubleClicked(0))
+							{
+								ViewerManager::OpenViewer(m_Files[i]);
+							}
+						}
+						else
+						{
+							if (ImGui::IsMouseDoubleClicked(0))
+							{
+								OpenAllSelectedItems();
+							}
+						}
+
+						m_SelectedFiles[i] = !m_SelectedFiles[i];
+					}
+
+					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+					{
+						ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
+						ImGui::Text(m_Files[i].filename().string().c_str());
+						ImGui::EndDragDropSource();
+					}
+					ImGui::EndGroup();
+
+					++cntEntries;
+					//TODO:: switch on view zoom
+					if (cntEntries == m_NumBrowsingEntriesPerColumn)
+					{
+						cntEntries = 0;
+						ImGui::NextColumn();
+					}
+				}
+			}
+
+			ImGui::PopID();
 		}
 	}
 	ImGui::End();

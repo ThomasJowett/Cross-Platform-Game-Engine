@@ -117,6 +117,11 @@ void Win32Window::SetIcon(const std::string& path)
 	//TODO: change icon
 }
 
+void Win32Window::SetCursor(Cursors cursorType)
+{
+	//TODO: set cursor
+}
+
 void Win32Window::DisableCursor()
 {
 	//TODO: disable cursor
