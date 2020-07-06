@@ -6,6 +6,19 @@
 
 #include "Viewers/ViewerManager.h"
 
+void ImGuiContentExplorer::Paste()
+{
+}
+
+void ImGuiContentExplorer::Duplicate()
+{
+}
+
+void ImGuiContentExplorer::Delete()
+{
+
+}
+
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -55,6 +68,48 @@ void ImGuiContentExplorer::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 		++m_NumBrowsingEntriesPerColumn;
 }
 
+void ImGuiContentExplorer::HandleKeyboardInputs()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	auto shift = io.KeyShift;
+	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
+	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+
+	if (ImGui::IsWindowFocused())
+	{
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+			Delete();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
+			Copy();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
+			Paste();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+			Cut();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
+			Duplicate();
+	}
+}
+
+void ImGuiContentExplorer::HandleMouseInputs()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	auto shift = io.KeyShift;
+	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
+	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+
+	if (ImGui::IsWindowHovered())
+	{
+		if (!shift && !alt)
+		{
+			auto click = ImGui::IsMouseClicked(0);
+			auto doubleClick = ImGui::IsMouseDoubleClicked(0);
+
+			if (doubleClick)
+			{
+			}
+		}
+	}
+}
 
 ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
 	:m_Show(show), Layer("ContentExplorer")
@@ -103,10 +158,21 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 		m_Dirs = Directory::GetDirectories(m_CurrentPath, m_SortingMode);
 		m_Files = Directory::GetFiles(m_CurrentPath, m_SortingMode);
+
+		m_SelectedDirs.clear();
+		m_SelectedDirs.resize(m_Dirs.size());
+		m_SelectedFiles.clear();
+		m_SelectedFiles.resize(m_Files.size());
 	}
+
+	
+
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Content Explorer", m_Show))
 	{
+		HandleKeyboardInputs();
+		HandleMouseInputs();
+
 		const ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
 
@@ -195,7 +261,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
 
 			ImGui::SameLine();
-			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder16.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_WindowBg]))
+			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder16.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_Button]))
 			{
 				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
 			}
@@ -362,11 +428,24 @@ void ImGuiContentExplorer::OnImGuiRender()
 					for (int i = 0; i < m_Files.size(); i++)
 					{
 						ImGui::BeginGroup();
-						if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
+						if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i]))
 						{
-							//open file on click
-							ViewerManager::OpenViewer(m_Files[i]);
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								m_SelectedFiles.clear();
+								m_SelectedFiles.resize(m_Files.size());
+							}
+							if (ImGui::IsMouseDoubleClicked(0))
+								ViewerManager::OpenViewer(m_Files[i]);
+							else
+								m_SelectedFiles[i] = true;
 						}
+
+						//if (ImGui::SmallButton(m_Files[i].filename().string().c_str()))
+						//{
+						//	//open file on click
+						//	ViewerManager::OpenViewer(m_Files[i]);
+						//}
 						if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 						{
 							ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
@@ -391,4 +470,13 @@ void ImGuiContentExplorer::OnImGuiRender()
 		}
 	}
 	ImGui::End();
+}
+
+void ImGuiContentExplorer::Copy()
+{
+	CLIENT_DEBUG("Copied");
+}
+
+void ImGuiContentExplorer::Cut()
+{
 }

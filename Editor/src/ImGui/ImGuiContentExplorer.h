@@ -90,9 +90,17 @@ public:
 	void OnAttach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
+
+	void Copy();
+	void Cut();
+	void Paste();
+	void Duplicate();
+	void Delete();
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));
+	void HandleKeyboardInputs();
+	void HandleMouseInputs();
 private:
 	bool* m_Show;
 
@@ -101,6 +109,9 @@ private:
 	std::vector<std::filesystem::path> m_Dirs, m_Files;
 	std::filesystem::path m_CurrentPath;
 	std::vector<std::string> m_CurrentSplitPath;
+
+	std::vector<bool> m_SelectedDirs;
+	std::vector<bool> m_SelectedFiles;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
 	History m_History;
