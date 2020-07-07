@@ -185,8 +185,8 @@ Vector3f GridLayer::TargetLocation(float time)
 	double elevation = PI * 0.5 - acos(dah / dl);
 
 	float z = (float)(dl * sin(elevation) * cos(azimuth));
-	float y = (float)(dl * sin(elevation));
 	float x = (float)(dl * cos(elevation) * sin(azimuth));
+	float y = (float)(dl * sin(elevation));
 	return Vector3f(x, y, z);
 }
 
@@ -200,18 +200,17 @@ void GridLayer::GenerateLaserVertices()
 
 	Vector3f translation = m_TargetLocation - (m_TargetLocation / 2.0f);
 
-	Matrix4x4::LookAt(Vector3f(), Vector3f(0.0,0.0, -1.0), Vector3f(0.0, 1.0, 0.0));
+	Matrix4x4::LookAt(Vector3f(), Vector3f(0.0, 0.0, -1.0), Vector3f(0.0, 1.0, 0.0));
 
-	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI/2);
+	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
 
-	float reflectedDiameter = sqrt((endDiameter * endDiameter) + (m_Divergence * m_Divergence) * (20.0f * 20.0f));
+	float reflectedDiameter = sqrt((endDiameter * endDiameter) + (m_ReflectedDivergence * m_ReflectedDivergence) * (20.0f * 20.0f));
 
 	m_ReflectionLaserVertexArray = GeometryGenerator::CreateCylinder(endDiameter, reflectedDiameter, 10.0f, 10, 1);
 
 	Vector3f reflectedDirection = Vector3f::Reflect(m_TargetLocation.GetNormalized(), Vector3f(0.0, 0.0, 1.0));
 
 	Vector3f reflectedTranslation = m_TargetLocation + (reflectedDirection * 5.0f);
-
-	//m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * /*Matrix4x4::LookAt(reflectedTranslation, reflectedTranslation + reflectedDirection, Vector3f(0, 1.0, 0.0))**/ Matrix4x4::RotateX(-PI / 2);
+	
 	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), reflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
 }

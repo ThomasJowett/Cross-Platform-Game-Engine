@@ -61,7 +61,7 @@ public:
 		case Colours::BROWN:		r = 0.64f, g = 0.16f, b = 0.16f, a = 1.0f;	break;
 		case Colours::CYAN:			r = 0.00f, g = 1.00f, b = 1.00f, a = 1.0f;	break;
 		case Colours::FOREST_GREEN:	r = 0.13f, g = 0.54f, b = 0.13f, a = 1.0f;	break;
-		case Colours::GREEN:		r = 0.00f, g = 0.50f, b = 0.50f, a = 1.0f;	break;
+		case Colours::GREEN:		r = 0.00f, g = 0.50f, b = 0.00f, a = 1.0f;	break;
 		case Colours::GREY:			r = 0.40f, g = 0.40f, b = 0.40f, a = 1.0f;	break;
 		case Colours::INDIGO:		r = 0.30f, g = 0.00f, b = 0.50f, a = 1.0f;	break;
 		case Colours::KHAKI:		r = 0.94f, g = 0.90f, b = 0.54f, a = 1.0f;	break;

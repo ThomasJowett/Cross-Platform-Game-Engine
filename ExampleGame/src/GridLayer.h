@@ -43,7 +43,8 @@ private:
 	double m_FlybyAngle = 45.0;
 
 	double m_BeamApeture = 0.0007;
-	double m_Divergence = 0.00677;
+	double m_Divergence = 0.0000677;
+	double m_ReflectedDivergence = 0.0025;
 
 	Matrix4x4 m_IncidentBeamTransform;
 	Matrix4x4 m_ReflectedBeamTransform;
