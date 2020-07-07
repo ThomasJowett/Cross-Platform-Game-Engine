@@ -44,7 +44,7 @@ void ImGuiScriptView::OnImGuiRender()
 				{
 					m_TextEditor.SaveTextToFile(m_FilePath);
 				}
-			ImGui::EndMenu();
+				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Edit"))
@@ -73,7 +73,7 @@ void ImGuiScriptView::OnImGuiRender()
 
 				if (ImGui::MenuItem("Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
-			ImGui::EndMenu();
+				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("View"))
@@ -84,7 +84,7 @@ void ImGuiScriptView::OnImGuiRender()
 					m_TextEditor.SetPalette(TextEditor::GetLightPalette());
 				if (ImGui::MenuItem("Retro blue Palette"))
 					m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
-			ImGui::EndMenu();
+				ImGui::EndMenu();
 			}
 		}
 		ImGui::EndMenuBar();
