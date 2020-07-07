@@ -5,6 +5,7 @@
 #include <filesystem>
 
 #include "FileSystem/Directory.h"
+#include "Interfaces/ICopyable.h"
 
 struct History
 {
@@ -81,7 +82,7 @@ public:
 };
 
 class ImGuiContentExplorer
-	:public Layer
+	:public Layer, public ICopyable
 {
 public:
 	explicit ImGuiContentExplorer(bool* show);
@@ -91,11 +92,11 @@ public:
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 
-	void Copy();
-	void Cut();
-	void Paste();
-	void Duplicate();
-	void Delete();
+	void Copy() override;
+	void Cut() override;
+	void Paste() override;
+	void Duplicate() override;
+	void Delete() override;
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));

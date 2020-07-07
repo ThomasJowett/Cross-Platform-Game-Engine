@@ -11,8 +11,10 @@
 #include <map>
 #include <regex>
 #include "imgui/imgui.h"
+#include "Interfaces/IUndoable.h"
+#include "Interfaces/ICopyable.h"
 
-class TextEditor
+class TextEditor : public IUndoable, public ICopyable
 {
 public:
 	enum class PaletteIndex
@@ -254,16 +256,16 @@ public:
 	void SelectAll();
 	bool HasSelection() const;
 
-	void Copy();
-	void Cut();
-	void Paste();
-	void Duplicate();
-	void Delete();
+	void Copy() override;
+	void Cut() override;
+	void Paste() override;
+	void Duplicate() override;
+	void Delete() override;
 
 	bool CanUndo() const;
 	bool CanRedo() const;
-	void Undo(int aSteps = 1);
-	void Redo(int aSteps = 1);
+	void Undo(int aSteps = 1) override;
+	void Redo(int aSteps = 1) override;
 
 	bool SaveTextToFile(const std::filesystem::path& filepath);
 
