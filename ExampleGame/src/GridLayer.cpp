@@ -34,16 +34,19 @@ void GridLayer::OnDetach()
 
 void GridLayer::OnFixedUpdate()
 {
-	static int count = 0;
-
-	count++;
-	if (count > 10)
+	if (m_Simulate)
 	{
-		count = 0;
-		m_Time -= 1;
-		if (m_Time < -30) m_Time = 0;
-		m_TargetLocation = TargetLocation(m_Time);
-		GenerateLaserVertices();
+		static int count = 0;
+
+		count++;
+		if (count > 10)
+		{
+			count = 0;
+			m_Time += 1;
+			if (m_Time > 30) m_Time = 0;
+			m_TargetLocation = TargetLocation(m_Time);
+			GenerateLaserVertices();
+		}
 	}
 }
 
@@ -100,7 +103,11 @@ void GridLayer::OnImGuiRender()
 	ImGui::Text(std::to_string(m_Positions.size()).c_str());
 	ImGui::Separator();
 	if (ImGui::Button("Recalculate"))
+	{
 		m_TargetLocation = TargetLocation(m_Time);
+		GenerateLaserVertices();
+	}
+	ImGui::SameLine(); ImGui::Checkbox("Simulate", &m_Simulate);
 	ImGui::DragFloat("Time", &m_Time, 1.0f, -30.0f, 30.0f, "%.0f");
 	ImGui::InputDouble("Initial Speed", &m_TargetInitialSpeed);
 	ImGui::InputDouble("Initial Distance", &m_InitialDistance);
@@ -144,8 +151,8 @@ void GridLayer::GeneratePositions()
 		{
 			attempts++;
 
-			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
 			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
+			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
 			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) - z * incline;
 
 			bool tooClose = false;
@@ -174,19 +181,20 @@ void GridLayer::GeneratePositions()
 
 Vector3f GridLayer::TargetLocation(float time)
 {
+	double flybyAngle = m_FlybyAngle * (PI/ 180);
 	double distanceTraveled = m_TargetInitialSpeed * time;
 	double dl = sqrt((distanceTraveled * distanceTraveled) + (m_InitialDistance * m_InitialDistance)
-		- 2.0 * distanceTraveled * m_InitialDistance * cos(m_FlybyAngle / 180));
+		- 2.0 * distanceTraveled * m_InitialDistance * cos(flybyAngle));
 
 	double drop = 6371.0 * (1 - cos(dl / 6371.0));
 	double dah = m_Altitude - drop;
 
-	double azimuth = asin((distanceTraveled / dl) * sin(m_FlybyAngle / 180));
-	double elevation = PI * 0.5 - acos(dah / dl);
+	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) - (flybyAngle - (PI * 0.5));
+	double elevation = (PI * 0.5) - acos(dah / dl);
 
 	float z = (float)(dl * sin(elevation) * cos(azimuth));
-	float x = (float)(dl * cos(elevation) * sin(azimuth));
-	float y = (float)(dl * sin(elevation));
+	float x = (float)(dl * sin(elevation) * sin(azimuth));
+	float y = (float)(dl * cos(elevation));
 	return Vector3f(x, y, z);
 }
 

@@ -38,7 +38,7 @@ private:
 
 	Vector3f m_TargetLocation;
 	double m_TargetInitialSpeed = 0.75;
-	double m_InitialDistance = 1.5;
+	double m_InitialDistance = 6.0;
 	double m_Altitude = 1.5;
 	double m_FlybyAngle = 45.0;
 
@@ -54,5 +54,7 @@ private:
 	std::vector<Vector3f> m_Positions;
 	int m_NumberOfPositions = 20;
 	float m_MinimumDistance = 0.01;
+
+	bool m_Simulate;
 };
 

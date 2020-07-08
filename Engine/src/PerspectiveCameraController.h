@@ -46,6 +46,7 @@ public:
 	float GetTranslationSpeed() const { return m_TranslationSpeed; }
 
 private:
+	bool OnMouseButton(MouseButtonPressedEvent& event);
 	bool OnMouseWheel(MouseWheelEvent& event);
 	bool OnWindowResized(WindowResizeEvent& event);
 	bool OnMouseMoved(MouseMotionEvent& event);

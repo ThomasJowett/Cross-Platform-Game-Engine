@@ -110,6 +110,16 @@ void PerspectiveCameraController::OnEvent(Event& event)
 	dispatcher.Dispatch<MouseWheelEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseWheel));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnWindowResized));
 	dispatcher.Dispatch<MouseMotionEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseMoved));
+	dispatcher.Dispatch<MouseButtonPressedEvent>(BIND_EVENT_FN(PerspectiveCameraController::OnMouseButton));
+}
+
+bool PerspectiveCameraController::OnMouseButton(MouseButtonPressedEvent& event)
+{
+	if (event.GetMouseButton() == MOUSE_BUTTON_RIGHT)
+	{
+		m_MouseRelativeVelocity = Vector2f();
+	}
+	return false;
 }
 
 bool PerspectiveCameraController::OnMouseWheel(MouseWheelEvent& event)
