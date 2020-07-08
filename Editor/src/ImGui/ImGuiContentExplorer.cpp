@@ -291,9 +291,9 @@ void ImGuiContentExplorer::OnImGuiRender()
 		//Sorting mode combo
 		ImGui::SetNextItemWidth(ImGui::CalcTextSize("Last Modified Reverse        ").x);
 		ImGui::SameLine();
-		m_ForceRescan = (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
-			"Alphabetical\0Alphabetical Reverse\0Last Modified\0Last Modified Reverse\0Size\0Size Reverse\0Type\0Type Reverse"));
-
+		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
+			"Alphabetical\0Alphabetical Reverse\0Last Modified\0Last Modified Reverse\0Size\0Size Reverse\0Type\0Type Reverse"))
+			m_ForceRescan = true;
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
 		const std::filesystem::path* fi = m_History.GetCurrentFolder();
@@ -506,8 +506,8 @@ void ImGuiContentExplorer::OnImGuiRender()
 					}
 					ImGui::EndGroup();
 
-					ImGui::SameLine(300);
-					ImGui::Text((std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) /1000.0f)) + "KB").c_str());
+					ImGui::SameLine(std::max(ImGui::CalcTextSize(m_Files[i].filename().string().c_str()).x + 15, 300.0f));
+					ImGui::Text((std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
 
 					++cntEntries;
 					//TODO:: switch on view zoom

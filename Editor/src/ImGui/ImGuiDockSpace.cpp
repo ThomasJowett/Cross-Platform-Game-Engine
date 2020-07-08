@@ -109,7 +109,7 @@ void ImGuiDockSpace::OnImGuiRender()
 	{
 		CLIENT_ERROR("Docking not enabled.");
 	}
-
+	bool about = false;
 	if (ImGui::BeginMenuBar())
 	{
 		if (ImGui::BeginMenu("File"))
@@ -163,7 +163,10 @@ void ImGuiDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem("About", "");
+			if (ImGui::MenuItem("About", ""))
+			{
+				about = true;
+			}
 			if (ImGui::MenuItem("Documentation", ""))
 			{
 #ifdef __WINDOWS__
@@ -177,7 +180,18 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::EndMenu();
 		}
 
+		
 		ImGui::EndMenuBar();
+	}
+
+	if(about) ImGui::OpenPopup("About");
+
+	if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+	{
+		ImGui::Text("Version: "); ImGui::SameLine(); ImGui::Text(VERSION);
+		ImGui::Text("Built on: "); ImGui::SameLine(); ImGui::Text(__DATE__);
+		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+		ImGui::EndPopup();
 	}
 
 	ImGui::End();
