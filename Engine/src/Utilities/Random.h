@@ -17,13 +17,13 @@ public:
 	}
 
 	// random float in range with uniform distribution
-	static float FloatInRange(float min, float max)
+	static float FloatInRange(float min = 0.0f, float max = 1.0f)
 	{
 		return min + (Float() * (max - min));
 	}
 
 	// random float using gaussian normal distribution
-	static float NormalDistribution(float mean, float sigma)
+	static float NormalDistribution(float mean = 0.0f, float sigma = 1.0f)
 	{
 		return (float)(s_NormalDistribution(s_RandomEngine) * sigma) + mean;
 	}
