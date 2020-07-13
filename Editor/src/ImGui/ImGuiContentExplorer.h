@@ -92,11 +92,16 @@ public:
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 
-	void Copy() override;
-	void Cut() override;
-	void Paste() override;
-	void Duplicate() override;
-	void Delete() override;
+	virtual void Copy() override;
+	virtual void Cut() override;
+	virtual void Paste() override;
+	virtual void Duplicate() override;
+	virtual void Delete() override;
+	virtual void SelectAll() override;
+	virtual bool HasSelection() const override;
+
+	virtual bool IsReadOnly() const override { return false; }
+
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));
@@ -116,6 +121,8 @@ private:
 
 	std::vector<bool> m_SelectedDirs;
 	std::vector<bool> m_SelectedFiles;
+
+	bool m_HasSelection;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
 	History m_History;

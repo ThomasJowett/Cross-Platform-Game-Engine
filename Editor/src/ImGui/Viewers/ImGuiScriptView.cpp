@@ -33,7 +33,7 @@ void ImGuiScriptView::OnImGuiRender()
 	ImGui::PushFont(Fonts::Consolas);
 
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_HorizontalScrollbar))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -42,9 +42,9 @@ void ImGuiScriptView::OnImGuiRender()
 
 		bool readOnly = m_TextEditor.IsReadOnly();
 
-		if (ImGui::BeginMenuBar())
-		{
-			if (ImGui::BeginMenu("File"))
+		//if (ImGui::BeginMenuBar())
+		//{
+			/*if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, !readOnly))
 				{
@@ -53,7 +53,7 @@ void ImGuiScriptView::OnImGuiRender()
 				ImGui::EndMenu();
 			}
 
-			if (ImGui::BeginMenu("Edit"))
+			/*if (ImGui::BeginMenu("Edit"))
 			{
 				if (ImGui::MenuItem("Read-Only mode", nullptr, &readOnly))
 					m_TextEditor.SetReadOnly(readOnly);
@@ -80,25 +80,36 @@ void ImGuiScriptView::OnImGuiRender()
 				if (ImGui::MenuItem("Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
 				ImGui::EndMenu();
-			}
+			}*/
 
-			if (ImGui::BeginMenu("View"))
-			{
-				if (ImGui::MenuItem("Dark palette"))
-					m_TextEditor.SetPalette(TextEditor::GetDarkPalette());
-				if (ImGui::MenuItem("Light palette"))
-					m_TextEditor.SetPalette(TextEditor::GetLightPalette());
-				if (ImGui::MenuItem("Retro blue Palette"))
-					m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
-				ImGui::EndMenu();
-			}
-		}
-		ImGui::EndMenuBar();
+			//if (ImGui::BeginMenu("View"))
+			//{
+			//	if (ImGui::MenuItem("Dark palette"))
+			//		m_TextEditor.SetPalette(TextEditor::GetDarkPalette());
+			//	if (ImGui::MenuItem("Light palette"))
+			//		m_TextEditor.SetPalette(TextEditor::GetLightPalette());
+			//	if (ImGui::MenuItem("Retro blue Palette"))
+			//		m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
+			//	ImGui::EndMenu();
+			//}
+		//}
+		//ImGui::EndMenuBar();
 
 		m_TextEditor.Render("TextEditor");
 	}
 	ImGui::End();
 	ImGui::PopFont();
+}
+
+void ImGuiScriptView::Save()
+{
+	if (!IsReadOnly())
+		m_TextEditor.SaveTextToFile(m_FilePath);
+}
+
+void ImGuiScriptView::SaveAs()
+{
+	//TODO: save as
 }
 
 TextEditor::LanguageDefinition ImGuiScriptView::DetermineLanguageDefinition()

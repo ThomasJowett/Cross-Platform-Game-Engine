@@ -7,9 +7,10 @@
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
+#include "Interfaces/ISaveable.h"
 
 class ImGuiViewportPanel
-	:public Layer, public ICopyable, public IUndoable
+	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
 public: 
 	explicit ImGuiViewportPanel(bool* show);
@@ -20,16 +21,22 @@ public:
 	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
 
-	void Copy() override;
-	void Cut() override;
-	void Paste() override;
-	void Duplicate() override;
-	void Delete() override;
+	virtual void Copy() override;
+	virtual void Cut() override;
+	virtual void Paste() override;
+	virtual void Duplicate() override;
+	virtual void Delete() override;
+	virtual void SelectAll() override;
+	virtual bool HasSelection() const override;
+	virtual bool IsReadOnly() const override { return false; }
 
-	bool CanUndo() const override;
-	bool CanRedo() const override;
-	void Undo(int astep = 1) override;
-	void Redo(int astep = 1) override;
+	virtual bool CanUndo() const override;
+	virtual bool CanRedo() const override;
+	virtual void Undo(int astep = 1) override;
+	virtual void Redo(int astep = 1) override;
+
+	virtual void Save() override;
+	virtual void SaveAs() override;
 private:
 	void HandleKeyboardInputs();
 

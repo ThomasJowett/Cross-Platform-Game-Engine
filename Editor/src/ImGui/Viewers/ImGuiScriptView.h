@@ -5,9 +5,10 @@
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
+#include "Interfaces/ISaveable.h"
 
 class ImGuiScriptView
-	:public Layer, public ICopyable, public IUndoable
+	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
 public:
 	ImGuiScriptView(bool* show, std::filesystem::path filepath);
@@ -22,10 +23,18 @@ public:
 	virtual void Duplicate() override { m_TextEditor.Duplicate(); }
 	virtual void Delete() override { m_TextEditor.Delete(); }
 
+	virtual bool IsReadOnly() const override { return m_TextEditor.IsReadOnly(); }
+
 	virtual bool CanUndo() const override { return m_TextEditor.CanUndo(); };
 	virtual bool CanRedo() const override { return m_TextEditor.CanRedo(); };
 	virtual void Undo(int asteps = 1) { m_TextEditor.Undo(asteps); }
 	virtual void Redo(int asteps = 1) { m_TextEditor.Redo(asteps); }
+
+	virtual bool HasSelection() const override { return m_TextEditor.HasSelection(); }
+	virtual void SelectAll() override { m_TextEditor.SelectAll(); }
+
+	virtual void Save() override;
+	virtual void SaveAs() override;
 private:
 	TextEditor::LanguageDefinition DetermineLanguageDefinition();
 private:

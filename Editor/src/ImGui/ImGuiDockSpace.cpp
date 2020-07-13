@@ -14,6 +14,7 @@
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
+#include "Interfaces/ISaveable.h"
 
 Layer* ImGuiDockSpace::s_CurrentlyFoccusedPanel;
 
@@ -134,44 +135,55 @@ void ImGuiDockSpace::OnImGuiRender()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
+			ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFoccusedPanel);
+
+			bool saveable = iSave != nullptr;
+
 			ImGui::MenuItem("New Scene", "Ctrl + N", nullptr, false);
 			ImGui::MenuItem("New Project", "Ctrl + Shift + N", nullptr, false);
 			ImGui::MenuItem("Open Project", "Ctrl + O", nullptr, false);
-			ImGui::MenuItem("Save", "Ctrl + S", nullptr, false);
+			if (ImGui::MenuItem("Save", "Ctrl + S", nullptr, saveable))
+				iSave->Save();
 			if (ImGui::MenuItem("Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Edit"))
 		{
-			ICopyable* icopy = dynamic_cast<ICopyable*>(s_CurrentlyFoccusedPanel);
+			ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFoccusedPanel);
 
-			bool copyable = icopy != nullptr;
+			bool copyable = false;
 
-			IUndoable* iundo = dynamic_cast<IUndoable*>(s_CurrentlyFoccusedPanel);
+			if (iCopy != nullptr)
+				copyable = !iCopy->IsReadOnly();
+
+			IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFoccusedPanel);
 
 			bool undoable = false, redoable = false;
-			if (iundo != nullptr)
+			if (iUndo != nullptr)
 			{
-				undoable = iundo->CanUndo();
-				redoable = iundo->CanRedo();
+				undoable = iUndo->CanUndo();
+				redoable = iUndo->CanRedo();
 			}
 
 			if (ImGui::MenuItem("Undo", "Ctrl + Z", nullptr, undoable))
-				iundo->Undo();
+				iUndo->Undo();
 			if (ImGui::MenuItem("Redo", "Ctrl + Y", nullptr, redoable))
-				iundo->Redo();
+				iUndo->Redo();
 			ImGui::Separator();//-----------------------------------------------
-			if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, copyable))
-				icopy->Cut();
-			if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, copyable))
-				icopy->Copy();
-			if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, copyable))
-				icopy->Paste();
+			if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, copyable && iCopy->HasSelection()))
+				iCopy->Cut();
+			if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, copyable && iCopy->HasSelection()))
+				iCopy->Copy();
+			if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, copyable && ImGui::GetClipboardText() != nullptr))
+				iCopy->Paste();
 			if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, copyable))
-				icopy->Duplicate();
-			if (ImGui::MenuItem("Delete", "Del", nullptr, copyable))
-				icopy->Delete();
+				iCopy->Duplicate();
+			if (ImGui::MenuItem("Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
+				iCopy->Delete();
+			ImGui::Separator();//-----------------------------------------------
+			if (ImGui::MenuItem("Select All", "Ctrl + A", nullptr, copyable))
+				iCopy->SelectAll();
 			ImGui::Separator();//-----------------------------------------------
 			ImGui::MenuItem("Preferences", "", &m_ShowEditorPreferences);
 			ImGui::MenuItem("Project Settings", "", nullptr, false);

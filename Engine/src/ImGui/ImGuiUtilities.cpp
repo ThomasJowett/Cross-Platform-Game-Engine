@@ -150,25 +150,37 @@ bool ImGui::LoadStyle(const char* filename, ImGuiStyle& style)
 				if (sscanf(line_start, "%f", &x) == npf) {
 					*pf[0] = x;
 				}
-				else ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				else
+				{
+					ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				}
 				break;
 			case 2:
 				if (sscanf(line_start, "%f %f", &x, &y) == npf) {
 					*pf[0] = x; *pf[1] = y;
 				}
-				else ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				else
+				{
+					ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				}
 				break;
 			case 3:
 				if (sscanf(line_start, "%f %f %f", &x, &y, &z) == npf) {
 					*pf[0] = x; *pf[1] = y; *pf[2] = z;
 				}
-				else ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				else
+				{
+					ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				}
 				break;
 			case 4:
 				if (sscanf(line_start, "%f %f %f %f", &x, &y, &z, &w) == npf) {
 					*pf[0] = x; *pf[1] = y; *pf[2] = z; *pf[3] = w;
 				}
-				else ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				else 
+				{
+					ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
+				}
 				break;
 			default:
 				ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (unknown field)", filename, name);

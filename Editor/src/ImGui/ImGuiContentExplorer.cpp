@@ -21,6 +21,15 @@ void ImGuiContentExplorer::Delete()
 
 }
 
+void ImGuiContentExplorer::SelectAll()
+{
+}
+
+bool ImGuiContentExplorer::HasSelection() const
+{
+	return m_HasSelection;
+}
+
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -89,6 +98,8 @@ void ImGuiContentExplorer::HandleKeyboardInputs()
 			Cut();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
 			Duplicate();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+			SelectAll();
 	}
 }
 
@@ -191,6 +202,8 @@ void ImGuiContentExplorer::OnImGuiRender()
 		m_SelectedDirs.resize(m_Dirs.size());
 		m_SelectedFiles.clear();
 		m_SelectedFiles.resize(m_Files.size());
+
+		m_HasSelection = false;
 	}
 
 
@@ -483,11 +496,15 @@ void ImGuiContentExplorer::OnImGuiRender()
 					ImGui::BeginGroup();
 					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
+
 						if (!ImGui::GetIO().KeyCtrl)
 						{
 							m_SelectedFiles.clear();
 							m_SelectedFiles.resize(m_Files.size());
 
+							m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+							m_HasSelection = true;
 
 							if (ImGui::IsMouseDoubleClicked(0))
 							{
@@ -496,13 +513,16 @@ void ImGuiContentExplorer::OnImGuiRender()
 						}
 						else
 						{
+							m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+							m_HasSelection = m_SelectedFiles[i];
+
 							if (ImGui::IsMouseDoubleClicked(0))
 							{
 								OpenAllSelectedItems();
 							}
 						}
 
-						m_SelectedFiles[i] = !m_SelectedFiles[i];
 					}
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))

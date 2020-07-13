@@ -142,6 +142,11 @@ public:
 	{
 		return std::string("r:" + std::to_string(r) + " g:" + std::to_string(g) + " b:" + std::to_string(b) + " a:" + std::to_string(a));
 	}
+
+	float& operator[](const int i)
+	{
+		return i == 0 ? this->r : (i == 1 ? this->g : i == 2 ? this->b : this->a);
+	}
 };
 
 inline std::ostream& operator<<(std::ostream& os, Colour& c)

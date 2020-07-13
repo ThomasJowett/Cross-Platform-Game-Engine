@@ -167,7 +167,7 @@ void ImGuiViewportPanel::Cut()
 void ImGuiViewportPanel::Paste()
 {
 	//TODO: viewport paste
-	CLIENT_DEBUG("Pasted");
+	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
 }
 
 void ImGuiViewportPanel::Duplicate()
@@ -180,6 +180,15 @@ void ImGuiViewportPanel::Delete()
 {
 	//TODO: viewport delete
 	CLIENT_DEBUG("Deleted");
+}
+
+void ImGuiViewportPanel::SelectAll()
+{
+}
+
+bool ImGuiViewportPanel::HasSelection() const
+{
+	return false;
 }
 
 bool ImGuiViewportPanel::CanUndo() const
@@ -203,6 +212,16 @@ void ImGuiViewportPanel::Redo(int astep)
 	CLIENT_DEBUG("Redid");
 }
 
+void ImGuiViewportPanel::Save()
+{
+	CLIENT_DEBUG("Saving...");
+}
+
+void ImGuiViewportPanel::SaveAs()
+{
+	CLIENT_DEBUG("Saving As...");
+}
+
 void ImGuiViewportPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -220,6 +239,8 @@ void ImGuiViewportPanel::HandleKeyboardInputs()
 
 	if (ImGui::IsWindowFocused())
 	{
+		io.WantCaptureKeyboard = true;
+		io.WantCaptureMouse = true;
 
 		if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
 			Undo();
@@ -235,5 +256,9 @@ void ImGuiViewportPanel::HandleKeyboardInputs()
 			Cut();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
 			Duplicate();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+			SelectAll();
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
+			Save();
 	}
 }

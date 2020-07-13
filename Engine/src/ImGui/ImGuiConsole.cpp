@@ -193,9 +193,7 @@ void ImGuiConsole::Message::OnImGuiRender(Message::Level filter)
 	if (m_Level != Level::Invalid && m_Level >= filter)
 	{
 		Colour colour = GetRenderColour(m_Level);
-		ImGui::PushStyleColor(ImGuiCol_Text, { colour.r, colour.g, colour.b, colour.a });
-		ImGui::TextUnformatted(m_Message.c_str());
-		ImGui::PopStyleColor();
+		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, m_Message.c_str());
 	}
 }
 

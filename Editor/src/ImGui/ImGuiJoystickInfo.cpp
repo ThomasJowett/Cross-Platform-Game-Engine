@@ -2,6 +2,7 @@
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
+#include "ImGui/ImGuiDockSpace.h"
 
 #include "include.h"
 
@@ -20,6 +21,11 @@ void ImGuiJoystickInfo::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Joystick Info", m_Show))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			ImGuiDockSpace::SetFocussedWindow(this);
+		}
+
 		if (Joysticks::GetJoystickCount() == 0)
 		{
 			ImGui::Text("No Joysticks Connected");
