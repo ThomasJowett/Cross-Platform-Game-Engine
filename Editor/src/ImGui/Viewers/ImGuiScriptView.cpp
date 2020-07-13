@@ -1,5 +1,6 @@
 #include "ImGuiScriptView.h"
 #include "Fonts/Fonts.h"
+#include "ImGui/ImGuiDockSpace.h"
 
 ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -34,6 +35,11 @@ void ImGuiScriptView::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			ImGuiDockSpace::SetFocussedWindow(this);
+		}
+
 		bool readOnly = m_TextEditor.IsReadOnly();
 
 		if (ImGui::BeginMenuBar())

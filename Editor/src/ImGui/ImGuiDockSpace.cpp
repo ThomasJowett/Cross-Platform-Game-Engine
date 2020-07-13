@@ -4,10 +4,24 @@
 #include  "Core/Version.h"
 #include "Fonts/Fonts.h"
 
+
+#include "ImGui/ImGuiContentExplorer.h"
+#include "ImGui/ImGuiConsole.h"
+#include "ImGui/ImGuiJoystickInfo.h"
+#include "ImGui/ImGuiContentExplorer.h"
+#include "ImGui/ImGuiPreferences.h"
+#include "ImGui/ImGuiViewport.h"
+
+#include "Interfaces/ICopyable.h"
+#include "Interfaces/IUndoable.h"
+
+Layer* ImGuiDockSpace::s_CurrentlyFoccusedPanel;
+
 ImGuiDockSpace::ImGuiDockSpace()
 	:Layer("Dockspace")
 {
 	m_Show = true;
+
 	m_ShowEditorPreferences = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
@@ -23,14 +37,14 @@ void ImGuiDockSpace::OnAttach()
 {
 	Fonts::LoadFonts();
 
-	Settings::SetDefaultBool("Windows", "Viewport", true);
-	Settings::SetDefaultBool("Windows", "Console", false);
-	Settings::SetDefaultBool("Windows", "ContentExplorer", true);
-	Settings::SetDefaultBool("Windows", "JoystickInfo", false);
-	Settings::SetDefaultBool("Windows", "Hierachy", true);
-	Settings::SetDefaultBool("Windows", "Properties", true);
-	Settings::SetDefaultBool("Windows", "ErrorList", true);
-	Settings::SetDefaultBool("Windows", "EditorPreferences", false);
+	Settings::SetDefaultBool("Windows", "Viewport", m_ShowViewport);
+	Settings::SetDefaultBool("Windows", "Console", m_ShowConsole);
+	Settings::SetDefaultBool("Windows", "ContentExplorer", m_ShowContentExplorer);
+	Settings::SetDefaultBool("Windows", "JoystickInfo", m_ShowJoystickInfo);
+	Settings::SetDefaultBool("Windows", "Hierachy", m_ShowHierachy);
+	Settings::SetDefaultBool("Windows", "Properties", m_ShowProperties);
+	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
+	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 
 	m_ShowViewport = Settings::GetBool("Windows", "Viewport");
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
@@ -40,6 +54,12 @@ void ImGuiDockSpace::OnAttach()
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierachy = Settings::GetBool("Windows", "Hierachy");
+
+	Application::Get().AddOverlay(new ImGuiViewportPanel(&m_ShowViewport));
+	Application::Get().AddOverlay(new ImGuiEditorPreferences(&m_ShowEditorPreferences));
+	Application::Get().AddOverlay(new ImGuiContentExplorer(&m_ShowContentExplorer));
+	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
+	Application::Get().AddOverlay(new ImGuiJoystickInfo(&m_ShowJoystickInfo));
 }
 
 void ImGuiDockSpace::OnDetach()
@@ -114,59 +134,80 @@ void ImGuiDockSpace::OnImGuiRender()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			ImGui::MenuItem("New Scene", "Ctrl + N");
-			ImGui::MenuItem("New Project", "Ctrl + Shift + N");
-			ImGui::MenuItem("Open Project", "Ctrl + O");
-			ImGui::MenuItem("Save", "Ctrl + S");
+			ImGui::MenuItem("New Scene", "Ctrl + N", nullptr, false);
+			ImGui::MenuItem("New Project", "Ctrl + Shift + N", nullptr, false);
+			ImGui::MenuItem("Open Project", "Ctrl + O", nullptr, false);
+			ImGui::MenuItem("Save", "Ctrl + S", nullptr, false);
 			if (ImGui::MenuItem("Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Edit"))
 		{
-			ImGui::MenuItem("Undo", "Ctrl + Z");
-			ImGui::MenuItem("Redo", "Ctrl + Y");
-			ImGui::MenuItem("Cut", "Ctrl + X");
-			ImGui::MenuItem("Copy", "Ctrl + C");
-			ImGui::MenuItem("Paste", "Ctrl + V");
-			ImGui::MenuItem("Duplicate", "Ctrl + D");
+			ICopyable* icopy = dynamic_cast<ICopyable*>(s_CurrentlyFoccusedPanel);
+
+			bool copyable = icopy != nullptr;
+
+			IUndoable* iundo = dynamic_cast<IUndoable*>(s_CurrentlyFoccusedPanel);
+
+			bool undoable = false, redoable = false;
+			if (iundo != nullptr)
+			{
+				undoable = iundo->CanUndo();
+				redoable = iundo->CanRedo();
+			}
+
+			if (ImGui::MenuItem("Undo", "Ctrl + Z", nullptr, undoable))
+				iundo->Undo();
+			if (ImGui::MenuItem("Redo", "Ctrl + Y", nullptr, redoable))
+				iundo->Redo();
+			ImGui::Separator();//-----------------------------------------------
+			if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, copyable))
+				icopy->Cut();
+			if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, copyable))
+				icopy->Copy();
+			if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, copyable))
+				icopy->Paste();
+			if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, copyable))
+				icopy->Duplicate();
+			if (ImGui::MenuItem("Delete", "Del", nullptr, copyable))
+				icopy->Delete();
+			ImGui::Separator();//-----------------------------------------------
 			ImGui::MenuItem("Preferences", "", &m_ShowEditorPreferences);
-			ImGui::MenuItem("Project Settings", "");
+			ImGui::MenuItem("Project Settings", "", nullptr, false);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Window"))
 		{
-			ImGui::MenuItem("Properties", "", &m_ShowProperties);
-			ImGui::MenuItem("Heirachy", "", &m_ShowHierachy);
+			ImGui::MenuItem("Properties", "", &m_ShowProperties, false);//TODO: Create properties panel
+			ImGui::MenuItem("Heirachy", "", &m_ShowHierachy, false);//TODO: create heirachy panel
 			ImGui::MenuItem("Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem("Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem("Conosole", "", &m_ShowConsole);
-			ImGui::MenuItem("Error List", "", &m_ShowErrorList);
-			ImGui::MenuItem("Task List", "", &m_ShowTaskList);
+			ImGui::MenuItem("Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
+			ImGui::MenuItem("Task List", "", &m_ShowTaskList, false);//TODO: Create Tasklist ImguiPanel
 			ImGui::MenuItem("Joystick Info", "", &m_ShowJoystickInfo);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Tools"))
 		{
-			ImGui::MenuItem("Play", "");
-			ImGui::MenuItem("Lights", "");
-			ImGui::MenuItem("Volumes", "");
-			ImGui::MenuItem("Landscape", "");
-			ImGui::MenuItem("Foliage", "");
-			ImGui::MenuItem("Multiplayer", "");
-			ImGui::MenuItem("Save/Open", "");
-			ImGui::MenuItem("Target Platform", "");
+			//TODO: create a toolbar for these tools
+			ImGui::MenuItem("Play", "", nullptr, false); //TODO: create a play/pause tool
+			ImGui::MenuItem("Lights", "", nullptr, false); //TODO: create a lights tool
+			ImGui::MenuItem("Volumes", "", nullptr, false); //TODO: Create a Volumes tool e.g. blocking volumes
+			ImGui::MenuItem("Landscape", "", nullptr, false); //TODO: create landscape tool
+			ImGui::MenuItem("Foliage", "", nullptr, false); //TODO: create a foliage tool
+			ImGui::MenuItem("Multiplayer", "", nullptr, false); //TODO: Create multiplayer tool
+			ImGui::MenuItem("Save/Open", "", nullptr, false); //TODO: Create Save/openTool
+			ImGui::MenuItem("Target Platform", "", nullptr, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
-			if (ImGui::MenuItem("About", ""))
-			{
-				about = true;
-			}
+			ImGui::MenuItem("About", "", &about);
 			if (ImGui::MenuItem("Documentation", ""))
 			{
 #ifdef __WINDOWS__
@@ -176,15 +217,15 @@ void ImGuiDockSpace::OnImGuiRender()
 #elif __APPLE__
 				system("open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
 #endif
-			}
-			ImGui::EndMenu();
 		}
-
-		
-		ImGui::EndMenuBar();
+			ImGui::EndMenu();
 	}
 
-	if(about) ImGui::OpenPopup("About");
+
+		ImGui::EndMenuBar();
+}
+
+	if (about) ImGui::OpenPopup("About");
 
 	if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 	{

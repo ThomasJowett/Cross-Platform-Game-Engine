@@ -6,6 +6,8 @@
 
 #include "Viewers/ViewerManager.h"
 
+#include "ImGuiDockSpace.h"
+
 void ImGuiContentExplorer::Paste()
 {
 }
@@ -193,9 +195,14 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 
 
-	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(500, 20), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin("Content Explorer", m_Show))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			ImGuiDockSpace::SetFocussedWindow(this);
+		}
 		HandleKeyboardInputs();
 
 		if (ImGui::IsWindowHovered())

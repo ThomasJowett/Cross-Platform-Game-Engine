@@ -1,6 +1,7 @@
 #include "ImGuiViewport.h"
 
 #include "imgui/imgui_internal.h"
+#include "ImGui/ImGuiDockSpace.h"
 
 ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
@@ -34,19 +35,24 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 
 
 	static bool cursorDisabled = false;
-	if (m_WindowHovered && Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+
+	if (cursorDisabled)
+		m_CameraController.OnUpdate(deltaTime);
+
+	if (m_WindowHovered && rightMouseDown && !cursorDisabled)
 	{
-		Application::GetWindow().DisableCursor();
+		Application::GetWindow().DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
 		cursorDisabled = true;
 	}
-	else if (cursorDisabled && !Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+
+	else if (cursorDisabled && !rightMouseDown)
 	{
 		cursorDisabled = false;
 		Application::GetWindow().EnableCursor();
 	}
 
-	if (cursorDisabled)
-		m_CameraController.OnUpdate(deltaTime);
+
 
 	//TODO: have a scene object that will be traversed here instead of creating a scene manually
 	Renderer::BeginScene(*m_CameraController.GetCamera());
@@ -82,14 +88,22 @@ void ImGuiViewportPanel::OnImGuiRender()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin("Viewport", m_Show, ImGuiWindowFlags_NoScrollbar));
+	ImVec2 pos;
+	ImGuiIO& io = ImGui::GetIO();
+	bool viewShown = ImGui::Begin("Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
+	if (viewShown)
 	{
 		HandleKeyboardInputs();
 
 		m_WindowHovered = ImGui::IsWindowHovered();
 
-		ImGuiIO& io = ImGui::GetIO();
+		if (ImGui::IsWindowFocused())
+		{
+			ImGuiDockSpace::SetFocussedWindow(this);
+		}
+
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
 			m_CameraController.OnMouseWheel(io.MouseWheel);
 
@@ -99,7 +113,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 			m_ViewportSize = panelSize;
 		}
 
-		ImVec2 pos = ImGui::GetCursorScreenPos();
+		pos = ImGui::GetCursorScreenPos();
 		ImVec2 mouse_pos = ImGui::GetMousePos();
 
 		m_RelativeMousePosition = { mouse_pos.x - ImGui::GetWindowPos().x - 1.0f, mouse_pos.y - ImGui::GetWindowPos().y - 8.0f - ImGui::GetFontSize() };
@@ -121,6 +135,21 @@ void ImGuiViewportPanel::OnImGuiRender()
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
+
+	if (viewShown)
+	{
+		ImGui::SetNextWindowPos(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y));
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.2f));
+		ImGui::Begin("FPS", m_Show, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
+			| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+			| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
+
+		ImGui::Text("%.1f", io.Framerate);
+		ImGui::End();
+		ImGui::PopStyleColor();
+	}
 }
 
 void ImGuiViewportPanel::Copy()

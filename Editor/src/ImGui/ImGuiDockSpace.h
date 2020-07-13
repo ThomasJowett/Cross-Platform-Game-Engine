@@ -17,15 +17,7 @@ public:
 
 	virtual void OnImGuiRender() override;
 
-	bool* GetShowEditorPreferences() { return &m_ShowEditorPreferences; }
-	bool* GetShowViewport() { return &m_ShowViewport; }
-	bool* GetShowConsole() { return &m_ShowConsole; }
-	bool* GetShowErrorList() { return &m_ShowErrorList; }
-	bool* GetShowTaskList() { return &m_ShowTaskList; }
-	bool* GetShowProperties() { return &m_ShowProperties; }
-	bool* GetShowHierachy() { return &m_ShowHierachy; }
-	bool* GetShowContentExplorer() { return &m_ShowContentExplorer; }
-	bool* GetShowJoystickInfo() { return &m_ShowJoystickInfo; }
+	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFoccusedPanel = focussedPanel; }
 
 private:
 	bool m_Show;
@@ -40,4 +32,6 @@ private:
 	bool m_ShowHierachy;
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
+
+	static Layer* s_CurrentlyFoccusedPanel;
 };

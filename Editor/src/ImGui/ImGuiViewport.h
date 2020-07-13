@@ -5,8 +5,11 @@
 
 #include "ViewportCameraController.h"
 
+#include "Interfaces/ICopyable.h"
+#include "Interfaces/IUndoable.h"
+
 class ImGuiViewportPanel
-	:public Layer
+	:public Layer, public ICopyable, public IUndoable
 {
 public: 
 	explicit ImGuiViewportPanel(bool* show);
@@ -17,16 +20,16 @@ public:
 	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
 
-	void Copy();
-	void Cut();
-	void Paste();
-	void Duplicate();
-	void Delete();
+	void Copy() override;
+	void Cut() override;
+	void Paste() override;
+	void Duplicate() override;
+	void Delete() override;
 
-	bool CanUndo() const;
-	bool CanRedo() const;
-	void Undo(int astep = 1);
-	void Redo(int astep = 1);
+	bool CanUndo() const override;
+	bool CanRedo() const override;
+	void Undo(int astep = 1) override;
+	void Redo(int astep = 1) override;
 private:
 	void HandleKeyboardInputs();
 
