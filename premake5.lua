@@ -9,9 +9,9 @@ workspace "Cross Platform Game Engine"
 		"Distribution"
 	}
 	
-	flags		
-	{		
-		"MultiProcessorCompile"		
+	flags
+	{
+		"MultiProcessorCompile"
 	}
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
@@ -39,7 +39,8 @@ project "Engine"
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/stb/**.h",
 		"%{prj.name}/vendor/stb/**.cpp",
-		"%{prj.name}/vendor/simpleini/**.h"
+		"%{prj.name}/vendor/simpleini/**.h",
+		"%{prj.name}/vendor/EnTT/**.hpp"
 	}
 
 	includedirs
@@ -51,7 +52,8 @@ project "Engine"
 		"%{prj.name}/vendor/imgui",
 		"%{prj.name}/vendor/stb",
 		"%{prj.name}/vendor/spdlog/include",
-		"%{prj.name}/vendor/simpleini"
+		"%{prj.name}/vendor/simpleini",
+		"%{prj.name}/vendor/EnTT"
 	}
 	
 	links
@@ -297,3 +299,4 @@ project "Editor"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+

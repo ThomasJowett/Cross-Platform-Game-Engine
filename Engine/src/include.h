@@ -39,3 +39,5 @@
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Random.h"
 #include "Utilities/StringUtils.h"
+
+#include "EnTT/entt.hpp"

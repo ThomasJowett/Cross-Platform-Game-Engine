@@ -22,6 +22,7 @@ void ImGuiScriptView::OnAttach()
 		std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 		m_TextEditor.SetText(str);
+		m_TextEditor.SetFilePath(m_FilePath);
 	}
 }
 
