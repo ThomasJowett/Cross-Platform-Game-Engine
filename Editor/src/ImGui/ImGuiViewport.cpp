@@ -103,7 +103,8 @@ void ImGuiViewportPanel::OnImGuiRender()
 		{
 			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 			{
-				//Application::GetWindow().SetCursor(Cursors::CrossHair);
+				ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
+				Application::GetWindow().SetCursor(Cursors::CrossHair);
 			}
 		}
 

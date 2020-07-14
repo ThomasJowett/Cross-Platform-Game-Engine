@@ -53,7 +53,7 @@ private:
 
 	Vector2f m_MouseRelativeVelocity;
 	Vector2f m_MouseLastPosition;
-	float m_Sensitivity = 0.1f;
+	float m_Sensitivity = 0.03f;
 
 	OrthographicCamera m_2DCamera;
 	PerspectiveCamera m_3DCamera;
