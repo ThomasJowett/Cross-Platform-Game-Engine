@@ -77,6 +77,9 @@ void GridLayer::OnUpdate(float deltaTime)
 	shader->SetFloat4("u_colour", Colours::GREEN);
 	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
 
+	shader->SetFloat4("u_colour", Colours::YELLOW);
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian(m_Azimuth, m_Elevation, m_Distance)));
+
 	shader->SetFloat4("u_colour", Colours::BLUE);
 
 	for (Vector3f position : m_Positions)
@@ -108,12 +111,16 @@ void GridLayer::OnImGuiRender()
 		GenerateLaserVertices();
 	}
 	ImGui::SameLine(); ImGui::Checkbox("Simulate", &m_Simulate);
-	ImGui::DragFloat("Time", &m_Time, 1.0f, -30.0f, 30.0f, "%.0f");
-	ImGui::InputDouble("Initial Speed", &m_TargetInitialSpeed);
-	ImGui::InputDouble("Initial Distance", &m_InitialDistance);
-	ImGui::InputDouble("Altitude", &m_Altitude);
-	ImGui::InputDouble("FlybyAngle", &m_FlybyAngle);
+	ImGui::DragFloat("Time (s)", &m_Time, 1.0f, -30.0f, 30.0f, "%.0f");
+	ImGui::InputDouble("Initial Speed (km/s)", &m_TargetInitialSpeed);
+	ImGui::InputDouble("Initial Distance (km)", &m_InitialDistance);
+	ImGui::InputDouble("Altitude (km)", &m_Altitude);
+	ImGui::InputDouble("FlybyAngle (Deg)", &m_FlybyAngle);
 	ImGui::Text(m_TargetLocation.to_string().c_str());
+	ImGui::Separator();
+	ImGui::DragFloat("Azimuth (Deg)", &m_Azimuth, 5.0f, -180.0f, 180.0f);
+	ImGui::DragFloat("Elevation (Deg)", &m_Elevation, 5.0f, -180.0f, 180.0f);
+	ImGui::DragFloat("Distance (km)", &m_Distance, 0.1f, 0.0f, 10.0f);
 	ImGui::End();
 }
 
@@ -181,7 +188,7 @@ void GridLayer::GeneratePositions()
 
 Vector3f GridLayer::TargetLocation(float time)
 {
-	double flybyAngle = m_FlybyAngle * (PI/ 180);
+	double flybyAngle = m_FlybyAngle * (PI / 180);
 	double distanceTraveled = m_TargetInitialSpeed * time;
 	double dl = sqrt((distanceTraveled * distanceTraveled) + (m_InitialDistance * m_InitialDistance)
 		- 2.0 * distanceTraveled * m_InitialDistance * cos(flybyAngle));
@@ -189,13 +196,15 @@ Vector3f GridLayer::TargetLocation(float time)
 	double drop = 6371.0 * (1 - cos(dl / 6371.0));
 	double dah = m_Altitude - drop;
 
-	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) - (flybyAngle - (PI * 0.5));
+	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle));
 	double elevation = (PI * 0.5) - acos(dah / dl);
 
-	float z = (float)(dl * sin(elevation) * cos(azimuth));
-	float x = (float)(dl * sin(elevation) * sin(azimuth));
-	float y = (float)(dl * cos(elevation));
-	return Vector3f(x, y, z);
+	return ConvertPolarToCartesian(azimuth, elevation, dl, true);
+
+	//float z = (float)(dl * sin(elevation) * cos(azimuth));
+	//float x = (float)(dl * sin(elevation) * sin(azimuth));
+	//float y = (float)(dl * cos(elevation));
+	//return Vector3f(x, y, z);
 }
 
 void GridLayer::GenerateLaserVertices()
@@ -219,6 +228,16 @@ void GridLayer::GenerateLaserVertices()
 	Vector3f reflectedDirection = Vector3f::Reflect(m_TargetLocation.GetNormalized(), Vector3f(0.0, 0.0, 1.0));
 
 	Vector3f reflectedTranslation = m_TargetLocation + (reflectedDirection * 5.0f);
-	
+
 	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), reflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
+}
+
+Vector3f GridLayer::ConvertPolarToCartesian(float azimuth, float elevation, float distance, bool rad)
+{
+	if (!rad)
+	{
+		azimuth = azimuth * (PI / 180) + (PI * 0.25);
+		elevation = (PI * 0.5) - (elevation * (PI / 180));
+	}
+	return Vector3f(distance * sin(elevation) * sin(azimuth), distance * cos(elevation), distance * sin(elevation) * cos(azimuth));
 }

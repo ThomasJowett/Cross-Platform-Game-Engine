@@ -34,6 +34,7 @@ TextEditor::TextEditor()
 	, mScrollToCursor(false)
 	, mScrollToTop(false)
 	, mTextChanged(false)
+	, mDirty(false)
 	, mColorizerEnabled(true)
 	, mTextStart(20.0f)
 	, mLeftMargin(10)
@@ -255,6 +256,7 @@ void TextEditor::DeleteRange(const Coordinates& aStart, const Coordinates& aEnd)
 	}
 
 	mTextChanged = true;
+	mDirty = true;
 }
 
 int TextEditor::InsertTextAt(Coordinates& /* inout */ aWhere, const char* aValue)
@@ -301,6 +303,8 @@ int TextEditor::InsertTextAt(Coordinates& /* inout */ aWhere, const char* aValue
 		}
 
 		mTextChanged = true;
+
+		mDirty = true;
 	}
 
 	return totalLines;
@@ -601,6 +605,8 @@ void TextEditor::RemoveLine(int aStart, int aEnd)
 	assert(!mLines.empty());
 
 	mTextChanged = true;
+
+	mDirty = true;
 }
 
 void TextEditor::RemoveLine(int aIndex)
@@ -631,6 +637,7 @@ void TextEditor::RemoveLine(int aIndex)
 	assert(!mLines.empty());
 
 	mTextChanged = true;
+	mDirty = true;
 }
 
 TextEditor::Line& TextEditor::InsertLine(int aIndex)
@@ -1306,6 +1313,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift)
 				AddUndo(u);
 
 				mTextChanged = true;
+				mDirty = true;
 
 				EnsureCursorVisible();
 			}
@@ -1378,6 +1386,7 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift)
 	}
 
 	mTextChanged = true;
+	mDirty = true;
 
 	u.mAddedEnd = GetActualCursorCoordinates();
 	u.mAfter = mState;
@@ -1809,6 +1818,7 @@ void TextEditor::Delete()
 		}
 
 		mTextChanged = true;
+		mDirty = true;
 
 		Colorize(pos.mLine, 1);
 	}
@@ -1886,6 +1896,7 @@ void TextEditor::Backspace()
 		}
 
 		mTextChanged = true;
+		mDirty = true;
 
 		EnsureCursorVisible();
 		Colorize(mState.mCursorPosition.mLine, 1);
@@ -2060,6 +2071,7 @@ bool TextEditor::SaveTextToFile(const std::filesystem::path& filepath)
 		outputstream << GetText();
 
 		outputstream.flush();
+		mDirty = false;
 		return true;
 	}
 

@@ -92,12 +92,20 @@ void ImGuiViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
-	bool viewShown = ImGui::Begin("Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
+	bool viewShown = ImGui::Begin("Viewport", m_Show, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_UnsavedDocument);
 	if (viewShown)
 	{
 		HandleKeyboardInputs();
 
 		m_WindowHovered = ImGui::IsWindowHovered();
+
+		if (m_WindowHovered)
+		{
+			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+			{
+				//Application::GetWindow().SetCursor(Cursors::CrossHair);
+			}
+		}
 
 		if (ImGui::IsWindowFocused())
 		{
@@ -228,14 +236,6 @@ void ImGuiViewportPanel::HandleKeyboardInputs()
 	auto shift = io.KeyShift;
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
-
-	if (ImGui::IsWindowHovered())
-	{
-		if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-		{
-			Application::GetWindow().SetCursor(Cursors::CrossHair);
-		}
-	}
 
 	if (ImGui::IsWindowFocused())
 	{

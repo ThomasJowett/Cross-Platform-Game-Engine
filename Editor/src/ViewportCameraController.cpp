@@ -56,8 +56,8 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 			Raise(+1.0f * m_TranslationSpeed * deltaTime);
 		}
 
-		Yaw(-m_MouseRelativeVelocity.x * deltaTime);
-		Pitch(-m_MouseRelativeVelocity.y * deltaTime);
+		Yaw(-m_MouseRelativeVelocity.x * m_Sensitivity);
+		Pitch(-m_MouseRelativeVelocity.y * m_Sensitivity);
 
 
 		//make sure right and forward are orthoganal to each other

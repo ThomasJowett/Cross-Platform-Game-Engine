@@ -43,6 +43,7 @@ private:
 private:
 	bool* m_Show;
 	bool m_WindowHovered = false;
+	bool m_CursorDisabled;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
 	Vector2f m_RelativeMousePosition;

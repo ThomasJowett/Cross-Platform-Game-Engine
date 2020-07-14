@@ -272,6 +272,8 @@ public:
 	const std::filesystem::path& GetFilePath() { return mFilePath; }
 	void SetFilePath(const std::filesystem::path& filepath) { mFilePath = filepath; }
 
+	bool NeedsSaving() { return mDirty; }
+
 	static const Palette& GetDarkPalette();
 	static const Palette& GetLightPalette();
 	static const Palette& GetRetroBluePalette();
@@ -371,6 +373,7 @@ private:
 	bool mScrollToCursor;
 	bool mScrollToTop;
 	bool mTextChanged;
+	bool mDirty;
 	bool mColorizerEnabled;
 	float mTextStart;                   // position (in pixels) where a code line starts relative to the left of the TextEditor.
 	int  mLeftMargin;

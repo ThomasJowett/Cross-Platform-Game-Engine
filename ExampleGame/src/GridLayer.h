@@ -21,6 +21,7 @@ private:
 	Vector3f TargetLocation(float time);
 	void GenerateLaserVertices();
 
+	Vector3f ConvertPolarToCartesian(float azimuth, float elevation, float distance, bool rad = false);
 private:
 	ShaderLibrary m_ShaderLibrary;
 	PerspectiveCameraController m_CameraController;
@@ -56,5 +57,9 @@ private:
 	float m_MinimumDistance = 0.01;
 
 	bool m_Simulate;
+
+	float m_Azimuth = 0.0f;
+	float m_Elevation = 0.0f;
+	float m_Distance = 0.0f;
 };
 

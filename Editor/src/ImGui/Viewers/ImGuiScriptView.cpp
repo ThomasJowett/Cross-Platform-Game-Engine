@@ -28,12 +28,24 @@ void ImGuiScriptView::OnAttach()
 void ImGuiScriptView::OnImGuiRender()
 {
 	if (!*m_Show)
+	{
+		if (m_TextEditor.NeedsSaving())
+		{
+			CLIENT_DEBUG("needs saving");
+		}
 		return;
+	}
 
 	ImGui::PushFont(Fonts::Consolas);
 
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_HorizontalScrollbar))
+
+	ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
+
+	if (m_TextEditor.NeedsSaving())
+		flags |= ImGuiWindowFlags_UnsavedDocument;
+
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -97,6 +109,7 @@ void ImGuiScriptView::OnImGuiRender()
 
 		m_TextEditor.Render("TextEditor");
 	}
+
 	ImGui::End();
 	ImGui::PopFont();
 }
