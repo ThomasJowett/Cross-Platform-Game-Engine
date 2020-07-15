@@ -237,6 +237,7 @@ project "Editor"
 	{
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/vendor/IconFont/**.h",
 		"%{prj.name}/Editor.rc",
 		"%{prj.name}/resource.h",
 		"%{prj.name}/Icon.ico"
@@ -245,6 +246,8 @@ project "Editor"
 	includedirs
 	{
 		"Editor/src",
+		"Editor/vendor",
+		"Editor/vendor/IconFont",
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include"

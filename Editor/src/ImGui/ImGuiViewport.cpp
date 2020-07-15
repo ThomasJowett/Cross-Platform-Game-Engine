@@ -3,6 +3,8 @@
 #include "imgui/imgui_internal.h"
 #include "ImGui/ImGuiDockSpace.h"
 
+#include "IconsFontAwesome5.h"
+
 ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
 {
@@ -92,7 +94,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
-	bool viewShown = ImGui::Begin("Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
+	bool viewShown = ImGui::Begin(ICON_FA_GAMEPAD" Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
 	if (viewShown)
 	{
 		HandleKeyboardInputs();

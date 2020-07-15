@@ -8,6 +8,8 @@
 
 #include "ImGuiDockSpace.h"
 
+#include "IconsFontAwesome5.h"
+
 void ImGuiContentExplorer::Paste()
 {
 }
@@ -160,9 +162,6 @@ ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
 
 void ImGuiContentExplorer::OnAttach()
 {
-	//TODO: Have an Icon manager or something that loads the correct size icon bitmaps
-	//then have that texture built into the binary
-	m_TextureLibrary.Load("resources/Icons/Folder16.png");
 }
 
 void ImGuiContentExplorer::OnUpdate(float deltaTime)
@@ -210,7 +209,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(500, 20), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Content Explorer", m_Show))
+	if (ImGui::Begin(ICON_FA_FOLDER_OPEN" Content Explorer", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -251,7 +250,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
 			}
-			historyBackClicked = ImGui::ArrowButton("##BackButton", ImGuiDir_Left);
+			historyBackClicked = ImGui::Button(ICON_FA_ARROW_LEFT);
 
 			if (!historyCanGoBack) {
 				ImGui::PopStyleColor(3);
@@ -264,7 +263,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
 			}
 			ImGui::SameLine();
-			historyForwardClicked = ImGui::ArrowButton("##ForwardButton", ImGuiDir_Right);
+			historyForwardClicked = ImGui::Button(ICON_FA_ARROW_RIGHT);
 
 			if (!historyCanGoForward) {
 				ImGui::PopStyleColor(3);
@@ -278,7 +277,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			}
 
 			ImGui::SameLine();
-			levelUpClicked = ImGui::ArrowButton("##UpButton", ImGuiDir_Up);
+			levelUpClicked = ImGui::Button(ICON_FA_ARROW_UP);
 
 			if (!historyCanGoUp) {
 				ImGui::PopStyleColor(3);
@@ -325,7 +324,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
 
 			ImGui::SameLine();
-			if (ImGui::ImageButton(m_TextureLibrary.Get("resources/Icons/Folder16.png"), { 16,16 }, 0, ImGui::GetStyle().Colors[ImGuiCol_Button]))
+			if (ImGui::Button(ICON_FA_FOLDER))
 			{
 				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
 			}
@@ -334,7 +333,8 @@ void ImGuiContentExplorer::OnImGuiRender()
 			if (m_EditLocationCheckButtonPressed != hasFocus)
 			{
 				hasFocus = !hasFocus;
-				ImGui::SetKeyboardFocusHere();
+				if(hasFocus)
+					ImGui::SetKeyboardFocusHere();
 			}
 
 			ImGui::PopStyleColor();
@@ -423,7 +423,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 					if (t != numTabs - 1)
 					{
 						ImGui::SameLine();
-						ImGui::Text(">");
+						ImGui::Text(ICON_FA_ANGLE_RIGHT);
 					}
 					ImGui::PopID();
 

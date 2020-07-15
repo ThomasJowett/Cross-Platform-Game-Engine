@@ -10,6 +10,8 @@
 
 #include "ImGui/ImGuiConsole.h"
 
+#include "IconsFontAwesome5.h"
+
 ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
@@ -23,7 +25,7 @@ void ImGuiEditorPreferences::OnImGuiRender()
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin("Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin(ICON_FA_COG" Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
 	{
 		if (ImGui::BeginMenuBar())
 		{

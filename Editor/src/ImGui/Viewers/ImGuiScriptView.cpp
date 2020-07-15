@@ -1,6 +1,8 @@
 #include "ImGuiScriptView.h"
 #include "Fonts/Fonts.h"
 #include "ImGui/ImGuiDockSpace.h"
+#include "IconsFontAwesome5.h"
+#include "FileSystem/FileDialog.h"
 
 ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -9,7 +11,7 @@ ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
 
 void ImGuiScriptView::OnAttach()
 {
-	m_WindowName = m_FilePath.filename().string();
+	m_WindowName = ICON_FA_FILE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();
 
@@ -37,11 +39,9 @@ void ImGuiScriptView::OnImGuiRender()
 		return;
 	}
 
-	ImGui::PushFont(Fonts::Consolas);
-
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar;
 
 	if (m_TextEditor.NeedsSaving())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
@@ -55,23 +55,20 @@ void ImGuiScriptView::OnImGuiRender()
 
 		bool readOnly = m_TextEditor.IsReadOnly();
 
-		//if (ImGui::BeginMenuBar())
-		//{
-			/*if (ImGui::BeginMenu("File"))
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
 			{
 				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, !readOnly))
-				{
-					m_TextEditor.SaveTextToFile(m_FilePath);
-				}
+					Save();
+				if (ImGui::MenuItem("Save As", "Ctrl-Shift-S"))
+					SaveAs();
 				ImGui::EndMenu();
 			}
 
-			/*if (ImGui::BeginMenu("Edit"))
+			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Read-Only mode", nullptr, &readOnly))
-					m_TextEditor.SetReadOnly(readOnly);
-				ImGui::Separator();//---------------------------------------------------------------
-
 				if (ImGui::MenuItem("Undo", "Ctrl-Z", nullptr, !readOnly && m_TextEditor.CanUndo()))
 					m_TextEditor.Undo();
 				if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !readOnly && m_TextEditor.CanRedo()))
@@ -93,7 +90,7 @@ void ImGuiScriptView::OnImGuiRender()
 				if (ImGui::MenuItem("Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
 				ImGui::EndMenu();
-			}*/
+			}
 
 			//if (ImGui::BeginMenu("View"))
 			//{
@@ -105,14 +102,15 @@ void ImGuiScriptView::OnImGuiRender()
 			//		m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
 			//	ImGui::EndMenu();
 			//}
-		//}
-		//ImGui::EndMenuBar();
+		}
+		ImGui::EndMenuBar();
 
+		ImGui::PushFont(Fonts::Consolas);
 		m_TextEditor.Render("TextEditor");
+		ImGui::PopFont();
 	}
 
 	ImGui::End();
-	ImGui::PopFont();
 }
 
 void ImGuiScriptView::Save()
@@ -123,7 +121,11 @@ void ImGuiScriptView::Save()
 
 void ImGuiScriptView::SaveAs()
 {
-	//TODO: save as
+	auto ext = m_FilePath.extension();
+	m_FilePath = SaveAsDialog(L"Save As...", m_FilePath.extension().c_str());
+	if (!m_FilePath.has_extension())
+		m_FilePath.replace_extension(ext);
+	Save();
 }
 
 TextEditor::LanguageDefinition ImGuiScriptView::DetermineLanguageDefinition()

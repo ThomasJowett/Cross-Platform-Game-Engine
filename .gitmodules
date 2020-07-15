@@ -10,3 +10,6 @@
 [submodule "Engine/vendor/spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
+[submodule "Editor\\vendor\\IconFont"]
+	path = Editor\\vendor\\IconFont
+	url = https://github.com/juliettef/IconFontCppHeaders
