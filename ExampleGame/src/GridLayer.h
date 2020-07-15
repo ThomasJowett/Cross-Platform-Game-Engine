@@ -21,7 +21,7 @@ private:
 	Vector3f TargetLocation(float time);
 	void GenerateLaserVertices();
 
-	Vector3f ConvertPolarToCartesian(float azimuth, float elevation, float distance, bool rad = false);
+	Vector3f ConvertPolarToCartesian(float azimuth, float elevation, float distance);
 private:
 	ShaderLibrary m_ShaderLibrary;
 	PerspectiveCameraController m_CameraController;
@@ -38,7 +38,7 @@ private:
 	float m_Time = 0.0f;
 
 	Vector3f m_TargetLocation;
-	double m_TargetInitialSpeed = 0.75;
+	double m_TargetInitialSpeed = 0.075;
 	double m_InitialDistance = 6.0;
 	double m_Altitude = 1.5;
 	double m_FlybyAngle = 45.0;

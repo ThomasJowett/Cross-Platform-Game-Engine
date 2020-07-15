@@ -1,6 +1,9 @@
 #include "GridLayer.h"
 #include "imgui/imgui.h"
 
+#define DegToRad(degrees) (degrees * (PI/180))
+#define RadToDeg(radians) (radians * (180/PI))
+
 GridLayer::GridLayer()
 	:Layer("Grid")
 {
@@ -67,6 +70,7 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	Renderer::Submit(shader, m_TargetVertexArray, Matrix4x4::Translate(m_TargetLocation));
 
+	shader->SetFloat4("u_colour", Colours::GREY);
 	m_EarthTexture->Bind();
 	Renderer::Submit(shader, m_EarthVertexArray, Matrix4x4::Translate(Vector3f(0.0f, -6371.0f, 0.0f)) * Matrix4x4::RotateZ(0.55));
 
@@ -78,9 +82,9 @@ void GridLayer::OnUpdate(float deltaTime)
 	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
 
 	shader->SetFloat4("u_colour", Colours::YELLOW);
-	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian(m_Azimuth, m_Elevation, m_Distance)));
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian(DegToRad(m_Azimuth), DegToRad(m_Elevation), m_Distance)));
 
-	shader->SetFloat4("u_colour", Colours::BLUE);
+	shader->SetFloat4("u_colour", Colours::CYAN);
 
 	for (Vector3f position : m_Positions)
 	{
@@ -196,10 +200,14 @@ Vector3f GridLayer::TargetLocation(float time)
 	double drop = 6371.0 * (1 - cos(dl / 6371.0));
 	double dah = m_Altitude - drop;
 
-	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle));
-	double elevation = (PI * 0.5) - acos(dah / dl);
+	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) - (PI * 0.25);
+	double elevation = (PI *0.5) - asin(dah / dl);
 
-	return ConvertPolarToCartesian(azimuth, elevation, dl, true);
+	m_Azimuth = RadToDeg(azimuth);
+	m_Elevation = RadToDeg(elevation);
+	m_Distance = dl;
+
+	return ConvertPolarToCartesian(azimuth, elevation, dl);
 
 	//float z = (float)(dl * sin(elevation) * cos(azimuth));
 	//float x = (float)(dl * sin(elevation) * sin(azimuth));
@@ -232,12 +240,8 @@ void GridLayer::GenerateLaserVertices()
 	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), reflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
 }
 
-Vector3f GridLayer::ConvertPolarToCartesian(float azimuth, float elevation, float distance, bool rad)
+// angles in radians
+Vector3f GridLayer::ConvertPolarToCartesian(float azimuth, float elevation, float distance)
 {
-	if (!rad)
-	{
-		azimuth = azimuth * (PI / 180) + (PI * 0.25);
-		elevation = (PI * 0.5) - (elevation * (PI / 180));
-	}
 	return Vector3f(distance * sin(elevation) * sin(azimuth), distance * cos(elevation), distance * sin(elevation) * cos(azimuth));
 }
