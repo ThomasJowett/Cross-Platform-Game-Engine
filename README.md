@@ -1,4 +1,4 @@
-<h1 algin="center" style="border-bottom: none;">
+<h1 align="center" style="border-bottom: none;">
  <a href="https:github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
 </h1>
 <p align="center">
