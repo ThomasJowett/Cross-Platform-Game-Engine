@@ -76,7 +76,7 @@ void glfwWindow::SetIcon(const std::string& path)
 	images[0].width = width;
 	images[0].height = height;
 	images[0].pixels = data;
-	glfwSetWindowIcon(m_Window, sizeof(images), images);
+	glfwSetWindowIcon(m_Window, 1, images);
 	stbi_image_free(data);
 }
 

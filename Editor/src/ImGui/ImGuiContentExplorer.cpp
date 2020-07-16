@@ -25,6 +25,11 @@ void ImGuiContentExplorer::Delete()
 
 void ImGuiContentExplorer::SelectAll()
 {
+	for (auto file : m_SelectedFiles)
+		file = true;
+
+	for (auto dir : m_SelectedDirs)
+		dir = true;
 }
 
 bool ImGuiContentExplorer::HasSelection() const
@@ -426,12 +431,42 @@ void ImGuiContentExplorer::OnImGuiRender()
 					ImGui::PushID(t);
 					ImGui::SameLine();
 
+					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(-3, 0));
+					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3);
 					const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
 					if (t != numTabs - 1)
 					{
 						ImGui::SameLine();
-						ImGui::Text(ICON_FA_ANGLE_RIGHT);
+						ImGui::SetNextItemWidth(ImGui::GetFontSize());
+						if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
+						{
+							std::string path;
+							for (int i = 0; i <= t; i++)
+							{
+								path += m_CurrentSplitPath[i];
+								path += '\\';
+							}
+
+							auto directories = Directory::GetDirectories(path, m_SortingMode);
+
+							for (int n = 0; n < directories.size(); n++)
+							{
+								std::filesystem::path directory = directories[n].filename();
+								const bool is_selected = false;
+								if (ImGui::Selectable(directory.string().c_str(), is_selected))
+								{
+									m_History.SwitchTo(directories[n]);
+									m_ForceRescan = true;
+
+									m_CurrentPath = *m_History.GetCurrentFolder();
+									break;
+								}
+
+							}
+							ImGui::EndCombo();
+						}
 					}
+					ImGui::PopStyleVar(2);
 					ImGui::PopID();
 
 					if (pressed)
@@ -454,8 +489,6 @@ void ImGuiContentExplorer::OnImGuiRender()
 				}
 
 				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
-
-
 			}
 		}
 

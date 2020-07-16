@@ -42,6 +42,7 @@ private:
 	double m_InitialDistance = 6.0;
 	double m_Altitude = 1.5;
 	double m_FlybyAngle = 45.0;
+	double m_InitialAzimuth = 45.0;
 
 	double m_BeamApeture = 0.0007;
 	double m_Divergence = 0.0000677;

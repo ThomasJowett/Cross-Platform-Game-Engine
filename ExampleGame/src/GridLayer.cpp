@@ -24,7 +24,7 @@ void GridLayer::OnAttach()
 
 	m_Texture->SetData(&textureData, sizeof(uint32_t));
 
-	m_EarthTexture = Texture2D::Create("resources/Earth.png");
+	m_EarthTexture = Texture2D::Create("resources/Earth.jpg");
 
 	GeneratePositions();
 	m_TargetLocation = TargetLocation(m_Time);
@@ -70,9 +70,8 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	Renderer::Submit(shader, m_TargetVertexArray, Matrix4x4::Translate(m_TargetLocation));
 
-	shader->SetFloat4("u_colour", Colours::GREY);
 	m_EarthTexture->Bind();
-	Renderer::Submit(shader, m_EarthVertexArray, Matrix4x4::Translate(Vector3f(0.0f, -6371.0f, 0.0f)) * Matrix4x4::RotateZ(0.55));
+	Renderer::Submit(shader, m_EarthVertexArray, Matrix4x4::Translate(Vector3f(0.0f, -6371.0f, 0.0f)) * Matrix4x4::RotateZ(0.57f) * Matrix4x4::RotateY(0.1305f));
 
 	m_Texture->Bind();
 	shader->SetFloat4("u_colour", Colours::RED);
@@ -120,6 +119,7 @@ void GridLayer::OnImGuiRender()
 	ImGui::InputDouble("Initial Distance (km)", &m_InitialDistance);
 	ImGui::InputDouble("Altitude (km)", &m_Altitude);
 	ImGui::InputDouble("FlybyAngle (Deg)", &m_FlybyAngle);
+	ImGui::InputDouble("Initial Azimuth (Deg)", &m_InitialAzimuth);
 	ImGui::Text(m_TargetLocation.to_string().c_str());
 	ImGui::Separator();
 	ImGui::DragFloat("Azimuth (Deg)", &m_Azimuth, 5.0f, -180.0f, 180.0f);
@@ -192,7 +192,7 @@ void GridLayer::GeneratePositions()
 
 Vector3f GridLayer::TargetLocation(float time)
 {
-	double flybyAngle = m_FlybyAngle * (PI / 180);
+	double flybyAngle = -DegToRad(m_FlybyAngle);
 	double distanceTraveled = m_TargetInitialSpeed * time;
 	double dl = sqrt((distanceTraveled * distanceTraveled) + (m_InitialDistance * m_InitialDistance)
 		- 2.0 * distanceTraveled * m_InitialDistance * cos(flybyAngle));
@@ -200,19 +200,21 @@ Vector3f GridLayer::TargetLocation(float time)
 	double drop = 6371.0 * (1 - cos(dl / 6371.0));
 	double dah = m_Altitude - drop;
 
-	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) - (PI * 0.25);
+	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) + DegToRad(m_InitialAzimuth);
 	double elevation = (PI *0.5) - asin(dah / dl);
 
 	m_Azimuth = RadToDeg(azimuth);
 	m_Elevation = RadToDeg(elevation);
 	m_Distance = dl;
 
-	return ConvertPolarToCartesian(azimuth, elevation, dl);
+	double horizontalDist = cos(asin(dah / dl)) * dl;
+	float z = cos(DegToRad(m_InitialAzimuth)) * horizontalDist;
+	float x = sin(DegToRad(m_InitialAzimuth)) * horizontalDist;
+	float y = dah;
 
-	//float z = (float)(dl * sin(elevation) * cos(azimuth));
-	//float x = (float)(dl * sin(elevation) * sin(azimuth));
-	//float y = (float)(dl * cos(elevation));
 	//return Vector3f(x, y, z);
+
+	return ConvertPolarToCartesian(azimuth, elevation, dl);
 }
 
 void GridLayer::GenerateLaserVertices()
