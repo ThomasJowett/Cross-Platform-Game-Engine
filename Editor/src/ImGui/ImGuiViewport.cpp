@@ -94,7 +94,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
-	bool viewShown = ImGui::Begin(ICON_FA_GAMEPAD" Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
+	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
 	if (viewShown)
 	{
 		HandleKeyboardInputs();

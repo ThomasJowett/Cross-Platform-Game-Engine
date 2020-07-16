@@ -12,9 +12,8 @@
 ImFont* Fonts::Consolas = nullptr;
 ImFont* Fonts::DroidSans = nullptr;
 
-void Fonts::LoadFonts()
+void Fonts::LoadFonts(float fontSize)
 {
-	float fontSize = 16.0f;
 	ImGuiIO& io = ImGui::GetIO();
 	DroidSans = io.Fonts->AddFontFromMemoryCompressedTTF(DroidSans_compressed_data, DroidSans_compressed_size, fontSize);
 

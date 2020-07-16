@@ -308,10 +308,17 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 		//----------------------------------------------------------------------------------------------------
 		//Sorting mode combo
-		ImGui::SetNextItemWidth(ImGui::CalcTextSize("Last Modified Reverse        ").x);
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 2.5);
 		ImGui::SameLine();
 		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
-			"Alphabetical\0Alphabetical Reverse\0Last Modified\0Last Modified Reverse\0Size\0Size Reverse\0Type\0Type Reverse"))
+			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
+			ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0"
+			ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0"
+			ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0"
+			ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0"
+			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
+			ICON_FA_SORT_DOWN "\tType\0"
+			ICON_FA_SORT_UP "\tType Reverse"))
 			m_ForceRescan = true;
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
@@ -333,7 +340,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			if (m_EditLocationCheckButtonPressed != hasFocus)
 			{
 				hasFocus = !hasFocus;
-				if(hasFocus)
+				if (hasFocus)
 					ImGui::SetKeyboardFocusHere();
 			}
 

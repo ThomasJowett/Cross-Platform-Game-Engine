@@ -56,7 +56,7 @@ private:
 	int m_NumberOfPositions = 20;
 	float m_MinimumDistance = 0.01;
 
-	bool m_Simulate;
+	bool m_Simulate = true;
 
 	float m_Azimuth = 0.0f;
 	float m_Elevation = 0.0f;
