@@ -20,6 +20,7 @@ static uint8_t s_GLFWWindowCount = 0;
 
 static void	GLFWErrorCallback(int error, const char* description)
 {
+	if (error == 65545) return;
 	ENGINE_ERROR("GLFW Error {0} {1}", error, description);
 }
 

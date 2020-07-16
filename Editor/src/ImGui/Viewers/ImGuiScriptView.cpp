@@ -11,7 +11,7 @@ ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
 
 void ImGuiScriptView::OnAttach()
 {
-	m_WindowName = ICON_FA_FILE + std::string(" " + m_FilePath.filename().string());
+	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();
 
@@ -60,34 +60,34 @@ void ImGuiScriptView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem("Save", "Ctrl-S", nullptr, !readOnly))
+				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl-S", nullptr, !readOnly))
 					Save();
-				if (ImGui::MenuItem("Save As", "Ctrl-Shift-S"))
+				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl-Shift-S"))
 					SaveAs();
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem("Undo", "Ctrl-Z", nullptr, !readOnly && m_TextEditor.CanUndo()))
+				if (ImGui::MenuItem(ICON_FA_UNDO" Undo", "Ctrl-Z", nullptr, !readOnly && m_TextEditor.CanUndo()))
 					m_TextEditor.Undo();
-				if (ImGui::MenuItem("Redo", "Ctrl-Y", nullptr, !readOnly && m_TextEditor.CanRedo()))
+				if (ImGui::MenuItem(ICON_FA_REDO" Redo", "Ctrl-Y", nullptr, !readOnly && m_TextEditor.CanRedo()))
 					m_TextEditor.Redo();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem("Cut", "Ctrl-X", nullptr, m_TextEditor.HasSelection() && !readOnly))
+				if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl-X", nullptr, m_TextEditor.HasSelection() && !readOnly))
 					m_TextEditor.Cut();
-				if (ImGui::MenuItem("Copy", "Ctrl-C", nullptr, m_TextEditor.HasSelection()))
+				if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl-C", nullptr, m_TextEditor.HasSelection()))
 					m_TextEditor.Copy();
-				if (ImGui::MenuItem("Paste", "Ctrl-V", nullptr, ImGui::GetClipboardText() != nullptr && !readOnly))
+				if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl-V", nullptr, ImGui::GetClipboardText() != nullptr && !readOnly))
 					m_TextEditor.Paste();
-				if (ImGui::MenuItem("Duplicate", "Ctrl-D", nullptr, !readOnly))
+				if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl-D", nullptr, !readOnly))
 					m_TextEditor.Duplicate();
-				if (ImGui::MenuItem("Delete", "Del", nullptr, m_TextEditor.HasSelection() && !readOnly))
+				if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_TextEditor.HasSelection() && !readOnly))
 					m_TextEditor.Delete();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem("Select all", "Ctrl-A", nullptr))
+				if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER" Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
 				ImGui::EndMenu();
 			}

@@ -12,6 +12,14 @@
 class ImGuiViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
+	enum class  Mode
+	{
+		Select = 0,
+		Move,
+		Rotate,
+		Scale
+	};
+
 public: 
 	explicit ImGuiViewportPanel(bool* show);
 	~ImGuiViewportPanel() = default;
@@ -53,4 +61,6 @@ private:
 	Ref<VertexArray> m_TorusVertexArray;
 
 	Ref<Texture2D> m_Texture;
+
+	Mode m_Mode;
 };

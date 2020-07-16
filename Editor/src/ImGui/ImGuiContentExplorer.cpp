@@ -313,7 +313,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 		//----------------------------------------------------------------------------------------------------
 		//Sorting mode combo
-		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 2.5);
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0);
 		ImGui::SameLine();
 		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
 			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
@@ -404,8 +404,6 @@ void ImGuiContentExplorer::OnImGuiRender()
 				}
 			}
 		}
-		static bool showDemoWindow = true;
-		ImGui::ShowDemoWindow(&showDemoWindow);
 		//----------------------------------------------------------------------------------------------------
 		// Split path control
 		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
@@ -431,8 +429,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 					ImGui::PushID(t);
 					ImGui::SameLine();
 
-					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(-3, 0));
-					ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 3);
+					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
 					const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
 					if (t != numTabs - 1)
 					{
@@ -466,7 +463,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 							ImGui::EndCombo();
 						}
 					}
-					ImGui::PopStyleVar(2);
+					ImGui::PopStyleVar();
 					ImGui::PopID();
 
 					if (pressed)

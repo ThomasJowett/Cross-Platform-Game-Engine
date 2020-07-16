@@ -9,6 +9,8 @@ ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
 {
 	m_Framebuffer = FrameBuffer::Create({ 1920, 1080 });
+
+	m_Mode = Mode::Select;
 }
 
 void ImGuiViewportPanel::OnAttach()
@@ -263,5 +265,13 @@ void ImGuiViewportPanel::HandleKeyboardInputs()
 			SelectAll();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 			Save();
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
+			m_Mode = Mode::Select;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
+			m_Mode = Mode::Move;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
+			m_Mode = Mode::Rotate;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
+			m_Mode = Mode::Scale;
 	}
 }

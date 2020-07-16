@@ -40,4 +40,6 @@
 #include "Utilities/Random.h"
 #include "Utilities/StringUtils.h"
 
+#include "Scene/Scene.h"
+
 #include "EnTT/entt.hpp"
