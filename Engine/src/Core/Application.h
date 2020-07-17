@@ -36,6 +36,7 @@ private:
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
 	bool OnWindowMove(WindowMoveEvent& e);
+	bool OnMaximize(WindowMaximizedEvent& e);
 
 	void SetDefaultSettings(const WindowProps& props);
 

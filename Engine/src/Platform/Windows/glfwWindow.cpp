@@ -169,6 +169,16 @@ void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsig
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.XPos, m_OldWindowedParams.YPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
+void glfwWindow::MaximizeWindow()
+{
+	glfwMaximizeWindow(m_Window);
+}
+
+void glfwWindow::RestoreWindow()
+{
+	glfwRestoreWindow(m_Window);
+}
+
 void glfwWindow::DisableCursor()
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -247,6 +257,15 @@ void glfwWindow::Init(const WindowProps& props)
 			data.Height = height;
 
 			WindowResizeEvent event(width, height);
+			data.EventCallback(event);
+		});
+
+	glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			data.Maximized = maximized;
+
+			WindowMaximizedEvent event(maximized);
 			data.EventCallback(event);
 		});
 

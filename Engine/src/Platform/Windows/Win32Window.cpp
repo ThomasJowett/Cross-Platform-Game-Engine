@@ -73,6 +73,35 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		data->EventCallback(event);
 		break;
 	}
+	case WM_SYSCOMMAND:
+	{
+		switch (wParam)
+		{
+		case SC_MAXIMIZE:
+		{
+			bool maximize = true;
+
+			data->Maximized = maximize;
+
+			WindowMaximizedEvent event(maximize);
+			data->EventCallback(event);
+			break;
+		}
+		case SC_MINIMIZE:
+		{
+			bool maximize = false;
+
+			data->Maximized = maximize;
+
+			WindowMaximizedEvent event(maximize);
+			data->EventCallback(event);
+			break;
+		}
+		default:
+			break;
+		}
+		break;
+	}
 
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -137,6 +166,16 @@ void Win32Window::SetWindowMode(const WindowMode& mode, unsigned int width, unsi
 	//TODO: change window mode
 }
 
+void Win32Window::MaximizeWindow()
+{
+	ShowWindow(m_Window, SW_MAXIMIZE);
+}
+
+void Win32Window::RestoreWindow()
+{
+	ShowWindow(m_Window, SW_RESTORE);
+}
+
 HRESULT Win32Window::Init(const WindowProps& props)
 {
 	Input::SetInput(RendererAPI::GetAPI());
@@ -188,7 +227,7 @@ HRESULT Win32Window::Init(const WindowProps& props)
 
 	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.Title, m_Data.Width, m_Data.Height);
 
-	ShowWindow(m_Window, 1);
+	ShowWindow(m_Window, SW_SHOWNORMAL);
 	SetWindowLongPtr(m_Window, GWLP_USERDATA, (LONG_PTR)&m_Data);
 
 	++s_Win32WindowCount;

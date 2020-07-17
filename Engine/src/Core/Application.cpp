@@ -32,8 +32,10 @@ Application::Application(const WindowProps& props)
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	m_ImGuiManager = new ImGuiManager();
-
 	m_ImGuiManager->Init();
+
+	if (Settings::GetBool("Display", "Maximized"))
+		m_Window->MaximizeWindow();
 }
 
 
@@ -83,7 +85,7 @@ void Application::Run()
 		currentTime = newTime;
 
 		accumulator += frameTime;
-
+		
 		// On Fixed update
 		while (accumulator >= deltaTime)
 		{
@@ -163,6 +165,7 @@ void Application::OnEvent(Event& e)
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 	if (!m_Running)
 		return;
+	dispatcher.Dispatch<WindowMaximizedEvent>(BIND_EVENT_FN(Application::OnMaximize));
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 	dispatcher.Dispatch<WindowMoveEvent>(BIND_EVENT_FN(Application::OnWindowMove));
 
@@ -238,8 +241,11 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	}
 	m_Minimized = false;
 
-	Settings::SetInt("Display", "Screen_Width", e.GetWidth());
-	Settings::SetInt("Display", "Screen_Height", e.GetHeight());
+	if (!Settings::GetBool("Display", "Maximized"))
+	{
+		Settings::SetInt("Display", "Screen_Width", e.GetWidth());
+		Settings::SetInt("Display", "Screen_Height", e.GetHeight());
+	}
 
 	Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
 	return false;
@@ -247,8 +253,17 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 
 bool Application::OnWindowMove(WindowMoveEvent& e)
 {
-	Settings::SetInt("Display", "Window_Position_X", e.GetTopLeftX());
-	Settings::SetInt("Display", "Window_Position_Y", e.GetTopLeftY());
+	if (!Settings::GetBool("Display", "Maximized"))
+	{
+		Settings::SetInt("Display", "Window_Position_X", e.GetTopLeftX());
+		Settings::SetInt("Display", "Window_Position_Y", e.GetTopLeftY());
+	}
+	return false;
+}
+
+bool Application::OnMaximize(WindowMaximizedEvent& e)
+{
+	Settings::SetBool("Display", "Maximized", e.IsMaximized());
 	return false;
 }
 
@@ -262,6 +277,7 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Window_Position_X", props.PosX);
 	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
+	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
 }
 

@@ -48,6 +48,27 @@ private:
 	unsigned int m_XPosition, m_YPosition;
 };
 
+class WindowMaximizedEvent : public Event
+{
+public:
+	WindowMaximizedEvent(bool maximized)
+		:m_Maximized(maximized) {}
+
+	bool IsMaximized() const { return m_Maximized; }
+
+	std::string to_string() const override
+	{
+		if (m_Maximized)
+			return std::string("WindowMaximizeEvent: maximized");
+		return std::string("WindowMaximizeEvent: unmaximized");
+	}
+
+	EVENT_CLASS_TYPE(WINDOW_MAXIMIZED);
+	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+private:
+	bool m_Maximized;
+};
+
 class WindowFocusLostEvent : public Event
 {
 public:

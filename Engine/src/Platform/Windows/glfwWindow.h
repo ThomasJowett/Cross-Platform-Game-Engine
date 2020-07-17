@@ -30,6 +30,9 @@ public:
 
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0);
 
+	virtual void MaximizeWindow() override;
+	virtual void RestoreWindow() override;
+
 	inline virtual std::any GetNativeWindow() const override { return m_Window; }
 	inline virtual Ref<GraphicsContext> GetContext() const override { return m_Context; }
 
@@ -47,6 +50,7 @@ private:
 		unsigned int Width, Height, PosX, PosY;
 		bool VSync;
 		WindowMode Mode;
+		bool Maximized;
 
 		EventCallbackFn EventCallback;
 	};

@@ -92,7 +92,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();

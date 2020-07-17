@@ -63,6 +63,9 @@ public:
 
 	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) = 0;
 
+	virtual void MaximizeWindow() = 0; 
+	virtual void RestoreWindow() = 0;
+
 	virtual std::any GetNativeWindow() const = 0;
 	virtual Ref<GraphicsContext> GetContext() const = 0;
 	
