@@ -5,12 +5,17 @@
 class ImGuiStaticMeshView :
 	public Layer
 {
-	ImGuiStaticMeshView(bool* show);
+public:
+	ImGuiStaticMeshView(bool* show, std::filesystem::path filepath);
 	~ImGuiStaticMeshView() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;
 private:
 	bool* m_Show;
+
+	std::filesystem::path m_FilePath;
+
+	std::string m_WindowName;
 };
 

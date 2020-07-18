@@ -213,7 +213,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(ImVec2(500, 20), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowPos(ImVec2(500, 40), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(ICON_FA_FOLDER_OPEN" Content Explorer", m_Show))
 	{
 		if (ImGui::IsWindowFocused())

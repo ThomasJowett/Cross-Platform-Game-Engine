@@ -2,7 +2,7 @@
 
 #include "IconsFontAwesome5.h"
 
-ImGuiTextureView::ImGuiTextureView(bool* show, std::filesystem::path filepath)
+ImGuiTextureView::ImGuiTextureView(bool* show, const std::filesystem::path& filepath)
 	:Layer("TextureView"),m_Show(show), m_FilePath(filepath)
 {
 

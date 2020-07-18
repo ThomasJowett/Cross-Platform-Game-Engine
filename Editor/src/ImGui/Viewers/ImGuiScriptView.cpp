@@ -4,7 +4,7 @@
 #include "IconsFontAwesome5.h"
 #include "FileSystem/FileDialog.h"
 
-ImGuiScriptView::ImGuiScriptView(bool* show, std::filesystem::path filepath)
+ImGuiScriptView::ImGuiScriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
 {
 }

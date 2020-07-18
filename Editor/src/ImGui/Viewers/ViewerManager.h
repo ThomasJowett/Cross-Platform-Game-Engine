@@ -5,7 +5,7 @@
 class ViewerManager
 {
 public:
-	static void OpenViewer(std::filesystem::path assetPath);
+	static void OpenViewer(const std::filesystem::path& assetPath);
 
 private:
 

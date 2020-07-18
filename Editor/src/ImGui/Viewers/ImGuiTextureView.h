@@ -6,7 +6,7 @@ class ImGuiTextureView :
 	public Layer
 {
 public :
-	ImGuiTextureView(bool* show, std::filesystem::path filepath);
+	ImGuiTextureView(bool* show, const std::filesystem::path& filepath);
 	~ImGuiTextureView() = default;
 
 	virtual void OnAttach() override;

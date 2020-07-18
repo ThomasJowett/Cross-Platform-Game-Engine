@@ -63,3 +63,5 @@ Makefile
 /ExampleGame/Log.txt
 /Editor/Log.txt
 /Editor/styles/Editor.style
+/Editor/*.pdb
+/Editor/*.dll

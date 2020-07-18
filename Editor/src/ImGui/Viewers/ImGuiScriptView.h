@@ -11,7 +11,7 @@ class ImGuiScriptView
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
 public:
-	ImGuiScriptView(bool* show, std::filesystem::path filepath);
+	ImGuiScriptView(bool* show, const std::filesystem::path& filepath);
 	~ImGuiScriptView() = default;
 
 	virtual void OnAttach() override;
