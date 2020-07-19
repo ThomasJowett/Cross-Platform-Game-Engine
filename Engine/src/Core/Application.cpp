@@ -210,18 +210,20 @@ void Application::PopLayer(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
-	m_LayerStack.PopLayer(layer);
-	layer->OnDetach();
-	delete layer;
+	if(m_LayerStack.PopLayer(layer))
+		layer->OnDetach();
+	if (layer) 
+		delete layer;
 }
 
 void Application::PopOverlay(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
-	m_LayerStack.PopOverlay(layer);
-	layer->OnDetach();
-	delete layer;
+	if(m_LayerStack.PopOverlay(layer))
+		layer->OnDetach();
+	if(layer) 
+		delete layer;
 }
 
 bool Application::OnWindowClose(WindowCloseEvent& e)

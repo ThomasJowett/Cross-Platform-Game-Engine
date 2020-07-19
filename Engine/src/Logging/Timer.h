@@ -1,5 +1,4 @@
 #pragma once
-#include <iostream>
 #include <chrono>
 
 template<typename Fn>
@@ -9,12 +8,19 @@ public:
 	Timer(const char* name, Fn&& func, bool stopped = false)
 		:m_Name(name), m_Func(func), m_Stopped(stopped)
 	{
-		m_startTimepoint = std::chrono::high_resolution_clock::now();
+		if (!m_Stopped)
+			Start();
 	}
 	~Timer()
 	{
-		if(!m_Stopped)
+		if (!m_Stopped)
 			Stop();
+	}
+
+	void Start()
+	{
+		m_Stopped = false;
+		m_startTimepoint = std::chrono::high_resolution_clock::now();
 	}
 
 	void Stop()
@@ -30,9 +36,8 @@ public:
 
 		double ms = duration * 0.001;
 
-		m_Func({ m_Name, ms });
+		m_Func(m_Name, ms);
 	}
-
 
 private:
 	const char* m_Name;
@@ -40,4 +45,31 @@ private:
 	bool m_Stopped;
 
 	Fn m_Func;
+};
+
+class LogTimer
+{
+public:
+	explicit LogTimer(const char* name, bool stopped = false)
+		:m_Timer(name, PrintTime, stopped) {}
+
+	LogTimer(const LogTimer&) = delete;
+
+	void Start() { m_Timer.Start(); }
+	void Stop() { m_Timer.Stop(); }
+private:
+	Timer<std::function<void(const char*, double)>> m_Timer;
+
+	static void PrintTime(const char* name, double time)
+	{
+		const char* unit = "ms";
+
+		if (time > 100.0)
+		{
+			unit = "s";
+			time /= 100.0;
+		}
+
+		ENGINE_INFO("Timer:{0} took {1}{2}", name, time, unit);
+	}
 };

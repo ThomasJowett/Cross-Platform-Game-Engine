@@ -226,7 +226,7 @@ void ImGuiDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem(ICON_FA_EXCLAMATION_CIRCLE" About", "", &about);
+			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
 #ifdef __WINDOWS__
