@@ -26,3 +26,4 @@ Then run the shell script with `./ProGen_gmake.sh`.
 * [spdlog](https://github.com/gabime/spdlog) : Fast C++ logging library.
 * [stb](https://github.com/nothings/stb) : Single-file public domain (or MIT licensed) libraries for C/C++.
 * [glad](https://github.com/Dav1dde/glad) : Meta loader for OpenGL API.
+* [OpenFBX](https://github.com/nem0/OpenFBX) : Lightweight FBX Importer.
