@@ -13,3 +13,6 @@
 [submodule "Editor/vendor/IconFont"]
 	path = Editor/vendor/IconFont
 	url = https://github.com/juliettef/IconFontCppHeaders
+[submodule "Editor/vendor/OpenFBX"]
+	path = Editor/vendor/OpenFBX
+	url = https://github.com/nem0/OpenFBX
