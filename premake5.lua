@@ -302,48 +302,14 @@ project "Editor"
 		defines "DEBUG"
 		runtime "Debug"
 		symbols "On"
-		
-		links
-		{
-			"Editor/vendor/assimp/lib/Debug/assimp-vc141-mtd"
-		}
-		
-		postbuildcommands
-		{
-			("{COPY} vendor/assimp/dll/Debug/assimp-vc141-mtd.dll"),
-			("{COPY} vendor/assimp/dll/Debug/assimp-vc141-mtd.pdb"),
-			("{COPY} assimp-vc141-mtd.dll ../bin/" .. outputdir .. "/%{prj.name}")
-		}
 
 	filter "configurations:Release"
 		defines "RELEASE"
 		runtime "Release"
 		optimize "On"
 		symbols "Off"
-		
-		links
-		{
-			"Editor/vendor/assimp/lib/Release/assimp-vc141-mt"
-		}
-		
-		postbuildcommands
-		{
-			("{COPY} vendor/assimp/dll/Release/assimp-vc141-mt.dll"),
-			("{COPY} assimp-vc141-mt.dll ../bin/" .. outputdir .. "/%{prj.name}")
-		}
 
 	filter "configurations:Distribution"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
-		
-		links
-		{
-			"Editor/vendor/assimp/lib/Release/assimp-vc141-mt"
-		}
-
-		postbuildcommands
-		{
-			("{COPY} vendor/assimp/dll/Release/assimp-vc141-mt.dll"),
-			("{COPY} assimp-vc141-mt.dll ../bin/" .. outputdir .. "/%{prj.name}")
-		}

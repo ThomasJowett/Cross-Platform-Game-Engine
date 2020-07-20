@@ -2,9 +2,9 @@
 
 #include "IconsFontAwesome5.h"
 
-#include "assimp/cimport.h"
-#include "assimp/scene.h"
-#include "assimp/postprocess.h"
+//#include "assimp/cimport.h"
+//#include "assimp/scene.h"
+//#include "assimp/postprocess.h"
 
 ImGuiStaticMeshView::ImGuiStaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
@@ -17,9 +17,9 @@ void ImGuiStaticMeshView::OnAttach()
 
 	try
 	{
-		auto asuka = aiImportFile(m_FilePath.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
+		//auto asuka = aiImportFile(m_FilePath.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
 
-		CLIENT_DEBUG(asuka->mNumMeshes);
+		//CLIENT_DEBUG(asuka->mNumMeshes);
 	}
 	catch (const std::exception& ex)
 	{
