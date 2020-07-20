@@ -1,10 +1,7 @@
 #include "ImGuiStaticMeshView.h"
 
 #include "IconsFontAwesome5.h"
-
-//#include "assimp/cimport.h"
-//#include "assimp/scene.h"
-//#include "assimp/postprocess.h"
+#include "Importers/FbxImporter.h"
 
 ImGuiStaticMeshView::ImGuiStaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
@@ -15,16 +12,7 @@ void ImGuiStaticMeshView::OnAttach()
 {
 	m_WindowName = ICON_FA_SHAPES + std::string(" " + m_FilePath.filename().string());
 
-	try
-	{
-		//auto asuka = aiImportFile(m_FilePath.string().c_str(), aiProcessPreset_TargetRealtime_MaxQuality);
-
-		//CLIENT_DEBUG(asuka->mNumMeshes);
-	}
-	catch (const std::exception& ex)
-	{
-		CLIENT_ERROR(ex.what());
-	}
+	Importer::Fbx::ImportStaticMesh(m_FilePath);
 }
 
 void ImGuiStaticMeshView::OnImGuiRender()

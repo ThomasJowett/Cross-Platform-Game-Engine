@@ -18,6 +18,7 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 group "Dependencies"
 	include "Engine/vendor"
+	include "Editor/vendor"
 	
 group ""
 
@@ -253,7 +254,7 @@ project "Editor"
 		"%{prj.name}/src",
 		"%{prj.name}/vendor",
 		"%{prj.name}/vendor/IconFont",
-		"%{prj.name}/vendor/assimp/include",
+		"%{prj.name}/vendor/OpenFBX/src",
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include"
@@ -261,7 +262,8 @@ project "Editor"
 	
 	links
 	{
-		"Engine"
+		"Engine",
+		"OpenFBX"
 	}
 
 	postbuildcommands
