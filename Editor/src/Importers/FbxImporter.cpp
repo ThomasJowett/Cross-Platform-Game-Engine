@@ -7,7 +7,11 @@ Ref<VertexArray> Importer::Fbx::ImportStaticMesh(const std::filesystem::path& fi
 	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	FILE* fp = fopen(filepath.string().c_str(), "rb");
-	if (!fp) return returnModel;
+	if (!fp)
+	{
+		CLIENT_ERROR("Could not open {0}", filepath.string());
+		return returnModel;
+	}
 
 	fseek(fp, 0, SEEK_END);
 	long file_size = ftell(fp);
@@ -20,6 +24,7 @@ Ref<VertexArray> Importer::Fbx::ImportStaticMesh(const std::filesystem::path& fi
 	if (!scene)
 	{
 		CLIENT_ERROR(ofbx::getError());
+		return returnModel;
 	}
 
 	for (size_t i = 0; i < scene->getMeshCount(); i++)
