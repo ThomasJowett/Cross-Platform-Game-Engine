@@ -117,12 +117,15 @@ void glfwWindow::SetCursor(Cursors cursorType)
 	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
 }
 
-void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsigned int height)
+void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
 		return;
 	if (mode == m_Data.Mode)
 		return;
+
+	GLFWmonitor* monitor = nullptr;
+
 
 	if (m_Data.Mode == WindowMode::WINDOWED)
 	{
@@ -130,8 +133,6 @@ void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsig
 		m_OldWindowedParams.Height = m_Data.Height;
 		glfwGetWindowPos(m_Window, &(m_OldWindowedParams.XPos), &(m_OldWindowedParams.YPos));
 	}
-
-	GLFWmonitor* monitor = nullptr;
 
 	if (mode == WindowMode::BORDERLESS)
 	{
@@ -152,6 +153,16 @@ void glfwWindow::SetWindowMode(const WindowMode& mode, unsigned int width, unsig
 			height = m_Data.Height;
 		}
 		monitor = glfwGetPrimaryMonitor();
+	}
+	else if(mode != WindowMode::WINDOWED)
+	{
+		ENGINE_ERROR("Invalid window mode, reverting to default");
+		if (width == 0 || height == 0)
+		{
+			width = m_OldWindowedParams.width;
+			height = m_OldWindowedParams.Height;
+		}
+		mode = (WindowMode)Settings::GetDefaultInt("Display", "Window_Mode");
 	}
 
 	m_Data.Width = width;

@@ -33,7 +33,7 @@ public:
 	virtual void DisableCursor() override;
 	virtual void EnableCursor() override;
 
-	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) override;
+	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0) override;
 
 	virtual void MaximizeWindow() override;
 	virtual void RestoreWindow() override;

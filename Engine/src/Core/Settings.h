@@ -32,5 +32,12 @@ public:
 	static void SetDefaultVector2f(const char* section, const char* key, const Vector2f& value);
 	static void SetDefaultVector3f(const char* section, const char* key, const Vector3f& value);
 
+	static std::string GetDefaultValue(const char* section, const char* key);
+	static bool GetDefaultBool(const char* section, const char* key);
+	static double GetDefaultDouble(const char* section, const char* key);
+	static int GetDefaultInt(const char* section, const char* key);
+	static Vector2f GetDefaultVector2f(const char* section, const char* key);
+	static Vector3f GetDefaultVector3f(const char* section, const char* key);
+
 	static void SaveSettings();
 };

@@ -28,7 +28,7 @@ public:
 	void SetIcon(const std::string& path) override;
 	void SetCursor(Cursors cursorType) override;
 
-	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0);
+	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0);
 
 	virtual void MaximizeWindow() override;
 	virtual void RestoreWindow() override;

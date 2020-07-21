@@ -208,6 +208,70 @@ void Settings::SetDefaultVector3f(const char* section, const char* key, const Ve
 	s_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z);
 }
 
+std::string Settings::GetDefaultValue(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return std::string();
+	}
+	return s_DefaultValues[{section, key}];
+}
+
+bool Settings::GetDefaultBool(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return false;
+	}
+	return s_DefaultValues[{section, key}] == "true";
+}
+
+double Settings::GetDefaultDouble(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return 0.0;
+	}
+	return atof(s_DefaultValues[{section, key}].c_str());
+}
+
+int Settings::GetDefaultInt(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return 0;
+	}
+	return atoi(s_DefaultValues[{section, key}].c_str());
+}
+
+Vector2f Settings::GetDefaultVector2f(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return Vector2f();
+	}
+	std::vector<std::string> splitVector = SplitString(s_DefaultValues[{section, key}], ',');
+
+	return Vector2f((float)atof(splitVector[0].c_str()), (float)atof(splitVector[1].c_str()));
+}
+
+Vector3f Settings::GetDefaultVector3f(const char* section, const char* key)
+{
+	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
+	{
+		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
+		return Vector3f();
+	}
+	std::vector<std::string> splitVector = SplitString(s_DefaultValues[{section, key}], ',');
+
+	return Vector3f((float)atof(splitVector[0].c_str()), (float)atof(splitVector[1].c_str()), (float)atof(splitVector[2].c_str()));
+}
+
 void Settings::SaveSettings()
 {
 	SI_Error rc = s_Ini->SaveFile(s_Filename);

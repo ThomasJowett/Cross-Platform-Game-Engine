@@ -61,7 +61,7 @@ public:
 	virtual void DisableCursor() = 0;
 	virtual void EnableCursor() = 0;
 
-	virtual void SetWindowMode(const WindowMode& mode, unsigned int width = 0, unsigned int height = 0) = 0;
+	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0) = 0;
 
 	virtual void MaximizeWindow() = 0; 
 	virtual void RestoreWindow() = 0;
