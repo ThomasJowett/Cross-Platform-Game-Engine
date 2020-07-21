@@ -171,12 +171,12 @@ void Application::OnEvent(Event& e)
 
 	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected& event)
 		{
-			ENGINE_INFO("Controller Connected");
+			ENGINE_INFO(event.to_string());
 			return false;
 		});
 	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected& event)
 		{
-			ENGINE_INFO("Controller Disonnected");
+			ENGINE_INFO(event.to_string());
 			return false;
 		});
 

@@ -58,9 +58,14 @@ private:
 
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
+	OrthogrpahicCameraController m_OrthoCamera;
 	Ref<VertexArray> m_TorusVertexArray;
 
 	Ref<Texture2D> m_Texture;
 
 	Mode m_Mode;
+
+	Ref<Scene> m_Scene;
+
+	entt::entity m_Square;
 };

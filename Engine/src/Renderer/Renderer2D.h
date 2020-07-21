@@ -37,6 +37,10 @@ public:
 	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Colour& colour = Colours::WHITE);
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Colour& colour = Colours::WHITE);
 
+	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
+
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
 	static void DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour = Colours::WHITE);

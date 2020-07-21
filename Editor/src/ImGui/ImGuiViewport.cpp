@@ -21,6 +21,15 @@ void ImGuiViewportPanel::OnAttach()
 	m_Texture = Texture2D::Create("resources/UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+
+	m_Scene = CreateRef<Scene>();
+
+	auto square = m_Scene->CreateEntity();
+
+	m_Scene->GetRegistry().emplace<TransformComponent>(square);
+	m_Scene->GetRegistry().emplace<SpriteComponent>(square, Colour(Colours::GREEN));
+
+	m_Square = square;
 }
 
 void ImGuiViewportPanel::OnUpdate(float deltaTime)
@@ -56,7 +65,9 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 		Application::GetWindow().EnableCursor();
 	}
 
-
+	Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
+	m_Scene->OnUpdate(deltaTime);
+	Renderer2D::EndScene();
 
 	//TODO: have a scene object that will be traversed here instead of creating a scene manually
 	Renderer::BeginScene(*m_CameraController.GetCamera());
@@ -163,6 +174,11 @@ void ImGuiViewportPanel::OnImGuiRender()
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}
+
+	ImGui::Begin("Test");
+	Colour& SquareColour = m_Scene->GetRegistry().get<SpriteComponent>(m_Square).Tint;
+	ImGui::ColorEdit4("square colour", &SquareColour[0]);
+	ImGui::End();
 }
 
 void ImGuiViewportPanel::Copy()

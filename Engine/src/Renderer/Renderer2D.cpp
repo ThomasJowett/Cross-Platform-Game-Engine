@@ -249,95 +249,13 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
 {
-	PROFILE_FUNCTION();
-
-	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
-	{
-		FlushAndReset();
-	}
-
-	float textureIndex = 0.0f;
-	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
-
-	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-	{
-		if (*s_Data.TextureSlots[i].get() == *texture.get())
-		{
-			textureIndex = (float)i;
-			break;
-		}
-	}
-
-	if (textureIndex == 0.0f)
-	{
-		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
-			FlushAndReset();
-
-		textureIndex = (float)s_Data.TextureSlotIndex;
-		s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
-		s_Data.TextureSlotIndex++;
-	}
-
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-
-	for (size_t i = 0; i < 4; i++)
-	{
-		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-		s_Data.QuadVertexBufferPtr->colour = colour;
-		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
-		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-		s_Data.QuadVertexBufferPtr++;
-	}
-
-	s_Data.QuadIndexCount += 6;
-
-	s_Data.Statistics.QuadCount++;
+	DrawQuad(transform, texture, colour, tilingFactor);
 }
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour, float tilingFactor)
 {
-	PROFILE_FUNCTION();
-
-	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
-	{
-		FlushAndReset();
-	}
-
-	float textureIndex = 0.0f;
-	const Vector2f* texCoords = subtexture->GetTextureCoordinates();
-
-	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
-	{
-		if (*s_Data.TextureSlots[i].get() == *subtexture->GetTexture().get())
-		{
-			textureIndex = (float)i;
-			break;
-		}
-	}
-
-	if (textureIndex == 0.0f)
-	{
-		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
-			FlushAndReset();
-
-		textureIndex = (float)s_Data.TextureSlotIndex;
-		s_Data.TextureSlots[s_Data.TextureSlotIndex] = subtexture->GetTexture();
-		s_Data.TextureSlotIndex++;
-	}
-
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-
-	for (size_t i = 0; i < 4; i++)
-	{
-		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-		s_Data.QuadVertexBufferPtr->colour = colour;
-		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
-		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
-		s_Data.QuadVertexBufferPtr++;
-	}
-
-	s_Data.QuadIndexCount += 6;
-
-	s_Data.Statistics.QuadCount++;
+	DrawQuad(transform, subtexture, colour, tilingFactor);
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation, const Colour& colour)
@@ -347,29 +265,8 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const float& rotation, const Colour& colour)
 {
-	PROFILE_FUNCTION();
-
-	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
-	{
-		FlushAndReset();
-	}
-
-	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
-
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-
-	for (size_t i = 0; i < 4; i++)
-	{
-		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-		s_Data.QuadVertexBufferPtr->colour = colour;
-		s_Data.QuadVertexBufferPtr->TexCoords = texCoords[i];
-		s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
-		s_Data.QuadVertexBufferPtr++;
-	}
-
-	s_Data.QuadIndexCount += 6;
-
-	s_Data.Statistics.QuadCount++;
+	DrawQuad(transform, colour);
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)
@@ -400,6 +297,120 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Colour& colour)
 {
 	DrawQuad(position, size, 0.0f, colour);
+}
+
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
+{
+	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+	{
+		FlushAndReset();
+	}
+
+	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+		s_Data.QuadVertexBufferPtr->colour = colour;
+		s_Data.QuadVertexBufferPtr->TexCoords = texCoords[i];
+		s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
+		s_Data.QuadVertexBufferPtr++;
+	}
+
+	s_Data.QuadIndexCount += 6;
+
+	s_Data.Statistics.QuadCount++;
+}
+
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour, float tilingFactor)
+{
+	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+	{
+		FlushAndReset();
+	}
+
+	float textureIndex = 0.0f;
+	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
+
+	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+	{
+		if (*s_Data.TextureSlots[i].get() == *texture.get())
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
+			FlushAndReset();
+
+		textureIndex = (float)s_Data.TextureSlotIndex;
+		s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
+		s_Data.TextureSlotIndex++;
+	}
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+		s_Data.QuadVertexBufferPtr->colour = colour;
+		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+	}
+
+	s_Data.QuadIndexCount += 6;
+
+	s_Data.Statistics.QuadCount++;
+}
+
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, float tilingFactor)
+{
+	PROFILE_FUNCTION();
+
+	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
+	{
+		FlushAndReset();
+	}
+
+	float textureIndex = 0.0f;
+	const Vector2f* texCoords = subtexture->GetTextureCoordinates();
+
+	for (uint32_t i = 1; i < s_Data.TextureSlotIndex; i++)
+	{
+		if (*s_Data.TextureSlots[i].get() == *subtexture->GetTexture().get())
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
+			FlushAndReset();
+
+		textureIndex = (float)s_Data.TextureSlotIndex;
+		s_Data.TextureSlots[s_Data.TextureSlotIndex] = subtexture->GetTexture();
+		s_Data.TextureSlotIndex++;
+	}
+
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+		s_Data.QuadVertexBufferPtr->colour = colour;
+		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
+		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr++;
+	}
+
+	s_Data.QuadIndexCount += 6;
+
+	s_Data.Statistics.QuadCount++;
 }
 
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)

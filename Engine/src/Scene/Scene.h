@@ -8,6 +8,10 @@ public:
 	explicit Scene();
 	~Scene();
 
+	entt::entity CreateEntity();
+
+	void OnUpdate(float deltaTime);
+
 	entt::registry& GetRegistry() { return m_Registry; }
 	const std::string& GetSceneName() const { return m_SceneName; }
 private:

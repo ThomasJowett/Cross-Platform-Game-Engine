@@ -3,30 +3,30 @@
 
 #include "math/Matrix.h"
 
+#include "Components/Components.h"
+#include "Renderer/Renderer2D.h"
+
 Scene::Scene()
 {
-	struct TransformComponent
-	{
-		Matrix4x4 Transform;
-
-		TransformComponent() = default;
-		TransformComponent(const TransformComponent&) = default;
-		TransformComponent(const Matrix4x4& transform)
-			:Transform(transform) {}
-
-		operator const Matrix4x4& () { return Transform; }
-	};
 	entt::entity entity = m_Registry.create();
-
-	m_Registry.emplace<TransformComponent>(entity);
-
-	auto view = m_Registry.view<TransformComponent>();
-	for (auto entity : view)
-	{
-
-	}
 }
 
 Scene::~Scene()
 {
+}
+
+entt::entity Scene::CreateEntity()
+{
+	return entt::entity();
+}
+
+void Scene::OnUpdate(float deltaTime)
+{
+	auto group = m_Registry.group<TransformComponent>(entt::get<SpriteComponent>);
+	for (auto entity : group)
+	{
+		auto& [transform, sprite] = group.get<TransformComponent, SpriteComponent>(entity);
+
+		Renderer2D::DrawQuad(transform, sprite.Tint);
+	}
 }
