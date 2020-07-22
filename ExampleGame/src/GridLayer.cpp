@@ -37,24 +37,19 @@ void GridLayer::OnDetach()
 
 void GridLayer::OnFixedUpdate()
 {
-	if (m_Simulate)
-	{
-		static int count = 0;
-
-		count++;
-		if (count > 10)
-		{
-			count = 0;
-			m_Time += 1;
-			if (m_Time > 30) m_Time = 0;
-			m_TargetLocation = TargetLocation(m_Time);
-			GenerateLaserVertices();
-		}
-	}
 }
 
 void GridLayer::OnUpdate(float deltaTime)
 {
+	if (m_Simulate)
+	{
+		m_Time += deltaTime;
+		if (m_Time > 30) m_Time = 0;
+	}
+
+	m_TargetLocation = TargetLocation(m_Time);
+	GenerateLaserVertices();
+
 	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
 	shader->Bind();
 
@@ -68,7 +63,7 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(Vector3f()));
 
-	Renderer::Submit(shader, m_TargetVertexArray, Matrix4x4::Translate(m_TargetLocation));
+	Renderer::Submit(shader, m_TargetVertexArray, Matrix4x4::Translate(m_TargetLocation) * Matrix4x4::Rotate(m_PlaneRotation));
 
 	m_EarthTexture->Bind();
 	Renderer::Submit(shader, m_EarthVertexArray, Matrix4x4::Translate(Vector3f(0.0f, -6371.0f, 0.0f)) * Matrix4x4::RotateZ(0.57f) * Matrix4x4::RotateY(0.1305f));
@@ -87,6 +82,14 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	for (Vector3f position : m_Positions)
 	{
+		if (IsPositionIlluminated(position))
+		{
+			shader->SetFloat4("u_colour", Colours::YELLOW);
+		}
+		else
+		{
+			shader->SetFloat4("u_colour", Colours::CYAN);
+		}
 		Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(position));
 	}
 
@@ -114,12 +117,14 @@ void GridLayer::OnImGuiRender()
 		GenerateLaserVertices();
 	}
 	ImGui::SameLine(); ImGui::Checkbox("Simulate", &m_Simulate);
-	ImGui::DragFloat("Time (s)", &m_Time, 1.0f, -30.0f, 30.0f, "%.0f");
+	ImGui::DragFloat("Time (s)", &m_Time, 1.0f, -30.0f, 30.0f, "%.2f");
 	ImGui::InputDouble("Initial Speed (km/s)", &m_TargetInitialSpeed);
 	ImGui::InputDouble("Initial Distance (km)", &m_InitialDistance);
 	ImGui::InputDouble("Altitude (km)", &m_Altitude);
 	ImGui::InputDouble("FlybyAngle (Deg)", &m_FlybyAngle);
 	ImGui::InputDouble("Initial Azimuth (Deg)", &m_InitialAzimuth);
+	ImGui::DragFloat3("Rotation (Roll) (Yaw) (Pitch)", &m_PlaneRotation[0], 0.01f, -PI, PI);
+	ImGui::Text(m_PlaneNormal.to_string().c_str());
 	ImGui::Text(m_TargetLocation.to_string().c_str());
 	ImGui::Separator();
 	ImGui::DragFloat("Azimuth (Deg)", &m_Azimuth, 5.0f, -180.0f, 180.0f);
@@ -201,7 +206,7 @@ Vector3f GridLayer::TargetLocation(float time)
 	double dah = m_Altitude - drop;
 
 	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) + DegToRad(m_InitialAzimuth);
-	double elevation = (PI *0.5) - asin(dah / dl);
+	double elevation = (PI * 0.5) - asin(dah / dl);
 
 	m_Azimuth = RadToDeg(azimuth);
 	m_Elevation = RadToDeg(elevation);
@@ -221,29 +226,55 @@ void GridLayer::GenerateLaserVertices()
 {
 	float distance = m_TargetLocation.Magnitude();
 
-	float endDiameter = sqrt((m_BeamApeture * m_BeamApeture) + (m_Divergence * m_Divergence) * (distance * distance));
+	m_EndDiameter = sqrt((m_BeamApeture * m_BeamApeture) + (m_Divergence * m_Divergence) * (distance * distance));
 
-	m_IncidentLaserVertexArray = GeometryGenerator::CreateCylinder(m_BeamApeture, endDiameter, distance, 10, 1);
+	m_IncidentLaserVertexArray = GeometryGenerator::CreateCylinder(m_BeamApeture, m_EndDiameter, distance, 10, 1);
 
 	Vector3f translation = m_TargetLocation - (m_TargetLocation / 2.0f);
 
-	Matrix4x4::LookAt(Vector3f(), Vector3f(0.0, 0.0, -1.0), Vector3f(0.0, 1.0, 0.0));
+	Quaternion planeOrientation(m_PlaneRotation);
+
+	m_PlaneRotation = planeOrientation.EulerAngles();
+
+	m_PlaneNormal = planeOrientation.RotateVectorByQuaternion(Vector3f(0.0, 0.0, 1.0));
+	/*Vector3f u(this->i, this->j, this->k);
+
+		float s = this->r;
+
+		Vector3f returnVal = 2.0f * Vector3f::Dot(u, vector) * u
+			+ (s * s - Vector3f::Dot(u, u)) * vector
+			+ 2.0f * s * Vector3f::Cross(u, vector);
+
+		return returnVal;*/
 
 	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
 
-	float reflectedDiameter = sqrt((endDiameter * endDiameter) + (m_ReflectedDivergence * m_ReflectedDivergence) * (20.0f * 20.0f));
+	m_ReflectedDiameter = sqrt((m_EndDiameter * m_EndDiameter) + (m_ReflectedDivergence * m_ReflectedDivergence) * (200.0f * 200.0f));
 
-	m_ReflectionLaserVertexArray = GeometryGenerator::CreateCylinder(endDiameter, reflectedDiameter, 10.0f, 10, 1);
+	m_ReflectionLaserVertexArray = GeometryGenerator::CreateCylinder(m_EndDiameter, m_ReflectedDiameter, m_ReflectedLength, 10, 1);
 
-	Vector3f reflectedDirection = Vector3f::Reflect(m_TargetLocation.GetNormalized(), Vector3f(0.0, 0.0, 1.0));
+	m_ReflectedDirection = Vector3f::Reflect(m_TargetLocation.GetNormalized(), m_PlaneNormal);
 
-	Vector3f reflectedTranslation = m_TargetLocation + (reflectedDirection * 5.0f);
+	Vector3f reflectedTranslation = m_TargetLocation + (m_ReflectedDirection * (m_ReflectedLength *0.5f));
 
-	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), reflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
+	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), m_ReflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
 }
 
 // angles in radians
 Vector3f GridLayer::ConvertPolarToCartesian(float azimuth, float elevation, float distance)
 {
 	return Vector3f(distance * sin(elevation) * sin(azimuth), distance * cos(elevation), distance * sin(elevation) * cos(azimuth));
+}
+
+bool GridLayer::IsPositionIlluminated(const Vector3f& position)
+{
+	float coneDistance = Vector3f::Dot(position - m_TargetLocation, m_ReflectedDirection);
+
+	if (coneDistance < 0.0)
+		return false;
+
+	double radiusAtObserver = (m_ReflectedDiameter + (m_ReflectedDivergence * m_ReflectedDivergence) * (coneDistance * coneDistance)) / 2.0f;
+
+	double orthDistance = ((position - m_TargetLocation) - coneDistance * m_ReflectedDirection).Magnitude();
+	return orthDistance < m_ReflectedDiameter;
 }

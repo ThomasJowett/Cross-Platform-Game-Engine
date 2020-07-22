@@ -22,6 +22,8 @@ private:
 	void GenerateLaserVertices();
 
 	Vector3f ConvertPolarToCartesian(float azimuth, float elevation, float distance);
+
+	bool IsPositionIlluminated(const Vector3f& position);
 private:
 	ShaderLibrary m_ShaderLibrary;
 	PerspectiveCameraController m_CameraController;
@@ -62,5 +64,13 @@ private:
 	float m_Azimuth = 0.0f;
 	float m_Elevation = 0.0f;
 	float m_Distance = 0.0f;
+
+	Vector3f m_PlaneNormal;
+	Vector3f m_PlaneRotation;
+
+	float m_ReflectedLength = 100.0f;
+	Vector3f m_ReflectedDirection;
+	float m_EndDiameter;
+	float m_ReflectedDiameter;
 };
 
