@@ -530,6 +530,12 @@ void ImGuiContentExplorer::OnImGuiRender()
 			{
 				for (int i = 0; i < m_Files.size(); i++)
 				{
+					if (!std::filesystem::exists(m_Files[i]))
+					{
+						m_Files.erase(m_Files.begin() + i);
+						i--;
+						continue;
+					}
 					ImGui::BeginGroup();
 					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
