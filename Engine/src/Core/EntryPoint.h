@@ -6,7 +6,6 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
 
-
 extern Application* CreateApplication();
 
 bool AnotherInstance();
@@ -43,16 +42,17 @@ int main(int argc, char* argv[])
 
 	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 
-	if (!input.HasFoundAllArguments())
-	{
-		std::string file = input.OpenFile();
-		if (!file.empty())
-		{
-			ENGINE_INFO("Opening file: {0}", file);
-		}
+	std::string file;
+	bool hasFile = input.File(file);
+	if(hasFile)
+		Application::SetOpenDocument(file);
 
-		ENGINE_ERROR("Not a valid input parameter");
-		return EXIT_FAILURE;
+	if (!input.HasFoundAllArguments() && !hasFile)
+	{
+		{
+			ENGINE_ERROR("Not a valid input parameter");
+			return EXIT_FAILURE;
+		}
 	}
 
 	ENGINE_INFO("Engine Version: {0}", VERSION);

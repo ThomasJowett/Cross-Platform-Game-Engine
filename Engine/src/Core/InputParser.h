@@ -41,15 +41,22 @@ public:
 		return false;
 	}
 
-	std::string OpenFile()const
+	bool File(std::string& filename)const
 	{
+		if (m_Tokens.empty())
+			return false;
+
 		std::ifstream file;
 		file.open(m_Tokens[0]);
 
 		if (file.good())
-			return m_Tokens[0];
-		else
-			return std::string();
+		{
+			filename = m_Tokens[0];
+
+			return true;
+		}
+
+		return false;
 	}
 
 	bool HasFoundAllArguments()

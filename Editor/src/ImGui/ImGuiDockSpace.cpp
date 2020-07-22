@@ -5,6 +5,7 @@
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome5.h"
 #include "IconsFontAwesome5Brands.h"
+#include "FileSystem/FileDialog.h"
 
 #include "ImGui/ImGuiConsole.h"
 
@@ -39,6 +40,8 @@ ImGuiDockSpace::ImGuiDockSpace()
 
 void ImGuiDockSpace::OnAttach()
 {
+	PROFILE_FUNCTION();
+
 	Fonts::LoadFonts();
 
 	Settings::SetDefaultBool("Windows", "Viewport", m_ShowViewport);
@@ -148,7 +151,10 @@ void ImGuiDockSpace::OnImGuiRender()
 
 			ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N", nullptr, false);
 			ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N", nullptr, false);
-			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project", "Ctrl + O", nullptr, false);
+			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project", "Ctrl + O"))
+			{
+				Application::Get().SetOpenDocument(FileDialog(L"Open Project...", L"Project Files\0*.proj\0Any File\0*.*\0"));
+			}
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, saveable))
 				iSave->Save();
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();

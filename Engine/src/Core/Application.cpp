@@ -12,6 +12,8 @@
 
 Application* Application::s_Instance = nullptr;
 
+std::filesystem::path Application::s_OpenDocument;
+
 Application::Application(const WindowProps& props)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
@@ -303,4 +305,17 @@ double Application::GetTime()
 #endif // __WINDOWS__
 
 	return glfwGetTime();
+}
+
+void Application::SetOpenDocument(const std::string& filepath)
+{
+	if (std::filesystem::exists(filepath))
+	{
+		s_OpenDocument = filepath;
+	}
+}
+
+const std::filesystem::path& Application::GetOpenDocument()
+{
+	return s_OpenDocument;
 }

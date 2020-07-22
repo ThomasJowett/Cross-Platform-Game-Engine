@@ -30,6 +30,9 @@ public:
 
 	void Close() { m_Running = false; }
 
+	static void SetOpenDocument(const std::string& filepath);
+	static const std::filesystem::path& GetOpenDocument();
+
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();
@@ -56,6 +59,8 @@ private:
 
 	static Application* s_Instance;
 	friend int::main(int argc, char* argv[]);
+
+	static std::filesystem::path s_OpenDocument;
 
 protected:
 	void PushLayer(Layer* layer);

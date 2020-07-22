@@ -3,7 +3,7 @@
 
 // Opens a modal file dialog box and returns the file selected 
 // - Filter format: "Text Files\0*.txt\0Any File\0*.*\0"
-static std::string FileDialog(const wchar_t* title, const wchar_t* filter)
+static std::string FileDialog(const wchar_t* title = L"Open...", const wchar_t* filter = L"Any File\0*.*\0")
 {
 #ifdef __WINDOWS__
 	wchar_t filename[MAX_PATH];
@@ -49,7 +49,7 @@ static std::string FileDialog(const wchar_t* title, const wchar_t* filter)
 	return std::string();
 }
 
-static std::string SaveAsDialog(const wchar_t* title, const wchar_t* filter)
+static std::string SaveAsDialog(const wchar_t* title = L"Save As...", const wchar_t* filter = L"Any File\0*.*\0")
 {
 #ifdef __WINDOWS__
 
