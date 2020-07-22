@@ -20,4 +20,6 @@ private:
 private:
 	bool* m_Show;
 	ImGuiStyle m_Style;
+
+	bool m_VSnyc;
 };

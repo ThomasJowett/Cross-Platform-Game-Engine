@@ -174,11 +174,6 @@ void ImGuiViewportPanel::OnImGuiRender()
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}
-
-	ImGui::Begin("Test");
-	Colour& SquareColour = m_Scene->GetRegistry().get<SpriteComponent>(m_Square).Tint;
-	ImGui::ColorEdit4("square colour", &SquareColour[0]);
-	ImGui::End();
 }
 
 void ImGuiViewportPanel::Copy()

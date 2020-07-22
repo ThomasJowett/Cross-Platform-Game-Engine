@@ -33,5 +33,14 @@ private:
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
 
+	bool m_ShowPlayPauseToolbar;
+	bool m_ShowLightsToolbar;
+	bool m_ShowVolumesToolbar;
+	bool m_ShowLandscapeToolbar;
+	bool m_ShowFoliageToolbar;
+	bool m_ShowMultiplayerToolbar;
+	bool m_ShowSaveOpenToolbar;
+	bool m_ShowTargetPlatformToolbar;
+
 	static Layer* s_CurrentlyFoccusedPanel;
 };

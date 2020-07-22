@@ -10,4 +10,7 @@ namespace ImGui
 
 	bool SaveStyle(const char* filename, const ImGuiStyle& style);
 	bool LoadStyle(const char* filename, ImGuiStyle& style);
+
+	void Tooltip(const std::string& text);
+	void Tooltip(const char* text);
 }

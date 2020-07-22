@@ -15,6 +15,7 @@
 ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
+	m_VSnyc = Settings::GetBool("Display", "V-Sync");
 }
 
 void ImGuiEditorPreferences::OnImGuiRender()
@@ -51,6 +52,15 @@ void ImGuiEditorPreferences::OnImGuiRender()
 		if (ImGui::TreeNode("Style"))
 		{
 			ShowStyleEditor();
+			ImGui::TreePop();
+		}
+		if (ImGui::TreeNode("Display"))
+		{
+			if (ImGui::Checkbox("V-Sync", &m_VSnyc))
+			{
+				Settings::SetBool("Display", "V-Sync", m_VSnyc);
+				Application::GetWindow().SetVSync(m_VSnyc);
+			}
 			ImGui::TreePop();
 		}
 	}

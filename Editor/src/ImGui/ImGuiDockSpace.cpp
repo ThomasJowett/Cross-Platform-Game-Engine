@@ -15,6 +15,8 @@
 #include "ImGuiPreferences.h"
 #include "ImGuiViewport.h"
 #include "ImGuiHeirachy.h"
+#include "ImGuiToolbar.h"
+#include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
@@ -36,6 +38,15 @@ ImGuiDockSpace::ImGuiDockSpace()
 	m_ShowHierachy = false;
 	m_ShowContentExplorer = true;
 	m_ShowJoystickInfo = true;
+
+	m_ShowPlayPauseToolbar = true;
+	m_ShowLightsToolbar = false;
+	m_ShowVolumesToolbar = false;
+	m_ShowLandscapeToolbar = false;
+	m_ShowFoliageToolbar = false;
+	m_ShowMultiplayerToolbar = false;
+	m_ShowSaveOpenToolbar = false;
+	m_ShowTargetPlatformToolbar = false;
 }
 
 void ImGuiDockSpace::OnAttach()
@@ -219,14 +230,14 @@ void ImGuiDockSpace::OnImGuiRender()
 		if (ImGui::BeginMenu("Tools"))
 		{
 			//TODO: create a toolbar for these tools
-			ImGui::MenuItem(ICON_FA_PLAY" Play", "", nullptr, false); //TODO: create a play/pause tool
-			ImGui::MenuItem(ICON_FA_LIGHTBULB" Lights", "", nullptr, false); //TODO: create a lights tool
-			ImGui::MenuItem(ICON_FA_DICE_D6" Volumes", "", nullptr, false); //TODO: Create a Volumes tool e.g. blocking volumes
-			ImGui::MenuItem(ICON_FA_MOUNTAIN" Landscape", "", nullptr, false); //TODO: create landscape tool
-			ImGui::MenuItem(ICON_FA_SEEDLING" Foliage", "", nullptr, false); //TODO: create a foliage tool
-			ImGui::MenuItem(ICON_FA_NETWORK_WIRED" Multiplayer", "", nullptr, false); //TODO: Create multiplayer tool
-			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", nullptr, false); //TODO: Create Save/openTool
-			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", nullptr, false); //TODO: Create target Platform tool
+			ImGui::MenuItem(ICON_FA_PLAY" Play", "", &m_ShowPlayPauseToolbar); //TODO: create a play/pause tool
+			ImGui::MenuItem(ICON_FA_LIGHTBULB" Lights", "", &m_ShowLightsToolbar, false); //TODO: create a lights tool
+			ImGui::MenuItem(ICON_FA_DICE_D6" Volumes", "", &m_ShowVolumesToolbar, false); //TODO: Create a Volumes tool e.g. blocking volumes
+			ImGui::MenuItem(ICON_FA_MOUNTAIN" Landscape", "", &m_ShowLandscapeToolbar, false); //TODO: create landscape tool
+			ImGui::MenuItem(ICON_FA_SEEDLING" Foliage", "", &m_ShowFoliageToolbar, false); //TODO: create a foliage tool
+			ImGui::MenuItem(ICON_FA_NETWORK_WIRED" Multiplayer", "", &m_ShowMultiplayerToolbar, false); //TODO: Create multiplayer tool
+			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", &m_ShowSaveOpenToolbar, false); //TODO: Create Save/openTool
+			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
 
@@ -242,13 +253,20 @@ void ImGuiDockSpace::OnImGuiRender()
 #elif __APPLE__
 				system("open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
 #endif
-		}
+			}
 			ImGui::EndMenu();
-	}
+		}
 
+		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
+		ImGui::Separator();
+
+		if (m_ShowPlayPauseToolbar)
+		{
+			PlayPauseToolbar::Render();
+		}
 
 		ImGui::EndMenuBar();
-}
+	}
 
 	if (about) ImGui::OpenPopup("About");
 
@@ -261,4 +279,16 @@ void ImGuiDockSpace::OnImGuiRender()
 	}
 
 	ImGui::End();
+
+	//Toolbars------------------------------------------------------------------------------------------------------------
+
+	//if (ImGui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
+	//{
+	//	if (m_ShowPlayPauseToolbar)
+	//	{
+	//		PlayPauseToolbar::Render();
+	//	}
+	//}
+
+	//ImGui::End();
 }

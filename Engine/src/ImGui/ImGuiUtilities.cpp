@@ -208,3 +208,23 @@ bool ImGui::LoadStyle(const char* filename, ImGuiStyle& style)
 	ImGui::MemFree(f_data);
 	return true;
 }
+
+void ImGui::Tooltip(const std::string& text)
+{
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::TextUnformatted(text.c_str());
+		ImGui::EndTooltip();
+	}
+}
+
+void ImGui::Tooltip(const char* text)
+{
+	if (ImGui::IsItemHovered())
+	{
+		ImGui::BeginTooltip();
+		ImGui::TextUnformatted(text);
+		ImGui::EndTooltip();
+	}
+}
