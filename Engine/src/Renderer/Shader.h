@@ -5,7 +5,9 @@
 #include "Core/core.h"
 #include "Core/Colour.h"
 
-#define SHADER_DIRECTORY "resources/Shaders/"
+#include "Core/Application.h"
+
+#define SHADER_DIRECTORY Application::GetWorkingDirectory().string() + "\\resources\\Shaders\\"
 
 class Shader
 {

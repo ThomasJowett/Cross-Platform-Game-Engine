@@ -8,7 +8,7 @@ Editor::Editor(const WindowProps& props)
 	RenderCommand::SetClearColour(Colours::GREY);
 	PushOverlay(new ImGuiDockSpace());
 
-	Application::GetWindow().SetIcon("resources/Icons/Logo.png");
+	Application::GetWindow().SetIcon(GetWorkingDirectory().string() + "\\resources\\Icons\\Logo.png");
 
 	CLIENT_INFO("Opening project: {0}", Application::GetOpenDocument().string());
 }

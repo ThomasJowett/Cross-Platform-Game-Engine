@@ -5,15 +5,20 @@
 
 #include "Utilities/StringUtils.h"
 
+#include "Core/Application.h"
+
 static Settings* s_Instance = nullptr;
 
 static CSimpleIniA* s_Ini = nullptr;
-const char* Settings::s_Filename = "Settings.ini";
 
 std::map<std::pair<std::string, std::string>, std::string> Settings::s_DefaultValues = {};
 
+static std::string s_Filename;
+
 void Settings::Init()
 {
+	s_Filename = Application::GetWorkingDirectory().string() + "\\Settings.ini";
+
 	s_Ini = new CSimpleIniA();
 
 	s_Ini->SetUnicode();
@@ -34,7 +39,7 @@ void Settings::Init()
 		}
 	}
 
-	s_Ini->LoadFile(s_Filename);
+	s_Ini->LoadFile(s_Filename.c_str());
 }
 
 void Settings::SetValue(const char* section, const char* key, const char* value)
@@ -274,7 +279,7 @@ Vector3f Settings::GetDefaultVector3f(const char* section, const char* key)
 
 void Settings::SaveSettings()
 {
-	SI_Error rc = s_Ini->SaveFile(s_Filename);
+	SI_Error rc = s_Ini->SaveFile(s_Filename.c_str());
 
 	if (rc < 0)
 	{

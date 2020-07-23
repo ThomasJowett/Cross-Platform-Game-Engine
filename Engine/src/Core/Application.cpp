@@ -13,6 +13,7 @@
 Application* Application::s_Instance = nullptr;
 
 std::filesystem::path Application::s_OpenDocument;
+std::filesystem::path Application::s_WorkingDirectory;
 
 Application::Application(const WindowProps& props)
 {

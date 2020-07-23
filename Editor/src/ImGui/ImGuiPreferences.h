@@ -21,5 +21,7 @@ private:
 	bool* m_Show;
 	ImGuiStyle m_Style;
 
+	std::string m_StyleFilename;
+
 	bool m_VSnyc;
 };

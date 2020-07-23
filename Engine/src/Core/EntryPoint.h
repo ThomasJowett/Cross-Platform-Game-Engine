@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 	if (AnotherInstance())
 		return 1;
 
+	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+
 	Logger::Init();
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))

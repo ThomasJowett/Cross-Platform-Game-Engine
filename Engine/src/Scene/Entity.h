@@ -14,14 +14,14 @@ public:
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
-		CORE_ASSERT(HasComponent<T>(), "Entity already has this component");
+		CORE_ASSERT(!HasComponent<T>(), "Entity already has this component");
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
 	template<typename T>
 	T& GetComponent()
 	{
-		CORE_ASSERT(!HasComponent<T>(), "Entity does not have this component");
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}
 	template<typename T>
@@ -33,7 +33,7 @@ public:
 	template<typename T>
 	void RemoveComponent()
 	{
-		CORE_ASSERT(!HasComponent<T>(), "Entity does not have this component");
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
 		m_Scene->m_Registry.remove<T>(m_EntityHandle);
 	}
 

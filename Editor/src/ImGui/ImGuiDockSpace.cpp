@@ -163,7 +163,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N", nullptr, false);
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project", "Ctrl + O"))
 			{
-				Application::Get().SetOpenDocument(FileDialog(L"Open Project...", L"Project Files\0*.proj\0Any File\0*.*\0"));
+				Application::Get().SetOpenDocument(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0"));
 			}
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, saveable))
 				iSave->Save();

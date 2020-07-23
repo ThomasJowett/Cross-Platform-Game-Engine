@@ -7,14 +7,18 @@
 #include <ImGui/ImGuiConsoleSink.h>
 #include <spdlog/sinks/msvc_sink.h>
 
+#include "Core/Application.h"	
+
 Ref<spdlog::logger> Logger::s_EngineLogger;
 Ref<spdlog::logger> Logger::s_ClientLogger;
 
 void Logger::Init()
 {
+	std::string logFilename = Application::GetWorkingDirectory().string() + "\\Log.txt";
+
 	std::vector<spdlog::sink_ptr>logSinks;
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());					// std::cout
-	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>("Log.txt", true));	// file
+	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilename, true));	// file
 	logSinks.emplace_back(std::make_shared<ImGuiConsoleSink_mt>());									// ImGuiConsole
 #ifdef _MSC_VER
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());							// msvc output

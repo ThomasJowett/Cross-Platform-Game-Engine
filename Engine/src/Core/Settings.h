@@ -5,8 +5,6 @@
 
 class Settings
 {
-	static const char* s_Filename;
-
 	static std::map<std::pair<std::string, std::string>, std::string> s_DefaultValues;
 
 public:

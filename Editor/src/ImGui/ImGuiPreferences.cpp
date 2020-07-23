@@ -16,6 +16,8 @@ ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
+
+	m_StyleFilename = Application::GetWorkingDirectory().string() + "\\styles\\Editor.style";
 }
 
 void ImGuiEditorPreferences::OnImGuiRender()
@@ -69,7 +71,7 @@ void ImGuiEditorPreferences::OnImGuiRender()
 
 void ImGuiEditorPreferences::OnAttach()
 {
-	ImGui::LoadStyle("styles\\Editor.style", m_Style);
+	ImGui::LoadStyle(m_StyleFilename.c_str(), m_Style);
 
 	ImGuiStyle& style = ImGui::GetStyle();
 
@@ -80,7 +82,7 @@ void ImGuiEditorPreferences::OnAttach()
 
 void ImGuiEditorPreferences::OnDetach()
 {
-	ImGui::SaveStyle("styles\\Editor.style", m_Style);
+	ImGui::SaveStyle(m_StyleFilename.c_str(), m_Style);
 }
 
 void ImGuiEditorPreferences::ShowStyleEditor()
