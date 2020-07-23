@@ -24,12 +24,8 @@ void ImGuiViewportPanel::OnAttach()
 
 	m_Scene = CreateRef<Scene>();
 
-	auto square = m_Scene->CreateEntity();
-
-	m_Scene->GetRegistry().emplace<TransformComponent>(square);
-	m_Scene->GetRegistry().emplace<SpriteComponent>(square, Colour(Colours::GREEN));
-
-	m_Square = square;
+	Entity square = m_Scene->CreateEntity("Test Square");
+	square.AddComponent<SpriteComponent>(Colour(Colours::GREEN));
 }
 
 void ImGuiViewportPanel::OnUpdate(float deltaTime)

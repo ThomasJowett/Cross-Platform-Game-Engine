@@ -66,6 +66,4 @@ private:
 	Mode m_Mode;
 
 	Ref<Scene> m_Scene;
-
-	entt::entity m_Square;
 };

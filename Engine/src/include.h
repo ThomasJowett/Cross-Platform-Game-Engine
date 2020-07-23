@@ -41,6 +41,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "Scene/Scene.h"
+#include "Scene/Entity.h"
 #include "Scene/Components/Components.h"
 
 #include "EnTT/entt.hpp"

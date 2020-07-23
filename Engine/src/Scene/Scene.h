@@ -2,13 +2,15 @@
 
 #include "EnTT/entt.hpp"
 
+class Entity;
+
 class Scene
 {
 public:
 	explicit Scene();
 	~Scene();
 
-	entt::entity CreateEntity();
+	Entity CreateEntity(const std::string& name = "");
 
 	void OnUpdate(float deltaTime);
 
@@ -18,5 +20,7 @@ private:
 	entt::registry m_Registry;
 protected:
 	std::string m_SceneName;
+
+	friend class Entity;
 };
 

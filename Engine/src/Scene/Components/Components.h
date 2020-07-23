@@ -3,3 +3,4 @@
 #include "StaticMeshComponent.h"
 #include "TransformComponent.h"
 #include "SpriteComponent.h"
+#include "TagComponent.h"

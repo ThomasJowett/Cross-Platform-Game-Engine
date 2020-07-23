@@ -15,7 +15,6 @@
 #include "ImGuiPreferences.h"
 #include "ImGuiViewport.h"
 #include "ImGuiHeirachy.h"
-#include "ImGuiToolbar.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"

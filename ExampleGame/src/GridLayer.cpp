@@ -29,6 +29,15 @@ void GridLayer::OnAttach()
 	GeneratePositions();
 	m_TargetLocation = TargetLocation(m_Time);
 	GenerateLaserVertices();
+
+	//Vector3f inputVector(0.523599f,0.785398f,1.5708f);
+	Vector3f inputVector(0.5708f, 0.785398f, 0.523599f);
+	Quaternion quat(inputVector);
+
+	Vector3f returnVector = quat.EulerAngles();
+
+	std::cout << "input: " << inputVector << std::endl;
+	std::cout << "output: " << returnVector << std::endl;
 }
 
 void GridLayer::OnDetach()

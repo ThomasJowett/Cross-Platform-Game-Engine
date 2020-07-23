@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "Scene.h"
-
-#include "math/Matrix.h"
+#include "Entity.h"
 
 #include "Components/Components.h"
 #include "Renderer/Renderer2D.h"
@@ -15,9 +14,12 @@ Scene::~Scene()
 {
 }
 
-entt::entity Scene::CreateEntity()
+Entity Scene::CreateEntity(const std::string& name)
 {
-	return entt::entity();
+	Entity entity(m_Registry.create(), this);
+	entity.AddComponent<TransformComponent>();
+	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
+	return entity;
 }
 
 void Scene::OnUpdate(float deltaTime)
