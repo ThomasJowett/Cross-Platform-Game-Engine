@@ -11,9 +11,11 @@ Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& specificati
 {
 	switch (Renderer::GetAPI())
 	{
+#ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create Frame Buffer: DirectX is not currently supported");
 		return CreateRef<DirectX11FrameBuffer>(specification);
+#endif // __WINDOWS__
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLFrameBuffer>(specification);
 	default:

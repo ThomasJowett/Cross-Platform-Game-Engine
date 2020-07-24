@@ -122,7 +122,7 @@ void ImGuiScriptView::Save()
 void ImGuiScriptView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
-	m_FilePath = SaveAsDialog(L"Save As...", m_FilePath.extension().c_str());
+	m_FilePath = SaveAsDialog(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
 	if (!m_FilePath.has_extension())
 		m_FilePath.replace_extension(ext);
 	Save();

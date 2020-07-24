@@ -245,7 +245,9 @@ void GridLayer::GenerateLaserVertices()
 
 	m_PlaneRotation = planeOrientation.EulerAngles();
 
-	m_PlaneNormal = planeOrientation.RotateVectorByQuaternion(Vector3f(0.0, 0.0, 1.0));
+	Vector3f normal = Vector3f(0.0,0.0, 1.0);
+
+	m_PlaneNormal = planeOrientation.RotateVectorByQuaternion(normal);
 
 
 	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);

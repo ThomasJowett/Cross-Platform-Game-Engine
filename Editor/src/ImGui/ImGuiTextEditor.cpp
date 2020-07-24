@@ -2026,7 +2026,9 @@ void TextEditor::Duplicate()
 
 		u.mAddedEnd = Coordinates(mState.mCursorPosition.mLine + 2, 0);
 
-		InsertTextAt(Coordinates(mState.mCursorPosition.mLine + 1, 0 ), duplicatedText.c_str());
+		Coordinates insertloc = Coordinates(mState.mCursorPosition.mLine + 1, 0 );
+
+		InsertTextAt(insertloc, duplicatedText.c_str());
 		u.mAddedStart = Coordinates(mState.mCursorPosition.mLine + 1, 0);
 	}
 

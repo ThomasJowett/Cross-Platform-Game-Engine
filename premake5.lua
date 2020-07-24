@@ -120,7 +120,11 @@ project "Engine"
 			"%{prj.name}/src/Platform/iOS**.h",
 			"%{prj.name}/src/Platform/iOS**.cpp",
 			"%{prj.name}/src/Platform/Mac OS**.h",
-			"%{prj.name}/src/Platform/Mac OS**.cpp"
+			"%{prj.name}/src/Platform/Mac OS**.cpp",
+			"%{prj.name}/src/Platform/Windows/Win32Input.h",
+			"%{prj.name}/src/Platform/Windows/Win32Input.cpp",
+			"%{prj.name}/src/Platform/Windows/Win32Window.h",
+			"%{prj.name}/src/Platform/Windows/Win32Window.cpp"
 		}
 		
 		defines
@@ -298,6 +302,12 @@ project "Editor"
 		defines
 		{
 			"__linux__"
+		}
+
+		excludes
+		{
+			"%{prj.name}/Editor.rc",
+			"%{prj.name}/resource.h"
 		}
 
 	filter "configurations:Debug"

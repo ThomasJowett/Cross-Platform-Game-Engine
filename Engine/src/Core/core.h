@@ -4,7 +4,6 @@
 #ifdef __WINDOWS__ //windows x64 & x86
 
 #elif defined(__linux__)
-	#error "Linux is not yet supported!"
 
 #elif defined(__APPLE__) || defined(__MACH__)
 	#include <TargetConditionals.h>

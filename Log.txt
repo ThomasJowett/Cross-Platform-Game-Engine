@@ -1,0 +1,5 @@
+[05/05/2020] [22:25:24] [info] ENGINE: Engine Version: 0.0.1
+[05/05/2020] [22:25:24] [info] ENGINE: Creating Window Example Game 1920 1080
+[05/05/2020] [22:25:24] [info] ENGINE: Initializing GLFW
+[05/05/2020] [22:25:24] [info] ENGINE: Graphics Card: Intel Open Source Technology Center Mesa DRI Mobile Intel® GM45 Express Chipset 
+[05/05/2020] [22:25:24] [info] ENGINE: OpenGl Version: 2.1 Mesa 19.2.8

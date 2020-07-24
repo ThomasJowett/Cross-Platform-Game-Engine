@@ -16,6 +16,10 @@ project "OpenFBX"
 	filter "system:windows"
 		systemversion "latest"
 		staticruntime "Off"
+
+	filter "system:linux"
+		systemversion "latest"
+		staticruntime "Off"
 		
 	filter "configurations:Debug"
 		runtime "Debug"

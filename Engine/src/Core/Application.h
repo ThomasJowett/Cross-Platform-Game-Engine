@@ -63,7 +63,7 @@ private:
 	friend int::main(int argc, char* argv[]);
 
 	static std::filesystem::path s_OpenDocument;
-	static std::filesystem::path Application::s_WorkingDirectory;
+	static std::filesystem::path s_WorkingDirectory;
 
 protected:
 	void PushLayer(Layer* layer);

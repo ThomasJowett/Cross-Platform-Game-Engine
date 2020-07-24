@@ -20,12 +20,14 @@ void RenderCommand::CreateRendererAPI()
 		s_RendererAPI = CreateScope<OpenGLRendererAPI>();
 		return;
 	}
+#ifdef __WINDOWS__
 	else if(api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
 		s_RendererAPI = CreateScope <DirectX11RendererAPI>();
 		return;
 	}
+#endif // __WINDOWS__
 	else if (api == "Metal")
 	{
 		RendererAPI::s_API = RendererAPI::API::Metal;
