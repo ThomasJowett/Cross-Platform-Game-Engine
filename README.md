@@ -1,5 +1,5 @@
 <h1 align="center" style="border-bottom: none;">
- <a href="https:github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
+ <a href="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
 </h1>
 <p align="center">
  <img width="128" height="128" src="/Editor/resources/Icons/Logo.png">
