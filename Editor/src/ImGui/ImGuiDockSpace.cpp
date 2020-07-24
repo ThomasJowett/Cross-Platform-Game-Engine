@@ -15,6 +15,7 @@
 #include "ImGuiPreferences.h"
 #include "ImGuiViewport.h"
 #include "ImGuiHeirachy.h"
+#include "ImGuiProperties.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
@@ -78,6 +79,7 @@ void ImGuiDockSpace::OnAttach()
 	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
 	Application::Get().AddOverlay(new ImGuiJoystickInfo(&m_ShowJoystickInfo));
 	Application::Get().AddOverlay(new ImGuiHeirachy(&m_ShowHierachy));
+	Application::Get().AddOverlay(new ImGuiProperties(&m_ShowProperties));
 }
 
 void ImGuiDockSpace::OnDetach()
@@ -215,7 +217,7 @@ void ImGuiDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Window"))
 		{
-			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties, false);//TODO: Create properties panel
+			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);//TODO: Create properties panel
 			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierachy);//TODO: create heirachy panel
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);

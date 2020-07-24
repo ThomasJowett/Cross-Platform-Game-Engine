@@ -1,6 +1,7 @@
 #include "ImGuiHeirachy.h"
 
 #include "IconsFontAwesome5.h"
+#include "ImGuiDockSpace.h"
 
 ImGuiHeirachy::ImGuiHeirachy(bool* show)
 	:m_Show(show), Layer("Heirachy")
@@ -30,6 +31,11 @@ void ImGuiHeirachy::OnImGuiRender()
 
 	if (ImGui::Begin(ICON_FA_SITEMAP" Heirachy", m_Show))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			ImGuiDockSpace::SetFocussedWindow(this);
+		}
+
 		if (m_Scene != nullptr)
 		{
 			if (ImGui::TreeNode(m_Scene->GetSceneName().c_str()))

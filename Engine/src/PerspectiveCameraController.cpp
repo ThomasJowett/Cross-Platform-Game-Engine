@@ -142,7 +142,7 @@ bool PerspectiveCameraController::OnMouseWheel(MouseWheelEvent& event)
 bool PerspectiveCameraController::OnWindowResized(WindowResizeEvent& event)
 {
 	if(event.GetHeight() > 0.0f && event.GetWidth() > 0.0f)
-		SetAspectRatio((float)(event.GetWidth() / event.GetHeight()));
+		SetAspectRatio((float)((float)event.GetWidth() / (float)event.GetHeight()));
 	return false;
 }
 
