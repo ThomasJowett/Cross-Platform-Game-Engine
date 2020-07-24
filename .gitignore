@@ -50,6 +50,7 @@ bin-int/
 
 # makefiles
 Makefile
+*.make
 
 # profile jsons
 /ExampleGame/Profile-Runtime.json
