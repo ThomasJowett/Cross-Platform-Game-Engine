@@ -28,6 +28,7 @@ void RenderCommand::CreateRendererAPI()
 		return;
 	}
 #endif // __WINDOWS__
+#ifdef __APPLE__
 	else if (api == "Metal")
 	{
 		RendererAPI::s_API = RendererAPI::API::Metal;
@@ -35,6 +36,7 @@ void RenderCommand::CreateRendererAPI()
 		s_RendererAPI = nullptr;
 		return;
 	}
+#endif // __APPLE__
 	else if (api == "Vulkan")
 	{
 		RendererAPI::s_API = RendererAPI::API::Vulkan;
@@ -42,4 +44,12 @@ void RenderCommand::CreateRendererAPI()
 		s_RendererAPI = nullptr;
 		return;
 	}
+	else if (api == "None")
+	{
+		RendererAPI::s_API = RendererAPI::API::None;
+		CORE_ASSERT(false, "API of none is not currently supported!");
+		s_RendererAPI = nullptr;
+	}
+
+	ENGINE_ERROR("API: {0} is not recognised!");
 }

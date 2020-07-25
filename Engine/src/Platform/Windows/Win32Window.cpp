@@ -10,8 +10,12 @@
 #include "Core/Application.h"
 #include "Core/Settings.h"
 #include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
+#include <windowsx.h>
 
-//extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+#include "Win32KeyCodes.h"
+
+extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	WindowData* data = (WindowData*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
@@ -41,13 +45,40 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
 		WindowResizeEvent event(width, height);
 		data->EventCallback(event);
+
+		switch (wParam)
+		{
+		case SIZE_MAXIMIZED:
+		{
+			bool maximize = true;
+
+			data->Maximized = maximize;
+
+			WindowMaximizedEvent event(maximize);
+			data->EventCallback(event);
+			break;
+		}
+		case SIZE_RESTORED:
+		{
+			bool maximize = false;
+
+			data->Maximized = maximize;
+
+			WindowMaximizedEvent event(maximize);
+			data->EventCallback(event);
+			break;
+		}
+		default:
+			break;
+		}
 		break;
 	}
 	case WM_CLOSE:
 	{
 		WindowCloseEvent event;
 		data->EventCallback(event);
-		break;
+
+		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	case WM_SETFOCUS:
 	{
@@ -71,35 +102,86 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 
 		WindowMoveEvent event(posX, posY);
 		data->EventCallback(event);
+
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	case WM_MOUSEMOVE:
+	{
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+
+		MouseMotionEvent event(xPos, yPos);
+		data->EventCallback(event);
 		break;
 	}
-	case WM_SYSCOMMAND:
+	case WM_LBUTTONDOWN:
 	{
-		switch (wParam)
-		{
-		case SC_MAXIMIZE:
-		{
-			bool maximize = true;
+		MouseButtonPressedEvent event(MOUSE_BUTTON_LEFT);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_LBUTTONUP:
+	{
+		MouseButtonReleasedEvent event(MOUSE_BUTTON_LEFT);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_RBUTTONDOWN:
+	{
+		MouseButtonPressedEvent event(MOUSE_BUTTON_RIGHT);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_RBUTTONUP:
+	{
+		MouseButtonReleasedEvent event(MOUSE_BUTTON_RIGHT);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_MBUTTONDOWN:
+	{
+		MouseButtonPressedEvent event(MOUSE_BUTTON_MIDDLE);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_MBUTTONUP:
+	{
+		MouseButtonReleasedEvent event(MOUSE_BUTTON_MIDDLE);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_MOUSEHWHEEL:
+	{
+		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
-			data->Maximized = maximize;
+		MouseWheelEvent event(delta, 0);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_MOUSEWHEEL:
+	{
+		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
-			WindowMaximizedEvent event(maximize);
-			data->EventCallback(event);
-			break;
-		}
-		case SC_MINIMIZE:
-		{
-			bool maximize = false;
-
-			data->Maximized = maximize;
-
-			WindowMaximizedEvent event(maximize);
-			data->EventCallback(event);
-			break;
-		}
-		default:
-			break;
-		}
+		MouseWheelEvent event(0, delta);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_KEYDOWN:
+	{
+		KeyPressedEvent event(VirtualCodesToKeyCodes(wParam), 0);
+		data->EventCallback(event);
+		break;
+	}
+	case WM_KEYUP:
+	{
+		KeyReleasedEvent event(VirtualCodesToKeyCodes(wParam));
+		data->EventCallback(event);
+		break;
+	}
+	case WM_CHAR:
+	{
+		KeyTypedEvent event(wParam);
+		data->EventCallback(event);
 		break;
 	}
 
@@ -190,8 +272,9 @@ HRESULT Win32Window::Init(const WindowProps& props)
 
 	//Register class
 	WNDCLASSEX wcex;
+	ZeroMemory(&wcex, sizeof(wcex));
 	wcex.cbSize = sizeof(WNDCLASSEX);
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
+	wcex.style = CS_HREDRAW | CS_VREDRAW | CS_CLASSDC;
 	wcex.lpfnWndProc = WndProc;
 	wcex.cbClsExtra = 0;
 	wcex.cbWndExtra = 0;
@@ -248,35 +331,15 @@ void Win32Window::MessageLoop()
 {
 	MSG msg = { 0 };
 
-	//if (ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam))
-	//	return;
-
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 	{
-		bool handled = false;
-		if (msg.message >= WM_KEYFIRST && msg.message <= WM_KEYLAST)
-		{
-			KeyPressedEvent event(msg.message, 0);
-			m_Data.EventCallback(event);
-			handled = true;
-		}
-		else if (msg.message == WM_QUIT)
-		{
-			WindowCloseEvent event;
-			m_Data.EventCallback(event);
-			handled = true;
-		}
-		else if (msg.message == WM_SETFOCUS)
-		{
-			WindowFocusEvent event;
-			m_Data.EventCallback(event);
-			handled = true;
-		}
+		ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam);
 
-		if (!handled)
+		if (msg.message == WM_QUIT)
 		{
+			return;
+		}
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
-		}
 	}
 }

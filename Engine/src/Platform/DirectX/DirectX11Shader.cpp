@@ -118,8 +118,10 @@ HRESULT DirectX11Shader::CompileShaderFromFile(WCHAR* szFilename, LPCSTR szEntry
 HRESULT DirectX11Shader::CompileShaders(std::string filename)
 {
 	if (!std::filesystem::exists(filename))
+	{
+		ENGINE_ERROR("{0} shader file does not exist");
 		return S_FALSE;
-
+	}
 	HRESULT hr;
 	ID3DBlob* pBlob = nullptr;
 

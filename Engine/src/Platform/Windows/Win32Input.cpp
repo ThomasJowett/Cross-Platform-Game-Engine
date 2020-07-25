@@ -1,9 +1,10 @@
 #include "stdafx.h"
 #include "Win32Input.h"
+#include "Win32KeyCodes.h"
 
 bool Win32Input::IsKeyPressedImpl(int keycode)
 {
-	return GetAsyncKeyState(keycode);
+	return GetAsyncKeyState(KeyCodesToVirtualCodes(keycode));
 }
 bool Win32Input::IsMouseButtonPressedImpl(int button)
 {
