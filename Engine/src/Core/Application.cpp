@@ -164,8 +164,6 @@ void Application::OnEvent(Event& e)
 {
 	PROFILE_FUNCTION();
 
-	ENGINE_DEBUG(e.to_string());
-
 	EventDispatcher dispatcher(e);
 	dispatcher.Dispatch<WindowCloseEvent>(BIND_EVENT_FN(Application::OnWindowClose));
 	if (!m_Running)

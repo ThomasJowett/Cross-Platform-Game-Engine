@@ -6,8 +6,8 @@
 #include "Renderer/RendererAPI.h"
 
 #include "imgui.h"
-//#include "examples/imgui_impl_glfw.h"
-//#include "examples/imgui_impl_opengl3.h"
+#include "examples/imgui_impl_glfw.h"
+#include "examples/imgui_impl_opengl3.h"
 
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
@@ -62,10 +62,10 @@ void ImGuiManager::Init()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		//GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
-		//
-		//if (ImGui_ImplGlfw_InitForOpenGL(window, true))
-		//	m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
+		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
+		
+		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
+			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
 	else
 	{
@@ -87,8 +87,8 @@ void ImGuiManager::Shutdown()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		//ImGui_ImplOpenGL3_Shutdown();
-		//ImGui_ImplGlfw_Shutdown();
+		ImGui_ImplOpenGL3_Shutdown();
+		ImGui_ImplGlfw_Shutdown();
 	}
 
 	ImGui::DestroyContext();
@@ -116,8 +116,8 @@ void ImGuiManager::Begin()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		//ImGui_ImplOpenGL3_NewFrame();
-		//ImGui_ImplGlfw_NewFrame();
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
 	}
 
 	ImGui::NewFrame();
@@ -142,14 +142,21 @@ void ImGuiManager::End()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		//GLFWwindow* backup_current_context = glfwGetCurrentContext();
+		GLFWwindow* backup_current_context;
+		if (api == RendererAPI::API::OpenGL)
+		{
+			backup_current_context = glfwGetCurrentContext();
+		}
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
-		//glfwMakeContextCurrent(backup_current_context);
+		if (api == RendererAPI::API::OpenGL)
+		{
+			glfwMakeContextCurrent(backup_current_context);
+		}
 	}
 }
