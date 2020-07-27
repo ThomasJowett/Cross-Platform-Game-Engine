@@ -12,6 +12,20 @@
 
 void ImGuiContentExplorer::Paste()
 {
+	for (auto path : m_CopiedPaths)
+	{
+		auto target = m_CurrentPath / path.filename();
+
+		try
+		{
+			std::filesystem::copy_file(path, target, std::filesystem::copy_options::overwrite_existing);
+		}
+		catch (std::exception& e) 
+		{
+			CLIENT_ERROR(e.what());
+		}
+	}
+	m_ForceRescan = true;
 }
 
 void ImGuiContentExplorer::Duplicate()
@@ -20,7 +34,24 @@ void ImGuiContentExplorer::Duplicate()
 
 void ImGuiContentExplorer::Delete()
 {
+	if (m_NumberSelected == 1)
+		std::filesystem::remove(m_CurrentSelectedPath);
+	else
+	{
+		for (size_t i = 0; i < m_SelectedFiles.size(); i++)
+		{
+			if (m_SelectedFiles[i])
+				std::filesystem::remove(m_Files[i]);
+		}
 
+		for (size_t i = 0; i < m_SelectedDirs.size(); i++)
+		{
+			if (m_SelectedDirs[i])
+				std::filesystem::remove(m_Dirs[i]);
+		}
+	}
+
+	m_ForceRescan = true;
 }
 
 void ImGuiContentExplorer::SelectAll()
@@ -34,7 +65,51 @@ void ImGuiContentExplorer::SelectAll()
 
 bool ImGuiContentExplorer::HasSelection() const
 {
-	return m_HasSelection;
+	return m_NumberSelected > 0;
+}
+
+bool ImGuiContentExplorer::Rename()
+{
+	static char inputBuffer[1024] = "";
+
+	memset(inputBuffer, 0, sizeof(inputBuffer));
+	for (int i = 0; i < m_CurrentSelectedPath.filename().string().length(); i++)
+	{
+		inputBuffer[i] = m_CurrentSelectedPath.filename().string()[i];
+	}
+	static bool hasFocus = false;
+	static bool once = false;
+
+	if (!hasFocus)
+	{
+		ImGui::SetKeyboardFocusHere();
+		hasFocus = true;
+	}
+
+	if (ImGui::InputText("##RenameBox", inputBuffer, sizeof(inputBuffer),
+		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+	{
+		std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / inputBuffer);
+		m_ForceRescan = true;
+
+		ImGui::CloseCurrentPopup();
+		hasFocus = false;
+		once = false;
+		return true;
+	}
+
+	if (!ImGui::IsItemActive())
+	{
+		if (once)
+		{
+			ImGui::CloseCurrentPopup();
+			hasFocus = false;
+			once = false;
+			return false;
+		}
+		once = true;
+	}
+	return false;
 }
 
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
@@ -107,28 +182,8 @@ void ImGuiContentExplorer::HandleKeyboardInputs()
 			Duplicate();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
 			SelectAll();
-	}
-}
-
-void ImGuiContentExplorer::HandleMouseInputs()
-{
-	ImGuiIO& io = ImGui::GetIO();
-	bool shift = io.KeyShift;
-	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
-	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
-
-	if (ImGui::IsWindowHovered())
-	{
-		if (!shift && !alt)
-		{
-			bool click = ImGui::IsMouseClicked(0);
-			bool doubleClick = ImGui::IsMouseDoubleClicked(0);
-			bool rightClick = ImGui::IsMouseClicked(1);
-
-			if (doubleClick)
-			{
-			}
-		}
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('R') && m_NumberSelected == 1)
+			ImGui::OpenPopup("Rename");
 	}
 }
 
@@ -141,7 +196,24 @@ void ImGuiContentExplorer::RightClickMenu()
 	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 	if (ImGui::Selectable("New Folder"))
-		CLIENT_DEBUG("new folder");
+	{
+		std::string newFolderName = m_CurrentPath.string() + "\\New folder";
+		int suffix = 1;
+
+		if (std::filesystem::exists(newFolderName))
+		{
+			while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
+			{
+				suffix++;
+			}
+
+			newFolderName += " (" + std::to_string(suffix) + ')';
+		}
+
+		std::filesystem::create_directory(newFolderName);
+		m_ForceRescan = true;
+		CLIENT_DEBUG(newFolderName);
+	}
 	if (ImGui::Selectable("New Object"))
 		CLIENT_DEBUG("new folder");
 	ImGui::PopStyleColor();
@@ -207,7 +279,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 		m_SelectedFiles.clear();
 		m_SelectedFiles.resize(m_Files.size());
 
-		m_HasSelection = false;
+		m_NumberSelected = 0;
 	}
 
 
@@ -221,6 +293,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 			ImGuiDockSpace::SetFocussedWindow(this);
 		}
 		HandleKeyboardInputs();
+		//HandleMouseInputs();
 
 		if (ImGui::IsWindowHovered())
 		{
@@ -232,7 +305,12 @@ void ImGuiContentExplorer::OnImGuiRender()
 			RightClickMenu();
 			ImGui::EndPopup();
 		}
-
+		ImGui::SetNextWindowPos(m_CurrentSelectedPosition);
+		if (ImGui::BeginPopup("Rename"))
+		{
+			Rename();
+			ImGui::EndPopup();
+		}
 		const ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
 
@@ -254,8 +332,13 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
+
 			}
-			historyBackClicked = ImGui::Button(ICON_FA_ARROW_LEFT);
+			else if (ImGui::IsWindowHovered())
+			{
+				historyBackClicked = ImGui::IsMouseClicked(3);
+			}
+			historyBackClicked |= ImGui::Button(ICON_FA_ARROW_LEFT);
 
 			if (!historyCanGoBack) {
 				ImGui::PopStyleColor(3);
@@ -266,9 +349,15 @@ void ImGuiContentExplorer::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
+
+
+			}
+			else if (ImGui::IsWindowHovered())
+			{
+				historyForwardClicked = ImGui::IsMouseClicked(4);
 			}
 			ImGui::SameLine();
-			historyForwardClicked = ImGui::Button(ICON_FA_ARROW_RIGHT);
+			historyForwardClicked |= ImGui::Button(ICON_FA_ARROW_RIGHT);
 
 			if (!historyCanGoForward) {
 				ImGui::PopStyleColor(3);
@@ -539,33 +628,37 @@ void ImGuiContentExplorer::OnImGuiRender()
 					ImGui::BeginGroup();
 					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
-
 						if (!ImGui::GetIO().KeyCtrl)
 						{
-							m_SelectedFiles.clear();
-							m_SelectedFiles.resize(m_Files.size());
-
-							m_SelectedFiles[i] = !m_SelectedFiles[i];
-
-							m_HasSelection = true;
-
 							if (ImGui::IsMouseDoubleClicked(0))
 							{
 								ViewerManager::OpenViewer(m_Files[i]);
 							}
+
+							m_SelectedFiles.clear();
+							m_SelectedFiles.resize(m_Files.size());
+
+							m_SelectedFiles[i] = true;
+
+							m_NumberSelected = 1;
+
+							m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+							m_CurrentSelectedPath = m_Files[i];
 						}
 						else
 						{
+							m_NumberSelected -= m_SelectedFiles[i];
+
 							m_SelectedFiles[i] = !m_SelectedFiles[i];
 
-							m_HasSelection = m_SelectedFiles[i];
+							m_NumberSelected += m_SelectedFiles[i];
 
 							if (ImGui::IsMouseDoubleClicked(0))
 							{
 								OpenAllSelectedItems();
 							}
 						}
-
+						CLIENT_DEBUG(m_NumberSelected);
 					}
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -597,7 +690,12 @@ void ImGuiContentExplorer::OnImGuiRender()
 
 void ImGuiContentExplorer::Copy()
 {
-	CLIENT_DEBUG("Copied");
+	m_CopiedPaths.clear();
+	for (size_t i = 0; i < m_SelectedFiles.size(); i++)
+	{
+		if (m_SelectedFiles[i])
+			m_CopiedPaths.push_back(m_Files[i]);
+	}
 }
 
 void ImGuiContentExplorer::Cut()

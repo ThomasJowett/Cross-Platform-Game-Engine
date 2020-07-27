@@ -38,7 +38,5 @@ public:
 
 	// e.g. ".txt;.jpg;.png". To use unwantedExtensions, set wantedExtensions="".
 	static std::vector<std::filesystem::path> GetFiles(const char* directoryName, const char* wantedExtensions, const char* unwantedExtensions = NULL, Sorting sorting = Sorting::ALPHABETIC);
-
-	static void Create(const char* directoryName);
 };
 

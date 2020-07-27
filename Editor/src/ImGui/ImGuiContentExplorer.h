@@ -106,8 +106,8 @@ private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));
 	void HandleKeyboardInputs();
-	void HandleMouseInputs();
 	void RightClickMenu();
+	bool Rename();
 
 	void OpenAllSelectedItems();
 private:
@@ -122,7 +122,9 @@ private:
 	std::vector<bool> m_SelectedDirs;
 	std::vector<bool> m_SelectedFiles;
 
-	bool m_HasSelection;
+	int m_NumberSelected;
+	ImVec2 m_CurrentSelectedPosition;
+	std::filesystem::path m_CurrentSelectedPath;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
 	History m_History;
@@ -133,4 +135,6 @@ private:
 	int m_TotalNumBrowsingEntries;
 	int m_NumBrowsingColumns;
 	int m_NumBrowsingEntriesPerColumn;
+
+	std::vector<std::filesystem::path> m_CopiedPaths;
 };
