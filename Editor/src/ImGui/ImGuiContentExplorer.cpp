@@ -10,6 +10,10 @@
 
 #include "IconsFontAwesome5.h"
 
+#include "FileSystem/FileDialog.h"
+
+#include "Importers/ImportManager.h"
+
 void ImGuiContentExplorer::Paste()
 {
 	for (auto path : m_CopiedPaths)
@@ -212,10 +216,24 @@ void ImGuiContentExplorer::RightClickMenu()
 
 		std::filesystem::create_directory(newFolderName);
 		m_ForceRescan = true;
-		CLIENT_DEBUG(newFolderName);
 	}
 	if (ImGui::Selectable("New Object"))
-		CLIENT_DEBUG("new folder");
+		CLIENT_DEBUG("new object");
+	if (ImGui::Selectable("Import Assets"))
+	{
+		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", L"Any File\0*.*\0Film Box (.fbx)\0*.fbx"));
+	}
+	ImGui::Separator();
+	if (ImGui::Selectable("Cut"))
+		Cut();
+	if (ImGui::Selectable("Copy"))
+		Copy();
+	if (ImGui::Selectable("Paste"))
+		Paste();
+	if (ImGui::Selectable("Duplicate"))
+		Duplicate();
+	if (ImGui::Selectable("Delete"))
+		Delete();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleVar(3);
 }
@@ -658,7 +676,6 @@ void ImGuiContentExplorer::OnImGuiRender()
 								OpenAllSelectedItems();
 							}
 						}
-						CLIENT_DEBUG(m_NumberSelected);
 					}
 
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
