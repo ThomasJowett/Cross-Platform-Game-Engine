@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "ImGuiConsole.h"
 
+#include "ImGuiUtilites.h"
 #include "imgui.h"
 
 uint16_t ImGuiConsole::s_MessageBufferCapacity = 200;
@@ -64,15 +65,14 @@ ImGuiConsole::ImGuiConsole(bool* show)
 	m_AllowScrollingToBottom = true;
 
 	m_LastBufferSize = 0;
+
+	m_Filter = new ImGuiTextFilter();
 }
 
 void ImGuiConsole::ImGuiRenderHeader()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 	const float spacing = style.ItemInnerSpacing.x;
-
-	// Text change level
-	ImGui::Text("Display");
 
 	ImGui::SameLine(0.0f, 2.0f * spacing);
 
@@ -81,6 +81,8 @@ void ImGuiConsole::ImGuiRenderHeader()
 	{
 		m_MessageBufferRenderFilter = Message::GetLowerLevel(m_MessageBufferRenderFilter);
 	}
+
+	ImGui::Tooltip("Lower Level");
 
 	ImGui::SameLine(0.0f, spacing);
 
@@ -103,6 +105,8 @@ void ImGuiConsole::ImGuiRenderHeader()
 	}
 	ImGui::PopItemWidth();
 
+	ImGui::Tooltip("Level");
+
 	ImGui::SameLine(0.0f, spacing);
 
 	// Buttons to quickly change level right
@@ -110,6 +114,14 @@ void ImGuiConsole::ImGuiRenderHeader()
 	{
 		m_MessageBufferRenderFilter = Message::GetHigherLevel(m_MessageBufferRenderFilter);
 	}
+
+	ImGui::Tooltip("Higher Level");
+
+	//Filter textbox
+	ImGui::SameLine(0.0f, spacing);
+	m_Filter->Draw("Search", 180);
+
+	ImGui::Tooltip("Filter (\"incl,-excl\") (\"error\")");
 
 	ImGui::SameLine(0.0f, spacing);
 
@@ -158,10 +170,10 @@ void ImGuiConsole::ImGuiRenderMessages()
 		auto messageStart = s_MessageBuffer.begin() + s_MessageBufferBegin;
 		if (*messageStart)// If contains old message here
 			for (auto message = messageStart; message != s_MessageBuffer.end(); message++)
-				(*message)->OnImGuiRender(m_MessageBufferRenderFilter);
+				(*message)->OnImGuiRender(m_MessageBufferRenderFilter, m_Filter);
 		if (s_MessageBufferBegin != 0) // Skipped first message in vector
 			for (auto message = s_MessageBuffer.begin(); message != messageStart; message++)
-				(*message)->OnImGuiRender(m_MessageBufferRenderFilter);
+				(*message)->OnImGuiRender(m_MessageBufferRenderFilter, m_Filter);
 
 		if (m_AllowScrollingToBottom && m_LastBufferSize < s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
 		{
@@ -188,9 +200,9 @@ ImGuiConsole::Message::Message(const std::string& message, Level level)
 {
 }
 
-void ImGuiConsole::Message::OnImGuiRender(Message::Level filter)
+void ImGuiConsole::Message::OnImGuiRender(Message::Level filter, ImGuiTextFilter* textFilter)
 {
-	if (m_Level != Level::Invalid && m_Level >= filter)
+	if (m_Level != Level::Invalid && m_Level >= filter && textFilter->PassFilter(m_Message.c_str()))
 	{
 		Colour colour = GetRenderColour(m_Level);
 		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, m_Message.c_str());

@@ -241,7 +241,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
-
+		
 		if (ImGui::BeginMenu("Help"))
 		{
 			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);

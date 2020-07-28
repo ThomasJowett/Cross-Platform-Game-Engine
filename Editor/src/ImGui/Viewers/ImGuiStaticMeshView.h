@@ -17,5 +17,7 @@ private:
 	std::filesystem::path m_FilePath;
 
 	std::string m_WindowName;
+
+	Mesh m_Mesh;
 };
 

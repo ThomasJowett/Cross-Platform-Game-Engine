@@ -1,7 +1,6 @@
 #include "ImGuiStaticMeshView.h"
 
 #include "IconsFontAwesome5.h"
-#include "Importers/FbxImporter.h"
 
 ImGuiStaticMeshView::ImGuiStaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
@@ -12,7 +11,7 @@ void ImGuiStaticMeshView::OnAttach()
 {
 	m_WindowName = ICON_FA_SHAPES + std::string(" " + m_FilePath.filename().string());
 
-	Importer::Fbx::ImportStaticMesh(m_FilePath);
+	m_Mesh.LoadModel(m_FilePath);
 }
 
 void ImGuiStaticMeshView::OnImGuiRender()

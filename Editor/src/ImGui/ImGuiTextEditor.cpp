@@ -2052,6 +2052,9 @@ void TextEditor::Undo(int aSteps)
 {
 	while (CanUndo() && aSteps-- > 0)
 		mUndoBuffer[--mUndoIndex].Undo(this);
+
+	if (!CanUndo())
+		mDirty = false;
 }
 
 void TextEditor::Redo(int aSteps)
@@ -2078,6 +2081,13 @@ bool TextEditor::SaveTextToFile(const std::filesystem::path& filepath)
 	}
 
 	return false;
+}
+
+void TextEditor::DiscardAllChanges()
+{
+	while (CanUndo())
+		mUndoBuffer[--mUndoIndex].Undo(this);
+	mDirty = false;
 }
 
 const TextEditor::Palette& TextEditor::GetDarkPalette()

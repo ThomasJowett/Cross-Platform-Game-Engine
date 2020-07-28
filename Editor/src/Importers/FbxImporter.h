@@ -4,11 +4,9 @@
 
 #include "Renderer/VertexArray.h"
 
-namespace Importer
+
+class FbxImporter
 {
-	class Fbx
-	{
-	public:
-		static Ref<VertexArray> ImportStaticMesh(const std::filesystem::path& filepath);
-	};
-}
+public:
+	static void ImportAssests(const std::filesystem::path& filepath, const std::filesystem::path& destination);
+};

@@ -1,16 +1,14 @@
 #include "FbxImporter.h"
 
-Ref<VertexArray> Importer::Fbx::ImportStaticMesh(const std::filesystem::path& filepath)
+void FbxImporter::ImportAssests(const std::filesystem::path& filepath, const std::filesystem::path& destination)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	FILE* fp = fopen(filepath.string().c_str(), "rb");
 	if (!fp)
 	{
 		CLIENT_ERROR("Could not open {0}", filepath.string());
-		return returnModel;
+		return;
 	}
 
 	fseek(fp, 0, SEEK_END);
@@ -24,7 +22,7 @@ Ref<VertexArray> Importer::Fbx::ImportStaticMesh(const std::filesystem::path& fi
 	if (!scene)
 	{
 		CLIENT_ERROR(ofbx::getError());
-		return returnModel;
+		return;
 	}
 
 	for (size_t i = 0; i < scene->getMeshCount(); i++)
@@ -75,8 +73,18 @@ Ref<VertexArray> Importer::Fbx::ImportStaticMesh(const std::filesystem::path& fi
 			indicesList.push_back(sixi + 3);
 		}
 
-	}
+		std::string meshName = std::string(mesh.name);
 
-	//TODO: create the vertex array
-	return returnModel;
+		std::filesystem::path outFilename = destination / meshName.substr(meshName.find_last_of("::") + 1);
+		outFilename.replace_extension(".staticMesh");
+		std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
+		outbin.write((char*)&vertexCount, sizeof(uint32_t));
+		outbin.write((char*)&indexCount, sizeof(uint32_t));
+		outbin.write((char*)&verticesList[0], sizeof(float) * vertexCount);
+		outbin.write((char*)&indicesList[0], sizeof(uint32_t) * indexCount);
+		outbin.close();
+	}
+	//TODO: import skeletons
+	//TODO: import textures
+	return;
 }

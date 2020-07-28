@@ -268,6 +268,7 @@ public:
 	void Redo(int aSteps = 1) override;
 
 	bool SaveTextToFile(const std::filesystem::path& filepath);
+	void DiscardAllChanges();
 
 	const std::filesystem::path& GetFilePath() { return mFilePath; }
 	void SetFilePath(const std::filesystem::path& filepath) { mFilePath = filepath; }

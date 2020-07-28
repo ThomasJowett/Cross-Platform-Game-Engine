@@ -5,6 +5,7 @@
 class Mesh
 {
 public:
+	Mesh() = default;
 	Mesh(std::filesystem::path filepath);
 	Mesh(Ref<VertexArray> vertexArray, std::string name);
 	~Mesh() = default;

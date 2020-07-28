@@ -95,6 +95,11 @@ static std::vector<std::string> MultiFileDialog(const wchar_t* title = L"Open...
 	wchar_t* str = ofn.lpstrFile;
 	std::wstring directory = str;
 	str += (directory.length() + 1);
+	if (!*str)
+	{
+		files.push_back(std::string(directory.begin(), directory.end()));
+		return files;
+	}
 	while (*str) {
 		std::wstring filename = str;
 		str += (filename.length() + 1);

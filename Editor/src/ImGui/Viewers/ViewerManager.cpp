@@ -20,7 +20,8 @@ static const char* ImageExtensions[] =
 
 static const char* MeshExtensions[] =
 {
-	".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
+	".staticmesh"
+	//".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
 };
 
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)

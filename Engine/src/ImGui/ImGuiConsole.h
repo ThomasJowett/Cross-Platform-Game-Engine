@@ -4,6 +4,8 @@
 
 #include "Core/Layer.h"
 
+class ImGuiTextFilter;
+
 class ImGuiConsole
 	:public Layer
 {
@@ -26,7 +28,7 @@ public:
 
 		Message(const std::string& message = "", Level level = Level::Invalid);
 
-		void OnImGuiRender(Level filter);
+		void OnImGuiRender(Level filter, ImGuiTextFilter* textFilter);
 
 		static Level GetLowerLevel(Level level);
 		static Level GetHigherLevel(Level level);
@@ -67,4 +69,6 @@ private:
 	static uint16_t s_MessageBufferSize;
 	static uint16_t s_MessageBufferBegin;
 	static std::vector<Ref<Message>> s_MessageBuffer;
+
+	ImGuiTextFilter* m_Filter;
 };

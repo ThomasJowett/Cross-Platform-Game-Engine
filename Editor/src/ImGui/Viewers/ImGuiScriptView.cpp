@@ -34,10 +34,36 @@ void ImGuiScriptView::OnImGuiRender()
 	{
 		if (m_TextEditor.NeedsSaving())
 		{
-			CLIENT_DEBUG("needs saving");
+			ImGui::OpenPopup("Save Prompt");
+		}
+
+		if (ImGui::BeginPopupModal("Save Prompt"))
+		{
+			ImGui::Text("Save unsaved changes?");
+			if (ImGui::Button("Save"))
+			{
+				m_TextEditor.SaveTextToFile(m_FilePath);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Don't Save"))
+			{
+				m_TextEditor.DiscardAllChanges();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				*m_Show = true;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
 		}
 		return;
 	}
+
+	
 
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 

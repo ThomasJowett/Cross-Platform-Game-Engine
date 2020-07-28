@@ -221,7 +221,8 @@ void ImGuiContentExplorer::RightClickMenu()
 		CLIENT_DEBUG("new object");
 	if (ImGui::Selectable("Import Assets"))
 	{
-		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", L"Any File\0*.*\0Film Box (.fbx)\0*.fbx"));
+		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", L"Any File\0*.*\0Film Box (.fbx)\0*.fbx"), m_CurrentPath);
+		m_ForceRescan = true;
 	}
 	ImGui::Separator();
 	if (ImGui::Selectable("Cut"))
