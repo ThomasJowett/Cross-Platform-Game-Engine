@@ -61,6 +61,8 @@ private:
 	OrthogrpahicCameraController m_OrthoCamera;
 	Ref<VertexArray> m_TorusVertexArray;
 
+	Ref<Mesh> m_Mesh;
+
 	Ref<Texture2D> m_Texture;
 
 	Mode m_Mode;

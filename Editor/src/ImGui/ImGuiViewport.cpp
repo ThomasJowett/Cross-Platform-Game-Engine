@@ -18,15 +18,17 @@ void ImGuiViewportPanel::OnAttach()
 	//TEMP CODE
 	m_TorusVertexArray = GeometryGenerator::CreateTorus(0.7f, 0.25f, 30);
 
+	m_Mesh = CreateRef<Mesh>(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
+
 	m_ShaderLibrary.Load("NormalMap");
-	m_Texture = Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png");
+	m_Texture = Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 
 	m_Scene = CreateRef<Scene>();
 
-	Entity square = m_Scene->CreateEntity("Test Square");
-	square.AddComponent<SpriteComponent>(Colour(Colours::GREEN));
+	//Entity square = m_Scene->CreateEntity("Test Square");
+	//square.AddComponent<SpriteComponent>(Colour(Colours::GREEN));
 }
 
 void ImGuiViewportPanel::OnUpdate(float deltaTime)
@@ -71,8 +73,8 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 	m_Texture->Bind();
 
 	//Torus
-	Renderer::Submit(shader, m_TorusVertexArray, Matrix4x4::Translate({ 0.0f, 0.0f,0.0f })
-		* Matrix4x4::Rotate(Vector3f(PI / 2.0f, 0.0f, 0.0f)));
+	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
+		* Matrix4x4::Rotate(Vector3f(-PI / 2.0f, 0.0f, 0.0f)));
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

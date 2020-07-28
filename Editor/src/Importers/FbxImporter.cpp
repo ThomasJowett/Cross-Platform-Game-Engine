@@ -46,16 +46,42 @@ void FbxImporter::ImportAssests(const std::filesystem::path& filepath, const std
 			verticesList.push_back(vertices[i].y);
 			verticesList.push_back(vertices[i].z);
 
-			verticesList.push_back(normals[i].x);
-			verticesList.push_back(normals[i].y);
-			verticesList.push_back(normals[i].z);
+			if (normals)
+			{
+				verticesList.push_back(normals[i].x);
+				verticesList.push_back(normals[i].y);
+				verticesList.push_back(normals[i].z);
+			}
+			else
+			{
+				verticesList.push_back(0.0f);
+				verticesList.push_back(0.0f);
+				verticesList.push_back(0.0f);
+			}
 
-			verticesList.push_back(tangents[i].x);
-			verticesList.push_back(tangents[i].y);
-			verticesList.push_back(tangents[i].z);
+			if (tangents)
+			{
+				verticesList.push_back(tangents[i].x);
+				verticesList.push_back(tangents[i].y);
+				verticesList.push_back(tangents[i].z);
+			}
+			else
+			{
+				verticesList.push_back(0.0f);
+				verticesList.push_back(0.0f);
+				verticesList.push_back(0.0f);
+			}
 
-			verticesList.push_back(texcoords[i].x);
-			verticesList.push_back(texcoords[i].y);
+			if (texcoords)
+			{
+				verticesList.push_back(texcoords[i].x);
+				verticesList.push_back(texcoords[i].y);
+			}
+			else
+			{
+				verticesList.push_back(0.0f);
+				verticesList.push_back(0.0f);
+			}
 		}
 
 		std::vector<uint32_t> indicesList;
@@ -64,24 +90,24 @@ void FbxImporter::ImportAssests(const std::filesystem::path& filepath, const std
 		int indexCount = geom.getIndexCount();
 		for (size_t i = 0; i < indexCount; i++)
 		{
-			int sixi = i * 6;
-			indicesList.push_back(sixi);
-			indicesList.push_back(sixi + 1);
-			indicesList.push_back(sixi + 2);
-			indicesList.push_back(sixi);
-			indicesList.push_back(sixi + 2);
-			indicesList.push_back(sixi + 3);
+			int index = i * 3;
+			indicesList.push_back(index);
+			indicesList.push_back(index + 1);
+			indicesList.push_back(index + 2);
 		}
 
+
 		std::string meshName = std::string(mesh.name);
+
+		int numIndices = indicesList.size();
 
 		std::filesystem::path outFilename = destination / meshName.substr(meshName.find_last_of("::") + 1);
 		outFilename.replace_extension(".staticMesh");
 		std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
 		outbin.write((char*)&vertexCount, sizeof(uint32_t));
-		outbin.write((char*)&indexCount, sizeof(uint32_t));
-		outbin.write((char*)&verticesList[0], sizeof(float) * vertexCount);
-		outbin.write((char*)&indicesList[0], sizeof(uint32_t) * indexCount);
+		outbin.write((char*)&numIndices, sizeof(uint32_t));
+		outbin.write((char*)&verticesList[0], sizeof(float) * vertexCount * 11);
+		outbin.write((char*)&indicesList[0], sizeof(uint32_t) * numIndices);
 		outbin.close();
 	}
 	//TODO: import skeletons
