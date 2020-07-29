@@ -2,18 +2,15 @@
 
 #include "Core/core.h"
 #include "Renderer/Mesh.h"
+#include "Renderer/Material.h"
 
-class StaticMeshComponent
+struct MeshComponent
 {
-public:
-	StaticMeshComponent()
-	{
-	}
+	Mesh Geometry;
+	Material material;
 
-	~StaticMeshComponent()
-	{
-	}
-
-private:
-	Ref<Mesh> m_Mesh;
+	MeshComponent() = default;
+	MeshComponent(const MeshComponent&) = default;
+	MeshComponent(const Mesh& mesh, const Material& material)
+		:Geometry(mesh),material(material) {}
 };
