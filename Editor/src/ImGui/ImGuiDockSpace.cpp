@@ -73,9 +73,11 @@ void ImGuiDockSpace::OnAttach()
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierachy = Settings::GetBool("Windows", "Hierachy");
 
+	m_ContentExplorer = new ImGuiContentExplorer(&m_ShowContentExplorer);
+
 	Application::Get().AddOverlay(new ImGuiViewportPanel(&m_ShowViewport));
 	Application::Get().AddOverlay(new ImGuiEditorPreferences(&m_ShowEditorPreferences));
-	Application::Get().AddOverlay(new ImGuiContentExplorer(&m_ShowContentExplorer));
+	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
 	Application::Get().AddOverlay(new ImGuiJoystickInfo(&m_ShowJoystickInfo));
 	Application::Get().AddOverlay(new ImGuiHeirachy(&m_ShowHierachy));
@@ -98,6 +100,8 @@ void ImGuiDockSpace::OnDetach()
 
 void ImGuiDockSpace::OnEvent(Event& event)
 {
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(ImGuiDockSpace::OnOpenProject));
 }
 
 void ImGuiDockSpace::OnUpdate(float deltaTime)
@@ -292,4 +296,18 @@ void ImGuiDockSpace::OnImGuiRender()
 	//}
 
 	//ImGui::End();
+}
+
+void ImGuiDockSpace::OpenProject(const std::filesystem::path& filename)
+{
+	ENGINE_INFO("Opened Project: {0}", filename.string());
+
+	m_ContentExplorer->SwitchTo(filename);
+}
+
+bool ImGuiDockSpace::OnOpenProject(AppOpenDocumentChange& event)
+{
+	OpenProject(Application::Get().GetOpenDocument());
+
+	return false;
 }

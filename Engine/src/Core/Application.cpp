@@ -15,6 +15,8 @@ Application* Application::s_Instance = nullptr;
 std::filesystem::path Application::s_OpenDocument;
 std::filesystem::path Application::s_WorkingDirectory;
 
+Application::EventCallbackFn Application::s_EventCallback;
+
 Application::Application(const WindowProps& props)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
@@ -33,6 +35,8 @@ Application::Application(const WindowProps& props)
 	Renderer::Init();
 
 	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+
+	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
 
 	m_ImGuiManager = new ImGuiManager();
 	m_ImGuiManager->Init();
@@ -313,6 +317,8 @@ void Application::SetOpenDocument(const std::string& filepath)
 	if (std::filesystem::exists(filepath))
 	{
 		s_OpenDocument = filepath;
+		AppOpenDocumentChange event;
+		s_EventCallback(event);
 	}
 }
 

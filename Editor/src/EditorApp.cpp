@@ -1,6 +1,7 @@
 #include "EditorApp.h"
 
 #include "ImGui/ImGuiDockSpace.h"
+#include "ImGui/ImGuiProjectsStartScreen.h"
 
 Editor::Editor(const WindowProps& props)
 	:Application(props)
@@ -13,6 +14,7 @@ Editor::Editor(const WindowProps& props)
 	}
 	else
 	{
+		PushOverlay(new ImGuiProjectsStartScreen());
 		CLIENT_INFO("No project has been opened");
 	}
 

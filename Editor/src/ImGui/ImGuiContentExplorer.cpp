@@ -116,6 +116,23 @@ bool ImGuiContentExplorer::Rename()
 	return false;
 }
 
+void ImGuiContentExplorer::SwitchTo(const std::filesystem::path& path)
+{
+	m_CurrentPath = path;
+
+	if (std::filesystem::is_regular_file(m_CurrentPath))
+	{
+		m_CurrentPath.remove_filename();
+		std::string path = m_CurrentPath.string();
+		path.pop_back();
+		m_CurrentPath = path;
+	}
+
+	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
+	m_History.SwitchTo(path);
+	m_ForceRescan = true;
+}
+
 std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -487,18 +504,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 				{
 					if (std::filesystem::exists(inputBuffer))
 					{
-						m_CurrentPath = inputBuffer;
-
-						if (std::filesystem::is_regular_file(inputBuffer))
-						{
-							m_CurrentPath.remove_filename();
-							std::string path = m_CurrentPath.string();
-							path.pop_back();
-							m_CurrentPath = path;
-						}
-						m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
-						m_ForceRescan = true;
-						m_History.SwitchTo(m_CurrentPath);
+						SwitchTo(inputBuffer);
 					}
 					else
 					{

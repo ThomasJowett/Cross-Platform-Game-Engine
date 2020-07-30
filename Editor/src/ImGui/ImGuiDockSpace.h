@@ -3,6 +3,8 @@
 #include "Core/Layer.h"
 #include "include.h"
 
+class ImGuiContentExplorer;
+
 class ImGuiDockSpace :
 	public Layer
 {
@@ -19,6 +21,9 @@ public:
 
 	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFoccusedPanel = focussedPanel; }
 
+private:
+	void OpenProject(const std::filesystem::path& filename);
+	bool OnOpenProject(AppOpenDocumentChange& event);
 private:
 	bool m_Show;
 
@@ -43,4 +48,6 @@ private:
 	bool m_ShowTargetPlatformToolbar;
 
 	static Layer* s_CurrentlyFoccusedPanel;
+
+	ImGuiContentExplorer* m_ContentExplorer;
 };

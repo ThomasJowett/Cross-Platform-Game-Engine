@@ -9,6 +9,7 @@ int main(int argc, char* argv[]);
 
 class Application
 {
+	using EventCallbackFn = std::function<void(Event&)>;
 public:
 	Application(const WindowProps& props);
 	Application(const Application&) = delete;
@@ -64,6 +65,8 @@ private:
 
 	static std::filesystem::path s_OpenDocument;
 	static std::filesystem::path s_WorkingDirectory;
+
+	static EventCallbackFn s_EventCallback;
 
 protected:
 	void PushLayer(Layer* layer);

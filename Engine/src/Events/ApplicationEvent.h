@@ -120,3 +120,12 @@ public:
 	EVENT_CLASS_TYPE(APP_TICK);
 	EVENT_CLASS_CATEGORY(EC_APPLICATION);
 };
+
+class AppOpenDocumentChange : public Event
+{
+public:
+	AppOpenDocumentChange() {}
+
+	EVENT_CLASS_TYPE(APP_OPEN_DOCUMENT_CHANGE);
+	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+};
