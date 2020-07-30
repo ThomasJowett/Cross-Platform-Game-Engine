@@ -1,6 +1,6 @@
 workspace "Cross Platform Game Engine"
 	architecture "x86_64"
-	startproject "ExampleGame"
+	startproject "Editor"
 
 	configurations
 	{
