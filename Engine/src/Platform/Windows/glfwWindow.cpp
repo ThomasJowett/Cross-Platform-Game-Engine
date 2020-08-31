@@ -200,6 +200,11 @@ void glfwWindow::EnableCursor()
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
+void glfwWindow::SetCursorPosition(double xpos, double ypos)
+{
+	glfwSetCursorPos(m_Window, xpos, ypos);
+}
+
 void glfwWindow::Init(const WindowProps& props)
 {
 	Input::SetInput(RendererAPI::GetAPI());

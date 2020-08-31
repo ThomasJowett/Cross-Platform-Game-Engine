@@ -8,11 +8,7 @@ Editor::Editor(const WindowProps& props)
 {
 	RenderCommand::SetClearColour(Colours::GREY);
 
-	if (!Application::GetOpenDocument().empty())
-	{
-		CLIENT_INFO("Opening project: {0}", Application::GetOpenDocument().string());
-	}
-	else
+	if (Application::GetOpenDocument().empty())
 	{
 		PushOverlay(new ImGuiProjectsStartScreen());
 		CLIENT_INFO("No project has been opened");

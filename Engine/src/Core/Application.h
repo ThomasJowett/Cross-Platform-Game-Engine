@@ -31,7 +31,7 @@ public:
 
 	void Close() { m_Running = false; }
 
-	static void SetOpenDocument(const std::string& filepath);
+	static void SetOpenDocument(const std::filesystem::path& filepath);
 	static const std::filesystem::path& GetOpenDocument();
 
 	static const std::filesystem::path& GetWorkingDirectory() { return s_WorkingDirectory; }

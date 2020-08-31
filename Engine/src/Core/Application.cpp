@@ -92,7 +92,7 @@ void Application::Run()
 		currentTime = newTime;
 
 		accumulator += frameTime;
-		
+
 		// On Fixed update
 		while (accumulator >= deltaTime)
 		{
@@ -217,9 +217,9 @@ void Application::PopLayer(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
-	if(m_LayerStack.PopLayer(layer))
+	if (m_LayerStack.PopLayer(layer))
 		layer->OnDetach();
-	if (layer) 
+	if (layer)
 		delete layer;
 }
 
@@ -227,9 +227,9 @@ void Application::PopOverlay(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
-	if(m_LayerStack.PopOverlay(layer))
+	if (m_LayerStack.PopOverlay(layer))
 		layer->OnDetach();
-	if(layer) 
+	if (layer)
 		delete layer;
 }
 
@@ -300,7 +300,7 @@ double Application::GetTime()
 		//most accurate method of getting system time
 		LARGE_INTEGER now;
 		QueryPerformanceCounter(&now);
-		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart)/1000.0;
+		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
 	}
 	else
 	{
@@ -312,13 +312,16 @@ double Application::GetTime()
 	return glfwGetTime();
 }
 
-void Application::SetOpenDocument(const std::string& filepath)
+void Application::SetOpenDocument(const std::filesystem::path& filepath)
 {
 	if (std::filesystem::exists(filepath))
 	{
 		s_OpenDocument = filepath;
-		AppOpenDocumentChange event;
-		s_EventCallback(event);
+		if (s_Instance)
+		{
+			AppOpenDocumentChange event;
+			s_EventCallback(event);
+		}
 	}
 }
 

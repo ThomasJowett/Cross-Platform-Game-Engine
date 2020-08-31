@@ -51,7 +51,8 @@ private:
 private:
 	bool* m_Show;
 	bool m_WindowHovered = false;
-	bool m_CursorDisabled;
+	bool m_WindowFocussed = false;
+	bool m_CursorDisabled = false;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
 	Vector2f m_RelativeMousePosition;
@@ -59,11 +60,6 @@ private:
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
 	OrthogrpahicCameraController m_OrthoCamera;
-	Ref<VertexArray> m_TorusVertexArray;
-
-	Ref<Mesh> m_Mesh;
-
-	Ref<Texture2D> m_Texture;
 
 	Mode m_Mode;
 

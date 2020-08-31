@@ -12,4 +12,7 @@ public:
 	void OnImGuiRender() override;
 	void OnAttach() override;
 	void OnDetach() override;
+
+private:
+	bool m_CreateProject;
 };

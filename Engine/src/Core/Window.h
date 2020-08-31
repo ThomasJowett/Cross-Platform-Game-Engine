@@ -61,6 +61,8 @@ public:
 	virtual void DisableCursor() = 0;
 	virtual void EnableCursor() = 0;
 
+	virtual void SetCursorPosition(double xpos, double ypos) = 0;
+
 	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0) = 0;
 
 	virtual void MaximizeWindow() = 0; 

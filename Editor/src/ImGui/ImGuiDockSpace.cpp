@@ -82,6 +82,11 @@ void ImGuiDockSpace::OnAttach()
 	Application::Get().AddOverlay(new ImGuiJoystickInfo(&m_ShowJoystickInfo));
 	Application::Get().AddOverlay(new ImGuiHeirachy(&m_ShowHierachy));
 	Application::Get().AddOverlay(new ImGuiProperties(&m_ShowProperties));
+
+	if (!Application::GetOpenDocument().empty())
+	{
+		OpenProject(Application::GetOpenDocument());
+	}
 }
 
 void ImGuiDockSpace::OnDetach()

@@ -38,6 +38,7 @@ public:
 
 	virtual void DisableCursor() override;
 	virtual void EnableCursor() override;
+	virtual void SetCursorPosition(double xpos, double ypos) override;
 
 private:
 	void Init(const WindowProps& props);

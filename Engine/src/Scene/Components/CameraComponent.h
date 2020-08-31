@@ -1,16 +1,18 @@
 #pragma once
 
-#include "Renderer/Camera.h"
+#include "Scene/SceneCamera.h"
 
 struct CameraComponent
 {
-	Camera m_Camera;
+	SceneCamera Camera;
+	bool Primary = true;
+	bool FixedAspectRatio = false;
 
 	CameraComponent() = default;
 	CameraComponent(const CameraComponent&) = default;
-	CameraComponent(const Camera& camera)
-		:m_Camera(camera){}
+	CameraComponent(const SceneCamera& camera, bool mainCamera = true, bool fixedAspectRatio = true)
+		:Camera(camera){}
 
-	operator Camera& () { return m_Camera; }
-	operator const Camera& () const { return m_Camera; }
+	operator SceneCamera& () { return Camera; }
+	operator const SceneCamera& () const { return Camera; }
 };

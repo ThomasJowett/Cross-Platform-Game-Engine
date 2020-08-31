@@ -5,3 +5,4 @@
 #include "SpriteComponent.h"
 #include "TagComponent.h"
 #include "CameraComponent.h"
+#include "NativeScriptComponent.h"

@@ -1,6 +1,5 @@
 #include "ImGuiViewport.h"
 
-#include "imgui/imgui_internal.h"
 #include "ImGui/ImGuiDockSpace.h"
 
 #include "IconsFontAwesome5.h"
@@ -16,19 +15,56 @@ ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 void ImGuiViewportPanel::OnAttach()
 {
 	//TEMP CODE
-	m_TorusVertexArray = GeometryGenerator::CreateTorus(0.7f, 0.25f, 30);
 
-	m_Mesh = CreateRef<Mesh>(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
+	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
 
 	m_ShaderLibrary.Load("NormalMap");
-	m_Texture = Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png");
+	Material material(m_ShaderLibrary.Get("NormalMap"));
+
+	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 
 	m_Scene = CreateRef<Scene>();
-
+	//TODO: load the default scene and deserialize it
+	//for now it just loads a mesh of a bucket
 	//Entity square = m_Scene->CreateEntity("Test Square");
 	//square.AddComponent<SpriteComponent>(Colour(Colours::GREEN));
+
+	Entity entity = m_Scene->CreateEntity("Bucket");
+	entity.AddComponent<MeshComponent>(mesh, material);
+
+	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
+		* Matrix4x4::Rotate(Vector3f(-PI / 2.0f, 0.0f, 0.0f));
+
+	//Camera camera = Camera(Matrix4x4::PerspectiveRH(PI * 0.5, 16.0 / 9.0, 1.0, -1.0), Matrix4x4());
+	SceneCamera camera;
+
+	camera.SetPosition({ 0.0, 0.0, 2.0 });
+
+	entity = m_Scene->CreateEntity("MainCamera");
+	entity.AddComponent<CameraComponent>(camera, true);
+
+	class CameraController :public ScriptableEntity
+	{
+	public:
+		void OnCreate()
+		{
+
+		}
+
+		void OnDestroy()
+		{
+
+		}
+
+		void OnUpdate(float deltaTime)
+		{
+			CLIENT_DEBUG(deltaTime);
+		}
+	};
+
+	//entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 }
 
 void ImGuiViewportPanel::OnUpdate(float deltaTime)
@@ -39,44 +75,38 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 	RenderCommand::Clear();
 
 	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
-	shader->Bind();
-
+	//shader->Bind();
+	//
 	shader->SetInt("u_texture", 0);
 	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
 	shader->SetFloat("u_tilingFactor", 1.0f);
 
-
-	static bool cursorDisabled = false;
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
-	if (cursorDisabled)
+	if (m_CursorDisabled)
 		m_CameraController.OnUpdate(deltaTime);
 
-	if (m_WindowHovered && rightMouseDown && !cursorDisabled)
+	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
 	{
 		Application::GetWindow().DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
-		cursorDisabled = true;
+		m_CursorDisabled = true;
 	}
 
-	else if (cursorDisabled && !rightMouseDown)
+	else if (m_CursorDisabled && !rightMouseDown)
 	{
-		cursorDisabled = false;
+		m_CursorDisabled = false;
 		Application::GetWindow().EnableCursor();
 	}
 
-	Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
-	m_Scene->OnUpdate(deltaTime);
-	Renderer2D::EndScene();
-
-	//TODO: have a scene object that will be traversed here instead of creating a scene manually
+	Renderer2D::ResetStats();
 	Renderer::BeginScene(*m_CameraController.GetCamera());
-	m_Texture->Bind();
+	//Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
 
-	//Torus
-	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
-		* Matrix4x4::Rotate(Vector3f(-PI / 2.0f, 0.0f, 0.0f)));
+	m_Scene->OnUpdate(deltaTime);
 
-	Renderer::EndScene();
+	//Renderer2D::EndScene();
+	//Renderer::EndScene();
+
 	m_Framebuffer->UnBind();
 }
 
@@ -87,6 +117,8 @@ void ImGuiViewportPanel::OnFixedUpdate()
 	{
 		m_Framebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+
+		m_Scene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 	}
 }
 
@@ -112,6 +144,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 		HandleKeyboardInputs();
 
 		m_WindowHovered = ImGui::IsWindowHovered();
+		m_WindowFocussed = ImGui::IsWindowFocused();
 
 		if (m_WindowHovered)
 		{
@@ -122,7 +155,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 			}
 		}
 
-		if (ImGui::IsWindowFocused())
+		if (m_WindowFocussed)
 		{
 			ImGuiDockSpace::SetFocussedWindow(this);
 		}
@@ -170,6 +203,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 
 		ImGui::Text("%.1f", io.Framerate);
+		ImGui::Text(std::to_string(m_ViewportSize.x / m_ViewportSize.y).c_str());
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}

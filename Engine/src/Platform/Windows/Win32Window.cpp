@@ -243,6 +243,10 @@ void Win32Window::EnableCursor()
 	//TODO: enable cursor
 }
 
+void Win32Window::SetCursorPosition(double xpos, double ypos)
+{
+}
+
 void Win32Window::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	//TODO: change window mode

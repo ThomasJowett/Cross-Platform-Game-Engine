@@ -48,3 +48,18 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);
 }
+
+void Renderer::Submit(const Material& material, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
+{
+	Ref<Shader> shader = material.GetShader();
+	shader->Bind();
+	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
+	shader->SetMat4("u_ModelMatrix", transform, true);
+
+	material.BindTextures();
+
+	CORE_ASSERT(vertexArray, "No data in vertex array");
+
+	vertexArray->Bind();
+	RenderCommand::DrawIndexed(vertexArray);
+}

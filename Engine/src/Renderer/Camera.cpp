@@ -7,6 +7,13 @@ Camera::Camera(Matrix4x4 ProjectionMatrix, Matrix4x4 viewMatrix)
 	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 }
 
+Camera::Camera()
+{
+	m_ProjectionMatrix = Matrix4x4();
+	m_ViewMatrix = Matrix4x4();
+	m_ViewProjectionMatrix = Matrix4x4();
+}
+
 void Camera::RecalculateViewMatrix()
 {
 	PROFILE_FUNCTION();

@@ -2,6 +2,8 @@
 
 #include "include.h"
 
+#include "ViewportCameraController.h"
+
 class ImGuiStaticMeshView :
 	public Layer
 {
@@ -11,6 +13,8 @@ public:
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;
+	virtual void OnUpdate(float deltaTime) override;
+	virtual void OnFixedUpdate() override;
 private:
 	bool* m_Show;
 
@@ -18,6 +22,18 @@ private:
 
 	std::string m_WindowName;
 
-	Mesh m_Mesh;
+	Ref<Mesh> m_Mesh;
+
+	Ref<Texture2D> m_Texture;
+
+	bool m_WindowHovered = false;
+	bool m_WindowFocussed = false;
+	bool m_CursorDisabled;
+	ImVec2 m_ViewportSize;
+	Ref<FrameBuffer> m_Framebuffer;
+	Vector2f m_RelativeMousePosition;
+
+	ShaderLibrary m_ShaderLibrary;
+	ViewportCameraController m_CameraController;
 };
 
