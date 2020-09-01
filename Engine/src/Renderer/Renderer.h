@@ -4,6 +4,7 @@
 #include "Camera.h"
 #include "Shader.h"
 #include "Material.h"
+#include "Mesh.h"
 
 class Renderer
 {
@@ -14,7 +15,7 @@ public:
 	static void EndScene();
 
 	static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform = Matrix4x4());
-	static void Submit(const Material& material, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform = Matrix4x4());
+	static void Submit(const Material& material, const Mesh& vertexArray, const Matrix4x4& transform = Matrix4x4());
 
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 };

@@ -47,24 +47,15 @@ void ImGuiViewportPanel::OnAttach()
 
 	class CameraController :public ScriptableEntity
 	{
+
 	public:
-		void OnCreate()
-		{
-
-		}
-
-		void OnDestroy()
-		{
-
-		}
-
-		void OnUpdate(float deltaTime)
-		{
-			CLIENT_DEBUG(deltaTime);
-		}
+		//void OnUpdate(float deltaTime) override
+		//{
+		//	CLIENT_DEBUG(deltaTime);
+		//}
 	};
 
-	//entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
+	entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 }
 
 void ImGuiViewportPanel::OnUpdate(float deltaTime)

@@ -12,7 +12,7 @@ public:
 	void LoadModel(Ref<VertexArray> vertexArray, std::string name);
 	void LoadModel(std::filesystem::path filepath);
 
-	Ref<VertexArray> GetVertexArray() { return m_VertexArray; }
+	const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:
 	Ref<VertexArray> m_VertexArray;
 	std::string m_Name;

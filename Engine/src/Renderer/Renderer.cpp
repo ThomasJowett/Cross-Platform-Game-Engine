@@ -49,7 +49,7 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 	RenderCommand::DrawIndexed(vertexArray);
 }
 
-void Renderer::Submit(const Material& material, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
+void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform)
 {
 	Ref<Shader> shader = material.GetShader();
 	shader->Bind();
@@ -57,6 +57,8 @@ void Renderer::Submit(const Material& material, const Ref<VertexArray>& vertexAr
 	shader->SetMat4("u_ModelMatrix", transform, true);
 
 	material.BindTextures();
+
+	auto vertexArray = mesh.GetVertexArray();
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 

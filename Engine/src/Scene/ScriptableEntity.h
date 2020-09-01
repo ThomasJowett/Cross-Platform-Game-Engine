@@ -5,6 +5,9 @@
 class ScriptableEntity
 {
 public:
+	ScriptableEntity() = default;
+	virtual ~ScriptableEntity() {}
+
 	template<typename T>
 	T& GetComponent()
 	{
@@ -21,6 +24,10 @@ public:
 	{
 		m_Entity.RemoveComponent<T>();
 	}
+protected:
+	virtual void OnCreate() {}
+	virtual void OnDestroy() {}
+	virtual void OnUpdate(float deltaTime) {}
 private:
 	Entity m_Entity;
 

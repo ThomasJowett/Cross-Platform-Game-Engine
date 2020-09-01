@@ -25,50 +25,40 @@ Entity Scene::CreateEntity(const std::string& name)
 
 void Scene::OnUpdate(float deltaTime)
 {
-	{
-		m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			if (!nsc.Instance)
 			{
-				if (!nsc.Instance)
-				{
-					nsc.InstantiateFunction();
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.OnCreateFunction(nsc.Instance);
-				}
+				nsc.Instance = nsc.InstantiateScript();
+				nsc.Instance->m_Entity = Entity{ entity, this };
+				nsc.Instance->OnCreate();
+			}
 
-				nsc.OnUpdateFunction(nsc.Instance, deltaTime);
-			});
-	}
-	auto CameraView = m_Registry.view<TransformComponent, CameraComponent>();
-	for (auto entity : CameraView)
-	{
-		auto& [transform, camera] = CameraView.get<TransformComponent, CameraComponent>(entity);
+			nsc.Instance->OnUpdate(deltaTime);
+		});
 
-		if (camera.Primary)
+	m_Registry.view<TransformComponent, CameraComponent>().each(
+		[&]([[maybe_unused]] const auto cameraEntity, const auto& transform, const auto& cameraComp)
 		{
-			Renderer::BeginScene(camera.Camera);
-			break;
+			if (cameraComp.Primary)
+			{
+				Renderer::BeginScene(cameraComp.Camera);
+			}
 		}
-	}
+	);
 
-	{
-		auto group = m_Registry.group<SpriteComponent>(entt::get<TransformComponent>);
-		for (auto entity : group)
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transform)
 		{
-			const auto& [transform, sprite] = group.get<TransformComponent, SpriteComponent>(entity);
-	
 			Renderer2D::DrawQuad(transform, sprite.Tint);
-		}
-	}
+		});
 
-	{
-		auto group = m_Registry.group<MeshComponent>(entt::get<TransformComponent>);
-		for (auto entity : group)
+
+	m_Registry.group<MeshComponent>(entt::get<TransformComponent>).each(
+		[](const auto& mesh, const auto& transform)
 		{
-			const auto& [transform, mesh] = group.get<TransformComponent, MeshComponent>(entity);
-
-			Renderer::Submit(mesh.material, mesh.Geometry.GetVertexArray(), transform);
-		}
-	}
+			Renderer::Submit(mesh.material, mesh.Geometry, transform);
+		});
 
 	Renderer::EndScene();
 }
@@ -79,14 +69,13 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	m_ViewportWidth = width;
 
 	// Resize non fixed aspect ratio cameras
-	auto view = m_Registry.view<CameraComponent>();
-	for (auto entity : view)
-	{
-		CameraComponent& camera = view.get<CameraComponent>(entity);
-		if (!camera.FixedAspectRatio)
+	m_Registry.view<CameraComponent>().each(
+		[=]([[maybe_unused]] const auto cameraEntity, auto& cameraComp)
 		{
-			camera.Camera.SetAspectRatio((float)width/ (float)height);
-		}
-		
-	}
+			if (!cameraComp.FixedAspectRatio)
+			{
+				cameraComp.Camera.SetAspectRatio((float)width / (float)height);
+			}
+
+		});
 }
