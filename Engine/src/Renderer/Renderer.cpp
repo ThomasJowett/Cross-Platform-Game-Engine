@@ -56,6 +56,11 @@ void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x
 	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);
 
+	shader->SetFloat4("u_colour", material.GetTint());
+
+	//TODO: each texture should have it's own tiling factor
+	shader->SetFloat("u_tilingFactor", 1.0f);
+
 	material.BindTextures();
 
 	auto vertexArray = mesh.GetVertexArray();

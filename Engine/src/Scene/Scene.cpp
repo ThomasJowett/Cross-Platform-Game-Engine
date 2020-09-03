@@ -37,22 +37,24 @@ void Scene::OnUpdate(float deltaTime)
 			nsc.Instance->OnUpdate(deltaTime);
 		});
 
+	Camera orthoCamera;
+	Camera perspectiveCamera;
+
 	m_Registry.view<TransformComponent, CameraComponent>().each(
 		[&]([[maybe_unused]] const auto cameraEntity, const auto& transform, const auto& cameraComp)
 		{
 			if (cameraComp.Primary)
 			{
-				Renderer::BeginScene(cameraComp.Camera);
+				if (cameraComp.Camera.IsPerspective)
+					perspectiveCamera = cameraComp.Camera;
+				else
+				{
+				}//orthoCamera = cameraComp.Camera;
 			}
 		}
 	);
 
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transform)
-		{
-			Renderer2D::DrawQuad(transform, sprite.Tint);
-		});
-
+	Renderer::BeginScene(perspectiveCamera);
 
 	m_Registry.group<MeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transform)
@@ -61,6 +63,16 @@ void Scene::OnUpdate(float deltaTime)
 		});
 
 	Renderer::EndScene();
+
+	Renderer2D::BeginScene(orthoCamera);
+
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transform)
+		{
+			Renderer2D::DrawQuad(transform, sprite.Tint);
+		});
+
+	Renderer2D::EndScene();
 }
 
 void Scene::OnViewportResize(uint32_t width, uint32_t height)

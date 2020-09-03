@@ -10,6 +10,9 @@ public:
 	void SetOrthoGraphic(float size, float nearClip, float farClip);
 	void SetPerspective(float fov, float nearClip, float farClip);
 	void SetAspectRatio(const float& aspectRatio);
+
+	bool IsPerspective = true;
+	
 private:
 	void RecalculateOrthographicProjection();
 	void RecalculatePerspectiveProjection();
@@ -23,6 +26,4 @@ private:
 	float m_Fov = PI * 0.5f;
 
 	float m_AspectRatio = 16.0f/9.0f;
-
-	bool m_IsPerspective = true;
 };

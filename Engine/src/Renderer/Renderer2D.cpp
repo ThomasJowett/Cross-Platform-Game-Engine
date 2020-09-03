@@ -177,7 +177,7 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 {
 }
 
-void Renderer2D::BeginScene(const OrthographicCamera& camera)
+void Renderer2D::BeginScene(const Camera& camera)
 {
 	PROFILE_FUNCTION();
 	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();

@@ -16,13 +16,29 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 {
 	ImGui::OpenPopup("##StartScreen");
 
-	ImGui::SetNextWindowSize(ImVec2(800, 800));
+	int windowSizeX = Application::GetWindow().GetWidth();
+	int windowSizeY = Application::GetWindow().GetHeight();
+
+	int popupSizeX = std::min(windowSizeX - 20, 600);
+	int popupSizeY = std::min(windowSizeY - 20, 600);
+
+	ImGui::SetNextWindowSize(ImVec2(popupSizeX, popupSizeY));
+
+	int windowPosX = Application::GetWindow().GetPosX();
+	int windowPosY = Application::GetWindow().GetPosY();
+
+	// Find the middle of the screen
+	ImGui::SetNextWindowPos(ImVec2(
+		(float)(windowSizeX / 2.0f) + windowPosX - (float)(popupSizeX / 2.0f),
+		(float)(windowSizeY / 2.0f) + windowPosY - (float)(popupSizeY / 2.0f))
+	);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_Modal |
 		ImGuiWindowFlags_NoDocking |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoTitleBar;
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize;
 
 	if (ImGui::BeginPopupModal("##StartScreen", NULL, flags))
 	{

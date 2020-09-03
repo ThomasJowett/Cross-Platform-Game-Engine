@@ -8,6 +8,7 @@ SceneCamera::SceneCamera()
 
 void SceneCamera::SetOrthoGraphic(float size, float nearClip, float farClip)
 {
+	IsPerspective = false;
 	m_OrthographicSize = size;
 	m_OrthoGraphicNear = nearClip;
 	m_OrthoGraphicFar = farClip;
@@ -17,6 +18,7 @@ void SceneCamera::SetOrthoGraphic(float size, float nearClip, float farClip)
 
 void SceneCamera::SetPerspective(float fov, float nearClip, float farClip)
 {
+	IsPerspective = true;
 	m_PerspectiveNear = nearClip;
 	m_PerspectiveFar = farClip;
 	m_Fov = fov;
@@ -26,7 +28,7 @@ void SceneCamera::SetPerspective(float fov, float nearClip, float farClip)
 void SceneCamera::SetAspectRatio(const float& aspectRatio)
 {
 	m_AspectRatio = aspectRatio;
-	if (m_IsPerspective)
+	if (IsPerspective)
 		RecalculatePerspectiveProjection();
 	else
 		RecalculateOrthographicProjection();

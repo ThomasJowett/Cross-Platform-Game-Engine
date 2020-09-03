@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "Material.h"
 
-Material::Material(Ref<Shader> shader)
-	:m_Shader(shader)
+Material::Material(Ref<Shader> shader, Colour tint)
+	:m_Shader(shader), m_Tint(tint)
 {
 }
 

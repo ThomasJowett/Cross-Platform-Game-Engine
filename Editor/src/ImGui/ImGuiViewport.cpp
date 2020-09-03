@@ -16,20 +16,28 @@ void ImGuiViewportPanel::OnAttach()
 {
 	//TEMP CODE
 
-	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
-
-	m_ShaderLibrary.Load("NormalMap");
-	Material material(m_ShaderLibrary.Get("NormalMap"));
-
-	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 
 	m_Scene = CreateRef<Scene>();
 	//TODO: load the default scene and deserialize it
 	//for now it just loads a mesh of a bucket
-	//Entity square = m_Scene->CreateEntity("Test Square");
-	//square.AddComponent<SpriteComponent>(Colour(Colours::GREEN));
+
+	Entity square = m_Scene->CreateEntity("Test Square");
+	square.AddComponent<SpriteComponent>(Colour(0.0f,1.0f, 0.0f, 0.5f));
+	
+	SceneCamera orthoCamera;
+	orthoCamera.SetOrthoGraphic(1, 1.0f, -1.0f);
+	square = m_Scene->CreateEntity("2D Camera");
+	square.AddComponent<CameraComponent>(orthoCamera, true);
+
+
+	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
+
+	m_ShaderLibrary.Load("NormalMap");
+	Material material(m_ShaderLibrary.Get("NormalMap"));
+
+	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
 
 	Entity entity = m_Scene->CreateEntity("Bucket");
 	entity.AddComponent<MeshComponent>(mesh, material);
@@ -49,10 +57,10 @@ void ImGuiViewportPanel::OnAttach()
 	{
 
 	public:
-		//void OnUpdate(float deltaTime) override
-		//{
-		//	CLIENT_DEBUG(deltaTime);
-		//}
+		void OnUpdate(float deltaTime) override
+		{
+			//CLIENT_DEBUG(deltaTime);
+		}
 	};
 
 	entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
@@ -64,13 +72,6 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
-
-	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
-	//shader->Bind();
-	//
-	shader->SetInt("u_texture", 0);
-	shader->SetFloat4("u_colour", 1.0f, 1.0f, 1.0f, 1.0f);
-	shader->SetFloat("u_tilingFactor", 1.0f);
 
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
@@ -90,7 +91,7 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 	}
 
 	Renderer2D::ResetStats();
-	Renderer::BeginScene(*m_CameraController.GetCamera());
+	//Renderer::BeginScene(*m_CameraController.GetCamera());
 	//Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
 
 	m_Scene->OnUpdate(deltaTime);
