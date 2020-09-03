@@ -6,9 +6,9 @@
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
 
-Scene::Scene()
+Scene::Scene(std::string name)
+	:m_SceneName(name)
 {
-	entt::entity entity = m_Registry.create();
 }
 
 Scene::~Scene()
@@ -17,7 +17,7 @@ Scene::~Scene()
 
 Entity Scene::CreateEntity(const std::string& name)
 {
-	Entity entity(m_Registry.create(), this);
+	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<TransformComponent>();
 	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
 	return entity;

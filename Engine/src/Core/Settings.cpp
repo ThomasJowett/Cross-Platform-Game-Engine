@@ -7,8 +7,6 @@
 
 #include "Core/Application.h"
 
-static Settings* s_Instance = nullptr;
-
 static CSimpleIniA* s_Ini = nullptr;
 
 std::map<std::pair<std::string, std::string>, std::string> Settings::s_DefaultValues = {};

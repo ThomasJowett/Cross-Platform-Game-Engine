@@ -4,6 +4,8 @@
 
 #include "IconsFontAwesome5.h"
 
+#include "Scene/SceneManager.h"
+
 ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
 {
@@ -19,7 +21,10 @@ void ImGuiViewportPanel::OnAttach()
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 
-	m_Scene = CreateRef<Scene>();
+	m_Scene = CreateRef<Scene>("Test Scene");
+
+	SceneManager::SetScene(m_Scene);
+
 	//TODO: load the default scene and deserialize it
 	//for now it just loads a mesh of a bucket
 
@@ -195,7 +200,6 @@ void ImGuiViewportPanel::OnImGuiRender()
 			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 
 		ImGui::Text("%.1f", io.Framerate);
-		ImGui::Text(std::to_string(m_ViewportSize.x / m_ViewportSize.y).c_str());
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}

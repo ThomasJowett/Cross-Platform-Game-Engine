@@ -3,6 +3,8 @@
 #include "IconsFontAwesome5.h"
 #include "ImGuiDockSpace.h"
 
+#include "Scene/SceneManager.h"
+
 ImGuiHeirachy::ImGuiHeirachy(bool* show)
 	:m_Show(show), Layer("Heirachy")
 {
@@ -11,6 +13,7 @@ ImGuiHeirachy::ImGuiHeirachy(bool* show)
 
 void ImGuiHeirachy::OnAttach()
 {
+	m_Scene = SceneManager::GetCurrentScene();
 }
 
 void ImGuiHeirachy::OnFixedUpdate()
@@ -38,12 +41,42 @@ void ImGuiHeirachy::OnImGuiRender()
 
 		if (m_Scene != nullptr)
 		{
-			if (ImGui::TreeNode(m_Scene->GetSceneName().c_str()))
+			if (ImGui::TreeNodeEx(m_Scene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				ImGui::Button("test");
+				m_Scene->GetRegistry().each([&](auto entityID)
+					{
+						auto& name = m_Scene->GetRegistry().get<TagComponent>(entityID);
+						Entity entity{ entityID, m_Scene.get(),  name };
+						DrawNode(entity);
+					});
+
 				ImGui::TreePop();
 			}
 		}
 	}
 	ImGui::End();
+}
+
+void ImGuiHeirachy::SetContext(const Ref<Scene>& scene)
+{
+	m_Scene = scene;
+}
+
+void ImGuiHeirachy::DrawNode(Entity entity)
+{
+	auto& tag = entity.GetComponent<TagComponent>().Tag;
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
+
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+
+	if (ImGui::IsItemClicked())
+	{
+		m_SelectedEntity = entity;
+	}
+
+	if (opened)
+	{
+		ImGui::TreePop();
+	}
 }

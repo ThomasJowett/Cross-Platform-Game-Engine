@@ -7,7 +7,7 @@ class Entity;
 class Scene
 {
 public:
-	explicit Scene();
+	explicit Scene(std::string name);
 	~Scene();
 
 	Entity CreateEntity(const std::string& name = "");
