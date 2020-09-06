@@ -10,6 +10,8 @@
 
 #include "Logging/Logger.h"
 
+#include "Utilities/StringUtils.h"
+
 Application* Application::s_Instance = nullptr;
 
 std::filesystem::path Application::s_OpenDocument;
@@ -280,6 +282,7 @@ void Application::SetDefaultSettings(const WindowProps& props)
 {
 	const char* display = "Display";
 	const char* audio = "Audio";
+	const char* files = "Files";
 
 	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
 	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
@@ -288,6 +291,8 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
+
+	Settings::SetDefaultValue(files, "Recent_Files", "");
 }
 
 double Application::GetTime()
@@ -317,6 +322,30 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 	if (std::filesystem::exists(filepath))
 	{
 		s_OpenDocument = filepath;
+
+		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
+
+		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
+
+		std::string fileStr = filepath.string();
+
+		bool containsFile = false;
+
+		for (std::string file : recentFilesList)
+		{
+			if (file == fileStr)
+			{
+				containsFile = true;
+				break;
+			}
+		}
+
+		if (!containsFile)
+		{
+			recentFiles.append(filepath.string() + ',');
+			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
+		}
+
 		if (s_Instance)
 		{
 			AppOpenDocumentChange event;

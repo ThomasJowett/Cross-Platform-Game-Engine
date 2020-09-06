@@ -46,6 +46,19 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 		{
 			ImGui::Columns(2);
 			ImGui::Text("Recent Projects...");
+
+			for (const std::filesystem::path& project : m_RecentProjects)
+			{
+				if (ImGui::Button(project.filename().string().c_str()))
+				{
+					Application::SetOpenDocument(project);
+					ImGui::CloseCurrentPopup();
+					Application::Get().RemoveOverlay(this);
+					break;
+				}
+				//ImGui::Selectable(project.filename().c_str(), );
+			}
+
 			ImGui::NextColumn();
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
@@ -96,6 +109,17 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 
 void ImGuiProjectsStartScreen::OnAttach()
 {
+	std::string recentProjectsStr = Settings::GetValue("Files", "Recent_Files");
+
+	std::vector<std::string> recentProjectsList = SplitString(recentProjectsStr, ',');
+
+	for (std::filesystem::path project : recentProjectsList)
+	{
+		if (project.extension() == ".proj")
+		{
+			m_RecentProjects.push_back(project);
+		}
+	}
 }
 
 void ImGuiProjectsStartScreen::OnDetach()

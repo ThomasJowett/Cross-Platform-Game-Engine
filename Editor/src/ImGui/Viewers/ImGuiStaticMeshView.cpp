@@ -72,8 +72,8 @@ void ImGuiStaticMeshView::OnImGuiRender()
 
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
-		if (m_CursorDisabled)
-			ImGui:
+		//if (m_CursorDisabled)
+		//	ImGui:
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -107,7 +107,8 @@ void ImGuiStaticMeshView::OnUpdate(float deltaTime)
 	shader->SetFloat4("u_colour", Colours::WHITE);
 	shader->SetFloat("u_tilingFactor", 1.0f);
 
-	m_CursorDisabled = false;
+	//m_CursorDisabled = false;
+	//TODO: fix the cursor position stuff
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
 	if (m_CursorDisabled)

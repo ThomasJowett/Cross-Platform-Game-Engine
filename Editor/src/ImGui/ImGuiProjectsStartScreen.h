@@ -15,4 +15,6 @@ public:
 
 private:
 	bool m_CreateProject;
+
+	std::vector<std::filesystem::path> m_RecentProjects;
 };

@@ -87,6 +87,18 @@ void ImGuiDockSpace::OnAttach()
 	{
 		OpenProject(Application::GetOpenDocument());
 	}
+
+	std::string recentProjectsStr = Settings::GetValue("Files", "Recent_Files");
+
+	std::vector<std::string> recentProjectsList = SplitString(recentProjectsStr, ',');
+
+	for (std::filesystem::path project : recentProjectsList)
+	{
+		if (project.extension() == ".proj")
+		{
+			m_RecentProjects.push_back(project);
+		}
+	}
 }
 
 void ImGuiDockSpace::OnDetach()
@@ -176,6 +188,17 @@ void ImGuiDockSpace::OnImGuiRender()
 			{
 				Application::Get().SetOpenDocument(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0"));
 			}
+			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
+			{
+				for (auto project : m_RecentProjects)
+				{
+					if (ImGui::MenuItem(project.filename().string().c_str()))
+					{
+						Application::SetOpenDocument(project);
+					}
+				}
+				ImGui::EndMenu();
+			}
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, saveable))
 				iSave->Save();
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
@@ -250,7 +273,7 @@ void ImGuiDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
-		
+
 		if (ImGui::BeginMenu("Help"))
 		{
 			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);
@@ -265,7 +288,7 @@ void ImGuiDockSpace::OnImGuiRender()
 #endif
 			}
 			ImGui::EndMenu();
-		}
+			}
 
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
 		ImGui::Separator();
@@ -276,7 +299,7 @@ void ImGuiDockSpace::OnImGuiRender()
 		}
 
 		ImGui::EndMenuBar();
-	}
+		}
 
 	if (about) ImGui::OpenPopup("About");
 
@@ -301,7 +324,7 @@ void ImGuiDockSpace::OnImGuiRender()
 	//}
 
 	//ImGui::End();
-}
+	}
 
 void ImGuiDockSpace::OpenProject(const std::filesystem::path& filename)
 {

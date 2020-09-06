@@ -50,4 +50,6 @@ private:
 	static Layer* s_CurrentlyFoccusedPanel;
 
 	ImGuiContentExplorer* m_ContentExplorer;
+
+	std::vector<std::filesystem::path> m_RecentProjects;
 };
