@@ -7,12 +7,12 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-class ImGuiScriptView
+class ScriptView
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
 public:
-	ImGuiScriptView(bool* show, const std::filesystem::path& filepath);
-	~ImGuiScriptView() = default;
+	ScriptView(bool* show, const std::filesystem::path& filepath);
+	~ScriptView() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;

@@ -1,4 +1,4 @@
-#include "ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
 #include "imgui/imgui.h"
 #include  "Core/Version.h"
@@ -9,22 +9,22 @@
 
 #include "ImGui/ImGuiConsole.h"
 
-#include "ImGuiContentExplorer.h"
-#include "ImGuiJoystickInfo.h"
-#include "ImGuiContentExplorer.h"
-#include "ImGuiPreferences.h"
-#include "ImGuiViewport.h"
-#include "ImGuiHeirachy.h"
-#include "ImGuiProperties.h"
+#include "Panels/ContentExplorerPanel.h"
+#include "Panels/JoystickInfoPanel.h"
+#include "Panels/ContentExplorerPanel.h"
+#include "Panels/EditorPreferencesPanel.h"
+#include "Panels/ViewportPanel.h"
+#include "Panels/HeirachyPanel.h"
+#include "Panels/PropertiesPanel.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-Layer* ImGuiDockSpace::s_CurrentlyFoccusedPanel;
+Layer* MainDockSpace::s_CurrentlyFoccusedPanel;
 
-ImGuiDockSpace::ImGuiDockSpace()
+MainDockSpace::MainDockSpace()
 	:Layer("Dockspace")
 {
 	m_Show = true;
@@ -47,9 +47,11 @@ ImGuiDockSpace::ImGuiDockSpace()
 	m_ShowMultiplayerToolbar = false;
 	m_ShowSaveOpenToolbar = false;
 	m_ShowTargetPlatformToolbar = false;
+
+	m_ContentExplorer = nullptr;
 }
 
-void ImGuiDockSpace::OnAttach()
+void MainDockSpace::OnAttach()
 {
 	PROFILE_FUNCTION();
 
@@ -73,15 +75,15 @@ void ImGuiDockSpace::OnAttach()
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierachy = Settings::GetBool("Windows", "Hierachy");
 
-	m_ContentExplorer = new ImGuiContentExplorer(&m_ShowContentExplorer);
+	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
-	Application::Get().AddOverlay(new ImGuiViewportPanel(&m_ShowViewport));
-	Application::Get().AddOverlay(new ImGuiEditorPreferences(&m_ShowEditorPreferences));
+	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport));
+	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
-	Application::Get().AddOverlay(new ImGuiJoystickInfo(&m_ShowJoystickInfo));
-	Application::Get().AddOverlay(new ImGuiHeirachy(&m_ShowHierachy));
-	Application::Get().AddOverlay(new ImGuiProperties(&m_ShowProperties));
+	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
+	Application::Get().AddOverlay(new HeirachyPanel(&m_ShowHierachy));
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties));
 
 	if (!Application::GetOpenDocument().empty())
 	{
@@ -101,7 +103,7 @@ void ImGuiDockSpace::OnAttach()
 	}
 }
 
-void ImGuiDockSpace::OnDetach()
+void MainDockSpace::OnDetach()
 {
 	Settings::SetBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetBool("Windows", "Viewport", m_ShowViewport);
@@ -115,17 +117,17 @@ void ImGuiDockSpace::OnDetach()
 	Settings::SaveSettings();
 }
 
-void ImGuiDockSpace::OnEvent(Event& event)
+void MainDockSpace::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(ImGuiDockSpace::OnOpenProject));
+	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
 }
 
-void ImGuiDockSpace::OnUpdate(float deltaTime)
+void MainDockSpace::OnUpdate(float deltaTime)
 {
 }
 
-void ImGuiDockSpace::OnImGuiRender()
+void MainDockSpace::OnImGuiRender()
 {
 	static bool showDemoWindow = true;
 	ImGui::ShowDemoWindow(&showDemoWindow);//TEMP 
@@ -326,14 +328,14 @@ void ImGuiDockSpace::OnImGuiRender()
 	//ImGui::End();
 	}
 
-void ImGuiDockSpace::OpenProject(const std::filesystem::path& filename)
+void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 {
 	ENGINE_INFO("Opened Project: {0}", filename.string());
 
 	m_ContentExplorer->SwitchTo(filename);
 }
 
-bool ImGuiDockSpace::OnOpenProject(AppOpenDocumentChange& event)
+bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)
 {
 	OpenProject(Application::Get().GetOpenDocument());
 

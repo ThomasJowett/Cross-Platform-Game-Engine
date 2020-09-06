@@ -1,4 +1,4 @@
-#include "ImGuiPreferences.h"
+#include "EditorPreferencesPanel.h"
 
 #include "include.h"
 
@@ -6,13 +6,13 @@
 
 #include "FileSystem/FileDialog.h"
 
-#include "EditorStyles.h"
+#include "Styles/EditorStyles.h"
 
 #include "ImGui/ImGuiConsole.h"
 
 #include "IconsFontAwesome5.h"
 
-ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
+EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
 {
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
@@ -20,7 +20,7 @@ ImGuiEditorPreferences::ImGuiEditorPreferences(bool* show)
 	m_StyleFilename = Application::GetWorkingDirectory().string() + "\\styles\\Editor.style";
 }
 
-void ImGuiEditorPreferences::OnImGuiRender()
+void EditorPreferencesPanel::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -69,7 +69,7 @@ void ImGuiEditorPreferences::OnImGuiRender()
 	ImGui::End();
 }
 
-void ImGuiEditorPreferences::OnAttach()
+void EditorPreferencesPanel::OnAttach()
 {
 	ImGui::LoadStyle(m_StyleFilename.c_str(), m_Style);
 
@@ -80,12 +80,12 @@ void ImGuiEditorPreferences::OnAttach()
 	ImGuiConsole::SetDarkTheme(style.Colors[ImGuiCol_WindowBg].x + style.Colors[ImGuiCol_WindowBg].y + style.Colors[ImGuiCol_WindowBg].z < 1.5f);
 }
 
-void ImGuiEditorPreferences::OnDetach()
+void EditorPreferencesPanel::OnDetach()
 {
 	ImGui::SaveStyle(m_StyleFilename.c_str(), m_Style);
 }
 
-void ImGuiEditorPreferences::ShowStyleEditor()
+void EditorPreferencesPanel::ShowStyleEditor()
 {
 	ImGuiStyle& style = ImGui::GetStyle();
 
@@ -250,7 +250,7 @@ void ImGuiEditorPreferences::ShowStyleEditor()
 	m_Style = style;
 }
 
-bool ImGuiEditorPreferences::ShowStyleSelector()
+bool EditorPreferencesPanel::ShowStyleSelector()
 {
 	static int style_idx = -1;
 	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark"))

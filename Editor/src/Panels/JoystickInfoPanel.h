@@ -2,12 +2,12 @@
 
 #include "Core/Layer.h"
 
-class ImGuiJoystickInfo
+class JoystickInfoPanel
 	:public Layer
 {
 public:
-	explicit ImGuiJoystickInfo(bool* show);
-	~ImGuiJoystickInfo() = default;
+	explicit JoystickInfoPanel(bool* show);
+	~JoystickInfoPanel() = default;
 	void OnImGuiRender() override;
 private:
 	bool* m_Show;

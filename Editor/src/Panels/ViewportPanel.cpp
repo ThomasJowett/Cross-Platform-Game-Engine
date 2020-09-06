@@ -1,12 +1,12 @@
-#include "ImGuiViewport.h"
+#include "ViewportPanel.h"
 
-#include "ImGui/ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
 #include "IconsFontAwesome5.h"
 
 #include "Scene/SceneManager.h"
 
-ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
+ViewportPanel::ViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
 {
 	m_Framebuffer = FrameBuffer::Create({ 1920, 1080 });
@@ -14,7 +14,7 @@ ImGuiViewportPanel::ImGuiViewportPanel(bool* show)
 	m_Mode = Mode::Select;
 }
 
-void ImGuiViewportPanel::OnAttach()
+void ViewportPanel::OnAttach()
 {
 	//TEMP CODE
 
@@ -71,7 +71,7 @@ void ImGuiViewportPanel::OnAttach()
 	entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 }
 
-void ImGuiViewportPanel::OnUpdate(float deltaTime)
+void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
@@ -107,7 +107,7 @@ void ImGuiViewportPanel::OnUpdate(float deltaTime)
 	m_Framebuffer->UnBind();
 }
 
-void ImGuiViewportPanel::OnFixedUpdate()
+void ViewportPanel::OnFixedUpdate()
 {
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
@@ -119,7 +119,7 @@ void ImGuiViewportPanel::OnFixedUpdate()
 	}
 }
 
-void ImGuiViewportPanel::OnImGuiRender()
+void ViewportPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
@@ -154,7 +154,7 @@ void ImGuiViewportPanel::OnImGuiRender()
 
 		if (m_WindowFocussed)
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
@@ -205,77 +205,77 @@ void ImGuiViewportPanel::OnImGuiRender()
 	}
 }
 
-void ImGuiViewportPanel::Copy()
+void ViewportPanel::Copy()
 {
 	// TODO: viewport copy
 	CLIENT_DEBUG("Copied");
 }
 
-void ImGuiViewportPanel::Cut()
+void ViewportPanel::Cut()
 {
 	// TODO: viewport cut
 	CLIENT_DEBUG("Cutted");
 }
 
-void ImGuiViewportPanel::Paste()
+void ViewportPanel::Paste()
 {
 	//TODO: viewport paste
 	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
 }
 
-void ImGuiViewportPanel::Duplicate()
+void ViewportPanel::Duplicate()
 {
 	//TODO: viewport duplicate
 	CLIENT_DEBUG("Duplicated");
 }
 
-void ImGuiViewportPanel::Delete()
+void ViewportPanel::Delete()
 {
 	//TODO: viewport delete
 	CLIENT_DEBUG("Deleted");
 }
 
-void ImGuiViewportPanel::SelectAll()
+void ViewportPanel::SelectAll()
 {
 }
 
-bool ImGuiViewportPanel::HasSelection() const
+bool ViewportPanel::HasSelection() const
 {
 	return false;
 }
 
-bool ImGuiViewportPanel::CanUndo() const
+bool ViewportPanel::CanUndo() const
 {
 	//TODO: viewport undolist
 	return false;
 }
 
-bool ImGuiViewportPanel::CanRedo() const
+bool ViewportPanel::CanRedo() const
 {
 	return false;
 }
 
-void ImGuiViewportPanel::Undo(int astep)
+void ViewportPanel::Undo(int astep)
 {
 	CLIENT_DEBUG("Undid");
 }
 
-void ImGuiViewportPanel::Redo(int astep)
+void ViewportPanel::Redo(int astep)
 {
 	CLIENT_DEBUG("Redid");
 }
 
-void ImGuiViewportPanel::Save()
+void ViewportPanel::Save()
 {
 	CLIENT_DEBUG("Saving...");
 }
 
-void ImGuiViewportPanel::SaveAs()
+void ViewportPanel::SaveAs()
 {
 	CLIENT_DEBUG("Saving As...");
 }
 
-void ImGuiViewportPanel::HandleKeyboardInputs()
+void ViewportPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	auto shift = io.KeyShift;

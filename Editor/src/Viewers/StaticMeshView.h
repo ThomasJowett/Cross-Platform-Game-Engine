@@ -4,12 +4,12 @@
 
 #include "ViewportCameraController.h"
 
-class ImGuiStaticMeshView :
+class StaticMeshView :
 	public Layer
 {
 public:
-	ImGuiStaticMeshView(bool* show, std::filesystem::path filepath);
-	~ImGuiStaticMeshView() = default;
+	StaticMeshView(bool* show, std::filesystem::path filepath);
+	~StaticMeshView() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;

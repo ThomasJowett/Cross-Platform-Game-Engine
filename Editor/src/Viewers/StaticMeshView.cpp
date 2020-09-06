@@ -1,15 +1,15 @@
-#include "ImGuiStaticMeshView.h"
+#include "StaticMeshView.h"
 
 #include "IconsFontAwesome5.h"
-#include "ImGui/ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
-ImGuiStaticMeshView::ImGuiStaticMeshView(bool* show, std::filesystem::path filepath)
+StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	m_Framebuffer = FrameBuffer::Create({ 640, 480 });
 }
 
-void ImGuiStaticMeshView::OnAttach()
+void StaticMeshView::OnAttach()
 {
 	m_WindowName = ICON_FA_SHAPES + std::string(" " + m_FilePath.filename().string());
 
@@ -23,7 +23,7 @@ void ImGuiStaticMeshView::OnAttach()
 	// m_CameraController.SetPosition({0.0,0.0, m_Mesh->GetBounds().radius})
 }
 
-void ImGuiStaticMeshView::OnImGuiRender()
+void StaticMeshView::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -53,7 +53,7 @@ void ImGuiStaticMeshView::OnImGuiRender()
 
 		if (m_WindowFocussed)
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
@@ -93,7 +93,7 @@ void ImGuiStaticMeshView::OnImGuiRender()
 	ImGui::PopStyleVar();
 }
 
-void ImGuiStaticMeshView::OnUpdate(float deltaTime)
+void StaticMeshView::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
@@ -135,7 +135,7 @@ void ImGuiStaticMeshView::OnUpdate(float deltaTime)
 	m_Framebuffer->UnBind();
 }
 
-void ImGuiStaticMeshView::OnFixedUpdate()
+void StaticMeshView::OnFixedUpdate()
 {
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))

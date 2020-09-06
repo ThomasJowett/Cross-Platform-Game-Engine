@@ -81,12 +81,12 @@ public:
 	}
 };
 
-class ImGuiContentExplorer
+class ContentExplorerPanel
 	:public Layer, public ICopyable
 {
 public:
-	explicit ImGuiContentExplorer(bool* show);
-	~ImGuiContentExplorer() = default;
+	explicit ContentExplorerPanel(bool* show);
+	~ContentExplorerPanel() = default;
 
 	void OnAttach() override;
 	void OnUpdate(float deltaTime) override;

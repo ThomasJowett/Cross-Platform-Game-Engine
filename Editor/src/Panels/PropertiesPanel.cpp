@@ -1,22 +1,22 @@
-#include "ImGuiProperties.h"
+#include "PropertiesPanel.h"
 
 #include "IconsFontAwesome5.h"
-#include "ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
-ImGuiProperties::ImGuiProperties(bool* show)
+PropertiesPanel::PropertiesPanel(bool* show)
 	:Layer("Properties"), m_Show(show)
 {
 }
 
-void ImGuiProperties::OnAttach()
+void PropertiesPanel::OnAttach()
 {
 }
 
-void ImGuiProperties::OnFixedUpdate()
+void PropertiesPanel::OnFixedUpdate()
 {
 }
 
-void ImGuiProperties::OnImGuiRender()
+void PropertiesPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
@@ -32,7 +32,7 @@ void ImGuiProperties::OnImGuiRender()
 	{
 		if (ImGui::IsWindowFocused())
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 	}
 	ImGui::End();

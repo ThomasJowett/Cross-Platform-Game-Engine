@@ -1,15 +1,15 @@
-#include "ImGuiScriptView.h"
+#include "ScriptView.h"
 #include "Fonts/Fonts.h"
-#include "ImGui/ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 #include "IconsFontAwesome5.h"
 #include "FileSystem/FileDialog.h"
 
-ImGuiScriptView::ImGuiScriptView(bool* show, const std::filesystem::path& filepath)
+ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
 {
 }
 
-void ImGuiScriptView::OnAttach()
+void ScriptView::OnAttach()
 {
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
@@ -28,7 +28,7 @@ void ImGuiScriptView::OnAttach()
 	}
 }
 
-void ImGuiScriptView::OnImGuiRender()
+void ScriptView::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -76,7 +76,7 @@ void ImGuiScriptView::OnImGuiRender()
 	{
 		if (ImGui::IsWindowFocused())
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 
 		bool readOnly = m_TextEditor.IsReadOnly();
@@ -139,13 +139,13 @@ void ImGuiScriptView::OnImGuiRender()
 	ImGui::End();
 }
 
-void ImGuiScriptView::Save()
+void ScriptView::Save()
 {
 	if (!IsReadOnly())
 		m_TextEditor.SaveTextToFile(m_FilePath);
 }
 
-void ImGuiScriptView::SaveAs()
+void ScriptView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
 	m_FilePath = SaveAsDialog(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
@@ -154,7 +154,7 @@ void ImGuiScriptView::SaveAs()
 	Save();
 }
 
-TextEditor::LanguageDefinition ImGuiScriptView::DetermineLanguageDefinition()
+TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 {
 	auto ext = m_FilePath.extension();
 

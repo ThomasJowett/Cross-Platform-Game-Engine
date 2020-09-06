@@ -2,17 +2,19 @@
 
 #include "Core/Layer.h"
 
-class ImGuiProjectsStartScreen
+class ProjectsStartScreen
 	:public Layer
 {
 public:
-	explicit ImGuiProjectsStartScreen();
-	~ImGuiProjectsStartScreen() = default;
+	explicit ProjectsStartScreen();
+	~ProjectsStartScreen() = default;
 
 	void OnImGuiRender() override;
 	void OnAttach() override;
 	void OnDetach() override;
 
+private:
+	void OpenProject(const std::filesystem::path& projectPath);
 private:
 	bool m_CreateProject;
 

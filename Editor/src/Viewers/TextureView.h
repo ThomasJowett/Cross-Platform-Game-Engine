@@ -2,12 +2,12 @@
 #include "include.h"
 #include <filesystem>
 
-class ImGuiTextureView :
+class TextureView :
 	public Layer
 {
 public :
-	ImGuiTextureView(bool* show, const std::filesystem::path& filepath);
-	~ImGuiTextureView() = default;
+	TextureView(bool* show, const std::filesystem::path& filepath);
+	~TextureView() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;
@@ -21,4 +21,3 @@ private:
 
 	std::string m_WindowName;
 };
-

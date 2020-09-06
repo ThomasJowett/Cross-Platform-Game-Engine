@@ -87,7 +87,6 @@ void Application::Run()
 	{
 		PROFILE_SCOPE("Run Loop");
 
-		OnUpdate();
 
 		double newTime = GetTime();
 		double frameTime = newTime - currentTime;
@@ -102,6 +101,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
+				Application::OnFixedUpdate();
 				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
@@ -112,6 +112,8 @@ void Application::Run()
 
 		// On Update
 		{
+			Application::OnUpdate();
+
 			PROFILE_SCOPE("Layer Stack Update");
 
 			if (!m_Minimized)

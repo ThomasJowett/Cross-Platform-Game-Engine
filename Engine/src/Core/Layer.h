@@ -9,14 +9,37 @@ public:
 	Layer(const std::string& name = "Layer");
 	virtual ~Layer();
 
+	/// <summary>
+	/// Called when the layer is added to the layer stack
+	/// </summary>
 	virtual void OnAttach() {}
-	virtual void OnDetach() {}
-	virtual void OnFixedUpdate() {}
-	virtual void OnUpdate(float deltaTime) {}
-	virtual void OnImGuiRender() {}
-	virtual void OnEvent(Event& event) {}
 
-	inline const std::string& GetName() const { return m_debugName; }
+	/// <summary>
+	/// Called when the layer is removed from the layer stack
+	/// </summary>
+	virtual void OnDetach() {}
+
+	/// <summary>
+	/// Called 100 times a second
+	/// </summary>
+	virtual void OnFixedUpdate() {}
+
+	/// <summary>
+	/// Called each frame
+	/// </summary>
+	/// <param name="deltaTime"></param>
+	virtual void OnUpdate(float deltaTime) {}
+
+	/// <summary>
+	/// Called during the ImGui frame 
+	/// </summary>
+	virtual void OnImGuiRender() {}
+
+	/// <summary>
+	/// Called when an event is triggered
+	/// </summary>
+	/// <param name="event"></param>
+	virtual void OnEvent(Event& event) {}
 
 protected:
 	std::string m_debugName;

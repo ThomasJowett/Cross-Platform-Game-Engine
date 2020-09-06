@@ -1,12 +1,12 @@
 #pragma once
 #include "include.h"
 
-class ImGuiProperties :
+class PropertiesPanel :
 	public Layer
 {
 public:
-	explicit ImGuiProperties(bool* show);
-	~ImGuiProperties() = default;
+	explicit PropertiesPanel(bool* show);
+	~PropertiesPanel() = default;
 
 	void OnAttach() override;
 	void OnFixedUpdate() override;

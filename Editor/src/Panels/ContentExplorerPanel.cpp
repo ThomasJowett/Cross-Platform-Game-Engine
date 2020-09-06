@@ -1,4 +1,4 @@
-#include "ImGuiContentExplorer.h"
+#include "ContentExplorerPanel.h"
 
 #include "imgui/imgui.h"
 
@@ -6,7 +6,7 @@
 
 #include "Viewers/ViewerManager.h"
 
-#include "ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
 #include "IconsFontAwesome5.h"
 
@@ -14,7 +14,7 @@
 
 #include "Importers/ImportManager.h"
 
-void ImGuiContentExplorer::Paste()
+void ContentExplorerPanel::Paste()
 {
 	for (auto path : m_CopiedPaths)
 	{
@@ -32,11 +32,11 @@ void ImGuiContentExplorer::Paste()
 	m_ForceRescan = true;
 }
 
-void ImGuiContentExplorer::Duplicate()
+void ContentExplorerPanel::Duplicate()
 {
 }
 
-void ImGuiContentExplorer::Delete()
+void ContentExplorerPanel::Delete()
 {
 	if (m_NumberSelected == 1)
 		std::filesystem::remove(m_CurrentSelectedPath);
@@ -58,7 +58,7 @@ void ImGuiContentExplorer::Delete()
 	m_ForceRescan = true;
 }
 
-void ImGuiContentExplorer::SelectAll()
+void ContentExplorerPanel::SelectAll()
 {
 	for (auto file : m_SelectedFiles)
 		file = true;
@@ -67,12 +67,12 @@ void ImGuiContentExplorer::SelectAll()
 		dir = true;
 }
 
-bool ImGuiContentExplorer::HasSelection() const
+bool ContentExplorerPanel::HasSelection() const
 {
 	return m_NumberSelected > 0;
 }
 
-bool ImGuiContentExplorer::Rename()
+bool ContentExplorerPanel::Rename()
 {
 	static char inputBuffer[1024] = "";
 
@@ -116,7 +116,7 @@ bool ImGuiContentExplorer::Rename()
 	return false;
 }
 
-void ImGuiContentExplorer::SwitchTo(const std::filesystem::path& path)
+void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 {
 	m_CurrentPath = path;
 
@@ -133,7 +133,7 @@ void ImGuiContentExplorer::SwitchTo(const std::filesystem::path& path)
 	m_ForceRescan = true;
 }
 
-std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
+std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
 	for (int i = 0; i <= index; i++)
@@ -146,7 +146,7 @@ std::filesystem::path ImGuiContentExplorer::GetPathForSplitPathIndex(int index)
 	return std::filesystem::path(path);
 }
 
-void ImGuiContentExplorer::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
+void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
 {
 	int approxNumEntriesPerColumn = 20;
 	if (childWindowSize.y > 0)
@@ -182,7 +182,7 @@ void ImGuiContentExplorer::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 		++m_NumBrowsingEntriesPerColumn;
 }
 
-void ImGuiContentExplorer::HandleKeyboardInputs()
+void ContentExplorerPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
 	auto shift = io.KeyShift;
@@ -208,7 +208,7 @@ void ImGuiContentExplorer::HandleKeyboardInputs()
 	}
 }
 
-void ImGuiContentExplorer::RightClickMenu()
+void ContentExplorerPanel::RightClickMenu()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 
@@ -256,7 +256,7 @@ void ImGuiContentExplorer::RightClickMenu()
 	ImGui::PopStyleVar(3);
 }
 
-void ImGuiContentExplorer::OpenAllSelectedItems()
+void ContentExplorerPanel::OpenAllSelectedItems()
 {
 	for (size_t i = 0; i < m_Files.size(); i++)
 	{
@@ -265,7 +265,7 @@ void ImGuiContentExplorer::OpenAllSelectedItems()
 	}
 }
 
-ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
+ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	:m_Show(show), Layer("ContentExplorer")
 {
 	m_TotalNumBrowsingEntries = 0;
@@ -273,15 +273,15 @@ ImGuiContentExplorer::ImGuiContentExplorer(bool* show)
 	m_NumBrowsingEntriesPerColumn = 0;
 }
 
-void ImGuiContentExplorer::OnAttach()
+void ContentExplorerPanel::OnAttach()
 {
 }
 
-void ImGuiContentExplorer::OnUpdate(float deltaTime)
+void ContentExplorerPanel::OnUpdate(float deltaTime)
 {
 }
 
-void ImGuiContentExplorer::OnImGuiRender()
+void ContentExplorerPanel::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -326,7 +326,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 	{
 		if (ImGui::IsWindowFocused())
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 		HandleKeyboardInputs();
 		//HandleMouseInputs();
@@ -712,7 +712,7 @@ void ImGuiContentExplorer::OnImGuiRender()
 	ImGui::End();
 }
 
-void ImGuiContentExplorer::Copy()
+void ContentExplorerPanel::Copy()
 {
 	m_CopiedPaths.clear();
 	for (size_t i = 0; i < m_SelectedFiles.size(); i++)
@@ -722,6 +722,6 @@ void ImGuiContentExplorer::Copy()
 	}
 }
 
-void ImGuiContentExplorer::Cut()
+void ContentExplorerPanel::Cut()
 {
 }

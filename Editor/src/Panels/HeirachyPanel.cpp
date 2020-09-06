@@ -1,26 +1,26 @@
-#include "ImGuiHeirachy.h"
+#include "HeirachyPanel.h"
 
 #include "IconsFontAwesome5.h"
-#include "ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
 #include "Scene/SceneManager.h"
 
-ImGuiHeirachy::ImGuiHeirachy(bool* show)
+HeirachyPanel::HeirachyPanel(bool* show)
 	:m_Show(show), Layer("Heirachy")
 {
 	m_Scene = nullptr;
 }
 
-void ImGuiHeirachy::OnAttach()
+void HeirachyPanel::OnAttach()
 {
 	m_Scene = SceneManager::GetCurrentScene();
 }
 
-void ImGuiHeirachy::OnFixedUpdate()
+void HeirachyPanel::OnFixedUpdate()
 {
 }
 
-void ImGuiHeirachy::OnImGuiRender()
+void HeirachyPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
@@ -36,7 +36,7 @@ void ImGuiHeirachy::OnImGuiRender()
 	{
 		if (ImGui::IsWindowFocused())
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 
 		if (m_Scene != nullptr)
@@ -57,12 +57,12 @@ void ImGuiHeirachy::OnImGuiRender()
 	ImGui::End();
 }
 
-void ImGuiHeirachy::SetContext(const Ref<Scene>& scene)
+void HeirachyPanel::SetContext(const Ref<Scene>& scene)
 {
 	m_Scene = scene;
 }
 
-void ImGuiHeirachy::DrawNode(Entity entity)
+void HeirachyPanel::DrawNode(Entity entity)
 {
 	auto& tag = entity.GetComponent<TagComponent>().Tag;
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow

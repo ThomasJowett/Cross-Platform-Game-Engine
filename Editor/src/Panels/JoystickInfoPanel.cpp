@@ -1,18 +1,19 @@
-#include "ImGuiJoystickInfo.h"
+#include "JoystickInfoPanel.h"
 
 #include "imgui/imgui.h"
 #include "imgui/imgui_internal.h"
-#include "ImGui/ImGuiDockSpace.h"
 #include "IconsFontAwesome5.h"
+
+#include "MainDockSpace.h"
 
 #include "include.h"
 
-ImGuiJoystickInfo::ImGuiJoystickInfo(bool* show)
+JoystickInfoPanel::JoystickInfoPanel(bool* show)
 	:m_Show(show), Layer("JoystickInfo")
 {
 }
 
-void ImGuiJoystickInfo::OnImGuiRender()
+void JoystickInfoPanel::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -24,7 +25,7 @@ void ImGuiJoystickInfo::OnImGuiRender()
 	{
 		if (ImGui::IsWindowFocused())
 		{
-			ImGuiDockSpace::SetFocussedWindow(this);
+			MainDockSpace::SetFocussedWindow(this);
 		}
 
 		if (Joysticks::GetJoystickCount() == 0)

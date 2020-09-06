@@ -1,12 +1,12 @@
 #pragma once
 #include "include.h"
 
-class ImGuiHeirachy :
+class HeirachyPanel :
     public Layer
 {
 public:
-    explicit ImGuiHeirachy(bool* show);
-    ~ImGuiHeirachy() = default;
+    explicit HeirachyPanel(bool* show);
+    ~HeirachyPanel() = default;
 
     void OnAttach() override;
     void OnFixedUpdate() override;

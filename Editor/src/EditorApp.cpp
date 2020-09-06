@@ -1,7 +1,7 @@
 #include "EditorApp.h"
 
-#include "ImGui/ImGuiDockSpace.h"
-#include "ImGui/ImGuiProjectsStartScreen.h"
+#include "MainDockSpace.h"
+#include "ProjectsStartScreen.h"
 
 Editor::Editor(const WindowProps& props)
 	:Application(props)
@@ -10,15 +10,11 @@ Editor::Editor(const WindowProps& props)
 
 	if (Application::GetOpenDocument().empty())
 	{
-		PushOverlay(new ImGuiProjectsStartScreen());
+		PushOverlay(new ProjectsStartScreen());
 		CLIENT_INFO("No project has been opened");
 	}
 
-	PushOverlay(new ImGuiDockSpace());
+	PushOverlay(new MainDockSpace());
 
 	Application::GetWindow().SetIcon(GetWorkingDirectory().string() + "\\resources\\Icons\\Logo.png");
-}
-
-void Editor::OnUpdate()
-{
 }

@@ -1,18 +1,18 @@
-#include "ImGuiProjectsStartScreen.h"
+#include "ProjectsStartScreen.h"
 
 #include "include.h"
 
 #include "IconsFontAwesome5.h"
 
 #include "FileSystem/FileDialog.h"
-#include "ImGuiDockSpace.h"
+#include "MainDockSpace.h"
 
-ImGuiProjectsStartScreen::ImGuiProjectsStartScreen()
+ProjectsStartScreen::ProjectsStartScreen()
 {
 	m_CreateProject = false;
 }
 
-void ImGuiProjectsStartScreen::OnImGuiRender()
+void ProjectsStartScreen::OnImGuiRender()
 {
 	ImGui::OpenPopup("##StartScreen");
 
@@ -51,21 +51,16 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 			{
 				if (ImGui::Button(project.filename().string().c_str()))
 				{
-					Application::SetOpenDocument(project);
-					ImGui::CloseCurrentPopup();
-					Application::Get().RemoveOverlay(this);
+					OpenProject(project);
 					break;
 				}
-				//ImGui::Selectable(project.filename().c_str(), );
 			}
 
 			ImGui::NextColumn();
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
-				Application::SetOpenDocument(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0"));
-				ImGui::CloseCurrentPopup();
-				Application::Get().RemoveOverlay(this);
+				OpenProject(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0"));
 			}
 		}
 		else
@@ -96,9 +91,7 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 					if (file.is_open())
 					{
 						file.close();
-						Application::SetOpenDocument(projectPath);
-						ImGui::CloseCurrentPopup();
-						Application::Get().RemoveOverlay(this);
+						OpenProject(projectPath);
 					}
 				}
 			}
@@ -107,7 +100,7 @@ void ImGuiProjectsStartScreen::OnImGuiRender()
 	}
 }
 
-void ImGuiProjectsStartScreen::OnAttach()
+void ProjectsStartScreen::OnAttach()
 {
 	std::string recentProjectsStr = Settings::GetValue("Files", "Recent_Files");
 
@@ -122,6 +115,13 @@ void ImGuiProjectsStartScreen::OnAttach()
 	}
 }
 
-void ImGuiProjectsStartScreen::OnDetach()
+void ProjectsStartScreen::OnDetach()
 {
+}
+
+void ProjectsStartScreen::OpenProject(const std::filesystem::path& projectPath)
+{
+	Application::SetOpenDocument(projectPath);
+	ImGui::CloseCurrentPopup();
+	Application::Get().RemoveOverlay(this);
 }

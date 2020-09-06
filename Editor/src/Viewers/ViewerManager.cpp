@@ -1,9 +1,9 @@
 #include "stdafx.h"
 #include "ViewerManager.h"
 
-#include "ImGuiTextureView.h"
-#include "ImGuiScriptView.h"
-#include "ImGuiStaticMeshView.h"
+#include "TextureView.h"
+#include "ScriptView.h"
+#include "StaticMeshView.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
 
@@ -60,7 +60,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		if (strcmp(ext, knownExt) == 0)
 		{
 			bool* show = new bool(true);
-			Layer* layer = new ImGuiScriptView(show, assetPath);
+			Layer* layer = new ScriptView(show, assetPath);
 			s_AssetViewers[assetPath] = std::make_pair(layer, show);
 			Application::Get().AddOverlay(layer);
 			return;
@@ -72,7 +72,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		if (strcmp(ext, knownExt) == 0)
 		{
 			bool* show = new bool(true);
-			Layer* layer = new ImGuiTextureView(show, assetPath);
+			Layer* layer = new TextureView(show, assetPath);
 			s_AssetViewers[assetPath] = std::make_pair(layer, show);
 			Application::Get().AddOverlay(layer);
 			return;
@@ -84,7 +84,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		if (strcmp(ext, knownExt) == 0)
 		{
 			bool* show = new bool(true);
-			Layer* layer = new ImGuiStaticMeshView(show, assetPath);
+			Layer* layer = new StaticMeshView(show, assetPath);
 			s_AssetViewers[assetPath] = std::make_pair(layer, show);
 			Application::Get().AddOverlay(layer);
 			return;

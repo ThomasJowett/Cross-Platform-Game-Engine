@@ -3,14 +3,14 @@
 #include "Core/Layer.h"
 #include "include.h"
 
-class ImGuiContentExplorer;
+class ContentExplorerPanel;
 
-class ImGuiDockSpace :
+class MainDockSpace :
 	public Layer
 {
 public:
-	ImGuiDockSpace();
-	~ImGuiDockSpace() = default;
+	MainDockSpace();
+	~MainDockSpace() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
@@ -49,7 +49,7 @@ private:
 
 	static Layer* s_CurrentlyFoccusedPanel;
 
-	ImGuiContentExplorer* m_ContentExplorer;
+	ContentExplorerPanel* m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
 };

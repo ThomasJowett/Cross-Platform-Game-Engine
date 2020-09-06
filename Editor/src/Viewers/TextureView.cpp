@@ -1,19 +1,19 @@
-#include "ImGuiTextureView.h"
+#include "TextureView.h"
 
 #include "IconsFontAwesome5.h"
 
-ImGuiTextureView::ImGuiTextureView(bool* show, const std::filesystem::path& filepath)
+TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 	:Layer("TextureView"),m_Show(show), m_FilePath(filepath)
 {
 
 }
-void ImGuiTextureView::OnAttach()
+void TextureView::OnAttach()
 {
 	m_Texture = Texture2D::Create(m_FilePath.string());
 
 	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string(m_Texture->GetRendererID());
 }
-void ImGuiTextureView::OnImGuiRender()
+void TextureView::OnImGuiRender()
 {
 	if (!*m_Show)
 		return;

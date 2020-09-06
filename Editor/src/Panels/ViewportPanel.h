@@ -9,7 +9,7 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-class ImGuiViewportPanel
+class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
 	enum class  Mode
@@ -21,8 +21,8 @@ class ImGuiViewportPanel
 	};
 
 public: 
-	explicit ImGuiViewportPanel(bool* show);
-	~ImGuiViewportPanel() = default;
+	explicit ViewportPanel(bool* show);
+	~ViewportPanel() = default;
 
 	void OnAttach() override;
 	void OnUpdate(float deltaTime) override;

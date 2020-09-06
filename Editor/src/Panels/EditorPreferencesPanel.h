@@ -4,12 +4,12 @@
 
 #include "imgui/imgui.h"
 
-class ImGuiEditorPreferences
+class EditorPreferencesPanel
 	:public Layer
 {
 public:
-	explicit ImGuiEditorPreferences(bool* show);
-	~ImGuiEditorPreferences() = default;
+	explicit EditorPreferencesPanel(bool* show);
+	~EditorPreferencesPanel() = default;
 	void OnImGuiRender() override;
 
 	virtual void OnAttach() override;
