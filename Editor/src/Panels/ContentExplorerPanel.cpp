@@ -271,6 +271,7 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_TotalNumBrowsingEntries = 0;
 	m_NumBrowsingColumns = 0;
 	m_NumBrowsingEntriesPerColumn = 0;
+	m_NumberSelected = 0;
 }
 
 void ContentExplorerPanel::OnAttach()

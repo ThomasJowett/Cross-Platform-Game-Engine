@@ -66,6 +66,11 @@ void ProjectsStartScreen::OnImGuiRender()
 		else
 		{
 			ImGui::Text("Select Template...");
+			ImGui::SameLine(0.0f, popupSizeX - 185);
+			if (ImGui::Button(ICON_FA_LONG_ARROW_ALT_LEFT" Back"))
+			{
+				m_CreateProject = false;
+			}
 			ImGui::Separator();
 
 			if (ImGui::Button("Blank Project"))
