@@ -56,7 +56,7 @@ void Scene::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(perspectiveCamera);
 
-	m_Registry.group<MeshComponent>(entt::get<TransformComponent>).each(
+	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transform)
 		{
 			Renderer::Submit(mesh.material, mesh.Geometry, transform);

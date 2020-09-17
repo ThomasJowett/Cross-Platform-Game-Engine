@@ -45,7 +45,7 @@ void ViewportPanel::OnAttach()
 	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
 
 	Entity entity = m_Scene->CreateEntity("Bucket");
-	entity.AddComponent<MeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
 
 	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
 		* Matrix4x4::Rotate(Vector3f(-PI / 2.0f, 0.0f, 0.0f));

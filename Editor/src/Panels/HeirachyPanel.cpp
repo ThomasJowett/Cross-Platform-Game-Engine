@@ -39,6 +39,11 @@ void HeirachyPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
+		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+		{
+			m_SelectedEntity = {};
+		}
+
 		if (m_Scene != nullptr)
 		{
 			if (ImGui::TreeNodeEx(m_Scene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))

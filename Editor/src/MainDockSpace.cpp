@@ -82,8 +82,9 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	Application::Get().AddOverlay(new HeirachyPanel(&m_ShowHierachy));
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties));
+	HeirachyPanel* heirachyPanel = new HeirachyPanel(&m_ShowHierachy);
+	Application::Get().AddOverlay(heirachyPanel);
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, heirachyPanel));
 
 	if (!Application::GetOpenDocument().empty())
 	{

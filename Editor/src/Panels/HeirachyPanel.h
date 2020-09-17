@@ -13,6 +13,7 @@ public:
     void OnImGuiRender() override;
 
     void SetContext(const Ref<Scene>& scene);
+    Entity GetSelectedEntity() { return m_SelectedEntity; }
 private:
     void DrawNode(Entity entity);
 private:
