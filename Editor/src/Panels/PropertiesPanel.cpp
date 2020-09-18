@@ -35,16 +35,18 @@ void PropertiesPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		DrawComponents(m_HeirachyPanel->GetSelectedEntity());
+		Entity entity = m_HeirachyPanel->GetSelectedEntity();
+		if (entity)
+		{
+			DrawComponents(entity);
+			ImGui::Separator();
+		}
 	}
 	ImGui::End();
 }
 
 void PropertiesPanel::DrawComponents(Entity entity)
 {
-	if (!entity)
-		return;
-
 	if (entity.HasComponent<TagComponent>())
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -83,7 +85,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	if (entity.HasComponent<SpriteComponent>())
 	{
-		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Sprite"))
+		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_IMAGE" Sprite"))
 		{
 			auto& sprite = entity.GetComponent<SpriteComponent>();
 
@@ -97,7 +99,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	if (entity.HasComponent<StaticMeshComponent>())
 	{
-		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Static Mesh"))
+		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_SHAPES" Static Mesh"))
 		{
 			auto& mesh = entity.GetComponent<StaticMeshComponent>();
 
@@ -107,7 +109,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	if (entity.HasComponent<NativeScriptComponent>())
 	{
-		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Native Script"))
+		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_FILE_CODE" Native Script"))
 		{
 			auto& script = entity.GetComponent<NativeScriptComponent>();
 
