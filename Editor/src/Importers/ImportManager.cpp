@@ -12,7 +12,7 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 
 	if (extString == ".fbx")
 	{
-		FbxImporter::ImportAssests(asset, destination);
+		FbxImporter::ImportAssets(asset, destination);
 	}
 }
 

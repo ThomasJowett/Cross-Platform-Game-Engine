@@ -1,12 +1,9 @@
 #pragma once
 
-#include "ofbx.h"
-
-#include "Renderer/VertexArray.h"
-
+#include <filesystem>
 
 class FbxImporter
 {
 public:
-	static void ImportAssests(const std::filesystem::path& filepath, const std::filesystem::path& destination);
+	static void ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination);
 };

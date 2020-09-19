@@ -1,7 +1,5 @@
 #pragma once
 
-#include "include.h"
-
 #define MAX_ASSET_VIEWERS 2
 
 class ViewerManager

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 #include "Core/core.h"
 
 enum class ShaderDataType

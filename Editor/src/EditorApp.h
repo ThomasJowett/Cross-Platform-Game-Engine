@@ -1,5 +1,4 @@
 #pragma once
-#include <include.h>
 #include "Core/EntryPoint.h"
 
 class Editor : public Application

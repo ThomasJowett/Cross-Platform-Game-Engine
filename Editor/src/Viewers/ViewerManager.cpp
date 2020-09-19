@@ -1,6 +1,6 @@
-#include "stdafx.h"
-#include "ViewerManager.h"
+#include "Engine.h"
 
+#include "ViewerManager.h"
 #include "TextureView.h"
 #include "ScriptView.h"
 #include "StaticMeshView.h"

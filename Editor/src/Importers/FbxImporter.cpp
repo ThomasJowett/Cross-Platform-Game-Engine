@@ -1,6 +1,10 @@
 #include "FbxImporter.h"
 
-void FbxImporter::ImportAssests(const std::filesystem::path& filepath, const std::filesystem::path& destination)
+#include "Engine.h"
+
+#include "ofbx.h"
+
+void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination)
 {
 	PROFILE_FUNCTION();
 
