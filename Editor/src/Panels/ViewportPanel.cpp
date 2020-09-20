@@ -53,7 +53,7 @@ void ViewportPanel::OnAttach()
 	//Camera camera = Camera(Matrix4x4::PerspectiveRH(PI * 0.5, 16.0 / 9.0, 1.0, -1.0), Matrix4x4());
 	SceneCamera camera;
 
-	camera.SetPosition({ 0.0, 0.0, 2.0 });
+	camera.SetPosition({ 0.0, 0.0, 20.0 });
 
 	entity = m_Scene->CreateEntity("MainCamera");
 	entity.AddComponent<CameraComponent>(camera, true);

@@ -284,7 +284,6 @@ void Application::SetDefaultSettings(const WindowProps& props)
 {
 	const char* display = "Display";
 	const char* audio = "Audio";
-	const char* files = "Files";
 
 	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
 	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
@@ -293,8 +292,6 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
-
-	Settings::SetDefaultValue(files, "Recent_Files", "");
 }
 
 double Application::GetTime()

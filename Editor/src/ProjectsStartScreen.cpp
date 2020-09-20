@@ -115,7 +115,8 @@ void ProjectsStartScreen::OnAttach()
 	{
 		if (project.extension() == ".proj")
 		{
-			m_RecentProjects.push_back(project);
+			if (std::filesystem::exists(project))
+				m_RecentProjects.push_back(project);
 		}
 	}
 }

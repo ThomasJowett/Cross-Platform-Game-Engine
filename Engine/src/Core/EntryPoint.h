@@ -1,6 +1,7 @@
 #include "Application.h"
 #include "InputParser.h"
 #include "Core/Version.h"
+#include "Settings.h"
 
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
@@ -43,6 +44,8 @@ int main(int argc, char* argv[])
 	}
 
 	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
+
+	Settings::SetDefaultValue("Files", "Recent_Files", "");
 
 	std::string file;
 	bool hasFile = input.File(file);

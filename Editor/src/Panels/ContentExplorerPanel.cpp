@@ -238,7 +238,11 @@ void ContentExplorerPanel::RightClickMenu()
 		CLIENT_DEBUG("new object");
 	if (ImGui::Selectable("Import Assets"))
 	{
-		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", L"Any File\0*.*\0Film Box (.fbx)\0*.fbx"), m_CurrentPath);
+		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", 
+			L"Any File\0*.*\0"
+			"Film Box (.fbx)\0*.fbx\0"
+			"Wavefront OBJ (.obj)\0*.obj"),
+			m_CurrentPath);
 		m_ForceRescan = true;
 	}
 	ImGui::Separator();

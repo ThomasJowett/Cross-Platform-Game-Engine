@@ -7,7 +7,7 @@
 
 #include "Core/Application.h"
 
-static CSimpleIniA* s_Ini = nullptr;
+static CSimpleIniA* s_Ini = new CSimpleIniA();
 
 std::map<std::pair<std::string, std::string>, std::string> Settings::s_DefaultValues = {};
 
@@ -16,8 +16,6 @@ static std::string s_Filename;
 void Settings::Init()
 {
 	s_Filename = Application::GetWorkingDirectory().string() + "\\Settings.ini";
-
-	s_Ini = new CSimpleIniA();
 
 	s_Ini->SetUnicode();
 

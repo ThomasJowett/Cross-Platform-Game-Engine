@@ -59,6 +59,8 @@ void StaticMeshView::OnImGuiRender()
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
 			m_CameraController.OnMouseWheel(io.MouseWheel);
 
+		ImGui::Columns(2);
+
 		ImVec2 panelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
 		{
@@ -85,6 +87,10 @@ void StaticMeshView::OnImGuiRender()
 		ImGui::EndMenuBar();
 
 		auto tex = m_Framebuffer->GetColourAttachment();
+
+		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
+
+		ImGui::NextColumn();
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 	}

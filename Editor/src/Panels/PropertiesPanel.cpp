@@ -3,6 +3,8 @@
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
 
+#include "ImGui/ImGuiTransform.h"
+
 PropertiesPanel::PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel)
 	:Layer("Properties"), m_Show(show), m_HeirachyPanel(heirachyPanel)
 {
@@ -67,17 +69,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			auto& transform = entity.GetComponent<TransformComponent>().Transform;
 
-			float* position[3] = { &transform.m[0][3], &transform.m[1][3], &transform.m[2][3] };
-
-			ImGui::DragFloat3("Position", position[0], 0.1f);
-
-			Vector3f scale = transform.ExtractScale();
-
-			ImGui::DragFloat3("Scale", &scale[0]);
-
-			Quaternion rotation = transform.ExtractRotation();
-
-			ImGui::DragFloat4("Rotation", &rotation[0]);
+			ImGui::Transform(transform);
 
 			ImGui::TreePop();
 		}

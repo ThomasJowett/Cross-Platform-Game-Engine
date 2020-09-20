@@ -49,7 +49,8 @@ void Scene::OnUpdate(float deltaTime)
 					perspectiveCamera = cameraComp.Camera;
 				else
 				{
-				}//orthoCamera = cameraComp.Camera;
+					orthoCamera = cameraComp.Camera;
+				}//
 			}
 		}
 	);

@@ -1,6 +1,7 @@
 #include "ImportManager.h"
 
 #include "FbxImporter.h"
+#include "OBJImporter.h"
 
 void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::filesystem::path& destination)
 {
@@ -13,6 +14,10 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	if (extString == ".fbx")
 	{
 		FbxImporter::ImportAssets(asset, destination);
+	}
+	else if (extString == ".obj")
+	{
+		OBJImporter::ImportAssets(asset, destination);
 	}
 }
 
