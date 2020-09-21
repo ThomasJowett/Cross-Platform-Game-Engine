@@ -273,7 +273,8 @@ project "Editor"
 
 	postbuildcommands
 	{
-		("{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources")
+		"{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources",
+		"{COPY} imgui.ini ../bin/" .. outputdir .. "/%{prj.name}"
 	}
 
 	filter "system:windows"

@@ -47,6 +47,10 @@ void ImGuiManager::Init()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+	m_IniFile = std::filesystem::path(Application::GetWorkingDirectory() / "imgui.ini").string();
+
+	io.IniFilename = m_IniFile.c_str();
+
 	//Setup Platform/Renderer bindings
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)

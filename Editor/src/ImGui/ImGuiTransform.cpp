@@ -10,7 +10,7 @@ bool ImGui::Transform(Matrix4x4& transform)
 	Vector3f position = transform.ExtractTranslation();
 	Vector3f rotation = transform.ExtractRotation().EulerAngles();
 	Vector3f scale = transform.ExtractScale();//TODO: fix extract scale
-	scale = Vector3f(1,1,1);
+	//scale = Vector3f(1,1,1);
 
 	ImGui::Text("Position");
 	float width = ImGui::GetContentRegionAvailWidth();

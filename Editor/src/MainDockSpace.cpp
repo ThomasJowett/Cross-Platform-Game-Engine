@@ -34,8 +34,8 @@ MainDockSpace::MainDockSpace()
 	m_ShowConsole = true;
 	m_ShowErrorList = false;
 	m_ShowTaskList = false;
-	m_ShowProperties = false;
-	m_ShowHierachy = false;
+	m_ShowProperties = true;
+	m_ShowHierachy = true;
 	m_ShowContentExplorer = true;
 	m_ShowJoystickInfo = true;
 

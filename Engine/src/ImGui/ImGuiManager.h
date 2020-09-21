@@ -26,4 +26,6 @@ public:
 
 private:
 	bool m_UsingImGui;
+
+	std::string m_IniFile;
 };
