@@ -29,6 +29,11 @@ void Renderer::BeginScene(const Camera& camera)
 	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 }
 
+void Renderer::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
+{
+	s_Data.ViewProjectionMatrix = projection * view;
+}
+
 void Renderer::EndScene()
 {
 	//TODO: frustum culling

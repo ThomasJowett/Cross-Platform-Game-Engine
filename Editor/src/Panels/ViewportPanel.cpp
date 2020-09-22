@@ -58,6 +58,8 @@ void ViewportPanel::OnAttach()
 	entity = m_Scene->CreateEntity("MainCamera");
 	entity.AddComponent<CameraComponent>(camera, true);
 
+	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ 0.0,0.0,20.0 });
+
 	class CameraController :public ScriptableEntity
 	{
 
@@ -100,9 +102,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	//Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
 
 	m_Scene->OnUpdate(deltaTime);
-
-	//Renderer2D::EndScene();
-	//Renderer::EndScene();
 
 	m_Framebuffer->UnBind();
 }

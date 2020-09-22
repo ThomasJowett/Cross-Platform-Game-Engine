@@ -5,6 +5,7 @@
 #include "Components/Components.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
+#include "Renderer/Camera.h"
 
 Scene::Scene(std::string name)
 	:m_SceneName(name)
@@ -40,13 +41,20 @@ void Scene::OnUpdate(float deltaTime)
 	Camera orthoCamera;
 	Camera perspectiveCamera;
 
+	Matrix4x4 view;
+	Matrix4x4 projection;
+
 	m_Registry.view<TransformComponent, CameraComponent>().each(
 		[&]([[maybe_unused]] const auto cameraEntity, const auto& transform, const auto& cameraComp)
 		{
 			if (cameraComp.Primary)
 			{
 				if (cameraComp.Camera.IsPerspective)
+				{
+					view = Matrix4x4::Inverse(transform);;
+					projection = cameraComp.Camera.GetProjectionMatrix();
 					perspectiveCamera = cameraComp.Camera;
+				}
 				else
 				{
 					orthoCamera = cameraComp.Camera;
@@ -55,7 +63,8 @@ void Scene::OnUpdate(float deltaTime)
 		}
 	);
 
-	Renderer::BeginScene(perspectiveCamera);
+	Renderer::BeginScene(view, projection);
+	//Renderer::BeginScene(perspectiveCamera);
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transform)
