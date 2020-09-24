@@ -31,7 +31,7 @@ void Renderer::BeginScene(const Camera& camera)
 
 void Renderer::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
 {
-	s_Data.ViewProjectionMatrix = projection * view;
+	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
 }
 
 void Renderer::EndScene()

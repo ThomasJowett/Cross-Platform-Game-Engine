@@ -28,13 +28,13 @@ void ViewportPanel::OnAttach()
 	//TODO: load the default scene and deserialize it
 	//for now it just loads a mesh of a bucket
 
-	Entity square = m_Scene->CreateEntity("Test Square");
-	square.AddComponent<SpriteComponent>(Colour(0.0f,1.0f, 0.0f, 0.5f));
+	//Entity square = m_Scene->CreateEntity("Test Square");
+	//square.AddComponent<SpriteComponent>(Colour(0.0f,1.0f, 0.0f, 0.5f));
 	
-	SceneCamera orthoCamera;
-	orthoCamera.SetOrthoGraphic(1, 1.0f, -1.0f);
-	square = m_Scene->CreateEntity("2D Camera");
-	square.AddComponent<CameraComponent>(orthoCamera, true);
+	//SceneCamera orthoCamera;
+	//orthoCamera.SetOrthoGraphic(1, 1.0f, -1.0f);
+	//square = m_Scene->CreateEntity("2D Camera");
+	//square.AddComponent<CameraComponent>(orthoCamera, false);
 
 
 	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");

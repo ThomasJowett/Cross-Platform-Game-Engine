@@ -49,22 +49,13 @@ void Scene::OnUpdate(float deltaTime)
 		{
 			if (cameraComp.Primary)
 			{
-				if (cameraComp.Camera.IsPerspective)
-				{
-					view = Matrix4x4::Inverse(transform);;
+					view = transform;
 					projection = cameraComp.Camera.GetProjectionMatrix();
-					perspectiveCamera = cameraComp.Camera;
-				}
-				else
-				{
-					orthoCamera = cameraComp.Camera;
-				}//
 			}
 		}
 	);
 
 	Renderer::BeginScene(view, projection);
-	//Renderer::BeginScene(perspectiveCamera);
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transform)
@@ -98,6 +89,5 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 			{
 				cameraComp.Camera.SetAspectRatio((float)width / (float)height);
 			}
-
 		});
 }
