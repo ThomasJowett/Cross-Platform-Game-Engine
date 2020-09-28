@@ -13,4 +13,6 @@ struct TransformComponent
 
 	operator Matrix4x4& () { return Transform; }
 	operator const Matrix4x4& () const { return Transform; }
+
+
 };

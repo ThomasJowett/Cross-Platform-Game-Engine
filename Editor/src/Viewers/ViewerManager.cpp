@@ -4,6 +4,7 @@
 #include "TextureView.h"
 #include "ScriptView.h"
 #include "StaticMeshView.h"
+#include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
 
@@ -89,5 +90,16 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 			Application::Get().AddOverlay(layer);
 			return;
 		}
+	}
+
+	if (strcmp(ext, ".scene") == 0)
+	{
+		if (SceneManager::s_CurrentScene->IsDirty())
+		{
+			SceneManager::s_CurrentScene->Serialise(false);
+		}
+
+		SceneManager::s_CurrentScene = CreateScope<Scene>(assetPath);
+		SceneManager::s_CurrentScene->Deserialise();
 	}
 }

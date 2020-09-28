@@ -2,15 +2,10 @@
 
 #include "Core/core.h"
 
-class Scene;
-
+#include "Scene/Scene.h"
 
 class SceneManager
 {
 public:
-	static Ref<Scene> GetCurrentScene() { return s_CurrentScene; }
-	static void SetScene(Ref<Scene> scene) { s_CurrentScene = scene; }
-private:
-
-	static Ref<Scene> s_CurrentScene;
+	static Scope<Scene> s_CurrentScene;
 };

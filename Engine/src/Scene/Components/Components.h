@@ -1,8 +1,16 @@
 #pragma once
 
-#include "StaticMeshComponent.h"
 #include "TransformComponent.h"
-#include "SpriteComponent.h"
 #include "TagComponent.h"
 #include "CameraComponent.h"
+#include "SpriteComponent.h"
+#include "StaticMeshComponent.h"
 #include "NativeScriptComponent.h"
+
+#define COMPONENTS		\
+TransformComponent,		\
+TagComponent			\
+CameraComponent,		\
+SpriteComponent,		\
+StaticMeshComponent,	\
+NativeScriptComponent	

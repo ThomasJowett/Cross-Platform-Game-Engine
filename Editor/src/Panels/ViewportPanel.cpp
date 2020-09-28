@@ -5,6 +5,8 @@
 #include "IconsFontAwesome5.h"
 
 #include "Scene/SceneManager.h"
+#include "FileSystem/FileDialog.h"
+
 
 ViewportPanel::ViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
@@ -18,12 +20,7 @@ void ViewportPanel::OnAttach()
 {
 	//TEMP CODE
 
-
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
-
-	m_Scene = CreateRef<Scene>("Test Scene");
-
-	SceneManager::SetScene(m_Scene);
 
 	//TODO: load the default scene and deserialize it
 	//for now it just loads a mesh of a bucket
@@ -44,7 +41,7 @@ void ViewportPanel::OnAttach()
 
 	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
 
-	Entity entity = m_Scene->CreateEntity("Bucket");
+	Entity entity = SceneManager::s_CurrentScene->CreateEntity("Bucket");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 
 	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
@@ -55,7 +52,7 @@ void ViewportPanel::OnAttach()
 
 	camera.SetPosition({ 0.0, 0.0, 20.0 });
 
-	entity = m_Scene->CreateEntity("MainCamera");
+	entity = SceneManager::s_CurrentScene->CreateEntity("MainCamera");
 	entity.AddComponent<CameraComponent>(camera, true);
 
 	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ 0.0,0.0,20.0 });
@@ -76,6 +73,9 @@ void ViewportPanel::OnAttach()
 void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
+
+	//if (SceneManager::GetCurrentScene() != m_Scene)
+	//	m_Scene = SceneManager::GetCurrentScene();
 
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
@@ -101,7 +101,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	//Renderer::BeginScene(*m_CameraController.GetCamera());
 	//Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
 
-	m_Scene->OnUpdate(deltaTime);
+	SceneManager::s_CurrentScene->OnUpdate(deltaTime);
 
 	m_Framebuffer->UnBind();
 }
@@ -114,7 +114,7 @@ void ViewportPanel::OnFixedUpdate()
 		m_Framebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 
-		m_Scene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
+		SceneManager::s_CurrentScene->OnViewportResize(m_ViewportSize.x, m_ViewportSize.y);
 	}
 }
 
@@ -134,6 +134,11 @@ void ViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+
+	if(SceneManager::s_CurrentScene->IsDirty())
+		flags |= ImGuiWindowFlags_UnsavedDocument;
+
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
 	if (viewShown)
 	{
@@ -214,24 +219,32 @@ void ViewportPanel::Cut()
 {
 	// TODO: viewport cut
 	CLIENT_DEBUG("Cutted");
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::Paste()
 {
 	//TODO: viewport paste
 	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::Duplicate()
 {
 	//TODO: viewport duplicate
 	CLIENT_DEBUG("Duplicated");
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::Delete()
 {
 	//TODO: viewport delete
 	CLIENT_DEBUG("Deleted");
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::SelectAll()
@@ -257,21 +270,31 @@ bool ViewportPanel::CanRedo() const
 void ViewportPanel::Undo(int astep)
 {
 	CLIENT_DEBUG("Undid");
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::Redo(int astep)
 {
 	CLIENT_DEBUG("Redid");
+
+	SceneManager::s_CurrentScene->MakeDirty();
 }
 
 void ViewportPanel::Save()
 {
+	//if (!m_SceneDirty)
+	//	return;
 	CLIENT_DEBUG("Saving...");
+
+	SceneManager::s_CurrentScene->Serialise(false);
 }
 
 void ViewportPanel::SaveAs()
 {
 	CLIENT_DEBUG("Saving As...");
+
+	SceneManager::s_CurrentScene->Serialise(SaveAsDialog(L"Save Scene As...", L"Scene (.scene)\0*.scene\0"), false);
 }
 
 void ViewportPanel::HandleKeyboardInputs()

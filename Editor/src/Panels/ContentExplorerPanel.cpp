@@ -123,13 +123,13 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	if (std::filesystem::is_regular_file(m_CurrentPath))
 	{
 		m_CurrentPath.remove_filename();
-		std::string path = m_CurrentPath.string();
-		path.pop_back();
-		m_CurrentPath = path;
+		std::string str = m_CurrentPath.string();
+		str.pop_back();
+		m_CurrentPath = str;
 	}
 
 	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
-	m_History.SwitchTo(path);
+	m_History.SwitchTo(m_CurrentPath);
 	m_ForceRescan = true;
 }
 
@@ -232,6 +232,31 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 
 		std::filesystem::create_directory(newFolderName);
+
+		m_ForceRescan = true;
+	}
+	if (ImGui::Selectable("New Scene"))
+	{
+		std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
+
+		int suffix = 1;
+
+		if (std::filesystem::exists(newSceneFilepath + ".scene"))
+		{
+			while (std::filesystem::exists(newSceneFilepath + '(' + std::to_string(suffix) + ").scene"))
+			{
+				suffix++;
+			}
+
+			newSceneFilepath += '(' + std::to_string(suffix) + ')';
+		}
+
+		newSceneFilepath += ".scene";
+
+		Ref<Scene> newScene = CreateRef<Scene>(newSceneFilepath);
+
+		newScene->Serialise(false);
+
 		m_ForceRescan = true;
 	}
 	if (ImGui::Selectable("New Object"))

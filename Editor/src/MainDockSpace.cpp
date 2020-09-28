@@ -22,6 +22,8 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
+#include "Scene/SceneManager.h"
+
 Layer* MainDockSpace::s_CurrentlyFoccusedPanel;
 
 MainDockSpace::MainDockSpace()
@@ -252,8 +254,8 @@ void MainDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Window"))
 		{
-			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);//TODO: Create properties panel
-			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierachy);//TODO: create heirachy panel
+			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);
+			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierachy);
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Conosole", "", &m_ShowConsole);
@@ -291,7 +293,7 @@ void MainDockSpace::OnImGuiRender()
 #endif
 			}
 			ImGui::EndMenu();
-			}
+		}
 
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
 		ImGui::Separator();
@@ -302,7 +304,7 @@ void MainDockSpace::OnImGuiRender()
 		}
 
 		ImGui::EndMenuBar();
-		}
+	}
 
 	if (about) ImGui::OpenPopup("About");
 
@@ -327,13 +329,27 @@ void MainDockSpace::OnImGuiRender()
 	//}
 
 	//ImGui::End();
-	}
+}
 
 void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 {
 	ENGINE_INFO("Opened Project: {0}", filename.string());
 
 	m_ContentExplorer->SwitchTo(filename);
+
+	std::ifstream file(filename);
+
+	//TODO: get default scene filepath from the project file
+
+	std::filesystem::path startSceneFilepath = filename;
+
+	startSceneFilepath.remove_filename();
+	startSceneFilepath /= "DefaultScene.scene";
+
+	file.close();
+
+	SceneManager::s_CurrentScene = CreateScope<Scene>(startSceneFilepath);
+	SceneManager::s_CurrentScene->Deserialise(false);
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)

@@ -9,6 +9,8 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
+#include "Scene/SceneManager.h"
+
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
@@ -63,5 +65,5 @@ private:
 
 	Mode m_Mode;
 
-	Ref<Scene> m_Scene;
+	std::filesystem::path m_SceneFilepath;
 };

@@ -7,9 +7,14 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
 
-Scene::Scene(std::string name)
-	:m_SceneName(name)
+#include "cereal/archives/binary.hpp"
+#include "cereal/archives/json.hpp"
+
+Scene::Scene(std::filesystem::path filepath)
+	:m_Filepath(filepath)
 {
+	m_SceneName = filepath.filename().string();
+	m_SceneName = m_SceneName.substr(0, m_SceneName.find_last_of('.'));
 }
 
 Scene::~Scene()
@@ -49,8 +54,8 @@ void Scene::OnUpdate(float deltaTime)
 		{
 			if (cameraComp.Primary)
 			{
-					view = transform;
-					projection = cameraComp.Camera.GetProjectionMatrix();
+				view = transform;
+				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}
 	);
@@ -90,4 +95,83 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 				cameraComp.Camera.SetAspectRatio((float)width / (float)height);
 			}
 		});
+}
+
+void Scene::Serialise(std::filesystem::path filepath, bool binary)
+{
+	PROFILE_FUNCTION();
+
+	ENGINE_INFO("Saving Scene {0} to {1}", m_SceneName, m_Filepath.string());
+
+	std::filesystem::path finalPath = filepath;
+	finalPath.replace_extension(".scene");
+
+	if (!std::filesystem::exists(finalPath))
+	{
+		if (!std::filesystem::exists(filepath.remove_filename()))
+		{
+			CLIENT_INFO("Creating Directory {0}", filepath);
+			std::filesystem::create_directory(filepath.remove_filename());
+		}
+	}
+
+	if (binary)
+	{
+		std::ofstream file(finalPath, std::ios::binary);
+		
+		{
+			cereal::BinaryOutputArchive output(file);
+			//output(*this);
+			//entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+		}
+		file.close();
+	}
+	else
+	{
+		std::stringstream ss;
+		{
+			cereal::JSONOutputArchive output{ ss };
+			output(*this);
+			entt::snapshot{ m_Registry }.entities(output).component<TagComponent>(output);
+		}
+
+		std::ofstream file(finalPath);
+		file << ss.str();
+		file.close();
+	}
+
+	m_Dirty = false;
+}
+
+void Scene::Serialise(bool binary)
+{
+	Serialise(m_Filepath, binary);
+}
+
+void Scene::Deserialise(bool binary)
+{
+	if (!std::filesystem::exists(m_Filepath))
+	{
+		ENGINE_ERROR("File not found {0}", m_Filepath);
+		return;
+	}
+	
+	if (binary)
+	{
+		std::ifstream file(m_Filepath, std::ios::binary);
+		cereal::BinaryInputArchive input(file);
+		//input(*this);
+	//	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+		file.close();
+	}
+	else
+	{
+		std::ifstream file(m_Filepath);
+		cereal::JSONInputArchive input(file);
+		input(*this);
+		entt::snapshot_loader(m_Registry).entities(input).component<TagComponent>(input);
+		file.close();
+	}
+
+	m_Dirty = false;
 }

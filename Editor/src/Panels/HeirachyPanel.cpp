@@ -8,12 +8,10 @@
 HeirachyPanel::HeirachyPanel(bool* show)
 	:m_Show(show), Layer("Heirachy")
 {
-	m_Scene = nullptr;
 }
 
 void HeirachyPanel::OnAttach()
 {
-	m_Scene = SceneManager::GetCurrentScene();
 }
 
 void HeirachyPanel::OnFixedUpdate()
@@ -44,14 +42,14 @@ void HeirachyPanel::OnImGuiRender()
 			m_SelectedEntity = {};
 		}
 
-		if (m_Scene != nullptr)
+		if (SceneManager::s_CurrentScene != nullptr)
 		{
-			if (ImGui::TreeNodeEx(m_Scene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::TreeNodeEx(SceneManager::s_CurrentScene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
 			{
-				m_Scene->GetRegistry().each([&](auto entityID)
+				SceneManager::s_CurrentScene->GetRegistry().each([&](auto entityID)
 					{
-						auto& name = m_Scene->GetRegistry().get<TagComponent>(entityID);
-						Entity entity{ entityID, m_Scene.get(),  name };
+						auto& name = SceneManager::s_CurrentScene->GetRegistry().get<TagComponent>(entityID);
+						Entity entity{ entityID, SceneManager::s_CurrentScene.get(),  name };
 						DrawNode(entity);
 					});
 
@@ -60,11 +58,6 @@ void HeirachyPanel::OnImGuiRender()
 		}
 	}
 	ImGui::End();
-}
-
-void HeirachyPanel::SetContext(const Ref<Scene>& scene)
-{
-	m_Scene = scene;
 }
 
 void HeirachyPanel::DrawNode(Entity entity)

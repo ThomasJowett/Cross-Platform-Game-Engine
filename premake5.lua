@@ -54,7 +54,8 @@ project "Engine"
 		"%{prj.name}/vendor/stb",
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/simpleini",
-		"%{prj.name}/vendor/EnTT"
+		"%{prj.name}/vendor/EnTT",
+		"%{prj.name}/vendor/cereal/include"
 	}
 	
 	links
@@ -176,7 +177,8 @@ project "ExampleGame"
 		"ExampleGame/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include"
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include"
 	}
 	
 	links
@@ -262,7 +264,8 @@ project "Editor"
 		"%{prj.name}/vendor/OpenFBX/src",
 		"Engine/src",
 		"Engine/vendor",
-		"Engine/vendor/spdlog/include"
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include"
 	}
 	
 	links

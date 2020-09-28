@@ -1,3 +1,3 @@
 #include "stdafx.h"
 #include "SceneManager.h"
-Ref<Scene> SceneManager::s_CurrentScene;
+Scope<Scene> SceneManager::s_CurrentScene;
