@@ -16,3 +16,6 @@
 [submodule "Editor/vendor/OpenFBX"]
 	path = Editor/vendor/OpenFBX
 	url = https://github.com/nem0/OpenFBX
+[submodule "Engine/vendor/cereal"]
+	path = Engine/vendor/cereal
+	url = https://github.com/USCiLab/cereal
