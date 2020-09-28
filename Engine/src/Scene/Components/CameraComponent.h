@@ -15,4 +15,12 @@ struct CameraComponent
 
 	operator SceneCamera& () { return Camera; }
 	operator const SceneCamera& () const { return Camera; }
+
+	template<typename Archive>
+	void serialize(Archive& archive)
+	{
+		archive(cereal::make_nvp("SceneCamera", Camera));
+		archive(cereal::make_nvp("Primary", Primary));
+		archive(cereal::make_nvp("FixedAspectRatio", FixedAspectRatio));
+	}
 };

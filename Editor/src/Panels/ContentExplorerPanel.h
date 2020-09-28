@@ -104,6 +104,8 @@ public:
 
 	void SwitchTo(const std::filesystem::path& path);
 
+	void CreateNewScene();
+
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));

@@ -5,9 +5,6 @@
 
 #include "ImGui/ImGuiTransform.h"
 
-#define DegToRad(degrees) (degrees * (PI/180))
-#define RadToDeg(radians) (radians * (180/PI))
-
 PropertiesPanel::PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel)
 	:Layer("Properties"), m_Show(show), m_HeirachyPanel(heirachyPanel)
 {

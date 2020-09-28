@@ -187,7 +187,10 @@ void MainDockSpace::OnImGuiRender()
 
 			bool saveable = iSave != nullptr;
 
-			ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N", nullptr, false);
+			if(ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
+			{
+				m_ContentExplorer->CreateNewScene();
+			}
 			ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N", nullptr, false);
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project", "Ctrl + O"))
 			{

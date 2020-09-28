@@ -147,6 +147,12 @@ public:
 	{
 		return i == 0 ? this->r : (i == 1 ? this->g : i == 2 ? this->b : this->a);
 	}
+
+	template<typename Archive>
+	void serialize(Archive& archive)
+	{
+		archive(r,g,b,a);
+	}
 };
 
 inline std::ostream& operator<<(std::ostream& os, Colour& c)

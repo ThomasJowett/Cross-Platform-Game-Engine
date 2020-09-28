@@ -132,7 +132,7 @@ void Scene::Serialise(std::filesystem::path filepath, bool binary)
 		{
 			cereal::JSONOutputArchive output{ ss };
 			output(*this);
-			entt::snapshot{ m_Registry }.entities(output).component<TagComponent>(output);
+			entt::snapshot{ m_Registry }.entities(output).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(output);
 		}
 
 		std::ofstream file(finalPath);
@@ -169,7 +169,7 @@ void Scene::Deserialise(bool binary)
 		std::ifstream file(m_Filepath);
 		cereal::JSONInputArchive input(file);
 		input(*this);
-		entt::snapshot_loader(m_Registry).entities(input).component<TagComponent>(input);
+		entt::snapshot_loader(m_Registry).entities(input).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(input);
 		file.close();
 	}
 

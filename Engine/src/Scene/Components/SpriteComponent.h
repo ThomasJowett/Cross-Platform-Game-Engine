@@ -10,4 +10,10 @@ struct SpriteComponent
 	SpriteComponent(const SpriteComponent&) = default;
 	SpriteComponent(const Colour& colour)
 		:Tint(colour) {}
+
+	template<typename Archive>
+	void serialize(Archive& archive)
+	{
+		archive(cereal::make_nvp("Tint", Tint));
+	}
 };

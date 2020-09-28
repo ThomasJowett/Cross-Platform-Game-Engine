@@ -133,6 +133,31 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	m_ForceRescan = true;
 }
 
+void ContentExplorerPanel::CreateNewScene()//TODO: create a popup to name the scene before creating it
+{
+	std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
+
+	int suffix = 1;
+
+	if (std::filesystem::exists(newSceneFilepath + ".scene"))
+	{
+		while (std::filesystem::exists(newSceneFilepath + '(' + std::to_string(suffix) + ").scene"))
+		{
+			suffix++;
+		}
+
+		newSceneFilepath += '(' + std::to_string(suffix) + ')';
+	}
+
+	newSceneFilepath += ".scene";
+
+	Ref<Scene> newScene = CreateRef<Scene>(newSceneFilepath);
+
+	newScene->Serialise(false);
+
+	m_ForceRescan = true;
+}
+
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -237,27 +262,7 @@ void ContentExplorerPanel::RightClickMenu()
 	}
 	if (ImGui::Selectable("New Scene"))
 	{
-		std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
-
-		int suffix = 1;
-
-		if (std::filesystem::exists(newSceneFilepath + ".scene"))
-		{
-			while (std::filesystem::exists(newSceneFilepath + '(' + std::to_string(suffix) + ").scene"))
-			{
-				suffix++;
-			}
-
-			newSceneFilepath += '(' + std::to_string(suffix) + ')';
-		}
-
-		newSceneFilepath += ".scene";
-
-		Ref<Scene> newScene = CreateRef<Scene>(newSceneFilepath);
-
-		newScene->Serialise(false);
-
-		m_ForceRescan = true;
+		CreateNewScene();
 	}
 	if (ImGui::Selectable("New Object"))
 		CLIENT_DEBUG("new object");

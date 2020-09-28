@@ -32,6 +32,20 @@ public:
 
 	void RecalculateProjection();
 
+	template<typename Archive>
+	void serialize(Archive& archive)
+	{
+		archive(cereal::make_nvp("Projection", m_ProjectionMatrix));
+		archive(cereal::make_nvp("ProjectionType", m_ProjectionType));
+		archive(cereal::make_nvp("OrthoSize", m_OrthographicSize));
+		archive(cereal::make_nvp("OrthoNear", m_OrthoGraphicNear));
+		archive(cereal::make_nvp("OrthoFar", m_OrthoGraphicFar));
+		archive(cereal::make_nvp("OrthoFar", m_PerspectiveNear));
+		archive(cereal::make_nvp("OrthoFar", m_PerspectiveFar));
+		archive(cereal::make_nvp("OrthoFar", m_Fov));
+		archive(cereal::make_nvp("OrthoFar", m_AspectRatio));
+	}
+
 private:
 	void RecalculateOrthographicProjection();
 	void RecalculatePerspectiveProjection();
