@@ -10,6 +10,9 @@ git pull origin docking
 cd ..\math
 git pull origin master
 
+cd ..\cereal
+git pull origin master
+
 cd ..\..\..\Editor\vendor\IconFont
 git pull origin master
 
