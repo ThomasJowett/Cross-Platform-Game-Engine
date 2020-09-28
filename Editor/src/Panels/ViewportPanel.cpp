@@ -33,6 +33,8 @@ void ViewportPanel::OnAttach()
 	//square = m_Scene->CreateEntity("2D Camera");
 	//square.AddComponent<CameraComponent>(orthoCamera, false);
 
+	if (!SceneManager::s_CurrentScene)
+		return;
 
 	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
 
@@ -73,6 +75,9 @@ void ViewportPanel::OnAttach()
 void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
+
+	if (!SceneManager::s_CurrentScene)
+		return;
 
 	//if (SceneManager::GetCurrentScene() != m_Scene)
 	//	m_Scene = SceneManager::GetCurrentScene();
@@ -122,7 +127,7 @@ void ViewportPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
-	if (!*m_Show)
+	if (!*m_Show || SceneManager::s_CurrentScene == nullptr)
 	{
 		return;
 	}

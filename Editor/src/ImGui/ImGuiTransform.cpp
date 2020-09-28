@@ -7,15 +7,15 @@
 bool ImGui::Transform(Matrix4x4& transform)
 {
 	bool edited = false;
-	//Vector3f position = transform.ExtractTranslation();
-	//Vector3f rotation = transform.ExtractRotation().EulerAngles();
-	//Vector3f scale = transform.ExtractScale();//TODO: fix extract scale
+	Vector3f position = transform.ExtractTranslation();
+	Vector3f rotation = transform.ExtractRotation().EulerAngles();
+	Vector3f scale = transform.ExtractScale();//TODO: fix extract scale
 
-	Vector3f position;
-	Vector3f rotation;
-	Vector3f scale;
+	//Vector3f position;
+	//Vector3f rotation;
+	//Vector3f scale;
 
-	transform.Decompose(position, rotation, scale);
+	//transform.Decompose(position, rotation, scale);
 	//scale = Vector3f(1,1,1);
 
 	ImGui::Text("Position");
