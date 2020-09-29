@@ -28,6 +28,7 @@ private:
 	bool m_Show;
 
 	bool m_ShowEditorPreferences;
+	bool m_ShowProjectSettings;
 
 	bool m_ShowViewport;
 	bool m_ShowConsole;

@@ -1,7 +1,7 @@
 #include "MainDockSpace.h"
 
 #include "imgui/imgui.h"
-#include  "Core/Version.h"
+#include "Core/Version.h"
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome5.h"
 #include "IconsFontAwesome5Brands.h"
@@ -13,6 +13,7 @@
 #include "Panels/JoystickInfoPanel.h"
 #include "Panels/ContentExplorerPanel.h"
 #include "Panels/EditorPreferencesPanel.h"
+#include "Panels/ProjectSettingsPanel.h"
 #include "Panels/ViewportPanel.h"
 #include "Panels/HeirachyPanel.h"
 #include "Panels/PropertiesPanel.h"
@@ -24,6 +25,10 @@
 
 #include "Scene/SceneManager.h"
 
+#include "ProjectData.h"
+#include "cereal/archives/json.hpp"
+#include "cereal/types/string.hpp"
+
 Layer* MainDockSpace::s_CurrentlyFoccusedPanel;
 
 MainDockSpace::MainDockSpace()
@@ -32,6 +37,7 @@ MainDockSpace::MainDockSpace()
 	m_Show = true;
 
 	m_ShowEditorPreferences = false;
+	m_ShowProjectSettings = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
 	m_ShowErrorList = false;
@@ -67,10 +73,12 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
+	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
 
 	m_ShowViewport = Settings::GetBool("Windows", "Viewport");
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
 	m_ShowEditorPreferences = Settings::GetBool("Windows", "EditorPreferences");
+	m_ShowProjectSettings = Settings::GetBool("Windows", "ProjectSettings");
 	m_ShowContentExplorer = Settings::GetBool("Windows", "ContentExplorer");
 	m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
@@ -81,6 +89,7 @@ void MainDockSpace::OnAttach()
 
 	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport));
 	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
+	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
@@ -187,7 +196,7 @@ void MainDockSpace::OnImGuiRender()
 
 			bool saveable = iSave != nullptr;
 
-			if(ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
+			if (ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
 			{
 				m_ContentExplorer->CreateNewScene();
 			}
@@ -251,7 +260,7 @@ void MainDockSpace::OnImGuiRender()
 				iCopy->SelectAll();
 			ImGui::Separator();//-----------------------------------------------
 			ImGui::MenuItem(ICON_FA_COG" Preferences", "", &m_ShowEditorPreferences);
-			ImGui::MenuItem(ICON_FA_COGS" Project Settings", "", nullptr, false);
+			ImGui::MenuItem(ICON_FA_COGS" Project Settings", "", &m_ShowProjectSettings);
 			ImGui::EndMenu();
 		}
 
@@ -334,24 +343,23 @@ void MainDockSpace::OnImGuiRender()
 	//ImGui::End();
 }
 
+
+
 void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 {
+	
 	ENGINE_INFO("Opened Project: {0}", filename.string());
 
 	m_ContentExplorer->SwitchTo(filename);
 
 	std::ifstream file(filename);
-
-	//TODO: get default scene filepath from the project file
-
-	std::filesystem::path startSceneFilepath = filename;
-
-	startSceneFilepath.remove_filename();
-	startSceneFilepath /= "DefaultScene.scene";
-
+	
+	cereal::JSONInputArchive input(file);
+	ProjectData data;
+	input(data);
 	file.close();
 
-	SceneManager::s_CurrentScene = CreateScope<Scene>(startSceneFilepath);
+	SceneManager::s_CurrentScene = CreateScope<Scene>(data.DefaultScene);
 	SceneManager::s_CurrentScene->Deserialise(false);
 }
 

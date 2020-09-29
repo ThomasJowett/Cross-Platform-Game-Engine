@@ -190,6 +190,22 @@ void ViewportPanel::OnImGuiRender()
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 			{
 				std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+				if (file->extension() == ".staticMesh")
+				{
+					std::string entityName = file->filename().string();
+					entityName = entityName.substr(0, entityName.find_last_of('.'));
+					Entity staticMeshEntity = SceneManager::s_CurrentScene->CreateEntity(entityName);
+
+					Mesh mesh(*file);
+
+					m_ShaderLibrary.Load("NormalMap");
+					Material material(m_ShaderLibrary.Get("NormalMap"));
+
+					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+
+					staticMeshEntity.AddComponent<StaticMeshComponent>(mesh, material);
+				}
 				CLIENT_DEBUG(file->string());
 			}
 			ImGui::EndDragDropTarget();

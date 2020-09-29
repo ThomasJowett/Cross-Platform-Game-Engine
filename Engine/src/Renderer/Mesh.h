@@ -6,7 +6,7 @@ class Mesh
 {
 public:
 	Mesh() = default;
-	Mesh(std::filesystem::path filepath);
+	Mesh(const std::filesystem::path& filepath);
 	Mesh(Ref<VertexArray> vertexArray, std::string name);
 	~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray, std::string name);

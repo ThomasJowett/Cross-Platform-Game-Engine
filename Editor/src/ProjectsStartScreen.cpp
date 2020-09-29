@@ -7,6 +7,9 @@
 #include "FileSystem/FileDialog.h"
 #include "MainDockSpace.h"
 
+#include "ProjectData.h"
+#include "cereal/archives/json.hpp"
+
 ProjectsStartScreen::ProjectsStartScreen()
 {
 	m_CreateProject = false;
@@ -95,6 +98,26 @@ void ProjectsStartScreen::OnImGuiRender()
 					file.open(projectPath);
 					if (file.is_open())
 					{
+						std::filesystem::path sceneDirectory = projectPath;
+						sceneDirectory.remove_filename();
+						sceneDirectory /= "Scenes";
+
+						std::filesystem::create_directory(sceneDirectory);
+
+						std::string sceneName = "Untitled.scene";
+
+						ProjectData data;
+						data.DefaultScene = "Scenes/" + sceneName;
+
+						Ref<Scene> newScene = CreateRef<Scene>(sceneDirectory / sceneName);
+
+						newScene->Serialise(false);
+
+						{
+							cereal::JSONOutputArchive output(file);
+							output(cereal::make_nvp(projectPath.string(), data));
+						}
+
 						file.close();
 						OpenProject(projectPath);
 					}

@@ -8,7 +8,7 @@ static BufferLayout staticMeshLayout = {
 		{ShaderDataType::Float2, "a_TexCoord"}
 };
 
-Mesh::Mesh(std::filesystem::path filepath)
+Mesh::Mesh(const std::filesystem::path& filepath)
 {
 	LoadModel(filepath);
 }
