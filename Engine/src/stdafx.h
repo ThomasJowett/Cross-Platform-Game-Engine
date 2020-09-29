@@ -26,7 +26,7 @@
 #endif // __WINDOWS__
 
 // math libraries
-//#include "math/Line3D.h"
+#include "math/Line3D.h"
 #include "math/Matrix.h"
 #include "math/Plane.h"
 #include "math/Quaternion.h"
