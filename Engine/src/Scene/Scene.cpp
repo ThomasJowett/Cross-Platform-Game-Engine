@@ -9,6 +9,7 @@
 
 #include "cereal/archives/binary.hpp"
 #include "cereal/archives/json.hpp"
+#include "cereal/types/string.hpp"
 
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
@@ -121,8 +122,8 @@ void Scene::Serialise(std::filesystem::path filepath, bool binary)
 		
 		{
 			cereal::BinaryOutputArchive output(file);
-			//output(*this);
-			//entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+			output(*this);
+			entt::snapshot(m_Registry).entities(output).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(output);
 		}
 		file.close();
 	}
@@ -160,8 +161,8 @@ void Scene::Deserialise(bool binary)
 	{
 		std::ifstream file(m_Filepath, std::ios::binary);
 		cereal::BinaryInputArchive input(file);
-		//input(*this);
-	//	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+		input(*this);
+		entt::snapshot_loader(m_Registry).entities(input).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(input);
 		file.close();
 	}
 	else

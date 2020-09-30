@@ -24,7 +24,7 @@ void ContentExplorerPanel::Paste()
 		{
 			std::filesystem::copy_file(path, target, std::filesystem::copy_options::overwrite_existing);
 		}
-		catch (std::exception& e) 
+		catch (std::exception& e)
 		{
 			CLIENT_ERROR(e.what());
 		}
@@ -156,6 +156,8 @@ void ContentExplorerPanel::CreateNewScene()//TODO: create a popup to name the sc
 	newScene->Serialise(false);
 
 	m_ForceRescan = true;
+
+	m_CurrentSelectedPath = newSceneFilepath;
 }
 
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
@@ -237,38 +239,53 @@ void ContentExplorerPanel::RightClickMenu()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 
-	ImGui::PushStyleColor(ImGuiCol_Button, style->Colors[ImGuiCol_PopupBg]);
-	ImGui::PushStyleVar(ImGuiStyleVar_IndentSpacing, 0.0f);
-	ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0.0f, 0.0f));
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-	if (ImGui::Selectable("New Folder"))
+	ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0,0,0,0));
+	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
+	if (ImGui::BeginMenu("New"))
 	{
-		std::string newFolderName = m_CurrentPath.string() + "\\New folder";
-		int suffix = 1;
-
-		if (std::filesystem::exists(newFolderName))
+		if (ImGui::SmallButton("Folder"))
 		{
-			while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
+			std::string newFolderName = m_CurrentPath.string() + "\\New folder";
+			int suffix = 1;
+
+			if (std::filesystem::exists(newFolderName))
 			{
-				suffix++;
+				while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
+				{
+					suffix++;
+				}
+
+				newFolderName += " (" + std::to_string(suffix) + ')';
 			}
 
-			newFolderName += " (" + std::to_string(suffix) + ')';
+			std::filesystem::create_directory(newFolderName);
+
+			m_ForceRescan = true;
+
+			ImGui::OpenPopup("Rename");
+			
+
+			m_CurrentSelectedPath = newFolderName;
 		}
+		if (ImGui::SmallButton("Scene"))
+		{
+			CreateNewScene();
+			ImGui::OpenPopup("Rename");
+		}
+		if (ImGui::SmallButton("Object"))
+			CLIENT_DEBUG("new object");
 
-		std::filesystem::create_directory(newFolderName);
-
-		m_ForceRescan = true;
+		if (ImGui::BeginPopup("Rename"))
+		{
+			Rename();
+			ImGui::EndPopup();
+		}
+		ImGui::EndMenu();
 	}
-	if (ImGui::Selectable("New Scene"))
+	if (ImGui::MenuItem("Import Assets"))
 	{
-		CreateNewScene();
-	}
-	if (ImGui::Selectable("New Object"))
-		CLIENT_DEBUG("new object");
-	if (ImGui::Selectable("Import Assets"))
-	{
-		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...", 
+		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...",
 			L"Any File\0*.*\0"
 			"Film Box (.fbx)\0*.fbx\0"
 			"Wavefront OBJ (.obj)\0*.obj"),
@@ -276,18 +293,28 @@ void ContentExplorerPanel::RightClickMenu()
 		m_ForceRescan = true;
 	}
 	ImGui::Separator();
-	if (ImGui::Selectable("Cut"))
+	if (ImGui::MenuItem("Cut"))
 		Cut();
-	if (ImGui::Selectable("Copy"))
+	if (ImGui::MenuItem("Copy"))
 		Copy();
-	if (ImGui::Selectable("Paste"))
+	if (ImGui::MenuItem("Paste"))
 		Paste();
-	if (ImGui::Selectable("Duplicate"))
+	if (ImGui::MenuItem("Duplicate"))
 		Duplicate();
-	if (ImGui::Selectable("Delete"))
+	if (ImGui::MenuItem("Delete"))
 		Delete();
+	ImGui::Separator();
+	if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+	{
+		ImGui::OpenPopup("Rename");
+	}
+	if (ImGui::BeginPopup("Rename"))
+	{
+		Rename();
+		ImGui::EndPopup();
+	}
 	ImGui::PopStyleColor();
-	ImGui::PopStyleVar(3);
+	ImGui::PopStyleVar(2);
 }
 
 void ContentExplorerPanel::OpenAllSelectedItems()
@@ -686,6 +713,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						continue;
 					}
 					ImGui::BeginGroup();
+
 					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
 						if (!ImGui::GetIO().KeyCtrl)
