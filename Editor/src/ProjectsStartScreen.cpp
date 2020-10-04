@@ -111,7 +111,7 @@ void ProjectsStartScreen::OnImGuiRender()
 
 						Ref<Scene> newScene = CreateRef<Scene>(sceneDirectory / sceneName);
 
-						newScene->Serialise(false);
+						newScene->Save(false);
 
 						{
 							cereal::JSONOutputArchive output(file);

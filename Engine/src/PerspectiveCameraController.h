@@ -20,7 +20,7 @@ public:
 	void SetRotation(const Vector3f& rotation) { m_CameraRotation = rotation; m_Camera.SetRotation(m_CameraRotation); }
 	Quaternion GetRotation() { return m_CameraRotation; }
 
-	PerspectiveCamera GetCamera() { return m_Camera; }
+	const PerspectiveCamera& GetCamera() { return m_Camera; }
 
 	float GetFovY() const { return m_FovY; }
 	void SetFovY(const float& fovY);

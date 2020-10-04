@@ -7,7 +7,6 @@
 #include "Scene/SceneManager.h"
 #include "FileSystem/FileDialog.h"
 
-
 ViewportPanel::ViewportPanel(bool* show)
 	:m_Show(show), Layer("Viewport")
 {
@@ -18,58 +17,9 @@ ViewportPanel::ViewportPanel(bool* show)
 
 void ViewportPanel::OnAttach()
 {
-	//TEMP CODE
-
+	//TODO: Render the scene with the camera controller when not in "play" mode.
+	//TODO: Load where the camera was in the scene and load that
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
-
-	//TODO: load the default scene and deserialize it
-	//for now it just loads a mesh of a bucket
-
-	//Entity square = m_Scene->CreateEntity("Test Square");
-	//square.AddComponent<SpriteComponent>(Colour(0.0f,1.0f, 0.0f, 0.5f));
-	
-	//SceneCamera orthoCamera;
-	//orthoCamera.SetOrthoGraphic(1, 1.0f, -1.0f);
-	//square = m_Scene->CreateEntity("2D Camera");
-	//square.AddComponent<CameraComponent>(orthoCamera, false);
-
-	if (!SceneManager::s_CurrentScene)
-		return;
-
-	Mesh mesh(Application::GetWorkingDirectory().string() + "\\resources\\Bucket.staticMesh");
-
-	m_ShaderLibrary.Load("NormalMap");
-	Material material(m_ShaderLibrary.Get("NormalMap"));
-
-	material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\Bucket_Texture.png"), 0);
-
-	Entity entity = SceneManager::s_CurrentScene->CreateEntity("Bucket");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
-
-	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ -1.0f, -1.5f,0.0f })
-		* Matrix4x4::Rotate(Vector3f(-PI / 2.0f, 0.0f, 0.0f));
-
-	//Camera camera = Camera(Matrix4x4::PerspectiveRH(PI * 0.5, 16.0 / 9.0, 1.0, -1.0), Matrix4x4());
-	SceneCamera camera;
-
-	camera.SetPosition({ 0.0, 0.0, 20.0 });
-
-	entity = SceneManager::s_CurrentScene->CreateEntity("MainCamera");
-	entity.AddComponent<CameraComponent>(camera, true);
-
-	entity.GetComponent<TransformComponent>() = Matrix4x4::Translate({ 0.0,0.0,20.0 });
-
-	class CameraController :public ScriptableEntity
-	{
-
-	public:
-		void OnUpdate(float deltaTime) override
-		{
-			//CLIENT_DEBUG(deltaTime);
-		}
-	};
-
-	entity.AddComponent<NativeScriptComponent>().Bind<CameraController>();
 }
 
 void ViewportPanel::OnUpdate(float deltaTime)
@@ -78,9 +28,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	if (!SceneManager::s_CurrentScene)
 		return;
-
-	//if (SceneManager::GetCurrentScene() != m_Scene)
-	//	m_Scene = SceneManager::GetCurrentScene();
 
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
@@ -103,8 +50,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	}
 
 	Renderer2D::ResetStats();
-	//Renderer::BeginScene(*m_CameraController.GetCamera());
-	//Renderer2D::BeginScene(m_OrthoCamera.GetCamera());
 
 	SceneManager::s_CurrentScene->OnUpdate(deltaTime);
 
@@ -308,14 +253,14 @@ void ViewportPanel::Save()
 	//	return;
 	CLIENT_DEBUG("Saving...");
 
-	SceneManager::s_CurrentScene->Serialise(false);
+	SceneManager::s_CurrentScene->Save(false);
 }
 
 void ViewportPanel::SaveAs()
 {
 	CLIENT_DEBUG("Saving As...");
 
-	SceneManager::s_CurrentScene->Serialise(SaveAsDialog(L"Save Scene As...", L"Scene (.scene)\0*.scene\0"), false);
+	SceneManager::s_CurrentScene->Save(SaveAsDialog(L"Save Scene As...", L"Scene (.scene)\0*.scene\0"), false);
 }
 
 void ViewportPanel::HandleKeyboardInputs()

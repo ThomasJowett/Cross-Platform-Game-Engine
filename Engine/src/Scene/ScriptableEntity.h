@@ -2,6 +2,8 @@
 
 #include "Entity.h"
 
+#include "Core/Factory.h"
+
 class ScriptableEntity
 {
 public:
@@ -25,11 +27,27 @@ public:
 		m_Entity.RemoveComponent<T>();
 	}
 protected:
+	//Called when the entity is created
 	virtual void OnCreate() {}
+
+	//Called when the entity is destroyed
 	virtual void OnDestroy() {}
+
+	//Called once per frame
 	virtual void OnUpdate(float deltaTime) {}
 private:
 	Entity m_Entity;
 
 	friend class Scene;
+};
+
+template<typename T> ScriptableEntity* CreateT() { return new T; }
+
+template<typename T>
+struct ScriptRegister : Factory<ScriptableEntity>
+{
+	ScriptRegister(std::string const& name)
+	{
+		GetMap()->insert(std::make_pair(name, &CreateT<T>));
+	}
 };

@@ -1,7 +1,6 @@
 #pragma once
 
 #include "EnTT/entt.hpp"
-#include "cereal/access.hpp"
 
 class Entity;
 
@@ -19,27 +18,12 @@ public:
 	entt::registry& GetRegistry() { return m_Registry; }
 	const std::string& GetSceneName() const { return m_SceneName; }
 
-	virtual void Serialise(bool binary = false);
-	virtual void Serialise(std::filesystem::path filepath, bool binary = false);
-	virtual void Deserialise(bool binary = false);
+	virtual void Save(bool binary = false);
+	virtual void Save(std::filesystem::path filepath, bool binary = false);
+	virtual void Load(bool binary = false);
 
 	void MakeDirty() { m_Dirty = true; }
 	bool IsDirty() { return m_Dirty; }
-
-private:
-	friend class cereal::access;
-
-	template<typename Archive>
-	void save(Archive& archive) const
-	{
-		archive(cereal::make_nvp("Scene Name", m_SceneName));
-	}
-
-	template<typename Archive>
-	void load(Archive& archive)
-	{
-		archive(cereal::make_nvp("Scene Name", m_SceneName));
-	}
 
 private:
 	entt::registry m_Registry;

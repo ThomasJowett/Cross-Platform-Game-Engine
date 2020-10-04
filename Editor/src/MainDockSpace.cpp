@@ -360,7 +360,7 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	file.close();
 
 	SceneManager::s_CurrentScene = CreateScope<Scene>(data.DefaultScene);
-	SceneManager::s_CurrentScene->Deserialise(false);
+	SceneManager::s_CurrentScene->Load(false);
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)

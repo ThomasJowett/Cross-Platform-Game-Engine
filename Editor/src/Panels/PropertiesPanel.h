@@ -15,6 +15,7 @@ public:
 	void OnImGuiRender() override;
 private:
 	void DrawComponents(Entity entity);
+	void DrawAddComponent(Entity entity);
 private:
 	bool* m_Show;
 

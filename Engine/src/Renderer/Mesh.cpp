@@ -38,6 +38,7 @@ void Mesh::LoadModel(std::filesystem::path filepath)
 		return;
 
 	m_Name = filepath.filename().string();
+	m_Name = m_Name.substr(0, m_Name.find_last_of('.'));
 
 	m_VertexArray = VertexArray::Create();
 
@@ -66,4 +67,6 @@ void Mesh::LoadModel(std::filesystem::path filepath)
 
 	delete[] indices;
 	delete[] vertices;
+
+	//TODO: load in information to do with the default materials of the mesh and the material Ids
 }

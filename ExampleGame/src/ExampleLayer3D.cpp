@@ -81,7 +81,6 @@ void ExampleLayer3D::OnEvent(Event& e)
 void ExampleLayer3D::OnImGuiRender()
 {
 	ImGui::Begin("Settings 3D");
-	ImGui::Text(m_CameraController.GetCamera().GetRotation().to_string().c_str());
 	ImGui::Text(std::to_string(m_CameraController.GetTranslationSpeed()).c_str());
 	ImGui::DragFloat3("Cube Position", m_Position, 0.01f);
 	ImGui::DragFloat3("Cube Rotation", m_Rotation, 0.001f);

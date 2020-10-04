@@ -7,10 +7,10 @@
 #include "StaticMeshComponent.h"
 #include "NativeScriptComponent.h"
 
+//List of components that can be serialized
 #define COMPONENTS		\
 TransformComponent,		\
-TagComponent			\
+TagComponent,			\
 CameraComponent,		\
 SpriteComponent,		\
-StaticMeshComponent,	\
 NativeScriptComponent	

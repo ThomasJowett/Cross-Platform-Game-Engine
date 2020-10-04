@@ -15,6 +15,7 @@
 Application* Application::s_Instance = nullptr;
 
 std::filesystem::path Application::s_OpenDocument;
+std::filesystem::path Application::s_OpenDocumentDirectory;
 std::filesystem::path Application::s_WorkingDirectory;
 
 Application::EventCallbackFn Application::s_EventCallback;
@@ -101,7 +102,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				Application::OnFixedUpdate();
+				OnFixedUpdate();
 				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
@@ -112,7 +113,7 @@ void Application::Run()
 
 		// On Update
 		{
-			Application::OnUpdate();
+			OnUpdate();
 
 			PROFILE_SCOPE("Layer Stack Update");
 
@@ -322,6 +323,12 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 	{
 		s_OpenDocument = filepath;
 
+		std::string fileDirectory = filepath.string();
+
+		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of('\\'));
+
+		s_OpenDocumentDirectory = fileDirectory;
+
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
@@ -356,4 +363,9 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 const std::filesystem::path& Application::GetOpenDocument()
 {
 	return s_OpenDocument;
+}
+
+const std::filesystem::path& Application::GetOpenDocumentDirectory()
+{
+	return s_OpenDocumentDirectory;
 }

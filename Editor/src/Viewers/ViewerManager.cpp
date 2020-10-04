@@ -96,10 +96,10 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		if (SceneManager::s_CurrentScene->IsDirty())
 		{
-			SceneManager::s_CurrentScene->Serialise(false);
+			SceneManager::s_CurrentScene->Save(false);
 		}
 
 		SceneManager::s_CurrentScene = CreateScope<Scene>(assetPath);
-		SceneManager::s_CurrentScene->Deserialise();
+		SceneManager::s_CurrentScene->Load();
 	}
 }

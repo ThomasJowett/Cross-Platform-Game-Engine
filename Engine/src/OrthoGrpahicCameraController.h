@@ -19,7 +19,7 @@ public:
 	void SetRotation(const float& rotation) { m_CameraRotation = rotation; m_Camera.SetRotation(Vector3f(0.0f, 0.0f, m_CameraRotation)); }
 	float GetRotation() { return m_CameraRotation; }
 
-	OrthographicCamera GetCamera() { return m_Camera; }
+	const OrthographicCamera& GetCamera() { return m_Camera; }
 
 	float GetZoom() const { return m_ZoomLevel; }
 	void SetZoom(float zoom) {

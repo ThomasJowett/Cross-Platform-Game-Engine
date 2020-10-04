@@ -153,7 +153,7 @@ void ContentExplorerPanel::CreateNewScene()//TODO: create a popup to name the sc
 
 	Ref<Scene> newScene = CreateRef<Scene>(newSceneFilepath);
 
-	newScene->Serialise(false);
+	newScene->Save(false);
 
 	m_ForceRescan = true;
 

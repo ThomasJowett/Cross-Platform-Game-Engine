@@ -79,6 +79,11 @@ public:
 	/// </summary>
 	/// <returns></returns>
 	static const std::filesystem::path& GetOpenDocument();
+	/// <summary>
+	/// Gets the directory of the open document
+	/// </summary>
+	/// <returns></returns>
+	static const std::filesystem::path& GetOpenDocumentDirectory();
 
 	/// <summary>
 	/// Get the directory that the application was launched from
@@ -114,6 +119,7 @@ private:
 	friend int::main(int argc, char* argv[]);
 
 	static std::filesystem::path s_OpenDocument;
+	static std::filesystem::path s_OpenDocumentDirectory;
 	static std::filesystem::path s_WorkingDirectory;
 
 	static EventCallbackFn s_EventCallback;

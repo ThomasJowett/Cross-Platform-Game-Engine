@@ -14,10 +14,10 @@ public:
 	const Matrix4x4 GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 
 	void SetPosition(const Vector3f& position) { m_Position = position; RecalculateViewMatrix(); }
-	Vector3f GetPosition() { return m_Position; }
+	const Vector3f& GetPosition() { return m_Position; }
 
 	void SetRotation(const Vector3f& rotation) { m_Rotation = rotation; RecalculateViewMatrix(); }
-	Vector3f GetRotation() { return m_Rotation; }
+	const Vector3f& GetRotation() { return m_Rotation; }
 
 	void SetPositionAndRotation(const Vector3f& position, const Vector3f& rotation) 
 	{

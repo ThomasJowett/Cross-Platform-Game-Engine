@@ -113,7 +113,6 @@ void GridLayer::OnEvent(Event& e)
 void GridLayer::OnImGuiRender()
 {
 	ImGui::Begin("Settings");
-	ImGui::Text(m_CameraController.GetCamera().GetPosition().to_string().c_str());
 	if (ImGui::Button("Generate Observer Positions"))
 		GeneratePositions();
 	ImGui::SliderInt("Number of Positions", &m_NumberOfPositions, 0, 1000);

@@ -40,8 +40,35 @@ void PropertiesPanel::OnImGuiRender()
 		Entity entity = m_HeirachyPanel->GetSelectedEntity();
 		if (entity)
 		{
+			ImGui::BeginGroup();
 			DrawComponents(entity);
 			ImGui::Separator();
+			DrawAddComponent(entity);
+			ImVec2 available = ImGui::GetContentRegionAvail();
+			ImGui::Dummy(available);
+			ImGui::EndGroup();
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				{
+					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+					if (file->extension() == ".staticmesh" && !entity.HasComponent<StaticMeshComponent>())
+					{
+						//TODO: Store the material in the mesh file
+						Mesh mesh(*file);
+
+						Material material(Shader::Create("NormalMap"));
+
+						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+
+						entity.AddComponent<StaticMeshComponent>(mesh, material);
+					}
+
+					CLIENT_DEBUG(file->string());
+				}
+				ImGui::EndDragDropTarget();
+			}
 		}
 	}
 	ImGui::End();
@@ -49,6 +76,7 @@ void PropertiesPanel::OnImGuiRender()
 
 void PropertiesPanel::DrawComponents(Entity entity)
 {
+	//Tag------------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<TagComponent>())
 	{
 		auto& tag = entity.GetComponent<TagComponent>().Tag;
@@ -63,6 +91,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}
 	}
 
+	//Transform------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<TransformComponent>())
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
@@ -75,6 +104,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}
 	}
 
+	//Sprite--------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<SpriteComponent>())
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_IMAGE" Sprite"))
@@ -89,6 +119,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}
 	}
 
+	//Static Mesh------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<StaticMeshComponent>())
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_SHAPES" Static Mesh"))
@@ -99,19 +130,23 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}
 	}
 
+	//Native Script------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<NativeScriptComponent>())
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_FILE_CODE" Native Script"))
 		{
 			auto& script = entity.GetComponent<NativeScriptComponent>();
 
+			ImGui::Text(script.Name.c_str());
+
 			ImGui::TreePop();
 		}
 	}
 
+	//Camera------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<CameraComponent>())
 	{
-		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_CAMERA" Camera"))
+		if (ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_VIDEO" Camera"))
 		{
 			auto& cameraComp = entity.GetComponent<CameraComponent>();
 			auto& camera = cameraComp.Camera;
@@ -197,5 +232,48 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+	}
+
+	//Add Component Button ---------------------------------------------------------------------------------------------
+	
+}
+
+void PropertiesPanel::DrawAddComponent(Entity entity)
+{
+	ImGui::Dummy({0,0 });
+	float width = ImGui::GetContentRegionAvailWidth();
+	ImGui::SameLine((width / 2.0f) - (ImGui::CalcTextSize("Add Component").x/2.0f));
+	if (ImGui::Button("Add Component"))
+	{
+		ImGui::OpenPopup("Components");
+	}
+
+	if (ImGui::BeginPopup("Components"))
+	{
+
+		if (ImGui::MenuItem("Camera", nullptr, nullptr, !entity.HasComponent<CameraComponent>()))
+		{
+			entity.AddComponent<CameraComponent>();
+		}
+		if (ImGui::MenuItem("Sprite", nullptr, nullptr, !entity.HasComponent<SpriteComponent>()))
+		{
+			entity.AddComponent<SpriteComponent>();
+		}
+		//if (ImGui::MenuItem("Static Mesh", nullptr, nullptr, !entity.HasComponent<StaticMeshComponent>()))
+		//{
+		//	entity.AddComponent<StaticMeshComponent>();
+		//}
+		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>()))
+		{
+			for (auto&& [key, value] : *Factory<ScriptableEntity>::GetMap())
+			{
+				if (ImGui::MenuItem(key.c_str()))
+				{
+					entity.AddComponent<NativeScriptComponent>().Bind(key);
+				}
+			}
+			ImGui::EndMenu();
+		}
+		ImGui::EndPopup();
 	}
 }

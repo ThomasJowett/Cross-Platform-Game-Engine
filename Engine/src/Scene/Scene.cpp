@@ -34,14 +34,19 @@ void Scene::OnUpdate(float deltaTime)
 {
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
-			if (!nsc.Instance)
+			if (nsc.InstantiateScript != nullptr)
 			{
-				nsc.Instance = nsc.InstantiateScript();
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			}
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript(nsc.Name);
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
 
-			nsc.Instance->OnUpdate(deltaTime);
+				nsc.Instance->OnUpdate(deltaTime);
+			}
+			else
+				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
 
 	Camera orthoCamera;
@@ -98,7 +103,7 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 		});
 }
 
-void Scene::Serialise(std::filesystem::path filepath, bool binary)
+void Scene::Save(std::filesystem::path filepath, bool binary)
 {
 	PROFILE_FUNCTION();
 
@@ -119,11 +124,10 @@ void Scene::Serialise(std::filesystem::path filepath, bool binary)
 	if (binary)
 	{
 		std::ofstream file(finalPath, std::ios::binary);
-		
+
 		{
 			cereal::BinaryOutputArchive output(file);
-			output(*this);
-			entt::snapshot(m_Registry).entities(output).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(output);
+			entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 		}
 		file.close();
 	}
@@ -132,8 +136,7 @@ void Scene::Serialise(std::filesystem::path filepath, bool binary)
 		std::stringstream ss;
 		{
 			cereal::JSONOutputArchive output{ ss };
-			output(*this);
-			entt::snapshot{ m_Registry }.entities(output).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(output);
+			entt::snapshot{ m_Registry }.entities(output).component<COMPONENTS>(output);
 		}
 
 		std::ofstream file(finalPath);
@@ -144,33 +147,33 @@ void Scene::Serialise(std::filesystem::path filepath, bool binary)
 	m_Dirty = false;
 }
 
-void Scene::Serialise(bool binary)
+void Scene::Save(bool binary)
 {
-	Serialise(m_Filepath, binary);
+	Save(Application::GetOpenDocumentDirectory() / m_Filepath, binary);
 }
 
-void Scene::Deserialise(bool binary)
+void Scene::Load(bool binary)
 {
-	if (!std::filesystem::exists(m_Filepath))
+	std::filesystem::path filepath = Application::GetOpenDocumentDirectory() / m_Filepath;
+
+	if (!std::filesystem::exists(filepath))
 	{
-		ENGINE_ERROR("File not found {0}", m_Filepath);
+		ENGINE_ERROR("File not found {0}", filepath);
 		return;
 	}
-	
+
 	if (binary)
 	{
-		std::ifstream file(m_Filepath, std::ios::binary);
+		std::ifstream file(filepath, std::ios::binary);
 		cereal::BinaryInputArchive input(file);
-		input(*this);
-		entt::snapshot_loader(m_Registry).entities(input).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(input);
+		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 		file.close();
 	}
 	else
 	{
-		std::ifstream file(m_Filepath);
+		std::ifstream file(filepath);
 		cereal::JSONInputArchive input(file);
-		input(*this);
-		entt::snapshot_loader(m_Registry).entities(input).component<TransformComponent, TagComponent, CameraComponent, SpriteComponent>(input);
+		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 		file.close();
 	}
 
