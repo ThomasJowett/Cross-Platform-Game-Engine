@@ -30,6 +30,17 @@ Entity Scene::CreateEntity(const std::string& name)
 	return entity;
 }
 
+bool Scene::RemoveEntity(const Entity& entity)
+{
+	if (entity.BelongsToScene(this))
+	{
+		//TODO: remove entitys from registry
+		ENGINE_DEBUG("Could not remove entity because the function is not implemented!");
+	}
+
+	return false;
+}
+
 void Scene::OnUpdate(float deltaTime)
 {
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -171,10 +182,17 @@ void Scene::Load(bool binary)
 	}
 	else
 	{
-		std::ifstream file(filepath);
-		cereal::JSONInputArchive input(file);
-		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
-		file.close();
+		try
+		{
+			std::ifstream file(filepath);
+			cereal::JSONInputArchive input(file);
+			entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+			file.close();
+		}
+		catch (const std::exception& ex)
+		{
+			ENGINE_ERROR("Failed to load scene. Exception thrown: {0}", ex.what());
+		}
 	}
 
 	m_Dirty = false;

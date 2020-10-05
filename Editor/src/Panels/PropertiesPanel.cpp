@@ -117,6 +117,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				entity.RemoveComponent<SpriteComponent>();
+			}
+			ImGui::EndPopup();
+		}
 	}
 
 	//Static Mesh------------------------------------------------------------------------------------------------------------
@@ -127,6 +135,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			auto& mesh = entity.GetComponent<StaticMeshComponent>();
 
 			ImGui::TreePop();
+		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				entity.RemoveComponent<StaticMeshComponent>();
+			}
+			ImGui::EndPopup();
 		}
 	}
 
@@ -140,6 +156,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::Text(script.Name.c_str());
 
 			ImGui::TreePop();
+		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				entity.RemoveComponent<NativeScriptComponent>();
+			}
+			ImGui::EndPopup();
 		}
 	}
 
@@ -228,9 +252,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			}
 
-			ImGui::Text(camera.GetProjectionMatrix().to_string().c_str());
-
 			ImGui::TreePop();
+		}
+		if (ImGui::BeginPopupContextItem())
+		{
+			if (ImGui::MenuItem("Delete"))
+			{
+				entity.RemoveComponent<CameraComponent>();
+			}
+			ImGui::EndPopup();
 		}
 	}
 
