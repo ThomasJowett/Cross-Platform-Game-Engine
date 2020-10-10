@@ -29,14 +29,14 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		return;
 	}
 
-	for (size_t i = 0; i < scene->getMeshCount(); i++)
+	for (uint32_t i = 0; i < (uint32_t)scene->getMeshCount(); i++)
 	{
 		const ofbx::Mesh& mesh = *scene->getMesh(i);
 
 		const ofbx::Geometry& geom = *mesh.getGeometry();
 
 		// get the vertices
-		int vertexCount = geom.getVertexCount();
+		uint32_t vertexCount = geom.getVertexCount();
 		const ofbx::Vec3* vertices = geom.getVertices();
 		const ofbx::Vec3* normals = geom.getNormals();
 		const ofbx::Vec3* tangents = geom.getTangents();
@@ -44,17 +44,17 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 		std::vector<float> verticesList;
 
-		for (size_t i = 0; i < vertexCount; i++)
+		for (uint32_t i = 0; i < vertexCount; i++)
 		{
-			verticesList.push_back(vertices[i].x);
-			verticesList.push_back(vertices[i].y);
-			verticesList.push_back(vertices[i].z);
+			verticesList.push_back((float)vertices[i].x);
+			verticesList.push_back((float)vertices[i].y);
+			verticesList.push_back((float)vertices[i].z);
 
 			if (normals)
 			{
-				verticesList.push_back(normals[i].x);
-				verticesList.push_back(normals[i].y);
-				verticesList.push_back(normals[i].z);
+				verticesList.push_back((float)normals[i].x);
+				verticesList.push_back((float)normals[i].y);
+				verticesList.push_back((float)normals[i].z);
 			}
 			else
 			{
@@ -65,9 +65,9 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 			if (tangents)
 			{
-				verticesList.push_back(tangents[i].x);
-				verticesList.push_back(tangents[i].y);
-				verticesList.push_back(tangents[i].z);
+				verticesList.push_back((float)tangents[i].x);
+				verticesList.push_back((float)tangents[i].y);
+				verticesList.push_back((float)tangents[i].z);
 			}
 			else
 			{
@@ -78,8 +78,8 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 			if (texcoords)
 			{
-				verticesList.push_back(texcoords[i].x);
-				verticesList.push_back(texcoords[i].y);
+				verticesList.push_back((float)texcoords[i].x);
+				verticesList.push_back((float)texcoords[i].y);
 			}
 			else
 			{
@@ -91,10 +91,10 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		std::vector<uint32_t> indicesList;
 
 		// get the indices
-		int indexCount = geom.getIndexCount();
-		for (size_t i = 0; i < indexCount; i++)
+		uint32_t indexCount = (uint32_t)geom.getIndexCount();
+		for (uint32_t i = 0; i < indexCount; i++)
 		{
-			int index = i * 3;
+			uint32_t index = i * 3;
 			indicesList.push_back(index);
 			indicesList.push_back(index + 1);
 			indicesList.push_back(index + 2);
@@ -103,7 +103,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 		std::string meshName = std::string(mesh.name);
 
-		int numIndices = indicesList.size();
+		size_t numIndices = indicesList.size();
 
 		std::filesystem::path outFilename = destination / meshName.substr(meshName.find_last_of("::") + 1);
 		outFilename.replace_extension(".staticMesh");

@@ -13,7 +13,7 @@ ExampleGame::ExampleGame(const WindowProps& props)
 
 	//PushLayer(new GridLayer());
 	PushLayer(new ExampleLayer3D());
-	//PushLayer(new ExampleLayer2D());
+	PushLayer(new ExampleLayer2D());
 	//PushLayer(new MonteCarloLayer());
 	static bool showConsole = true;
 	PushOverlay(new ImGuiConsole(&showConsole));

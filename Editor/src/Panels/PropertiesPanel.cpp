@@ -5,6 +5,8 @@
 
 #include "ImGui/ImGuiTransform.h"
 
+#include <cstring>
+
 PropertiesPanel::PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel)
 	:Layer("Properties"), m_Show(show), m_HeirachyPanel(heirachyPanel)
 {
@@ -83,7 +85,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		strcpy_s(buffer, sizeof(buffer), tag.c_str());
+		std::strncpy(buffer, tag.c_str(),sizeof(buffer)) ;
 
 		if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 		{
@@ -182,10 +184,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 			case SceneCamera::ProjectionType::perspective:
 			{
-				float fov = RadToDeg(camera.GetVerticalFov());
+				float fov = (float)RadToDeg(camera.GetVerticalFov());
 				if (ImGui::DragFloat("Fov", &fov, 1.0f, 1.0f, 180.0f))
 				{
-					camera.SetVerticalFov(DegToRad(fov));
+					camera.SetVerticalFov((float)DegToRad(fov));
 				}
 
 				float nearClip = camera.GetPerspectiveNear();

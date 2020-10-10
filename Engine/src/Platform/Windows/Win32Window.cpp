@@ -110,7 +110,7 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int xPos = GET_X_LPARAM(lParam);
 		int yPos = GET_Y_LPARAM(lParam);
 
-		MouseMotionEvent event(xPos, yPos);
+		MouseMotionEvent event((float)xPos, (float)yPos);
 		data->EventCallback(event);
 		break;
 	}
@@ -154,7 +154,7 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
-		MouseWheelEvent event(delta, 0);
+		MouseWheelEvent event((float)delta, 0);
 		data->EventCallback(event);
 		break;
 	}
@@ -162,25 +162,25 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	{
 		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
-		MouseWheelEvent event(0, delta);
+		MouseWheelEvent event(0, (float)delta);
 		data->EventCallback(event);
 		break;
 	}
 	case WM_KEYDOWN:
 	{
-		KeyPressedEvent event(VirtualCodesToKeyCodes(wParam), 0);
+		KeyPressedEvent event(VirtualCodesToKeyCodes((int)wParam), 0);
 		data->EventCallback(event);
 		break;
 	}
 	case WM_KEYUP:
 	{
-		KeyReleasedEvent event(VirtualCodesToKeyCodes(wParam));
+		KeyReleasedEvent event(VirtualCodesToKeyCodes((int)wParam));
 		data->EventCallback(event);
 		break;
 	}
 	case WM_CHAR:
 	{
-		KeyTypedEvent event(wParam);
+		KeyTypedEvent event((int)wParam);
 		data->EventCallback(event);
 		break;
 	}

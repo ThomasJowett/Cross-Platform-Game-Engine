@@ -88,8 +88,8 @@ void ViewportCameraController::OnMouseWheel(float mouseWheel)
 {
 	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 	{
-		double ln = 10.0 * log(m_TranslationSpeed);
-		m_TranslationSpeed = std::clamp(exp(0.1 * (ln + mouseWheel)), (double)FLT_MIN, 1000.0);
+		float ln = 10.0f * log(m_TranslationSpeed);
+		m_TranslationSpeed = std::clamp(exp(0.1f * (ln + mouseWheel)), FLT_MIN, 1000.0f);
 
 		if (m_TranslationSpeed < 0.0f)
 			m_TranslationSpeed = FLT_MIN;
@@ -136,9 +136,9 @@ void ViewportCameraController::Pitch(float angle)
 	m_3DCameraRotation = m_3DCameraRotation + Vector3f(angle, 0.0f, 0.0f);
 
 	if (m_3DCameraRotation.x > PI * 0.5)
-		m_3DCameraRotation.x = (PI * 0.5);
+		m_3DCameraRotation.x = (float)(PI * 0.5);
 	else if (m_3DCameraRotation.x < -(PI * 0.5))
-		m_3DCameraRotation.x = -(PI * 0.5);
+		m_3DCameraRotation.x = -(float)(PI * 0.5);
 	else
 	{
 		Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_Right, angle));
@@ -155,7 +155,7 @@ void ViewportCameraController::Yaw(float angle)
 	m_3DCameraRotation = m_3DCameraRotation + Vector3f(0.0f, angle, 0.0f);
 
 	if (m_3DCameraRotation.y > PI)
-		m_3DCameraRotation.y -= (PI * 2);
+		m_3DCameraRotation.y -= (float)(PI * 2);
 	else if (m_3DCameraRotation.y < -PI)
-		m_3DCameraRotation.y += (PI * 2);
+		m_3DCameraRotation.y += (float)(PI * 2);
 }

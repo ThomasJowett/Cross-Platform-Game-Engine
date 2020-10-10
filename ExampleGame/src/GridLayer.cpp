@@ -1,9 +1,6 @@
 #include "GridLayer.h"
 #include "imgui/imgui.h"
 
-#define DegToRad(degrees) (degrees * (PI/180))
-#define RadToDeg(radians) (radians * (180/PI))
-
 GridLayer::GridLayer()
 	:Layer("Grid")
 {
@@ -85,7 +82,7 @@ void GridLayer::OnUpdate(float deltaTime)
 	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
 
 	shader->SetFloat4("u_colour", Colours::YELLOW);
-	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian(DegToRad(m_Azimuth), DegToRad(m_Elevation), m_Distance)));
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian((float)DegToRad(m_Azimuth), (float)DegToRad(m_Elevation), m_Distance)));
 
 	shader->SetFloat4("u_colour", Colours::CYAN);
 
@@ -131,7 +128,7 @@ void GridLayer::OnImGuiRender()
 	ImGui::InputDouble("Altitude (km)", &m_Altitude);
 	ImGui::InputDouble("FlybyAngle (Deg)", &m_FlybyAngle);
 	ImGui::InputDouble("Initial Azimuth (Deg)", &m_InitialAzimuth);
-	ImGui::DragFloat3("Rotation (Roll) (Yaw) (Pitch)", &m_PlaneRotation[0], 0.01f, -PI, PI);
+	ImGui::DragFloat3("Rotation (Roll) (Yaw) (Pitch)", &m_PlaneRotation[0], 0.01f, -(float)PI, (float)PI);
 	ImGui::Text(m_PlaneNormal.to_string().c_str());
 	ImGui::Text(m_TargetLocation.to_string().c_str());
 	ImGui::Separator();
@@ -157,9 +154,9 @@ void GridLayer::GeneratePositions()
 	{
 		for (size_t i = 0; i < m_NumberOfPositions; i++)
 		{
-			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
-			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) + abs(x) * incline;
-			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
+			float x = Random::FloatInRange((float)LowerXLimit, (float)UpperXLimit);
+			float y = Random::FloatInRange((float)LowerYLimit, (float)UpperYLimit) + abs(x) * (float)incline;
+			float z = Random::FloatInRange((float)LowerZLimit, (float)UpperZLimit);
 
 			m_Positions.push_back(Vector3f(x, y, z));
 		}
@@ -175,9 +172,9 @@ void GridLayer::GeneratePositions()
 		{
 			attempts++;
 
-			float z = Random::FloatInRange(LowerZLimit, UpperZLimit);
-			float x = Random::FloatInRange(LowerXLimit, UpperXLimit);
-			float y = Random::FloatInRange(LowerYLimit, UpperYLimit) - z * incline;
+			float z = Random::FloatInRange((float)LowerZLimit, (float)UpperZLimit);
+			float x = Random::FloatInRange((float)LowerXLimit, (float)UpperXLimit);
+			float y = Random::FloatInRange((float)LowerYLimit, (float)UpperYLimit) - z * (float)incline;
 
 			bool tooClose = false;
 			for (Vector3f otherPosition : m_Positions)
@@ -216,27 +213,27 @@ Vector3f GridLayer::TargetLocation(float time)
 	double azimuth = asin((distanceTraveled / dl) * sin(flybyAngle)) + DegToRad(m_InitialAzimuth);
 	double elevation = (PI * 0.5) - asin(dah / dl);
 
-	m_Azimuth = RadToDeg(azimuth);
-	m_Elevation = RadToDeg(elevation);
-	m_Distance = dl;
+	m_Azimuth = (float)RadToDeg(azimuth);
+	m_Elevation = (float)RadToDeg(elevation);
+	m_Distance = (float)dl;
 
 	double horizontalDist = cos(asin(dah / dl)) * dl;
-	float z = cos(DegToRad(m_InitialAzimuth)) * horizontalDist;
-	float x = sin(DegToRad(m_InitialAzimuth)) * horizontalDist;
-	float y = dah;
+	float z = (float)(cos(DegToRad(m_InitialAzimuth)) * horizontalDist);
+	float x = (float)(sin(DegToRad(m_InitialAzimuth)) * horizontalDist);
+	float y = (float)dah;
 
 	//return Vector3f(x, y, z);
 
-	return ConvertPolarToCartesian(azimuth, elevation, dl);
+	return ConvertPolarToCartesian((float)azimuth, (float)elevation, (float)dl);
 }
 
 void GridLayer::GenerateLaserVertices()
 {
 	float distance = m_TargetLocation.Magnitude();
 
-	m_EndDiameter = sqrt((m_BeamApeture * m_BeamApeture) + (m_Divergence * m_Divergence) * (distance * distance));
+	m_EndDiameter = (float)(sqrt((m_BeamApeture * m_BeamApeture) + (m_Divergence * m_Divergence) * (distance * distance)));
 
-	m_IncidentLaserVertexArray = GeometryGenerator::CreateCylinder(m_BeamApeture, m_EndDiameter, distance, 10, 1);
+	m_IncidentLaserVertexArray = GeometryGenerator::CreateCylinder((float)m_BeamApeture, m_EndDiameter, distance, 10, 1);
 
 	Vector3f translation = m_TargetLocation - (m_TargetLocation / 2.0f);
 
@@ -249,9 +246,9 @@ void GridLayer::GenerateLaserVertices()
 	m_PlaneNormal = planeOrientation.RotateVectorByQuaternion(normal);
 
 
-	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
+	m_IncidentBeamTransform = Matrix4x4::Translate(translation) * Matrix4x4::LookAt(Vector3f(), m_TargetLocation, Vector3f(0.0, 1.0, 0.0)) * Matrix4x4::RotateX(-(float)PI / 2);
 
-	m_ReflectedDiameter = sqrt((m_EndDiameter * m_EndDiameter) + (m_ReflectedDivergence * m_ReflectedDivergence) * (200.0f * 200.0f));
+	m_ReflectedDiameter = (float)sqrt((m_EndDiameter * m_EndDiameter) + (m_ReflectedDivergence * m_ReflectedDivergence) * (200.0f * 200.0f));
 
 	m_ReflectionLaserVertexArray = GeometryGenerator::CreateCylinder(m_EndDiameter, m_ReflectedDiameter, m_ReflectedLength, 10, 1);
 
@@ -259,7 +256,7 @@ void GridLayer::GenerateLaserVertices()
 
 	Vector3f reflectedTranslation = m_TargetLocation + (m_ReflectedDirection * (m_ReflectedLength *0.5f));
 
-	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), m_ReflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-PI / 2);
+	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), m_ReflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-(float)PI / 2);
 }
 
 // angles in radians

@@ -14,17 +14,17 @@ static size_t ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 
 void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
 {
-	ImTextureID my_tex_id = (void*)texture->GetRendererID();
+	ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
 	ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
 }
 
 IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 {
-	ImTextureID my_tex_id = (void*)texture->GetRendererID();
+	ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
 	return ImGui::ImageButton(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), frame_padding, bg_col, tint_col);
 }
 
-bool ImGui::SaveStyle(const char* filename, const ImGuiStyle& style)
+bool ImGui::SaveStyle(const std::filesystem::path& filename, const ImGuiStyle& style)
 {
 	std::filesystem::path filepath(filename);
 	if (filepath.empty()) return false;
@@ -56,7 +56,7 @@ bool ImGui::SaveStyle(const char* filename, const ImGuiStyle& style)
 	for (size_t i = 0; i < ImGuiCol_COUNT; i++)
 	{
 		const ImVec4& c = style.Colors[i];
-		file << "[" << ImGui::GetStyleColorName(i) << "]" << std::endl;
+		file << "[" << ImGui::GetStyleColorName((ImGuiCol)i) << "]" << std::endl;
 		file << c.x << " " << c.y << " " << c.z << " " << c.w << std::endl;
 	}
 	file << std::endl;
@@ -65,14 +65,14 @@ bool ImGui::SaveStyle(const char* filename, const ImGuiStyle& style)
 	return true;
 }
 
-bool ImGui::LoadStyle(const char* filename, ImGuiStyle& style)
+bool ImGui::LoadStyle(const std::filesystem::path& filename, ImGuiStyle& style)
 {
 	// Load .style file
-	if (!filename)  return false;
+	if (!std::filesystem::exists(filename))  return false;
 
 	// Load file into memory
 	FILE* f;
-	if ((f = fopen(filename, "rt")) == NULL) return false;
+	if ((f = fopen(filename.string().c_str(), "rt")) == NULL) return false;
 	if (fseek(f, 0, SEEK_END)) {
 		fclose(f);
 		return false;

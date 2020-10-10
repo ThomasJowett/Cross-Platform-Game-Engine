@@ -57,7 +57,7 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 
 	//Grid
 	Renderer::Submit(shader, m_GridVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] - 0.5f })
-		* Matrix4x4::Rotate(Vector3f(PI / 2.0f, 0.0f, 0.0f)));
+		* Matrix4x4::Rotate(Vector3f((float)PI / 2.0f, 0.0f, 0.0f)));
 
 	//Torus
 	Renderer::Submit(shader, m_TorusVertexArray, Matrix4x4::Translate({ m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] })
@@ -84,7 +84,7 @@ void ExampleLayer3D::OnImGuiRender()
 	ImGui::Text(std::to_string(m_CameraController.GetTranslationSpeed()).c_str());
 	ImGui::DragFloat3("Cube Position", m_Position, 0.01f);
 	ImGui::DragFloat3("Cube Rotation", m_Rotation, 0.001f);
-	ImGui::DragFloat("Fov", m_FOV, 0.01f, 0.0f, PI);
+	ImGui::DragFloat("Fov", m_FOV, 0.01f, 0.0f, (float)PI);
 	ImGui::DragFloat2("near far depth", m_Nearfar, 1.0f);
 	ImGui::End();
 }

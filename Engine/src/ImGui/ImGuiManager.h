@@ -6,8 +6,6 @@
 
 #include "ImGuiConsole.h"
 
-class ImFont;
-
 class ImGuiManager
 {
 public:

@@ -89,7 +89,7 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 	return returnModel;
 }
 
-Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int longitudeLines, unsigned int latitudeLines)
+Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
 {
 	PROFILE_FUNCTION();
 
@@ -106,12 +106,12 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 	float thetaStep = 2.0f * (float)PI / longitudeLines;
 
 	// Compute vertices for each latitude ring
-	for (unsigned int i = 0; i <= latitudeLines; ++i)
+	for (uint32_t i = 0; i <= latitudeLines; ++i)
 	{
 		float phi = i * phiStep;
 
 		// vertices of ring
-		for (unsigned int j = 0; j <= longitudeLines; j++)
+		for (uint32_t j = 0; j <= longitudeLines; j++)
 		{
 			float theta = j * thetaStep;
 
@@ -152,9 +152,9 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 
 	std::vector<uint32_t> indicesList;
 
-	for (unsigned int i = 0; i <= latitudeLines; i++)
+	for (uint32_t i = 0; i <= latitudeLines; i++)
 	{
-		for (unsigned int j = 0; j < longitudeLines; j++)
+		for (uint32_t j = 0; j < longitudeLines; j++)
 		{
 			indicesList.push_back(i * longitudeLines + j);
 			indicesList.push_back(i * longitudeLines + j + 1);
@@ -179,7 +179,7 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, unsigned int long
 	return returnModel;
 }
 
-Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsigned int widthLines, unsigned int lengthLines, float tileU, float tileV)
+Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
 {
 	PROFILE_FUNCTION();
 
@@ -190,8 +190,8 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsign
 	if (lengthLines < 2)
 		lengthLines = 2;
 
-	int vertexCount = widthLines * lengthLines; // 11 float per vertex
-	int facecount = (widthLines - 1) * (lengthLines - 1) * 2;
+	uint32_t vertexCount = widthLines * lengthLines; // 11 float per vertex
+	uint32_t facecount = (widthLines - 1) * (lengthLines - 1) * 2;
 
 	//
 	// Create the vertices
@@ -208,13 +208,13 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsign
 
 	float* vertices = new float[vertexCount * 11];
 
-	int k = 0;
+	uint32_t k = 0;
 
-	for (unsigned int i = 0; i < widthLines; ++i)
+	for (uint32_t i = 0; i < widthLines; ++i)
 	{
 		float z = halfDepth - i * dz;
 
-		for (unsigned int j = 0; j < lengthLines; ++j)
+		for (uint32_t j = 0; j < lengthLines; ++j)
 		{
 			float x = -halfWidth + j * dx;
 
@@ -240,12 +240,12 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, unsign
 		}
 	}
 
-	unsigned int* indices = new unsigned int[facecount * 3];
+	uint32_t* indices = new uint32_t[facecount * 3];
 
 	k = 0;
-	for (unsigned int i = 0; i < lengthLines - 1; ++i)
+	for (uint32_t i = 0; i < lengthLines - 1; ++i)
 	{
-		for (unsigned int j = 0; j < widthLines - 1; ++j)
+		for (uint32_t j = 0; j < widthLines - 1; ++j)
 		{
 			indices[k] = i * lengthLines + j;
 			indices[k + 1] = i * lengthLines + j + 1;
@@ -308,7 +308,7 @@ Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 	return returnModel;
 }
 
-Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, int sliceCount, int stackCount)
+Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
 {
 	PROFILE_FUNCTION();
 
@@ -342,8 +342,8 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 		float y = -0.5f * height + i * stackHeight;
 		float r = bottomRadius + i * radiusStep;
 
-		float dTheta = 2.0f * PI / sliceCount;
-		for (int j = 0; j <= sliceCount; j++)
+		float dTheta = 2.0f * (float)PI / sliceCount;
+		for (uint32_t j = 0; j <= sliceCount; j++)
 		{
 			float c = cosf(j * dTheta);
 			float s = sinf(j * dTheta);
@@ -381,9 +381,9 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	std::vector<uint32_t> indicesList;
 
 	//compute the indices for each stack
-	for (size_t i = 0; i < stackCount; i++)
+	for (uint32_t i = 0; i < stackCount; i++)
 	{
-		for (size_t j = 0; j < sliceCount; j++)
+		for (uint32_t j = 0; j < sliceCount; j++)
 		{
 			indicesList.push_back(i * ringVertexCount + j);
 			indicesList.push_back((i + 1) * ringVertexCount + j);
@@ -399,9 +399,9 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	uint32_t baseIndex = (uint32_t)(verticesList.size() / 11.0f);
 
 	float y = 0.5f * height;
-	float dTheta = 2.0f * PI / sliceCount;
+	float dTheta = 2.0f * (float)PI / sliceCount;
 
-	for (size_t i = 0; i <= sliceCount; i++)
+	for (uint32_t i = 0; i <= sliceCount; i++)
 	{
 		float x = topRadius * cosf(i * dTheta);
 		float z = topRadius * sinf(i * dTheta);
@@ -448,7 +448,7 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 	uint32_t centerIndex = (uint32_t)(verticesList.size() / 11.0f - 1);
 
-	for (size_t i = 0; i < sliceCount; i++)
+	for (uint32_t i = 0; i < sliceCount; i++)
 	{
 		indicesList.push_back(centerIndex);
 		indicesList.push_back(baseIndex + i + 1);
@@ -460,8 +460,8 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	y = -0.5f * height;
 
 	//vertices of ring
-	dTheta = 2.0f * PI / sliceCount;
-	for (size_t i = 0; i <= sliceCount; i++)
+	dTheta = 2.0f * (float)PI / sliceCount;
+	for (uint32_t i = 0; i <= sliceCount; i++)
 	{
 		float x = bottomRadius * cosf(i * dTheta);
 		float z = bottomRadius * sinf(i * dTheta);
@@ -507,7 +507,7 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 	centerIndex = (uint32_t)(verticesList.size() / 11.0f - 1);
 
-	for (size_t i = 0; i < sliceCount; i++)
+	for (uint32_t i = 0; i < sliceCount; i++)
 	{
 		indicesList.push_back(centerIndex);
 		indicesList.push_back(baseIndex + i);
@@ -527,7 +527,7 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	return returnModel;
 }
 
-Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, int segments)
+Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
 {
 	PROFILE_FUNCTION();
 
@@ -536,23 +536,23 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 	if (segments < 3)
 		segments = 3;
 
-	size_t stride = segments + 1;
+	uint32_t stride = segments + 1;
 
 	std::vector<float> verticesList;
 	std::vector<uint32_t> indicesList;
 
-	for (size_t i = 0; i <= segments; i++)
+	for (uint32_t i = 0; i <= segments; i++)
 	{
 		float u = 1.0f - float(i) / segments;
-		float outerAngle = (i * PI / segments - (PI / 2.0f)) * 2;
+		float outerAngle = (i * (float)PI / segments - (float)(PI / 2.0f)) * 2;
 
 		Matrix4x4 transform = Matrix4x4::RotateY(outerAngle) * Matrix4x4::Translate({ diameter / 2.0f, 0.0f, 0.0f });
 
-		for (size_t j = 0; j <= segments; j++)
+		for (uint32_t j = 0; j <= segments; j++)
 		{
 			float v = 1 - (float)(j) / segments;
 
-			float innerAngle = (j * PI / segments + PI) * 2;
+			float innerAngle = (float)(j * PI / segments + PI) * 2;
 			float dx = cos(innerAngle);
 			float dy = sin(innerAngle);
 
@@ -584,8 +584,8 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 			verticesList.push_back(v);
 
 			//Indices
-			size_t nextI = (i + 1) % stride;
-			size_t nextJ = (j + 1) % stride;
+			uint32_t nextI = (i + 1) % stride;
+			uint32_t nextJ = (j + 1) % stride;
 
 			indicesList.push_back(nextI * stride + j);
 			indicesList.push_back(i * stride + nextJ);

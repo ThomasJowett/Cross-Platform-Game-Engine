@@ -151,7 +151,7 @@ void ImGuiManager::End()
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
 	{
-		GLFWwindow* backup_current_context;
+		GLFWwindow* backup_current_context = nullptr;
 		if (api == RendererAPI::API::OpenGL)
 		{
 			backup_current_context = glfwGetCurrentContext();

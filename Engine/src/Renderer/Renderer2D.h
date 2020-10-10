@@ -14,6 +14,7 @@ public:
 
 	static void OnWindowResize(uint32_t width, uint32_t height);
 	static void BeginScene(const Camera& camera);
+	static void BegineScene(const Matrix4x4& view, const Matrix4x4& projection);
 	static void EndScene();
 
 	static void Flush();
@@ -62,5 +63,6 @@ public:
 	static void ResetStats();
 
 private:
+	static void StartBatch();
 	static void FlushAndReset();
 };

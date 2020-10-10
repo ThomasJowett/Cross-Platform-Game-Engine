@@ -73,8 +73,8 @@ void OBJImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 			for (int i = 0; i < 3; ++i)
 			{
 				inFile >> input;
-				int slash = input.find("/");
-				int secondSlash = input.find("/", slash + 1);
+				size_t slash = input.find("/");
+				size_t secondSlash = input.find("/", slash + 1);
 
 				beforeFirstSlash = input.substr(0, slash);
 				afterFirstSlash = input.substr(slash + 1, secondSlash - slash - 1);
@@ -115,7 +115,7 @@ void OBJImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	std::vector<Vector3f> expandedVertices;
 	std::vector<Vector3f> expandedNormals;
 	std::vector<Vector2f> expandedTexCoord;
-	uint32_t numIndices = vertIndices.size();
+	uint32_t numIndices = (uint32_t)vertIndices.size();
 	for (uint32_t i = 0; i < numIndices; i++)
 	{
 		expandedVertices.push_back(verts[vertIndices[i]]);

@@ -4,7 +4,7 @@
 
 #include "Core/Layer.h"
 
-class ImGuiTextFilter;
+struct ImGuiTextFilter;
 
 class ImGuiConsole
 	:public Layer

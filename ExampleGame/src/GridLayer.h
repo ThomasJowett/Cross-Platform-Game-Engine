@@ -57,7 +57,7 @@ private:
 
 	std::vector<Vector3f> m_Positions;
 	int m_NumberOfPositions = 20;
-	float m_MinimumDistance = 0.01;
+	float m_MinimumDistance = 0.01f;
 
 	bool m_Simulate = true;
 

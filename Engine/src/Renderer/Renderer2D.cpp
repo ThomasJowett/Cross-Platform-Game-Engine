@@ -184,13 +184,17 @@ void Renderer2D::BeginScene(const Camera& camera)
 	s_Data.QuadShader->Bind();
 	s_Data.QuadShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
 
-	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
-	s_Data.QuadIndexCount = 0;
+	StartBatch();
+}
 
-	//s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-	//s_Data.LineIndexCount = 0;
+void Renderer2D::BegineScene(const Matrix4x4& view, const Matrix4x4& projection)
+{
+	PROFILE_FUNCTION();
+	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
+	s_Data.QuadShader->Bind();
+	s_Data.QuadShader->SetMat4("u_Projection", s_Data.ViewProjectionMatrix, true);
 
-	s_Data.TextureSlotIndex = 1;
+	StartBatch();
 }
 
 void Renderer2D::EndScene()
@@ -211,6 +215,11 @@ void Renderer2D::EndScene()
 
 void Renderer2D::Flush()
 {
+	if (s_Data.QuadIndexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
+	s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
+
 	for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
 	{
 		s_Data.TextureSlots[i]->Bind(i);
@@ -228,17 +237,18 @@ void Renderer2D::Flush()
 	s_Data.Statistics.DrawCalls++;
 }
 
-void Renderer2D::FlushAndReset()
+void Renderer2D::StartBatch()
 {
-	EndScene();
-
-	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 	s_Data.QuadIndexCount = 0;
-
-	//s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
-	//s_Data.LineIndexCount = 0;
+	s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
 	s_Data.TextureSlotIndex = 1;
+}
+
+void Renderer2D::FlushAndReset()
+{
+	Flush();
+	StartBatch();
 }
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)

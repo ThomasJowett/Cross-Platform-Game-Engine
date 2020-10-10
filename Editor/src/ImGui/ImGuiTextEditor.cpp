@@ -2020,7 +2020,7 @@ void TextEditor::Duplicate()
 		TextEditor::Line& line = mLines[mState.mCursorPosition.mLine];
 		if (line.empty()) return;
 		Coordinates start = Coordinates(mState.mCursorPosition.mLine, 0);
-		Coordinates end = Coordinates(mState.mCursorPosition.mLine, line.size());
+		Coordinates end = Coordinates(mState.mCursorPosition.mLine, (int)line.size());
 		duplicatedText = GetText(start, end);
 		duplicatedText.push_back('\n');
 

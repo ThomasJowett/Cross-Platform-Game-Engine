@@ -183,7 +183,7 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 			numLinesThatFit = 1;
 		approxNumEntriesPerColumn = numLinesThatFit;
 	}
-	m_NumBrowsingColumns = std::ceil((float)m_TotalNumBrowsingEntries / (float)approxNumEntriesPerColumn);
+	m_NumBrowsingColumns = (int)std::ceil((float)(m_TotalNumBrowsingEntries /approxNumEntriesPerColumn));
 
 	if (m_NumBrowsingColumns <= 0)
 	{
@@ -500,7 +500,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		//----------------------------------------------------------------------------------------------------
 		//Sorting mode combo
-		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0);
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
 		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
 			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
@@ -670,7 +670,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		// MAIN BROWSING WINDOW
 		//----------------------------------------------------------------------------------------------------
 		{
-			m_TotalNumBrowsingEntries = m_Dirs.size() + m_Files.size();
+			m_TotalNumBrowsingEntries = (uint32_t)(m_Dirs.size() + m_Files.size());
 			CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
 
 			ImGui::Columns(m_NumBrowsingColumns);

@@ -86,13 +86,13 @@ void StaticMeshView::OnImGuiRender()
 		}
 		ImGui::EndMenuBar();
 
-		auto tex = m_Framebuffer->GetColourAttachment();
+		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 
-		ImGui::NextColumn();
-
-		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
+		//ImGui::NextColumn();
+		//
+		//ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 	}
 	ImGui::End();
 
@@ -146,7 +146,7 @@ void StaticMeshView::OnFixedUpdate()
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
-		m_Framebuffer->Resize(m_ViewportSize.x, m_ViewportSize.y);
+		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 	}
 }

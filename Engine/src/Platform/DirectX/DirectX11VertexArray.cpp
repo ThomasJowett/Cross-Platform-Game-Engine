@@ -54,7 +54,7 @@ void DirectX11VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer
 	uint32_t index = 0;
 	const BufferLayout& layout = vertexBuffer->GetLayout();
 
-	UINT numElements = layout.GetElements().size();
+	UINT numElements = (UINT)layout.GetElements().size();
 
 	D3D11_INPUT_ELEMENT_DESC* ed =  new D3D11_INPUT_ELEMENT_DESC[numElements];
 	for (const BufferElement& element : layout)

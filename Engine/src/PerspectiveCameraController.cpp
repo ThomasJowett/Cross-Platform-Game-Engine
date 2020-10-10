@@ -126,8 +126,8 @@ bool PerspectiveCameraController::OnMouseWheel(MouseWheelEvent& event)
 {
 	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 	{
-		double ln = 10.0 * log(m_TranslationSpeed);
-		m_TranslationSpeed = std::clamp(exp(0.1 * (ln + (double)event.GetYOffset())), (double)FLT_MIN, 1000.0);
+		float ln = 10.0f * log(m_TranslationSpeed);
+		m_TranslationSpeed = std::clamp(exp(0.1f * (ln + event.GetYOffset())), FLT_MIN, 1000.0f);
 
 		if (m_TranslationSpeed < 0.0f)
 			m_TranslationSpeed = FLT_MIN;
@@ -148,8 +148,8 @@ bool PerspectiveCameraController::OnWindowResized(WindowResizeEvent& event)
 
 bool PerspectiveCameraController::OnMouseMoved(MouseMotionEvent& event)
 {
-	float xOffset = event.GetX() - m_LastMousePosition.first;
-	float yOffset = event.GetY() - m_LastMousePosition.second;
+	float xOffset = event.GetX() - (float)m_LastMousePosition.first;
+	float yOffset = event.GetY() - (float)m_LastMousePosition.second;
 
 	m_LastMousePosition.first = event.GetX();
 	m_LastMousePosition.second = event.GetY();
@@ -177,10 +177,10 @@ void PerspectiveCameraController::Pitch(float angle)
 {
 	m_CameraRotation = m_CameraRotation + Vector3f(angle, 0.0f, 0.0f);
 
-	if (m_CameraRotation.x > PI * 0.5)
-		m_CameraRotation.x = (PI * 0.5);
-	else if (m_CameraRotation.x < -(PI * 0.5))
-		m_CameraRotation.x = -(PI * 0.5);
+	if (m_CameraRotation.x > PI * 0.5f)
+		m_CameraRotation.x = (float)(PI * 0.5f);
+	else if (m_CameraRotation.x < -(PI * 0.5f))
+		m_CameraRotation.x = -(float)(PI * 0.5f);
 	else
 	{
 		Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_Right, angle));
@@ -197,9 +197,9 @@ void PerspectiveCameraController::Yaw(float angle)
 	m_CameraRotation = m_CameraRotation + Vector3f(0.0f, angle, 0.0f);
 
 	if (m_CameraRotation.y > PI)
-		m_CameraRotation.y -= (PI * 2);
+		m_CameraRotation.y -= (float)(PI * 2.0f);
 	else if (m_CameraRotation.y < -PI)
-		m_CameraRotation.y += (PI * 2);
+		m_CameraRotation.y += (float)(PI * 2.0f);
 }
 
 void PerspectiveCameraController::LookAt(Vector3f focalPoint)

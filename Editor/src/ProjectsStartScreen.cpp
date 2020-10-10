@@ -22,8 +22,8 @@ void ProjectsStartScreen::OnImGuiRender()
 	int windowSizeX = Application::GetWindow().GetWidth();
 	int windowSizeY = Application::GetWindow().GetHeight();
 
-	int popupSizeX = std::min(windowSizeX - 20, 600);
-	int popupSizeY = std::min(windowSizeY - 20, 600);
+	float popupSizeX = (float)std::min(windowSizeX - 20, 600);
+	float popupSizeY = (float)std::min(windowSizeY - 20, 600);
 
 	ImGui::SetNextWindowSize(ImVec2(popupSizeX, popupSizeY));
 
@@ -69,7 +69,7 @@ void ProjectsStartScreen::OnImGuiRender()
 		else
 		{
 			ImGui::Text("Select Template...");
-			ImGui::SameLine(0.0f, popupSizeX - 185);
+			ImGui::SameLine(0.0f, (float)(popupSizeX - 185));
 			if (ImGui::Button(ICON_FA_LONG_ARROW_ALT_LEFT" Back"))
 			{
 				m_CreateProject = false;

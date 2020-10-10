@@ -1,6 +1,7 @@
 project "GLFW"
 	kind "StaticLib"
 	language "C"
+	cppdialect "C++17"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -21,7 +22,7 @@ project "GLFW"
 		pic "On"
 
 		systemversion "latest"
-		staticruntime "On"
+		staticruntime "off"
 
 		files
 		{
@@ -44,7 +45,7 @@ project "GLFW"
 
 	filter "system:windows"
 		systemversion "latest"
-		staticruntime "On"
+		staticruntime "off"
 
 		files
 		{
@@ -76,9 +77,15 @@ project "GLFW"
 project "ImGui"
 	kind "StaticLib"
 	language "C++"
+	cppdialect "C++17"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
 
 	files
 	{
@@ -97,13 +104,13 @@ project "ImGui"
 	filter "system:windows"
 		systemversion "latest"
 		cppdialect "C++17"
-		staticruntime "On"
+		staticruntime "off"
 
 	filter "system:linux"
 		pic "On"
 		systemversion "latest"
-		cppdialect "C++17"
-		staticruntime "On"
+		
+		staticruntime "off"
 
 	filter "configurations:Debug"
 		runtime "Debug"
@@ -116,6 +123,7 @@ project "ImGui"
 project "GLAD"
 	kind "StaticLib"
 	language "C"
+	cppdialect "C++17"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")

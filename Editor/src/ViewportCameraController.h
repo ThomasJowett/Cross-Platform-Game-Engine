@@ -43,7 +43,7 @@ private:
 	float m_ZoomLevel = 2.0f;
 	float m_TranslationSpeed = 1.0f;
 
-	float m_FovY = PI / 2;
+	float m_FovY = (float)PI / 2;
 	float m_NearDepth = 1.0f;
 	float m_FarDepth = -1.0f;
 
