@@ -68,6 +68,15 @@ void HeirachyPanel::DrawNode(Entity entity)
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 
+	if (ImGui::BeginPopupContextItem("Object Context Menu"))
+	{
+		if (ImGui::MenuItem("Delete"))
+		{
+			SceneManager::s_CurrentScene->RemoveEntity(entity);
+		}
+		ImGui::EndPopup();
+	}
+
 	if (ImGui::IsItemClicked())
 	{
 		m_SelectedEntity = entity;

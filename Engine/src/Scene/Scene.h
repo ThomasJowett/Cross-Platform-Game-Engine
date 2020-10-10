@@ -12,6 +12,8 @@ public:
 
 	Entity CreateEntity(const std::string& name = "");
 
+	bool RemoveEntity(const Entity& entity);
+
 	void OnUpdate(float deltaTime);
 	void OnViewportResize(uint32_t width, uint32_t height);
 
