@@ -51,7 +51,7 @@ static std::wstring FileDialog(const wchar_t* title = L"Open...", const wchar_t*
 
 // Opens a modal file dialog box and returns a list of selected files 
 // - Filter format: "Text Files\0*.txt\0Any File\0*.*\0"
-static std::vector<std::string> MultiFileDialog(const wchar_t* title = L"Open...", const wchar_t* filter = L"Any File\0*.*\0")
+static std::vector<std::wstring> MultiFileDialog(const wchar_t* title = L"Open...", const wchar_t* filter = L"Any File\0*.*\0")
 {
 #ifdef __WINDOWS__
 	wchar_t filename[MAX_PATH];
@@ -90,27 +90,27 @@ static std::vector<std::string> MultiFileDialog(const wchar_t* title = L"Open...
 		}
 	}
 
-	std::vector<std::string> files;
+	std::vector<std::wstring> files;
 
 	wchar_t* str = ofn.lpstrFile;
 	std::wstring directory = str;
 	str += (directory.length() + 1);
 	if (!*str)
 	{
-		files.push_back(std::string(directory.begin(), directory.end()));
+		files.push_back(directory);
 		return files;
 	}
 	while (*str) {
 		std::wstring filename = str;
 		str += (filename.length() + 1);
 		std::wstring ws(filename);
-		files.push_back(std::string(directory.begin(), directory.end()) + std::string(ws.begin(), ws.end()));
+		files.push_back(directory + ws);
 	}
 
 	return files;
 #endif // __WINDOWS__
 
-	return std::vector<std::string>();
+	return std::vector<std::wstring>();
 }
 
 static std::wstring SaveAsDialog(const wchar_t* title = L"Save As...", const wchar_t* filter = L"Any File\0*.*\0")

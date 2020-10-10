@@ -21,7 +21,15 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	}
 }
 
-void ImportManager::ImportMultiAssets(const std::vector<std::string>& assets, const std::filesystem::path& destination)
+void ImportManager::ImportMultiAssets(const std::vector<std::filesystem::path>& assets, const std::filesystem::path& destination)
+{
+	for (auto asset : assets)
+	{
+		ImportAsset(asset, destination);
+	}
+}
+
+void ImportManager::ImportMultiAssets(const std::vector<std::wstring>& assets, const std::filesystem::path& destination)
 {
 	for (auto asset : assets)
 	{

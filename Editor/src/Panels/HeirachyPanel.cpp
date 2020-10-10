@@ -37,7 +37,7 @@ void HeirachyPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered())
+		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered() || !m_SelectedEntity.BelongsToScene(SceneManager::s_CurrentScene.get()))
 		{
 			m_SelectedEntity = {};
 		}
