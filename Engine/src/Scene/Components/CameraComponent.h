@@ -2,6 +2,8 @@
 
 #include "Scene/SceneCamera.h"
 
+#include "cereal/cereal.hpp"
+
 struct CameraComponent
 {
 	SceneCamera Camera;

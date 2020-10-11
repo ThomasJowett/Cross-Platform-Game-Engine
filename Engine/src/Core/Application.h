@@ -1,5 +1,8 @@
 #pragma once
 
+#include <functional>
+#include <filesystem>
+
 #include "LayerStack.h"
 #include "Window.h"
 

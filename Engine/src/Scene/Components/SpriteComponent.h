@@ -2,6 +2,8 @@
 
 #include "Core/Colour.h"
 
+#include "cereal/cereal.hpp"
+
 struct SpriteComponent
 {
 	Colour Tint{ 1.0f, 1.0f,1.0f,1.0f };

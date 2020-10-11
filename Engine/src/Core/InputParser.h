@@ -1,5 +1,8 @@
 #pragma once
-#include "stdafx.h"
+
+#include <string>
+#include <fstream>
+#include <vector>
 
 class InputParser
 {

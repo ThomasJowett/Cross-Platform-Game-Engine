@@ -1,4 +1,8 @@
 #pragma once
+
+#include <sstream>
+
+#include "Logging/Logger.h"
 #include "Utilities/Random.h"
 
 enum class Colours

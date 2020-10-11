@@ -27,6 +27,7 @@ Entity Scene::CreateEntity(const std::string& name)
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<TransformComponent>();
 	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
+	m_Dirty = true;
 	return entity;
 }
 
@@ -37,7 +38,7 @@ bool Scene::RemoveEntity(const Entity& entity)
 		//TODO: remove entitys from registry
 		ENGINE_DEBUG("Could not remove entity because the function is not implemented!");
 	}
-
+	m_Dirty = true;
 	return false;
 }
 

@@ -1,4 +1,7 @@
 #pragma once
+
+#include <vector>
+
 #include "Core/core.h"
 #include "Layer.h"
 

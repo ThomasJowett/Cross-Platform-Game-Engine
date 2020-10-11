@@ -89,7 +89,7 @@ void ViewportPanel::OnImGuiRender()
 	if(SceneManager::s_CurrentScene->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
-	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, ImGuiWindowFlags_NoScrollbar);
+	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
 		HandleKeyboardInputs();

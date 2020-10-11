@@ -1,5 +1,9 @@
 #pragma once
+
 #include "Renderer/Camera.h"
+
+#include "cereal/cereal.hpp"
+
 class SceneCamera :
 	public Camera
 {

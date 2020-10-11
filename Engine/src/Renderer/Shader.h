@@ -1,5 +1,4 @@
 #pragma once
-#include "stdafx.h"
 
 #include "math/Matrix.h"
 #include "Core/core.h"

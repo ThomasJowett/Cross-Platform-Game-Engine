@@ -1,6 +1,11 @@
 #pragma once
 #include "Engine.h"
 
+#ifdef __WINDOWS__
+#include <commdlg.h>
+#include <cderr.h>
+#endif // __WINDOWS__
+
 // Opens a modal file dialog box and returns the file selected 
 // - Filter format: "Text Files\0*.txt\0Any File\0*.*\0"
 static std::wstring FileDialog(const wchar_t* title = L"Open...", const wchar_t* filter = L"Any File\0*.*\0")
@@ -93,7 +98,7 @@ static std::vector<std::wstring> MultiFileDialog(const wchar_t* title = L"Open..
 	std::vector<std::wstring> files;
 
 	wchar_t* str = ofn.lpstrFile;
-	std::wstring directory = str;
+	std::wstring directory = filename;
 	str += (directory.length() + 1);
 	if (!*str)
 	{
@@ -101,9 +106,9 @@ static std::vector<std::wstring> MultiFileDialog(const wchar_t* title = L"Open..
 		return files;
 	}
 	while (*str) {
-		std::wstring filename = str;
-		str += (filename.length() + 1);
-		std::wstring ws(filename);
+		std::wstring file = str;
+		str += (file.length() + 1);
+		std::wstring ws(file);
 		files.push_back(directory + ws);
 	}
 

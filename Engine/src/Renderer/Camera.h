@@ -54,7 +54,6 @@ public:
 
 	void SetProjection(float left, float right, float bottom, float top, float nearDepth = 1.0f, float farDepth = -1.0f)
 	{
-		PROFILE_FUNCTION();
 		Camera::SetProjectionMatrix(Matrix4x4::OrthographicRH(left, right, bottom, top, nearDepth, farDepth));
 
 		m_NearDepth = nearDepth;
@@ -79,7 +78,6 @@ public:
 
 	void SetProjection(float fovY, float aspectRatio, float nearDepth = 1.0f, float farDepth = -1.0f)
 	{
-		PROFILE_FUNCTION();
 		Camera::SetProjectionMatrix(Matrix4x4::PerspectiveRH(fovY, aspectRatio, nearDepth, farDepth));
 
 		m_NearDepth = nearDepth;

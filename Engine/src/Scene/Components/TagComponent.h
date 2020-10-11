@@ -1,6 +1,8 @@
 #pragma once
 #include <string>
 
+#include "cereal/cereal.hpp"
+
 struct TagComponent
 {
 	std::string Tag;

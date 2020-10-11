@@ -2,6 +2,8 @@
 #include "InputParser.h"
 #include "Core/Version.h"
 #include "Settings.h"
+#include "Logging/Logger.h"
+#include "Logging/Instrumentor.h"
 
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")

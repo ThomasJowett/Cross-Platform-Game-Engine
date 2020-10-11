@@ -1,6 +1,7 @@
 #pragma once
 
-#include "stdafx.h"
+#include <functional>
+#include <any>
 
 #include "core.h"
 #include "Events/Event.h"

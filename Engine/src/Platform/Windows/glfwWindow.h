@@ -1,7 +1,5 @@
 #pragma once
 
-#include "stdafx.h"
-
 #include "Core/Window.h"
 #include "Renderer/GraphicsContext.h"
 

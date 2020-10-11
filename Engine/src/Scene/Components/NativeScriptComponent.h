@@ -4,15 +4,17 @@
 
 #include "Core/core.h"
 
+#include "cereal/cereal.hpp"
+
 struct NativeScriptComponent
 {
 	ScriptableEntity* Instance = nullptr;
 
-	ScriptableEntity*(*InstantiateScript)(const std::string&);
-	void (*DestroyScript)(NativeScriptComponent*);
+	ScriptableEntity*(*InstantiateScript)(const std::string&) = nullptr;
+	void (*DestroyScript)(NativeScriptComponent*) = nullptr;
 
 	NativeScriptComponent() = default;
-	NativeScriptComponent(const std::string& name) { Name = name; Bind(Name); }
+	NativeScriptComponent(const std::string& name):Name(name) {Bind(Name); }
 	NativeScriptComponent(const NativeScriptComponent&) = default;
 
 	std::string Name;

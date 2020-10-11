@@ -16,6 +16,7 @@ public:
 	T& AddComponent(Args&&... args)
 	{
 		CORE_ASSERT(!HasComponent<T>(), "Entity already has this component");
+		m_Scene->MakeDirty();
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
@@ -36,6 +37,7 @@ public:
 	{
 		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
 		m_Scene->m_Registry.remove<T>(m_EntityHandle);
+		m_Scene->MakeDirty();
 	}
 
 	bool BelongsToScene(Scene* scene) const

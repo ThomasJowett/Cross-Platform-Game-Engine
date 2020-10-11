@@ -2,6 +2,8 @@
 
 #include "math/Matrix.h"
 
+#include "cereal/cereal.hpp"
+
 struct TransformComponent
 {
 	Matrix4x4 Transform;

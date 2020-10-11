@@ -2,6 +2,8 @@
 
 #define MAX_ASSET_VIEWERS 2
 
+#include <map>
+
 class ViewerManager
 {
 public:

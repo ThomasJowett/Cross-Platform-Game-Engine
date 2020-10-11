@@ -1,8 +1,9 @@
 #pragma once
 
-#include "stdafx.h"
-#include "Core/core.h"
+#include <string>
+#include <sstream>
 
+#include "Core/core.h"
 
 enum class EventType
 {

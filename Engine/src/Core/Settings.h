@@ -1,7 +1,10 @@
 #pragma once
 
-#include "stdafx.h"
 #include <map>
+#include <string>
+
+#include "math/Vector2f.h"
+#include "math/Vector3f.h"
 
 class Settings
 {

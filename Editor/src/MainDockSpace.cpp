@@ -1,5 +1,7 @@
 #include "MainDockSpace.h"
 
+#include <shellapi.h>
+
 #include "imgui/imgui.h"
 #include "Core/Version.h"
 #include "Fonts/Fonts.h"
@@ -218,6 +220,10 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, saveable))
 				iSave->Save();
+			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::s_CurrentScene != nullptr))
+			{
+				SceneManager::s_CurrentScene->Save(false);
+			}
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}

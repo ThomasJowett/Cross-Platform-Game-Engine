@@ -5,6 +5,8 @@
 
 #include "ImGui/ImGuiTransform.h"
 
+#include "Scene/SceneManager.h"
+
 #include <cstring>
 
 PropertiesPanel::PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel)
@@ -85,11 +87,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		std::strncpy(buffer, tag.c_str(),sizeof(buffer)) ;
+		std::strncpy(buffer, tag.c_str(), sizeof(buffer));
 
 		if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 		{
 			tag = std::string(buffer);
+			SceneManager::s_CurrentScene->MakeDirty();
 		}
 	}
 
@@ -111,21 +114,27 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_IMAGE" Sprite"))
 		{
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Delete"))
+				{
+					entity.RemoveComponent<SpriteComponent>();
+					return;
+				}
+
+				ImGui::EndPopup();
+			}
+
 			auto& sprite = entity.GetComponent<SpriteComponent>();
 
 			float* tint[4] = { &sprite.Tint.r, &sprite.Tint.g, &sprite.Tint.b, &sprite.Tint.a };
 
-			ImGui::ColorEdit4("Tint", tint[0]);
+			if (ImGui::ColorEdit4("Tint", tint[0]))
+			{
+				SceneManager::s_CurrentScene->MakeDirty();
+			}
 
 			ImGui::TreePop();
-		}
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::MenuItem("Delete"))
-			{
-				entity.RemoveComponent<SpriteComponent>();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -134,17 +143,19 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_SHAPES" Static Mesh"))
 		{
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Delete"))
+				{
+					entity.RemoveComponent<StaticMeshComponent>();
+					return;
+				}
+
+				ImGui::EndPopup();
+			}
 			auto& mesh = entity.GetComponent<StaticMeshComponent>();
 
 			ImGui::TreePop();
-		}
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::MenuItem("Delete"))
-			{
-				entity.RemoveComponent<StaticMeshComponent>();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -153,19 +164,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_FILE_CODE" Native Script"))
 		{
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Delete"))
+				{
+					entity.RemoveComponent<NativeScriptComponent>();
+					return;
+				}
+
+				ImGui::EndPopup();
+			}
 			auto& script = entity.GetComponent<NativeScriptComponent>();
 
 			ImGui::Text(script.Name.c_str());
 
 			ImGui::TreePop();
-		}
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::MenuItem("Delete"))
-			{
-				entity.RemoveComponent<NativeScriptComponent>();
-			}
-			ImGui::EndPopup();
 		}
 	}
 
@@ -174,6 +187,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_VIDEO" Camera"))
 		{
+			if (ImGui::BeginPopupContextItem())
+			{
+				if (ImGui::MenuItem("Delete"))
+				{
+					entity.RemoveComponent<CameraComponent>();
+					return;//TODO: fix this from breaking
+				}
+
+				ImGui::EndPopup();
+			}
+
 			auto& cameraComp = entity.GetComponent<CameraComponent>();
 			auto& camera = cameraComp.Camera;
 
@@ -212,18 +236,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				if (ImGui::DragFloat("Fov", &fov, 1.0f, 1.0f, 180.0f))
 				{
 					camera.SetVerticalFov((float)DegToRad(fov));
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				float nearClip = camera.GetPerspectiveNear();
 				if (ImGui::DragFloat("Near Clip##Perspective", &nearClip, 1.0f, 0.001f, 10000.0f))
 				{
 					camera.SetPerspectiveNear(nearClip);
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				float farClip = camera.GetPerspectiveFar();
 				if (ImGui::DragFloat("Far Clip##Perspective", &farClip, 1.0f, 0.001f, 10000.0f))
 				{
 					camera.SetPerspectiveFar(farClip);
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				camera.RecalculateProjection();
@@ -235,18 +262,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				if (ImGui::DragFloat("Size", &size, 0.1f, 0.0f, 100.0f))
 				{
 					camera.SetOrthoSize(size);
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				float nearClip = camera.GetOrthoNear();
 				if (ImGui::DragFloat("Near Clip##Ortho", &nearClip))
 				{
 					camera.SetOrthoNear(nearClip);
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				float farClip = camera.GetOrthoFar();
 				if (ImGui::DragFloat("Far Clip##Ortho", &farClip))
 				{
 					camera.SetOrthoFar(farClip);
+					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				camera.RecalculateProjection();
@@ -256,25 +286,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
-		if (ImGui::BeginPopupContextItem())
-		{
-			if (ImGui::MenuItem("Delete"))
-			{
-				entity.RemoveComponent<CameraComponent>();
-			}
-			ImGui::EndPopup();
-		}
 	}
-
-	//Add Component Button ---------------------------------------------------------------------------------------------
-	
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
 {
-	ImGui::Dummy({0,0 });
+	ImGui::Dummy({ 0,0 });
 	float width = ImGui::GetContentRegionAvailWidth();
-	ImGui::SameLine((width / 2.0f) - (ImGui::CalcTextSize("Add Component").x/2.0f));
+	ImGui::SameLine((width / 2.0f) - (ImGui::CalcTextSize("Add Component").x / 2.0f));
 	if (ImGui::Button("Add Component"))
 	{
 		ImGui::OpenPopup("Components");

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <filesystem>
+
 #include "EnTT/entt.hpp"
 
 class Entity;
