@@ -1,8 +1,0 @@
-// Hint files help the Visual Studio IDE interpret Visual C++ identifiers
-// such as names of functions and macros.
-// For more information see https://go.microsoft.com/fwlink/?linkid=865984
-#define DLLIMPEXP_CORE __declspec(dllexport)
-#define DLLIMPEXP_CORE __declspec(dllimport)
-#define DLLIMPEXP_CORE __attribute__((visibility("default")))
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return type; } virtual EventType GetEventType() const override { return GetStaticType(); } virtual const char* GetName() const override { return #type; }
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
