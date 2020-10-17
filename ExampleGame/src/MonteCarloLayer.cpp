@@ -65,7 +65,7 @@ void MonteCarloLayer::OnImGuiRender()
 	//if (ImGui::Button("Run Monte Carlo"))
 	//	RunMonteCarlo();
 	std::string pi = "PI = " + std::to_string((double)(m_RedPositions.size()) / (double)m_BluePositions.size());
-	ImGui::Text(pi.c_str());
+	ImGui::Text("%s", pi.c_str());
 	ImGui::End();
 };
 void MonteCarloLayer::RunMonteCarlo()

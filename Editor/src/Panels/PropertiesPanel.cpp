@@ -176,7 +176,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			auto& script = entity.GetComponent<NativeScriptComponent>();
 
-			ImGui::Text(script.Name.c_str());
+			ImGui::Text("%s", script.Name.c_str());
 
 			ImGui::TreePop();
 		}

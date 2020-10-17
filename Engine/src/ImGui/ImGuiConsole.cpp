@@ -205,7 +205,7 @@ void ImGuiConsole::Message::OnImGuiRender(Message::Level filter, ImGuiTextFilter
 	if (m_Level != Level::Invalid && m_Level >= filter && textFilter->PassFilter(m_Message.c_str()))
 	{
 		Colour colour = GetRenderColour(m_Level);
-		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, m_Message.c_str());
+		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", m_Message.c_str());
 	}
 }
 

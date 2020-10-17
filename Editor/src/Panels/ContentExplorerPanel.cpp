@@ -751,13 +751,13 @@ void ContentExplorerPanel::OnImGuiRender()
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 					{
 						ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
-						ImGui::Text(m_Files[i].filename().string().c_str());
+						ImGui::Text("%s", m_Files[i].filename().string().c_str());
 						ImGui::EndDragDropSource();
 					}
 					ImGui::EndGroup();
 
 					ImGui::SameLine(std::max(ImGui::CalcTextSize(m_Files[i].filename().string().c_str()).x + 15, 300.0f));
-					ImGui::Text((std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
+					ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
 
 					++cntEntries;
 					//TODO:: switch on view zoom

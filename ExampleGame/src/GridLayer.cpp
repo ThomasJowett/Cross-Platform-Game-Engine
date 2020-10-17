@@ -114,7 +114,7 @@ void GridLayer::OnImGuiRender()
 		GeneratePositions();
 	ImGui::SliderInt("Number of Positions", &m_NumberOfPositions, 0, 1000);
 	ImGui::SliderFloat("Minimum distance", &m_MinimumDistance, 0, 1.0);
-	ImGui::Text(std::to_string(m_Positions.size()).c_str());
+	ImGui::Text("%s", std::to_string(m_Positions.size()).c_str());
 	ImGui::Separator();
 	if (ImGui::Button("Recalculate"))
 	{
@@ -129,8 +129,8 @@ void GridLayer::OnImGuiRender()
 	ImGui::InputDouble("FlybyAngle (Deg)", &m_FlybyAngle);
 	ImGui::InputDouble("Initial Azimuth (Deg)", &m_InitialAzimuth);
 	ImGui::DragFloat3("Rotation (Roll) (Yaw) (Pitch)", &m_PlaneRotation[0], 0.01f, -(float)PI, (float)PI);
-	ImGui::Text(m_PlaneNormal.to_string().c_str());
-	ImGui::Text(m_TargetLocation.to_string().c_str());
+	ImGui::Text("%s", m_PlaneNormal.to_string().c_str());
+	ImGui::Text("%s", m_TargetLocation.to_string().c_str());
 	ImGui::Separator();
 	ImGui::DragFloat("Azimuth (Deg)", &m_Azimuth, 5.0f, -180.0f, 180.0f);
 	ImGui::DragFloat("Elevation (Deg)", &m_Elevation, 5.0f, -180.0f, 180.0f);
