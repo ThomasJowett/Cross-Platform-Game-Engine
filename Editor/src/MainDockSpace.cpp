@@ -1,6 +1,8 @@
 #include "MainDockSpace.h"
 
+#ifdef __WINDOWS__
 #include <shellapi.h>
+#endif // __WINDOWS__
 
 #include "imgui/imgui.h"
 #include "Core/Version.h"
