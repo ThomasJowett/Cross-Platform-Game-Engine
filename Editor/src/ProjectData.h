@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "cereal/cereal.hpp"
+
 struct ProjectData
 {
 	std::string DefaultScene;

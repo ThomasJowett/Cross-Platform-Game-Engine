@@ -2,7 +2,7 @@
 
 #include "Core/Layer.h"
 
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 
 #include "ProjectData.h"
 

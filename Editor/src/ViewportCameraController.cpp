@@ -89,7 +89,7 @@ void ViewportCameraController::OnMouseWheel(float mouseWheel)
 	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 	{
 		float ln = 10.0f * log(m_TranslationSpeed);
-		m_TranslationSpeed = std::clamp(exp(0.1f * (ln + mouseWheel)), FLT_MIN, 1000.0f);
+		m_TranslationSpeed = std::clamp((float)exp(0.1f * (ln + mouseWheel)), FLT_MIN, 1000.0f);
 
 		if (m_TranslationSpeed < 0.0f)
 			m_TranslationSpeed = FLT_MIN;

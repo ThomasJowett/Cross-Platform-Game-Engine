@@ -224,7 +224,7 @@ void glfwWindow::Init(const WindowProps& props)
 		PROFILE_SCOPE("glfw init");
 		ENGINE_INFO("Initializing GLFW");
 		int success = glfwInit();
-		CORE_ASSERT(success, "Could not initialize GLFW!");
+		CORE_ASSERT(success == GLFW_TRUE, "Could not initialize GLFW!");
 		glfwSetErrorCallback(GLFWErrorCallback);
 	}
 
