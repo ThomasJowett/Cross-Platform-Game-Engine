@@ -11,15 +11,15 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 
 ## Project Generation
 #### Windows
- For Visual studio, run the batch files `ProGen_vs2019.bat` or `ProGen_vs2017.bat`
+ For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2017.bat`
  #### Mac
- For Xcode, run the shell script `ProGen_Xcode.sh`
+ For Xcode, run the shell script `Progen_Xcode.sh`
 #### Linux
 First install libx11-dev by opening a console window and running 
 `sudo apt-get install -y libx11-dev`, `sudo apt-get install xserver-xorg-input-all`, `sudo apt-get install -y libxrandr-dev`, `sudo apt-get install -y libxi-dev`, `sudo apt-get install -y libxinerama-dev`, `sudo apt-get install -y libgl1-mesa-dev` and `sudo apt-get install -y libxcursor-dev`.
-Then make the premake5 file executable by running `chmod +x /vendor/bin/premake/premake5`.
-Then make the shell script executable by running `chmod +x ProGen_gmake.sh`.
-Then run the shell script with `./ProGen_gmake.sh`.
+Then make the premake5 file executable by running `chmod +x vendor/bin/premake/premake5`.
+Then make the shell script executable by running `chmod +x Progen_gmake.sh`.
+Then run the shell script with `./Progen_gmake.sh`.
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 * [Entt](https://github.com/skypjack/entt) : Fast and reliable entity-component system (ECS) 
