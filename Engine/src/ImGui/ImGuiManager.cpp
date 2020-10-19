@@ -6,14 +6,14 @@
 #include "Renderer/RendererAPI.h"
 
 #include "imgui.h"
-#include "examples/imgui_impl_glfw.h"
-#include "examples/imgui_impl_opengl3.h"
+#include "imgui/backends/imgui_impl_glfw.h"
+#include "imgui/backends/imgui_impl_opengl3.h"
 
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #include "Platform/DirectX/DirectX11Context.h"
-#include "examples/imgui_impl_dx11.h"
-#include "examples/imgui_impl_win32.h"
+#include "imgui/backends/imgui_impl_dx11.h"
+#include "imgui/backends/imgui_impl_win32.h"
 
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
