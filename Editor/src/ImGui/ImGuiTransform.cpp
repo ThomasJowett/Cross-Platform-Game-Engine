@@ -5,23 +5,21 @@
 
 #include "Engine.h"
 
-bool ImGui::Transform(Matrix4x4& transform)
+bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 {
 	bool edited = false;
-	Vector3f position = transform.ExtractTranslation();
-	Vector3f rotation = transform.ExtractRotation().EulerAngles();
-	Vector3f scale = transform.ExtractScale();//TODO: fix extract scale
-
-	//Vector3f position;
-	//Vector3f rotation;
-	//Vector3f scale;
-
-	//transform.Decompose(position, rotation, scale);
-	//scale = Vector3f(1,1,1);
 
 	ImGui::Text("Position");
 	float width = ImGui::GetContentRegionAvailWidth();
+
+	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
+	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
+
 	ImGui::TextColored({ 245,0,0,255 }, "X");
+	//ImGui::PushStyleColor(ImGuiCol_Button, { 225,0,0,255 });
+	//if (ImGui::Button("X", buttonSize))
+	//	position.x = 0.0f;
+	//ImGui::PopStyleColor();
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##posX", &position.x, 0.1f))
@@ -42,25 +40,27 @@ bool ImGui::Transform(Matrix4x4& transform)
 		edited = true;
 
 	//--------------------------------------
+
+	Vector3f rotationDegrees(RadToDeg(rotation.x), RadToDeg(rotation.y), RadToDeg(rotation.z));
 	ImGui::Text("Rotation");
 	ImGui::TextColored({ 245,0,0,255 }, "X");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::InputFloat("##rotX", &rotation.x, 0.1f))
+	if (ImGui::DragFloat("##rotX", &rotationDegrees.x, 0.1f))
 		edited = true;
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,245,0,255 }, "Y");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::InputFloat("##RotY", &rotation.y, 0.1f))
+	if (ImGui::DragFloat("##RotY", &rotationDegrees.y, 0.1f))
 		edited = true;
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,0,245,255 }, "Z");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::InputFloat("##RotZ", &rotation.z, 0.1f))
+	if (ImGui::DragFloat("##RotZ", &rotationDegrees.z, 0.1f))
 		edited = true;
 
 	//--------------------------------------
@@ -90,9 +90,7 @@ bool ImGui::Transform(Matrix4x4& transform)
 
 	if (edited)
 	{
-		//transform.Recompose(position, rotation, scale);
-
-		transform = Matrix4x4::Translate(position) * Matrix4x4::Rotate(rotation) * Matrix4x4::Scale(scale);
+		rotation = {(float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z)};
 		SceneManager::s_CurrentScene->MakeDirty();
 	}
 

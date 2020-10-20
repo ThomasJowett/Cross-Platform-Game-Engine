@@ -68,11 +68,11 @@ void Scene::OnUpdate(float deltaTime)
 	Matrix4x4 projection;
 
 	m_Registry.view<TransformComponent, CameraComponent>().each(
-		[&]([[maybe_unused]] const auto cameraEntity, const auto& transform, const auto& cameraComp)
+		[&]([[maybe_unused]] const auto cameraEntity, const auto& transformComp, const auto& cameraComp)
 		{
 			if (cameraComp.Primary)
 			{
-				view = transform;
+				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
 				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}
@@ -81,8 +81,10 @@ void Scene::OnUpdate(float deltaTime)
 	Renderer::BeginScene(view, projection);
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transform)
+		[](const auto& mesh, const auto& transformComp)
 		{
+			//Matrix4x4 transform = Matrix4x4::Compose(transformComp.Position, transformComp.Rotation, transformComp.Scale);
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
 			Renderer::Submit(mesh.material, mesh.Geometry, transform);
 		});
 
@@ -91,8 +93,9 @@ void Scene::OnUpdate(float deltaTime)
 	Renderer2D::BeginScene(orthoCamera);
 
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transform)
+		[](const auto& sprite, const auto& transformComp)
 		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawQuad(transform, sprite.Tint);
 		});
 

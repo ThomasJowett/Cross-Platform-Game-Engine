@@ -101,9 +101,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
 		{
-			auto& transform = entity.GetComponent<TransformComponent>().Transform;
+			auto& transform = entity.GetComponent<TransformComponent>();
 
-			ImGui::Transform(transform);
+			ImGui::Transform(transform.Position, transform.Rotation, transform.Scale);
 
 			ImGui::TreePop();
 		}
