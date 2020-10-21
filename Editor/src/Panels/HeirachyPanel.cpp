@@ -42,6 +42,14 @@ void HeirachyPanel::OnImGuiRender()
 			m_SelectedEntity = {};
 		}
 
+		// right click on a blank space
+		if (ImGui::BeginPopupContextWindow(0, 1, false))
+		{
+			if (ImGui::MenuItem("Create Empty Entity"))
+				SceneManager::s_CurrentScene->CreateEntity("New Entity");//TODO: make all the entities have a unique name
+			ImGui::EndPopup();
+		}
+
 		if (SceneManager::s_CurrentScene != nullptr)
 		{
 			if (ImGui::TreeNodeEx(SceneManager::s_CurrentScene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
@@ -68,22 +76,30 @@ void HeirachyPanel::DrawNode(Entity entity)
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
 
-	if (ImGui::BeginPopupContextItem("Object Context Menu"))
-	{
-		if (ImGui::MenuItem("Delete"))
-		{
-			SceneManager::s_CurrentScene->RemoveEntity(entity);
-		}
-		ImGui::EndPopup();
-	}
-
 	if (ImGui::IsItemClicked())
 	{
 		m_SelectedEntity = entity;
 	}
 
+	bool entityDeleted = false;
+	if (ImGui::BeginPopupContextItem(std::string("Entity Context Menu" + tag).c_str()))
+	{
+		if (ImGui::MenuItem("Delete Entity"))
+		{
+			entityDeleted = true;
+		}
+		ImGui::EndPopup();
+	}
+
 	if (opened)
 	{
 		ImGui::TreePop();
+	}
+
+	if (entityDeleted)
+	{
+		if (m_SelectedEntity == entity)
+			m_SelectedEntity = {};
+		SceneManager::s_CurrentScene->RemoveEntity(entity);
 	}
 }

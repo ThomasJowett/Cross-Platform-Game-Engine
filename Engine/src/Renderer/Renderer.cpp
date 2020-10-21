@@ -57,6 +57,10 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform)
 {
 	Ref<Shader> shader = material.GetShader();
+
+	if (!shader)
+		return;
+
 	shader->Bind();
 	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);

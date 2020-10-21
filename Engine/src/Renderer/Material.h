@@ -6,6 +6,7 @@
 class Material
 {
 public:
+	Material() = default;
 	Material(Ref<Shader> shader, Colour tint = Colours::WHITE);
 
 	const Ref<Shader> GetShader() const { return m_Shader; };

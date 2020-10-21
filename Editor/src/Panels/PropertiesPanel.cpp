@@ -112,14 +112,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Sprite--------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<SpriteComponent>())
 	{
+		bool deleteComponent = false;
+
 		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_IMAGE" Sprite"))
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				if (ImGui::MenuItem("Delete"))
 				{
-					entity.RemoveComponent<SpriteComponent>();
-					return;
+					deleteComponent = true;
 				}
 
 				ImGui::EndPopup();
@@ -136,19 +137,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+
+		if (deleteComponent)
+			entity.RemoveComponent<SpriteComponent>();
 	}
 
 	//Static Mesh------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<StaticMeshComponent>())
 	{
+		bool deleteComponent = false;
 		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_SHAPES" Static Mesh"))
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				if (ImGui::MenuItem("Delete"))
 				{
-					entity.RemoveComponent<StaticMeshComponent>();
-					return;
+					deleteComponent = true;
 				}
 
 				ImGui::EndPopup();
@@ -157,19 +161,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+
+		if (deleteComponent)
+			entity.RemoveComponent<StaticMeshComponent>();
 	}
 
 	//Native Script------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<NativeScriptComponent>())
 	{
+		bool deleteComponent = false;
 		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_FILE_CODE" Native Script"))
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				if (ImGui::MenuItem("Delete"))
 				{
-					entity.RemoveComponent<NativeScriptComponent>();
-					return;
+					deleteComponent = true;
 				}
 
 				ImGui::EndPopup();
@@ -180,19 +187,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+		if (deleteComponent)
+			entity.RemoveComponent<NativeScriptComponent>();
 	}
 
 	//Camera------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<CameraComponent>())
 	{
+		bool deleteComponent = false;
 		if (ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_VIDEO" Camera"))
 		{
 			if (ImGui::BeginPopupContextItem())
 			{
 				if (ImGui::MenuItem("Delete"))
 				{
-					entity.RemoveComponent<CameraComponent>();
-					return;//TODO: fix this from breaking
+					deleteComponent = true;
 				}
 
 				ImGui::EndPopup();
@@ -286,6 +295,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			ImGui::TreePop();
 		}
+
+		if (deleteComponent)
+			entity.RemoveComponent<CameraComponent>();
 	}
 }
 
@@ -301,20 +313,11 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 
 	if (ImGui::BeginPopup("Components"))
 	{
+		AddComponentMenuItem<CameraComponent>("Camera", entity);
+		AddComponentMenuItem<SpriteComponent>("Sprite", entity);
+		AddComponentMenuItem<StaticMeshComponent>("Static Mesh", entity);
 
-		if (ImGui::MenuItem("Camera", nullptr, nullptr, !entity.HasComponent<CameraComponent>()))
-		{
-			entity.AddComponent<CameraComponent>();
-		}
-		if (ImGui::MenuItem("Sprite", nullptr, nullptr, !entity.HasComponent<SpriteComponent>()))
-		{
-			entity.AddComponent<SpriteComponent>();
-		}
-		//if (ImGui::MenuItem("Static Mesh", nullptr, nullptr, !entity.HasComponent<StaticMeshComponent>()))
-		//{
-		//	entity.AddComponent<StaticMeshComponent>();
-		//}
-		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>()))
+		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{
 			for (auto&& [key, value] : *Factory<ScriptableEntity>::GetMap())
 			{

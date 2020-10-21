@@ -16,6 +16,16 @@ public:
 private:
 	void DrawComponents(Entity entity);
 	void DrawAddComponent(Entity entity);
+
+	template<typename T>
+	void AddComponentMenuItem(const char* name, Entity entity)
+	{
+		if (ImGui::MenuItem(name, nullptr, nullptr, !entity.HasComponent<T>()))
+		{
+			entity.AddComponent<T>();
+		}
+	}
+
 private:
 	bool* m_Show;
 

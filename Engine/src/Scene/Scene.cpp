@@ -35,8 +35,7 @@ bool Scene::RemoveEntity(const Entity& entity)
 {
 	if (entity.BelongsToScene(this))
 	{
-		//TODO: remove entitys from registry
-		ENGINE_DEBUG("Could not remove entity because the function is not implemented!");
+		m_Registry.destroy(entity);
 	}
 	m_Dirty = true;
 	return false;
