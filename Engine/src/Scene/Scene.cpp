@@ -166,14 +166,14 @@ void Scene::Save(bool binary)
 	Save(Application::GetOpenDocumentDirectory() / m_Filepath, binary);
 }
 
-void Scene::Load(bool binary)
+bool Scene::Load(bool binary)
 {
 	std::filesystem::path filepath = Application::GetOpenDocumentDirectory() / m_Filepath;
 
 	if (!std::filesystem::exists(filepath))
 	{
 		ENGINE_ERROR("File not found {0}", filepath);
-		return;
+		return false;
 	}
 
 	if (binary)
@@ -195,8 +195,10 @@ void Scene::Load(bool binary)
 		catch (const std::exception& ex)
 		{
 			ENGINE_ERROR("Failed to load scene. Exception thrown: {0}", ex.what());
+			return false;
 		}
 	}
 
 	m_Dirty = false;
+	return true;
 }

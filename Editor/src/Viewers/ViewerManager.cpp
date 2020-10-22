@@ -94,12 +94,16 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 
 	if (strcmp(ext, ".scene") == 0)
 	{
-		if (SceneManager::s_CurrentScene->IsDirty())
+		if (SceneManager::s_CurrentScene)
 		{
-			SceneManager::s_CurrentScene->Save(false);
+			if (SceneManager::s_CurrentScene->IsDirty())
+			{
+				SceneManager::s_CurrentScene->Save(false);
+			}
 		}
 
 		SceneManager::s_CurrentScene = CreateScope<Scene>(assetPath);
-		SceneManager::s_CurrentScene->Load();
+		if (!SceneManager::s_CurrentScene->Load())
+			SceneManager::s_CurrentScene = nullptr;
 	}
 }

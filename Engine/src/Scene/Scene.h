@@ -24,7 +24,7 @@ public:
 
 	virtual void Save(bool binary = false);
 	virtual void Save(std::filesystem::path filepath, bool binary = false);
-	virtual void Load(bool binary = false);
+	virtual bool Load(bool binary = false);
 
 	void MakeDirty() { m_Dirty = true; }
 	bool IsDirty() { return m_Dirty; }
