@@ -52,7 +52,10 @@ void HeirachyPanel::OnImGuiRender()
 
 		if (SceneManager::s_CurrentScene != nullptr)
 		{
-			if (ImGui::TreeNodeEx(SceneManager::s_CurrentScene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen))
+			if (ImGui::TreeNodeEx(SceneManager::s_CurrentScene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
+				| ImGuiTreeNodeFlags_SpanAvailWidth 
+				| ImGuiTreeNodeFlags_Bullet
+				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
 			{
 				SceneManager::s_CurrentScene->GetRegistry().each([&](auto entityID)
 					{
@@ -71,7 +74,7 @@ void HeirachyPanel::OnImGuiRender()
 void HeirachyPanel::DrawNode(Entity entity)
 {
 	auto& tag = entity.GetComponent<TagComponent>().Tag;
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());

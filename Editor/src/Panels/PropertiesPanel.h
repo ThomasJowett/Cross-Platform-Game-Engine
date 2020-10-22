@@ -18,11 +18,45 @@ private:
 	void DrawAddComponent(Entity entity);
 
 	template<typename T>
-	void AddComponentMenuItem(const char* name, Entity entity)
+	static void AddComponentMenuItem(const char* name, Entity entity)
 	{
 		if (ImGui::MenuItem(name, nullptr, nullptr, !entity.HasComponent<T>()))
 		{
 			entity.AddComponent<T>();
+		}
+	}
+
+	template<typename T, typename UIFunction>
+	static void DrawComponent(const char* name, Entity entity, UIFunction uifunction, bool deletable = true)
+	{
+		if (entity.HasComponent<T>())
+		{
+			bool deleteComponent = false;
+
+			if (ImGui::TreeNodeEx((void*)typeid(T).hash_code(), ImGuiTreeNodeFlags_DefaultOpen | ImGuiTreeNodeFlags_Framed | ImGuiTreeNodeFlags_FramePadding, name))
+			{
+				if (deletable)
+				{
+					if (ImGui::BeginPopupContextItem())
+					{
+						if (ImGui::MenuItem("Delete"))
+						{
+							deleteComponent = true;
+						}
+
+						ImGui::EndPopup();
+					}
+				}
+
+				auto& component = entity.GetComponent<T>();
+
+				uifunction(component);
+
+				ImGui::TreePop();
+			}
+
+			if (deleteComponent)
+				entity.RemoveComponent<T>();
 		}
 	}
 

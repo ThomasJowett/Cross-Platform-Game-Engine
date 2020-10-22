@@ -97,117 +97,40 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	}
 
 	//Transform------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<TransformComponent>())
-	{
-		if (ImGui::TreeNodeEx((void*)typeid(TransformComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, "Transform"))
+	DrawComponent<TransformComponent>("Transform", entity, [](auto& transform) 
 		{
-			auto& transform = entity.GetComponent<TransformComponent>();
+			ImGui::Transform(transform.Position, transform.Rotation, transform.Scale); 
+		}, false);
 
-			ImGui::Transform(transform.Position, transform.Rotation, transform.Scale);
-
-			ImGui::TreePop();
-		}
-	}
 
 	//Sprite--------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<SpriteComponent>())
-	{
-		bool deleteComponent = false;
-
-		if (ImGui::TreeNodeEx((void*)typeid(SpriteComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_IMAGE" Sprite"))
+	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [](auto& sprite)
 		{
-			if (ImGui::BeginPopupContextItem())
-			{
-				if (ImGui::MenuItem("Delete"))
-				{
-					deleteComponent = true;
-				}
-
-				ImGui::EndPopup();
-			}
-
-			auto& sprite = entity.GetComponent<SpriteComponent>();
-
 			float* tint[4] = { &sprite.Tint.r, &sprite.Tint.g, &sprite.Tint.b, &sprite.Tint.a };
 
 			if (ImGui::ColorEdit4("Tint", tint[0]))
 			{
 				SceneManager::s_CurrentScene->MakeDirty();
 			}
-
-			ImGui::TreePop();
-		}
-
-		if (deleteComponent)
-			entity.RemoveComponent<SpriteComponent>();
-	}
+		});
 
 	//Static Mesh------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<StaticMeshComponent>())
-	{
-		bool deleteComponent = false;
-		if (ImGui::TreeNodeEx((void*)typeid(StaticMeshComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_SHAPES" Static Mesh"))
+	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [](auto& staticMesh)
 		{
-			if (ImGui::BeginPopupContextItem())
-			{
-				if (ImGui::MenuItem("Delete"))
-				{
-					deleteComponent = true;
-				}
+			//TODO: create static mesh properties
 
-				ImGui::EndPopup();
-			}
-			auto& mesh = entity.GetComponent<StaticMeshComponent>();
-
-			ImGui::TreePop();
-		}
-
-		if (deleteComponent)
-			entity.RemoveComponent<StaticMeshComponent>();
-	}
+			/* static mesh properties */
+		});
 
 	//Native Script------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<NativeScriptComponent>())
-	{
-		bool deleteComponent = false;
-		if (ImGui::TreeNodeEx((void*)typeid(NativeScriptComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_FILE_CODE" Native Script"))
+	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
 		{
-			if (ImGui::BeginPopupContextItem())
-			{
-				if (ImGui::MenuItem("Delete"))
-				{
-					deleteComponent = true;
-				}
-
-				ImGui::EndPopup();
-			}
-			auto& script = entity.GetComponent<NativeScriptComponent>();
-
 			ImGui::Text("%s", script.Name.c_str());
-
-			ImGui::TreePop();
-		}
-		if (deleteComponent)
-			entity.RemoveComponent<NativeScriptComponent>();
-	}
+		});
 
 	//Camera------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<CameraComponent>())
-	{
-		bool deleteComponent = false;
-		if (ImGui::TreeNodeEx((void*)typeid(CameraComponent).hash_code(), ImGuiTreeNodeFlags_DefaultOpen, ICON_FA_VIDEO" Camera"))
+	DrawComponent<CameraComponent>(ICON_FA_VIDEO" Camera", entity, [](auto& cameraComp)
 		{
-			if (ImGui::BeginPopupContextItem())
-			{
-				if (ImGui::MenuItem("Delete"))
-				{
-					deleteComponent = true;
-				}
-
-				ImGui::EndPopup();
-			}
-
-			auto& cameraComp = entity.GetComponent<CameraComponent>();
 			auto& camera = cameraComp.Camera;
 
 			ImGui::Checkbox("Primary", &cameraComp.Primary);
@@ -292,13 +215,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				break;
 			}
 			}
-
-			ImGui::TreePop();
-		}
-
-		if (deleteComponent)
-			entity.RemoveComponent<CameraComponent>();
-	}
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
