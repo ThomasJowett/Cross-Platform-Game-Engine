@@ -8,7 +8,7 @@
 
 #include "Styles/EditorStyles.h"
 
-#include "ImGui/ImGuiConsole.h"
+#include "Panels/ConsolePanel.h"
 
 #include "IconsFontAwesome5.h"
 
@@ -77,7 +77,7 @@ void EditorPreferencesPanel::OnAttach()
 
 	style = m_Style;
 
-	ImGuiConsole::SetDarkTheme(style.Colors[ImGuiCol_WindowBg].x + style.Colors[ImGuiCol_WindowBg].y + style.Colors[ImGuiCol_WindowBg].z < 1.5f);
+	ConsolePanel::SetDarkTheme(style.Colors[ImGuiCol_WindowBg].x + style.Colors[ImGuiCol_WindowBg].y + style.Colors[ImGuiCol_WindowBg].z < 1.5f);
 }
 
 void EditorPreferencesPanel::OnDetach()
@@ -267,7 +267,7 @@ bool EditorPreferencesPanel::ShowStyleSelector()
 		case 6: isDarkTheme = EditorStyles::Emerald(); break;
 		case 7: isDarkTheme = EditorStyles::Ochre(); break;
 		}
-		ImGuiConsole::SetDarkTheme(isDarkTheme);
+		ConsolePanel::SetDarkTheme(isDarkTheme);
 		return true;
 	}
 	return false;

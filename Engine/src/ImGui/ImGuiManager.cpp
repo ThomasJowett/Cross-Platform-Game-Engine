@@ -19,8 +19,6 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // __WINDOWS__
 
-#include "ImGuiConsole.h"
-
 #include "Renderer/Texture.h"
 
 //TEMPORARY

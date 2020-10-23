@@ -11,7 +11,6 @@
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
 
-#include "ImGui/ImGuiConsole.h"
 
 #include "Panels/ContentExplorerPanel.h"
 #include "Panels/JoystickInfoPanel.h"
@@ -21,6 +20,7 @@
 #include "Panels/ViewportPanel.h"
 #include "Panels/HeirachyPanel.h"
 #include "Panels/PropertiesPanel.h"
+#include "Panels/ConsolePanel.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
@@ -95,7 +95,7 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
 	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
 	Application::Get().AddOverlay(m_ContentExplorer);
-	Application::Get().AddOverlay(new ImGuiConsole(&m_ShowConsole));
+	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
 	HeirachyPanel* heirachyPanel = new HeirachyPanel(&m_ShowHierachy);
 	Application::Get().AddOverlay(heirachyPanel);

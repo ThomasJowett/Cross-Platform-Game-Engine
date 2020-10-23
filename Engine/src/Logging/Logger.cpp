@@ -4,8 +4,9 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 #include <spdlog/sinks/basic_file_sink.h>
-#include <ImGui/ImGuiConsoleSink.h>
 #include <spdlog/sinks/msvc_sink.h>
+
+#include "InternalConsoleSink.h"
 
 #include "Core/Application.h"	
 
@@ -19,7 +20,7 @@ void Logger::Init()
 	std::vector<spdlog::sink_ptr>logSinks;
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());					// std::cout
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::basic_file_sink_mt>(logFilename, true));	// file
-	logSinks.emplace_back(std::make_shared<ImGuiConsoleSink_mt>());									// ImGuiConsole
+	logSinks.emplace_back(std::make_shared<InternalConsoleSink_mt>());								// InternalConsole
 #ifdef _MSC_VER
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::msvc_sink_mt>());							// msvc output
 	logSinks[3]->set_pattern("%n: %v");

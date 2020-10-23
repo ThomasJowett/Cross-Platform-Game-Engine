@@ -4,8 +4,6 @@
 #include "Events/KeyEvent.h"
 #include "Events/ApplicationEvent.h"
 
-#include "ImGuiConsole.h"
-
 class ImGuiManager
 {
 public:

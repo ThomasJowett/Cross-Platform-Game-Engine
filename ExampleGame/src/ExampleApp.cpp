@@ -2,7 +2,6 @@
 #include "ExampleLayer3D.h"
 #include "MonteCarloLayer.h"
 #include "GridLayer.h"
-#include "ImGui/ImGuiConsole.h"
 #include "ExampleApp.h"
 
 ExampleGame::ExampleGame(const WindowProps& props)
@@ -15,8 +14,6 @@ ExampleGame::ExampleGame(const WindowProps& props)
 	PushLayer(new ExampleLayer3D());
 	PushLayer(new ExampleLayer2D());
 	//PushLayer(new MonteCarloLayer());
-	static bool showConsole = true;
-	PushOverlay(new ImGuiConsole(&showConsole));
 	
 
 	//Application::GetWindow().SetIcon("resources/Circle.png");

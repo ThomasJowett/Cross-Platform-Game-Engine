@@ -1,7 +1,5 @@
 #include "EditorStyles.h"
 
-#include "ImGui/ImGuiConsole.h"
-
 ImVec4 ImLerp(const ImVec4& a, const ImVec4& b, float t) { return ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t); }
 ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs) { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
 
@@ -65,7 +63,6 @@ bool EditorStyles::Phthalo()
 
 bool EditorStyles::Majorelle()
 {
-	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.00f, 0.00f, 0.00f, 1.00f);
@@ -124,7 +121,6 @@ bool EditorStyles::Majorelle()
 
 bool EditorStyles::Cherry()
 {
-	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.860f, 0.930f, 0.890f, 0.78f);
@@ -177,7 +173,6 @@ bool EditorStyles::Cherry()
 
 bool EditorStyles::Xiketic()
 {
-	ImGuiConsole::SetDarkTheme(true);
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
 	colors[ImGuiCol_Text] = ImVec4(0.90f, 0.90f, 0.90f, 0.90f);
