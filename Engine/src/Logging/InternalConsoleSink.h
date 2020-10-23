@@ -1,6 +1,5 @@
 #pragma once
 #include "spdlog/sinks/base_sink.h"
-//#include "ImGuiConsole.h"
 #include <mutex>
 #include <vector>
 
@@ -37,23 +36,6 @@ protected:
 	}
 
 private:
-	/*static ImGuiConsole::Message::Level GetMessageLevel(const spdlog::level::level_enum level)
-	{
-		switch (level)
-		{
-		case spdlog::level::level_enum::trace: return ImGuiConsole::Message::Level::Trace;
-		case spdlog::level::level_enum::debug:return ImGuiConsole::Message::Level::Debug;
-		case spdlog::level::level_enum::info:return ImGuiConsole::Message::Level::Info;
-		case spdlog::level::level_enum::warn:return ImGuiConsole::Message::Level::Warn;
-		case spdlog::level::level_enum::err:return ImGuiConsole::Message::Level::Error;
-		case spdlog::level::level_enum::critical:return ImGuiConsole::Message::Level::Critical;
-		case spdlog::level::level_enum::off:return ImGuiConsole::Message::Level::Off;
-		default:
-			break;
-		}
-
-		return ImGuiConsole::Message::Level::Invalid;
-	}*/
 
 	void AddMessage(const std::string& message, spdlog::level::level_enum level)
 	{
