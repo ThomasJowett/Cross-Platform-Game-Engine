@@ -212,9 +212,9 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 void ContentExplorerPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
-	auto shift = io.KeyShift;
-	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
-	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+	bool shift = io.KeyShift;
+	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
+	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
 	if (ImGui::IsWindowFocused())
 	{

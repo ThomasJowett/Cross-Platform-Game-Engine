@@ -118,16 +118,21 @@ void ScriptView::OnImGuiRender()
 				ImGui::EndMenu();
 			}
 
-			//if (ImGui::BeginMenu("View"))
-			//{
-			//	if (ImGui::MenuItem("Dark palette"))
-			//		m_TextEditor.SetPalette(TextEditor::GetDarkPalette());
-			//	if (ImGui::MenuItem("Light palette"))
-			//		m_TextEditor.SetPalette(TextEditor::GetLightPalette());
-			//	if (ImGui::MenuItem("Retro blue Palette"))
-			//		m_TextEditor.SetPalette(TextEditor::GetRetroBluePalette());
-			//	ImGui::EndMenu();
-			//}
+			if (ImGui::BeginMenu("View"))
+			{
+				bool showWhiteSpace = m_TextEditor.IsShowingWhitespaces();
+				if (ImGui::MenuItem("Show white Space", "", &showWhiteSpace))
+				{
+					m_TextEditor.SetShowWhitespaces(showWhiteSpace);
+				}
+
+				bool colourize = m_TextEditor.IsColorizerEnabled();
+				if (ImGui::MenuItem("Colourize Text", "", &colourize))
+				{
+					m_TextEditor.SetColorizerEnable(colourize);
+				}
+				ImGui::EndMenu();
+			}
 		}
 		ImGui::EndMenuBar();
 

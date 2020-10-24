@@ -5,14 +5,14 @@
 #include "IconsFontAwesome5.h"
 
 #include "FileSystem/FileDialog.h"
-#include "MainDockSpace.h"
 
 #include "ProjectData.h"
 #include "cereal/archives/json.hpp"
 
-ProjectsStartScreen::ProjectsStartScreen()
+ProjectsStartScreen::ProjectsStartScreen(bool createProject)
+	:m_CreateProject(createProject)
 {
-	m_CreateProject = false;
+	m_CanGoBack = !createProject;
 }
 
 void ProjectsStartScreen::OnImGuiRender()
@@ -63,16 +63,32 @@ void ProjectsStartScreen::OnImGuiRender()
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
-				OpenProject(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0"));
+				const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0");
+				if (!fileToOpen.empty())
+					OpenProject(fileToOpen);
 			}
 		}
 		else
 		{
 			ImGui::Text("Select Template...");
-			ImGui::SameLine(0.0f, (float)(popupSizeX - 185));
-			if (ImGui::Button(ICON_FA_LONG_ARROW_ALT_LEFT" Back"))
+			if (m_CanGoBack)
 			{
-				m_CreateProject = false;
+				ImGui::SameLine(0.0f, (float)(popupSizeX - 185));
+				if (ImGui::Button(ICON_FA_LONG_ARROW_ALT_LEFT" Back"))
+				{
+					m_CreateProject = false;
+				}
+			}
+			else
+			{
+				ImGui::SameLine(0.0f, (float)(popupSizeX - 190));
+				if (ImGui::Button(ICON_FA_WINDOW_CLOSE" Cancel"))
+				{
+					ImGui::CloseCurrentPopup();
+					Application::Get().RemoveOverlay(this);
+					ImGui::EndPopup();
+					return;
+				}
 			}
 			ImGui::Separator();
 

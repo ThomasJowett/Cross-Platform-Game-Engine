@@ -24,6 +24,8 @@ public:
 private:
 	void OpenProject(const std::filesystem::path& filename);
 	bool OnOpenProject(AppOpenDocumentChange& event);
+
+	void HandleKeyBoardInputs();
 private:
 	bool m_Show;
 

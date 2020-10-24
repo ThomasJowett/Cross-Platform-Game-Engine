@@ -35,7 +35,7 @@ private:
 	void ImGuiRenderHeader();
 	void ImGuiRenderSettings();
 	void ImGuiRenderMessages();
-	void RenderMessage(const InternalConsoleSink_mt::Message& message);
+	void RenderMessage(const InternalConsole::Message& message);
 
 	Level GetMessageLevel(spdlog::level::level_enum level);
 

@@ -121,10 +121,10 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 {
 	PROFILE_FUNCTION();
 
-	ENGINE_INFO("Saving Scene {0} to {1}", m_SceneName, m_Filepath.string());
-
 	std::filesystem::path finalPath = filepath;
 	finalPath.replace_extension(".scene");
+
+	ENGINE_INFO("Saving Scene {0} to {1}", m_SceneName, finalPath.string());
 
 	if (!std::filesystem::exists(finalPath))
 	{

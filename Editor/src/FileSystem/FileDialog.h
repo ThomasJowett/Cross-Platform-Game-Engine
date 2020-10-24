@@ -22,7 +22,8 @@ static std::wstring FileDialog(const wchar_t* title = L"Open...", const wchar_t*
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST;
+	ofn.nFilterIndex = 1;
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
 	if (!GetOpenFileName(&ofn))
 	{
@@ -48,7 +49,6 @@ static std::wstring FileDialog(const wchar_t* title = L"Open...", const wchar_t*
 	}
 
 	return std::wstring(filename);
-	//return std::string(ws.begin(), ws.end());
 #endif // __WINDOWS__
 
 	return std::wstring();
@@ -70,7 +70,7 @@ static std::vector<std::wstring> MultiFileDialog(const wchar_t* title = L"Open..
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
-	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER;
+	ofn.Flags = OFN_DONTADDTORECENT | OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER | OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
 	if (!GetOpenFileName(&ofn))
 	{

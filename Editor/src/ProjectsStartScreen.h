@@ -6,7 +6,7 @@ class ProjectsStartScreen
 	:public Layer
 {
 public:
-	explicit ProjectsStartScreen();
+	explicit ProjectsStartScreen(bool createProject = false);
 	~ProjectsStartScreen() = default;
 
 	void OnImGuiRender() override;
@@ -17,6 +17,7 @@ private:
 	void OpenProject(const std::filesystem::path& projectPath);
 private:
 	bool m_CreateProject;
+	bool m_CanGoBack;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
 };

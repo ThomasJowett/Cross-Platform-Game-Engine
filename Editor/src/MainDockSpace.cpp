@@ -11,6 +11,7 @@
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
 
+#include "ProjectsStartScreen.h"
 
 #include "Panels/ContentExplorerPanel.h"
 #include "Panels/JoystickInfoPanel.h"
@@ -180,6 +181,8 @@ void MainDockSpace::OnImGuiRender()
 	if (opt_fullscreen)
 		ImGui::PopStyleVar(2);
 
+	HandleKeyBoardInputs();
+
 	// DockSpace
 	ImGuiIO& io = ImGui::GetIO();
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
@@ -196,18 +199,19 @@ void MainDockSpace::OnImGuiRender()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFoccusedPanel);
-
-			bool saveable = iSave != nullptr;
-
 			if (ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
 			{
 				m_ContentExplorer->CreateNewScene();
 			}
-			ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N", nullptr, false);
-			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project", "Ctrl + O"))
+			if (ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N"))
 			{
-				Application::Get().SetOpenDocument(FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0"));
+				Application::Get().AddOverlay(new ProjectsStartScreen(true));
+			}
+			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
+			{
+				const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+				if (!fileToOpen.empty())
+					Application::Get().SetOpenDocument(fileToOpen);
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
@@ -220,8 +224,6 @@ void MainDockSpace::OnImGuiRender()
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, saveable))
-				iSave->Save();
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::s_CurrentScene != nullptr))
 			{
 				SceneManager::s_CurrentScene->Save(false);
@@ -324,7 +326,7 @@ void MainDockSpace::OnImGuiRender()
 		}
 
 		ImGui::EndMenuBar();
-	}
+			}
 
 	if (about) ImGui::OpenPopup("About");
 
@@ -349,19 +351,19 @@ void MainDockSpace::OnImGuiRender()
 	//}
 
 	//ImGui::End();
-}
+		}
 
 
 
 void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 {
-	
+
 	ENGINE_INFO("Opened Project: {0}", filename.string());
 
 	m_ContentExplorer->SwitchTo(filename);
 
 	std::ifstream file(filename);
-	
+
 	cereal::JSONInputArchive input(file);
 	ProjectData data;
 	input(data);
@@ -376,4 +378,31 @@ bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)
 	OpenProject(Application::Get().GetOpenDocument());
 
 	return false;
+}
+
+void MainDockSpace::HandleKeyBoardInputs()
+{
+	ImGuiIO& io = ImGui::GetIO();
+	bool shift = io.KeyShift;
+	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
+	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+
+	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
+	{
+		SceneManager::s_CurrentScene->Save(false);
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('N'))
+	{
+		m_ContentExplorer->CreateNewScene();
+	}
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed('N'))
+	{
+		Application::Get().AddOverlay(new ProjectsStartScreen(true));
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('O'))
+	{
+		const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+		if (!fileToOpen.empty())
+			Application::Get().SetOpenDocument(fileToOpen);
+	}
 }

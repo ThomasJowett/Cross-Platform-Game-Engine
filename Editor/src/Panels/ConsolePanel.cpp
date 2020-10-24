@@ -4,14 +4,16 @@
 #include "ImGui/ImGuiUtilites.h"
 #include "imgui/imgui.h"
 
+#include "IconsFontAwesome5.h"
+
 bool ConsolePanel::s_DarkTheme = false;
 
 void ConsolePanel::Clear()
 {
-	/*for (auto message = s_MessageBuffer.begin(); message != s_MessageBuffer.end(); message++)
-		(*message) = std::make_shared<Message>();
+	InternalConsole::s_MessageBuffer.clear();
+	InternalConsole::s_MessageBuffer.resize(InternalConsole::s_MessageBufferCapacity);
 
-	s_MessageBufferBegin = 0;*/
+	InternalConsole::s_MessageBufferBegin = 0;
 }
 
 void ConsolePanel::SetDarkTheme(bool darktheme)
@@ -24,7 +26,7 @@ void ConsolePanel::OnImGuiRender()
 	if (*m_Show)
 	{
 		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-		ImGui::Begin("Console", m_Show);
+		ImGui::Begin(ICON_FA_TERMINAL" Console", m_Show);
 		{
 			ImGuiRenderHeader();
 			ImGui::Separator();
@@ -145,18 +147,18 @@ void ConsolePanel::ImGuiRenderMessages()
 	{
 		ImGui::SetWindowFontScale(m_DisplayScale);
 
-		auto messageStart = InternalConsoleSink_mt::s_MessageBuffer.begin() + InternalConsoleSink_mt::s_MessageBufferBegin;
-		if (InternalConsoleSink_mt::s_MessageBufferBegin == 0)// If contains old message here
-			for (auto message : InternalConsoleSink_mt::s_MessageBuffer)
+		auto messageStart = InternalConsole::s_MessageBuffer.begin() + InternalConsole::s_MessageBufferBegin;
+		if (InternalConsole::s_MessageBufferBegin == 0)// If contains old message here
+			for (auto message : InternalConsole::s_MessageBuffer)
 				RenderMessage(message);
-		if (InternalConsoleSink_mt::s_MessageBufferBegin != 0) // Skipped first message in vector
-			for (auto message = InternalConsoleSink_mt::s_MessageBuffer.begin(); message != messageStart; message++)
+		if (InternalConsole::s_MessageBufferBegin != 0) // Skipped first message in vector
+			for (auto message = InternalConsole::s_MessageBuffer.begin(); message != messageStart; message++)
 				RenderMessage(*message);
-				
-		if (m_AllowScrollingToBottom && m_LastBufferSize < InternalConsoleSink_mt::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
+
+		if (m_AllowScrollingToBottom && m_LastBufferSize < InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
 		{
 			ImGui::SetScrollY(ImGui::GetScrollMaxY());
-			m_LastBufferSize = InternalConsoleSink_mt::s_MessageBufferSize;
+			m_LastBufferSize = InternalConsole::s_MessageBufferSize;
 		}
 	}
 	ImGui::EndChild();
@@ -173,14 +175,14 @@ std::vector<ConsolePanel::Level> ConsolePanel::s_Levels
 	ConsolePanel::Level::Off
 };
 
-void ConsolePanel::RenderMessage(const InternalConsoleSink_mt::Message& message)
+void ConsolePanel::RenderMessage(const InternalConsole::Message& message)
 {
 	Level level = GetMessageLevel(message.second);
-		if (level != Level::Invalid && level >= m_LevelFilter && m_TextFilter->PassFilter(message.first.c_str()))
-		{
-			Colour colour = GetRenderColour(level);
-			ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", message.first.c_str());
-		}
+	if (level != Level::Invalid && level >= m_LevelFilter && m_TextFilter->PassFilter(message.first.c_str()))
+	{
+		Colour colour = GetRenderColour(level);
+		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", message.first.c_str());
+	}
 }
 
 ConsolePanel::Level ConsolePanel::GetMessageLevel(spdlog::level::level_enum level)

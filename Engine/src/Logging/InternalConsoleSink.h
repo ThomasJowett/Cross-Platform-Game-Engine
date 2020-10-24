@@ -3,27 +3,30 @@
 #include <mutex>
 #include <vector>
 
-template<class Mutex>
-class InternalConsoleSink : public spdlog::sinks::base_sink<std::mutex>
+class InternalConsole
 {
 public:
 	using Message = std::pair<std::string, spdlog::level::level_enum>;
-
-	explicit InternalConsoleSink()
-	{
-	}
-
-	InternalConsoleSink(const InternalConsoleSink&) = delete;
-	InternalConsoleSink& operator=(const InternalConsoleSink&) = delete;
-	virtual ~InternalConsoleSink() = default;
-
-public:
 	static uint16_t s_MessageBufferCapacity;
 	static uint16_t s_MessageBufferSize;
 	static uint16_t s_MessageBufferBegin;
 	static std::vector<Message> s_MessageBuffer;
+};
+
+template <class Mutex>
+class InternalConsoleSink : public spdlog::sinks::base_sink<std::mutex>
+{
+public:
+	explicit InternalConsoleSink()
+	{
+	}
+
+	InternalConsoleSink(const InternalConsoleSink &) = delete;
+	InternalConsoleSink &operator=(const InternalConsoleSink &) = delete;
+	virtual ~InternalConsoleSink() = default;
+
 protected:
-	void sink_it_(const spdlog::details::log_msg& msg) override
+	void sink_it_(const spdlog::details::log_msg &msg) override
 	{
 		spdlog::memory_buf_t formatted;
 		base_sink<Mutex>::formatter_->format(msg, formatted);
@@ -36,18 +39,16 @@ protected:
 	}
 
 private:
-
-	void AddMessage(const std::string& message, spdlog::level::level_enum level)
+	void AddMessage(const std::string &message, spdlog::level::level_enum level)
 	{
-		*(s_MessageBuffer.begin() + s_MessageBufferBegin) = std::make_pair(message, level);
-		if (++s_MessageBufferBegin == s_MessageBufferCapacity)
-			s_MessageBufferBegin = 0;
-		if (s_MessageBufferSize < s_MessageBufferCapacity)
-			s_MessageBufferSize++;
+		*(InternalConsole::s_MessageBuffer.begin() + InternalConsole::s_MessageBufferBegin) = std::make_pair(message, level);
+		if (++InternalConsole::s_MessageBufferBegin == InternalConsole::s_MessageBufferCapacity)
+			InternalConsole::s_MessageBufferBegin = 0;
+		if (InternalConsole::s_MessageBufferSize < InternalConsole::s_MessageBufferCapacity)
+			InternalConsole::s_MessageBufferSize++;
 	}
-private:
 
+private:
 };
 
 using InternalConsoleSink_mt = InternalConsoleSink<std::mutex>;
-
