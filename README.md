@@ -15,7 +15,8 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
  #### Mac
  For Xcode, run the shell script `Progen_Xcode.sh`
 #### Linux
-First install libx11-dev by opening a console window and running 
+First install x11-apps by running `sudo apt install x11-apps`.
+Then if needed install libx11-dev by opening a console window and running 
 `sudo apt-get install -y libx11-dev`, `sudo apt-get install xserver-xorg-input-all`, `sudo apt-get install -y libxrandr-dev`, `sudo apt-get install -y libxi-dev`, `sudo apt-get install -y libxinerama-dev`, `sudo apt-get install -y libgl1-mesa-dev` and `sudo apt-get install -y libxcursor-dev`.
 Then make the premake5 file executable by running `chmod +x vendor/bin/premake/premake5`.
 Then make the shell script executable by running `chmod +x Progen_gmake.sh`.
