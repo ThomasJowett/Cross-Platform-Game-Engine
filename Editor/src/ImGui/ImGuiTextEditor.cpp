@@ -9,6 +9,30 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui.h" // for imGui::GetCurrentWindow()
 
+TextEditor::Palette TextEditor::sPaletteBase({ 
+	0xff7f7f7f,	// Default
+	0xffd69c56,	// Keyword	
+	0xff00ff00,	// Number
+	0xff7070e0,	// String
+	0xff70a0e0, // Char literal
+	0xffffffff, // Punctuation
+	0xff408080,	// Preprocessor
+	0xffaaaaaa, // Identifier
+	0xff9bc64d, // Known identifier
+	0xffc040a0, // Preproc identifier
+	0xff206020, // Comment (single line)
+	0xff406020, // Comment (multi line)
+	0xff101010, // Background
+	0xffe0e0e0, // Cursor
+	0x80a06020, // Selection
+	0x800020ff, // ErrorMarker
+	0x40f08000, // Breakpoint
+	0xff707000, // Line number
+	0x40000000, // Current line fill
+	0x40808080, // Current line fill (inactive)
+	0x40a0a0a0 // Current line edge)
+	});
+
 // TODO
 // - multiline comments vs single-line: latter is blocking start of a ML
 
@@ -50,7 +74,7 @@ TextEditor::TextEditor()
 	, mShowWhitespaces(true)
 	, mStartTime(std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count())
 {
-	SetPalette(GetDarkPalette());
+	//SetPalette(GetDarkPalette());
 	SetLanguageDefinition(LanguageDefinition::HLSL());
 	mLines.push_back(Line());
 }
@@ -72,7 +96,7 @@ void TextEditor::SetLanguageDefinition(const LanguageDefinition& aLanguageDef)
 
 void TextEditor::SetPalette(const Palette& aValue)
 {
-	mPaletteBase = aValue;
+	sPaletteBase = aValue;
 }
 
 std::string TextEditor::GetText(const Coordinates& aStart, const Coordinates& aEnd) const
@@ -871,7 +895,7 @@ void TextEditor::Render()
 	/* Update palette with the current alpha from style */
 	for (int i = 0; i < (int)PaletteIndex::Max; ++i)
 	{
-		auto color = ImGui::ColorConvertU32ToFloat4(mPaletteBase[i]);
+		auto color = ImGui::ColorConvertU32ToFloat4(sPaletteBase[i]);
 		color.w *= ImGui::GetStyle().Alpha;
 		mPalette[i] = ImGui::ColorConvertFloat4ToU32(color);
 	}

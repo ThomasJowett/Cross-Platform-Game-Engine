@@ -133,7 +133,7 @@ public:
 		return stream.str();
 	}
 
-	int HexValue()
+	uint32_t HexValue()
 	{
 		int red = (int)(r * 255);
 		int green = (int)(g * 255);

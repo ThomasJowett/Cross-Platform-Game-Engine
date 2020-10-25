@@ -20,9 +20,28 @@ void ContentExplorerPanel::Paste()
 	{
 		auto target = m_CurrentPath / path.filename();
 
+		if (std::filesystem::exists(target))
+		{
+			int suffix = 1;
+			std::string extenstion = target.extension().string();
+
+			std::filesystem::path targetNoExt = target;
+			targetNoExt.replace_extension("");
+
+			std::filesystem::path temp = targetNoExt.string() + "- Copy" + extenstion;
+
+			while (std::filesystem::exists(temp))
+			{
+				suffix++;
+				temp = targetNoExt.string() + "- Copy (" + std::to_string(suffix) + ')' + extenstion;
+			}
+
+			target = temp;
+		}
+
 		try
 		{
-			std::filesystem::copy_file(path, target, std::filesystem::copy_options::overwrite_existing);
+			std::filesystem::copy_file(path, target, std::filesystem::copy_options::skip_existing);
 		}
 		catch (std::exception& e)
 		{
@@ -34,6 +53,8 @@ void ContentExplorerPanel::Paste()
 
 void ContentExplorerPanel::Duplicate()
 {
+	Copy();
+	Paste();
 }
 
 void ContentExplorerPanel::Delete()
@@ -93,8 +114,15 @@ bool ContentExplorerPanel::Rename()
 	if (ImGui::InputText("##RenameBox", inputBuffer, sizeof(inputBuffer),
 		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 	{
-		std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / inputBuffer);
-		m_ForceRescan = true;
+		if (!std::filesystem::exists(m_CurrentPath / inputBuffer))
+		{
+			std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / inputBuffer);
+			m_ForceRescan = true;
+		}
+		else
+		{
+			CLIENT_ERROR("Could not name folder: Folder already exists!");
+		}
 
 		ImGui::CloseCurrentPopup();
 		hasFocus = false;
@@ -183,7 +211,7 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 			numLinesThatFit = 1;
 		approxNumEntriesPerColumn = numLinesThatFit;
 	}
-	m_NumBrowsingColumns = (int)std::ceil((float)(m_TotalNumBrowsingEntries /approxNumEntriesPerColumn));
+	m_NumBrowsingColumns = (int)std::ceil((float)(m_TotalNumBrowsingEntries / approxNumEntriesPerColumn));
 
 	if (m_NumBrowsingColumns <= 0)
 	{
@@ -239,7 +267,7 @@ void ContentExplorerPanel::RightClickMenu()
 {
 	ImGuiStyle* style = &ImGui::GetStyle();
 
-	ImGui::PushStyleColor(ImGuiCol_Button,ImVec4(0,0,0,0));
+	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
 	if (ImGui::BeginMenu("New"))
@@ -264,7 +292,7 @@ void ContentExplorerPanel::RightClickMenu()
 			m_ForceRescan = true;
 
 			ImGui::OpenPopup("Rename");
-			
+
 
 			m_CurrentSelectedPath = newFolderName;
 		}
@@ -293,26 +321,17 @@ void ContentExplorerPanel::RightClickMenu()
 		m_ForceRescan = true;
 	}
 	ImGui::Separator();
-	if (ImGui::MenuItem("Cut"))
+	if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
 		Cut();
-	if (ImGui::MenuItem("Copy"))
+	if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 		Copy();
-	if (ImGui::MenuItem("Paste"))
+	if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
 		Paste();
-	if (ImGui::MenuItem("Duplicate"))
+	if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 		Duplicate();
-	if (ImGui::MenuItem("Delete"))
+	if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
 		Delete();
-	ImGui::Separator();
-	if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
-	{
-		ImGui::OpenPopup("Rename");
-	}
-	if (ImGui::BeginPopup("Rename"))
-	{
-		Rename();
-		ImGui::EndPopup();
-	}
+
 	ImGui::PopStyleColor();
 	ImGui::PopStyleVar(2);
 }
@@ -393,17 +412,13 @@ void ContentExplorerPanel::OnImGuiRender()
 		HandleKeyboardInputs();
 		//HandleMouseInputs();
 
-		if (ImGui::IsWindowHovered())
-		{
-			if (ImGui::IsMouseClicked(1))
-				ImGui::OpenPopup("Right click menu");
-		}
-		if (ImGui::BeginPopup("Right click menu"))
+		if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
 		{
 			RightClickMenu();
 			ImGui::EndPopup();
 		}
-		ImGui::SetNextWindowPos(m_CurrentSelectedPosition);
+
+		//ImGui::SetNextWindowPos(m_CurrentSelectedPosition);
 		if (ImGui::BeginPopup("Rename"))
 		{
 			Rename();
@@ -683,13 +698,74 @@ void ContentExplorerPanel::OnImGuiRender()
 			{
 				for (int i = 0; i < m_Dirs.size(); i++)
 				{
-					std::string dirName = SplitString(m_Dirs[i].string(), '\\').back();
-					if (ImGui::SmallButton(dirName.c_str()))
+					std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), '\\').back();
+					if (ImGui::Selectable(dirName.c_str(), m_SelectedDirs[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
-						//change dirctory on click
-						m_History.SwitchTo(m_Dirs[i]);
-						m_CurrentPath = *m_History.GetCurrentFolder();
-						m_ForceRescan = true;
+						if (!ImGui::GetIO().KeyCtrl)
+						{
+							m_SelectedDirs.clear();
+							m_SelectedDirs.resize(m_Dirs.size());
+
+							m_SelectedDirs[i] = true;
+
+							m_NumberSelected = 1;
+							m_CurrentSelectedPath = m_Dirs[i];
+						}
+						else
+						{
+							m_NumberSelected -= m_SelectedDirs[i];
+							m_SelectedDirs[i] = !m_SelectedDirs[i];
+
+							m_NumberSelected += m_SelectedDirs[i];
+						}
+
+						if (ImGui::IsMouseDoubleClicked(0))
+						{
+							//change dirctory on click
+							m_History.SwitchTo(m_Dirs[i]);
+							m_CurrentPath = *m_History.GetCurrentFolder();
+							m_ForceRescan = true;
+						}
+
+					}
+
+					if (ImGui::BeginPopupContextItem(dirName.c_str()))
+					{
+						if (!m_SelectedDirs[i])
+						{
+							m_SelectedDirs.clear();
+							m_SelectedDirs.resize(m_Dirs.size());
+
+							m_SelectedDirs[i] = true;
+
+							m_NumberSelected = 1;
+						}
+
+						m_CurrentSelectedPath = m_Dirs[i];
+
+						if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+						{
+							ImGui::OpenPopup("Rename");
+						}
+						if (ImGui::BeginPopup("Rename"))
+						{
+							Rename();
+							ImGui::EndPopup();
+						}
+
+						ImGui::Separator();
+
+						if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+							Cut();
+						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
+							Copy();
+						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
+							Paste();
+						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
+							Duplicate();
+						if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
+							Delete();
+						ImGui::EndPopup();
 					}
 					++cntEntries;
 					//TODO:: switch on view zoom
@@ -714,7 +790,9 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					ImGui::BeginGroup();
 
-					if (ImGui::Selectable(m_Files[i].filename().string().c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
+					std::string filename = ICON_FA_FILE " " + m_Files[i].filename().string();
+
+					if (ImGui::Selectable(filename.c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
 						if (!ImGui::GetIO().KeyCtrl)
 						{
@@ -748,6 +826,48 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
+					if (ImGui::BeginPopupContextItem(filename.c_str()))
+					{
+						// if the file that this context menu is for is not selected then select it and unselect all that is selected
+						if (!m_SelectedFiles[i])
+						{
+							m_SelectedFiles.clear();
+							m_SelectedFiles.resize(m_Files.size());
+
+							m_SelectedFiles[i] = true;
+
+							m_NumberSelected = 1;
+						}
+
+						m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+						m_CurrentSelectedPath = m_Files[i];
+
+						if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+						{
+							ImGui::OpenPopup("Rename");
+						}
+						if (ImGui::BeginPopup("Rename"))
+						{
+							Rename();
+							ImGui::EndPopup();
+						}
+
+						ImGui::Separator();
+
+						if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+							Cut();
+						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
+							Copy();
+						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
+							Paste();
+						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
+							Duplicate();
+						if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
+							Delete();
+
+						ImGui::EndPopup();
+					}
+
 					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 					{
 						ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
@@ -756,8 +876,11 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					ImGui::EndGroup();
 
-					ImGui::SameLine(std::max(ImGui::CalcTextSize(m_Files[i].filename().string().c_str()).x + 15, 300.0f));
-					ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
+					if (!m_ForceRescan)
+					{
+						ImGui::SameLine(std::max(ImGui::CalcTextSize(m_Files[i].filename().string().c_str()).x + 15, 300.0f));
+						ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
+					}
 
 					++cntEntries;
 					//TODO:: switch on view zoom
@@ -787,4 +910,5 @@ void ContentExplorerPanel::Copy()
 
 void ContentExplorerPanel::Cut()
 {
+	CLIENT_ERROR("ContentExplorerPanel::Cut() Function not implemented!");
 }
