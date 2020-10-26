@@ -8,7 +8,7 @@ void OpenGLMessageCallback(unsigned source, unsigned type, unsigned id, unsigned
 {
 	if (type == GL_DEBUG_TYPE_ERROR)
 	{
-		ENGINE_ERROR("GL CALLBACK: {0} type = 0x{1} severity = 0x{2} message = {3}", type, severity, message);
+		ENGINE_ERROR("GL CALLBACK: type = 0x{0} severity = 0x{1} message = {2}", std::to_string(type), std::to_string(severity), std::string(message));
 	}
 	else
 	{
@@ -28,7 +28,7 @@ bool OpenGLRendererAPI::Init()
 	glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DEBUG_SEVERITY_NOTIFICATION, 0, NULL, GL_FALSE);
 #endif // DEBUG
 
-	glPolygonMode(GL_FRONT, GL_FILL);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);

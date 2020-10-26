@@ -332,8 +332,14 @@ void MainDockSpace::OnImGuiRender()
 
 	if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		ImGui::Text("Version: "); ImGui::SameLine(); ImGui::Text(VERSION);
-		ImGui::Text("Built on: "); ImGui::SameLine(); ImGui::Text(__DATE__);
+		ImGui::Text("Version: %i.%i.%i", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+		ImGui::Text("Built on: %s", __DATE__);
+		ImGui::Separator();
+		ImGui::Text("Dear ImGui version: %s", ImGui::GetVersion());
+		ImGui::Text("spg log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
+		ImGui::Text("cereal version: %i.%i.%i", CEREAL_VERSION_MAJOR, CEREAL_VERSION_MINOR, CEREAL_VERSION_PATCH);
+		ImGui::Text("Simple ini version: 4.17");
+		ImGui::Text("entt version: 3.5.2");
 		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 		ImGui::EndPopup();
 	}

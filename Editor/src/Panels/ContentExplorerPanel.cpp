@@ -60,7 +60,7 @@ void ContentExplorerPanel::Duplicate()
 void ContentExplorerPanel::Delete()
 {
 	if (m_NumberSelected == 1)
-		std::filesystem::remove(m_CurrentSelectedPath);
+		std::filesystem::remove_all(m_CurrentSelectedPath);
 	else
 	{
 		for (size_t i = 0; i < m_SelectedFiles.size(); i++)
@@ -72,7 +72,7 @@ void ContentExplorerPanel::Delete()
 		for (size_t i = 0; i < m_SelectedDirs.size(); i++)
 		{
 			if (m_SelectedDirs[i])
-				std::filesystem::remove(m_Dirs[i]);
+				std::filesystem::remove_all(m_Dirs[i]);
 		}
 	}
 
@@ -325,7 +325,7 @@ void ContentExplorerPanel::RightClickMenu()
 		Cut();
 	if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 		Copy();
-	if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
 		Paste();
 	if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 		Duplicate();
@@ -759,7 +759,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							Cut();
 						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 							Copy();
-						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
+						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
 							Paste();
 						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 							Duplicate();
@@ -858,7 +858,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							Cut();
 						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 							Copy();
-						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_NumberSelected > 0))
+						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
 							Paste();
 						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 							Duplicate();
