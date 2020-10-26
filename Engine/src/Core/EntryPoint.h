@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 
 	if (input.CmdOptionExists("-v") || input.CmdOptionExists("--version"))
 	{
-		std::cout << VERSION << std::endl;
+		std::cout << VERSION_MAJOR << '.' << VERSION_MINOR << '.' << VERSION_PATCH << std::endl;
 		return EXIT_SUCCESS;
 	}
 
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 		}
 	}
 
-	ENGINE_INFO("Engine Version: {0}", VERSION);
+	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
 	Application* app = CreateApplication();
 	
