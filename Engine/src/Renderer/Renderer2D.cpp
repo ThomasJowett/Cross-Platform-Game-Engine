@@ -187,7 +187,7 @@ void Renderer2D::BeginScene(const Camera& camera)
 	StartBatch();
 }
 
-void Renderer2D::BegineScene(const Matrix4x4& view, const Matrix4x4& projection)
+void Renderer2D::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
 	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);

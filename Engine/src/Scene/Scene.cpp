@@ -60,9 +60,6 @@ void Scene::OnUpdate(float deltaTime)
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
 
-	Camera orthoCamera;
-	Camera perspectiveCamera;
-
 	Matrix4x4 view;
 	Matrix4x4 projection;
 
@@ -89,7 +86,7 @@ void Scene::OnUpdate(float deltaTime)
 
 	Renderer::EndScene();
 
-	Renderer2D::BeginScene(orthoCamera);
+	Renderer2D::BeginScene(view, projection);
 
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 		[](const auto& sprite, const auto& transformComp)

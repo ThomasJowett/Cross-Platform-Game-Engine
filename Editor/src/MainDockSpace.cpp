@@ -326,7 +326,7 @@ void MainDockSpace::OnImGuiRender()
 		}
 
 		ImGui::EndMenuBar();
-			}
+	}
 
 	if (about) ImGui::OpenPopup("About");
 
@@ -357,7 +357,7 @@ void MainDockSpace::OnImGuiRender()
 	//}
 
 	//ImGui::End();
-		}
+}
 
 
 
