@@ -182,7 +182,7 @@ void Renderer2D::BeginScene(const Camera& camera)
 	PROFILE_FUNCTION();
 	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
 	s_Data.QuadShader->Bind();
-	s_Data.QuadShader->SetMat4("u_ViewProjection", camera.GetViewProjectionMatrix(), true);
+	s_Data.QuadShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 
 	StartBatch();
 }
@@ -192,7 +192,7 @@ void Renderer2D::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
 	PROFILE_FUNCTION();
 	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
 	s_Data.QuadShader->Bind();
-	s_Data.QuadShader->SetMat4("u_Projection", s_Data.ViewProjectionMatrix, true);
+	s_Data.QuadShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 
 	StartBatch();
 }
