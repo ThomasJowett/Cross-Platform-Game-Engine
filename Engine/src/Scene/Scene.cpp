@@ -76,6 +76,14 @@ void Scene::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(view, projection);
 
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawQuad(transform, sprite.Tint);
+		});
+
+
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
 		{
@@ -84,17 +92,6 @@ void Scene::OnUpdate(float deltaTime)
 		});
 
 	Renderer::EndScene();
-
-	Renderer2D::BeginScene(view, projection);
-
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawQuad(transform, sprite.Tint);
-		});
-
-	Renderer2D::EndScene();
 }
 
 void Scene::OnViewportResize(uint32_t width, uint32_t height)

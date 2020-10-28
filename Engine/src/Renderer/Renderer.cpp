@@ -32,10 +32,12 @@ void Renderer::BeginScene(const Camera& camera)
 void Renderer::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
 {
 	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
+	Renderer2D::BeginScene(view, projection);
 }
 
 void Renderer::EndScene()
 {
+	Renderer2D::EndScene();
 	//TODO: frustum culling
 	//TODO: sort the opaque objects front to back
 	//TODO: sort the transparent objects back to front

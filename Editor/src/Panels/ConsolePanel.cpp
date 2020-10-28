@@ -3,7 +3,7 @@
 
 #include "ImGui/ImGuiUtilites.h"
 #include "imgui/imgui.h"
-
+#include "Fonts/Fonts.h"
 #include "IconsFontAwesome5.h"
 
 bool ConsolePanel::s_DarkTheme = false;
@@ -30,7 +30,11 @@ void ConsolePanel::OnImGuiRender()
 		{
 			ImGuiRenderHeader();
 			ImGui::Separator();
+			ImGui::PushFont(Fonts::Consolas);
+			ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 1.0f));
 			ImGuiRenderMessages();
+			ImGui::PopFont();
+			ImGui::PopStyleVar();
 		}
 		ImGui::End();
 	}
@@ -181,7 +185,9 @@ void ConsolePanel::RenderMessage(const InternalConsole::Message& message)
 	if (level != Level::Invalid && level >= m_LevelFilter && m_TextFilter->PassFilter(message.first.c_str()))
 	{
 		Colour colour = GetRenderColour(level);
+		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ImGui::GetContentRegionAvailWidth());
 		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", message.first.c_str());
+		ImGui::PopTextWrapPos();
 	}
 }
 

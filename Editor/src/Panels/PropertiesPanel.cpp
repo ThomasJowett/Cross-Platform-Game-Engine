@@ -215,6 +215,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				break;
 			}
 			}
+
+			ImGui::Text("%s", camera.GetProjectionMatrix().to_string().c_str());
 		});
 }
 
