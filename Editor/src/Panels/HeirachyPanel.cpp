@@ -160,7 +160,7 @@ void HeirachyPanel::DrawNode(Entity entity)
 	}
 
 	bool entityDeleted = false;
-	if (ImGui::BeginPopupContextItem(std::string(tag.c_str() + std::to_string(entity)).c_str()))
+	if (ImGui::BeginPopupContextItem(std::string(tag.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
 		if (ImGui::MenuItem("Delete Entity"))
 		{
