@@ -19,7 +19,7 @@ public:
 
 	virtual void OnImGuiRender() override;
 
-	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFoccusedPanel = focussedPanel; }
+	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFocusedPanel = focussedPanel; }
 
 private:
 	void OpenProject(const std::filesystem::path& filename);
@@ -37,7 +37,7 @@ private:
 	bool m_ShowErrorList;
 	bool m_ShowTaskList;
 	bool m_ShowProperties;
-	bool m_ShowHierachy;
+	bool m_ShowHierarchy;
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
 
@@ -50,7 +50,7 @@ private:
 	bool m_ShowSaveOpenToolbar;
 	bool m_ShowTargetPlatformToolbar;
 
-	static Layer* s_CurrentlyFoccusedPanel;
+	static Layer* s_CurrentlyFocusedPanel;
 
 	ContentExplorerPanel* m_ContentExplorer;
 

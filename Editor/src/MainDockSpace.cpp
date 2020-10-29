@@ -34,7 +34,7 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
-Layer* MainDockSpace::s_CurrentlyFoccusedPanel;
+Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
 MainDockSpace::MainDockSpace()
 	:Layer("Dockspace")
@@ -48,7 +48,7 @@ MainDockSpace::MainDockSpace()
 	m_ShowErrorList = false;
 	m_ShowTaskList = false;
 	m_ShowProperties = true;
-	m_ShowHierachy = true;
+	m_ShowHierarchy = true;
 	m_ShowContentExplorer = true;
 	m_ShowJoystickInfo = true;
 
@@ -74,7 +74,7 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "Console", m_ShowConsole);
 	Settings::SetDefaultBool("Windows", "ContentExplorer", m_ShowContentExplorer);
 	Settings::SetDefaultBool("Windows", "JoystickInfo", m_ShowJoystickInfo);
-	Settings::SetDefaultBool("Windows", "Hierachy", m_ShowHierachy);
+	Settings::SetDefaultBool("Windows", "Hierarchy", m_ShowHierarchy);
 	Settings::SetDefaultBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
@@ -88,7 +88,7 @@ void MainDockSpace::OnAttach()
 	m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
-	m_ShowHierachy = Settings::GetBool("Windows", "Hierachy");
+	m_ShowHierarchy = Settings::GetBool("Windows", "Hierarchy");
 
 	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
@@ -98,7 +98,7 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	HeirachyPanel* heirachyPanel = new HeirachyPanel(&m_ShowHierachy);
+	HeirachyPanel* heirachyPanel = new HeirachyPanel(&m_ShowHierarchy);
 	Application::Get().AddOverlay(heirachyPanel);
 	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, heirachyPanel));
 
@@ -127,7 +127,7 @@ void MainDockSpace::OnDetach()
 	Settings::SetBool("Windows", "Console", m_ShowConsole);
 	Settings::SetBool("Windows", "ContentExplorer", m_ShowContentExplorer);
 	Settings::SetBool("Windows", "JoystickInfo", m_ShowJoystickInfo);
-	Settings::SetBool("Windows", "Hierachy", m_ShowHierachy);
+	Settings::SetBool("Windows", "Hierarchy", m_ShowHierarchy);
 	Settings::SetBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetBool("Windows", "ErrorList", m_ShowErrorList);
 
@@ -171,7 +171,7 @@ void MainDockSpace::OnImGuiRender()
 
 	// Important: note that we proceed even if Begin() returns false (aka window is collapsed).
 	// This is because we want to keep our DockSpace() active. If a DockSpace() is inactive, 
-	// all active windows docked into it will lose their parent and become undocked.
+	// all active windows docked into it will lose their parent and become un-docked.
 	// We cannot preserve the docking relationship between an active window and an inactive docking, otherwise 
 	// any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
@@ -234,14 +234,14 @@ void MainDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Edit"))
 		{
-			ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFoccusedPanel);
+			ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel);
 
 			bool copyable = false;
 
 			if (iCopy != nullptr)
 				copyable = !iCopy->IsReadOnly();
 
-			IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFoccusedPanel);
+			IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel);
 
 			bool undoable = false, redoable = false;
 			if (iUndo != nullptr)
@@ -277,10 +277,10 @@ void MainDockSpace::OnImGuiRender()
 		if (ImGui::BeginMenu("Window"))
 		{
 			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);
-			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierachy);
+			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierarchy);
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
-			ImGui::MenuItem(ICON_FA_TERMINAL" Conosole", "", &m_ShowConsole);
+			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
 			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
 			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Tasklist ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
