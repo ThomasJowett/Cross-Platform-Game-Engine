@@ -184,7 +184,7 @@ void ViewportPanel::Copy()
 void ViewportPanel::Cut()
 {
 	// TODO: viewport cut
-	CLIENT_DEBUG("Cutted");
+	CLIENT_DEBUG("Cut");
 
 	SceneManager::s_CurrentScene->MakeDirty();
 }
@@ -224,7 +224,7 @@ bool ViewportPanel::HasSelection() const
 
 bool ViewportPanel::CanUndo() const
 {
-	//TODO: viewport undolist
+	//TODO: viewport undo list
 	return false;
 }
 

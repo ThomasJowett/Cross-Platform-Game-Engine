@@ -141,9 +141,9 @@ void OBJImporter::InsertTangentsIntoArray()
 Vector3f OBJImporter::CalculateTangent(Vector3f pos0, Vector3f pos1, Vector3f pos2, Vector2f tex0, Vector2f tex1, Vector2f tex2)
 {
 	//using Eric Lengyel's approach with a few modifications
-	//from Mathematics for 3D Game Programmming and Computer Graphics
-	// want to be able to trasform a vector in Object Space to Tangent Space
-	// such that the x-axis cooresponds to the 's' direction and the
+	//from Mathematics for 3D Game Programming and Computer Graphics
+	// want to be able to transform a vector in Object Space to Tangent Space
+	// such that the x-axis corresponds to the 's' direction and the
 	// y-axis corresponds to the 't' direction, and the z-axis corresponds
 	// to <0,0,1>, straight up out of the texture map
 
@@ -160,7 +160,7 @@ Vector3f OBJImporter::CalculateTangent(Vector3f pos0, Vector3f pos1, Vector3f po
 	// Q = s2*T + t2*B
 	// for T and B
 
-	//this is a linear system with six unknowns and six equatinos, for TxTyTz BxByBz
+	//this is a linear system with six unknowns and six equations, for TxTyTz BxByBz
 	//[px,py,pz] = [s1,t1] * [Tx,Ty,Tz]
 	// qx,qy,qz     s2,t2     Bx,By,Bz
 
@@ -168,7 +168,7 @@ Vector3f OBJImporter::CalculateTangent(Vector3f pos0, Vector3f pos1, Vector3f po
 	//[Tx,Ty,Tz] = 1/(s1t2-s2t1) *  [t2,-t1] * [px,py,pz]
 	// Bx,By,Bz                      -s2,s1	    qx,qy,qz  
 
-	//solve this for the unormalized T and B to get from tangent to object space
+	//solve this for the normalized T and B to get from tangent to object space
 
 	float tmp = 0.0f;
 	if (fabsf(s1 * t2 - s2 * t1) <= 0.0001f)

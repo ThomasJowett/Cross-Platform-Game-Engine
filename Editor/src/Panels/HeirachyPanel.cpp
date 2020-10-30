@@ -8,7 +8,7 @@
 #include "Utilities/GeometryGenerator.h"
 
 HeirachyPanel::HeirachyPanel(bool* show)
-	:m_Show(show), Layer("Heirachy")
+	:m_Show(show), Layer("Hierarchy")
 {
 }
 
@@ -32,7 +32,7 @@ void HeirachyPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(40, 40), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(ICON_FA_SITEMAP" Heirachy", m_Show))
+	if (ImGui::Begin(ICON_FA_SITEMAP" Hierarchy", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{

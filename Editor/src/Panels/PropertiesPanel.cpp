@@ -166,7 +166,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			case SceneCamera::ProjectionType::perspective:
 			{
 				float fov = (float)RadToDeg(camera.GetVerticalFov());
-				if (ImGui::DragFloat("Fov", &fov, 1.0f, 1.0f, 180.0f))
+				if (ImGui::DragFloat("FOV", &fov, 1.0f, 1.0f, 180.0f))
 				{
 					camera.SetVerticalFov((float)DegToRad(fov));
 					SceneManager::s_CurrentScene->MakeDirty();
@@ -199,14 +199,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 
 				float nearClip = camera.GetOrthoNear();
-				if (ImGui::DragFloat("Near Clip##Ortho", &nearClip))
+				if (ImGui::DragFloat("Near Clip##Orthographic", &nearClip))
 				{
 					camera.SetOrthoNear(nearClip);
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
 
 				float farClip = camera.GetOrthoFar();
-				if (ImGui::DragFloat("Far Clip##Ortho", &farClip))
+				if (ImGui::DragFloat("Far Clip##Orthographic", &farClip))
 				{
 					camera.SetOrthoFar(farClip);
 					SceneManager::s_CurrentScene->MakeDirty();

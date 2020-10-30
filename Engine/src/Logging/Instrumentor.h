@@ -143,7 +143,7 @@ private:
 		{
 			if (m_CurrentSession->Name != name)
 			{
-				ENGINE_WARN("Attempting to end session \"{0}\" but does not macth current session \"{1}\"", name, m_CurrentSession->Name);
+				ENGINE_WARN("Attempting to end session \"{0}\" but does not match current session \"{1}\"", name, m_CurrentSession->Name);
 			}
 			WriteFooter();
 			m_OutputStream.close();

@@ -3,7 +3,7 @@
 #include "behaviorTree.h"
 
 //Wait for the specified time when executed
-class Wait : public BehaviorTree::Leaf
+class Wait : public BehaviourTree::Leaf
 {
 public:
 	Wait(float waitTime)

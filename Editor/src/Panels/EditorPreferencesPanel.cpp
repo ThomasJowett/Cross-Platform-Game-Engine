@@ -147,20 +147,20 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			ImGui::EndTabItem();
 		}
 
-		if (ImGui::BeginTabItem("Colors"))
+		if (ImGui::BeginTabItem("Colours"))
 		{
 			static int output_dest = 0;
 			static bool output_only_modified = true;
 			
 			static ImGuiTextFilter filter;
-			filter.Draw("Filter colors", ImGui::GetFontSize() * 16);
+			filter.Draw("Filter colours", ImGui::GetFontSize() * 16);
 
 			static ImGuiColorEditFlags alpha_flags = 0;
 			if (ImGui::RadioButton("Opaque", alpha_flags == ImGuiColorEditFlags_None)) { alpha_flags = ImGuiColorEditFlags_None; } ImGui::SameLine();
 			if (ImGui::RadioButton("Alpha", alpha_flags == ImGuiColorEditFlags_AlphaPreview)) { alpha_flags = ImGuiColorEditFlags_AlphaPreview; } ImGui::SameLine();
 			if (ImGui::RadioButton("Both", alpha_flags == ImGuiColorEditFlags_AlphaPreviewHalf)) { alpha_flags = ImGuiColorEditFlags_AlphaPreviewHalf; }
 
-			ImGui::BeginChild("##colors", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+			ImGui::BeginChild("##colours", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
 			ImGui::PushItemWidth(-160);
 			for (int i = 0; i < ImGuiCol_COUNT; i++)
 			{
@@ -168,14 +168,14 @@ void EditorPreferencesPanel::ShowStyleEditor()
 				if (!filter.PassFilter(name))
 					continue;
 				ImGui::PushID(i);
-				ImGui::ColorEdit4("##color", (float*)&style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
-				//if (memcmp(&style.Colors[i], &ref->Colors[i], sizeof(ImVec4)) != 0)
+				ImGui::ColorEdit4("##colour", (float*)&style.Colors[i], ImGuiColorEditFlags_AlphaBar | alpha_flags);
+				//if (memcmp(&style.Colors[i], &ref->Colours[i], sizeof(ImVec4)) != 0)
 				//{
 				//	// Tips: in a real user application, you may want to merge and use an icon font into the main font,
 				//	// so instead of "Save"/"Revert" you'd use icons!
 				//	// Read the FAQ and docs/FONTS.txt about using icon fonts. It's really easy and super convenient!
-				//	ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) { ref->Colors[i] = style.Colors[i]; }
-				//	ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) { style.Colors[i] = ref->Colors[i]; }
+				//	ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Save")) { ref->Colours[i] = style.Colors[i]; }
+				//	ImGui::SameLine(0.0f, style.ItemInnerSpacing.x); if (ImGui::Button("Revert")) { style.Colors[i] = ref->Colours[i]; }
 				//}
 				ImGui::SameLine(0.0f, style.ItemInnerSpacing.x);
 				ImGui::TextUnformatted(name);

@@ -17,7 +17,7 @@ public:
 		CleanUp();
 	}
 
-	T* AquireObject()
+	T* AcquireObject()
 	{
 		if (mObjects.empty())
 		{

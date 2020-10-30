@@ -1,7 +1,7 @@
 #pragma once
 #include "BehaviorTree.h"
 
-namespace BehaviorTree
+namespace BehaviourTree
 {
 
 	// The Blackboard Bool decorator returns the value of a blackboard bool

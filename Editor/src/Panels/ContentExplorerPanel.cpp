@@ -161,7 +161,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	m_ForceRescan = true;
 }
 
-void ContentExplorerPanel::CreateNewScene()//TODO: create a popup to name the scene before creating it
+void ContentExplorerPanel::CreateNewScene()//TODO: create a pop-up to name the scene before creating it
 {
 	std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
 
@@ -721,7 +721,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						if (ImGui::IsMouseDoubleClicked(0))
 						{
-							//change dirctory on click
+							//change directory on click
 							m_History.SwitchTo(m_Dirs[i]);
 							m_CurrentPath = *m_History.GetCurrentFolder();
 							m_ForceRescan = true;

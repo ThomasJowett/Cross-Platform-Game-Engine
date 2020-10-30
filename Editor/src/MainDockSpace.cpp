@@ -277,12 +277,12 @@ void MainDockSpace::OnImGuiRender()
 		if (ImGui::BeginMenu("Window"))
 		{
 			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);
-			ImGui::MenuItem(ICON_FA_SITEMAP" Heirachy", "", &m_ShowHierarchy);
+			ImGui::MenuItem(ICON_FA_SITEMAP" Hierarchy", "", &m_ShowHierarchy);
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
 			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
-			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Tasklist ImguiPanel
+			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
 			ImGui::EndMenu();
 		}
@@ -336,7 +336,7 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::Text("Built on: %s", __DATE__);
 		ImGui::Separator();
 		ImGui::Text("Dear ImGui version: %s", ImGui::GetVersion());
-		ImGui::Text("spg log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
+		ImGui::Text("spd log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 		ImGui::Text("cereal version: %i.%i.%i", CEREAL_VERSION_MAJOR, CEREAL_VERSION_MINOR, CEREAL_VERSION_PATCH);
 		ImGui::Text("Simple ini version: 4.17");
 		ImGui::Text("entt version: 3.5.2");

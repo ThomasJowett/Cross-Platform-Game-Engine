@@ -60,7 +60,7 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 		Pitch(-m_MouseRelativeVelocity.y * m_Sensitivity);
 
 
-		//make sure right and forward are orthoganal to each other
+		//make sure right and forward are orthogonal to each other
 		Vector3f up = Vector3f::Cross(m_Right, m_Forward).GetNormalized();
 		m_Right = Vector3f::Cross(m_Forward, up).GetNormalized();
 

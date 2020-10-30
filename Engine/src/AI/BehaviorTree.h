@@ -1,4 +1,4 @@
-// BrainTree - A C++ behavior tree single header library.
+// BrainTree - A C++ behaviour tree single header library.
 // Copyright 2015-2018 Par Arvidsson. All rights reserved.
 // Licensed under the MIT license (https://github.com/arvidsson/BrainTree/blob/master/LICENSE).
 
@@ -9,12 +9,13 @@
 #include <string>
 #include <unordered_map>
 #include "Core/core.h"
+#include "Logging/Logger.h"
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
 
 #include <iostream>
 
-namespace BehaviorTree
+namespace BehaviourTree
 {
 
 class Node
@@ -211,11 +212,11 @@ protected:
 
 //--------------------------------------------------------------------------------------------------------------------
 
-class BehaviorTree : public Node
+class BehaviourTree : public Node
 {
 public:
-    BehaviorTree() : m_Blackboard(CreateRef<Blackboard>()), m_NodeRunning(false) {}
-    BehaviorTree(const Ref<Node> &rootNode) : BehaviorTree() { m_Root = rootNode; }
+    BehaviourTree() : m_Blackboard(CreateRef<Blackboard>()), m_NodeRunning(false) {}
+    BehaviourTree(const Ref<Node> &rootNode) : BehaviourTree() { m_Root = rootNode; }
     
 	Status update(float deltaTime) override
 	{
@@ -357,8 +358,8 @@ public:
 
     Ref<Node> build()
     {
-        ASSERT(m_Root != nullptr, "The Behavior Tree is empty!");
-        auto tree = std::make_shared<BehaviorTree>();
+        ASSERT(m_Root != nullptr, "The Behaviour Tree is empty!");
+        auto tree = std::make_shared<BehaviourTree>();
         tree->setRoot(m_Root);
         return tree;
     }
@@ -424,7 +425,7 @@ public:
 
 //--------------------------------------------------------------------------------------------------------------------
 
-// The StatefulSelector composite ticks each child node in order, and remembers what child it prevously tried to tick.
+// The StatefulSelector composite ticks each child node in order, and remembers what child it previously tried to tick.
 // If a child succeeds or runs, the stateful selector returns the same status.
 // In the next tick, it will try to run the next child or start from the beginning again.
 // If all children fails, only then does the stateful selector fail.
@@ -454,7 +455,7 @@ private:
 
 //--------------------------------------------------------------------------------------------------------------------
 
-// The MemSequence composite ticks each child node in order, and remembers what child it prevously tried to tick.
+// The MemSequence composite ticks each child node in order, and remembers what child it previously tried to tick.
 // If a child fails or runs, the stateful sequence returns the same status.
 // In the next tick, it will try to run the next child or start from the beginning again.
 // If all children succeeds, only then does the stateful sequence succeed.
@@ -544,4 +545,4 @@ private:
     int m_MinFail = 0;
 };
 
-} // namespace BehaviorTree
+} // namespace BehaviourTree

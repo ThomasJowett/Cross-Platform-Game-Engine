@@ -70,7 +70,7 @@ void ConsolePanel::ImGuiRenderHeader()
 
 	ImGui::SameLine(0.0f, spacing);
 
-	// Dropdown with Levels
+	// Drop-down with Levels
 	ImGui::PushItemWidth(ImGui::CalcTextSize("Critical").x * 1.36f);
 	if (ImGui::BeginCombo(
 		"##MessageRenderFilter",
@@ -101,7 +101,7 @@ void ConsolePanel::ImGuiRenderHeader()
 
 	ImGui::Tooltip("Higher Level");
 
-	//Filter textbox
+	//Filter text box
 	ImGui::SameLine(0.0f, spacing);
 	m_TextFilter->Draw("Search", 180);
 
