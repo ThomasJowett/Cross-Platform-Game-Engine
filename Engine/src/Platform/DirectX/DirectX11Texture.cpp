@@ -23,7 +23,7 @@ DirectX11Texture2D::DirectX11Texture2D(const std::string & path)
 
 	bool isValid = std::filesystem::exists(path);
 
-	CORE_ASSERT(isValid, "Image does not exist! " + path);
+	CORE_ASSERT(isValid, "Image does not exist! %s", path);
 
 	if (isValid)
 	{
@@ -93,7 +93,7 @@ bool DirectX11Texture2D::LoadTextureFromFile()
 		data = stbi_load(m_Path.c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image: " + m_Path);
+	CORE_ASSERT(data, "Failed to load image: %s", m_Path);
 
 	if (!data)
 	{
