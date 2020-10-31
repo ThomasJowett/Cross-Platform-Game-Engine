@@ -12,7 +12,7 @@ std::string DirectX11Shader::shaderVersion = "_5_0";
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 
-DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& fileDirectory)
+DirectX11Shader::DirectX11Shader(const std::string& name, const std::filesystem::path& fileDirectory)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
@@ -23,7 +23,10 @@ DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& fil
 	m_GeometryShader = nullptr;
 	m_PixelShader = nullptr;
 
-	CompileShaders(fileDirectory + name + ".hlsl");
+	std::filesystem::path shaderPath = fileDirectory / name;
+	shaderPath.replace_extension(".hlsl");
+
+	CompileShaders(shaderPath);
 }
 
 DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
@@ -86,7 +89,7 @@ void DirectX11Shader::SetFloat(const char* name, const float value)
 {
 }
 
-HRESULT DirectX11Shader::CompileShaderFromFile(WCHAR* szFilename, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+HRESULT DirectX11Shader::CompileShaderFromFile(const std::filesystem::path& filename, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
 	HRESULT hr;
 
@@ -97,6 +100,8 @@ HRESULT DirectX11Shader::CompileShaderFromFile(WCHAR* szFilename, LPCSTR szEntry
 #endif // DEBUG
 
 	ID3DBlob* pErrorBlob = nullptr;
+
+	LPCWSTR szFilename = ConvertToWideChar(filename.string());
 
 	hr = D3DCompileFromFile(szFilename, nullptr, nullptr, szEntryPoint, szShaderModel, dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
 
@@ -115,7 +120,7 @@ HRESULT DirectX11Shader::CompileShaderFromFile(WCHAR* szFilename, LPCSTR szEntry
 	return hr;
 }
 
-HRESULT DirectX11Shader::CompileShaders(std::string filename)
+HRESULT DirectX11Shader::CompileShaders(const std::filesystem::path& filename)
 {
 	if (!std::filesystem::exists(filename))
 	{
@@ -125,30 +130,28 @@ HRESULT DirectX11Shader::CompileShaders(std::string filename)
 	HRESULT hr;
 	ID3DBlob* pBlob = nullptr;
 
-	WCHAR* wFilename = ConvertToWideChar(filename);
-
 	// Vertex Shader
-	hr = CompileShaderFromFile(wFilename, "vertexShader", ("vs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "vertexShader", ("vs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = g_D3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_VertexShader);
 
 	// Hull Shader
-	hr = CompileShaderFromFile(wFilename, "hullShader", ("hs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "hullShader", ("hs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = g_D3dDevice->CreateHullShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_HullShader);
 
 	//Domain Shader
-	hr = CompileShaderFromFile(wFilename, "domainShader", ("ds" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "domainShader", ("ds" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = g_D3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
 
 	//Geometry Shader
-	hr = CompileShaderFromFile(wFilename, "geometryShader", ("gs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "geometryShader", ("gs" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = g_D3dDevice->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_GeometryShader);
 
 	//Pixel Shader
-	hr = CompileShaderFromFile(wFilename, "pixelShader", ("ps" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "pixelShader", ("ps" + shaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
 		hr = g_D3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_PixelShader);
 

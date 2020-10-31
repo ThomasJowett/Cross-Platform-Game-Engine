@@ -8,7 +8,7 @@
 #endif // __WINDOWS__
 
 
-Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDirectory)
+Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& fileDirectory)
 {
 	switch (Renderer::GetAPI())
 	{
@@ -19,7 +19,7 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string & fileDire
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		//CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
-			return CreateRef<DirectX11Shader>(name, fileDirectory);
+		return CreateRef<DirectX11Shader>(name, fileDirectory);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -72,7 +72,7 @@ void ShaderLibrary::Add(const Ref<Shader>& shader)
 	m_Shaders[shader->GetName()] = shader;
 }
 
-Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& fileDirectory)
+Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::path& fileDirectory)
 {
 	if (Exists(name))
 		return m_Shaders[name];
@@ -82,13 +82,13 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::string& file
 	return shader;
 }
 
-Ref<Shader> ShaderLibrary::Get(const std::string & name)
+Ref<Shader> ShaderLibrary::Get(const std::string& name)
 {
 	CORE_ASSERT(Exists(name), "Shader does not exist!");
 	return m_Shaders[name];
 }
 
-bool ShaderLibrary::Exists(const std::string & name) const
+bool ShaderLibrary::Exists(const std::string& name) const
 {
 	return m_Shaders.find(name) != m_Shaders.end();
 }

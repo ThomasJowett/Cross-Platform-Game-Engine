@@ -6,7 +6,7 @@
 
 #include "Core/Application.h"
 
-#define SHADER_DIRECTORY Application::GetWorkingDirectory().string() + "\\resources\\Shaders\\"
+#define SHADER_DIRECTORY Application::GetWorkingDirectory() / "resources" / "Shaders"
 
 class Shader
 {
@@ -24,7 +24,7 @@ public:
 	virtual void SetFloat(const char* name, const float value) = 0;
 
 	// Create Shader from file
-	static Ref<Shader> Create(const std::string& name, const std::string& fileDirectory = SHADER_DIRECTORY);
+	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
 	//create Shader from  source strings
 	static Ref<Shader> Create(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
 
@@ -45,7 +45,7 @@ class ShaderLibrary
 {
 public:
 	void Add(const Ref<Shader>& shader);
-	Ref<Shader> Load(const std::string& name, const std::string& fileDirectory = SHADER_DIRECTORY);
+	Ref<Shader> Load(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
 	Ref<Shader> Get(const std::string& name);
 
 	bool Exists(const std::string& name) const;
