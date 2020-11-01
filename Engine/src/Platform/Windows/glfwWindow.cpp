@@ -240,10 +240,10 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // DEBUG
 
-			//Minimum version that is supported is 4.6
+			//Minimum version that is supported is 3.3
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-			//glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);

@@ -27,14 +27,27 @@
 	#error Target platform not supported
 #endif
 
-#ifdef ENABLE_ASSERTS
-	#ifdef _MSC_VER
-		#define ASSERT(x, ...) {if(!(x)){CLIENT_ERROR("Assertion failed: {0}", __VA_ARGS__);__debugbreak();}}
-		#define CORE_ASSERT(x,...){if(!(x)){ENGINE_ERROR("Assertion failed: {0}", __VA_ARGS__);__debugbreak();}}
+#ifdef DEBUG
+	#if defined(_MSC_VER)
+		#define DEBUGBREAK() __debugbreak()
+	#elif defined(__linux__)
+		#include <signal.h>
+		#if defined(SIGTRAP)
+			#define DEBUGBREAK() raise(SIGTRAP)
+		#else
+			#define DEBUGBREAK() raise(SIGABRT)
+		#endif
 	#else
-		#define ASSERT(x, ...) {if(!(x)){CLIENT_ERROR("Assertion failed: {0}", __VA_ARGS__);__builtin_trap();}}
-		#define CORE_ASSERT(x,...){if(!(x)){ENGINE_ERROR("Assertion failed: {0}", __VA_ARGS__);__builtin_trap();}}
+		DEBUGBREAK()
 	#endif
+#endif // DEBUG
+
+#define EXPAND_MACRO(x) x
+#define STRINGIFY_MACRO(x) #x
+
+#ifdef ENABLE_ASSERTS
+	#define ASSERT(x, ...) {if(!(x)){CLIENT_ERROR("Assertion failed: {0}", __VA_ARGS__);DEBUGBREAK();}}
+	#define CORE_ASSERT(x,...){if(!(x)){ENGINE_ERROR("Assertion failed: {0}", __VA_ARGS__);DEBUGBREAK();}}
 #else
 	#define ASSERT(x, ...)
 	#define CORE_ASSERT(z, ...)

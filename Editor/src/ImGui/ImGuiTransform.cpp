@@ -41,7 +41,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 
 	//--------------------------------------
 
-	Vector3f rotationDegrees(RadToDeg(rotation.x), RadToDeg(rotation.y), RadToDeg(rotation.z));
+	Vector3f rotationDegrees((float)RadToDeg(rotation.x), (float)RadToDeg(rotation.y), (float)RadToDeg(rotation.z));
 	ImGui::Text("Rotation");
 	ImGui::TextColored({ 245,0,0,255 }, "X");
 	ImGui::SameLine();
