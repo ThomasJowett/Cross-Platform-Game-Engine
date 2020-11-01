@@ -75,10 +75,10 @@ bool Renderer2D::Init()
 	s_Data.QuadVertexBuffer = VertexBuffer::Create(s_Data.MaxVertices * sizeof(QuadVertex));
 
 	s_Data.QuadVertexBuffer->SetLayout({
-			{ShaderDataType::Float3, "a_position"},
-			{ShaderDataType::Float4, "a_colour"},
-			{ShaderDataType::Float2, "a_texcoord"},
-			{ShaderDataType::Float, "a_texIndex"}
+			{ShaderDataType::Float3, "a_Position"},
+			{ShaderDataType::Float4, "a_Colour"},
+			{ShaderDataType::Float2, "a_Texcoord"},
+			{ShaderDataType::Float, "a_TexIndex"}
 		});
 
 	s_Data.QuadVertexArray->AddVertexBuffer(s_Data.QuadVertexBuffer);
@@ -151,7 +151,7 @@ bool Renderer2D::Init()
 
 	s_Data.QuadShader = Shader::Create("Texture");
 	s_Data.QuadShader->Bind();
-	s_Data.QuadShader->SetIntArray("u_textures", samplers, s_Data.MaxTexturesSlots);
+	s_Data.QuadShader->SetIntArray("u_Textures", samplers, s_Data.MaxTexturesSlots);
 
 	s_Data.LineShader = Shader::Create("Line");
 	s_Data.LineShader->Bind();

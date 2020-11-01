@@ -1,15 +1,14 @@
 #version 330 core
 
-uniform float u_tilingFactor;
-uniform sampler2D u_texture;
-
-in vec4 v_colour;
-in vec2 v_texCoord;
-
 layout(location = 0) out vec4 frag_colour;
+
+in vec4 v_Colour;
+in vec2 v_TexCoord;
+in float v_TexIndex;
+
+uniform sampler2D u_Textures[32];
 
 void main()
 {
-	//frag_colour = texture(u_texture,v_texCoord * u_tilingFactor) * v_colour;
-	frag_colour = v_colour;
+	frag_colour = texture(u_Textures[int(v_TexIndex)], v_TexCoord) * v_Colour;
 }

@@ -79,7 +79,9 @@ void Scene::OnUpdate(float deltaTime)
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 		[](const auto& sprite, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) 
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawQuad(transform, sprite.Tint);
 		});
 
@@ -87,7 +89,9 @@ void Scene::OnUpdate(float deltaTime)
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }) * Matrix4x4::Scale(transformComp.Scale);
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) 
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer::Submit(mesh.material, mesh.Geometry, transform);
 		});
 
