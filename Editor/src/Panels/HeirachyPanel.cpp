@@ -59,7 +59,8 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = cubeEntity;
 				}
@@ -69,7 +70,8 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = sphereEntity;
 				}
@@ -79,7 +81,8 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = planeEntity;
 				}
@@ -89,7 +92,8 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = cylinderEntity;
 				}
@@ -99,7 +103,8 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = cylinderEntity;
 				}
@@ -109,18 +114,65 @@ void HeirachyPanel::OnImGuiRender()
 
 					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
 					Material material(Shader::Create("NormalMap"));
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+					material.SetTint(Colours::RANDOM);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					m_SelectedEntity = torusEntity;
+				}
+				if (ImGui::MenuItem("Terrain", "", nullptr, false))
+				{
+					//TODO: Create terrain
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("2D Object"))
+			{
+				if (ImGui::MenuItem("Sprite"))
+				{
+					Entity entity = SceneManager::s_CurrentScene->CreateEntity("Sprite");
+					entity.AddComponent<SpriteComponent>();
+					m_SelectedEntity = entity;
+				}
+				if (ImGui::MenuItem("Tilemap", "", nullptr, false))
+				{
+					//TODO: create tilemap
+				}
+				ImGui::EndMenu();
+			}
+			if (ImGui::BeginMenu("Audio"))
+			{
+				if (ImGui::MenuItem("Audio Source", "", nullptr, false))
+				{
+					//TODO: create an audio source component
 				}
 				ImGui::EndMenu();
 			}
 			if (ImGui::BeginMenu("Light"))
 			{
-				ImGui::MenuItem("Point Light", nullptr, false);
-				ImGui::MenuItem("Directional Light", nullptr, false);
-				ImGui::MenuItem("Spot Light", nullptr, false);
+				if (ImGui::MenuItem("Point Light", "", nullptr, false))
+				{
+					//TODO: Create point light
+				}
+				if (ImGui::MenuItem("Directional Light", "", nullptr, false))
+				{
+					//TODO: Create Directional light
+				}
+
+				if (ImGui::MenuItem("Spot Light", "", nullptr, false))
+				{
+					//TODO: Create Spot light
+				}
 				ImGui::EndMenu();
+			}
+			if (ImGui::MenuItem("Particle Emitter", "", nullptr, false))
+			{
+				//TODO: create a particle emitter component
+			}
+			if (ImGui::MenuItem("Camera"))
+			{
+				Entity entity = SceneManager::s_CurrentScene->CreateEntity("Camera");
+				entity.AddComponent<CameraComponent>();
+				m_SelectedEntity = entity;
 			}
 			ImGui::EndPopup();
 		}
