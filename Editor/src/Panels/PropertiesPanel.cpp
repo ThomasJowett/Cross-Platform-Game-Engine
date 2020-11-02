@@ -218,7 +218,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Primitve--------------------------------------------------------------------------------------------------------------
+	//Primitive--------------------------------------------------------------------------------------------------------------
 	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [](auto& primitive)
 		{
 			const char* shapeTypeStrings[] = { "Cube", "Sphere", "Plane", "Cylinder", "Cone", "Torus" };
