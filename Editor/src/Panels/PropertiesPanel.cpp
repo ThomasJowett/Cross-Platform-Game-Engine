@@ -9,8 +9,8 @@
 
 #include <cstring>
 
-PropertiesPanel::PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel)
-	:Layer("Properties"), m_Show(show), m_HeirachyPanel(heirachyPanel)
+PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierachyPanel)
+	:Layer("Properties"), m_Show(show), m_HierachyPanel(hierachyPanel)
 {
 }
 
@@ -41,7 +41,7 @@ void PropertiesPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		Entity entity = m_HeirachyPanel->GetSelectedEntity();
+		Entity entity = m_HierachyPanel->GetSelectedEntity();
 		if (entity)
 		{
 			ImGui::BeginGroup();
@@ -97,9 +97,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	}
 
 	//Transform------------------------------------------------------------------------------------------------------------
-	DrawComponent<TransformComponent>("Transform", entity, [](auto& transform) 
+	DrawComponent<TransformComponent>("Transform", entity, [](auto& transform)
 		{
-			ImGui::Transform(transform.Position, transform.Rotation, transform.Scale); 
+			ImGui::Transform(transform.Position, transform.Rotation, transform.Scale);
 		}, false);
 
 
@@ -217,6 +217,169 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			}
 		});
+
+	//Primitve--------------------------------------------------------------------------------------------------------------
+	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [](auto& primitive)
+		{
+			const char* shapeTypeStrings[] = { "Cube", "Sphere", "Plane", "Cylinder", "Cone", "Torus" };
+
+			const char* currentShapeTypeString = shapeTypeStrings[(int)primitive.Type];
+
+			if (ImGui::BeginCombo("Shape", currentShapeTypeString))
+			{
+				for (int i = 0; i < 6; i++)
+				{
+					bool isSelected = currentShapeTypeString == shapeTypeStrings[i];
+
+					if (ImGui::Selectable(shapeTypeStrings[i], isSelected))
+					{
+						currentShapeTypeString = shapeTypeStrings[i];
+						primitive.Type = (PrimitiveComponent::Shape)i;
+						primitive.NeedsUpdating = true;
+						SceneManager::s_CurrentScene->MakeDirty();
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+			switch (primitive.Type)
+			{
+			case PrimitiveComponent::Shape::Cube:
+				if (ImGui::DragFloat("Width##cube", &primitive.CubeWidth, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Height##cube", &primitive.CubeHeight, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Depth##cube", &primitive.CubeDepth, 0.1f, 0.0f))
+					primitive.NeedsUpdating = true;
+				break;
+			case PrimitiveComponent::Shape::Sphere:
+				if (ImGui::DragFloat("Radius##Sphere", &primitive.SphereRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Longitude Lines##Sphere", &(int)primitive.SphereLongitudeLines, 1.0f, 3, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Latitude Lines##Sphere", &(int)primitive.SphereLatitudeLines, 1.0f, 2, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				break;
+			case PrimitiveComponent::Shape::Plane:
+				if (ImGui::DragFloat("Width##Plane", &primitive.PlaneWidth, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Length##Plane", &primitive.PlaneLength, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Width Lines##Plane", &(int)primitive.PlaneWidthLines, 1.0f, 2, 1000))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Length Lines##Plane", &(int)primitive.PlaneLengthLines, 1.0f, 2, 1000))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Tile U##Plane", &primitive.PlaneTileU, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Tile V##Plane", &primitive.PlaneTileV, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				break;
+			case PrimitiveComponent::Shape::Cylinder:
+				if (ImGui::DragFloat("Bottom Radius##Cylinder", &primitive.CylinderBottomRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Top Radius##Cylinder", &primitive.CylinderTopRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Height##Cylinder", &primitive.CylinderHeight, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Slice Count##Cylinder", &(int)primitive.CylinderSliceCount, 1.0f, 3, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Stack Count##Cylinder", &(int)primitive.CylinderStackCount, 1.0f, 1, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				break;
+			case PrimitiveComponent::Shape::Cone:
+				if (ImGui::DragFloat("Bottom Radius##Cone", &primitive.ConeBottomRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Height##Cone", &primitive.ConeHeight, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Slice Count##Cone", &(int)primitive.ConeSliceCount, 1.0f, 3, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragInt("Stack Count##Cone", &(int)primitive.ConeStackCount, 1.0f, 1, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				break;
+			case PrimitiveComponent::Shape::Torus:
+				if (ImGui::DragFloat("Outer Radius##Torus", &primitive.TorusOuterRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Inner Radius##Torus", &primitive.TorusInnerRadius, 0.1f, 0.0f))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				if (ImGui::DragFloat("Slice Count##Torus", &primitive.TorusSliceCount, 1.0f, 3, 600))
+				{
+					primitive.NeedsUpdating = true;
+					SceneManager::s_CurrentScene->MakeDirty();
+				}
+				break;
+			default:
+				break;
+			}
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
@@ -234,6 +397,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<CameraComponent>("Camera", entity);
 		AddComponentMenuItem<SpriteComponent>("Sprite", entity);
 		AddComponentMenuItem<StaticMeshComponent>("Static Mesh", entity);
+		AddComponentMenuItem<PrimitiveComponent>("Primitive", entity);
 
 		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{

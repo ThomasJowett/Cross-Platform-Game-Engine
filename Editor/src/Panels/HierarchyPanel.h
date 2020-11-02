@@ -1,12 +1,12 @@
 #pragma once
 #include "Engine.h"
 
-class HeirachyPanel :
+class HierarchyPanel :
     public Layer
 {
 public:
-    explicit HeirachyPanel(bool* show);
-    ~HeirachyPanel() = default;
+    explicit HierarchyPanel(bool* show);
+    ~HierarchyPanel() = default;
 
     void OnAttach() override;
     void OnFixedUpdate() override;

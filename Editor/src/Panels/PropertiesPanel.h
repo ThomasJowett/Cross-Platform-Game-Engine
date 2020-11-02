@@ -1,13 +1,13 @@
 #pragma once
 #include "Engine.h"
 
-#include "HeirachyPanel.h"
+#include "HierarchyPanel.h"
 
 class PropertiesPanel :
 	public Layer
 {
 public:
-	explicit PropertiesPanel(bool* show, HeirachyPanel* heirachyPanel);
+	explicit PropertiesPanel(bool* show, HierarchyPanel* hierachyPanel);
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
@@ -63,5 +63,5 @@ private:
 private:
 	bool* m_Show;
 
-	HeirachyPanel* m_HeirachyPanel;
+	HierarchyPanel* m_HierachyPanel;
 };

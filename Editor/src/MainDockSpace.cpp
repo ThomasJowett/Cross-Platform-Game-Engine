@@ -19,7 +19,7 @@
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/ViewportPanel.h"
-#include "Panels/HeirachyPanel.h"
+#include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
 #include "Panels/ConsolePanel.h"
 #include "Toolbars/PlayPauseToolbar.h"
@@ -98,9 +98,9 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	HeirachyPanel* heirachyPanel = new HeirachyPanel(&m_ShowHierarchy);
-	Application::Get().AddOverlay(heirachyPanel);
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, heirachyPanel));
+	HierarchyPanel* hierachyPanel = new HierarchyPanel(&m_ShowHierarchy);
+	Application::Get().AddOverlay(hierachyPanel);
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierachyPanel));
 
 	if (!Application::GetOpenDocument().empty())
 	{

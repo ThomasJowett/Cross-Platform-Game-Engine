@@ -1,4 +1,4 @@
-#include "HeirachyPanel.h"
+#include "HierarchyPanel.h"
 
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
@@ -7,20 +7,20 @@
 
 #include "Utilities/GeometryGenerator.h"
 
-HeirachyPanel::HeirachyPanel(bool* show)
+HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
 {
 }
 
-void HeirachyPanel::OnAttach()
+void HierarchyPanel::OnAttach()
 {
 }
 
-void HeirachyPanel::OnFixedUpdate()
+void HierarchyPanel::OnFixedUpdate()
 {
 }
 
-void HeirachyPanel::OnImGuiRender()
+void HierarchyPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
@@ -62,6 +62,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
 				}
 				if (ImGui::MenuItem("Sphere"))
@@ -73,6 +74,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
 				}
 				if (ImGui::MenuItem("Plane"))
@@ -84,6 +86,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
 				}
 				if (ImGui::MenuItem("Cylinder"))
@@ -95,6 +98,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
 				}
 				if (ImGui::MenuItem("Cone"))
@@ -106,6 +110,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
 				}
 				if (ImGui::MenuItem("Torus"))
@@ -117,6 +122,7 @@ void HeirachyPanel::OnImGuiRender()
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
 				}
 				if (ImGui::MenuItem("Terrain", "", nullptr, false))
@@ -198,7 +204,7 @@ void HeirachyPanel::OnImGuiRender()
 	ImGui::End();
 }
 
-void HeirachyPanel::DrawNode(Entity entity)
+void HierarchyPanel::DrawNode(Entity entity)
 {
 	auto& tag = entity.GetComponent<TagComponent>().Tag;
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth

@@ -66,31 +66,80 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	//--------------------------------------
 	ImGui::Text("Scale");
 	ImGui::SameLine();
-	static bool locked = false;
-	ImGui::Checkbox(ICON_FA_UNLOCK_ALT, &locked);
+	static bool locked = true;
+	Vector3f lockedScale = scale;
+	if (locked)
+	{
+		ImGui::Checkbox(ICON_FA_LOCK, &locked);
+	}
+	else
+		ImGui::Checkbox(ICON_FA_UNLOCK, &locked);
+
 	ImGui::TextColored({ 245,0,0,255 }, "X");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::DragFloat("##scaleX", &scale.x, 0.1f))
-		edited = true;
+	if (locked)
+	{
+		if (ImGui::DragFloat("##scaleX", &lockedScale.x, 0.1f))
+		{
+			edited = true;
+			float difference = lockedScale.x - scale.x;
+			scale.x += difference;
+			scale.y += difference;
+			scale.z += difference;
+		}
+	}
+	else
+	{
+		if (ImGui::DragFloat("##scaleX", &scale.x, 0.1f))
+			edited = true;
+	}
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,245,0,255 }, "Y");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::DragFloat("##scaleY", &scale.y, 0.1f))
-		edited = true;
+	if (locked)
+	{
+		if (ImGui::DragFloat("##scaleY", &lockedScale.y, 0.1f))
+		{
+			edited = true;
+			float difference = lockedScale.y - scale.y;
+			scale.x += difference;
+			scale.y += difference;
+			scale.z += difference;
+		}
+	}
+	else
+	{
+		if (ImGui::DragFloat("##scaleY", &scale.y, 0.1f))
+			edited = true;
+	}
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,0,245,255 }, "Z");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
-	if (ImGui::DragFloat("##scaleZ", &scale.z, 0.1f))
-		edited = true;
+	if (locked)
+	{
+		if (ImGui::DragFloat("##scaleZ", &lockedScale.z, 0.1f))
+		{
+			edited = true;
+			float difference = lockedScale.z - scale.z;
+			scale.x += difference;
+			scale.y += difference;
+			scale.z += difference;
+		}
+	}
+	else
+	{
+		if (ImGui::DragFloat("##scaleZ", &scale.z, 0.1f))
+			edited = true;
+	}
 
 	if (edited)
 	{
-		rotation = {(float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z)};
+		rotation = { (float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z) };
 		SceneManager::s_CurrentScene->MakeDirty();
 	}
 

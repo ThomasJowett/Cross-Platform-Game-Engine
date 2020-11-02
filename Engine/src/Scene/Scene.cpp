@@ -7,6 +7,8 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
 
+#include "Utilities/GeometryGenerator.h"
+
 #include "cereal/archives/binary.hpp"
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
@@ -60,6 +62,37 @@ void Scene::OnUpdate(float deltaTime)
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
 
+	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
+	{
+		if (primitiveComponent.NeedsUpdating)
+		{
+			switch (primitiveComponent.Type)
+			{
+			case PrimitiveComponent::Shape::Cube:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.CubeWidth, primitiveComponent.CubeHeight, primitiveComponent.CubeDepth), "Cube");
+				break;
+			case PrimitiveComponent::Shape::Sphere:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.SphereRadius, primitiveComponent.SphereLongitudeLines, primitiveComponent.SphereLatitudeLines), "Sphere");
+				break;
+			case PrimitiveComponent::Shape::Plane:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.PlaneWidth, primitiveComponent.PlaneLength, primitiveComponent.PlaneLengthLines, primitiveComponent.PlaneWidthLines, primitiveComponent.PlaneTileU, primitiveComponent.PlaneTileV), "Plane");
+				break;
+			case PrimitiveComponent::Shape::Cylinder:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.CylinderBottomRadius, primitiveComponent.CylinderTopRadius, primitiveComponent.CylinderHeight, primitiveComponent.CylinderSliceCount, primitiveComponent.CylinderStackCount), "Cylinder");
+				break;
+			case PrimitiveComponent::Shape::Cone:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.ConeBottomRadius, 0.00001f, primitiveComponent.ConeHeight, primitiveComponent.ConeSliceCount, primitiveComponent.ConeStackCount), "Cone");
+				break;
+			case PrimitiveComponent::Shape::Torus:
+				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.TorusOuterRadius, primitiveComponent.TorusInnerRadius, primitiveComponent.TorusSliceCount), "Torus");
+				break;
+			default:
+				break;
+			}
+			primitiveComponent.NeedsUpdating = false;
+		}
+	});
+
 	Matrix4x4 view;
 	Matrix4x4 projection;
 
@@ -79,7 +112,7 @@ void Scene::OnUpdate(float deltaTime)
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 		[](const auto& sprite, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) 
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
 				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
 				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawQuad(transform, sprite.Tint);
@@ -89,7 +122,7 @@ void Scene::OnUpdate(float deltaTime)
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position) 
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
 				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
 				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer::Submit(mesh.material, mesh.Geometry, transform);

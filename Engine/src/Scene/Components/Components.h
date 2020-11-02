@@ -6,6 +6,7 @@
 #include "SpriteComponent.h"
 #include "StaticMeshComponent.h"
 #include "NativeScriptComponent.h"
+#include "PrimitiveComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS		\
