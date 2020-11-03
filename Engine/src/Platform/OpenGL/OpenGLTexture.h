@@ -7,7 +7,7 @@ class OpenGLTexture2D : public Texture2D
 {
 public:
 	OpenGLTexture2D(uint32_t width, uint32_t height);
-	OpenGLTexture2D(const std::string& path);
+	OpenGLTexture2D(const std::filesystem::path& filepath);
 	virtual ~OpenGLTexture2D();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
@@ -27,7 +27,7 @@ private:
 	void NullTexture();
 
 	bool LoadTextureFromFile();
-	std::string m_Path;
+	std::filesystem::path m_Path;
 	uint32_t m_Width, m_Height;
 
 	uint32_t m_RendererID;

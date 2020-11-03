@@ -14,8 +14,8 @@ DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
 	m_ShaderResourceView = nullptr;
 }
 
-DirectX11Texture2D::DirectX11Texture2D(const std::string & path)
-	:m_Path(path)
+DirectX11Texture2D::DirectX11Texture2D(const std::filesystem::path& path)
+	: m_Path(path)
 {
 	PROFILE_FUNCTION();
 
@@ -23,7 +23,7 @@ DirectX11Texture2D::DirectX11Texture2D(const std::string & path)
 
 	bool isValid = std::filesystem::exists(path);
 
-	CORE_ASSERT(isValid, "Image does not exist! %s", path);
+	CORE_ASSERT(isValid, "Image does not exist! " + path.string());
 
 	if (isValid)
 	{
@@ -38,10 +38,10 @@ DirectX11Texture2D::DirectX11Texture2D(const std::string & path)
 
 DirectX11Texture2D::~DirectX11Texture2D()
 {
-	if(m_ShaderResourceView) m_ShaderResourceView->Release();
+	if (m_ShaderResourceView) m_ShaderResourceView->Release();
 }
 
-void DirectX11Texture2D::SetData(void * data, uint32_t size)
+void DirectX11Texture2D::SetData(void* data, uint32_t size)
 {
 	m_Path = "";
 }
@@ -53,7 +53,7 @@ void DirectX11Texture2D::Bind(uint32_t slot) const
 
 std::string DirectX11Texture2D::GetName() const
 {
-	return m_Path;
+	return m_Path.filename().string();
 }
 
 uint32_t DirectX11Texture2D::GetRendererID() const
@@ -90,7 +90,7 @@ bool DirectX11Texture2D::LoadTextureFromFile()
 	unsigned char* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image Directx11Texture2D(const std::string&)");
-		data = stbi_load(m_Path.c_str(), &width, &height, &channels, 0);
+		data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
 	}
 
 	CORE_ASSERT(data, "Failed to load image: %s", m_Path);

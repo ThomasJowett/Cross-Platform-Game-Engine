@@ -16,7 +16,7 @@ void ExampleLayer3D::OnAttach()
 	m_TorusVertexArray = GeometryGenerator::CreateTorus(0.7f, 0.25f, 30);
 
 	m_ShaderLibrary.Load("NormalMap");
-	m_Texture = Texture2D::Create("resources/UVChecker.png");
+	m_Texture = Texture2D::Create(Application::Get().GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0,0.0,10.0 });
 }

@@ -20,7 +20,7 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
 }
 
-OpenGLTexture2D::OpenGLTexture2D(const std::string& path)
+OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 	:m_Path(path), m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
 {
 	PROFILE_FUNCTION();
@@ -70,7 +70,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 
 std::string OpenGLTexture2D::GetName() const
 {
-	return m_Path;
+	return m_Path.filename().string();
 }
 
 uint32_t OpenGLTexture2D::GetRendererID() const
@@ -120,10 +120,10 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::string&)");
-		data = stbi_load(m_Path.c_str(), &width, &height, &channels, 0);
+		data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image! %s", m_Path);
+	CORE_ASSERT(data, "Failed to load image! " + m_Path.string());
 
 	if (!data)
 	{

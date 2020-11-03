@@ -17,7 +17,7 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 		return CreateRef<OpenGLTexture2D>(width, height);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-			return CreateRef<DirectX11Texture2D>(width, height);
+		return CreateRef<DirectX11Texture2D>(width, height);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -35,17 +35,17 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 		return nullptr;
 }
 
-Ref<Texture2D> Texture2D::Create(const std::string & path)
+Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLTexture2D>(path);
+		return CreateRef<OpenGLTexture2D>(filepath);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-			return CreateRef<DirectX11Texture2D>(path);
+		return CreateRef<DirectX11Texture2D>(filepath);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -69,10 +69,10 @@ void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
 	m_Textures[texture->GetName()] = texture;
 }
 
-Ref<Texture2D> TextureLibrary2D::Load(const std::string& path)
+Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path)
 {
-	if (Exists(path))
-		return m_Textures[path];
+	if (Exists(path.filename().string()))
+		return m_Textures[path.filename().string()];
 
 	Ref<Texture2D> texture = Texture2D::Create(path);
 	Add(texture);

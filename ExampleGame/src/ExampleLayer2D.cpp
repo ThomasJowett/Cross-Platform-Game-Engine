@@ -10,8 +10,8 @@ ExampleLayer2D::ExampleLayer2D()
 
 void ExampleLayer2D::OnAttach()
 {
-	m_TextureLibrary.Load("resources/UVChecker.png");
-	m_SubTexture = SubTexture2D::Create(m_TextureLibrary.Get("resources/UVChecker.png"), { 1, 1 }, { 102, 102 }, { 1, 2 });
+	m_TextureLibrary.Load(Application::Get().GetWorkingDirectory() / "resources" / "UVChecker.png");
+	m_SubTexture = SubTexture2D::Create(m_TextureLibrary.Get("UVChecker.png"), { 1, 1 }, { 102, 102 }, { 1, 2 });
 }
 
 void ExampleLayer2D::OnDetach()
@@ -30,16 +30,16 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
 
 	//A textured quad tinted
-	Renderer2D::DrawQuad(Vector2f(m_Position[0] + 1.0f, m_Position[1]), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("resources/UVChecker.png"), m_Rotation, m_Colour);
+	Renderer2D::DrawQuad(Vector2f(m_Position[0] + 1.0f, m_Position[1]), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("UVChecker.png"), m_Rotation, m_Colour);
 
 	//A textured quad
-	Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1] + 1.0f), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("resources/UVChecker.png"), m_Rotation);
+	Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1] + 1.0f), Vector2f(m_Size[0], m_Size[1]), m_TextureLibrary.Get("UVChecker.png"), m_Rotation);
 
 	//A quad textured with a sub texture
 	Renderer2D::DrawQuad(Vector2f(m_Position[0], m_Position[1] + 2.0f), Vector2f(m_Size[0]/2, m_Size[1]), m_SubTexture, m_Rotation);
 
 	//A textured quad with fixed rotation
-	Renderer2D::DrawQuad({ m_Position[0] + 1.0f , m_Position[1] + 1.0f }, { m_Size[0], m_Size[1] }, m_TextureLibrary.Get("resources/UVChecker.png"), 1.0f, m_Colour, 10.0f);
+	Renderer2D::DrawQuad({ m_Position[0] + 1.0f , m_Position[1] + 1.0f }, { m_Size[0], m_Size[1] }, m_TextureLibrary.Get("UVChecker.png"), 1.0f, m_Colour, 10.0f);
 
 	for (float y = -m_Gridsize; y <= m_Gridsize; y += 0.2f)
 	{

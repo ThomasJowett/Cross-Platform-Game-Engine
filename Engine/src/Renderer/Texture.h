@@ -27,14 +27,14 @@ class Texture2D :public Texture
 {
 public:
 	static Ref<Texture2D> Create(uint32_t width, uint32_t height);
-	static Ref<Texture2D> Create(const std::string& path);
+	static Ref<Texture2D> Create(const std::filesystem::path& filepath);
 };
 
 class TextureLibrary2D
 {
 public:
 	void Add(const Ref<Texture2D>& texture);
-	Ref<Texture2D> Load(const std::string& path);
+	Ref<Texture2D> Load(const std::filesystem::path& path);
 	Ref<Texture2D> Get(const std::string& name);
 
 	bool Exists(const std::string& name) const;
