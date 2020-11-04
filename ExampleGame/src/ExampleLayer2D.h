@@ -13,7 +13,7 @@ public:
 	virtual void OnEvent(Event& e) override;
 	virtual void OnImGuiRender() override;
 private:
-	OrthogrpahicCameraController m_CameraController;
+	OrthographicCameraController m_CameraController;
 	Ref<VertexArray> m_CubeVertexArray;
 	Colour m_Colour = Colours::RED;
 

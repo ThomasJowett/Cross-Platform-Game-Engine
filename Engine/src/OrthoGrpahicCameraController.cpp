@@ -5,18 +5,18 @@
 #include "Core/Joysticks.h"
 #include "Core/Settings.h"
 
-OrthogrpahicCameraController::OrthogrpahicCameraController()
+OrthographicCameraController::OrthographicCameraController()
 	:m_AspectRatio((float)(Settings::GetInt("Display", "Screen_Width")) / (float)(Settings::GetInt("Display", "Screen_Height"))),
 	m_Camera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel)
 {
 }
 
 
-OrthogrpahicCameraController::~OrthogrpahicCameraController()
+OrthographicCameraController::~OrthographicCameraController()
 {
 }
 
-void OrthogrpahicCameraController::OnUpdate(float deltaTime)
+void OrthographicCameraController::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
@@ -49,16 +49,16 @@ void OrthogrpahicCameraController::OnUpdate(float deltaTime)
 	m_Camera.SetPosition(m_CameraPosition);
 }
 
-void OrthogrpahicCameraController::OnEvent(Event & event)
+void OrthographicCameraController::OnEvent(Event & event)
 {
 	PROFILE_FUNCTION();
 
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<MouseWheelEvent>(BIND_EVENT_FN(OrthogrpahicCameraController::OnMouseWheel));
-	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OrthogrpahicCameraController::OnWindowResized));
+	dispatcher.Dispatch<MouseWheelEvent>(BIND_EVENT_FN(OrthographicCameraController::OnMouseWheel));
+	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(OrthographicCameraController::OnWindowResized));
 }
 
-bool OrthogrpahicCameraController::OnMouseWheel(MouseWheelEvent & event)
+bool OrthographicCameraController::OnMouseWheel(MouseWheelEvent & event)
 {
 	PROFILE_FUNCTION();
 
@@ -70,7 +70,7 @@ bool OrthogrpahicCameraController::OnMouseWheel(MouseWheelEvent & event)
 	return false;
 }
 
-bool OrthogrpahicCameraController::OnWindowResized(WindowResizeEvent & event)
+bool OrthographicCameraController::OnWindowResized(WindowResizeEvent & event)
 {
 	PROFILE_FUNCTION();
 

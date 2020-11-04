@@ -24,6 +24,6 @@ private:
     std::vector<Vector2f> m_RedPositions;
     std::vector<Vector2f> m_BluePositions;
 
-    OrthogrpahicCameraController m_CameraController;
+    OrthographicCameraController m_CameraController;
 };
 

@@ -61,7 +61,7 @@ private:
 
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
-	OrthogrpahicCameraController m_OrthoCamera;
+	OrthographicCameraController m_OrthoCamera;
 
 	Mode m_Mode;
 

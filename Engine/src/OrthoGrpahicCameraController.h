@@ -4,11 +4,11 @@
 #include "Events/ApplicationEvent.h"
 #include "Events/MouseEvent.h"
 
-class OrthogrpahicCameraController
+class OrthographicCameraController
 {
 public:
-	OrthogrpahicCameraController();
-	~OrthogrpahicCameraController();
+	OrthographicCameraController();
+	~OrthographicCameraController();
 
 	void OnUpdate(float deltaTime);
 	void OnEvent(Event& event);
