@@ -69,7 +69,7 @@ struct PrimitiveComponent
 
 
 		archive(cereal::make_nvp("Plane Width", PlaneWidth));
-		archive(cereal::make_nvp("Plane Depth", PlaneDepth));
+		archive(cereal::make_nvp("Plane Length", PlaneLength));
 		archive(cereal::make_nvp("Plane Width Lines", PlaneWidthLines));
 		archive(cereal::make_nvp("Plane Length Lines", PlaneLengthLines));
 		archive(cereal::make_nvp("Plane Tile U", PlaneTileU));

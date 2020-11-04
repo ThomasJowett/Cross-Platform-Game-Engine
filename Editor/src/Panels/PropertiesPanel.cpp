@@ -247,6 +247,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			switch (primitive.Type)
 			{
+				int tempInt;
 			case PrimitiveComponent::Shape::Cube:
 				if (ImGui::DragFloat("Width##cube", &primitive.CubeWidth, 0.1f, 0.0f))
 				{
@@ -267,13 +268,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Longitude Lines##Sphere", &(int)primitive.SphereLongitudeLines, 1.0f, 3, 600))
+				tempInt = primitive.SphereLongitudeLines;
+				if (ImGui::DragInt("Longitude Lines##Sphere", &tempInt, 1.0f, 3, 600))
 				{
+					primitive.SphereLongitudeLines = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Latitude Lines##Sphere", &(int)primitive.SphereLatitudeLines, 1.0f, 2, 600))
+				tempInt = primitive.SphereLatitudeLines;
+				if (ImGui::DragInt("Latitude Lines##Sphere", &tempInt, 1.0f, 2, 600))
 				{
+					primitive.SphereLatitudeLines = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
@@ -289,13 +294,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Width Lines##Plane", &(int)primitive.PlaneWidthLines, 1.0f, 2, 1000))
+				tempInt = primitive.PlaneWidthLines;
+				if (ImGui::DragInt("Width Lines##Plane", &tempInt, 1.0f, 2, 1000))
 				{
+					primitive.PlaneWidthLines = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Length Lines##Plane", &(int)primitive.PlaneLengthLines, 1.0f, 2, 1000))
+				tempInt = primitive.PlaneLengthLines;
+				if (ImGui::DragInt("Length Lines##Plane", &tempInt, 1.0f, 2, 1000))
 				{
+					primitive.PlaneLengthLines = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
@@ -326,13 +335,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Slice Count##Cylinder", &(int)primitive.CylinderSliceCount, 1.0f, 3, 600))
+				tempInt = primitive.CylinderSliceCount;
+				if (ImGui::DragInt("Slice Count##Cylinder", &tempInt, 1.0f, 3, 600))
 				{
+					primitive.CylinderSliceCount = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Stack Count##Cylinder", &(int)primitive.CylinderStackCount, 1.0f, 1, 600))
+				tempInt = primitive.CylinderStackCount;
+				if (ImGui::DragInt("Stack Count##Cylinder", &tempInt, 1.0f, 1, 600))
 				{
+					primitive.CylinderStackCount = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
@@ -348,13 +361,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Slice Count##Cone", &(int)primitive.ConeSliceCount, 1.0f, 3, 600))
+				tempInt = primitive.ConeSliceCount;
+				if (ImGui::DragInt("Slice Count##Cone", &tempInt, 1.0f, 3, 600))
 				{
+					primitive.ConeSliceCount = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragInt("Stack Count##Cone", &(int)primitive.ConeStackCount, 1.0f, 1, 600))
+				tempInt = primitive.ConeStackCount;
+				if (ImGui::DragInt("Stack Count##Cone", &tempInt, 1.0f, 1, 600))
 				{
+					primitive.ConeStackCount = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
