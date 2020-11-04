@@ -63,9 +63,9 @@ void ProjectsStartScreen::OnImGuiRender()
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
-				const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0");
-				if (!fileToOpen.empty())
-					OpenProject(fileToOpen);
+				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0");
+				if (fileToOpen)
+					OpenProject(fileToOpen.value());
 			}
 		}
 		else
@@ -94,13 +94,15 @@ void ProjectsStartScreen::OnImGuiRender()
 
 			if (ImGui::Button("Blank Project"))
 			{
-				std::filesystem::path projectPath = SaveAsDialog(L"Choose Project Location...", L"Project File (*.proj)\0*.proj");
+				std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Choose Project Location...", L"Project File (*.proj)\0*.proj");
 
-				if (projectPath.empty())
+				if (!dialogPath)
 				{
 					ImGui::EndPopup();
 					return;
 				}
+
+				std::filesystem::path projectPath = dialogPath.value();
 
 				projectPath.replace_extension(".proj");
 

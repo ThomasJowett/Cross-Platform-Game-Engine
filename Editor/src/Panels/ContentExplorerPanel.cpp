@@ -43,7 +43,7 @@ void ContentExplorerPanel::Paste()
 		{
 			std::filesystem::copy_file(path, target, std::filesystem::copy_options::skip_existing);
 		}
-		catch (std::exception& e)
+		catch (std::exception &e)
 		{
 			CLIENT_ERROR(e.what());
 		}
@@ -112,7 +112,7 @@ bool ContentExplorerPanel::Rename()
 	}
 
 	if (ImGui::InputText("##RenameBox", inputBuffer, sizeof(inputBuffer),
-		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+						 ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 	{
 		if (!std::filesystem::exists(m_CurrentPath / inputBuffer))
 		{
@@ -144,7 +144,7 @@ bool ContentExplorerPanel::Rename()
 	return false;
 }
 
-void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
+void ContentExplorerPanel::SwitchTo(const std::filesystem::path &path)
 {
 	m_CurrentPath = path;
 
@@ -161,7 +161,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	m_ForceRescan = true;
 }
 
-void ContentExplorerPanel::CreateNewScene()//TODO: create a pop-up to name the scene before creating it
+void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
 	std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
 
@@ -201,7 +201,7 @@ std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 	return std::filesystem::path(path);
 }
 
-void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
+void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2 &childWindowSize)
 {
 	int approxNumEntriesPerColumn = 20;
 	if (childWindowSize.y > 0)
@@ -239,7 +239,7 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 
 void ContentExplorerPanel::HandleKeyboardInputs()
 {
-	ImGuiIO& io = ImGui::GetIO();
+	ImGuiIO &io = ImGui::GetIO();
 	bool shift = io.KeyShift;
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
@@ -265,7 +265,7 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 
 void ContentExplorerPanel::RightClickMenu()
 {
-	ImGuiStyle* style = &ImGui::GetStyle();
+	ImGuiStyle *style = &ImGui::GetStyle();
 
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
@@ -293,7 +293,6 @@ void ContentExplorerPanel::RightClickMenu()
 
 			ImGui::OpenPopup("Rename");
 
-
 			m_CurrentSelectedPath = newFolderName;
 		}
 		if (ImGui::SmallButton("Scene"))
@@ -313,12 +312,16 @@ void ContentExplorerPanel::RightClickMenu()
 	}
 	if (ImGui::MenuItem("Import Assets"))
 	{
-		ImportManager::ImportMultiAssets(MultiFileDialog(L"Select Files...",
-			L"Any File\0*.*\0"
-			"Film Box (.fbx)\0*.fbx\0"
-			"Wavefront OBJ (.obj)\0*.obj"),
-			m_CurrentPath);
-		m_ForceRescan = true;
+		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
+																					L"Any File\0*.*\0"
+																					"Film Box (.fbx)\0*.fbx\0"
+																					"Wavefront OBJ (.obj)\0*.obj");
+
+		if (assetPaths)
+		{
+			ImportManager::ImportMultiAssets(assetPaths.value(), m_CurrentPath);
+			m_ForceRescan = true;
+		}
 	}
 	ImGui::Separator();
 	if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
@@ -345,8 +348,8 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 	}
 }
 
-ContentExplorerPanel::ContentExplorerPanel(bool* show)
-	:m_Show(show), Layer("ContentExplorer")
+ContentExplorerPanel::ContentExplorerPanel(bool *show)
+	: m_Show(show), Layer("ContentExplorer")
 {
 	m_TotalNumBrowsingEntries = 0;
 	m_NumBrowsingColumns = 0;
@@ -399,11 +402,9 @@ void ContentExplorerPanel::OnImGuiRender()
 		m_NumberSelected = 0;
 	}
 
-
-
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(500, 40), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(ICON_FA_FOLDER_OPEN" Content Explorer", m_Show))
+	if (ImGui::Begin(ICON_FA_FOLDER_OPEN " Content Explorer", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -424,7 +425,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			Rename();
 			ImGui::EndPopup();
 		}
-		const ImGuiStyle& style = ImGui::GetStyle();
+		const ImGuiStyle &style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
 
 		//----------------------------------------------------------------------------------------------------
@@ -445,7 +446,6 @@ void ContentExplorerPanel::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
-
 			}
 			else if (ImGui::IsWindowHovered())
 			{
@@ -453,7 +453,8 @@ void ContentExplorerPanel::OnImGuiRender()
 			}
 			historyBackClicked |= ImGui::Button(ICON_FA_ARROW_LEFT);
 
-			if (!historyCanGoBack) {
+			if (!historyCanGoBack)
+			{
 				ImGui::PopStyleColor(3);
 			}
 
@@ -462,8 +463,6 @@ void ContentExplorerPanel::OnImGuiRender()
 				ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
 				ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
-
-
 			}
 			else if (ImGui::IsWindowHovered())
 			{
@@ -472,7 +471,8 @@ void ContentExplorerPanel::OnImGuiRender()
 			ImGui::SameLine();
 			historyForwardClicked |= ImGui::Button(ICON_FA_ARROW_RIGHT);
 
-			if (!historyCanGoForward) {
+			if (!historyCanGoForward)
+			{
 				ImGui::PopStyleColor(3);
 			}
 
@@ -486,7 +486,8 @@ void ContentExplorerPanel::OnImGuiRender()
 			ImGui::SameLine();
 			levelUpClicked = ImGui::Button(ICON_FA_ARROW_UP);
 
-			if (!historyCanGoUp) {
+			if (!historyCanGoUp)
+			{
 				ImGui::PopStyleColor(3);
 			}
 		}
@@ -517,19 +518,19 @@ void ContentExplorerPanel::OnImGuiRender()
 		//Sorting mode combo
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
-		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
-			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
-			ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0"
-			ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0"
-			ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0"
-			ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0"
-			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
-			ICON_FA_SORT_DOWN "\tType\0"
-			ICON_FA_SORT_UP "\tType Reverse"))
+		if (ImGui::Combo("##Sorting Mode", (int *)&m_SortingMode,
+						 ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0" 
+						 ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0" 
+						 ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0" 
+						 ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0" 
+						 ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0" 
+						 ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0" 
+						 ICON_FA_SORT_DOWN "\tType\0" 
+						 ICON_FA_SORT_UP "\tType Reverse"))
 			m_ForceRescan = true;
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
-		const std::filesystem::path* fi = m_History.GetCurrentFolder();
+		const std::filesystem::path *fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;
@@ -557,7 +558,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			{
 				ImGui::SameLine();
 				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
-					ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
+																	  ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
 
 				static bool once = false;
 				if (!ImGui::IsItemActive())
@@ -571,8 +572,6 @@ void ContentExplorerPanel::OnImGuiRender()
 					once = false;
 					mustValidateInputPath = true;
 				}
-
-
 			}
 
 			if (mustValidateInputPath)
@@ -589,7 +588,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					m_EditLocationCheckButtonPressed = false;
 				}
-				catch (const std::exception& e)
+				catch (const std::exception &e)
 				{
 					CLIENT_ERROR(e.what());
 				}
@@ -649,7 +648,6 @@ void ContentExplorerPanel::OnImGuiRender()
 									m_CurrentPath = *m_History.GetCurrentFolder();
 									break;
 								}
-
 							}
 							ImGui::EndCombo();
 						}
@@ -671,7 +669,8 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						m_CurrentPath = *m_History.GetCurrentFolder();
 					}
-					if (t == numTabs - 1) {
+					if (t == numTabs - 1)
+					{
 						ImGui::PopStyleColor(3);
 					}
 				}
@@ -726,7 +725,6 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_CurrentPath = *m_History.GetCurrentFolder();
 							m_ForceRescan = true;
 						}
-
 					}
 
 					if (ImGui::BeginPopupContextItem(dirName.c_str()))

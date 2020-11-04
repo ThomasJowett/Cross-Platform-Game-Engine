@@ -259,8 +259,9 @@ void ViewportPanel::Save()
 void ViewportPanel::SaveAs()
 {
 	CLIENT_DEBUG("Saving As...");
-
-	SceneManager::s_CurrentScene->Save(SaveAsDialog(L"Save Scene As...", L"Scene (.scene)\0*.scene\0"), false);
+	std::optional<std::wstring> scenePath = FileDialog::SaveAs(L"Save Scene As...", L"Scene (.scene)\0*.scene\0");
+	if(scenePath)
+		SceneManager::s_CurrentScene->Save(scenePath.value(), false);
 }
 
 void ViewportPanel::HandleKeyboardInputs()

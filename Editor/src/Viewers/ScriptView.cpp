@@ -153,10 +153,14 @@ void ScriptView::Save()
 void ScriptView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
-	m_FilePath = SaveAsDialog(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
-	if (!m_FilePath.has_extension())
-		m_FilePath.replace_extension(ext);
-	Save();
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
+	if(dialogPath)
+	{
+		m_FilePath =  dialogPath.value();
+		if (!m_FilePath.has_extension())
+			m_FilePath.replace_extension(ext);
+		Save();
+	}
 }
 
 TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()

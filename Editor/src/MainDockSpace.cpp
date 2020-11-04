@@ -209,9 +209,9 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
-				const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
-				if (!fileToOpen.empty())
-					Application::Get().SetOpenDocument(fileToOpen);
+				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+				if (fileToOpen)
+					Application::Get().SetOpenDocument(fileToOpen.value());
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
@@ -407,8 +407,8 @@ void MainDockSpace::HandleKeyBoardInputs()
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('O'))
 	{
-		const std::wstring& fileToOpen = FileDialog(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
-		if (!fileToOpen.empty())
-			Application::Get().SetOpenDocument(fileToOpen);
+		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+		if (fileToOpen)
+			Application::Get().SetOpenDocument(fileToOpen.value());
 	}
 }
