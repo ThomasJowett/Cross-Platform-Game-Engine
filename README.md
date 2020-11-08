@@ -15,18 +15,33 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
  #### Mac
  For Xcode, run the shell script `Progen_Xcode.sh`
 #### Linux
-First install x11-apps by running `sudo apt install x11-apps`.
-Then if needed install libx11-dev by opening a console window and running 
-`sudo apt-get install -y libx11-dev`, `sudo apt-get install xserver-xorg-input-all`, `sudo apt-get install -y libxrandr-dev`, `sudo apt-get install -y libxi-dev`, `sudo apt-get install -y libxinerama-dev`, `sudo apt-get install -y libgl1-mesa-dev` and `sudo apt-get install -y libxcursor-dev`.
+First install dependencies by opening a console window and running the follwing commands:
+* `sudo apt-get install -y libx11-dev`
+* `sudo apt-get install -y libxrandr-dev`
+* `sudo apt-get install -y libxi-dev`
+* `sudo apt-get install -y libxinerama-dev`
+* `sudo apt-get install -y libgl1-mesa-dev`
+* `sudo apt-get install -y libxcursor-dev`.
+
+If using a virtual machine you may also need:
+* `sudo apt-get install xserver-xorg-input-all`
+
+You will also require g++ compiler and make commands to be installed.
+
 Then make the premake5 file executable by running `chmod +x vendor/bin/premake/premake5`.
+
 Then make the shell script executable by running `chmod +x Progen_gmake.sh`.
+
 Then run the shell script with `./Progen_gmake.sh`.
+
+The engine can now be build by running `make`.
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 * [Entt](https://github.com/skypjack/entt) : Fast and reliable entity-component system (ECS) 
 * [glfw](https://github.com/glfw/glfw) : A multi-platform library for OpenGL, OpenGL ES, Vulkan, window and input.
 * [spdlog](https://github.com/gabime/spdlog) : Fast C++ logging library.
 * [stb](https://github.com/nothings/stb) : Single-file public domain (or MIT licensed) libraries for C/C++.
+* [simpleini](https://github.com/brofield/simpleini) : Simple initialization file parser and writer.
 * [glad](https://github.com/Dav1dde/glad) : Meta loader for OpenGL API.
 * [OpenFBX](https://github.com/nem0/OpenFBX) : Lightweight FBX Importer.
 * [cereal](https://github.com/USCiLab/cereal) : A C++11 library for serialization.
