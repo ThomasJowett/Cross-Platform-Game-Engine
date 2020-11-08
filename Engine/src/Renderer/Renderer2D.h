@@ -64,5 +64,5 @@ public:
 
 private:
 	static void StartBatch();
-	static void FlushAndReset();
+	static void NextBatch();
 };

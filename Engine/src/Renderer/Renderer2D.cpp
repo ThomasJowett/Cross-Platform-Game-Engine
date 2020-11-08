@@ -200,15 +200,6 @@ void Renderer2D::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
 void Renderer2D::EndScene()
 {
 	PROFILE_FUNCTION();
-	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-
-	if (dataSize == 0)
-		return;//Nothing was drawn
-
-	s_Data.QuadVertexBuffer->SetData(s_Data.QuadVertexBufferBase, dataSize);
-
-	//dataSize = (uint32_t)((uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase);
-	//s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, dataSize);
 
 	Flush();
 }
@@ -245,7 +236,7 @@ void Renderer2D::StartBatch()
 	s_Data.TextureSlotIndex = 1;
 }
 
-void Renderer2D::FlushAndReset()
+void Renderer2D::NextBatch()
 {
 	Flush();
 	StartBatch();
@@ -319,7 +310,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 
 	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
 	{
-		FlushAndReset();
+		NextBatch();
 	}
 
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
@@ -342,7 +333,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& text
 {
 	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
 	{
-		FlushAndReset();
+		NextBatch();
 	}
 
 	float textureIndex = 0.0f;
@@ -360,7 +351,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& text
 	if (textureIndex == 0.0f)
 	{
 		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
-			FlushAndReset();
+			NextBatch();
 
 		textureIndex = (float)s_Data.TextureSlotIndex;
 		s_Data.TextureSlots[s_Data.TextureSlotIndex] = texture;
@@ -387,7 +378,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
 	{
-		FlushAndReset();
+		NextBatch();
 	}
 
 	float textureIndex = 0.0f;
@@ -405,7 +396,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 	if (textureIndex == 0.0f)
 	{
 		if (s_Data.TextureSlotIndex >= Renderer2DData::MaxTexturesSlots)
-			FlushAndReset();
+			NextBatch();
 
 		textureIndex = (float)s_Data.TextureSlotIndex;
 		s_Data.TextureSlots[s_Data.TextureSlotIndex] = subtexture->GetTexture();
@@ -430,7 +421,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
 	if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
-		FlushAndReset();
+		NextBatch();
 
 	//world to clip
 	Vector3f clipI = s_Data.ViewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);

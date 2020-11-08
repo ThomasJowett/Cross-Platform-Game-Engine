@@ -104,7 +104,7 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 			break;
 		}
 		default: 
-			CORE_ASSERT(false, "Unkown ShaderDataType");
+			CORE_ASSERT(false, "Unknown ShaderDataType");
 		}
 	}
 

@@ -7,7 +7,9 @@
 #include "Core/Application.h"
 #include "DirectX11Context.h"
 
-std::string DirectX11Shader::shaderVersion = "_5_0";
+#pragma comment(lib, "dxguid.lib")
+
+std::string DirectX11Shader::s_ShaderVersion = "_5_0";
 
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
@@ -23,6 +25,12 @@ DirectX11Shader::DirectX11Shader(const std::string& name, const std::filesystem:
 	m_GeometryShader = nullptr;
 	m_PixelShader = nullptr;
 
+	m_VertexReflector = nullptr;
+	m_HullReflector = nullptr;
+	m_DomainReflector = nullptr;
+	m_GeometryReflector = nullptr;
+	m_PixelReflector = nullptr;
+
 	std::filesystem::path shaderPath = fileDirectory / name;
 	shaderPath.replace_extension(".hlsl");
 
@@ -36,6 +44,12 @@ DirectX11Shader::DirectX11Shader(const std::string& name, const std::string& ver
 	m_DomainShader = nullptr;
 	m_GeometryShader = nullptr;
 	m_PixelShader = nullptr;
+
+	m_VertexReflector = nullptr;
+	m_HullReflector = nullptr;
+	m_DomainReflector = nullptr;
+	m_GeometryReflector = nullptr;
+	m_PixelReflector = nullptr;
 }
 
 DirectX11Shader::~DirectX11Shader()
@@ -45,6 +59,12 @@ DirectX11Shader::~DirectX11Shader()
 	if (m_DomainShader)		m_DomainShader->Release();
 	if (m_GeometryShader)	m_GeometryShader->Release();
 	if (m_PixelShader)		m_PixelShader->Release();
+
+	if (m_VertexReflector)		m_VertexReflector->Release();
+	if (m_HullReflector)		m_HullReflector->Release();
+	if (m_DomainReflector)		m_DomainReflector->Release();
+	if (m_GeometryReflector)	m_GeometryReflector->Release();
+	if (m_PixelReflector)		m_PixelReflector->Release();
 }
 
 void DirectX11Shader::Bind() const
@@ -75,6 +95,8 @@ void DirectX11Shader::SetFloat4(const char* name, const float r, const float g, 
 
 void DirectX11Shader::SetFloat4(const char* name, const Colour colour)
 {
+	D3D11_SHADER_INPUT_BIND_DESC shaderInputBindingDesc;
+	if (m_VertexShader) m_VertexReflector->GetResourceBindingDescByName(name, &shaderInputBindingDesc);
 }
 
 void DirectX11Shader::SetInt(const char* name, const int value)
@@ -124,43 +146,67 @@ HRESULT DirectX11Shader::CompileShaders(const std::filesystem::path& filename)
 {
 	if (!std::filesystem::exists(filename))
 	{
-		ENGINE_ERROR("{0} shader file does not exist");
+		ENGINE_ERROR("{0} shader file does not exist", filename.string());
 		return S_FALSE;
 	}
 	HRESULT hr;
 	ID3DBlob* pBlob = nullptr;
 
 	// Vertex Shader
-	hr = CompileShaderFromFile(filename, "vertexShader", ("vs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "vertexShader", ("vs" + s_ShaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
+	{
 		hr = g_D3dDevice->CreateVertexShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_VertexShader);
 
+		if (SUCCEEDED(hr))
+			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_VertexReflector);
+	}
+
 	// Hull Shader
-	hr = CompileShaderFromFile(filename, "hullShader", ("hs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "hullShader", ("hs" + s_ShaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
+	{
 		hr = g_D3dDevice->CreateHullShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_HullShader);
+		D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_HullReflector);
+	}
 
 	//Domain Shader
-	hr = CompileShaderFromFile(filename, "domainShader", ("ds" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "domainShader", ("ds" + s_ShaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
+	{
 		hr = g_D3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
 
+
+		if (SUCCEEDED(hr))
+			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_DomainReflector);
+	}
+
 	//Geometry Shader
-	hr = CompileShaderFromFile(filename, "geometryShader", ("gs" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "geometryShader", ("gs" + s_ShaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
+	{
 		hr = g_D3dDevice->CreateGeometryShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_GeometryShader);
 
+		if (SUCCEEDED(hr))
+			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_GeometryReflector);
+	}
+
 	//Pixel Shader
-	hr = CompileShaderFromFile(filename, "pixelShader", ("ps" + shaderVersion).c_str(), &pBlob);
+	hr = CompileShaderFromFile(filename, "pixelShader", ("ps" + s_ShaderVersion).c_str(), &pBlob);
 	if (SUCCEEDED(hr))
+	{
 		hr = g_D3dDevice->CreatePixelShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_PixelShader);
+
+		if (SUCCEEDED(hr))
+			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_PixelReflector);
+	}
 
 	if (FAILED(hr))
 	{
 		ENGINE_ERROR("Could not compile {0}", filename);
 	}
 
-	if(pBlob)	pBlob->Release();
+	if (pBlob)	pBlob->Release();
 
 	return hr;
 }

@@ -21,6 +21,8 @@ public:
 	virtual void SetFloat(const char* name, const float value) override;
 
 	virtual std::string GetName()const override { return m_Name; }
+
+	static const std::string& GetShaderVersion() { return s_ShaderVersion; }
 private:
 	HRESULT CompileShaderFromFile(const std::filesystem::path&, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut);
 	HRESULT CompileShaders(const std::filesystem::path& filename);
@@ -33,5 +35,11 @@ private:
 	ID3D11GeometryShader* m_GeometryShader;
 	ID3D11PixelShader* m_PixelShader;
 
-	static std::string shaderVersion;
+	ID3D11ShaderReflection* m_VertexReflector;
+	ID3D11ShaderReflection* m_HullReflector;
+	ID3D11ShaderReflection* m_DomainReflector;
+	ID3D11ShaderReflection* m_GeometryReflector;
+	ID3D11ShaderReflection* m_PixelReflector;
+
+	static std::string s_ShaderVersion;
 };
