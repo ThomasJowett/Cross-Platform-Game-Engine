@@ -44,7 +44,7 @@ struct PrimitiveComponent
 
 	float TorusOuterRadius = 1.0f;
 	float TorusInnerRadius = 0.4f;
-	float TorusSliceCount = 32;
+	uint32_t TorusSliceCount = 32;
 
 	PrimitiveComponent() = default;
 	PrimitiveComponent(Shape shape)

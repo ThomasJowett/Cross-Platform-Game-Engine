@@ -387,8 +387,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
-				if (ImGui::DragFloat("Slice Count##Torus", &primitive.TorusSliceCount, 1.0f, 3, 600))
+				tempInt = primitive.TorusSliceCount;
+				if (ImGui::DragInt("Slice Count##Torus", &tempInt, 1.0f, 3, 600))
 				{
+					primitive.TorusSliceCount = tempInt;
 					primitive.NeedsUpdating = true;
 					SceneManager::s_CurrentScene->MakeDirty();
 				}
