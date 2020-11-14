@@ -13,6 +13,8 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
+#include "Events/SceneEvent.h"
+
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
 {
@@ -45,6 +47,7 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::OnUpdate(float deltaTime)
 {
+	m_IsUpdating = true;
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
 			if (nsc.InstantiateScript != nullptr)
@@ -63,35 +66,35 @@ void Scene::OnUpdate(float deltaTime)
 		});
 
 	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
-	{
-		if (primitiveComponent.NeedsUpdating)
 		{
-			switch (primitiveComponent.Type)
+			if (primitiveComponent.NeedsUpdating)
 			{
-			case PrimitiveComponent::Shape::Cube:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.CubeWidth, primitiveComponent.CubeHeight, primitiveComponent.CubeDepth), "Cube");
-				break;
-			case PrimitiveComponent::Shape::Sphere:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.SphereRadius, primitiveComponent.SphereLongitudeLines, primitiveComponent.SphereLatitudeLines), "Sphere");
-				break;
-			case PrimitiveComponent::Shape::Plane:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.PlaneWidth, primitiveComponent.PlaneLength, primitiveComponent.PlaneLengthLines, primitiveComponent.PlaneWidthLines, primitiveComponent.PlaneTileU, primitiveComponent.PlaneTileV), "Plane");
-				break;
-			case PrimitiveComponent::Shape::Cylinder:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.CylinderBottomRadius, primitiveComponent.CylinderTopRadius, primitiveComponent.CylinderHeight, primitiveComponent.CylinderSliceCount, primitiveComponent.CylinderStackCount), "Cylinder");
-				break;
-			case PrimitiveComponent::Shape::Cone:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.ConeBottomRadius, 0.00001f, primitiveComponent.ConeHeight, primitiveComponent.ConeSliceCount, primitiveComponent.ConeStackCount), "Cone");
-				break;
-			case PrimitiveComponent::Shape::Torus:
-				staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.TorusOuterRadius, primitiveComponent.TorusInnerRadius, primitiveComponent.TorusSliceCount), "Torus");
-				break;
-			default:
-				break;
+				switch (primitiveComponent.Type)
+				{
+				case PrimitiveComponent::Shape::Cube:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.CubeWidth, primitiveComponent.CubeHeight, primitiveComponent.CubeDepth), "Cube");
+					break;
+				case PrimitiveComponent::Shape::Sphere:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.SphereRadius, primitiveComponent.SphereLongitudeLines, primitiveComponent.SphereLatitudeLines), "Sphere");
+					break;
+				case PrimitiveComponent::Shape::Plane:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.PlaneWidth, primitiveComponent.PlaneLength, primitiveComponent.PlaneLengthLines, primitiveComponent.PlaneWidthLines, primitiveComponent.PlaneTileU, primitiveComponent.PlaneTileV), "Plane");
+					break;
+				case PrimitiveComponent::Shape::Cylinder:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.CylinderBottomRadius, primitiveComponent.CylinderTopRadius, primitiveComponent.CylinderHeight, primitiveComponent.CylinderSliceCount, primitiveComponent.CylinderStackCount), "Cylinder");
+					break;
+				case PrimitiveComponent::Shape::Cone:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.ConeBottomRadius, 0.00001f, primitiveComponent.ConeHeight, primitiveComponent.ConeSliceCount, primitiveComponent.ConeStackCount), "Cone");
+					break;
+				case PrimitiveComponent::Shape::Torus:
+					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.TorusOuterRadius, primitiveComponent.TorusInnerRadius, primitiveComponent.TorusSliceCount), "Torus");
+					break;
+				default:
+					break;
+				}
+				primitiveComponent.NeedsUpdating = false;
 			}
-			primitiveComponent.NeedsUpdating = false;
-		}
-	});
+		});
 
 	Matrix4x4 view;
 	Matrix4x4 projection;
@@ -129,6 +132,32 @@ void Scene::OnUpdate(float deltaTime)
 		});
 
 	Renderer::EndScene();
+
+	m_IsUpdating = false;
+}
+
+void Scene::OnFixedUpdate()
+{
+	m_IsUpdating = true;
+
+	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+		{
+			if (nsc.InstantiateScript != nullptr)
+			{
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript(nsc.Name);
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
+
+				nsc.Instance->OnFixedUpdate();
+			}
+			else
+				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
+		});
+
+	m_IsUpdating = false;
 }
 
 void Scene::OnViewportResize(uint32_t width, uint32_t height)
@@ -150,6 +179,8 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 void Scene::Save(std::filesystem::path filepath, bool binary)
 {
 	PROFILE_FUNCTION();
+
+	m_IsSaving = true;
 
 	std::filesystem::path finalPath = filepath;
 	finalPath.replace_extension(".scene");
@@ -189,16 +220,19 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	}
 
 	m_Dirty = false;
+	SceneSaved event(finalPath);
+	Application::CallEvent(event);
+	m_IsSaving = false;
 }
 
 void Scene::Save(bool binary)
 {
-	Save(Application::GetOpenDocumentDirectory() / m_Filepath, binary);
+	Save(m_Filepath, binary);
 }
 
 bool Scene::Load(bool binary)
 {
-	std::filesystem::path filepath = Application::GetOpenDocumentDirectory() / m_Filepath;
+	std::filesystem::path filepath = m_Filepath;
 
 	if (!std::filesystem::exists(filepath))
 	{
@@ -230,5 +264,24 @@ bool Scene::Load(bool binary)
 	}
 
 	m_Dirty = false;
+	SceneLoaded event(filepath);
+	Application::CallEvent(event);
 	return true;
+}
+
+void Scene::SetFilepath(std::filesystem::path filepath)
+{
+	filepath.replace_extension(".scene");
+
+	if (Application::GetOpenDocument().empty())
+	{
+		if (std::filesystem::exists(Application::GetWorkingDirectory() / filepath))
+		{
+			m_Filepath = filepath;
+		}
+		else if (std::filesystem::exists(Application::GetOpenDocumentDirectory() / filepath))
+		{
+			m_Filepath = filepath;
+		}
+	}
 }

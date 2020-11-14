@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Events/JoystickEvent.h"
-
 #define MAX_JOYSTICKS 16
 
 class Joysticks
@@ -17,7 +15,6 @@ public:
 		int Buttons = 0;
 		int Hats = 0;
 	};
-	using EventCallbackFn = std::function<void(Event&)>;
 
 	static void AddJoystick(Joystick joystick)
 	{
@@ -44,16 +41,9 @@ public:
 	static Joystick GetJoystick(int joystickSlot);
 	static double GetDeadZone() { return s_DeadZone; }
 
-	static void SetEventCallback(const EventCallbackFn& callback);
-
-	static void CallEvent(JoystickConnected event);
-	static void CallEvent(JoystickDisconnected event);
-
 private:
 	static Joystick s_Joysticks[MAX_JOYSTICKS];
 	static int s_JoystickCount;
-
-	static EventCallbackFn s_EventCallback;
 
 	static double s_DeadZone;
 };

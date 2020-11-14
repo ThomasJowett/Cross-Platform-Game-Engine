@@ -31,7 +31,11 @@ enum class EventType
 	MOUSE_WHEEL,
 
 	JOYSTICK_CONNECTED,
-	JOYSTICK_DISCONNECTED
+	JOYSTICK_DISCONNECTED,
+
+	SCENE_CHANGED,
+	SCENE_SAVED,
+	SCENE_LOADED
 };
 
 enum EventCategory
@@ -42,7 +46,8 @@ enum EventCategory
 	EC_KEYBOARD		= BIT(2),
 	EC_MOUSE		= BIT(3),
 	EC_MOUSE_BUTTON	= BIT(4),
-	EC_JOYSTICK		= BIT(5)
+	EC_JOYSTICK		= BIT(5),
+	EC_SCENE		= BIT(6)
 };
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\

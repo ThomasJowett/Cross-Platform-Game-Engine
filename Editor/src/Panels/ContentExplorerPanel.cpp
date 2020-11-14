@@ -14,6 +14,8 @@
 
 #include "Importers/ImportManager.h"
 
+#include "Scene/SceneManager.h"
+
 void ContentExplorerPanel::Paste()
 {
 	for (auto path : m_CopiedPaths)
@@ -179,9 +181,7 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 
 	newSceneFilepath += ".scene";
 
-	Ref<Scene> newScene = CreateRef<Scene>(newSceneFilepath);
-
-	newScene->Save(false);
+	SceneManager::ChangeScene(newSceneFilepath);
 
 	m_ForceRescan = true;
 

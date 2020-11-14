@@ -39,7 +39,7 @@ void HierarchyPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered() || !m_SelectedEntity.BelongsToScene(SceneManager::s_CurrentScene.get()))
+		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered() || !m_SelectedEntity.BelongsToScene(SceneManager::CurrentScene()))
 		{
 			m_SelectedEntity = {};
 		}
@@ -49,13 +49,13 @@ void HierarchyPanel::OnImGuiRender()
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
-				m_SelectedEntity = SceneManager::s_CurrentScene->CreateEntity("New Entity");//TODO: make all the entities have a unique name
+				m_SelectedEntity = SceneManager::CurrentScene()->CreateEntity("New Entity");//TODO: make all the entities have a unique name
 			}
 			if (ImGui::BeginMenu("3D Object"))
 			{
 				if (ImGui::MenuItem("Cube"))
 				{
-					Entity cubeEntity = SceneManager::s_CurrentScene->CreateEntity("Cube");
+					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
 					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
 					Material material(Shader::Create("NormalMap"));
@@ -67,7 +67,7 @@ void HierarchyPanel::OnImGuiRender()
 				}
 				if (ImGui::MenuItem("Sphere"))
 				{
-					Entity sphereEntity = SceneManager::s_CurrentScene->CreateEntity("Sphere");
+					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
 					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
 					Material material(Shader::Create("NormalMap"));
@@ -79,7 +79,7 @@ void HierarchyPanel::OnImGuiRender()
 				}
 				if (ImGui::MenuItem("Plane"))
 				{
-					Entity planeEntity = SceneManager::s_CurrentScene->CreateEntity("Plane");
+					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
 					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
 					Material material(Shader::Create("NormalMap"));
@@ -91,7 +91,7 @@ void HierarchyPanel::OnImGuiRender()
 				}
 				if (ImGui::MenuItem("Cylinder"))
 				{
-					Entity cylinderEntity = SceneManager::s_CurrentScene->CreateEntity("Cylinder");
+					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
 					Material material(Shader::Create("NormalMap"));
@@ -103,7 +103,7 @@ void HierarchyPanel::OnImGuiRender()
 				}
 				if (ImGui::MenuItem("Cone"))
 				{
-					Entity cylinderEntity = SceneManager::s_CurrentScene->CreateEntity("Cone");
+					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
 					Material material(Shader::Create("NormalMap"));
@@ -115,7 +115,7 @@ void HierarchyPanel::OnImGuiRender()
 				}
 				if (ImGui::MenuItem("Torus"))
 				{
-					Entity torusEntity = SceneManager::s_CurrentScene->CreateEntity("Torus");
+					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
 					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
 					Material material(Shader::Create("NormalMap"));
@@ -135,7 +135,7 @@ void HierarchyPanel::OnImGuiRender()
 			{
 				if (ImGui::MenuItem("Sprite"))
 				{
-					Entity entity = SceneManager::s_CurrentScene->CreateEntity("Sprite");
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Sprite");
 					entity.AddComponent<SpriteComponent>();
 					m_SelectedEntity = entity;
 				}
@@ -176,24 +176,24 @@ void HierarchyPanel::OnImGuiRender()
 			}
 			if (ImGui::MenuItem("Camera"))
 			{
-				Entity entity = SceneManager::s_CurrentScene->CreateEntity("Camera");
+				Entity entity = SceneManager::CurrentScene()->CreateEntity("Camera");
 				entity.AddComponent<CameraComponent>();
 				m_SelectedEntity = entity;
 			}
 			ImGui::EndPopup();
 		}
 
-		if (SceneManager::s_CurrentScene != nullptr)
+		if (SceneManager::CurrentScene() != nullptr)
 		{
-			if (ImGui::TreeNodeEx(SceneManager::s_CurrentScene->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
+			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
 				| ImGuiTreeNodeFlags_SpanAvailWidth
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
 			{
-				SceneManager::s_CurrentScene->GetRegistry().each([&](auto entityID)
+				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
 					{
-						auto& name = SceneManager::s_CurrentScene->GetRegistry().get<TagComponent>(entityID);
-						Entity entity{ entityID, SceneManager::s_CurrentScene.get(),  name };
+						auto& name = SceneManager::CurrentScene()->GetRegistry().get<TagComponent>(entityID);
+						Entity entity{ entityID, SceneManager::CurrentScene(),  name };
 						DrawNode(entity);
 					});
 
@@ -236,6 +236,6 @@ void HierarchyPanel::DrawNode(Entity entity)
 	{
 		if (m_SelectedEntity == entity)
 			m_SelectedEntity = {};
-		SceneManager::s_CurrentScene->RemoveEntity(entity);
+		SceneManager::CurrentScene()->RemoveEntity(entity);
 	}
 }

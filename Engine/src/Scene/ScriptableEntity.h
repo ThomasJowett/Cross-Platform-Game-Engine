@@ -35,6 +35,9 @@ protected:
 
 	//Called once per frame
 	virtual void OnUpdate(float deltaTime) {}
+
+	//Called 100 times a second
+	virtual void OnFixedUpdate() {}
 private:
 	Entity m_Entity;
 

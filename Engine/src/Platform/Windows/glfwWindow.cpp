@@ -420,13 +420,13 @@ void glfwWindow::Init(const WindowProps& props)
 				glfwGetJoystickHats(joystick.ID, &joystick.Hats);
 				Joysticks::AddJoystick(joystick);
 				JoystickConnected event(jid);
-				Joysticks::CallEvent(event);
+				Application::CallEvent(event);
 			}
 			else if (e == GLFW_DISCONNECTED)
 			{
 				Joysticks::RemoveJoystick(jid);
 				JoystickDisconnected event(jid);
-				Joysticks::CallEvent(event);
+				Application::CallEvent(event);
 			}
 		});
 }

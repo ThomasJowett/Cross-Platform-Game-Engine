@@ -26,7 +26,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	if (!SceneManager::s_CurrentScene)
+	if (!SceneManager::IsSceneLoaded())
 		return;
 
 	m_Framebuffer->Bind();
@@ -51,7 +51,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	Renderer2D::ResetStats();
 
-	SceneManager::s_CurrentScene->OnUpdate(deltaTime);
+	SceneManager::CurrentScene()->OnUpdate(deltaTime);//TODO:: call this from the scene manager update
 
 	m_Framebuffer->UnBind();
 }
@@ -64,7 +64,7 @@ void ViewportPanel::OnFixedUpdate()
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 
-		SceneManager::s_CurrentScene->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 }
 
@@ -72,7 +72,7 @@ void ViewportPanel::OnImGuiRender()
 {
 	PROFILE_FUNCTION();
 
-	if (!*m_Show || SceneManager::s_CurrentScene == nullptr)
+	if (!*m_Show || !SceneManager::IsSceneLoaded())
 	{
 		return;
 	}
@@ -86,7 +86,7 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-	if(SceneManager::s_CurrentScene->IsDirty())
+	if(SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
@@ -140,7 +140,7 @@ void ViewportPanel::OnImGuiRender()
 				{
 					std::string entityName = file->filename().string();
 					entityName = entityName.substr(0, entityName.find_last_of('.'));
-					Entity staticMeshEntity = SceneManager::s_CurrentScene->CreateEntity(entityName);
+					Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
 
 					Mesh mesh(*file);
 
@@ -186,7 +186,7 @@ void ViewportPanel::Cut()
 	// TODO: viewport cut
 	CLIENT_DEBUG("Cut");
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::Paste()
@@ -194,7 +194,7 @@ void ViewportPanel::Paste()
 	//TODO: viewport paste
 	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::Duplicate()
@@ -202,7 +202,7 @@ void ViewportPanel::Duplicate()
 	//TODO: viewport duplicate
 	CLIENT_DEBUG("Duplicated");
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::Delete()
@@ -210,7 +210,7 @@ void ViewportPanel::Delete()
 	//TODO: viewport delete
 	CLIENT_DEBUG("Deleted");
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::SelectAll()
@@ -237,14 +237,14 @@ void ViewportPanel::Undo(int astep)
 {
 	CLIENT_DEBUG("Undid");
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::Redo(int astep)
 {
 	CLIENT_DEBUG("Redid");
 
-	SceneManager::s_CurrentScene->MakeDirty();
+	SceneManager::CurrentScene()->MakeDirty();
 }
 
 void ViewportPanel::Save()
@@ -253,7 +253,7 @@ void ViewportPanel::Save()
 	//	return;
 	CLIENT_DEBUG("Saving...");
 
-	SceneManager::s_CurrentScene->Save(false);
+	SceneManager::CurrentScene()->Save(false);
 }
 
 void ViewportPanel::SaveAs()
@@ -261,7 +261,7 @@ void ViewportPanel::SaveAs()
 	CLIENT_DEBUG("Saving As...");
 	std::optional<std::wstring> scenePath = FileDialog::SaveAs(L"Save Scene As...", L"Scene (.scene)\0*.scene\0");
 	if(scenePath)
-		SceneManager::s_CurrentScene->Save(scenePath.value(), false);
+		SceneManager::CurrentScene()->Save(scenePath.value(), false);
 }
 
 void ViewportPanel::HandleKeyboardInputs()

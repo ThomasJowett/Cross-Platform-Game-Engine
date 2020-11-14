@@ -224,9 +224,9 @@ void MainDockSpace::OnImGuiRender()
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::s_CurrentScene != nullptr))
+			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
 			{
-				SceneManager::s_CurrentScene->Save(false);
+				SceneManager::CurrentScene()->Save(false);
 			}
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
@@ -375,8 +375,7 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	SceneManager::s_CurrentScene = CreateScope<Scene>(data.DefaultScene);
-	SceneManager::s_CurrentScene->Load(false);
+	SceneManager::ChangeScene(data.DefaultScene);
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)
@@ -395,7 +394,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 
 	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 	{
-		SceneManager::s_CurrentScene->Save(false);
+		SceneManager::CurrentScene()->Save(false);
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('N'))
 	{

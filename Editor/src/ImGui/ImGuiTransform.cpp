@@ -140,7 +140,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	if (edited)
 	{
 		rotation = { (float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z) };
-		SceneManager::s_CurrentScene->MakeDirty();
+		SceneManager::CurrentScene()->MakeDirty();
 	}
 
 	return bool();

@@ -94,6 +94,12 @@ public:
 	/// <returns></returns>
 	static const std::filesystem::path& GetWorkingDirectory() { return s_WorkingDirectory; }
 
+	/// <summary>
+	/// Calls an event 
+	/// </summary>
+	/// <param name="event"></param>
+	static void CallEvent(Event& event) { s_EventCallback(event); }
+
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();

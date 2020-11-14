@@ -3,10 +3,15 @@
 
 #include "GLFW/glfw3.h"
 
+#include "Settings.h"
+
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
-#include "Core/Joysticks.h"
-#include "Settings.h"
+
+#include "Events/JoystickEvent.h"
+#include "Events/SceneEvent.h"
+
+#include "Scene/SceneManager.h"
 
 #include "Logging/Logger.h"
 
@@ -36,8 +41,6 @@ Application::Application(const WindowProps& props)
 	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	Renderer::Init();
-
-	Joysticks::SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
 	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
 
@@ -187,6 +190,11 @@ void Application::OnEvent(Event& e)
 			return false;
 		});
 	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected& event)
+		{
+			ENGINE_INFO(event.to_string());
+			return false;
+		});
+	dispatcher.Dispatch<SceneChanged>([](SceneChanged& event)
 		{
 			ENGINE_INFO(event.to_string());
 			return false;
