@@ -64,7 +64,7 @@ void GridLayer::OnUpdate(float deltaTime)
 
 	m_CameraController.OnUpdate(deltaTime);
 
-	Renderer::BeginScene(m_CameraController.GetCamera());
+	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
 	m_Texture->Bind();
 
 	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(Vector3f()));

@@ -11,6 +11,8 @@
 
 #include "Scene/SceneManager.h"
 
+#include "HierarchyPanel.h"
+
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
@@ -23,7 +25,7 @@ class ViewportPanel
 	};
 
 public: 
-	explicit ViewportPanel(bool* show);
+	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel);
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
@@ -57,6 +59,7 @@ private:
 	bool m_CursorDisabled = false;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
+	Ref<FrameBuffer> m_CameraPreview;
 	Vector2f m_RelativeMousePosition;
 
 	ShaderLibrary m_ShaderLibrary;
@@ -66,4 +69,6 @@ private:
 	Mode m_Mode;
 
 	std::filesystem::path m_SceneFilepath;
+
+	HierarchyPanel* m_HierarchyPanel;
 };

@@ -31,4 +31,6 @@ private:
 
 	float* m_FOV;
 	float m_Nearfar[2] = { 1.0f, -1.0f };
+
+	bool m_ControlCamera = true;
 };

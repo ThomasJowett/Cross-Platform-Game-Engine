@@ -183,7 +183,7 @@ void HierarchyPanel::OnImGuiRender()
 			ImGui::EndPopup();
 		}
 
-		if (SceneManager::CurrentScene() != nullptr)
+		if (SceneManager::IsSceneLoaded())
 		{
 			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
 				| ImGuiTreeNodeFlags_SpanAvailWidth

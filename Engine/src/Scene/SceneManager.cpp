@@ -104,10 +104,11 @@ bool SceneManager::FinalChangeScene()
 	s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
 	if (!s_CurrentScene->Load(false))
 		s_CurrentScene = nullptr;
-	s_NextFilepath.clear();
 
 	SceneChanged event(s_NextFilepath);
 	Application::CallEvent(event);
+
+	s_NextFilepath.clear();
 
 	return IsSceneLoaded();
 }

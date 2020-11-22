@@ -92,15 +92,15 @@ void MainDockSpace::OnAttach()
 
 	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
-	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport));
 	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
 	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
 	Application::Get().AddOverlay(m_ContentExplorer);
 	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	HierarchyPanel* hierachyPanel = new HierarchyPanel(&m_ShowHierarchy);
-	Application::Get().AddOverlay(hierachyPanel);
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierachyPanel));
+	HierarchyPanel* hierarchyPanel = new HierarchyPanel(&m_ShowHierarchy);
+	Application::Get().AddOverlay(hierarchyPanel);
+	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel));
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel));
 
 	if (!Application::GetOpenDocument().empty())
 	{

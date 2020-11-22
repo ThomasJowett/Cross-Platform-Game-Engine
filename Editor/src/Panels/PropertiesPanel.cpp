@@ -9,8 +9,8 @@
 
 #include <cstring>
 
-PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierachyPanel)
-	:Layer("Properties"), m_Show(show), m_HierachyPanel(hierachyPanel)
+PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)
+	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel)
 {
 }
 
@@ -41,7 +41,7 @@ void PropertiesPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		Entity entity = m_HierachyPanel->GetSelectedEntity();
+		Entity entity = m_HierarchyPanel->GetSelectedEntity();
 		if (entity)
 		{
 			ImGui::BeginGroup();

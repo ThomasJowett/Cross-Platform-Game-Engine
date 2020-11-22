@@ -24,15 +24,10 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 	RenderCommand::SetViewport(0, 0, width, height);
 }
 
-void Renderer::BeginScene(const Camera& camera)
+void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
-	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
-}
-
-void Renderer::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
-{
-	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
-	Renderer2D::BeginScene(view, projection);
+	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
+	Renderer2D::BeginScene(transform, projection);
 }
 
 void Renderer::EndScene()
@@ -45,7 +40,7 @@ void Renderer::EndScene()
 
 void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
 {
-	//TODO: sumbit the vertex array to a render queue
+	//TODO: submit the vertex array to a render queue
 	shader->Bind();
 	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);

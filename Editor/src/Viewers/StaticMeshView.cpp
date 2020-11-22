@@ -132,7 +132,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 		Application::GetWindow().EnableCursor();
 	}
 
-	Renderer::BeginScene(*m_CameraController.GetCamera());
+	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 	m_Texture->Bind();
 
 	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());

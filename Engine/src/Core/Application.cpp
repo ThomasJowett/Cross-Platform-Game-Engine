@@ -106,10 +106,13 @@ void Application::Run()
 			if (!m_Minimized)
 			{
 				OnFixedUpdate();
+
 				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
 				}
+
+				SceneManager::FixedUpdate();
 			}
 			accumulator -= deltaTime;
 		}
@@ -127,6 +130,8 @@ void Application::Run()
 					layer->OnUpdate((float)frameTime);
 				}
 			}
+
+			SceneManager::Update((float)frameTime);
 		}
 
 		// Render the imgui of each of the layers

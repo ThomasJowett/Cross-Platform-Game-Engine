@@ -21,10 +21,13 @@ void ExampleLayer2D::OnDetach()
 void ExampleLayer2D::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
-	m_CameraController.OnUpdate(deltaTime);
+	if (m_ControlCamera)
+	{
+		m_CameraController.OnUpdate(deltaTime);
+	}
 	Renderer2D::ResetStats();
 
-	Renderer2D::BeginScene(m_CameraController.GetCamera());
+	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
 
 	//A coloured quad in the center of the screen
 	Renderer2D::DrawQuad({ m_Position[0], m_Position[1] }, { m_Size[0], m_Size[1] }, m_Rotation, m_Colour);
@@ -51,7 +54,7 @@ void ExampleLayer2D::OnUpdate(float deltaTime)
 	}
 
 	//Renderer2D::DrawLine(Vector2f( -0.3f,-0.4f ), Vector2f( -0.3f, 0.4f ), 1.0f);
-	Renderer2D::EndScene();
+	Renderer::EndScene();
 }
 
 void ExampleLayer2D::OnEvent(Event& e)
@@ -70,7 +73,7 @@ void ExampleLayer2D::OnEvent(Event& e)
 void ExampleLayer2D::OnImGuiRender()
 {
 	ImGui::Begin("Settings 2D");
-	ImGui::Text(std::to_string(m_CameraController.GetZoom()).c_str());
+	ImGui::Checkbox("Control Camera", &m_ControlCamera);
 	ImGui::ColorEdit4("Square Colour", &m_Colour.r);
 	ImGui::DragFloat2("Square Position", m_Position, 0.01f);
 	ImGui::DragFloat2("Square Size", m_Size, 0.01f);

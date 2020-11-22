@@ -23,6 +23,8 @@ private:
 
 	float m_Gridsize = 10.0f;
 
+	bool m_ControlCamera = false;
+
 	TextureLibrary2D m_TextureLibrary;
 	Ref<SubTexture2D> m_SubTexture;
 };

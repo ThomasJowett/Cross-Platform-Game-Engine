@@ -10,11 +10,15 @@ public:
 
 	void OnUpdate(float deltaTime);
 
-	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position;  m_CurrrentCamera->SetPosition(position); }
+	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position; }
+	Vector3f GetPosition() const;
 
 	void SetAspectRatio(const float& aspectRatio);
+	void SetViewPortSize(const Vector2f& viewportSize) { m_ViewPortSize = viewportSize; }
 
-	Camera* GetCamera() const { return m_CurrrentCamera; }
+	Camera* GetCamera() const { return m_CurrentCamera; }
+
+	Matrix4x4 GetTransformMatrix();
 
 	void OnMouseMotion(Vector2f mousePosition);
 	void OnMouseWheel(float mouseWheel);
@@ -36,20 +40,23 @@ private:
 
 	Vector3f m_2DCameraPosition;
 
-	Camera* m_CurrrentCamera;
+	Camera* m_CurrentCamera;
 	bool m_Is3DCamera;
 
 	float m_AspectRatio = 16.0f/9.0f;
-	float m_ZoomLevel = 2.0f;
 	float m_TranslationSpeed = 1.0f;
 
 	float m_FovY = (float)PI / 2;
-	float m_NearDepth = 1.0f;
-	float m_FarDepth = -1.0f;
+	float m_PerspectiveNearDepth = 1.0f;
+	float m_PerspectiveFarDepth = 1000.0f;
+
+	float m_ZoomLevel = 2.0f;
+	float m_OrthographicNearDepth = -1.0f;
+	float m_OrthoGraphicFarDepth = 1.0f;
 
 	Vector3f m_Up = { 0.0,1.0,0.0 };
 	Vector3f m_Right = { 1.0, 0.0, 0.0 };
-	Vector3f m_Forward = { 0.0, 0.0, -1.0 };
+	Vector3f m_Forward = { 0.0, 0.0, 1.0 };
 
 	Vector2f m_MouseRelativeVelocity;
 	Vector2f m_MouseLastPosition;
@@ -57,4 +64,6 @@ private:
 
 	OrthographicCamera m_2DCamera;
 	PerspectiveCamera m_3DCamera;
+
+	Vector2f m_ViewPortSize;
 };

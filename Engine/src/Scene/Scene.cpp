@@ -6,6 +6,8 @@
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/FrameBuffer.h"
 
 #include "Utilities/GeometryGenerator.h"
 
@@ -43,6 +45,57 @@ bool Scene::RemoveEntity(const Entity& entity)
 	}
 	m_Dirty = true;
 	return false;
+}
+
+void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& view, const Matrix4x4& projection)
+{
+	renderTarget->Bind();
+
+	RenderCommand::Clear();
+
+	Renderer::BeginScene(view, projection);
+
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawQuad(transform, sprite.Tint);
+		});
+
+
+	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
+		[](const auto& mesh, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer::Submit(mesh.material, mesh.Geometry, transform);
+		});
+
+	Renderer::EndScene();
+
+	renderTarget->UnBind();
+}
+
+void Scene::Render(Ref<FrameBuffer> renderTarget)
+{
+	Matrix4x4 view;
+	Matrix4x4 projection;
+
+	m_Registry.view<TransformComponent, CameraComponent>().each(
+		[&]([[maybe_unused]] const auto cameraEntity, const auto& transformComp, const auto& cameraComp)
+		{
+			if (cameraComp.Primary)
+			{
+				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				projection = cameraComp.Camera.GetProjectionMatrix();
+			}
+		}
+	);
+
+	Render(renderTarget, view, projection);
 }
 
 void Scene::OnUpdate(float deltaTime)
@@ -95,43 +148,6 @@ void Scene::OnUpdate(float deltaTime)
 				primitiveComponent.NeedsUpdating = false;
 			}
 		});
-
-	Matrix4x4 view;
-	Matrix4x4 projection;
-
-	m_Registry.view<TransformComponent, CameraComponent>().each(
-		[&]([[maybe_unused]] const auto cameraEntity, const auto& transformComp, const auto& cameraComp)
-		{
-			if (cameraComp.Primary)
-			{
-				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
-				projection = cameraComp.Camera.GetProjectionMatrix();
-			}
-		}
-	);
-
-	Renderer::BeginScene(view, projection);
-
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawQuad(transform, sprite.Tint);
-		});
-
-
-	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer::Submit(mesh.material, mesh.Geometry, transform);
-		});
-
-	Renderer::EndScene();
 
 	m_IsUpdating = false;
 }

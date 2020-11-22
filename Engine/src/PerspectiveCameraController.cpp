@@ -95,11 +95,9 @@ void PerspectiveCameraController::OnUpdate(float deltaTime)
 		Pitch(-1.0f * deltaTime);
 	}
 
-	//make sure right and forward are orthoganal to each other
+	//make sure right and forward are orthogonal to each other
 	Vector3f up = Vector3f::Cross(m_Right, m_Forward).GetNormalized();
 	m_Right = Vector3f::Cross(m_Forward, up).GetNormalized();
-
-	m_Camera.SetPositionAndRotation(m_CameraPosition, m_CameraRotation);
 
 	m_MouseRelativeVelocity = Vector2f();
 }
@@ -160,27 +158,27 @@ bool PerspectiveCameraController::OnMouseMoved(MouseMotionEvent& event)
 
 void PerspectiveCameraController::Walk(float d)
 {
-	m_CameraPosition = (d * m_Forward) + m_CameraPosition;
+	m_Position = (d * m_Forward) + m_Position;
 }
 
 void PerspectiveCameraController::Strafe(float d)
 {
-	m_CameraPosition = (d * m_Right) + m_CameraPosition;
+	m_Position = (d * m_Right) + m_Position;
 }
 
 void PerspectiveCameraController::Raise(float d)
 {
-	m_CameraPosition = (d * m_Up) + m_CameraPosition;
+	m_Position = (d * m_Up) + m_Position;
 }
 
 void PerspectiveCameraController::Pitch(float angle)
 {
-	m_CameraRotation = m_CameraRotation + Vector3f(angle, 0.0f, 0.0f);
+	m_Rotation = m_Rotation + Vector3f(angle, 0.0f, 0.0f);
 
-	if (m_CameraRotation.x > PI * 0.5f)
-		m_CameraRotation.x = (float)(PI * 0.5f);
-	else if (m_CameraRotation.x < -(PI * 0.5f))
-		m_CameraRotation.x = -(float)(PI * 0.5f);
+	if (m_Rotation.x > PI * 0.5f)
+		m_Rotation.x = (float)(PI * 0.5f);
+	else if (m_Rotation.x < -(PI * 0.5f))
+		m_Rotation.x = -(float)(PI * 0.5f);
 	else
 	{
 		Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_Right, angle));
@@ -194,12 +192,12 @@ void PerspectiveCameraController::Yaw(float angle)
 	m_Forward = rotation * m_Forward;
 	m_Right = rotation * m_Right;
 
-	m_CameraRotation = m_CameraRotation + Vector3f(0.0f, angle, 0.0f);
+	m_Rotation = m_Rotation + Vector3f(0.0f, angle, 0.0f);
 
-	if (m_CameraRotation.y > PI)
-		m_CameraRotation.y -= (float)(PI * 2.0f);
-	else if (m_CameraRotation.y < -PI)
-		m_CameraRotation.y += (float)(PI * 2.0f);
+	if (m_Rotation.y > PI)
+		m_Rotation.y -= (float)(PI * 2.0f);
+	else if (m_Rotation.y < -PI)
+		m_Rotation.y += (float)(PI * 2.0f);
 }
 
 void PerspectiveCameraController::LookAt(Vector3f focalPoint)
@@ -224,4 +222,9 @@ void PerspectiveCameraController::SetAspectRatio(const float& aspectRatio)
 {
 	m_AspectRatio = aspectRatio;
 	m_Camera.SetProjection(m_FovY, m_AspectRatio, m_NearDepth, m_FarDepth);
+}
+
+Matrix4x4 PerspectiveCameraController::GetTransformMatrix()
+{
+	return Matrix4x4::Translate(m_Position) * Matrix4x4::Rotate(m_Rotation);
 }

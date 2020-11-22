@@ -10,7 +10,7 @@ public:
 		:m_Filepath(filepath)
 	{}
 
-	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
+	std::filesystem::path GetFilepath() const { return m_Filepath; }
 
 	std::string to_string() const override
 	{
@@ -32,7 +32,7 @@ public:
 		:m_Filepath(filepath)
 	{}
 
-	const std::filesystem::path& GetFilePath() const { return m_Filepath; }
+	std::filesystem::path GetFilePath() const { return m_Filepath; }
 
 	std::string to_string() const override
 	{
@@ -54,7 +54,7 @@ public:
 		:m_Filepath(filepath)
 	{}
 
-	const std::filesystem::path& GetFilePath() const { return m_Filepath; }
+	std::filesystem::path GetFilePath() const { return m_Filepath; }
 
 	std::string to_string() const override
 	{

@@ -7,7 +7,7 @@ class PropertiesPanel :
 	public Layer
 {
 public:
-	explicit PropertiesPanel(bool* show, HierarchyPanel* hierachyPanel);
+	explicit PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel);
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
@@ -63,5 +63,5 @@ private:
 private:
 	bool* m_Show;
 
-	HierarchyPanel* m_HierachyPanel;
+	HierarchyPanel* m_HierarchyPanel;
 };

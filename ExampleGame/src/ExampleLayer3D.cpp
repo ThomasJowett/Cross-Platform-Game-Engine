@@ -38,9 +38,12 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 	m_CameraController.SetFovY(*m_FOV);
 	m_CameraController.SetNearAndFarDepth(m_Nearfar[0], m_Nearfar[1]);
 
-	m_CameraController.OnUpdate(deltaTime);
+	if (m_ControlCamera)
+	{
+		m_CameraController.OnUpdate(deltaTime);
+	}
 
-	Renderer::BeginScene(m_CameraController.GetCamera());
+	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
 	m_Texture->Bind();
 
 	//Cube
@@ -81,6 +84,7 @@ void ExampleLayer3D::OnEvent(Event& e)
 void ExampleLayer3D::OnImGuiRender()
 {
 	ImGui::Begin("Settings 3D");
+	ImGui::Checkbox("Control Camera", &m_ControlCamera);
 	ImGui::Text("%s", std::to_string(m_CameraController.GetTranslationSpeed()).c_str());
 	ImGui::DragFloat3("Cube Position", m_Position, 0.01f);
 	ImGui::DragFloat3("Cube Rotation", m_Rotation, 0.001f);

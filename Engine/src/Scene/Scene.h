@@ -3,8 +3,11 @@
 #include <filesystem>
 
 #include "EnTT/entt.hpp"
+#include "math/Matrix.h"
 
 class Entity;
+class FrameBuffer;
+class Camera;
 
 class Scene
 {
@@ -16,8 +19,18 @@ public:
 
 	bool RemoveEntity(const Entity& entity);
 
+	// Render the scene to the render target from the view and projection
+	void Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& view, const Matrix4x4& projection);
+
+	// Render the scene to the render target from the primary camera entity in the scene
+	void Render(Ref<FrameBuffer> renderTarget);
+
+	// Called once per frame
 	void OnUpdate(float deltaTime);
+
+	// Called 100 times a second
 	void OnFixedUpdate();
+
 	void OnViewportResize(uint32_t width, uint32_t height);
 
 	entt::registry& GetRegistry() { return m_Registry; }

@@ -177,20 +177,10 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 {
 }
 
-void Renderer2D::BeginScene(const Camera& camera)
+void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
-	s_Data.ViewProjectionMatrix = camera.GetViewProjectionMatrix();
-	s_Data.QuadShader->Bind();
-	s_Data.QuadShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
-
-	StartBatch();
-}
-
-void Renderer2D::BeginScene(const Matrix4x4& view, const Matrix4x4& projection)
-{
-	PROFILE_FUNCTION();
-	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(view);
+	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
 	s_Data.QuadShader->Bind();
 	s_Data.QuadShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
 

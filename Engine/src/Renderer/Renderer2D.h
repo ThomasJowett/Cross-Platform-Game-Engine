@@ -13,8 +13,7 @@ public:
 	static void Shutdown();
 
 	static void OnWindowResize(uint32_t width, uint32_t height);
-	static void BeginScene(const Camera& camera);
-	static void BeginScene(const Matrix4x4& view, const Matrix4x4& projection);
+	static void BeginScene(const Matrix4x4& transform, const Matrix4x4& projection);
 	static void EndScene();
 
 	static void Flush();
@@ -46,7 +45,7 @@ public:
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
 	static void DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour = Colours::WHITE);
 
-	// Polyline
+	// Poly-line
 	static void DrawPolyline(const std::vector<Vector2f>& points, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
 	static void DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour = Colours::WHITE);
 

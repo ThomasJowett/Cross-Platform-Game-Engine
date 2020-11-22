@@ -14,13 +14,15 @@ public:
 	void OnUpdate(float deltaTime);
 	void OnEvent(Event& event);
 
-	void SetPosition(const Vector3f& position) { m_CameraPosition = position; m_Camera.SetPosition(m_CameraPosition); }
-	Vector3f GetPosition() { return m_CameraPosition; }
+	void SetPosition(const Vector3f& position) { m_Position = position; }
+	Vector3f GetPosition() { return m_Position; }
 
-	void SetRotation(const Vector3f& rotation) { m_CameraRotation = rotation; m_Camera.SetRotation(m_CameraRotation); }
-	Quaternion GetRotation() { return m_CameraRotation; }
+	void SetRotation(const Vector3f& rotation) { m_Rotation = rotation;}
+	Quaternion GetRotation() { return m_Rotation; }
 
 	const PerspectiveCamera& GetCamera() { return m_Camera; }
+
+	Matrix4x4 GetTransformMatrix();
 
 	float GetFovY() const { return m_FovY; }
 	void SetFovY(const float& fovY);
@@ -57,8 +59,8 @@ private:
 	float m_TranslationSpeed = 5.0f;
 	PerspectiveCamera m_Camera;
 
-	Vector3f m_CameraPosition;
-	Vector3f m_CameraRotation;
+	Vector3f m_Position;
+	Vector3f m_Rotation;
 
 	Vector3f m_Up;
 	Vector3f m_Right;

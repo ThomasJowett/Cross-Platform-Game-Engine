@@ -82,7 +82,7 @@ struct PrimitiveComponent
 		archive(cereal::make_nvp("Cylinder Stack Count", CylinderStackCount));
 
 		archive(cereal::make_nvp("Cone Bottom Radius", ConeBottomRadius));
-		archive(cereal::make_nvp("Cone Hiehgt", ConeHeight));
+		archive(cereal::make_nvp("Cone Height", ConeHeight));
 		archive(cereal::make_nvp("Cone Slice Count", ConeSliceCount));
 		archive(cereal::make_nvp("Cone Stack Count", ConeStackCount));
 

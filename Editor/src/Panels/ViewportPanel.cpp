@@ -7,10 +7,14 @@
 #include "Scene/SceneManager.h"
 #include "FileSystem/FileDialog.h"
 
-ViewportPanel::ViewportPanel(bool* show)
-	:m_Show(show), Layer("Viewport")
+#include "HierarchyPanel.h"
+#include "Scene/Components/Components.h"
+
+ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
+	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
 	m_Framebuffer = FrameBuffer::Create({ 1920, 1080 });
+	m_CameraPreview = FrameBuffer::Create({ 256, 144 });
 
 	m_Mode = Mode::Select;
 }
@@ -19,18 +23,14 @@ void ViewportPanel::OnAttach()
 {
 	//TODO: Render the scene with the camera controller when not in "play" mode.
 	//TODO: Load where the camera was in the scene and load that
-	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 }
-
 void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
 	if (!SceneManager::IsSceneLoaded())
 		return;
-
-	m_Framebuffer->Bind();
-	RenderCommand::Clear();
 
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
@@ -49,23 +49,31 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		Application::GetWindow().EnableCursor();
 	}
 
-	Renderer2D::ResetStats();
-
-	SceneManager::CurrentScene()->OnUpdate(deltaTime);//TODO:: call this from the scene manager update
-
-	m_Framebuffer->UnBind();
-}
-
-void ViewportPanel::OnFixedUpdate()
-{
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-
-		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
+
+	SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+
+	if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+	{
+		if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+		{
+			CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
+			TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
+			Matrix4x4 view = Matrix4x4::Inverse(Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }));
+			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+		}
+	}
+
+	Renderer2D::ResetStats();
+}
+
+void ViewportPanel::OnFixedUpdate()
+{
 }
 
 void ViewportPanel::OnImGuiRender()
@@ -86,7 +94,7 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-	if(SceneManager::CurrentScene()->IsDirty())
+	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
@@ -118,6 +126,8 @@ void ViewportPanel::OnImGuiRender()
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
 		{
 			m_ViewportSize = panelSize;
+			m_CameraController.SetViewPortSize(Vector2f(m_ViewportSize.x, m_ViewportSize.y));
+			m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
 		}
 
 		pos = ImGui::GetCursorScreenPos();
@@ -154,6 +164,23 @@ void ViewportPanel::OnImGuiRender()
 				CLIENT_DEBUG(file->string());
 			}
 			ImGui::EndDragDropTarget();
+		}
+
+		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+		{
+			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+			{
+				ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
+					pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
+				ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetComponent<TagComponent>().Tag.c_str(), NULL,
+					ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
+					| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+					| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+					| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
+				uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
+				ImGui::Image((void*)cameraTex, ImVec2(m_CameraPreview->GetSpecification().Width, m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
+				ImGui::End();
+			}
 		}
 	}
 	ImGui::End();
@@ -260,7 +287,7 @@ void ViewportPanel::SaveAs()
 {
 	CLIENT_DEBUG("Saving As...");
 	std::optional<std::wstring> scenePath = FileDialog::SaveAs(L"Save Scene As...", L"Scene (.scene)\0*.scene\0");
-	if(scenePath)
+	if (scenePath)
 		SceneManager::CurrentScene()->Save(scenePath.value(), false);
 }
 

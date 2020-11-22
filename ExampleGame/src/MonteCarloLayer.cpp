@@ -25,7 +25,7 @@ void MonteCarloLayer::OnUpdate(float deltaTime)
 {
 	//m_CameraController.OnUpdate(deltaTime);
 
-	Renderer2D::BeginScene(m_CameraController.GetCamera());
+	Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
 
 	for (Vector2f position : m_BluePositions)
 	{
