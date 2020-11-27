@@ -19,7 +19,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(WINDOW_RESIZE);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 
 
 private:
@@ -43,7 +43,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(WINDOW_MOVED);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 private:
 	unsigned int m_XPosition, m_YPosition;
 };
@@ -64,7 +64,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(WINDOW_MAXIMIZED);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 private:
 	bool m_Maximized;
 };
@@ -74,7 +74,7 @@ class WindowFocusLostEvent : public Event
 public:
 	WindowFocusLostEvent() {}
 	EVENT_CLASS_TYPE(WINDOW_LOST_FOCUS);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class WindowFocusEvent : public Event
@@ -82,7 +82,7 @@ class WindowFocusEvent : public Event
 public:
 	WindowFocusEvent() {}
 	EVENT_CLASS_TYPE(WINDOW_FOCUS);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class WindowCloseEvent : public Event
@@ -91,7 +91,7 @@ public:
 	WindowCloseEvent() {}
 
 	EVENT_CLASS_TYPE(WINDOW_CLOSE);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class AppUpdateEvent : public Event
@@ -100,7 +100,7 @@ public:
 	AppUpdateEvent() {}
 
 	EVENT_CLASS_TYPE(APP_UPDATE);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class AppRenderEvent : public Event
@@ -109,7 +109,7 @@ public:
 	AppRenderEvent() {}
 
 	EVENT_CLASS_TYPE(APP_RENDER);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class AppTickEvent : public Event
@@ -118,7 +118,7 @@ public:
 	AppTickEvent() {}
 
 	EVENT_CLASS_TYPE(APP_TICK);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
 class AppOpenDocumentChange : public Event
@@ -127,5 +127,5 @@ public:
 	AppOpenDocumentChange() {}
 
 	EVENT_CLASS_TYPE(APP_OPEN_DOCUMENT_CHANGE);
-	EVENT_CLASS_CATEGORY(EC_APPLICATION);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };

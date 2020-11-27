@@ -101,8 +101,8 @@ void ImGuiManager::Shutdown()
 void ImGuiManager::OnEvent(Event& event)
 {
 	ImGuiIO& io = ImGui::GetIO();
-	event.Handled |= event.IsInCategory(EventCategory::EC_MOUSE) & io.WantCaptureMouse;
-	event.Handled |= event.IsInCategory(EventCategory::EC_KEYBOARD) & io.WantCaptureKeyboard;
+	event.Handled |= event.IsInCategory(EventCategory::MOUSE) & io.WantCaptureMouse;
+	event.Handled |= event.IsInCategory(EventCategory::KEYBOARD) & io.WantCaptureKeyboard;
 }
 
 void ImGuiManager::Begin()

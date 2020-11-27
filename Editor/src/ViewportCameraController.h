@@ -22,9 +22,11 @@ public:
 
 	void OnMouseMotion(Vector2f mousePosition);
 	void OnMouseWheel(float mouseWheel);
-private:
+	void SwitchCamera(bool is3D);
 
-	void SwitchCamera();
+	void LookAt(Vector3f focalPoint);
+
+private:
 
 	void Walk(float d);
 	void Strafe(float d);
@@ -56,7 +58,7 @@ private:
 
 	Vector3f m_Up = { 0.0,1.0,0.0 };
 	Vector3f m_Right = { 1.0, 0.0, 0.0 };
-	Vector3f m_Forward = { 0.0, 0.0, 1.0 };
+	Vector3f m_Forward = { 0.0, 0.0, -1.0 };
 
 	Vector2f m_MouseRelativeVelocity;
 	Vector2f m_MouseLastPosition;

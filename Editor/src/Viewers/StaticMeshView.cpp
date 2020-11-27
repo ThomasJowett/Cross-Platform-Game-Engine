@@ -19,6 +19,7 @@ void StaticMeshView::OnAttach()
 	m_Texture = Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+	m_CameraController.SwitchCamera(true);
 	//future code
 	// m_CameraController.SetPosition({0.0,0.0, m_Mesh->GetBounds().radius})
 }
@@ -59,7 +60,7 @@ void StaticMeshView::OnImGuiRender()
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
 			m_CameraController.OnMouseWheel(io.MouseWheel);
 
-		ImGui::Columns(2);
+		//ImGui::Columns(2);
 
 		ImVec2 panelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
@@ -81,6 +82,16 @@ void StaticMeshView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
+				ImGui::EndMenu();
+			}
+
+			if (ImGui::BeginMenu("View"))
+			{
+				if (ImGui::MenuItem("Reset camera"))
+				{
+					m_CameraController.SetPosition(Vector3f(0.0f, 0.0f, 0.0f));
+					m_CameraController.LookAt(Vector3f(0.0f, 0.0f, 0.0f));
+				}
 				ImGui::EndMenu();
 			}
 		}

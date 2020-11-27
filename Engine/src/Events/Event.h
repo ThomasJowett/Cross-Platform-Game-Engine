@@ -38,34 +38,42 @@ enum class EventType
 	SCENE_LOADED
 };
 
-enum EventCategory
+enum class EventCategory
 {
-	EC_NONE			= 0,
-	EC_APPLICATION	= BIT(0),
-	EC_INPUT		= BIT(1),
-	EC_KEYBOARD		= BIT(2),
-	EC_MOUSE		= BIT(3),
-	EC_MOUSE_BUTTON	= BIT(4),
-	EC_JOYSTICK		= BIT(5),
-	EC_SCENE		= BIT(6)
+	NONE			= 0,
+	APPLICATION		= BIT(0),
+	INPUT			= BIT(1),
+	KEYBOARD		= BIT(2),
+	MOUSE			= BIT(3),
+	MOUSE_BUTTON	= BIT(4),
+	JOYSTICK		= BIT(5),
+	SCENE			= BIT(6)
 };
+
+EventCategory operator |(EventCategory lhs, EventCategory rhs);
+EventCategory operator & (EventCategory lhs, EventCategory rhs);
+EventCategory operator ^(EventCategory lhs, EventCategory rhs);
+EventCategory operator ~(EventCategory rhs);
+EventCategory operator |=(EventCategory& lhs, EventCategory rhs);
+EventCategory operator &=(EventCategory& lhs, EventCategory rhs);
+EventCategory operator ^=(EventCategory& lhs, EventCategory rhs);
 
 #define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
 								virtual EventType GetEventType() const override { return GetStaticType(); }\
 								virtual const char* GetName() const override { return #type; }
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+#define EVENT_CLASS_CATEGORY(category) virtual EventCategory GetCategoryFlags() const override { return category; }
 
 class Event
 {
 public:
 	virtual EventType GetEventType() const = 0;
 	virtual const char* GetName() const = 0;
-	virtual int GetCategoryFlags() const = 0;
+	virtual EventCategory GetCategoryFlags() const = 0;
 	virtual std::string to_string() const { return GetName(); }
 
 	inline bool IsInCategory(EventCategory category)
 	{
-		return GetCategoryFlags() & category;
+		return static_cast<bool>(GetCategoryFlags() & category);
 	}
 
 public:
