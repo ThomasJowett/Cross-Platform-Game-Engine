@@ -9,6 +9,7 @@ static BufferLayout staticMeshLayout = {
 };
 
 Mesh::Mesh(const std::filesystem::path& filepath)
+	:m_Filepath(filepath)
 {
 	LoadModel(filepath);
 }
@@ -22,11 +23,14 @@ void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
 {
 	m_Name = name;
 	m_VertexArray = vertexArray;
+	m_Filepath.clear();
 }
 
-void Mesh::LoadModel(std::filesystem::path filepath)
+void Mesh::LoadModel(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
+
+	m_Filepath = filepath;
 
 	uint32_t numVertices;
 	uint32_t numIndices;

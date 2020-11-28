@@ -158,3 +158,15 @@ project "GLAD"
 		runtime "Release"
 		optimize "On"
 
+project "TinyXml2"
+	kind "StaticLib"
+	language "C++"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"TinyXml2/tinyxml2.h",
+		"TinyXml2/tinyxml2.cpp"
+	}

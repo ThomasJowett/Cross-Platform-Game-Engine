@@ -3,6 +3,8 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "cereal/access.hpp"
+
 class Material
 {
 public:
@@ -22,4 +24,17 @@ private:
 	std::unordered_map<Ref<Texture>, uint32_t> m_Textures;
 
 	Colour m_Tint;
+
+	friend cereal::access;
+	template<typename Archive>
+	void save(Archive& archive)
+	{
+		archive(cereal::make_nvp("Tint", m_Tint));
+	}
+
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(m_Tint);
+	}
 };

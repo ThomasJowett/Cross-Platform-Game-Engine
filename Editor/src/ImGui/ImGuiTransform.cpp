@@ -3,8 +3,6 @@
 #include  "IconsFontAwesome5.h"
 #include "Scene/SceneManager.h"
 
-#include "Engine.h"
-
 bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 {
 	bool edited = false;

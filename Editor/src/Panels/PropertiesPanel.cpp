@@ -5,8 +5,6 @@
 
 #include "ImGui/ImGuiTransform.h"
 
-#include "Scene/SceneManager.h"
-
 #include <cstring>
 
 PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)

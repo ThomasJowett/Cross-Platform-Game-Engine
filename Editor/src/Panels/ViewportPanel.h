@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Engine.h"
 #include "imgui/imgui.h"
 
 #include "ViewportCameraController.h"
@@ -9,7 +8,7 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-#include "Scene/SceneManager.h"
+#include "Renderer/Shader.h"
 
 #include "HierarchyPanel.h"
 
@@ -64,7 +63,6 @@ private:
 
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
-	OrthographicCameraController m_OrthoCamera;
 
 	Mode m_Mode;
 

@@ -10,6 +10,7 @@
 #include "IconsFontAwesome5.h"
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/Webpage.h"
 
 #include "ProjectsStartScreen.h"
 
@@ -306,13 +307,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
-#ifdef __WINDOWS__
-				ShellExecute(0, 0, L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki", 0, 0, SW_SHOW);
-#elif __linux__
-				system("xdg-open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
-#elif __APPLE__
-				system("open https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
-#endif
+				Webpage::OpenWebpage(L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
 			}
 			ImGui::EndMenu();
 		}

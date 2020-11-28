@@ -16,8 +16,9 @@ workspace "Cross Platform Game Engine"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
-group "Dependencies"
+group "Dependencies/Engine"
 	include "Engine/vendor"
+group "Dependencies/Editor"
 	include "Editor/vendor"
 	
 group ""
@@ -41,7 +42,7 @@ project "Engine"
 		"%{prj.name}/vendor/stb/**.h",
 		"%{prj.name}/vendor/stb/**.cpp",
 		"%{prj.name}/vendor/simpleini/**.h",
-		"%{prj.name}/vendor/EnTT/**.hpp"
+		"%{prj.name}/vendor/EnTT/entt.hpp"
 	}
 
 	includedirs
@@ -62,7 +63,8 @@ project "Engine"
 	{
 		"GLFW",
 		"GLAD",
-		"ImGui"
+		"ImGui",
+		"TinyXml2"
 	}
 	
 	defines
