@@ -4,6 +4,7 @@
 #include <glad/glad.h>
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
+	:m_Size(size)
 {
 	PROFILE_FUNCTION();
 	glCreateBuffers(1, &m_RendererID);
@@ -12,6 +13,7 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 }
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(float * vertices, uint32_t size)
+	:m_Size(size)
 {
 	PROFILE_FUNCTION();
 	glCreateBuffers(1, &m_RendererID);
@@ -25,11 +27,18 @@ OpenGLVertexBuffer::~OpenGLVertexBuffer()
 	glDeleteBuffers(1, &m_RendererID);
 }
 
-void OpenGLVertexBuffer::SetData(const void* data, uint32_t size)
+void OpenGLVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 {
+	CORE_ASSERT(size < m_Size, "Size must be less than the buffer size");
+
 	PROFILE_FUNCTION();
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
+	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+}
+
+void OpenGLVertexBuffer::SetData(const void* data)
+{
+	SetData(data, m_Size);
 }
 
 void OpenGLVertexBuffer::Bind() const

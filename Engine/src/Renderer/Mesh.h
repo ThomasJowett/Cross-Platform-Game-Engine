@@ -13,8 +13,9 @@ public:
 	~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray, std::string name);
 	void LoadModel(const std::filesystem::path& filepath);
-	void SaveModel(const std::filesystem::path& filepath);
-	void SaveModel();
+	void LoadModel();
+
+	std::filesystem::path& GetFilepath() { return m_Filepath; }
 
 	const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:
@@ -24,12 +25,13 @@ private:
 
 	friend cereal::access;
 	template<typename Archive>
-	void save(Archive& archive)
+	void save(Archive& archive) const
 	{
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
+		LoadModel();
 	}
 };

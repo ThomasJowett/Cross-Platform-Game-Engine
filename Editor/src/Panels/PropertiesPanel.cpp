@@ -4,6 +4,7 @@
 #include "MainDockSpace.h"
 
 #include "ImGui/ImGuiTransform.h"
+#include "ImGui/ImGuiFileEdit.h"
 
 #include <cstring>
 
@@ -115,9 +116,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [](auto& staticMesh)
 		{
-			//TODO: create static mesh properties
-
-			/* static mesh properties */
+			if (ImGui::FileEdit("Static Mesh", staticMesh.Geometry.GetFilepath(), L"Static Mesh (.staticMesh)\0*.staticMesh\0"))
+				staticMesh.Geometry.LoadModel();
+			//if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), L"Material (.material)\0*.material\0"))
+			//	staticMesh.material.LoadMaterial();
 		});
 
 	//Native Script------------------------------------------------------------------------------------------------------------

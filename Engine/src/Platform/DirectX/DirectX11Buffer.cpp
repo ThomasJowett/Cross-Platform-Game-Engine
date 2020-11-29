@@ -39,6 +39,7 @@ void DirectX11IndexBuffer::UnBind() const
 //------------------------------------------------------------------------------------
 
 DirectX11VertexBuffer::DirectX11VertexBuffer(uint32_t size)
+	:m_Size(size)
 {
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -53,6 +54,7 @@ DirectX11VertexBuffer::DirectX11VertexBuffer(uint32_t size)
 }
 
 DirectX11VertexBuffer::DirectX11VertexBuffer(float* vertices, uint32_t size)
+	:m_Size(size)
 {
 	D3D11_BUFFER_DESC bd;
 	ZeroMemory(&bd, sizeof(bd));
@@ -75,12 +77,18 @@ DirectX11VertexBuffer::~DirectX11VertexBuffer()
 	if (m_VertexBuffer) m_VertexBuffer->Release();
 }
 
-void DirectX11VertexBuffer::SetData(const void* data, uint32_t size)
+void DirectX11VertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 {
 	D3D11_MAPPED_SUBRESOURCE resource;
-	g_ImmediateContext->Map(m_VertexBuffer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+	ZeroMemory(&resource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+	g_ImmediateContext->Map(m_VertexBuffer, offset, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 	memcpy(resource.pData, data, size);
-	g_ImmediateContext->Unmap(m_VertexBuffer, 0);
+	g_ImmediateContext->Unmap(m_VertexBuffer, offset);
+}
+
+void DirectX11VertexBuffer::SetData(const void* data)
+{
+	SetData(data, m_Size);
 }
 
 void DirectX11VertexBuffer::Bind() const

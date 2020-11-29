@@ -74,23 +74,70 @@ bool Tilemap::Load(std::filesystem::path filepath)
 		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
 		m_TileWidth = atoi(pRoot->Attribute("tileheight"));
 
-		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("layer");
+		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("tilset");
 
 		while (pTileSet)
 		{
 			const char* tsxPath = pTileSet->Attribute("source");
 
+			Tileset tileset;
+			tileset.Load(tsxPath);
 
+			m_Tilesets.push_back(std::make_pair(tileset, atoi(pTileSet->Attribute("source"))));
+
+			pTileSet = pTileSet->NextSiblingElement("tileset");
 		}
 	}
 	else
 	{
-		CLIENT_ERROR("Could not load tilemap{ 0 }. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		CLIENT_ERROR("Could not load tilemap {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
 	}
-	return false;
+
+	return true;
 }
 
 bool Tilemap::Save(std::filesystem::path)
 {
+	return false;
+}
+
+bool Tileset::Load(const std::filesystem::path& filepath)
+{
+	tinyxml2::XMLDocument doc;
+
+	if (doc.Parse(filepath.string().c_str()))
+	{
+		tinyxml2::XMLElement* pRoot;
+
+		pRoot = doc.FirstChildElement("tileset");
+
+		const char* name = pRoot->Attribute("name");
+		m_Name = name;
+
+		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
+		m_TileHeight = atoi(pRoot->Attribute("tileheight"));
+		m_Columns = atoi(pRoot->Attribute("columns"));
+		m_TileCount = atoi(pRoot->Attribute("tilecount"));
+
+		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
+
+
+		const char* textureSource = pRoot->Attribute("source");
+
+		m_Texture = Texture2D::Create(textureSource);
+
+		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
+
+		while (pTile)
+		{
+			pTile = pTile->NextSiblingElement("tile");
+		}
+	}
+	else
+	{
+		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
+	}
 	return false;
 }

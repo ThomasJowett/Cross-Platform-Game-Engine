@@ -18,6 +18,11 @@ public:
 
 	void SetTint(const Colour& tint) { m_Tint = tint; }
 	Colour GetTint() const { return m_Tint; }
+
+	std::filesystem::path& GetFilepath() { return m_Filepath; }
+
+	void LoadMaterial(const std::filesystem::path& filepath);
+	void LoadMaterial();
 private:
 	Ref<Shader> m_Shader;
 
@@ -25,16 +30,17 @@ private:
 
 	Colour m_Tint;
 
+	std::filesystem::path m_Filepath;
+
 	friend cereal::access;
 	template<typename Archive>
-	void save(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Tint", m_Tint));
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(m_Tint);
+		LoadMaterial();
 	}
 };

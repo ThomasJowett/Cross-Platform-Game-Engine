@@ -5,6 +5,33 @@
 #include "cereal/access.hpp"
 
 #include "Core/Colour.h"
+#include "Renderer/Texture.h"
+
+
+class Tileset
+{
+public:
+	Tileset() = default;
+
+	bool Load(const std::filesystem::path& filepath);
+	bool Save(const std::filesystem::path& filepath);
+
+private:
+	std::string m_Name;
+	Ref<Texture2D> m_Texture;
+
+	uint32_t m_TileWidth;
+	uint32_t m_TileHeight;
+
+	uint32_t m_TileCount;
+	uint32_t m_Columns;
+
+	Colour m_BackgrondColour;
+
+	uint32_t m_OffsetX, m_OffsetY;
+
+	std::filesystem::path m_Filepath;
+};
 
 class Tilemap
 {
@@ -60,6 +87,8 @@ private:
 	Colour m_BackgroundColour;
 
 	bool m_Infinite;
+
+	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets
 
 	friend cereal::access;
 	template<typename Archive>

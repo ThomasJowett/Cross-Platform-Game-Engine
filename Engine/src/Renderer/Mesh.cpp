@@ -74,3 +74,8 @@ void Mesh::LoadModel(const std::filesystem::path& filepath)
 
 	//TODO: load in information to do with the default materials of the mesh and the material Ids
 }
+
+void Mesh::LoadModel()
+{
+	LoadModel(m_Filepath);
+}
