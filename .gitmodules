@@ -1,6 +1,3 @@
-[submodule "Engine/vendor/math"]
-	path = Engine/vendor/math
-	url = https://github.com/ThomasJowett/3D-Maths-libraries
 [submodule "Engine/vendor/GLFW"]
 	path = Engine/vendor/GLFW
 	url = https://github.com/glfw/GLFW
@@ -22,3 +19,6 @@
 [submodule "Engine/vendor/TinyXml2"]
 	path = Engine/vendor/TinyXml2
 	url = https://github.com/leethomason/tinyxml2
+[submodule "Engine/vendor/math"]
+	path = Engine/vendor/math
+	url = https://github.com/ThomasJowett/3D-Maths-libraries

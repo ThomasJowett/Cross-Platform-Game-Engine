@@ -10,6 +10,8 @@
 #include "HierarchyPanel.h"
 #include "Scene/Components/Components.h"
 
+#include "ImGui/ImGuizmo.h"
+
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
@@ -85,6 +87,8 @@ void ViewportPanel::OnImGuiRender()
 		return;
 	}
 
+	ImGuizmo::BeginFrame();
+
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 
 	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
@@ -93,6 +97,20 @@ void ViewportPanel::OnImGuiRender()
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
+
+	//TEMP
+	Matrix4x4 testTransform;
+
+	float* testPosition, * testRotation, * testScale;
+	testPosition = new float[3];
+	float matrix[16] =
+	{ 1.f, 0.f, 0.f, 0.f,
+   0.f, 1.f, 0.f, 0.f,
+   0.f, 0.f, 1.f, 0.f,
+   0.f, 0.f, 0.f, 1.f };
+	//Vector3f testPosition;
+	//Vector3f testRotation;
+	//Vector3f testScale;
 
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
@@ -111,6 +129,13 @@ void ViewportPanel::OnImGuiRender()
 			{
 				ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
 				Application::GetWindow().SetCursor(Cursors::CrossHair);
+
+
+			}
+
+			if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) || Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+			{
+				ImGui::SetWindowFocus();
 			}
 		}
 
@@ -132,8 +157,9 @@ void ViewportPanel::OnImGuiRender()
 
 		pos = ImGui::GetCursorScreenPos();
 		ImVec2 mouse_pos = ImGui::GetMousePos();
+		ImVec2 window_pos = ImGui::GetWindowPos();
 
-		m_RelativeMousePosition = { mouse_pos.x - ImGui::GetWindowPos().x - 1.0f, mouse_pos.y - ImGui::GetWindowPos().y - 8.0f - ImGui::GetFontSize() };
+		m_RelativeMousePosition = { mouse_pos.x - window_pos.x - 1.0f, mouse_pos.y - window_pos.y - 8.0f - ImGui::GetFontSize() };
 
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
@@ -182,6 +208,116 @@ void ViewportPanel::OnImGuiRender()
 				ImGui::End();
 			}
 		}
+
+		// Gizmos
+		Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+
+		if (selectedEntity)
+		{
+			ImGuizmo::SetOrthographic(true);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
+
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+			Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+
+			cameraViewMat.Transpose();
+			cameraProjectionMat.Transpose();
+			transformMat.Transpose();
+
+			float cameraView[16] =
+			{ cameraViewMat[0][0], cameraViewMat[0][1],cameraViewMat[0][2],cameraViewMat[0][3],
+			  cameraViewMat[1][0], cameraViewMat[1][1],cameraViewMat[1][2],cameraViewMat[1][3],
+			  cameraViewMat[2][0], cameraViewMat[2][1],cameraViewMat[2][2],cameraViewMat[2][3],
+			  cameraViewMat[3][0], cameraViewMat[3][1],cameraViewMat[3][2],cameraViewMat[3][3] };
+
+			float cameraProjection[16] =
+			{ cameraProjectionMat[0][0], cameraProjectionMat[0][1],cameraProjectionMat[0][2],cameraProjectionMat[0][3],
+			  cameraProjectionMat[1][0], cameraProjectionMat[1][1],cameraProjectionMat[1][2],cameraProjectionMat[1][3],
+			  cameraProjectionMat[2][0], cameraProjectionMat[2][1],cameraProjectionMat[2][2],cameraProjectionMat[2][3],
+			  cameraProjectionMat[3][0], cameraProjectionMat[3][1],cameraProjectionMat[3][2],cameraProjectionMat[3][3] };
+
+			float transform[16] =
+			{
+				transformMat[0][0], transformMat[0][1],transformMat[0][2],transformMat[0][3],
+			  transformMat[1][0], transformMat[1][1],transformMat[1][2],transformMat[1][3],
+			  transformMat[2][0], transformMat[2][1],transformMat[2][2],transformMat[2][3],
+			  transformMat[3][0], transformMat[3][1],transformMat[3][2],transformMat[3][3] };
+
+
+			bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
+			float snapValue = 0.5f;
+			if (m_Mode == Mode::Rotate)
+				snapValue = 10.0f;
+
+			float snapValues[3] = { snapValue, snapValue, snapValue };
+
+			ImGuizmo::OPERATION gizmoMode;
+			switch (m_Mode)
+			{
+			case ViewportPanel::Mode::Select:
+				gizmoMode = ImGuizmo::BOUNDS;
+				break;
+			case ViewportPanel::Mode::Move:
+				gizmoMode = ImGuizmo::OPERATION::TRANSLATE;
+				break;
+			case ViewportPanel::Mode::Rotate:
+				gizmoMode = ImGuizmo::OPERATION::ROTATE;
+				break;
+			case ViewportPanel::Mode::Scale:
+				gizmoMode = ImGuizmo::OPERATION::SCALE;
+				break;
+			default:
+				break;
+			}
+
+			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
+			ImGuizmo::Manipulate(cameraView, cameraProjection, gizmoMode, ImGuizmo::LOCAL, transform, NULL, snap ? snapValues : NULL);
+			//ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+
+			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
+
+			if (ImGuizmo::IsUsing())
+			{
+				//transform.Decompose(translation, rotation, scale);
+				//Vector3f translation, rotation, scale;
+
+
+				float translation[3], rotation[3], scale[3];
+
+				//Vector3f translation = transform.ExtractTranslation();
+				//Vector3f scale = transform.ExtractScale();
+				//Quaternion rotation = transform.ExtractRotation();
+
+
+				ImGuizmo::DecomposeMatrixToComponents(transform, translation, rotation, scale);
+
+				CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
+
+				//testTransform = transform;
+				testPosition = translation;
+				testRotation = rotation;
+				testScale = scale;
+
+				Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
+				if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
+				{
+					transformComp.Position = Vector3f(translation[0], translation[1], translation[2]);
+				}
+				if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
+				{
+					transformComp.Rotation += deltaRotation;
+				}
+				if (gizmoMode == ImGuizmo::OPERATION::SCALE)
+				{
+					transformComp.Scale = Vector3f(scale[0], scale[1], scale[2]);
+				}
+			}
+		}
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -197,6 +333,12 @@ void ViewportPanel::OnImGuiRender()
 			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 
 		ImGui::Text("%.1f", io.Framerate);
+		//ImGui::Text("Pos: %s", testPosition.to_string().c_str());
+		//ImGui::Text("Rot: %s", testRotation.to_string().c_str());
+		//ImGui::Text("Scale: %s", testScale.to_string().c_str());
+		ImGui::DragFloat3("pos", testPosition);
+		//ImGui::DragFloat3("rot", testRotation);
+		//ImGui::DragFloat3("scale", testScale);
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}

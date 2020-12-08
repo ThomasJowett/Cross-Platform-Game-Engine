@@ -6,6 +6,9 @@ ViewportCameraController::ViewportCameraController()
 {
 	m_Is3DCamera = false;
 	m_CurrentCamera = &m_2DCamera;
+
+	m_2DCameraPosition = Vector3f(0.0f, 0.0f, 0.0f);
+	m_3DCameraPosition = Vector3f(0.0f, 0.0f, 0.0f);
 }
 
 ViewportCameraController::~ViewportCameraController()
@@ -99,7 +102,6 @@ Matrix4x4 ViewportCameraController::GetTransformMatrix()
 
 void ViewportCameraController::OnMouseMotion(Vector2f mousePosition)
 {
-
 	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
 
 	if (!m_Is3DCamera && Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))

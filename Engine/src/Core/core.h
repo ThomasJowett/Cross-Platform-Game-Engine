@@ -1,6 +1,8 @@
 #pragma once
 #include <memory>
 
+
+
 #ifdef __WINDOWS__ //windows x64 & x86
 
 #elif defined(__linux__)
@@ -73,3 +75,5 @@ constexpr Ref<T> CreateRef(Args&& ... args)
 {
 	return std::make_shared<T>(std::forward<Args>(args)...);
 }
+
+#include "Logging/Logger.h"

@@ -123,6 +123,7 @@ void ImGuiManager::Begin()
 	}
 
 	ImGui::NewFrame();
+	//ImGuizmo::BeginFrame();
 }
 
 void ImGuiManager::End()

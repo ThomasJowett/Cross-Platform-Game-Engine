@@ -10,16 +10,6 @@
 
 #include "Debug.h"
 
-
-enum LoggingOutputs
-{
-	LO_NONE		= 0,
-	LO_IDE		= BIT(0),
-	LO_CONSOLE	= BIT(1),
-	LO_IMGUI	= BIT(2),
-	LO_FILE		= BIT(3)
-};
-
 class Logger
 {
 public:

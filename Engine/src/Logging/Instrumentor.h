@@ -47,7 +47,7 @@ public:
 		std::lock_guard lock(m_Mutex);
 		if (m_CurrentSession)
 		{
-			ENGINE_WARN("Begining new session before last has ended. Force ending last session...");
+			ENGINE_WARN("Beginning new session before last has ended. Force ending last session...");
 			// If there is already a current session, then close it before beginning a new one.
 			// Subsequent profiling output meant for the original session will end up in the new one instead.
 			InternalEndSession(m_CurrentSession->Name);

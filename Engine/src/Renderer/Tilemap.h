@@ -88,7 +88,7 @@ private:
 
 	bool m_Infinite;
 
-	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets
+	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets;
 
 	friend cereal::access;
 	template<typename Archive>

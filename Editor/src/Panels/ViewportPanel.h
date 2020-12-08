@@ -15,7 +15,7 @@
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
-	enum class  Mode
+	enum class Mode
 	{
 		Select = 0,
 		Move,
@@ -23,7 +23,7 @@ class ViewportPanel
 		Scale
 	};
 
-public: 
+public:
 	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel);
 	~ViewportPanel() = default;
 

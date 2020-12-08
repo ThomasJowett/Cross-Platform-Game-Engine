@@ -47,13 +47,13 @@ bool Scene::RemoveEntity(const Entity& entity)
 	return false;
 }
 
-void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& view, const Matrix4x4& projection)
+void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	renderTarget->Bind();
 
 	RenderCommand::Clear();
 
-	Renderer::BeginScene(view, projection);
+	Renderer::BeginScene(cameraTransform, projection);
 
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 		[](const auto& sprite, const auto& transformComp)
@@ -89,7 +89,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		{
 			if (cameraComp.Primary)
 			{
-				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate(Quaternion(transformComp.Rotation));
 				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}

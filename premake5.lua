@@ -276,6 +276,11 @@ project "Editor"
 		"OpenFBX"
 	}
 
+	defines
+	{
+		"ENABLE_ASSERTS"
+	}
+
 	postbuildcommands
 	{
 		"{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources",
