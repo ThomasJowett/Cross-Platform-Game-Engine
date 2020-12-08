@@ -19,3 +19,6 @@
 [submodule "Engine/vendor/TinyXml2"]
 	path = Engine/vendor/TinyXml2
 	url = https://github.com/leethomason/tinyxml2
+[submodule "Engine/vendor/math"]
+	path = Engine/vendor/math
+	url = https://github.com/ThomasJowett/3D-Maths-libraries
