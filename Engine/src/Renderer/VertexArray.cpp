@@ -7,7 +7,6 @@
 #include "Platform/DirectX/DirectX11VertexArray.h"
 #endif // __WINDOWS__
 
-
 Ref<VertexArray> VertexArray::Create()
 {
 	switch (Renderer::GetAPI())

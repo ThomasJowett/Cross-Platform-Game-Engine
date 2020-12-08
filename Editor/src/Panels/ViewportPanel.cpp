@@ -4,7 +4,7 @@
 
 #include "IconsFontAwesome5.h"
 
-#include "Scene/SceneManager.h"
+#include "Engine.h"
 #include "FileSystem/FileDialog.h"
 
 #include "HierarchyPanel.h"
@@ -178,7 +178,7 @@ void ViewportPanel::OnImGuiRender()
 					| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
 					| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 				uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
-				ImGui::Image((void*)cameraTex, ImVec2(m_CameraPreview->GetSpecification().Width, m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
+				ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
 				ImGui::End();
 			}
 		}

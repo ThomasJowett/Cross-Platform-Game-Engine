@@ -3,6 +3,7 @@
 #include <string>
 #include <regex>
 #include <cmath>
+#include <fstream>
 
 #include "ImGuiTextEditor.h"
 

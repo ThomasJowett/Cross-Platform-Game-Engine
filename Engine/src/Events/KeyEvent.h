@@ -7,7 +7,7 @@ class KeyEvent : public Event
 public:
 	inline int GetKeyCode() const { return m_keyCode; }
 
-	EVENT_CLASS_CATEGORY(EC_KEYBOARD | EC_INPUT)
+	EVENT_CLASS_CATEGORY(EventCategory::KEYBOARD | EventCategory::INPUT)
 	
 protected:
 

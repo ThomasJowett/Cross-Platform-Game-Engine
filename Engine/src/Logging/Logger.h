@@ -82,6 +82,6 @@ private:
 #else
 // Nothing logged unless in debug mode
 #define CLIENT_DEBUG(...)
-// Nothin logged unless in debug mode
+// Nothing logged unless in debug mode
 #define CLIENT_TRACE(...)
 #endif // DEBUG

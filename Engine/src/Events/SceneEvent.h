@@ -20,7 +20,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(SCENE_CHANGED);
-	EVENT_CLASS_CATEGORY(EC_SCENE);
+	EVENT_CLASS_CATEGORY(EventCategory::SCENE);
 private:
 	const std::filesystem::path m_Filepath;
 };
@@ -42,7 +42,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(SCENE_SAVED);
-	EVENT_CLASS_CATEGORY(EC_SCENE);
+	EVENT_CLASS_CATEGORY(EventCategory::SCENE);
 private:
 	const std::filesystem::path m_Filepath;
 };
@@ -64,7 +64,7 @@ public:
 	}
 
 	EVENT_CLASS_TYPE(SCENE_SAVED);
-	EVENT_CLASS_CATEGORY(EC_SCENE);
+	EVENT_CLASS_CATEGORY(EventCategory::SCENE);
 private:
 	const std::filesystem::path m_Filepath;
 };

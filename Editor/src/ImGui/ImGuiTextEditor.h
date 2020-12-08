@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Engine.h"
-
 #include <string>
 #include <vector>
 #include <array>
@@ -10,6 +8,7 @@
 #include <unordered_map>
 #include <map>
 #include <regex>
+#include <filesystem>
 #include "imgui/imgui.h"
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ICopyable.h"

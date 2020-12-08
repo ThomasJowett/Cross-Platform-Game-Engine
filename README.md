@@ -45,3 +45,4 @@ The engine can now be build by running `make`.
 * [glad](https://github.com/Dav1dde/glad) : Meta loader for OpenGL API.
 * [OpenFBX](https://github.com/nem0/OpenFBX) : Lightweight FBX Importer.
 * [cereal](https://github.com/USCiLab/cereal) : A C++11 library for serialization.
+* [tinyxml2](https://github.com/leethomason/tinyxml2) : A simple, small, efficient, C++ XML parser.

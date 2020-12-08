@@ -19,3 +19,6 @@
 [submodule "Engine/vendor/cereal"]
 	path = Engine/vendor/cereal
 	url = https://github.com/USCiLab/cereal
+[submodule "Engine/vendor/TinyXml2"]
+	path = Engine/vendor/TinyXml2
+	url = https://github.com/leethomason/tinyxml2

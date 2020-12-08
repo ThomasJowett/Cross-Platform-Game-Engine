@@ -139,9 +139,9 @@ void ViewportCameraController::OnMouseWheel(float mouseWheel)
 	}
 }
 
-void ViewportCameraController::SwitchCamera()
+void ViewportCameraController::SwitchCamera(bool is3D)
 {
-	if (m_Is3DCamera)
+	if (!is3D)
 	{
 		m_CurrentCamera = &m_2DCamera;
 		m_Is3DCamera = false;
@@ -151,6 +151,11 @@ void ViewportCameraController::SwitchCamera()
 		m_CurrentCamera = &m_3DCamera;
 		m_Is3DCamera = true;
 	}
+}
+
+void ViewportCameraController::LookAt(Vector3f focalPoint)
+{
+	//TODO: rotate vectors to look at focal point
 }
 
 void ViewportCameraController::Walk(float d)

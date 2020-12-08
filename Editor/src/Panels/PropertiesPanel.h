@@ -1,7 +1,8 @@
 #pragma once
-#include "Engine.h"
 
 #include "HierarchyPanel.h"
+
+#include "Engine.h"
 
 class PropertiesPanel :
 	public Layer

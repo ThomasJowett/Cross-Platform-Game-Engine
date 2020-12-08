@@ -3,7 +3,7 @@
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
 
-#include "Scene/SceneManager.h"
+#include "Engine.h"
 
 #include "Utilities/GeometryGenerator.h"
 
