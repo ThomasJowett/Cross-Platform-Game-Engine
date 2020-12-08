@@ -141,4 +141,5 @@ private:
 	int m_NumBrowsingEntriesPerColumn;
 
 	std::vector<std::filesystem::path> m_CopiedPaths;
+	bool m_Cut;
 };

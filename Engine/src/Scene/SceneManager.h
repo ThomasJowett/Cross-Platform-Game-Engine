@@ -12,6 +12,7 @@ public:
 	static bool IsSceneLoaded();
 	static bool Update(float deltaTime);
 	static bool FixedUpdate();
+	static bool CreateScene(std::filesystem::path filename);
 private:
 	static bool FinalChangeScene();
 	static Scope<Scene> s_CurrentScene;
