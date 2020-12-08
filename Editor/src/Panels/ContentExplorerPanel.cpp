@@ -18,38 +18,65 @@
 
 void ContentExplorerPanel::Paste()
 {
-	for (auto path : m_CopiedPaths)
+	if (m_Cut)
 	{
-		auto target = m_CurrentPath / path.filename();
-
-		if (std::filesystem::exists(target))
+		// if the files have been cut then rename them
+		for (auto path : m_CopiedPaths)
 		{
-			int suffix = 1;
-			std::string extenstion = target.extension().string();
-
-			std::filesystem::path targetNoExt = target;
-			targetNoExt.replace_extension("");
-
-			std::filesystem::path temp = targetNoExt.string() + "- Copy" + extenstion;
-
-			while (std::filesystem::exists(temp))
+			try
 			{
-				suffix++;
-				temp = targetNoExt.string() + "- Copy (" + std::to_string(suffix) + ')' + extenstion;
+				std::filesystem::rename(path, m_CurrentPath / path.filename());
+			}
+			catch (const std::filesystem::filesystem_error& e)
+			{
+				try
+				{
+					std::filesystem::copy_file(path, m_CurrentPath / path.filename(), std::filesystem::copy_options::skip_existing);
+				}
+				catch (const std::filesystem::filesystem_error& e)
+				{
+					CLIENT_ERROR("Could not paste cut files: {0}", e.what());
+				}
+			}
+		}
+		m_Cut = false;
+	}
+	else
+	{
+		for (auto path : m_CopiedPaths)
+		{
+			auto target = m_CurrentPath / path.filename();
+
+			if (std::filesystem::exists(target))
+			{
+				int suffix = 1;
+				std::string extenstion = target.extension().string();
+
+				std::filesystem::path targetNoExt = target;
+				targetNoExt.replace_extension("");
+
+				std::filesystem::path temp = targetNoExt.string() + "- Copy" + extenstion;
+
+				while (std::filesystem::exists(temp))
+				{
+					suffix++;
+					temp = targetNoExt.string() + "- Copy (" + std::to_string(suffix) + ')' + extenstion;
+				}
+
+				target = temp;
 			}
 
-			target = temp;
-		}
-
-		try
-		{
-			std::filesystem::copy_file(path, target, std::filesystem::copy_options::skip_existing);
-		}
-		catch (std::exception &e)
-		{
-			CLIENT_ERROR(e.what());
+			try
+			{
+				std::filesystem::copy_file(path, target, std::filesystem::copy_options::skip_existing);
+			}
+			catch (std::exception& e)
+			{
+				CLIENT_ERROR(e.what());
+			}
 		}
 	}
+
 	m_ForceRescan = true;
 }
 
@@ -114,7 +141,7 @@ bool ContentExplorerPanel::Rename()
 	}
 
 	if (ImGui::InputText("##RenameBox", inputBuffer, sizeof(inputBuffer),
-						 ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 	{
 		if (!std::filesystem::exists(m_CurrentPath / inputBuffer))
 		{
@@ -146,7 +173,7 @@ bool ContentExplorerPanel::Rename()
 	return false;
 }
 
-void ContentExplorerPanel::SwitchTo(const std::filesystem::path &path)
+void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 {
 	m_CurrentPath = path;
 
@@ -181,6 +208,8 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 
 	newSceneFilepath += ".scene";
 
+	SceneManager::CreateScene(newSceneFilepath);
+
 	SceneManager::ChangeScene(newSceneFilepath);
 
 	m_ForceRescan = true;
@@ -201,7 +230,7 @@ std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 	return std::filesystem::path(path);
 }
 
-void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2 &childWindowSize)
+void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
 {
 	int approxNumEntriesPerColumn = 20;
 	if (childWindowSize.y > 0)
@@ -239,7 +268,7 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2 &childWi
 
 void ContentExplorerPanel::HandleKeyboardInputs()
 {
-	ImGuiIO &io = ImGui::GetIO();
+	ImGuiIO& io = ImGui::GetIO();
 	bool shift = io.KeyShift;
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
@@ -265,7 +294,7 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 
 void ContentExplorerPanel::RightClickMenu()
 {
-	ImGuiStyle *style = &ImGui::GetStyle();
+	ImGuiStyle* style = &ImGui::GetStyle();
 
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
@@ -313,9 +342,9 @@ void ContentExplorerPanel::RightClickMenu()
 	if (ImGui::MenuItem("Import Assets"))
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
-																					L"Any File\0*.*\0"
-																					"Film Box (.fbx)\0*.fbx\0"
-																					"Wavefront OBJ (.obj)\0*.obj");
+			L"Any File\0*.*\0"
+			"Film Box (.fbx)\0*.fbx\0"
+			"Wavefront OBJ (.obj)\0*.obj");
 
 		if (assetPaths)
 		{
@@ -348,7 +377,7 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 	}
 }
 
-ContentExplorerPanel::ContentExplorerPanel(bool *show)
+ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: m_Show(show), Layer("ContentExplorer")
 {
 	m_TotalNumBrowsingEntries = 0;
@@ -425,7 +454,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			Rename();
 			ImGui::EndPopup();
 		}
-		const ImGuiStyle &style = ImGui::GetStyle();
+		const ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
 
 		//----------------------------------------------------------------------------------------------------
@@ -518,19 +547,19 @@ void ContentExplorerPanel::OnImGuiRender()
 		//Sorting mode combo
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
-		if (ImGui::Combo("##Sorting Mode", (int *)&m_SortingMode,
-						 ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0" 
-						 ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0" 
-						 ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0" 
-						 ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0" 
-						 ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0" 
-						 ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0" 
-						 ICON_FA_SORT_DOWN "\tType\0" 
-						 ICON_FA_SORT_UP "\tType Reverse"))
+		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
+			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
+			ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0"
+			ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0"
+			ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0"
+			ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0"
+			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
+			ICON_FA_SORT_DOWN "\tType\0"
+			ICON_FA_SORT_UP "\tType Reverse"))
 			m_ForceRescan = true;
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
-		const std::filesystem::path *fi = m_History.GetCurrentFolder();
+		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;
@@ -558,7 +587,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			{
 				ImGui::SameLine();
 				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
-																	  ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
+					ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
 
 				static bool once = false;
 				if (!ImGui::IsItemActive())
@@ -588,7 +617,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					m_EditLocationCheckButtonPressed = false;
 				}
-				catch (const std::exception &e)
+				catch (const std::exception& e)
 				{
 					CLIENT_ERROR(e.what());
 				}
@@ -908,5 +937,6 @@ void ContentExplorerPanel::Copy()
 
 void ContentExplorerPanel::Cut()
 {
-	CLIENT_ERROR("ContentExplorerPanel::Cut() Function not implemented!");
+	m_Cut = true;
+	Copy();
 }

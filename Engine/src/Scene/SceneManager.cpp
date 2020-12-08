@@ -112,3 +112,12 @@ bool SceneManager::FinalChangeScene()
 
 	return IsSceneLoaded();
 }
+
+bool SceneManager::CreateScene(std::filesystem::path filename)
+{
+	Ref<Scene> newScene = CreateRef<Scene>(filename);
+
+	newScene->Save(false);
+
+	return false;
+}
