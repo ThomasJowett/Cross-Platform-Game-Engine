@@ -42,6 +42,8 @@
 	#else
 		DEBUGBREAK()
 	#endif
+#else
+	#define DEBUGBREAK()
 #endif // DEBUG
 
 #define EXPAND_MACRO(x) x
