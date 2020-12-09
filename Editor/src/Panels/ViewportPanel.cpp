@@ -65,7 +65,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		{
 			CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
 			TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-			Matrix4x4 view = Matrix4x4::Inverse(Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation }));
+			Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
 			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
 			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
 		}
