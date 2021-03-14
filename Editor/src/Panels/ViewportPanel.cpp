@@ -15,9 +15,12 @@
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
-	m_Framebuffer = FrameBuffer::Create({ 1920, 1080 });
+	FrameBufferSpecification frameBufferSpecification = { 1920, 1080 };
+	frameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
+	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 	m_CameraPreview = FrameBuffer::Create({ 256, 144 });
 
+	m_Mode = Mode::Select;
 	m_Mode = Mode::Select;
 }
 
@@ -98,30 +101,16 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
-	//TEMP
-	Matrix4x4 testTransform;
-
-	float* testPosition, * testRotation, * testScale;
-	testPosition = new float[3];
-	float matrix[16] =
-	{ 1.f, 0.f, 0.f, 0.f,
-   0.f, 1.f, 0.f, 0.f,
-   0.f, 0.f, 1.f, 0.f,
-   0.f, 0.f, 0.f, 1.f };
-	//Vector3f testPosition;
-	//Vector3f testRotation;
-	//Vector3f testScale;
-
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
-		HandleKeyboardInputs();
-
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
+
+		HandleKeyboardInputs();
 
 		if (m_WindowHovered)
 		{
@@ -256,7 +245,7 @@ void ViewportPanel::OnImGuiRender()
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
-			ImGuizmo::OPERATION gizmoMode;
+			ImGuizmo::OPERATION gizmoMode = ImGuizmo::BOUNDS;
 			switch (m_Mode)
 			{
 			case ViewportPanel::Mode::Select:
@@ -283,25 +272,11 @@ void ViewportPanel::OnImGuiRender()
 
 			if (ImGuizmo::IsUsing())
 			{
-				//transform.Decompose(translation, rotation, scale);
-				//Vector3f translation, rotation, scale;
-
-
 				float translation[3], rotation[3], scale[3];
-
-				//Vector3f translation = transform.ExtractTranslation();
-				//Vector3f scale = transform.ExtractScale();
-				//Quaternion rotation = transform.ExtractRotation();
-
 
 				ImGuizmo::DecomposeMatrixToComponents(transform, translation, rotation, scale);
 
 				CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
-
-				//testTransform = transform;
-				testPosition = translation;
-				testRotation = rotation;
-				testScale = scale;
 
 				Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
 				if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
@@ -333,12 +308,6 @@ void ViewportPanel::OnImGuiRender()
 			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 
 		ImGui::Text("%.1f", io.Framerate);
-		//ImGui::Text("Pos: %s", testPosition.to_string().c_str());
-		//ImGui::Text("Rot: %s", testRotation.to_string().c_str());
-		//ImGui::Text("Scale: %s", testScale.to_string().c_str());
-		ImGui::DragFloat3("pos", testPosition);
-		//ImGui::DragFloat3("rot", testRotation);
-		//ImGui::DragFloat3("scale", testScale);
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}
@@ -440,7 +409,19 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ImGui::IsWindowFocused())
+	if (m_WindowHovered)
+	{
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
+			m_Mode = Mode::Select;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
+			m_Mode = Mode::Move;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
+			m_Mode = Mode::Rotate;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
+			m_Mode = Mode::Scale;
+	}
+
+	if (m_WindowFocussed)
 	{
 		io.WantCaptureKeyboard = true;
 		io.WantCaptureMouse = true;
@@ -463,13 +444,6 @@ void ViewportPanel::HandleKeyboardInputs()
 			SelectAll();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 			Save();
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
-			m_Mode = Mode::Select;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
-			m_Mode = Mode::Move;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
-			m_Mode = Mode::Rotate;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
-			m_Mode = Mode::Scale;
 	}
+
 }

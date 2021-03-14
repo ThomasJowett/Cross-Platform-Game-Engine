@@ -23,3 +23,17 @@ Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& specificati
 	}
 	return Ref<FrameBuffer>();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool FrameBuffer::IsDepthFormat(FrameBufferTextureFormat format)
+{
+	switch (format)
+	{
+	case FrameBufferTextureFormat::DEPTH24STENCIL8:
+		return true;
+	default:
+		break;
+	}
+	return false;
+}

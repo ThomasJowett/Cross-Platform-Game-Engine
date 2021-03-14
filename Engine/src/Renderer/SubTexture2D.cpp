@@ -10,6 +10,8 @@ SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const Vector2f& min, c
 	m_TexCoords[3] = { min.x, max.y };
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<SubTexture2D> SubTexture2D::Create(const Ref<Texture2D>& texture, const Vector2f& cellCoords, const Vector2f& spriteSize, const Vector2f cellDims)
 {
 	Vector2f minCoord((cellCoords.x * spriteSize.x) / texture->GetWidth(), (cellCoords.y * spriteSize.y ) / texture->GetHeight());

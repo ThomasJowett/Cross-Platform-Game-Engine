@@ -24,9 +24,13 @@ Scene::Scene(std::filesystem::path filepath)
 	m_SceneName = m_SceneName.substr(0, m_SceneName.find_last_of('.'));
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Scene::~Scene()
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Entity Scene::CreateEntity(const std::string& name)
 {
@@ -37,6 +41,8 @@ Entity Scene::CreateEntity(const std::string& name)
 	return entity;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Scene::RemoveEntity(const Entity& entity)
 {
 	if (entity.BelongsToScene(this))
@@ -46,6 +52,8 @@ bool Scene::RemoveEntity(const Entity& entity)
 	m_Dirty = true;
 	return false;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
@@ -79,6 +87,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	renderTarget->UnBind();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::Render(Ref<FrameBuffer> renderTarget)
 {
 	Matrix4x4 view;
@@ -97,6 +107,42 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 
 	Render(renderTarget, view, projection);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+{
+	renderTarget->Bind();
+
+	RenderCommand::Clear();
+
+	Renderer::BeginScene(cameraTransform, projection);
+
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawQuad(transform, sprite.Tint);
+		});
+
+
+	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
+		[](const auto& mesh, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer::Submit(mesh.material, mesh.Geometry, transform);
+		});
+
+	Renderer::EndScene();
+
+	renderTarget->UnBind();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnUpdate(float deltaTime)
 {
@@ -152,6 +198,8 @@ void Scene::OnUpdate(float deltaTime)
 	m_IsUpdating = false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::OnFixedUpdate()
 {
 	m_IsUpdating = true;
@@ -176,6 +224,8 @@ void Scene::OnFixedUpdate()
 	m_IsUpdating = false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::OnViewportResize(uint32_t width, uint32_t height)
 {
 	m_ViewportHeight = height;
@@ -191,6 +241,8 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 			}
 		});
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::Save(std::filesystem::path filepath, bool binary)
 {
@@ -241,10 +293,14 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	m_IsSaving = false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::Save(bool binary)
 {
 	Save(m_Filepath, binary);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool Scene::Load(bool binary)
 {
@@ -284,6 +340,8 @@ bool Scene::Load(bool binary)
 	Application::CallEvent(event);
 	return true;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::SetFilepath(std::filesystem::path filepath)
 {

@@ -6,6 +6,7 @@ LayerStack::LayerStack()
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 LayerStack::~LayerStack()
 {
@@ -16,16 +17,22 @@ LayerStack::~LayerStack()
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void LayerStack::PushLayer(Layer * layer)
 {
 	m_Layers.emplace(m_Layers.begin() + m_LayerInsert, layer);
 	m_LayerInsert++;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void LayerStack::PushOverlay(Layer * overlay)
 {
 	m_Layers.emplace_back(overlay);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool LayerStack::PopLayer(Layer * layer)
 {
@@ -38,6 +45,8 @@ bool LayerStack::PopLayer(Layer * layer)
 	}
 	return false;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool LayerStack::PopOverlay(Layer * overlay)
 {

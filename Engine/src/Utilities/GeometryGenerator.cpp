@@ -11,6 +11,8 @@ static BufferLayout layout = {
 		{ShaderDataType::Float2, "a_TexCoord"}
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
@@ -88,6 +90,8 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 
 	return returnModel;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
 {
@@ -178,6 +182,8 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 
 	return returnModel;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
 {
@@ -275,6 +281,8 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	return returnModel;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
@@ -307,6 +315,8 @@ Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 
 	return returnModel;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
 {
@@ -526,6 +536,8 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 	return returnModel;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
 {

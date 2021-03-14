@@ -35,6 +35,8 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
 		return nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 {
 	switch (Renderer::GetAPI())
@@ -63,11 +65,15 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 		return nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
 {
 	CORE_ASSERT(!Exists(texture->GetName()), "Texture already exists!");
 	m_Textures[texture->GetName()] = texture;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path)
 {
@@ -79,11 +85,15 @@ Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path)
 	return texture;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<Texture2D> TextureLibrary2D::Get(const std::string& name)
 {
 	CORE_ASSERT(Exists(name), "Texture does not exist!");
 	return m_Textures[name];
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool TextureLibrary2D::Exists(const std::string& name) const
 {

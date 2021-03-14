@@ -8,16 +8,22 @@ static BufferLayout staticMeshLayout = {
 		{ShaderDataType::Float2, "a_TexCoord"}
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Mesh::Mesh(const std::filesystem::path& filepath)
 	:m_Filepath(filepath)
 {
 	LoadModel(filepath);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Mesh::Mesh(Ref<VertexArray> vertexArray, std::string name)
 {
 	LoadModel(vertexArray, name);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
 {
@@ -25,6 +31,8 @@ void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
 	m_VertexArray = vertexArray;
 	m_Filepath.clear();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Mesh::LoadModel(const std::filesystem::path& filepath)
 {
@@ -74,6 +82,8 @@ void Mesh::LoadModel(const std::filesystem::path& filepath)
 
 	//TODO: load in information to do with the default materials of the mesh and the material Ids
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Mesh::LoadModel()
 {

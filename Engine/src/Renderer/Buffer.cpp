@@ -39,6 +39,8 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 		return nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 {
 	switch (Renderer::GetAPI())
@@ -68,6 +70,8 @@ Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 	CORE_ASSERT(false, "Could not create vertex buffer: Invalid Renderer API")
 	return nullptr;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 {

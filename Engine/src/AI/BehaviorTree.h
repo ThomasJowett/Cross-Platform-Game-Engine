@@ -29,7 +29,7 @@ public:
         Running,
     };
 
-    virtual ~Node() {}
+    virtual ~Node() = default;
 
     virtual Status update(float deltaTime) = 0;
     virtual void initialize() {}

@@ -24,6 +24,8 @@ private:
 	float m_mouseX, m_mouseY;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class MouseWheelEvent : public Event
 {
 public:
@@ -47,6 +49,8 @@ private:
 	float m_XOffset, m_YOffset;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class MouseButtonEvent : public Event
 {
 public:
@@ -61,6 +65,8 @@ protected:
 
 	int m_button;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class MouseButtonPressedEvent : public MouseButtonEvent
 {
@@ -77,6 +83,8 @@ public:
 
 	EVENT_CLASS_TYPE(MOUSE_BUTTON_PRESSED)
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class MouseButtonReleasedEvent : public MouseButtonEvent
 {

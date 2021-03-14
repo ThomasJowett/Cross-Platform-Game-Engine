@@ -8,124 +8,143 @@
 
 #include "ImGui/ImGuiManager.h"
 
-int main(int argc, char* argv[]);
+int main(int argc, char *argv[]);
 
 class Application
 {
-	using EventCallbackFn = std::function<void(Event&)>;
+	using EventCallbackFn = std::function<void(Event &)>;
+
 public:
-	Application(const WindowProps& props);
-	Application(const Application&) = delete;
+	Application(const WindowProps &props);
+	Application(const Application &) = delete;
 	virtual ~Application();
 
-	/// <summary>
-	/// Called when an event triggers
-	/// </summary>
-	/// <param name="e"></param>
-	void OnEvent(Event& e);
-	/// <summary>
-	/// Called once per frame
-	/// </summary>
-	virtual void OnUpdate() {};
-	/// <summary>
-	/// Called 100 times a second
-	/// </summary>
-	virtual void OnFixedUpdate() {};
+	/**
+	 * Called when an event triggers
+	 * @param e event
+	 */
+	void OnEvent(Event &e);
 
-	/// <summary>
-	/// Gets the static instance of the application
-	/// </summary>
-	/// <returns>The instance of the application</returns>
-	static inline Application& Get() { return *s_Instance; }
-	/// <summary>
-	/// Gets the applications window
-	/// </summary>
-	/// <returns></returns>
-	static Window& GetWindow() { return Get().GetWindowImpl(); }
+	/**
+	 * Called once per frame
+	 */
+	virtual void OnUpdate(){};
 
+	/**
+	 * Called 100 times a second
+	 */
+	virtual void OnFixedUpdate(){};
+
+	/**
+	 * Gets the static instance of the application
+	 * @return Application& The instance of the application
+	 */
+	static inline Application &Get() { return *s_Instance; }
+
+	/**
+	 * Get the applications Window object
+	 * 
+	 * @return Window& 
+	 */
+	static Window &GetWindow() { return Get().GetWindowImpl(); }
+
+	/**
+	 * Set wether to show Dear ImGui
+	 * @param showImgui 
+	 */
 	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
+
+	/**
+	 * Toggle wether Dear ImGui to shown
+	 */
 	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 
-	/// <summary>
-	/// Add a layer to the layer stack
-	/// </summary>
-	/// <param name="layer"></param>
-	void AddLayer(Layer* layer);
-	/// <summary>
-	/// Add an overlay to the  layer stack
-	/// </summary>
-	/// <param name="layer"></param>
-	void AddOverlay(Layer* layer);
-	/// <summary>
-	/// Removes a layer from the layer stack
-	/// </summary>
-	/// <param name="layer"></param>
-	void RemoveLayer(Layer* layer);
-	/// <summary>
-	/// Removes an overlay from the layer stack
-	/// </summary>
-	/// <param name="layer"></param>
-	void RemoveOverlay(Layer* layer);
+	/**
+	 * Add a layer to the layer stack
+	 * @param layer 
+	 */
+	void AddLayer(Layer *layer);
 
-	/// <summary>
-	/// Stops the application from running and closes the window
-	/// </summary>
+	/**
+	 * Add an overlay to the  layer stack
+	 * @param layer 
+	 */
+	void AddOverlay(Layer *layer);
+
+	/**
+	 * Removes a layer from the layer stack
+	 * @param layer 
+	 */
+	void RemoveLayer(Layer *layer);
+
+	/**
+	 * Removes an overlay from the layer stack
+	 * @param layer 
+	 */
+	void RemoveOverlay(Layer *layer);
+
+	/**
+	 * Stops the application from running and closes the window
+	 */
 	void Close() { m_Running = false; }
 
-	/// <summary>
-	/// Sets the main document that the application has open
-	/// </summary>
-	/// <param name="filepath"></param>
-	static void SetOpenDocument(const std::filesystem::path& filepath);
-	/// <summary>
-	/// Gets the document that the application has open
-	/// </summary>
-	/// <returns></returns>
-	static const std::filesystem::path& GetOpenDocument();
-	/// <summary>
-	/// Gets the directory of the open document
-	/// </summary>
-	/// <returns></returns>
-	static const std::filesystem::path& GetOpenDocumentDirectory();
+	/**
+	 * Sets the main document that the application has open
+	 * @param filepath 
+	 */
+	static void SetOpenDocument(const std::filesystem::path &filepath);
 
-	/// <summary>
-	/// Get the directory that the application was launched from
-	/// </summary>
-	/// <returns></returns>
-	static const std::filesystem::path& GetWorkingDirectory() { return s_WorkingDirectory; }
+	/**
+	 * Gets the document that the application has open
+	 * @return const std::filesystem::path& 
+	 */
+	static const std::filesystem::path &GetOpenDocument();
 
-	/// <summary>
-	/// Calls an event 
-	/// </summary>
-	/// <param name="event"></param>
-	static void CallEvent(Event& event) { s_EventCallback(event); }
+	/**
+	 * Get the Open Document Directory object
+	 * @return const std::filesystem::path& 
+	 */
+	static const std::filesystem::path &GetOpenDocumentDirectory();
+
+	/**
+	 * Get the directory that the application was launched from
+	 * @return const std::filesystem::path& 
+	 */
+	static const std::filesystem::path &GetWorkingDirectory() { return s_WorkingDirectory; }
+
+	/**
+	 * Calls an event
+	 * @param event 
+	 */
+	static void CallEvent(Event &event) { s_EventCallback(event); }
 
 private:
-	inline Window& GetWindowImpl() { return *m_Window; }
+	inline Window &GetWindowImpl() { return *m_Window; }
 	void Run();
-	bool OnWindowClose(WindowCloseEvent& e);
-	bool OnWindowResize(WindowResizeEvent& e);
-	bool OnWindowMove(WindowMoveEvent& e);
-	bool OnMaximize(WindowMaximizedEvent& e);
+	bool OnWindowClose(WindowCloseEvent &e);
+	bool OnWindowResize(WindowResizeEvent &e);
+	bool OnWindowMove(WindowMoveEvent &e);
+	bool OnMaximize(WindowMaximizedEvent &e);
 
-	void SetDefaultSettings(const WindowProps& props);
+	void SetDefaultSettings(const WindowProps &props);
 
 	double GetTime();
+
 private:
 	Scope<Window> m_Window;
-	ImGuiManager* m_ImGuiManager;
+	ImGuiManager *m_ImGuiManager;
 	bool m_Running = true;
 	bool m_Minimized = false;
 	LayerStack m_LayerStack;
 
-	std::vector<Layer*> m_WaitingLayers;
-	std::vector<Layer*> m_WaitingOverlays;
+	std::vector<Layer *> m_WaitingLayers;
+	std::vector<Layer *> m_WaitingOverlays;
 
-	std::vector<Layer*> m_DeadLayers;
-	std::vector<Layer*> m_DeadOverlays;
+	std::vector<Layer *> m_DeadLayers;
+	std::vector<Layer *> m_DeadOverlays;
 
-	static Application* s_Instance;
-	friend int::main(int argc, char* argv[]);
+	static Application *s_Instance;
+	friend int ::main(int argc, char *argv[]);
 
 	static std::filesystem::path s_OpenDocument;
 	static std::filesystem::path s_OpenDocumentDirectory;
@@ -134,27 +153,30 @@ private:
 	static EventCallbackFn s_EventCallback;
 
 protected:
-	/// <summary>
-	/// Immediately pushes a new layer to the layer stack, Should not be called during a frame
-	/// </summary>
-	/// <param name="layer"></param>
-	void PushLayer(Layer* layer);
-	/// <summary>
-	/// Immediately pushes a new overlay to the layer stack, Should not be called during a frame
-	/// </summary>
-	/// <param name="layer"></param>
-	void PushOverlay(Layer* layer);
-	/// <summary>
-	/// Immediately removes a layer from the layer stack, Should not be called during a frame
-	/// </summary>
-	/// <param name="layer"></param>
-	void PopLayer(Layer* layer);
-	/// <summary>
-	/// Immediately removes an overlay from the layer stack, Should not be called during a frame
-	/// </summary>
-	/// <param name="layer"></param>
-	void PopOverlay(Layer* layer);
+	/**
+	 * Immediately pushes a new layer to the layer stack, Should not be called during a frame
+	 * @param layer 
+	 */
+	void PushLayer(Layer *layer);
+
+	/**
+	 * Immediately pushes a new overlay to the layer stack, Should not be called during a frame
+	 * @param layer 
+	 */
+	void PushOverlay(Layer *layer);
+
+	/**
+	 * Immediately removes a layer from the layer stack, Should not be called during a frame
+	 * @param layer 
+	 */
+	void PopLayer(Layer *layer);
+
+	/**
+	 * Immediately removes an overlay from the layer stack, Should not be called during a frame
+	 * @param layer 
+	 */
+	void PopOverlay(Layer *layer);
 };
 
 // To be defined in CLIENT
-Application* CreateApplication();
+Application *CreateApplication();

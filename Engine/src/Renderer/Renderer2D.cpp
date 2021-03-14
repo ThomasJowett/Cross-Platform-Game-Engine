@@ -14,6 +14,8 @@ struct QuadVertex
 	float TexIndex;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 struct LineVertex
 {
 	Vector3f ClipCoord;
@@ -22,6 +24,8 @@ struct LineVertex
 	float Width;
 	float Length;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 struct Renderer2DData
 {
@@ -61,6 +65,8 @@ struct Renderer2DData
 
 	Renderer2D::Stats Statistics;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 static Renderer2DData s_Data;
 
@@ -169,13 +175,19 @@ bool Renderer2D::Init()
 	return s_Data.QuadShader == nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::Shutdown()
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
@@ -187,12 +199,16 @@ void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& project
 	StartBatch();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::EndScene()
 {
 	PROFILE_FUNCTION();
 
 	Flush();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::Flush()
 {
@@ -218,6 +234,8 @@ void Renderer2D::Flush()
 	s_Data.Statistics.DrawCalls++;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::StartBatch()
 {
 	s_Data.QuadIndexCount = 0;
@@ -226,37 +244,52 @@ void Renderer2D::StartBatch()
 	s_Data.TextureSlotIndex = 1;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::NextBatch()
 {
 	Flush();
 	StartBatch();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, rotation, colour, tilingFactor);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, rotation, colour, tilingFactor);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
 	DrawQuad(transform, texture, colour, tilingFactor);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour, float tilingFactor)
 {
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
 	DrawQuad(transform, subtexture, colour, tilingFactor);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, rotation, colour);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const float& rotation, const Colour& colour)
 {
@@ -264,35 +297,48 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 	DrawQuad(transform, colour);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, texture, 0.0f, colour);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, 0.0f, colour);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const Colour& colour)
 {
 	DrawQuad(position, size, texture, 0.0f, colour);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
 	DrawQuad(position, size, subtexture, 0.0f, colour);
 }
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Colour& colour)
 {
 	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, 0.0f, colour);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Colour& colour)
 {
 	DrawQuad(position, size, 0.0f, colour);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 {
@@ -318,6 +364,8 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 
 	s_Data.Statistics.QuadCount++;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour, float tilingFactor)
 {
@@ -361,6 +409,8 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& text
 
 	s_Data.Statistics.QuadCount++;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, float tilingFactor)
 {
@@ -407,6 +457,8 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 	s_Data.Statistics.QuadCount++;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
@@ -489,25 +541,35 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.Statistics.QuadCount++;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour)
 {
 	DrawLine(start, end, 1.0f, colour);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float& thickness, const Colour& colour)
 {
 	//TODO draw polyline
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour)
 {
 	DrawPolyline(points, 1.0f, colour);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 const Renderer2D::Stats& Renderer2D::GetStats()
 {
 	return s_Data.Statistics;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::ResetStats()
 {

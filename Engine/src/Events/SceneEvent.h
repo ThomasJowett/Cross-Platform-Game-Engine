@@ -25,6 +25,8 @@ private:
 	const std::filesystem::path m_Filepath;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class SceneSaved : public Event
 {
 public:
@@ -46,6 +48,8 @@ public:
 private:
 	const std::filesystem::path m_Filepath;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class SceneLoaded : public Event
 {

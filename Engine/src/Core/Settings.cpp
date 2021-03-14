@@ -38,6 +38,8 @@ void Settings::Init()
 	s_Ini->LoadFile(s_Filename.c_str());
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetValue(const char* section, const char* key, const char* value)
 {
 	SI_Error rc = s_Ini->SetValue(section, key, value);
@@ -47,6 +49,8 @@ void Settings::SetValue(const char* section, const char* key, const char* value)
 		ENGINE_ERROR("Failed to set setting: {0}", rc);
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Settings::SetBool(const char* section, const char* key, const bool value)
 {
@@ -58,6 +62,8 @@ void Settings::SetBool(const char* section, const char* key, const bool value)
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetDouble(const char* section, const char* key, const double value)
 {
 	SI_Error rc = s_Ini->SetDoubleValue(section, key, value);
@@ -68,6 +74,8 @@ void Settings::SetDouble(const char* section, const char* key, const double valu
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetInt(const char* section, const char* key, const int value)
 {
 	SI_Error rc = s_Ini->SetLongValue(section, key, value);
@@ -77,6 +85,8 @@ void Settings::SetInt(const char* section, const char* key, const int value)
 		ENGINE_ERROR("Failed to set integer setting: {0}", rc);
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Settings::SetVector2f(const char* section, const char* key, const Vector2f& value)
 {
@@ -90,6 +100,8 @@ void Settings::SetVector2f(const char* section, const char* key, const Vector2f&
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetVector3f(const char* section, const char* key, const Vector3f& value)
 {
 	std::string valueString = std::to_string(value.x) + "," + std::to_string(value.y) + "," + std::to_string(value.z);
@@ -102,6 +114,8 @@ void Settings::SetVector3f(const char* section, const char* key, const Vector3f&
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 const char* Settings::GetValue(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -112,6 +126,8 @@ const char* Settings::GetValue(const char* section, const char* key)
 
 	return s_Ini->GetValue(section, key, s_DefaultValues.at({ section, key }).c_str());
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool Settings::GetBool(const char* section, const char* key)
 {
@@ -124,6 +140,8 @@ bool Settings::GetBool(const char* section, const char* key)
 	return s_Ini->GetBoolValue(section, key, s_DefaultValues.at({ section, key }) == "true");
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 double Settings::GetDouble(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -135,6 +153,8 @@ double Settings::GetDouble(const char* section, const char* key)
 	return s_Ini->GetDoubleValue(section, key, atof(s_DefaultValues.at({ section, key }).c_str()));
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 int Settings::GetInt(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -144,6 +164,8 @@ int Settings::GetInt(const char* section, const char* key)
 	}
 	return s_Ini->GetLongValue(section, key, atoi(s_DefaultValues.at({ section, key }).c_str()));
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Vector2f Settings::GetVector2f(const char* section, const char* key)
 {
@@ -162,6 +184,8 @@ Vector2f Settings::GetVector2f(const char* section, const char* key)
 	return Vector2f();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Vector3f Settings::GetVector3f(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -179,35 +203,49 @@ Vector3f Settings::GetVector3f(const char* section, const char* key)
 	return Vector3f();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetDefaultValue(const char* section, const char* key, const char* value)
 {
 	s_DefaultValues[{section, key}] = value;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Settings::SetDefaultBool(const char* section, const char* key, const bool value)
 {
 	s_DefaultValues[{section, key}] = value ? "true" : "false";
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetDefaultDouble(const char* section, const char* key, const double value)
 {
 	s_DefaultValues[{section, key}] = std::to_string(value);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Settings::SetDefaultInt(const char* section, const char* key, const int value)
 {
 	s_DefaultValues[{section, key}] = std::to_string(value);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetDefaultVector2f(const char* section, const char* key, const Vector2f& value)
 {
 	s_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Settings::SetDefaultVector3f(const char* section, const char* key, const Vector3f& value)
 {
 	s_DefaultValues[{section, key}] = std::to_string(value.x) + ',' + std::to_string(value.y) + ',' + std::to_string(value.z);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 std::string Settings::GetDefaultValue(const char* section, const char* key)
 {
@@ -219,6 +257,8 @@ std::string Settings::GetDefaultValue(const char* section, const char* key)
 	return s_DefaultValues[{section, key}];
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Settings::GetDefaultBool(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -228,6 +268,8 @@ bool Settings::GetDefaultBool(const char* section, const char* key)
 	}
 	return s_DefaultValues[{section, key}] == "true";
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 double Settings::GetDefaultDouble(const char* section, const char* key)
 {
@@ -239,6 +281,8 @@ double Settings::GetDefaultDouble(const char* section, const char* key)
 	return atof(s_DefaultValues[{section, key}].c_str());
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 int Settings::GetDefaultInt(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -248,6 +292,8 @@ int Settings::GetDefaultInt(const char* section, const char* key)
 	}
 	return atoi(s_DefaultValues[{section, key}].c_str());
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Vector2f Settings::GetDefaultVector2f(const char* section, const char* key)
 {
@@ -261,6 +307,8 @@ Vector2f Settings::GetDefaultVector2f(const char* section, const char* key)
 	return Vector2f((float)atof(splitVector[0].c_str()), (float)atof(splitVector[1].c_str()));
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Vector3f Settings::GetDefaultVector3f(const char* section, const char* key)
 {
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
@@ -272,6 +320,8 @@ Vector3f Settings::GetDefaultVector3f(const char* section, const char* key)
 
 	return Vector3f((float)atof(splitVector[0].c_str()), (float)atof(splitVector[1].c_str()), (float)atof(splitVector[2].c_str()));
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Settings::SaveSettings()
 {

@@ -8,12 +8,16 @@ EventCategory operator|(EventCategory lhs, EventCategory rhs)
         static_cast<std::underlying_type<EventCategory>::type>(rhs));
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 EventCategory operator&(EventCategory lhs, EventCategory rhs)
 {
     return static_cast<EventCategory>(
         static_cast<std::underlying_type<EventCategory>::type>(lhs)&
         static_cast<std::underlying_type<EventCategory>::type>(rhs));
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 EventCategory operator^(EventCategory lhs, EventCategory rhs)
 {
@@ -22,12 +26,16 @@ EventCategory operator^(EventCategory lhs, EventCategory rhs)
         static_cast<std::underlying_type<EventCategory>::type>(rhs));
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 EventCategory operator~(EventCategory rhs)
 {
     return static_cast<EventCategory> (
         ~static_cast<std::underlying_type<EventCategory>::type>(rhs)
         );
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 EventCategory operator|=(EventCategory& lhs, EventCategory rhs)
 {
@@ -39,6 +47,8 @@ EventCategory operator|=(EventCategory& lhs, EventCategory rhs)
     return lhs;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 EventCategory operator&=(EventCategory& lhs, EventCategory rhs)
 {
     lhs = static_cast<EventCategory> (
@@ -48,6 +58,8 @@ EventCategory operator&=(EventCategory& lhs, EventCategory rhs)
 
     return lhs;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 EventCategory operator^=(EventCategory& lhs, EventCategory rhs)
 {

@@ -5,9 +5,19 @@
 class Camera
 {
 public:
+	/**
+	 * Construct a new Camera object from projection matrix
+	 * 
+	 * @param projectionMatrix 
+	 */
 	Camera(Matrix4x4 projectionMatrix)
 		:m_ProjectionMatrix(projectionMatrix)
 	{}
+
+	/**
+	 * Construct a new Camera object
+	 * 
+	 */
 	Camera() = default;
 	virtual ~Camera() = default;
 
@@ -18,6 +28,8 @@ protected:
 protected:
 	Matrix4x4 m_ProjectionMatrix;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class OrthographicCamera : public Camera
 {
@@ -40,6 +52,8 @@ public:
 		m_FarDepth = farDepth;
 	}
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class PerspectiveCamera : public Camera
 {

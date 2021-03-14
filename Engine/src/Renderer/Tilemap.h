@@ -26,7 +26,7 @@ private:
 	uint32_t m_TileCount;
 	uint32_t m_Columns;
 
-	Colour m_BackgrondColour;
+	Colour m_BackgroundColour;
 
 	uint32_t m_OffsetX, m_OffsetY;
 
@@ -77,7 +77,7 @@ private:
 
 	bool m_IsStaggered;
 
-	uint32_t m_Width, m_Hieght;
+	uint32_t m_Width, m_Height;
 	uint32_t m_TileWidth, m_TileHeight;
 
 	uint32_t m_HexSideLength;

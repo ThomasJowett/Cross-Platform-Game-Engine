@@ -9,36 +9,36 @@ public:
 	Layer(const std::string& name = "Layer");
 	virtual ~Layer();
 
-	/// <summary>
-	/// Called when the layer is added to the layer stack
-	/// </summary>
+	/**
+	 * Called when the layer is added to the layer stack
+	 */
 	virtual void OnAttach() {}
 
-	/// <summary>
-	/// Called when the layer is removed from the layer stack
-	/// </summary>
+	/**
+	 * Called when the layer is removed from the layer stack
+	 */
 	virtual void OnDetach() {}
 
-	/// <summary>
-	/// Called 100 times a second
-	/// </summary>
+	/**
+	 * Called 100 times a second
+	 */
 	virtual void OnFixedUpdate() {}
 
-	/// <summary>
-	/// Called each frame
-	/// </summary>
-	/// <param name="deltaTime"></param>
+	/**
+	 * Called each frame
+	 * @param deltaTime 
+	 */
 	virtual void OnUpdate(float deltaTime) {}
 
-	/// <summary>
-	/// Called during the ImGui frame 
-	/// </summary>
+	/**
+	 * Called during the ImGui frame
+	 */
 	virtual void OnImGuiRender() {}
 
-	/// <summary>
-	/// Called when an event is triggered
-	/// </summary>
-	/// <param name="event"></param>
+	/**
+	 * Called when an event is triggered
+	 * @param event 
+	 */
 	virtual void OnEvent(Event& event) {}
 
 protected:

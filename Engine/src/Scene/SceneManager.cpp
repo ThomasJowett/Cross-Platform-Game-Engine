@@ -11,6 +11,8 @@ Scene* SceneManager::CurrentScene()
 	return s_CurrentScene.get();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool SceneManager::ChangeScene(std::filesystem::path filepath)
 {
 	std::filesystem::path finalpath = filepath;
@@ -57,10 +59,14 @@ bool SceneManager::ChangeScene(std::filesystem::path filepath)
 	return IsSceneLoaded();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool SceneManager::IsSceneLoaded()
 {
 	return s_CurrentScene == nullptr ? false : !s_CurrentScene->IsSaving();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneManager::Update(float deltaTime)
 {
@@ -79,6 +85,8 @@ bool SceneManager::Update(float deltaTime)
 	return false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool SceneManager::FixedUpdate()
 {
 	if (IsSceneLoaded())
@@ -90,6 +98,8 @@ bool SceneManager::FixedUpdate()
 	}
 	return false;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneManager::FinalChangeScene()
 {
@@ -112,6 +122,8 @@ bool SceneManager::FinalChangeScene()
 
 	return IsSceneLoaded();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneManager::CreateScene(std::filesystem::path filename)
 {

@@ -1,4 +1,4 @@
-#version 330 core
+#version 450 core
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec4 a_Colour;
@@ -7,7 +7,7 @@ layout(location = 3) in float a_TexIndex;
 
 out vec4 v_Colour;
 out vec2 v_TexCoord;
-out float v_TexIndex;
+out flat float v_TexIndex;
 
 uniform mat4 u_ViewProjection;
 

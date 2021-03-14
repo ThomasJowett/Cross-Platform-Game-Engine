@@ -1,10 +1,10 @@
-#version 330 core
+#version 450 core
 
 layout(location = 0) out vec4 frag_colour;
 
 in vec4 v_Colour;
 in vec2 v_TexCoord;
-in float v_TexIndex;
+in flat float v_TexIndex;
 
 uniform sampler2D u_Textures[32];
 

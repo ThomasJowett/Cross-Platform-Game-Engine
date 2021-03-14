@@ -7,11 +7,42 @@
 class Entity
 {
 public:
+	/**
+	 * Construct a new Empty Entity
+	 * 
+	 */
 	Entity() = default;
+
+	/**
+	 * Construct a new Entity object
+	 * 
+	 * @param handle entt id
+	 * @param scene the entity belongs to
+	 * @param debugName name of the entity used only for debugging
+	 */
 	Entity(entt::entity handle, Scene* scene, const std::string& debugName = "");
+
+	/**
+	 * Construct a new Entity object from another
+	 * 
+	 * @param other 
+	 */
 	Entity(const Entity& other) = default;
+
+	/**
+	 * Destroy the Entity object
+	 * 
+	 */
 	~Entity() = default;
 
+	/**
+	 * Add a component to this entity
+	 * 
+	 * @tparam T 
+	 * @tparam Args 
+	 * @param args 
+	 * @return T& 
+	 */
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
@@ -20,18 +51,37 @@ public:
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
+	/**
+	 * Get a reference to a Component of this Entity
+	 * 
+	 * @tparam T type of component
+	 * @return T& 
+	 */
 	template<typename T>
 	T& GetComponent()
 	{
 		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}
+
+	/**
+	 * Find if this Entity has a Component of certain type
+	 * 
+	 * @tparam T type of Component
+	 * @return true Entity has this component
+	 * @return false Entity does not have this component
+	 */
 	template<typename T>
 	bool HasComponent()
 	{
 		return m_Scene->m_Registry.has<T>(m_EntityHandle);
 	}
 
+	/**
+	 * If the Entity has this component, then remove it
+	 * 
+	 * @tparam T 
+	 */
 	template<typename T>
 	void RemoveComponent()
 	{
@@ -40,6 +90,13 @@ public:
 		m_Scene->MakeDirty();
 	}
 
+	/**
+	 * Does this entity belong to the given scene
+	 * 
+	 * @param scene 
+	 * @return true 
+	 * @return false 
+	 */
 	bool BelongsToScene(Scene* scene) const
 	{
 		return scene == m_Scene;

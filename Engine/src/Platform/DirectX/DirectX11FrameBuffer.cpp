@@ -35,7 +35,7 @@ void DirectX11FrameBuffer::Resize(uint32_t width, uint32_t height)
 {
 }
 
-uint32_t DirectX11FrameBuffer::GetColourAttachment()
+uint32_t DirectX11FrameBuffer::GetColourAttachment(size_t index)
 {
 	return 0;
 }

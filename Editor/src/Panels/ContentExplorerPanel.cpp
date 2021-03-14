@@ -27,7 +27,7 @@ void ContentExplorerPanel::Paste()
 			{
 				std::filesystem::rename(path, m_CurrentPath / path.filename());
 			}
-			catch (const std::filesystem::filesystem_error& e)
+			catch (const std::filesystem::filesystem_error&)
 			{
 				try
 				{
@@ -384,6 +384,7 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_NumBrowsingColumns = 0;
 	m_NumBrowsingEntriesPerColumn = 0;
 	m_NumberSelected = 0;
+	m_Cut = false;
 }
 
 void ContentExplorerPanel::OnAttach()

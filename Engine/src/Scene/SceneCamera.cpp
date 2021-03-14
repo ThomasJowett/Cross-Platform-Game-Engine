@@ -6,6 +6,8 @@ SceneCamera::SceneCamera()
 	RecalculatePerspectiveProjection();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SceneCamera::SetOrthoGraphic(float size, float nearClip, float farClip)
 {
 	m_ProjectionType = ProjectionType::orthographic;
@@ -16,6 +18,8 @@ void SceneCamera::SetOrthoGraphic(float size, float nearClip, float farClip)
 	RecalculateOrthographicProjection();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SceneCamera::SetPerspective(float fov, float nearClip, float farClip)
 {
 	m_ProjectionType = ProjectionType::perspective;
@@ -25,17 +29,23 @@ void SceneCamera::SetPerspective(float fov, float nearClip, float farClip)
 	RecalculatePerspectiveProjection();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SceneCamera::SetProjection(ProjectionType projectionType)
 {
 	m_ProjectionType = projectionType;
 	RecalculateProjection();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SceneCamera::SetAspectRatio(const float& aspectRatio)
 {
 	m_AspectRatio = aspectRatio;
 	RecalculateProjection();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void SceneCamera::RecalculateProjection()
 {
@@ -50,6 +60,8 @@ void SceneCamera::RecalculateProjection()
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SceneCamera::RecalculateOrthographicProjection()
 {
 	float left = -m_OrthographicSize * m_AspectRatio * 0.5f;
@@ -58,6 +70,8 @@ void SceneCamera::RecalculateOrthographicProjection()
 	float top = m_OrthographicSize * 0.5f;
 	SetProjectionMatrix(Matrix4x4::OrthographicRH(left, right, bottom, top, m_OrthoGraphicNear, m_OrthoGraphicFar));
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void SceneCamera::RecalculatePerspectiveProjection()
 {

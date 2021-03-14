@@ -75,15 +75,35 @@ struct BufferElement
 class BufferLayout
 {
 public:
-	BufferLayout() {}
+	/**
+	 * Construct a new Buffer Layout object
+	 * 
+	 */
+	BufferLayout() = default;
 
+	/**
+	 * Construct a new Buffer Layout object from elements initializer list
+	 * 
+	 * @param elements 
+	 */
 	BufferLayout(const std::initializer_list<BufferElement>& elements)
 		:m_Elements(elements)
 	{
 		CalculateOffsetsAndStride();
 	}
 
+	/**
+	 * Get the Element list object
+	 * 
+	 * @return const std::vector<BufferElement>& 
+	 */
 	inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
+
+	/**
+	 * Get the Stride
+	 * 
+	 * @return const uint32_t& 
+	 */
 	inline const uint32_t& GetStride() const { return m_Stride; }
 
 	std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
@@ -108,6 +128,8 @@ private:
 	uint32_t m_Stride = 0;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class VertexBuffer
 {
 public:
@@ -127,6 +149,8 @@ public:
 	static Ref<VertexBuffer> Create(uint32_t size);
 	static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class IndexBuffer
 {

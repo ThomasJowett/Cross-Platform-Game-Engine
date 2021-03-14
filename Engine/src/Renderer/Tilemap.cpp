@@ -70,7 +70,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 			m_BackgroundColour = Colour(0.0f, 0.0f, 0.0f, 0.0f);
 
 		m_Width = atoi(pRoot->Attribute("width"));
-		m_Hieght = atoi(pRoot->Attribute("height"));
+		m_Height = atoi(pRoot->Attribute("height"));
 		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
 		m_TileWidth = atoi(pRoot->Attribute("tileheight"));
 
@@ -97,10 +97,14 @@ bool Tilemap::Load(std::filesystem::path filepath)
 	return true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Tilemap::Save(std::filesystem::path)
 {
 	return false;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool Tileset::Load(const std::filesystem::path& filepath)
 {

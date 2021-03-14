@@ -10,6 +10,8 @@ struct SceneData
 	Matrix4x4 ViewProjectionMatrix;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 SceneData s_Data;
 
 bool Renderer::Init()
@@ -19,16 +21,22 @@ bool Renderer::Init()
 	return false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 {
 	RenderCommand::SetViewport(0, 0, width, height);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
 	Renderer2D::BeginScene(transform, projection);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer::EndScene()
 {
@@ -37,6 +45,8 @@ void Renderer::EndScene()
 	//TODO: sort the opaque objects front to back
 	//TODO: sort the transparent objects back to front
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
 {
@@ -50,6 +60,8 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform)
 {

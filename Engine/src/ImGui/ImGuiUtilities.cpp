@@ -12,17 +12,23 @@ static size_t ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 	return (w == -1) ? buf_size : (size_t)w;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
 {
 	ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
 	ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 {
 	ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
 	return ImGui::ImageButton(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), frame_padding, bg_col, tint_col);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool ImGui::SaveStyle(const std::filesystem::path& filename, const ImGuiStyle& style)
 {
@@ -64,6 +70,8 @@ bool ImGui::SaveStyle(const std::filesystem::path& filename, const ImGuiStyle& s
 
 	return true;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool ImGui::LoadStyle(const std::filesystem::path& filename, ImGuiStyle& style)
 {
@@ -209,6 +217,8 @@ bool ImGui::LoadStyle(const std::filesystem::path& filename, ImGuiStyle& style)
 	return true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ImGui::Tooltip(const std::string& text)
 {
 	if (ImGui::IsItemHovered())
@@ -218,6 +228,8 @@ void ImGui::Tooltip(const std::string& text)
 		ImGui::EndTooltip();
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ImGui::Tooltip(const char* text)
 {

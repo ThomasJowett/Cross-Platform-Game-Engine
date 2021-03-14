@@ -43,16 +43,46 @@ class Colour
 public:
 	float r, g, b, a;
 
+	/**
+	 * Construct a new Colour object
+	 * 
+	 */
 	Colour() { r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f; }
+
+	/**
+	 * Construct a new Colour object from rgba
+	 * 
+	 * @param r red
+	 * @param g green
+	 * @param b blue
+	 * @param a alpha
+	 */
 	Colour(float r, float g, float b, float a) :r(r), g(g), b(b), a(a) {}
+
+	/**
+	 * Construct a new Colour object from Colours enum
+	 * 
+	 * @param colour 
+	 */
 	Colour(Colours colour)
 	{
 		SetColour(colour);
 	}
+
+	/**
+	 * Construct a new Colour object from hex value
+	 * 
+	 * @param hexValue 
+	 */
 	Colour(int hexValue)
 	{
 		SetColour(hexValue);
 	}
+
+	/**
+	 * Destroy the Colour object
+	 * 
+	 */
 	~Colour() = default;
 
 	void SetColour(Colours colour)
@@ -92,8 +122,12 @@ public:
 		}
 	}
 
-	// Hex Value in the form 0xRRGGBBAA
-	void SetColour(int hexValue)
+	/**
+	 * Set the Colour object from integer
+	 * 
+	 * @param hexValue in the form of 0xRRGGBBAA
+	 */
+	void SetColour(const uint32_t& hexValue)
 	{
 		r = ((hexValue >> 24) & 0x0FF) / 255.0f;
 		g = ((hexValue >> 16) & 0x0FF) / 255.0f;
@@ -101,21 +135,27 @@ public:
 		a = ((hexValue) & 0xFF) / 255.0f;
 	}
 
-	void SetColour(std::string hex)
+	/**
+	 * Set the Colour object from hexValue string
+	 * 
+	 * @param hex in the form of "#RRGGBBAA"
+	 */
+	void SetColour(const std::string& hex)
 	{
+		std::string thisHex = hex;
 		std::stringstream stream;
 
 		//Drop a hash if the value has one
-		if (hex[0] == '#')
-			hex.erase(0, 1);
+		if (thisHex[0] == '#')
+			thisHex.erase(0, 1);
 
-		stream << std::hex << hex;
+		stream << std::hex << thisHex;
 
-		if (hex.size() == 6)
+		if (thisHex.size() == 6)
 		{
 			stream << std::hex << 255;
 		}
-		else if (hex.size() != 8)
+		else if (thisHex.size() != 8)
 		{
 			ENGINE_ERROR("Invalid Hex Code #{0}", hex);
 			return;
@@ -132,7 +172,7 @@ public:
 		stream << "#" << std::hex << HexValue();
 		return stream.str();
 	}
-
+	
 	uint32_t HexValue()
 	{
 		int red = (int)(r * 255);
@@ -150,6 +190,27 @@ public:
 	float& operator[](const int i)
 	{
 		return i == 0 ? this->r : (i == 1 ? this->g : i == 2 ? this->b : this->a);
+	}
+
+	Colour operator=(const Colour& rhs)
+	{
+		r = rhs.r;
+		g = rhs.g;
+		b = rhs.b;
+		a = rhs.a;
+		return *this;
+	}
+
+	Colour operator=(const uint32_t& rhs)
+	{
+		SetColour(rhs);
+		return *this;
+	}
+
+	Colour operator=(const std::string& rhs)
+	{
+		SetColour(rhs);
+		return *this;
 	}
 
 	template<typename Archive>

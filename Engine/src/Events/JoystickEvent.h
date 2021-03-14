@@ -24,6 +24,8 @@ private:
 	int m_JoystickID;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class JoystickDisconnected :public Event
 {
 public:

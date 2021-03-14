@@ -6,6 +6,8 @@ Material::Material(Ref<Shader> shader, Colour tint)
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Material::BindTextures() const
 {
 	for (auto&&[texture, slot] : m_Textures)
@@ -14,15 +16,21 @@ void Material::BindTextures() const
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Material::AddTexture(Ref<Texture> texture, uint32_t slot)
 {
 	m_Textures[texture] = slot;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Material::LoadMaterial(const std::filesystem::path& filepath)
 {
 
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Material::LoadMaterial()
 {

@@ -8,8 +8,14 @@ class ScriptableEntity
 {
 public:
 	ScriptableEntity() = default;
-	virtual ~ScriptableEntity() {}
+	virtual ~ScriptableEntity() = default;
 
+	/**
+	 * Get the Component object
+	 * 
+	 * @tparam T 
+	 * @return T& 
+	 */
 	template<typename T>
 	T& GetComponent()
 	{

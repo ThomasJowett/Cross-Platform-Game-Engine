@@ -17,7 +17,7 @@
 
 #include "Utilities/StringUtils.h"
 
-Application* Application::s_Instance = nullptr;
+Application *Application::s_Instance = nullptr;
 
 std::filesystem::path Application::s_OpenDocument;
 std::filesystem::path Application::s_OpenDocumentDirectory;
@@ -25,7 +25,9 @@ std::filesystem::path Application::s_WorkingDirectory;
 
 Application::EventCallbackFn Application::s_EventCallback;
 
-Application::Application(const WindowProps& props)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Application::Application(const WindowProps &props)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
@@ -51,6 +53,7 @@ Application::Application(const WindowProps& props)
 		m_Window->MaximizeWindow();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Application::~Application()
 {
@@ -58,25 +61,35 @@ Application::~Application()
 	Settings::SaveSettings();
 }
 
-void Application::AddLayer(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::AddLayer(Layer *layer)
 {
 	m_WaitingLayers.push_back(layer);
 }
 
-void Application::AddOverlay(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::AddOverlay(Layer *layer)
 {
 	m_WaitingOverlays.push_back(layer);
 }
 
-void Application::RemoveLayer(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::RemoveLayer(Layer *layer)
 {
 	m_DeadLayers.push_back(layer);
 }
 
-void Application::RemoveOverlay(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::RemoveOverlay(Layer *layer)
 {
 	m_DeadOverlays.push_back(layer);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Application::Run()
 {
@@ -90,7 +103,6 @@ void Application::Run()
 	while (m_Running)
 	{
 		PROFILE_SCOPE("Run Loop");
-
 
 		double newTime = GetTime();
 		double frameTime = newTime - currentTime;
@@ -107,7 +119,7 @@ void Application::Run()
 			{
 				OnFixedUpdate();
 
-				for (Layer* layer : m_LayerStack)
+				for (Layer *layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
 				}
@@ -125,7 +137,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				for (Layer* layer : m_LayerStack)
+				for (Layer *layer : m_LayerStack)
 				{
 					layer->OnUpdate((float)frameTime);
 				}
@@ -138,7 +150,7 @@ void Application::Run()
 		if (m_ImGuiManager->IsUsing())
 		{
 			m_ImGuiManager->Begin();
-			for (Layer* layer : m_LayerStack)
+			for (Layer *layer : m_LayerStack)
 			{
 				layer->OnImGuiRender();
 			}
@@ -148,12 +160,12 @@ void Application::Run()
 		m_Window->OnUpdate();
 
 		// Push any layers that were created during the update to the stack
-		for (Layer* layer : m_WaitingLayers)
+		for (Layer *layer : m_WaitingLayers)
 		{
 			PushLayer(layer);
 		}
 
-		for (Layer* overlay : m_WaitingOverlays)
+		for (Layer *overlay : m_WaitingOverlays)
 		{
 			PushOverlay(overlay);
 		}
@@ -162,12 +174,12 @@ void Application::Run()
 		m_WaitingOverlays.clear();
 
 		// Remove any layers that were deleted during the update
-		for (Layer* layer : m_DeadLayers)
+		for (Layer *layer : m_DeadLayers)
 		{
 			PopLayer(layer);
 		}
 
-		for (Layer* layer : m_DeadOverlays)
+		for (Layer *layer : m_DeadOverlays)
 		{
 			PopOverlay(layer);
 		}
@@ -177,7 +189,9 @@ void Application::Run()
 	}
 }
 
-void Application::OnEvent(Event& e)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::OnEvent(Event &e)
 {
 	PROFILE_FUNCTION();
 
@@ -189,21 +203,18 @@ void Application::OnEvent(Event& e)
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 	dispatcher.Dispatch<WindowMoveEvent>(BIND_EVENT_FN(Application::OnWindowMove));
 
-	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected& event)
-		{
-			ENGINE_INFO(event.to_string());
-			return false;
-		});
-	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected& event)
-		{
-			ENGINE_INFO(event.to_string());
-			return false;
-		});
-	dispatcher.Dispatch<SceneChanged>([](SceneChanged& event)
-		{
-			ENGINE_INFO(event.to_string());
-			return false;
-		});
+	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected &event) {
+		ENGINE_INFO(event.to_string());
+		return false;
+	});
+	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected &event) {
+		ENGINE_INFO(event.to_string());
+		return false;
+	});
+	dispatcher.Dispatch<SceneChanged>([](SceneChanged &event) {
+		ENGINE_INFO(event.to_string());
+		return false;
+	});
 
 	m_ImGuiManager->OnEvent(e);
 
@@ -215,7 +226,9 @@ void Application::OnEvent(Event& e)
 	}
 }
 
-void Application::PushLayer(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::PushLayer(Layer *layer)
 {
 	PROFILE_FUNCTION();
 
@@ -223,15 +236,18 @@ void Application::PushLayer(Layer* layer)
 	layer->OnAttach();
 }
 
-void Application::PushOverlay(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::PushOverlay(Layer *layer)
 {
 	PROFILE_FUNCTION();
 
 	m_LayerStack.PushOverlay(layer);
 	layer->OnAttach();
 }
+/* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::PopLayer(Layer* layer)
+void Application::PopLayer(Layer *layer)
 {
 	PROFILE_FUNCTION();
 
@@ -241,7 +257,9 @@ void Application::PopLayer(Layer* layer)
 		delete layer;
 }
 
-void Application::PopOverlay(Layer* layer)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::PopOverlay(Layer *layer)
 {
 	PROFILE_FUNCTION();
 
@@ -251,13 +269,17 @@ void Application::PopOverlay(Layer* layer)
 		delete layer;
 }
 
-bool Application::OnWindowClose(WindowCloseEvent& e)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Application::OnWindowClose(WindowCloseEvent &e)
 {
 	m_Running = false;
 	return true;
 }
 
-bool Application::OnWindowResize(WindowResizeEvent& e)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Application::OnWindowResize(WindowResizeEvent &e)
 {
 	PROFILE_FUNCTION();
 
@@ -278,7 +300,9 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	return false;
 }
 
-bool Application::OnWindowMove(WindowMoveEvent& e)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Application::OnWindowMove(WindowMoveEvent &e)
 {
 	if (!Settings::GetBool("Display", "Maximized"))
 	{
@@ -288,16 +312,20 @@ bool Application::OnWindowMove(WindowMoveEvent& e)
 	return false;
 }
 
-bool Application::OnMaximize(WindowMaximizedEvent& e)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Application::OnMaximize(WindowMaximizedEvent &e)
 {
 	Settings::SetBool("Display", "Maximized", e.IsMaximized());
 	return false;
 }
 
-void Application::SetDefaultSettings(const WindowProps& props)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::SetDefaultSettings(const WindowProps &props)
 {
-	const char* display = "Display";
-	const char* audio = "Audio";
+	const char *display = "Display";
+	const char *audio = "Audio";
 
 	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
 	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
@@ -308,17 +336,20 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultBool(display, "V-Sync", true);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 double Application::GetTime()
 {
 #ifdef __WINDOWS__
 	static LARGE_INTEGER s_frequency;
 	//check to see if the application can read the frequency
 	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-	if (s_use_qpc) {
+	if (s_use_qpc)
+	{
 		//most accurate method of getting system time
 		LARGE_INTEGER now;
 		QueryPerformanceCounter(&now);
-		return(double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
+		return (double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
 	}
 	else
 	{
@@ -330,7 +361,9 @@ double Application::GetTime()
 	return glfwGetTime();
 }
 
-void Application::SetOpenDocument(const std::filesystem::path& filepath)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Application::SetOpenDocument(const std::filesystem::path &filepath)
 {
 	if (std::filesystem::exists(filepath))
 	{
@@ -373,12 +406,16 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 	}
 }
 
-const std::filesystem::path& Application::GetOpenDocument()
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+const std::filesystem::path &Application::GetOpenDocument()
 {
 	return s_OpenDocument;
 }
 
-const std::filesystem::path& Application::GetOpenDocumentDirectory()
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+const std::filesystem::path &Application::GetOpenDocumentDirectory()
 {
 	return s_OpenDocumentDirectory;
 }

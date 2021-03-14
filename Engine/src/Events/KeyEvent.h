@@ -16,6 +16,8 @@ protected:
 	int m_keyCode;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class KeyPressedEvent : public KeyEvent
 {
 public:
@@ -37,6 +39,8 @@ private:
 	int m_repeatCount;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 class KeyReleasedEvent :public KeyEvent
 {
 public:
@@ -52,6 +56,8 @@ public:
 
 	EVENT_CLASS_TYPE(KEY_RELEASED)
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class KeyTypedEvent : public KeyEvent
 {

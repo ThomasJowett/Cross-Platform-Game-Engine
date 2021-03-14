@@ -37,6 +37,8 @@ Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path&
 		return nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
 {
 	switch (Renderer::GetAPI())
@@ -66,11 +68,15 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 		return nullptr;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
 	CORE_ASSERT(!Exists(shader->GetName()), "Shader already exists!");
 	m_Shaders[shader->GetName()] = shader;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::path& fileDirectory)
 {
@@ -82,11 +88,15 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name, const std::filesystem::
 	return shader;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<Shader> ShaderLibrary::Get(const std::string& name)
 {
 	CORE_ASSERT(Exists(name), "Shader does not exist!");
 	return m_Shaders[name];
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool ShaderLibrary::Exists(const std::string& name) const
 {
