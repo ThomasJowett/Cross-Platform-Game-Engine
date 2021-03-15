@@ -61,7 +61,7 @@ static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum a
 }
 
 OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& specification)
-	:m_Specification(specification)
+	:m_Specification(specification), m_RendererID(0), m_DepthAttachment(0)
 {
 	for (auto spec : m_Specification.Attachments.Attachments)
 	{
@@ -143,6 +143,7 @@ void OpenGLFrameBuffer::Generate()
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
 			AttachDepthTexture(m_DepthAttachment, m_Specification.Samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.Width, m_Specification.Height);
+			break;
 		default:
 			break;
 		}

@@ -242,7 +242,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			ImGui::PushItemWidth(100);
 			ImGui::DragFloat("Curve Tessellation Tolerance", &style.CurveTessellationTol, 0.02f, 0.10f, 10.0f, "%.2f");
 			if (style.CurveTessellationTol < 0.10f) style.CurveTessellationTol = 0.10f;
-			ImGui::DragFloat("Circle segment Max Error", &style.CircleSegmentMaxError, 0.01f, 0.10f, 10.0f, "%.2f");
+			ImGui::DragFloat("Circle segment Max Error", &style.CircleTessellationMaxError, 0.01f, 0.10f, 10.0f, "%.2f");
 			ImGui::DragFloat("Global Alpha", &style.Alpha, 0.005f, 0.20f, 1.0f, "%.2f"); // Not exposing zero here so user doesn't "lose" the UI (zero alpha clips all widgets). But application code could have a toggle to switch between zero and non-zero.
 			ImGui::PopItemWidth();
 

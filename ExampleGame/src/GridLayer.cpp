@@ -78,9 +78,6 @@ void GridLayer::OnUpdate(float deltaTime)
 	shader->SetFloat4("u_colour", Colours::RED);
 	Renderer::Submit(shader, m_IncidentLaserVertexArray, m_IncidentBeamTransform);
 
-	shader->SetFloat4("u_colour", Colours::GREEN);
-	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
-
 	shader->SetFloat4("u_colour", Colours::YELLOW);
 	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian((float)DegToRad(m_Azimuth), (float)DegToRad(m_Elevation), m_Distance)));
 
@@ -99,6 +96,10 @@ void GridLayer::OnUpdate(float deltaTime)
 		Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(position));
 	}
 
+	shader->SetFloat4("u_colour", Colour(0.0f, 0.5f, 0.0f, 0.5f) );
+	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
+
+
 	Renderer::EndScene();
 }
 
@@ -114,6 +115,14 @@ void GridLayer::OnImGuiRender()
 		GeneratePositions();
 	ImGui::SliderInt("Number of Positions", &m_NumberOfPositions, 0, 1000);
 	ImGui::SliderFloat("Minimum distance", &m_MinimumDistance, 0, 1.0);
+	ImGui::InputFloat("Lower Limit X", &m_LowerXLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit X", &m_UpperXLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Lower Limit Y", &m_LowerYLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit Y", &m_UpperYLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Lower Limit Z", &m_LowerZLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit Z", &m_UpperZLimit ,1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Incline", &m_Incline ,1.0f, 10.0f, "%.2f");
+
 	ImGui::Text("%s", std::to_string(m_Positions.size()).c_str());
 	ImGui::Separator();
 	if (ImGui::Button("Recalculate"))
@@ -142,21 +151,13 @@ void GridLayer::GeneratePositions()
 {
 	m_Positions.clear();
 
-	double UpperZLimit = -4.0;
-	double UpperXLimit = 10.0;
-	double UpperYLimit = 0.2;
-	double LowerZLimit = -10.0;
-	double LowerXLimit = -10.0;
-	double LowerYLimit = 0.1;
-	double incline = 0.1;
-
 	if (m_MinimumDistance == 0.0f)
 	{
 		for (size_t i = 0; i < m_NumberOfPositions; i++)
 		{
-			float x = Random::FloatInRange((float)LowerXLimit, (float)UpperXLimit);
-			float y = Random::FloatInRange((float)LowerYLimit, (float)UpperYLimit) + abs(x) * (float)incline;
-			float z = Random::FloatInRange((float)LowerZLimit, (float)UpperZLimit);
+			float x = Random::FloatInRange(m_LowerXLimit, m_UpperXLimit);
+			float y = Random::FloatInRange(m_LowerYLimit, m_UpperYLimit) + abs(x) * m_Incline;
+			float z = Random::FloatInRange(m_LowerZLimit, m_UpperZLimit);
 
 			m_Positions.push_back(Vector3f(x, y, z));
 		}
@@ -172,9 +173,9 @@ void GridLayer::GeneratePositions()
 		{
 			attempts++;
 
-			float z = Random::FloatInRange((float)LowerZLimit, (float)UpperZLimit);
-			float x = Random::FloatInRange((float)LowerXLimit, (float)UpperXLimit);
-			float y = Random::FloatInRange((float)LowerYLimit, (float)UpperYLimit) - z * (float)incline;
+			float z = Random::FloatInRange(m_LowerZLimit, m_UpperZLimit);
+			float x = Random::FloatInRange(m_LowerXLimit, m_UpperXLimit);
+			float y = Random::FloatInRange(m_LowerYLimit, m_UpperYLimit) - z * m_Incline;
 
 			bool tooClose = false;
 			for (Vector3f otherPosition : m_Positions)
@@ -272,8 +273,10 @@ bool GridLayer::IsPositionIlluminated(const Vector3f& position)
 	if (coneDistance < 0.0)
 		return false;
 
-	double radiusAtObserver = (m_ReflectedDiameter + (m_ReflectedDivergence * m_ReflectedDivergence) * (coneDistance * coneDistance)) / 2.0f;
+	//double radiusAtObserver = (m_ReflectedDiameter + (m_ReflectedDivergence * m_ReflectedDivergence) * (coneDistance * coneDistance)) / 2.0f;
 
-	double orthDistance = ((position - m_TargetLocation) - coneDistance * m_ReflectedDirection).Magnitude();
-	return orthDistance < m_ReflectedDiameter;
+	float radiusAtObserver = (coneDistance / m_ReflectedLength) * m_ReflectedDiameter;
+
+	float orthDistance = ((position - m_TargetLocation) - coneDistance * m_ReflectedDirection).Magnitude();
+	return orthDistance < radiusAtObserver;
 }

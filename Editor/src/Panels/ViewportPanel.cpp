@@ -15,12 +15,14 @@
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
-	FrameBufferSpecification frameBufferSpecification = { 1920, 1080 };
-	frameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
-	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
-	m_CameraPreview = FrameBuffer::Create({ 256, 144 });
+	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
+	frameBufferSpecificationEditorCamera.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
+	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
-	m_Mode = Mode::Select;
+	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
+	frameBufferSpecificationPreview.Attachments = { FrameBufferTextureFormat::RGBA8 };
+	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
+
 	m_Mode = Mode::Select;
 }
 

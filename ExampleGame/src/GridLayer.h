@@ -48,7 +48,7 @@ private:
 
 	double m_BeamApeture = 0.0007;
 	double m_Divergence = 0.0000677;
-	double m_ReflectedDivergence = 0.0025;
+	double m_ReflectedDivergence = 0.025;
 
 	Matrix4x4 m_IncidentBeamTransform;
 	Matrix4x4 m_ReflectedBeamTransform;
@@ -72,5 +72,13 @@ private:
 	Vector3f m_ReflectedDirection;
 	float m_EndDiameter;
 	float m_ReflectedDiameter;
+
+	float m_UpperZLimit = -4.0;
+	float m_UpperXLimit = 10.0;
+	float m_UpperYLimit = 0.2;
+	float m_LowerZLimit = -10.0;
+	float m_LowerXLimit = -10.0;
+	float m_LowerYLimit = 0.1;
+	float m_Incline = 0.1;
 };
 
