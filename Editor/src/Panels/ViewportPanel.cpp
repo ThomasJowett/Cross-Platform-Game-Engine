@@ -150,7 +150,7 @@ void ViewportPanel::OnImGuiRender()
 		ImVec2 mouse_pos = ImGui::GetMousePos();
 		ImVec2 window_pos = ImGui::GetWindowPos();
 
-		m_RelativeMousePosition = { mouse_pos.x - window_pos.x - 1.0f, mouse_pos.y - window_pos.y - 8.0f - ImGui::GetFontSize() };
+		m_RelativeMousePosition = { mouse_pos.x - window_pos.x - 1.0f, mouse_pos.y - window_pos.y - ImGui::GetFrameHeight() };
 
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
@@ -207,7 +207,7 @@ void ViewportPanel::OnImGuiRender()
 		{
 			ImGuizmo::SetOrthographic(true);
 			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)ImGui::GetWindowWidth(), (float)ImGui::GetWindowHeight());
+			ImGuizmo::SetRect(window_pos.x, window_pos.y + ImGui::GetFrameHeight(), (float)panelSize.x, (float)panelSize.y);
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
