@@ -73,12 +73,11 @@ private:
 	float m_EndDiameter;
 	float m_ReflectedDiameter;
 
-	float m_UpperZLimit = -4.0;
-	float m_UpperXLimit = 10.0;
-	float m_UpperYLimit = 0.2;
-	float m_LowerZLimit = -10.0;
-	float m_LowerXLimit = -10.0;
-	float m_LowerYLimit = 0.1;
-	float m_Incline = 0.1;
+	float m_UpperZLimit = -4.0f;
+	float m_UpperXLimit = 10.0f;
+	float m_UpperYLimit = 0.2f;
+	float m_LowerZLimit = -10.0f;
+	float m_LowerXLimit = -10.0f;
+	float m_LowerYLimit = 0.1f;
+	float m_Incline = 0.1f;
 };
-
