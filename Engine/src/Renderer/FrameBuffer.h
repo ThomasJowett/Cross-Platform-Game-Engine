@@ -6,6 +6,7 @@ enum class FrameBufferTextureFormat
 
 	// Colour
 	RGBA8,
+	RED_INTEGER,
 
 	//Depth/stencil
 	DEPTH24STENCIL8,
@@ -62,9 +63,13 @@ public:
 
 	virtual void Resize(uint32_t width, uint32_t height) = 0;
 
+	virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
+
 	virtual uint32_t GetColourAttachment(size_t index = 0) = 0;
 
 	virtual const FrameBufferSpecification& GetSpecification() const = 0;
+
+	virtual void ClearAttachment(size_t index, int value) = 0;
 
 	static Ref<FrameBuffer>Create(const FrameBufferSpecification& specification);
 

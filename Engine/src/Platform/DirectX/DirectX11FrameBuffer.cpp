@@ -35,7 +35,16 @@ void DirectX11FrameBuffer::Resize(uint32_t width, uint32_t height)
 {
 }
 
+int DirectX11FrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+{
+	return 0;
+}
+
 uint32_t DirectX11FrameBuffer::GetColourAttachment(size_t index)
 {
 	return 0;
+}
+
+void DirectX11FrameBuffer::ClearAttachment(size_t index, int value)
+{
 }

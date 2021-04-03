@@ -59,8 +59,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 {
 	renderTarget->Bind();
 
-	RenderCommand::Clear();
-
 	Renderer::BeginScene(cameraTransform, projection);
 
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(

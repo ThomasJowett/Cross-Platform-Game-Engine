@@ -8,9 +8,9 @@ static GLenum TextureTarget(bool multisampled)
 	return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
 }
 
-static void CreateTextures(bool multisampled, uint32_t* outID, uint32_t count)
+static void CreateTextures(bool multisampled, uint32_t* outID, size_t count)
 {
-	glCreateTextures(TextureTarget(multisampled), count, outID);
+	glCreateTextures(TextureTarget(multisampled), (GLsizei)count, outID);
 }
 
 static void BindTexture(bool multisampled, uint32_t id)
@@ -18,16 +18,16 @@ static void BindTexture(bool multisampled, uint32_t id)
 	glBindTexture(TextureTarget(multisampled), id);
 }
 
-static void AttachColourTexture(uint32_t id, int samples, GLenum format, uint32_t width, uint32_t height, int index)
+static void AttachColourTexture(uint32_t id, int samples, GLenum internalFormat, GLenum format, uint32_t width, uint32_t height, size_t index)
 {
 	bool multisampled = samples > 1;
 	if (multisampled)
 	{
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, format, width, height, GL_FALSE);
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, samples, internalFormat, width, height, GL_FALSE);
 	}
 	else
 	{
-		glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+		glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, format, GL_UNSIGNED_BYTE, nullptr);
 
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -36,7 +36,7 @@ static void AttachColourTexture(uint32_t id, int samples, GLenum format, uint32_
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	}
 
-	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + (int)index, TextureTarget(multisampled), id, 0);
 }
 
 static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum attachmentType, uint32_t width, uint32_t height)
@@ -58,6 +58,21 @@ static void AttachDepthTexture(uint32_t id, int samples, GLenum format, GLenum a
 	}
 
 	glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentType, TextureTarget(multisampled), id, 0);
+}
+
+static GLenum TextureFormatToOpenGlTextureFormat(FrameBufferTextureFormat format)
+{
+	switch (format)
+	{
+	case FrameBufferTextureFormat::RGBA8:
+		return GL_RGBA8;
+	case FrameBufferTextureFormat::RED_INTEGER:
+		return GL_RED_INTEGER;
+	case FrameBufferTextureFormat::DEPTH24STENCIL8:
+		return GL_DEPTH24_STENCIL8;
+	default:
+		return GLenum();
+	}
 }
 
 OpenGLFrameBuffer::OpenGLFrameBuffer(const FrameBufferSpecification& specification)
@@ -121,13 +136,17 @@ void OpenGLFrameBuffer::Generate()
 		m_ColourAttachments.resize(m_ColourAttachmentSpecifications.size());
 
 		CreateTextures(multisample, m_ColourAttachments.data(), m_ColourAttachments.size());
+
 		for (size_t i = 0; i < m_ColourAttachmentSpecifications.size(); i++)
 		{
 			BindTexture(multisample, m_ColourAttachments[i]);
 			switch (m_ColourAttachmentSpecifications[i].TextureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				AttachColourTexture(m_ColourAttachments[i], m_Specification.Samples, GL_RGBA8, m_Specification.Width, m_Specification.Height, i);
+				AttachColourTexture(m_ColourAttachments[i], m_Specification.Samples, GL_RGBA8, GL_RGBA, m_Specification.Width, m_Specification.Height, i);
+				break;
+			case FrameBufferTextureFormat::RED_INTEGER:
+				AttachColourTexture(m_ColourAttachments[i], m_Specification.Samples, GL_R32I, GL_RED_INTEGER, m_Specification.Width, m_Specification.Height, i);
 				break;
 			default:
 				break;
@@ -182,8 +201,30 @@ void OpenGLFrameBuffer::Resize(uint32_t width, uint32_t height)
 	Generate();
 }
 
+int OpenGLFrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
+{
+	CORE_ASSERT(attachmentIndex < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + (int)attachmentIndex);
+	int pixelData;
+	glReadPixels(x, y, 1, 1, GL_RED_INTEGER, GL_INT, &pixelData);
+	return pixelData;
+}
+
 uint32_t OpenGLFrameBuffer::GetColourAttachment(size_t index)
 {
 	CORE_ASSERT(index < m_ColourAttachments.size(), "Index out of range");
 	return m_ColourAttachments[index];
 }
+
+void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
+{
+	CORE_ASSERT(index < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");
+
+	FrameBufferTextureSpecification& spec = m_ColourAttachmentSpecifications[index];
+	spec.TextureFormat;
+
+	GLenum textureFormat = TextureFormatToOpenGlTextureFormat(spec.TextureFormat);
+
+	glClearTexImage(m_ColourAttachments[index], 0, textureFormat, GL_INT, &value);
+}
+

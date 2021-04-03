@@ -16,7 +16,7 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
-	frameBufferSpecificationEditorCamera.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
+	frameBufferSpecificationEditorCamera.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
@@ -24,6 +24,8 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Mode = Mode::Select;
+
+	m_Framebuffer->ClearAttachment(1, -1);
 }
 
 void ViewportPanel::OnAttach()
@@ -62,7 +64,19 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
+	m_Framebuffer->Bind();
+	RenderCommand::Clear();
+	m_Framebuffer->ClearAttachment(1, -1);
 	SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+
+	if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
+		&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
+	{
+		m_Framebuffer->Bind();
+		m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+		//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
+		m_Framebuffer->UnBind();
+	}
 
 	if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 	{
@@ -72,11 +86,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
 			Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
 			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+			m_CameraPreview->Bind();
+			RenderCommand::Clear();
 			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
 		}
 	}
 
 	Renderer2D::ResetStats();
+
 }
 
 void ViewportPanel::OnFixedUpdate()
@@ -148,15 +165,15 @@ void ViewportPanel::OnImGuiRender()
 
 		pos = ImGui::GetCursorScreenPos();
 		ImVec2 mouse_pos = ImGui::GetMousePos();
-		ImVec2 window_pos = ImGui::GetWindowPos();
-
-		m_RelativeMousePosition = { mouse_pos.x - window_pos.x - 1.0f, mouse_pos.y - window_pos.y - ImGui::GetFrameHeight() };
-
-		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
 		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
+		ImVec2 window_pos = ImGui::GetItemRectMin();
+
+		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
+		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
+
 		if (ImGui::BeginDragDropTarget())
 		{
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
@@ -207,7 +224,7 @@ void ViewportPanel::OnImGuiRender()
 		{
 			ImGuizmo::SetOrthographic(true);
 			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(window_pos.x, window_pos.y + ImGui::GetFrameHeight(), (float)panelSize.x, (float)panelSize.y);
+			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
@@ -234,7 +251,7 @@ void ViewportPanel::OnImGuiRender()
 
 			float transform[16] =
 			{
-				transformMat[0][0], transformMat[0][1],transformMat[0][2],transformMat[0][3],
+			  transformMat[0][0], transformMat[0][1],transformMat[0][2],transformMat[0][3],
 			  transformMat[1][0], transformMat[1][1],transformMat[1][2],transformMat[1][3],
 			  transformMat[2][0], transformMat[2][1],transformMat[2][2],transformMat[2][3],
 			  transformMat[3][0], transformMat[3][1],transformMat[3][2],transformMat[3][3] };
@@ -244,6 +261,9 @@ void ViewportPanel::OnImGuiRender()
 			float snapValue = 0.5f;
 			if (m_Mode == Mode::Rotate)
 				snapValue = 10.0f;
+
+			//TODO: add a get bounds function method from sprite, camera and mesh
+			float bounds[6] = { -0.5f, -0.5f, -0.0f, 0.5f, 0.5f, 0.0f };
 
 			float snapValues[3] = { snapValue, snapValue, snapValue };
 
@@ -267,8 +287,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 
 			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
-			ImGuizmo::Manipulate(cameraView, cameraProjection, gizmoMode, ImGuizmo::LOCAL, transform, NULL, snap ? snapValues : NULL);
-			//ImGuizmo::Manipulate(cameraView, cameraProjection, mCurrentGizmoOperation, mCurrentGizmoMode, matrix, NULL, useSnap ? &snap[0] : NULL, boundSizing ? bounds : NULL, boundSizingSnap ? boundsSnap : NULL);
+			ImGuizmo::Manipulate(cameraView, cameraProjection, gizmoMode, ImGuizmo::LOCAL, transform, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
 
 			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
 
@@ -310,6 +329,7 @@ void ViewportPanel::OnImGuiRender()
 			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
 
 		ImGui::Text("%.1f", io.Framerate);
+		ImGui::Text("%i", m_PixelData);
 		ImGui::End();
 		ImGui::PopStyleColor();
 	}

@@ -69,4 +69,7 @@ private:
 	std::filesystem::path m_SceneFilepath;
 
 	HierarchyPanel* m_HierarchyPanel;
+	Entity m_HoveredEntity;
+
+	int m_PixelData;
 };
