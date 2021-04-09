@@ -20,7 +20,7 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
-	frameBufferSpecificationPreview.Attachments = { FrameBufferTextureFormat::RGBA8 };
+	frameBufferSpecificationPreview.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Mode = Mode::Select;
