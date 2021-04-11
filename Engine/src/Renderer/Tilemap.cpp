@@ -9,44 +9,60 @@ bool Tilemap::Load(std::filesystem::path filepath)
 {
 	tinyxml2::XMLDocument doc;
 
-	if (doc.Parse(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
+		m_Filepath = filepath;
+
 		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("map");
 
-		const char* orientation = pRoot->Attribute("orientation");
+		const char* orientationchar = pRoot->Attribute("orientation");
 
-		if (orientation == "orthogonal")
-			m_Orientation = Orientation::orthogonal;
-		else if (orientation == "isometric")
-			m_Orientation = Orientation::isometric;
-		else if (orientation == "staggered")
-			m_Orientation = Orientation::staggered;
-		else if (orientation == "hexagonal")
-			m_Orientation = Orientation::hexagonal;
+		if (orientationchar != nullptr)
+		{
+			std::string orientation(orientationchar);
 
-		const char* renderingOrder = pRoot->Attribute("renderorder");
+			if (orientation == "orthogonal")
+				m_Orientation = Orientation::orthogonal;
+			else if (orientation == "isometric")
+				m_Orientation = Orientation::isometric;
+			else if (orientation == "staggered")
+				m_Orientation = Orientation::staggered;
+			else if (orientation == "hexagonal")
+				m_Orientation = Orientation::hexagonal;
+		}
 
-		if (renderingOrder == "right-down")
-			m_RenderingOrder = RenderingOrder::rightDown;
-		else if (renderingOrder == "right-up")
-			m_RenderingOrder = RenderingOrder::rightUp;
-		else if (renderingOrder == "left-down")
-			m_RenderingOrder = RenderingOrder::leftDown;
-		else if (renderingOrder == "left-up")
-			m_RenderingOrder = RenderingOrder::leftUp;
+		const char* renderingOrderChar = pRoot->Attribute("renderorder");
+
+		if (renderingOrderChar != nullptr)
+		{
+			std::string renderingOrder(renderingOrderChar);
+
+			if (renderingOrder == "right-down")
+				m_RenderingOrder = RenderingOrder::rightDown;
+			else if (renderingOrder == "right-up")
+				m_RenderingOrder = RenderingOrder::rightUp;
+			else if (renderingOrder == "left-down")
+				m_RenderingOrder = RenderingOrder::leftDown;
+			else if (renderingOrder == "left-up")
+				m_RenderingOrder = RenderingOrder::leftUp;
+		}
 
 		if (m_Orientation == Orientation::staggered || m_Orientation == Orientation::hexagonal)
 		{
-			const char* staggerAxis = pRoot->Attribute("staggeraxis");
+			const char* staggerAxisChar = pRoot->Attribute("staggeraxis");
 
-			if (staggerAxis == "Y")
+			std::string staggerAxis(staggerAxisChar);
+
+			if (staggerAxis == "y")
 				m_StaggerAxis = StaggerAxis::Y;
-			else if (staggerAxis == "X")
-				m_StaggerAxis == StaggerAxis::X;
+			else if (staggerAxis == "x")
+				m_StaggerAxis = StaggerAxis::X;
 			else
 				m_IsStaggered = false;
 
-			const char* staggerIndex = pRoot->Attribute("staggerindex");
+			const char* staggerIndexChar = pRoot->Attribute("staggerindex");
+
+			std::string staggerIndex(staggerIndexChar);
 
 			if (staggerIndex == "even")
 				m_StaggerIndex = StaggerIndex::even;
@@ -72,20 +88,34 @@ bool Tilemap::Load(std::filesystem::path filepath)
 		m_Width = atoi(pRoot->Attribute("width"));
 		m_Height = atoi(pRoot->Attribute("height"));
 		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
-		m_TileWidth = atoi(pRoot->Attribute("tileheight"));
+		m_TileHeight = atoi(pRoot->Attribute("tileheight"));
 
-		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("tilset");
+		m_Infinite = atoi(pRoot->Attribute("infinite"));
+
+		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("tileset");
+
+		std::filesystem::path fileDirectory = filepath;
+		fileDirectory.remove_filename();
 
 		while (pTileSet)
 		{
 			const char* tsxPath = pTileSet->Attribute("source");
 
-			Tileset tileset;
-			tileset.Load(tsxPath);
+			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
 
-			m_Tilesets.push_back(std::make_pair(tileset, atoi(pTileSet->Attribute("source"))));
+			Tileset tileset;
+			tileset.Load(tilesetPath);
+
+			m_Tilesets.push_back(std::make_pair(tileset, atoi(pTileSet->Attribute("firstgid"))));
 
 			pTileSet = pTileSet->NextSiblingElement("tileset");
+		}
+
+		tinyxml2::XMLElement* pLayer = pRoot->FirstChildElement("Layer");
+
+		while (pLayer)
+		{
+
 		}
 	}
 	else
@@ -99,18 +129,45 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Tilemap::Save(std::filesystem::path)
+bool Tilemap::Save(std::filesystem::path filepath)
 {
-	return false;
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pRoot = doc.NewElement("map");
+
+	switch (m_Orientation)
+	{
+	case Tilemap::Orientation::orthogonal:
+		pRoot->SetAttribute("orientation", "orthogonal");
+		break;
+	case Tilemap::Orientation::isometric:
+		pRoot->SetAttribute("orientation", "isometric");
+		break;
+	case Tilemap::Orientation::staggered:
+		pRoot->SetAttribute("orientation", "staggered");
+		break;
+	case Tilemap::Orientation::hexagonal:
+		pRoot->SetAttribute("orientation", "hexagonal");
+		break;
+	default:
+		break;
+	}
+
+	
+	doc.InsertFirstChild(pRoot);
+	//doc.InsertEndChild(pRoot);
+
+	FILE* fp = fopen(filepath.string().c_str(), "wb");
+	tinyxml2::XMLError error =  doc.SaveFile(fp);
+	return error == tinyxml2::XML_SUCCESS;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Tileset::Load(const std::filesystem::path& filepath)
+bool Tileset::Load(std::filesystem::path& filepath)
 {
 	tinyxml2::XMLDocument doc;
 
-	if (doc.Parse(filepath.string().c_str()))
+	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
 		tinyxml2::XMLElement* pRoot;
 
@@ -127,14 +184,23 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
 
 
-		const char* textureSource = pRoot->Attribute("source");
+		const char* textureSource = pImage->Attribute("source");
 
-		m_Texture = Texture2D::Create(textureSource);
+		std::filesystem::path texturepath = filepath.remove_filename() / textureSource;
+		m_Texture = Texture2D::Create(texturepath);
 
 		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
 
 		while (pTile)
 		{
+			Tile tile;
+			tile.Id = atoi(pTile->Attribute("id"));
+			tile.Type = pTile->Attribute("type");
+			const char* probability = pTile->Attribute("probability");
+			if (probability != nullptr)
+				tile.Probability = atof(probability);
+
+			m_Tiles.push_back(tile);
 			pTile = pTile->NextSiblingElement("tile");
 		}
 	}
@@ -143,5 +209,5 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
 	}
-	return false;
+	return true;
 }

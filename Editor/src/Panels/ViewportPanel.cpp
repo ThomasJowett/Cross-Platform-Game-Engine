@@ -195,6 +195,14 @@ void ViewportPanel::OnImGuiRender()
 
 					staticMeshEntity.AddComponent<StaticMeshComponent>(mesh, material);
 				}
+				else if (file->extension() == ".tmx")
+				{
+					Tilemap tilemap;
+					tilemap.Load(*file);
+
+					tilemap.Save(file->replace_filename("Test Copy.tmx"));
+				}
+				
 				CLIENT_DEBUG(file->string());
 			}
 			ImGui::EndDragDropTarget();

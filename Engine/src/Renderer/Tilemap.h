@@ -7,13 +7,20 @@
 #include "Core/Colour.h"
 #include "Renderer/Texture.h"
 
+struct Tile
+{
+	int Id;
+	std::string Type;
+	double Probability = 1.0f;
+
+};
 
 class Tileset
 {
 public:
 	Tileset() = default;
 
-	bool Load(const std::filesystem::path& filepath);
+	bool Load(std::filesystem::path& filepath);
 	bool Save(const std::filesystem::path& filepath);
 
 private:
@@ -31,6 +38,8 @@ private:
 	uint32_t m_OffsetX, m_OffsetY;
 
 	std::filesystem::path m_Filepath;
+
+	std::vector<Tile> m_Tiles;
 };
 
 class Tilemap

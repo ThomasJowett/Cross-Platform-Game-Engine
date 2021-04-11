@@ -3,6 +3,8 @@
 #include "FbxImporter.h"
 #include "OBJImporter.h"
 
+#include <algorithm>
+
 void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::filesystem::path& destination)
 {
 	std::string extString = asset.extension().string();

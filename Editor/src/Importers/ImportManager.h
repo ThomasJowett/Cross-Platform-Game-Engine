@@ -1,7 +1,7 @@
 #pragma once
 
 #include <filesystem>
-
+#include <vector>
 class ImportManager
 {
 public:
