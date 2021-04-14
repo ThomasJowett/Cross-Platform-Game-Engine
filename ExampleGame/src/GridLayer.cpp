@@ -21,7 +21,7 @@ void GridLayer::OnAttach()
 
 	m_Texture->SetData(&textureData, sizeof(uint32_t));
 
-	m_EarthTexture = Texture2D::Create("resources/Earth.jpg");
+	m_EarthTexture = Texture2D::Create(Application::GetWorkingDirectory() / "resources/Earth.jpg");
 
 	GeneratePositions();
 	m_TargetLocation = TargetLocation(m_Time);
