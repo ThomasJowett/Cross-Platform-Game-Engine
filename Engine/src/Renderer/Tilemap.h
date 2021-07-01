@@ -7,16 +7,17 @@
 #include "Core/Colour.h"
 #include "Renderer/Texture.h"
 
-struct Tile
-{
-	int Id;
-	std::string Type;
-	double Probability = 1.0f;
 
-};
 
 class Tileset
 {
+	struct Tile
+	{
+		int Id;
+		std::string Type;
+		double Probability = 1.0f;
+
+	};
 public:
 	Tileset() = default;
 
@@ -72,6 +73,26 @@ class Tilemap
 		odd
 	};
 
+	class Layer
+	{
+		uint32_t m_Id;
+		std::string m_Name;
+		uint32_t m_Width, m_Height;
+
+		Vector2f m_Offset;
+		Vector2f m_ParralaxFactor;
+
+		uint32_t** m_Tiles;
+
+	public:
+		Layer(uint32_t id, const std::string& name, uint32_t width, uint32_t height, Vector2f offset);
+
+		bool ParseCsv(const std::string& data);
+
+		void Resize(uint32_t width, uint32_t height);
+		void Offset(float vertical, float horizontal);
+	};
+
 public:
 	Tilemap() = default;
 	bool Load(std::filesystem::path);
@@ -98,6 +119,8 @@ private:
 	bool m_Infinite;
 
 	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets;
+
+	std::vector<Layer> m_Layers;
 
 	friend cereal::access;
 	template<typename Archive>

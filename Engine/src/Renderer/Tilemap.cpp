@@ -3,6 +3,8 @@
 
 #include "TinyXml2/tinyxml2.h"
 
+#include "Utilities/StringUtils.h"
+
 static std::string fileLoadErrorString = "Could not load tilemap {0}. {1}!";
 
 bool Tilemap::Load(std::filesystem::path filepath)
@@ -111,11 +113,61 @@ bool Tilemap::Load(std::filesystem::path filepath)
 			pTileSet = pTileSet->NextSiblingElement("tileset");
 		}
 
-		tinyxml2::XMLElement* pLayer = pRoot->FirstChildElement("Layer");
+		// Layers ------------------------------------------------------------------------------------------------------
+		tinyxml2::XMLElement* pLayer = pRoot->FirstChildElement("layer");
 
 		while (pLayer)
 		{
+			uint32_t id = atoi(pLayer->Attribute("id"));
+			std::string name = pLayer->Attribute("name");
+			uint32_t width = atoi(pLayer->Attribute("width"));
+			uint32_t height = atoi(pLayer->Attribute("height"));
 
+			const char* verticalOffsetChar = pLayer->Attribute("offsetx");
+			const char* horizontalOffsetChar = pLayer->Attribute("offsety");
+
+			Vector2f offset(
+				verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) : 0.0f,
+				horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) : 0.0f
+			);
+
+			Layer layer(id, name, width, height, offset);
+
+			tinyxml2::XMLElement* pData = pLayer->FirstChildElement("data");
+
+			const char* encoding = pData->Attribute("encoding");
+
+			if (!strcmp(encoding, "csv"))
+			{
+				if (layer.ParseCsv(pData->GetText()))
+				{
+					ENGINE_ERROR("Could not parse tilemap layer {0}", name);
+					return false;
+				}
+			}
+			else if (!strcmp(encoding, "base64"))
+			{
+				ENGINE_ERROR("Could not load tilemap. {0} encoding not yet supported", encoding);
+				return false;
+			}
+			else
+			{
+				ENGINE_ERROR("Could not load tilemap. {0} encoding not recognised", encoding);
+				return false;
+			}
+
+			m_Layers.push_back(layer);
+			pLayer = pRoot->NextSiblingElement("layer");
+		}
+
+		// object groups ------------------------------------------------------------------------------------------------------
+		tinyxml2::XMLElement* pObjectGroup = pRoot->FirstChildElement("objectgroup");
+
+		while (pObjectGroup)
+		{
+
+
+			pObjectGroup = pRoot->NextSiblingElement("objectgroup");
 		}
 	}
 	else
@@ -208,6 +260,38 @@ bool Tileset::Load(std::filesystem::path& filepath)
 	{
 		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
+	}
+	return true;
+}
+
+Tilemap::Layer::Layer(uint32_t id, const std::string& name, uint32_t width, uint32_t height, Vector2f offset)
+	:m_Id(id), m_Name(name),
+	m_Width(width), m_Height(height),
+	m_Offset(offset)
+{
+	m_Tiles = new uint32_t * [m_Height];
+
+	for (uint32_t i = 0; i < m_Height; i++)
+	{
+		m_Tiles[i] = new uint32_t[m_Width];
+	}
+}
+
+bool Tilemap::Layer::ParseCsv(const std::string& data)
+{
+	std::vector<std::string> SeperatedData = SplitString(data, ',');
+
+	ASSERT((uint32_t)SeperatedData.size() == m_Width * m_Height, "Data not the correct length");
+
+	for (uint32_t i = 0; i < m_Height; i++)
+	{
+		for (uint32_t j = 0; j < m_Width; j++)
+		{
+			int index = atoi(SeperatedData[(i * m_Width) + j].c_str());
+			if (index == 0)
+				return false;
+			m_Tiles[j][i] = index - 1;
+		}
 	}
 	return true;
 }
