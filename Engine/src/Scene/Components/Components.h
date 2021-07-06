@@ -16,3 +16,4 @@ TagComponent,			\
 CameraComponent,		\
 SpriteComponent,		\
 NativeScriptComponent	\
+
