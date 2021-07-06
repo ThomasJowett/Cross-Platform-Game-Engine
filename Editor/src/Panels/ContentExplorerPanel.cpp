@@ -50,17 +50,17 @@ void ContentExplorerPanel::Paste()
 			if (std::filesystem::exists(target))
 			{
 				int suffix = 1;
-				std::string extenstion = target.extension().string();
+				std::string extension = target.extension().string();
 
 				std::filesystem::path targetNoExt = target;
 				targetNoExt.replace_extension("");
 
-				std::filesystem::path temp = targetNoExt.string() + "- Copy" + extenstion;
+				std::filesystem::path temp = targetNoExt.string() + "- Copy" + extension;
 
 				while (std::filesystem::exists(temp))
 				{
 					suffix++;
-					temp = targetNoExt.string() + "- Copy (" + std::to_string(suffix) + ')' + extenstion;
+					temp = targetNoExt.string() + "- Copy (" + std::to_string(suffix) + ')' + extension;
 				}
 
 				target = temp;
