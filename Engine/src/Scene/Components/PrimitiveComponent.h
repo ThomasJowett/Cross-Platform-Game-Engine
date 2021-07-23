@@ -49,9 +49,64 @@ struct PrimitiveComponent
 	PrimitiveComponent() = default;
 	PrimitiveComponent(Shape shape)
 		:Type(shape) {}
+
+	// Cube
+	PrimitiveComponent(float cubeWidth, float cubeHeight, float cubeDepth)
+		:Type(Shape::Cube),
+		CubeWidth(cubeWidth),
+		CubeHeight(cubeHeight),
+		CubeDepth(cubeDepth)
+	{}
+
+	//Sphere
+	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLine, uint32_t sphereLatitudeLine)
+		:Type(Shape::Sphere),
+		SphereRadius(shpereRadius),
+		SphereLongitudeLines(SphereLongitudeLines),
+		SphereLatitudeLines(sphereLatitudeLine)
+	{}
+
+	// Plane
+	PrimitiveComponent(float planeWidth, float planeLength, uint32_t planeWidthLines, uint32_t planeLengthLines, float planeTileU, float planeTileV)
+		:Type(Shape::Plane),
+		PlaneWidth(planeWidth),
+		PlaneLength(planeLength),
+		PlaneWidthLines(planeWidthLines),
+		PlaneLengthLines(planeLengthLines),
+		PlaneTileU(planeTileU),
+		PlaneTileV(planeTileV)
+	{}
+
+	// Cylinder
+	PrimitiveComponent(float cylinderBottomRadius, float cylinderTopRadius, float cylinderHeight, uint32_t cylinderSliceCount, uint32_t cylinderStackCount)
+		:Type(Shape::Cylinder),
+		CylinderBottomRadius(cylinderBottomRadius),
+		CylinderTopRadius(cylinderTopRadius),
+		CylinderHeight(cylinderHeight),
+		CylinderSliceCount(cylinderSliceCount),
+		CylinderStackCount(cylinderStackCount)
+	{}
+
+	//Cone
+	PrimitiveComponent(float coneBottomRadius, float coneHeight, uint32_t coneSliceCount, uint32_t coneStackCount)
+		:Type(Shape::Cone),
+		ConeBottomRadius(coneBottomRadius),
+		ConeHeight(coneHeight),
+		ConeSliceCount(coneSliceCount),
+		ConeStackCount(coneStackCount)
+	{}
+
+	//Torus
+	PrimitiveComponent(float torusOuterRadius, float torusInnerRadius, uint32_t torusSliceCount)
+		:Type(Shape::Torus),
+		TorusOuterRadius(torusOuterRadius),
+		TorusInnerRadius(torusInnerRadius),
+		TorusSliceCount(torusSliceCount)
+	{}
+
 	PrimitiveComponent(const PrimitiveComponent&) = default;
 
-	operator PrimitiveComponent::Shape& () { return Type;}
+	operator PrimitiveComponent::Shape& () { return Type; }
 	operator const PrimitiveComponent::Shape& () { return Type; }
 
 	template<typename Archive>
