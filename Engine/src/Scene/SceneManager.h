@@ -9,6 +9,7 @@ class SceneManager
 public:
 	static Scene* CurrentScene();
 	static bool ChangeScene(std::filesystem::path filepath);
+	static bool ChangeScene(std::string name);
 	static bool IsSceneLoaded();
 	static bool Update(float deltaTime);
 	static bool FixedUpdate();

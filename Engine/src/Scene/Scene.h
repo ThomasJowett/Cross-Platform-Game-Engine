@@ -12,7 +12,8 @@ class Camera;
 class Scene
 {
 public:
-	explicit Scene(std::filesystem::path filepath);
+	Scene(std::filesystem::path filepath);
+	Scene(std::string name);
 	~Scene();
 
 	Entity CreateEntity(const std::string& name = "");

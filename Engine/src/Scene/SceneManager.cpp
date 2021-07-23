@@ -59,6 +59,17 @@ bool SceneManager::ChangeScene(std::filesystem::path filepath)
 	return IsSceneLoaded();
 }
 
+bool SceneManager::ChangeScene(std::string name)
+{
+	if (IsSceneLoaded())
+	{
+		//TODO: save and unload the previous scene
+	}
+	s_CurrentScene = CreateScope<Scene>(name);
+
+	return IsSceneLoaded();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneManager::IsSceneLoaded()

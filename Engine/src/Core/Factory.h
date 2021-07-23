@@ -7,6 +7,7 @@ struct Factory
 {
 	typedef std::unordered_map<std::string, T*(*)()>map_Type;
 
+	template<typename... Args>
 	static T* CreateInstance(const std::string& name)
 	{
 		typename map_Type::iterator it = GetMap()->find(name);

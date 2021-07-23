@@ -1,6 +1,37 @@
 #include "ExampleLayer3D.h"
 #include "imgui/imgui.h"
 
+class Rotator : public ScriptableEntity
+{
+public:
+	Rotator() : m_Rotation() {}
+	Rotator(Vector3f rotation) : m_Rotation(rotation) {}
+	void OnFixedUpdate() override
+	{
+		GetComponent<TransformComponent>().Rotation += m_Rotation;
+	}
+	void OnUpdate(float deltaTime)override
+	{
+		GetComponent<TransformComponent>().Rotation += m_Rotation * deltaTime;
+	}
+
+	void SetRotation(Vector3f rotation) { m_Rotation = rotation; }
+private:
+	Vector3f m_Rotation;
+	static ScriptRegister<Rotator> reg;
+};
+
+ScriptRegister<Rotator> Rotator::reg("Rotator Script");
+
+class CameraController : public ScriptableEntity
+{
+	//TODO: implement a camera controller
+public:
+	CameraController() {}
+	void OnFixedUpdate() override
+	{}
+};
+
 ExampleLayer3D::ExampleLayer3D()
 	:Layer("Example 3D")
 {
@@ -9,6 +40,8 @@ ExampleLayer3D::ExampleLayer3D()
 
 void ExampleLayer3D::OnAttach()
 {
+	SceneManager::ChangeScene(std::string("Example 3D"));
+
 	m_CubeVertexArray = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
 	m_SphereVertexArray = GeometryGenerator::CreateSphere(0.5f, 50, 50);
 	m_GridVertexArray = GeometryGenerator::CreateGrid(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
@@ -19,6 +52,48 @@ void ExampleLayer3D::OnAttach()
 	m_Texture = Texture2D::Create(Application::Get().GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0,0.0,10.0 });
+
+	Mesh mesh;
+	mesh.LoadModel(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
+	Material material(m_ShaderLibrary.Get("NormalMap"));
+	material.AddTexture(m_Texture, 0);
+	
+	Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
+	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
+	//entity.AddComponent<NativeScriptComponent>("Rotator Script", Vector3f(0.0011f, 0.0014f, 0.002f));
+	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, 0.002f));
+
+	entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
+	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1] + 1.0f, m_Position[2] };
+	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(-0.0011f, 0.0014f, 0.002f));
+
+	entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
+	entity.GetComponent<TransformComponent>().Position = { m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] };
+	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, -0.0014f, 0.002f));
+
+	entity = SceneManager::CurrentScene()->CreateEntity("Torus");
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
+	entity.GetComponent<TransformComponent>().Position = { m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] };
+	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, -0.002f));
+
+	entity = SceneManager::CurrentScene()->CreateEntity("Plane");
+	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<PrimitiveComponent>(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
+	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1], m_Position[2] - 0.5f };
+	entity.GetComponent<TransformComponent>().Rotation = { (float)PI / 2.0f, 0.0f, 0.0f };
+
+	entity = SceneManager::CurrentScene()->CreateEntity("Camera");
+	SceneCamera camera;
+	camera.SetPerspective(45, 1, 100);
+	entity.AddComponent<CameraComponent>(camera, true, false);
+	entity.GetComponent<TransformComponent>().Position = { 0.0,0.0,10.0 };
 }
 
 void ExampleLayer3D::OnDetach()
@@ -29,11 +104,9 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
-	shader->Bind();
+	SceneManager::CurrentScene()->Render(nullptr);
 
-	shader->SetFloat4("u_colour", Colours::WHITE);
-	shader->SetFloat("u_tilingFactor", 1.0f);
+	/*
 
 	m_CameraController.SetFovY(*m_FOV);
 	m_CameraController.SetNearAndFarDepth(m_Nearfar[0], m_Nearfar[1]);
@@ -44,36 +117,11 @@ void ExampleLayer3D::OnUpdate(float deltaTime)
 	}
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
-	m_Texture->Bind();
-
-	//Cube
-	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1] - 1.0f, m_Position[2] })
-		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
-
-	//Sphere
-	Renderer::Submit(shader, m_SphereVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1] + 1.0f, m_Position[2] })
-		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
-
-	//Cylinder
-	Renderer::Submit(shader, m_CylinderVertexArray, Matrix4x4::Translate({ m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] })
-		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
-
-	//Grid
-	Renderer::Submit(shader, m_GridVertexArray, Matrix4x4::Translate({ m_Position[0], m_Position[1], m_Position[2] - 0.5f })
-		* Matrix4x4::Rotate(Vector3f((float)PI / 2.0f, 0.0f, 0.0f)));
-
-	//Torus
-	Renderer::Submit(shader, m_TorusVertexArray, Matrix4x4::Translate({ m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] })
-		* Matrix4x4::Rotate(Vector3f(m_Rotation[0], m_Rotation[1], m_Rotation[2])));
-
-	Renderer::EndScene();
+	*/
 }
 
 void ExampleLayer3D::OnFixedUpdate()
 {
-	m_Rotation[0] += 0.0011f;
-	m_Rotation[1] += 0.0014f;
-	m_Rotation[2] += 0.002f;
 }
 
 void ExampleLayer3D::OnEvent(Event& e)
@@ -83,6 +131,7 @@ void ExampleLayer3D::OnEvent(Event& e)
 
 void ExampleLayer3D::OnImGuiRender()
 {
+	//TODO: get the information from the scene
 	ImGui::Begin("Settings 3D");
 	ImGui::Checkbox("Control Camera", &m_ControlCamera);
 	ImGui::Text("%s", std::to_string(m_CameraController.GetTranslationSpeed()).c_str());

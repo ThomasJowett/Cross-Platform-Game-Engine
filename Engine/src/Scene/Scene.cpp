@@ -26,6 +26,14 @@ Scene::Scene(std::filesystem::path filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+Scene::Scene(std::string name)
+	:m_SceneName(name)
+{
+
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Scene::~Scene()
 {
 }
@@ -57,7 +65,8 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
-	renderTarget->Bind();
+	if(renderTarget != nullptr)
+		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
 
@@ -82,7 +91,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 	Renderer::EndScene();
 
-	renderTarget->UnBind();
+	if (renderTarget != nullptr)
+		renderTarget->UnBind();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -295,7 +305,8 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 
 void Scene::Save(bool binary)
 {
-	Save(m_Filepath, binary);
+	if (!m_Filepath.empty())
+		Save(m_Filepath, binary);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

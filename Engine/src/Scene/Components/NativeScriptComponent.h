@@ -8,10 +8,10 @@
 
 struct NativeScriptComponent
 {
-	ScriptableEntity* Instance = nullptr;
+	std::function<ScriptableEntity*(const std::string&)> InstantiateScript;
+	std::function<void(NativeScriptComponent*)> DestroyScript;
 
-	ScriptableEntity*(*InstantiateScript)(const std::string&) = nullptr;
-	void (*DestroyScript)(NativeScriptComponent*) = nullptr;
+	ScriptableEntity* Instance = nullptr;
 
 	NativeScriptComponent() = default;
 	NativeScriptComponent(const std::string& name):Name(name) {Bind(Name); }
@@ -21,18 +21,18 @@ struct NativeScriptComponent
 
 	std::filesystem::path file;
 
-	template<typename T>
-	void Bind()
+	template<typename T, typename... Args>
+	void Bind(Args... args)
 	{
 		Name = typeid(T).name();
-		InstantiateScript = [](const std::string&) {return static_cast<ScriptableEntity*>( new T()); };
+		InstantiateScript = [args...](const std::string&) {return static_cast<ScriptableEntity*>(new T(args...)); };
 		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 	}
 
-	void Bind(const std::string& scriptName)
+	void Bind(const std::string& scriptName)// TODO: get factory with argument packs working
 	{
 		Name = scriptName;
-		InstantiateScript = [](const std::string& name) {return static_cast<ScriptableEntity*>(Factory<ScriptableEntity>::CreateInstance(name)); };
+		InstantiateScript = [](const std::string& name) {return (Factory<ScriptableEntity>::CreateInstance(name)); };
 		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 	}
 
