@@ -224,7 +224,11 @@ project "ExampleGame"
 		}
 
 	filter "configurations:Debug"
-		defines "DEBUG"
+		defines 
+		{
+			"DEBUG",
+			"ENABLE_ASSERTS"
+		}
 		runtime "Debug"
 		symbols "On"
 
