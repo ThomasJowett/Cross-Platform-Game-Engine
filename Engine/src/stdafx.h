@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _PCH_
+#define _PCH_
 
 // Standard C++
 #include <iostream>
@@ -39,3 +40,5 @@
 
 // EnTT
 #include "EnTT/entt.hpp"
+
+#endif // !_PCH_
