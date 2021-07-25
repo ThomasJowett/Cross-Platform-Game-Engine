@@ -1,24 +1,32 @@
 [submodule "Engine/vendor/GLFW"]
 	path = Engine/vendor/GLFW
 	url = https://github.com/glfw/GLFW
+	branch = master
 [submodule "Engine/vendor/imgui"]
 	path = Engine/vendor/imgui
 	url = https://github.com/ocornut/imgui
+	branch = docking
 [submodule "Editor/vendor/IconFont"]
 	path = Editor/vendor/IconFont
 	url = https://github.com/juliettef/IconFontCppHeaders
+	branch = main
 [submodule "Editor/vendor/OpenFBX"]
 	path = Editor/vendor/OpenFBX
 	url = https://github.com/nem0/OpenFBX
+	branch = master
 [submodule "Engine/vendor/cereal"]
 	path = Engine/vendor/cereal
 	url = https://github.com/USCiLab/cereal
+	branch = master
 [submodule "Engine/vendor/TinyXml2"]
 	path = Engine/vendor/TinyXml2
 	url = https://github.com/leethomason/tinyxml2
+	branch = master
 [submodule "Engine/vendor/math"]
 	path = Engine/vendor/math
 	url = https://github.com/ThomasJowett/3D-Maths-libraries
+	branch = master
 [submodule "Engine/vendor/spdlog"]
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
+	branch = v1.x
