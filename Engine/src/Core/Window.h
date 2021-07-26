@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <any>
+#include <filesystem>
 
 #include "core.h"
 #include "Events/Event.h"
@@ -56,7 +57,7 @@ public:
 	virtual void SetVSync(bool enabled) = 0;
 	virtual bool IsVSync() const = 0;
 
-	virtual void SetIcon(const std::string& path) = 0;
+	virtual void SetIcon(const std::filesystem::path& path) = 0;
 	virtual void SetCursor(Cursors cursorType) = 0;
 
 	virtual void DisableCursor() = 0;

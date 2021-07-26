@@ -27,7 +27,7 @@ public:
 	inline virtual std::any GetNativeWindow() const override { return m_Window; }
 	inline virtual Ref<GraphicsContext> GetContext() const override { return m_Context; }
 
-	virtual void SetIcon(const std::string& path) override;
+	virtual void SetIcon(const std::filesystem::path& path) override;
 	virtual void SetCursor(Cursors cursorType) override;
 
 	virtual void DisableCursor() override;

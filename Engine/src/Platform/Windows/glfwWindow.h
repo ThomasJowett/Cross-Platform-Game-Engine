@@ -23,7 +23,7 @@ public:
 	void SetVSync(bool enabled) override;
 	bool IsVSync() const override;
 
-	void SetIcon(const std::string& path) override;
+	void SetIcon(const std::filesystem::path& path) override;
 	void SetCursor(Cursors cursorType) override;
 
 	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0);

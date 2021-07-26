@@ -66,7 +66,7 @@ bool glfwWindow::IsVSync() const
 	return m_Data.VSync;
 }
 
-void glfwWindow::SetIcon(const std::string& path)
+void glfwWindow::SetIcon(const std::filesystem::path& path)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(0);

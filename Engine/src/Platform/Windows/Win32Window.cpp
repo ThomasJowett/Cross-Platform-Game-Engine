@@ -223,7 +223,7 @@ bool Win32Window::IsVSync() const
 	return m_Data.VSync;
 }
 
-void Win32Window::SetIcon(const std::string& path)
+void Win32Window::SetIcon(const std::filesystem::path& path)
 {
 	//TODO: change icon
 }
