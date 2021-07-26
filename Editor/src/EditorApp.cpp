@@ -16,5 +16,5 @@ Editor::Editor(const WindowProps& props)
 
 	PushOverlay(new MainDockSpace());
 
-	Application::GetWindow().SetIcon(GetWorkingDirectory().string() + "\\resources\\Icons\\Logo.png");
+	Application::GetWindow().SetIcon(GetWorkingDirectory() / "resources" / "Icons" / "Logo.png");
 }
