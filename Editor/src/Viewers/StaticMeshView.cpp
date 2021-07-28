@@ -16,7 +16,7 @@ void StaticMeshView::OnAttach()
 	m_Mesh = CreateRef<Mesh>(m_FilePath);
 
 	m_ShaderLibrary.Load("NormalMap");
-	m_Texture = Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png");
+	m_Texture = Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 	m_CameraController.SwitchCamera(true);

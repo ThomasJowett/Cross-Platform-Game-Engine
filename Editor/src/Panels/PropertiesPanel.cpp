@@ -63,7 +63,7 @@ void PropertiesPanel::OnImGuiRender()
 
 						Material material(Shader::Create("NormalMap"));
 
-						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory().string() + "\\resources\\UVChecker.png"), 0);
+						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 
 						entity.AddComponent<StaticMeshComponent>(mesh, material);
 					}

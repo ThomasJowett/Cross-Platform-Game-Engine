@@ -250,32 +250,92 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
 {
-	static const char zenityBin[] = "/usr/bin/zenity";
+	char call[2048];
 
-	char Call[2048];
+	std::string outputString;
 
-	wchar_t filename[PATH_MAX];
+	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" 2>&1", title, filter);
+	sprintf(call, "zenity --file-selection --modal --title=\"%ls\"  2>&1", title);
 
-	sprintf(Call, "%s --file-selection --modal --title=\"%ls\" ", zenityBin, title);
+	FILE *f = popen(call, "r");
 
-	FILE *f = popen(Call, "r");
-
-	if (f != NULL)
+	if (f)
 	{
-		fgetws(filename, PATH_MAX, f);
+		char outpLine[PATH_MAX];
+		//while (!feof(f))
+		//{
+			if(fgets(outpLine, PATH_MAX, f) != NULL)
+			{
+				outputString += outpLine;
 
-		return std::wstring(filename);
+				rtrim(outputString);
+			}
+		//}
+
+		if(!outputString.empty())
+			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
 	}
 	return std::nullopt;
 }
 
 std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
 {
+	char call[2048];
+	std::string outputString;
+
+	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --multiple 2>&l", title, filter);
+
+	FILE *f = popen(call, "r");
+
+	if(f)
+	{
+		char outpLine[PATH_MAX];
+		std::vector<std::wstring> files;
+
+		while (!feof(f))
+		{
+			if(fgets(outpLine, PATH_MAX, f)!= NULL)
+			{
+				outputString += outpLine;
+
+				if(!outputString.empty())
+					files.push_back(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString));
+			}
+		}
+
+		if(!files.empty())
+			return files;
+	}
 	return std::nullopt;
 }
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
 {
+	char call[2048];
+	std::string outputString;
+
+	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --save", title, filter);
+	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --save", title);
+
+	FILE *f = popen(call, "r");
+
+	if (f)
+	{
+		char outpLine[PATH_MAX];
+		while (!feof(f))
+		{
+			if(fgets(outpLine, PATH_MAX, f) != NULL)
+			{
+				outputString += outpLine;
+
+				rtrim(outputString);
+			}
+		}
+
+		if(!outputString.empty())
+			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
+	}
+
 	return std::nullopt;
 }
 

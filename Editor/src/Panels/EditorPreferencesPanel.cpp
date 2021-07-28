@@ -17,7 +17,7 @@ EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 {
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
 
-	m_StyleFilename = Application::GetWorkingDirectory().string() + "\\styles\\Editor.style";
+	m_StyleFilename = (Application::GetWorkingDirectory() / "styles" / " Editor.style").string();
 }
 
 void EditorPreferencesPanel::OnImGuiRender()

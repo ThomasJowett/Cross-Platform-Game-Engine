@@ -192,7 +192,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
-	std::string newSceneFilepath = m_CurrentPath.string() + "\\Untitled";
+	std::string newSceneFilepath = (m_CurrentPath / "Untitled").string();
 
 	int suffix = 1;
 
@@ -303,7 +303,7 @@ void ContentExplorerPanel::RightClickMenu()
 	{
 		if (ImGui::SmallButton("Folder"))
 		{
-			std::string newFolderName = m_CurrentPath.string() + "\\New folder";
+			std::string newFolderName = (m_CurrentPath / "New folder").string();
 			int suffix = 1;
 
 			if (std::filesystem::exists(newFolderName))
@@ -657,11 +657,10 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::SetNextItemWidth(ImGui::GetFontSize());
 						if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
 						{
-							std::string path;
+							std::filesystem::path path;
 							for (int i = 0; i <= t; i++)
 							{
-								path += m_CurrentSplitPath[i];
-								path += '\\';
+								path = path / m_CurrentSplitPath[i];
 							}
 
 							auto directories = Directory::GetDirectories(path, m_SortingMode);

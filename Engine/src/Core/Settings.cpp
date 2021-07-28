@@ -15,7 +15,7 @@ static std::string s_Filename;
 
 void Settings::Init()
 {
-	s_Filename = Application::GetWorkingDirectory().string() + "\\Settings.ini";
+	s_Filename = (Application::GetWorkingDirectory() / "Settings.ini").string();
 
 	s_Ini->SetUnicode();
 
