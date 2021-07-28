@@ -70,7 +70,7 @@ void glfwWindow::SetIcon(const std::filesystem::path& path)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(0);
-	stbi_uc* data = stbi_load(path.c_str(), &width, &height, &channels, 4);
+	stbi_uc* data = stbi_load(path.string().c_str(), &width, &height, &channels, 4);
 	ASSERT(data, "Failed to load image!");
 	ASSERT(channels == 4, "Icon must be RGBA");
 
