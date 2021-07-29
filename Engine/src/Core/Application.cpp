@@ -371,7 +371,7 @@ void Application::SetOpenDocument(const std::filesystem::path &filepath)
 
 		std::string fileDirectory = filepath.string();
 
-		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of('\\'));
+		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of(std::filesystem::path::preferred_separator));
 
 		s_OpenDocumentDirectory = fileDirectory;
 

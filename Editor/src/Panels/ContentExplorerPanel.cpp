@@ -185,7 +185,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 		m_CurrentPath = str;
 	}
 
-	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
+	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 	m_History.SwitchTo(m_CurrentPath);
 	m_ForceRescan = true;
 }
@@ -224,7 +224,7 @@ std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 	{
 		path += m_CurrentSplitPath[i];
 		if (i != index)
-			path += '\\';
+			path += std::filesystem::path::preferred_separator;
 	}
 
 	return std::filesystem::path(path);
@@ -704,7 +704,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 				}
 
-				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), '\\');
+				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 			}
 		}
 
@@ -726,7 +726,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			{
 				for (int i = 0; i < m_Dirs.size(); i++)
 				{
-					std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), '\\').back();
+					std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 					if (ImGui::Selectable(dirName.c_str(), m_SelectedDirs[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
 						if (!ImGui::GetIO().KeyCtrl)

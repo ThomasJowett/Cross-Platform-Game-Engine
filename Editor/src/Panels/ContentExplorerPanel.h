@@ -24,7 +24,7 @@ public:
 	inline bool CanGoUp()
 	{
 		if(paths.size() > 0)
-			return SplitString(paths[currentPathIndex].string(), '\\').size() > 1;
+			return SplitString(paths[currentPathIndex].string(), std::filesystem::path::preferred_separator).size() > 1;
 		return false;
 	}
 
@@ -54,7 +54,7 @@ public:
 		if (CanGoUp())
 		{
 			std::string path = paths[currentPathIndex].string();
-			std::string newPath  = path.substr(0, path.find_last_of('\\'));
+			std::string newPath  = path.substr(0, path.find_last_of(std::filesystem::path::preferred_separator));
 
 			SwitchTo(newPath);
 			return true;
