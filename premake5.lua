@@ -24,7 +24,7 @@ group "Dependencies/Editor"
 group ""
 
 project "Engine"
-	location "Engine"
+	location "%{prj.name}"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
@@ -159,7 +159,7 @@ project "Engine"
 		optimize "On"
 
 project "ExampleGame"
-	location "ExampleGame"
+	location "%{prj.name}"
 	kind "ConsoleApp"
 	cppdialect "C++17"
 
@@ -244,11 +244,12 @@ project "ExampleGame"
 		optimize "On"
 		
 project "Editor"
-	location "Editor"
+	location "%{prj.name}"
 	kind "ConsoleApp"
 	cppdialect "C++17"
 
 	language "C++"
+	icon "%{prj.name}/Icon.ico"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
@@ -343,3 +344,36 @@ project "Editor"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
+project "EditorWpf"
+	location "%{prj.name}"
+	kind "WindowedApp"
+	language "C#"
+	flags {"WPF"}
+	namespace "Editor"
+	icon "Editor/Icon.ico"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.cs",
+		"%{prj.name}/src/**.xaml"
+	}
+
+	links
+	{
+		"Microsoft.Csharp",
+    	"PresentationCore",
+    	"PresentationFramework",
+    	"System",
+    	"System.Core",
+    	"System.Data",
+    	"System.Data.DataSetExtensions",
+    	"System.Net.Http",
+    	"System.Xaml",
+    	"System.Xml",
+    	"System.Xml.Linq",
+		"WindowsBase"
+	}
