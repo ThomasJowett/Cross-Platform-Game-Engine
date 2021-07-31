@@ -2,17 +2,16 @@
 #include <unordered_map>
 #include <string>
 
-template<typename T>
+template<typename T, typename... Args>
 struct Factory
 {
-	typedef std::unordered_map<std::string, T*(*)()>map_Type;
+	typedef std::unordered_map<std::string, std::function<T* (Args...)>>map_Type;
 
-	template<typename... Args>
-	static T* CreateInstance(const std::string& name)
+	static T* CreateInstance(const std::string& name, Args... args)
 	{
 		typename map_Type::iterator it = GetMap()->find(name);
 
-		return (it == GetMap()->end() ? nullptr : it->second());
+		return (it == GetMap()->end() ? nullptr : it->second(args...));
 	}
 
 	static map_Type* GetMap()

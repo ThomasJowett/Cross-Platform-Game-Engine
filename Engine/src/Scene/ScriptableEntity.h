@@ -57,6 +57,6 @@ struct ScriptRegister : Factory<ScriptableEntity>
 {
 	ScriptRegister(std::string const& name)
 	{
-		GetMap()->insert(std::make_pair(name, &CreateT<T>));
+		GetMap()->insert(std::make_pair(name, std::bind(&CreateT<T>)));
 	}
 };

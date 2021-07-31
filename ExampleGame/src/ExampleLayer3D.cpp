@@ -23,14 +23,7 @@ private:
 
 ScriptRegister<Rotator> Rotator::reg("Rotator Script");
 
-class CameraController : public ScriptableEntity
-{
-	//TODO: implement a camera controller
-public:
-	CameraController() {}
-	void OnFixedUpdate() override
-	{}
-};
+
 
 ExampleLayer3D::ExampleLayer3D()
 	:Layer("Example 3D")
@@ -62,7 +55,6 @@ void ExampleLayer3D::OnAttach()
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
-	//entity.AddComponent<NativeScriptComponent>("Rotator Script", Vector3f(0.0011f, 0.0014f, 0.002f));
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
