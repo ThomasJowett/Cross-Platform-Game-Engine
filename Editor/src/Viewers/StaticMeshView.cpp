@@ -6,7 +6,9 @@
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
-	m_Framebuffer = FrameBuffer::Create({ 640, 480 });
+	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
+	frameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8};
+	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
 void StaticMeshView::OnAttach()

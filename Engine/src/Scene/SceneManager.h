@@ -18,4 +18,5 @@ private:
 	static bool FinalChangeScene();
 	static Scope<Scene> s_CurrentScene;
 	static std::filesystem::path s_NextFilepath;
+	static std::string s_NextSceneName;
 };

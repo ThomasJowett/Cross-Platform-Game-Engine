@@ -370,7 +370,7 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	SceneManager::ChangeScene(data.DefaultScene);
+	SceneManager::ChangeScene(std::filesystem::path(data.DefaultScene));
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)

@@ -5,6 +5,7 @@
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
+std::string SceneManager::s_NextSceneName;
 
 Scene* SceneManager::CurrentScene()
 {
@@ -63,8 +64,19 @@ bool SceneManager::ChangeScene(std::string name)
 {
 	if (IsSceneLoaded())
 	{
-		//TODO: save and unload the previous scene
+		if (!s_CurrentScene->GetFilepath().empty())
+		{
+			if (s_CurrentScene->IsUpdating())
+			{
+				s_NextSceneName = name;
+			}
+			else
+			{
+				return FinalChangeScene();
+			}
+		}
 	}
+
 	s_CurrentScene = CreateScope<Scene>(name);
 
 	return IsSceneLoaded();
@@ -89,7 +101,7 @@ bool SceneManager::Update(float deltaTime)
 		}
 	}
 
-	if (!s_NextFilepath.empty())
+	if (!s_NextFilepath.empty() || !s_NextSceneName.empty())
 	{
 		FinalChangeScene();
 	}
@@ -122,7 +134,11 @@ bool SceneManager::FinalChangeScene()
 		}
 	}
 
-	s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
+	if (!s_NextFilepath.empty())
+		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
+	else if (!s_NextSceneName.empty())
+		s_CurrentScene = CreateScope<Scene>(s_NextSceneName);
+
 	if (!s_CurrentScene->Load(false))
 		s_CurrentScene = nullptr;
 
@@ -130,6 +146,7 @@ bool SceneManager::FinalChangeScene()
 	Application::CallEvent(event);
 
 	s_NextFilepath.clear();
+	s_NextSceneName.clear();
 
 	return IsSceneLoaded();
 }
