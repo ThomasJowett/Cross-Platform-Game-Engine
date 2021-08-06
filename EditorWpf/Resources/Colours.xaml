@@ -1,0 +1,8 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="Default_Blue" Color="#FF99CCFF"/>
+    <SolidColorBrush x:Key="Default_Red" Color="#FFFF607C"/>
+    <SolidColorBrush x:Key="Default_Green" Color="#FF5EDC89"/>
+    <SolidColorBrush x:Key="Default_LineColour" Color="#FF2E4369"/>
+    <SolidColorBrush x:Key="Default_Background" Color="#3c3c3c"/>
+</ResourceDictionary>

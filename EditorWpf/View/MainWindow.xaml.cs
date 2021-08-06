@@ -23,6 +23,8 @@ namespace Editor
         public MainWindow()
         {
             InitializeComponent();
+
+            int test = DLLWrapper.EngineAPI.GetValueFromDLL();
         }
     }
 }

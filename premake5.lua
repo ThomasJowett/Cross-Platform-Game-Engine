@@ -33,7 +33,7 @@ project "Engine"
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	pchheader "stdafx.h"
-	pchsource "Engine/src/stdafx.cpp"
+	pchsource "%{prj.name}/src/stdafx.cpp"
 
 	files
 	{
@@ -358,8 +358,8 @@ project "EditorWpf"
 
 	files
 	{
-		"%{prj.name}/src/**.cs",
-		"%{prj.name}/src/**.xaml"
+		"%{prj.name}/**.cs",
+		"%{prj.name}/**.xaml"
 	}
 
 	links
@@ -377,3 +377,62 @@ project "EditorWpf"
     	"System.Xml.Linq",
 		"WindowsBase"
 	}
+
+project "EngineDLL"
+	location "%{prj.name}"
+	kind "SharedLib"
+	language "C++"
+	cppdialect "C++17"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	pchheader "pch.h"
+	pchsource "%{prj.name}/src/pch.cpp"
+
+	files
+	{
+		"%{prj.name}/src/**.cpp",
+		"%{prj.name}/src/**.h"
+	}
+
+	links
+	{
+		"Engine"
+	}
+
+	includedirs
+	{
+		"Engine/src",
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include"
+	}
+
+	postbuildcommands
+	{
+		("{COPY} %{cfg.buildtarget.relpath} \"../bin/" .. outputdir .. "/EditorWPF/\"")
+	}
+	
+	filter "system:windows"
+		defines
+		{
+			"ENGINEDLL_EXPORTS",
+			"__WINDOWS__"
+		}
+
+	filter "configurations:Debug"
+		defines "DEBUG"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "RELEASE"
+		runtime "Release"
+		optimize "On"
+		symbols "Off"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"
