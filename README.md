@@ -17,7 +17,7 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2017.bat`
 ### Mac
 For Xcode, run the shell script `Progen_Xcode.sh`
-#### Linux
+### Linux
 First install dependencies by opening a console window and running the following commands:
 * `sudo apt-get install -y libx11-dev`
 * `sudo apt-get install -y libxrandr-dev`
