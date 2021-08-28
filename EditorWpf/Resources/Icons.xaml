@@ -35,4 +35,89 @@
         </DrawingImage.Drawing>
     </DrawingImage>
 
+    <DrawingImage x:Key="SaveDrawingImage">
+        <DrawingImage.Drawing>
+            <DrawingGroup ClipGeometry="M0,0 V21.882275 H21.872221 V0 H0 Z">
+                <DrawingGroup.Transform>
+                    <TranslateTransform X="60" Y="60" />
+                </DrawingGroup.Transform>
+                <DrawingGroup Opacity="1" Transform="1,0,0,1,-54.988405,-207.35412">
+                    <GeometryDrawing Brush="#FFEBF5FF" Geometry="F1 M21.872221,21.882275z M0,0z M58.868962,228.87865L72.980072,228.87865 72.980072,219.00088 58.868962,219.00088z" />
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,64.513406,214.76746">
+                        <GeometryDrawing Brush="#FFEBF5FF" Geometry="F1 M21.872221,21.882275z M0,0z M0,0L20,0C21.104,0,22,0.896,22,2L22,20 -2,20 -2,2C-2,0.896,-1.104,0,0,0" />
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,76.50785,210.53413">
+                        <GeometryDrawing Brush="#FF7F95AD" Geometry="F1 M21.872221,21.882275z M0,0z M0,0L-8,8 -12,8 -12,-10C-12,-11.104,-12.896,-12,-14,-12L-34,-12C-35.104,-12,-36,-11.104,-36,-10L-36,8 -60,8 -60,-52 -50,-52 -50,-24 -10,-24 -10,-52 0,-52z" />
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,-128.27965,386.37946">
+                        <DrawingGroup Opacity="1">
+                            <DrawingGroup Opacity="0.19999700784683228">
+                                <DrawingGroup.ClipGeometry>
+                                    <PathGeometry FillRule="Nonzero" Figures="M564.5,506.459L568.5,506.459 568.5,486.459 564.5,486.459z" />
+                                </DrawingGroup.ClipGeometry>
+                                <DrawingGroup Opacity="1" Transform="1,0,0,1,566.5,486.4592">
+                                    <GeometryDrawing Brush="#FFFFFFFF" Geometry="F1 M21.872221,21.882275z M0,0z M0,0C1.104,0,2,0.896,2,2L2,20 -2,20 -2,0z" />
+                                </DrawingGroup>
+                            </DrawingGroup>
+                        </DrawingGroup>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,-128.27965,386.37946">
+                        <DrawingGroup Opacity="1">
+                            <DrawingGroup Opacity="0.14999401569366455">
+                                <DrawingGroup.ClipGeometry>
+                                    <PathGeometry FillRule="Nonzero" Figures="M520.5,506.459L580.5,506.459 580.5,446.459 520.5,446.459z" />
+                                </DrawingGroup.ClipGeometry>
+                                <DrawingGroup Opacity="1" Transform="1,0,0,1,574.5,449.4592">
+                                    <GeometryDrawing Brush="#FF000064" Geometry="F1 M21.872221,21.882275z M0,0z M0,0L-40,0 -50,0 -50,57 -54,57 -54,-3 -44,-3 -4,-3 6,-3 6,0z" />
+                                </DrawingGroup>
+                            </DrawingGroup>
+                        </DrawingGroup>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,72.980073,228.87859">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L0,28 -40,28 -40,0">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,62.39674,222.52859">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L20,0">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,62.39674,225.35079">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L16,0">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,73.685627,207.71192">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L8,-8 8,-60 -52,-60 -52,0z">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,69.452293,210.53413">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L0,-4">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                    <DrawingGroup Opacity="1" Transform="0.35277777,0,0,-0.35277777,72.274517,207.71192">
+                        <GeometryDrawing Geometry="F1 M21.872221,21.882275z M0,0z M0,0L0,-18C0,-19.104,-0.896,-20,-2,-20L-22,-20C-23.104,-20,-24,-19.104,-24,-18L-24,0">
+                            <GeometryDrawing.Pen>
+                                <Pen Brush="{StaticResource Default_LineColour}" Thickness="2" StartLineCap="Round" EndLineCap="Round" LineJoin="Miter" />
+                            </GeometryDrawing.Pen>
+                        </GeometryDrawing>
+                    </DrawingGroup>
+                </DrawingGroup>
+            </DrawingGroup>
+        </DrawingImage.Drawing>
+    </DrawingImage>
+
 </ResourceDictionary>
