@@ -59,11 +59,11 @@ struct PrimitiveComponent
 	{}
 
 	//Sphere
-	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLine, uint32_t sphereLatitudeLine)
+	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLines, uint32_t sphereLatitudeLines)
 		:Type(Shape::Sphere),
 		SphereRadius(shpereRadius),
-		SphereLongitudeLines(SphereLongitudeLines),
-		SphereLatitudeLines(sphereLatitudeLine)
+		SphereLongitudeLines(sphereLongitudeLines),
+		SphereLatitudeLines(sphereLatitudeLines)
 	{}
 
 	// Plane

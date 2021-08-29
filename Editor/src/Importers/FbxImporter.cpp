@@ -8,18 +8,25 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 {
 	PROFILE_FUNCTION();
 
-	FILE* fp = fopen(filepath.string().c_str(), "rb");
-	if (!fp)
+	
+	long file_size;
+	ofbx::u8* content;
+
+	std::ifstream file(filepath, std::ios::in | std::ios::binary);
+	if (file.is_open())
+	{
+		file.seekg(0, std::ios::end);
+		file_size = (long)file.tellg();
+		content = new ofbx::u8[file_size];
+		file.seekg(0, std::ios::beg);
+		file.read((char*)&content[0], file_size);
+		file.close();
+	}
+	else
 	{
 		CLIENT_ERROR("Could not open {0}", filepath.string());
 		return;
 	}
-
-	fseek(fp, 0, SEEK_END);
-	long file_size = ftell(fp);
-	fseek(fp, 0, SEEK_SET);
-	auto* content = new ofbx::u8[file_size];
-	fread(content, 1, file_size, fp);
 
 	ofbx::IScene* scene = ofbx::load((ofbx::u8*)content, file_size, (ofbx::u64)ofbx::LoadFlags::TRIANGULATE);
 
