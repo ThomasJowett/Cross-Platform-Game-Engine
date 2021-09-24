@@ -245,26 +245,6 @@ void ViewportPanel::OnImGuiRender()
 			cameraProjectionMat.Transpose();
 			transformMat.Transpose();
 
-			float cameraView[16] =
-			{ cameraViewMat[0][0], cameraViewMat[0][1],cameraViewMat[0][2],cameraViewMat[0][3],
-			  cameraViewMat[1][0], cameraViewMat[1][1],cameraViewMat[1][2],cameraViewMat[1][3],
-			  cameraViewMat[2][0], cameraViewMat[2][1],cameraViewMat[2][2],cameraViewMat[2][3],
-			  cameraViewMat[3][0], cameraViewMat[3][1],cameraViewMat[3][2],cameraViewMat[3][3] };
-
-			float cameraProjection[16] =
-			{ cameraProjectionMat[0][0], cameraProjectionMat[0][1],cameraProjectionMat[0][2],cameraProjectionMat[0][3],
-			  cameraProjectionMat[1][0], cameraProjectionMat[1][1],cameraProjectionMat[1][2],cameraProjectionMat[1][3],
-			  cameraProjectionMat[2][0], cameraProjectionMat[2][1],cameraProjectionMat[2][2],cameraProjectionMat[2][3],
-			  cameraProjectionMat[3][0], cameraProjectionMat[3][1],cameraProjectionMat[3][2],cameraProjectionMat[3][3] };
-
-			float transform[16] =
-			{
-			  transformMat[0][0], transformMat[0][1],transformMat[0][2],transformMat[0][3],
-			  transformMat[1][0], transformMat[1][1],transformMat[1][2],transformMat[1][3],
-			  transformMat[2][0], transformMat[2][1],transformMat[2][2],transformMat[2][3],
-			  transformMat[3][0], transformMat[3][1],transformMat[3][2],transformMat[3][3] };
-
-
 			bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
 			float snapValue = 0.5f;
 			if (m_Mode == Mode::Rotate)
@@ -294,16 +274,14 @@ void ViewportPanel::OnImGuiRender()
 				break;
 			}
 
-			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
-			ImGuizmo::Manipulate(cameraView, cameraProjection, gizmoMode, ImGuizmo::LOCAL, transform, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
+			ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16, gizmoMode, ImGuizmo::LOCAL, transformMat.m16, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
 
-			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
 
 			if (ImGuizmo::IsUsing())
 			{
 				float translation[3], rotation[3], scale[3];
 
-				ImGuizmo::DecomposeMatrixToComponents(transform, translation, rotation, scale);
+				ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
 				CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 

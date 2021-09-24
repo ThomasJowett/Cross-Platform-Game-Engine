@@ -89,6 +89,22 @@ void DirectX11Shader::SetMat4(const char* name, const Matrix4x4& value, bool tra
 {
 }
 
+void DirectX11Shader::SetFloat2(const char* name, Vector2f value)
+{
+}
+
+void DirectX11Shader::SetFloat2(const char* name, const float x, const float y)
+{
+}
+
+void DirectX11Shader::SetFloat3(const char* name, Vector3f value)
+{
+}
+
+void DirectX11Shader::SetFloat3(const char* name, const float x, const float y, const float z)
+{
+}
+
 void DirectX11Shader::SetFloat4(const char* name, const float r, const float g, const float b, const float a)
 {
 }

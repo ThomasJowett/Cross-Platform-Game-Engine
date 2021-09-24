@@ -67,6 +67,30 @@ void OpenGLShader::SetMat4(const char* name, const Matrix4x4& value, bool transp
 	UploadUniformMat4(name, value, transpose);
 }
 
+void OpenGLShader::SetFloat2(const char* name, Vector2f value)
+{
+	PROFILE_FUNCTION();
+	UploadUniformFloat2(name, value.x, value.y);
+}
+
+void OpenGLShader::SetFloat2(const char* name, const float x, const float y)
+{
+	PROFILE_FUNCTION();
+	UploadUniformFloat2(name, x, y);
+}
+
+void OpenGLShader::SetFloat3(const char* name, Vector3f value)
+{
+	PROFILE_FUNCTION();
+	UploadUniformFloat3(name, value.x, value.y, value.z);
+}
+
+void OpenGLShader::SetFloat3(const char* name, const float x, const float y, const float z)
+{
+	PROFILE_FUNCTION();
+	UploadUniformFloat3(name, x, y, z);
+}
+
 void OpenGLShader::SetFloat4(const char* name, const float r, const float g, const float b, const float a)
 {
 	PROFILE_FUNCTION();
@@ -119,6 +143,18 @@ void OpenGLShader::UploadUniformFloat(const char* name, const float& Float)
 {
 	uint32_t location = glGetUniformLocation(m_rendererID, name);
 	glUniform1f(location, Float);
+}
+
+void OpenGLShader::UploadUniformFloat2(const char* name, const float& x, const float& y)
+{
+	GLint location = glGetUniformLocation(m_rendererID, name);
+	glUniform2f(location, x, y);
+}
+
+void OpenGLShader::UploadUniformFloat3(const char* name, const float& x, const float& y, const float& z)
+{
+	GLint location = glGetUniformLocation(m_rendererID, name);
+	glUniform3f(location, x, y, z);
 }
 
 void OpenGLShader::UploadUniformFloat4(const char* name, const float& r, const float& g, const float& b, const float& a)
