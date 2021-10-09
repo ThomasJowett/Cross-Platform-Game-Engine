@@ -812,7 +812,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		{
 			m_TotalNumBrowsingEntries = (uint32_t)(m_Dirs.size() + m_Files.size());
 
-			
+
 
 			static int id;
 			ImGui::PushID(&id);
@@ -943,12 +943,26 @@ void ContentExplorerPanel::OnImGuiRender()
 
 				if (ImGui::BeginTable("Details Table", 3, table_flags))
 				{
+
 					ImGui::TableSetupColumn("Name");
 					ImGui::TableSetupColumn("Date Modified");
 					ImGui::TableSetupColumn("Size");
 					ImGui::TableSetupScrollFreeze(0, 1);
 
 					ImGui::TableHeadersRow();
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
+					{
+						if (m_History.GoForward())
+							m_ForceRescan = true;
+					}
+
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
+					{
+						if (m_History.GoBack())
+							m_ForceRescan = true;
+					}
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
 
 					ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_SpanAllColumns
 						| ImGuiSelectableFlags_AllowItemOverlap
@@ -1068,7 +1082,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						{
 							ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
 						}
-						
+
 						ImGui::EndGroup();
 
 					}
