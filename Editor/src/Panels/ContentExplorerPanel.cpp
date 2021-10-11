@@ -812,8 +812,6 @@ void ContentExplorerPanel::OnImGuiRender()
 		{
 			m_TotalNumBrowsingEntries = (uint32_t)(m_Dirs.size() + m_Files.size());
 
-
-
 			static int id;
 			ImGui::PushID(&id);
 
@@ -847,7 +845,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_NumberSelected += m_SelectedDirs[i];
 						}
 
-						if (ImGui::IsMouseDoubleClicked(0))
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
 							//change directory on click
 							m_History.SwitchTo(m_Dirs[i]);
@@ -885,7 +883,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					{
 						if (!ImGui::GetIO().KeyCtrl)
 						{
-							if (ImGui::IsMouseDoubleClicked(0))
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
 								ViewerManager::OpenViewer(m_Files[i]);
 							}
@@ -907,7 +905,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 							m_NumberSelected += m_SelectedFiles[i];
 
-							if (ImGui::IsMouseDoubleClicked(0))
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
 								OpenAllSelectedItems();
 							}
@@ -931,8 +929,92 @@ void ContentExplorerPanel::OnImGuiRender()
 				break;
 			}
 			case ContentExplorerPanel::ZoomLevel::THUMBNAILS:
-				//ImGui::BeginTable()
-				break;
+			{
+				float thumbnailSize = 128;
+				ImGuiTableFlags table_flags =
+					ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY;
+
+				int width = ImGui::GetWindowSize().x;
+
+				ImGuiStyle& style = ImGui::GetStyle();
+
+				m_NumBrowsingColumns = width / (thumbnailSize + (style.FramePadding.x * 2));
+
+				if (m_NumBrowsingColumns == 0)
+					m_NumBrowsingColumns = 1;
+
+				if (ImGui::BeginTable("Thumbnails Table", m_NumBrowsingColumns, table_flags))
+				{
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
+					{
+						if (m_History.GoForward())
+							m_ForceRescan = true;
+					}
+
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
+					{
+						if (m_History.GoBack())
+							m_ForceRescan = true;
+					}
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
+
+					ImGui::TableNextRow();
+
+					//Directories -------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Dirs.size(); i++)
+					{
+						ImGui::TableNextColumn();
+						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
+						ImGui::BeginGroup();
+						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								ClearSelected();
+
+								m_SelectedDirs[i] = true;
+
+								m_NumberSelected = 1;
+								m_CurrentSelectedPath = m_Dirs[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedDirs[i];
+								m_SelectedDirs[i] = !m_SelectedDirs[i];
+
+								m_NumberSelected += m_SelectedDirs[i];
+							}
+
+						}
+
+						ImGui::Text(dirName.c_str());
+						ImGui::EndGroup();
+
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							//change directory on click
+							m_History.SwitchTo(m_Dirs[i]);
+							m_CurrentPath = *m_History.GetCurrentFolder();
+							m_ForceRescan = true;
+						}
+
+					}
+
+					//Files -------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Files.size(); i++)
+					{
+						ImGui::TableNextColumn();
+						std::string filename = m_Files[i].filename().string();
+
+						ImGui::Button(ICON_FA_FILE, { thumbnailSize, thumbnailSize });
+						ImGui::Text(filename.c_str());
+					}
+
+					ImGui::EndTable();
+				}
+			}
+			break;
 			case ContentExplorerPanel::ZoomLevel::DETAILS:
 			{
 				ImGuiTableFlags table_flags =
@@ -950,12 +1032,15 @@ void ContentExplorerPanel::OnImGuiRender()
 					ImGui::TableSetupScrollFreeze(0, 1);
 
 					ImGui::TableHeadersRow();
+
+					//Forward button
 					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
 					{
 						if (m_History.GoForward())
 							m_ForceRescan = true;
 					}
 
+					//Back button
 					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
 					{
 						if (m_History.GoBack())
@@ -992,7 +1077,7 @@ void ContentExplorerPanel::OnImGuiRender()
 								m_NumberSelected += m_SelectedDirs[i];
 							}
 
-							if (ImGui::IsMouseDoubleClicked(0))
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
 								//change directory on click
 								m_History.SwitchTo(m_Dirs[i]);
@@ -1035,7 +1120,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						{
 							if (!ImGui::GetIO().KeyCtrl)
 							{
-								if (ImGui::IsMouseDoubleClicked(0))
+								if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 								{
 									ViewerManager::OpenViewer(m_Files[i]);
 								}
@@ -1057,7 +1142,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 								m_NumberSelected += m_SelectedFiles[i];
 
-								if (ImGui::IsMouseDoubleClicked(0))
+								if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 								{
 									OpenAllSelectedItems();
 								}
