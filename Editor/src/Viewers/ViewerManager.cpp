@@ -126,7 +126,7 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		return FileType::SCENE;
 	}
 
-	if (strcmp(ext, ".script") == 0)
+	if (strcmp(ext, ".cs") == 0)
 	{
 		return FileType::SCRIPT;
 	}

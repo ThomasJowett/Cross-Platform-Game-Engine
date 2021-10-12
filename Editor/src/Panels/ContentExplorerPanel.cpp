@@ -227,7 +227,7 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 
 	SceneManager::CreateScene(newSceneFilepath);
 
-	SceneManager::ChangeScene(newSceneFilepath);
+	SceneManager::ChangeScene(std::filesystem::path(newSceneFilepath));
 
 	m_ForceRescan = true;
 

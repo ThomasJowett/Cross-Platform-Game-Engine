@@ -202,6 +202,10 @@ void ViewportPanel::OnImGuiRender()
 
 					tilemap.Save(file->replace_filename("Test Copy.tmx"));
 				}
+				else if (file->extension() == ".scene")
+				{
+					SceneManager::ChangeScene(*file);
+				}
 				
 				CLIENT_DEBUG(file->string());
 			}
