@@ -6,6 +6,7 @@
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
 std::string SceneManager::s_NextSceneName;
+SceneState SceneManager::s_SceneState;
 
 Scene* SceneManager::CurrentScene()
 {
@@ -159,5 +160,15 @@ bool SceneManager::CreateScene(std::filesystem::path filename)
 
 	newScene->Save(false);
 
+	return false;
+}
+
+bool SceneManager::ChangeSceneState(SceneState sceneState)
+{
+	if (sceneState != s_SceneState)
+	{
+		s_SceneState = sceneState;
+		return true;
+	}
 	return false;
 }

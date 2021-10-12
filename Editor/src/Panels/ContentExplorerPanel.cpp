@@ -1116,6 +1116,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						| ImGuiSelectableFlags_AllowItemOverlap
 						| ImGuiSelectableFlags_AllowDoubleClick;
 
+					//Directories -------------------------------------------------------------------------------
 					for (size_t i = 0; i < m_Dirs.size(); i++)
 					{
 						ImGui::TableNextRow();
@@ -1163,6 +1164,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
+					//Files -----------------------------------------------------------------------------------
 					for (size_t i = 0; i < m_Files.size(); i++)
 					{
 						if (!std::filesystem::exists(m_Files[i]))
