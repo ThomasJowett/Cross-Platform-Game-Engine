@@ -126,6 +126,8 @@ private:
 	void CreateDragDropSource(size_t index);
 	void ClearSelected();
 
+	const std::string GetFileIconForFileType(std::filesystem::path& assetPath);
+
 private:
 	bool* m_Show;
 

@@ -20,6 +20,10 @@
 
 #include "Scene/SceneManager.h"
 
+#include "Fonts/Fonts.h"
+
+static std::filesystem::path s_IconDirectory = Application::GetWorkingDirectory() / "resources" / "Icons";
+
 template <typename TP>
 std::time_t to_time_t(TP tp)
 {
@@ -459,6 +463,26 @@ void ContentExplorerPanel::ClearSelected()
 	m_SelectedFiles.resize(m_Files.size());
 }
 
+const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::path& assetPath)
+{
+	switch (ViewerManager::GetFileType(assetPath))
+	{
+	case FileType::IMAGE:
+		return ICON_FA_FILE_IMAGE;
+	case FileType::MESH:
+		return ICON_FA_SHAPES;
+	case FileType::SCENE:
+		return ICON_FA_IMAGE;
+	case FileType::SCRIPT:
+		return ICON_FA_FILE_CODE;
+	case FileType::TEXT:
+		return ICON_FA_FILE_ALT;
+	case FileType::AUDIO:
+		return ICON_FA_FILE_AUDIO;
+	}
+	return ICON_FA_FILE;
+}
+
 void ContentExplorerPanel::CreateDragDropSource(size_t index)
 {
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -725,84 +749,87 @@ void ContentExplorerPanel::OnImGuiRender()
 		// Split path control
 		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
 		{
-			bool mustSwitchSplitPath = false;
-
 			//Split Path
 			// tab:
+
+			const int numTabs = (int)m_CurrentSplitPath.size();
+
+			int pushpop = 0;
+
+			for (int t = 0; t < numTabs; t++)
 			{
-				const int numTabs = (int)m_CurrentSplitPath.size();
+				if (t == numTabs - 1)
+				{
+					ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
+				}
 
-				int pushpop = 0;
+				ImGui::PushID(t);
+				ImGui::SameLine();
 
-				for (int t = 0; t < numTabs; t++)
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
+				const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
+				if (t != numTabs - 1)
+				{
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(ImGui::GetFontSize());
+					if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
+					{
+						std::filesystem::path path = m_CurrentSplitPath[0];
+
+						if (path == path.root_name())
+						{
+							path += std::filesystem::path::preferred_separator;
+						}
+						for (int i = 1; i <= t; i++)
+						{
+							path /= m_CurrentSplitPath[i];
+						}
+
+						auto directories = Directory::GetDirectories(path, m_SortingMode);
+
+						for (int n = 0; n < directories.size(); n++)
+						{
+							std::filesystem::path directory = directories[n].filename();
+							const bool is_selected = false;
+							if (ImGui::Selectable(directory.string().c_str(), is_selected))
+							{
+								m_History.SwitchTo(directories[n]);
+								m_ForceRescan = true;
+
+								m_CurrentPath = *m_History.GetCurrentFolder();
+								break;
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+				ImGui::PopStyleVar();
+				ImGui::PopID();
+
+				if (pressed)
 				{
 					if (t == numTabs - 1)
 					{
-						ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
-					}
-
-					ImGui::PushID(t);
-					ImGui::SameLine();
-
-					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
-					const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
-					if (t != numTabs - 1)
-					{
-						ImGui::SameLine();
-						ImGui::SetNextItemWidth(ImGui::GetFontSize());
-						if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
-						{
-							std::filesystem::path path;
-							for (int i = 0; i <= t; i++)
-							{
-								path = path / m_CurrentSplitPath[i];
-							}
-
-							auto directories = Directory::GetDirectories(path, m_SortingMode);
-
-							for (int n = 0; n < directories.size(); n++)
-							{
-								std::filesystem::path directory = directories[n].filename();
-								const bool is_selected = false;
-								if (ImGui::Selectable(directory.string().c_str(), is_selected))
-								{
-									m_History.SwitchTo(directories[n]);
-									m_ForceRescan = true;
-
-									m_CurrentPath = *m_History.GetCurrentFolder();
-									break;
-								}
-							}
-							ImGui::EndCombo();
-						}
-					}
-					ImGui::PopStyleVar();
-					ImGui::PopID();
-
-					if (pressed)
-					{
-						if (t == numTabs - 1)
-						{
-							m_EditLocationCheckButtonPressed = true;
-							ImGui::PopStyleColor(3);
-							continue;
-						}
-
-						m_History.SwitchTo(GetPathForSplitPathIndex(t));
-						m_ForceRescan = true;
-
-						m_CurrentPath = *m_History.GetCurrentFolder();
-					}
-					if (t == numTabs - 1)
-					{
+						m_EditLocationCheckButtonPressed = true;
 						ImGui::PopStyleColor(3);
+						continue;
 					}
-				}
 
-				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+					m_History.SwitchTo(GetPathForSplitPathIndex(t));
+					m_ForceRescan = true;
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
+				}
+				if (t == numTabs - 1)
+				{
+					ImGui::PopStyleColor(3);
+				}
 			}
+
+			m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+
 		}
 
 		ImGui::Separator();
@@ -875,7 +902,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					ImGui::BeginGroup();
 
-					std::string filename = ICON_FA_FILE " " + m_Files[i].filename().string();
+					std::string filename = GetFileIconForFileType(m_Files[i]) + " " + m_Files[i].filename().string();
 
 					ImGui::PushID(i);
 
@@ -967,6 +994,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableNextColumn();
 						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 						ImGui::BeginGroup();
+						ImGui::PushFont(Fonts::Icons);
 						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
 						{
 							if (!ImGui::GetIO().KeyCtrl)
@@ -987,9 +1015,10 @@ void ContentExplorerPanel::OnImGuiRender()
 							}
 
 						}
-
-						ImGui::Text(dirName.c_str());
+						ImGui::PopFont();
+						ImGui::TextWrapped(dirName.c_str());
 						ImGui::EndGroup();
+						ItemContextMenu(i, true, dirName);
 
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
@@ -1007,8 +1036,42 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableNextColumn();
 						std::string filename = m_Files[i].filename().string();
 
-						ImGui::Button(ICON_FA_FILE, { thumbnailSize, thumbnailSize });
-						ImGui::Text(filename.c_str());
+						ImGui::BeginGroup();
+
+						ImGui::PushFont(Fonts::Icons);
+
+						if (ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize }))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								ClearSelected();
+
+								m_SelectedFiles[i] = true;
+
+								m_NumberSelected = 1;
+
+								m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+								m_CurrentSelectedPath = m_Files[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedFiles[i];
+
+								m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+								m_NumberSelected += m_SelectedFiles[i];
+							}
+						}
+						CreateDragDropSource(i);
+						ImGui::PopFont();
+						ImGui::TextWrapped(filename.c_str());
+						ImGui::EndGroup();
+						ItemContextMenu(i, false, filename);
+
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							OpenAllSelectedItems();
+						}
 					}
 
 					ImGui::EndTable();
@@ -1110,7 +1173,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 
 						ImGui::BeginGroup();
-						std::string filename = ICON_FA_FILE " " + m_Files[i].filename().string();
+						std::string filename = GetFileIconForFileType(m_Files[i]) + " " + m_Files[i].filename().string();
 
 						ImGui::TableNextRow();
 
