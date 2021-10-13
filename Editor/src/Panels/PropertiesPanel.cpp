@@ -8,8 +8,6 @@
 
 #include "Viewers/ViewerManager.h"
 
-#include <cstring>
-
 PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel)
 {
@@ -88,7 +86,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		strncpy_s(buffer, tag.c_str(), sizeof(buffer));
+		std::strncpy(buffer, tag.c_str(), sizeof(buffer));
 
 		if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 		{
