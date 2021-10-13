@@ -119,6 +119,8 @@ void MainDockSpace::OnAttach()
 			m_RecentProjects.push_back(project);
 		}
 	}
+
+	SceneManager::ChangeSceneState(SceneState::Edit);
 }
 
 void MainDockSpace::OnDetach()

@@ -6,6 +6,8 @@
 #include "SubTexture2D.h"
 #include "Core/Colour.h"
 
+#include "Scene/Components/SpriteComponent.h"
+
 class Renderer2D
 {
 public:
@@ -40,6 +42,8 @@ public:
 	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
+
+	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp);
 
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
