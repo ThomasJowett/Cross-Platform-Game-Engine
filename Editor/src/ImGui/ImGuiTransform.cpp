@@ -22,6 +22,12 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##posX", &position.x, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		position.x = 0.0f;
+		edited = true;
+	}
+
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,245,0,255 }, "Y");
@@ -29,6 +35,11 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##posY", &position.y, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		position.y = 0.0f;
+		edited = true;
+	}
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,0,245,255 }, "Z");
@@ -36,6 +47,11 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##posZ", &position.z, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		position.z = 0.0f;
+		edited = true;
+	}
 
 	//--------------------------------------
 
@@ -46,6 +62,11 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##rotX", &rotationDegrees.x, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		rotationDegrees.x = 0.0f;
+		edited = true;
+	}
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,245,0,255 }, "Y");
@@ -53,6 +74,11 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##RotY", &rotationDegrees.y, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		rotationDegrees.y = 0.0f;
+		edited = true;
+	}
 
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,0,245,255 }, "Z");
@@ -60,6 +86,11 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##RotZ", &rotationDegrees.z, 0.1f))
 		edited = true;
+	if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+	{
+		rotationDegrees.z = 0.0f;
+		edited = true;
+	}
 
 	//--------------------------------------
 	ImGui::Text("Scale");
@@ -86,11 +117,21 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 			scale.y += difference;
 			scale.z += difference;
 		}
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.x = scale.y = scale.z = 1.0f;
+			edited = true;
+		}
 	}
 	else
 	{
 		if (ImGui::DragFloat("##scaleX", &scale.x, 0.1f))
 			edited = true;
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.x = 1.0f;
+			edited = true;
+		}
 	}
 
 	ImGui::SameLine();
@@ -107,11 +148,21 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 			scale.y += difference;
 			scale.z += difference;
 		}
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.x = scale.y = scale.z = 1.0f;
+			edited = true;
+		}
 	}
 	else
 	{
 		if (ImGui::DragFloat("##scaleY", &scale.y, 0.1f))
 			edited = true;
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.y = 1.0f;
+			edited = true;
+		}
 	}
 
 	ImGui::SameLine();
@@ -128,11 +179,21 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 			scale.y += difference;
 			scale.z += difference;
 		}
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.x = scale.y = scale.z = 1.0f;
+			edited = true;
+		}
 	}
 	else
 	{
 		if (ImGui::DragFloat("##scaleZ", &scale.z, 0.1f))
 			edited = true;
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			scale.z = 1.0f;
+			edited = true;
+		}
 	}
 
 	if (edited)
