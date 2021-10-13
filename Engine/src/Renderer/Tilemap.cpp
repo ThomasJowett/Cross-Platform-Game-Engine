@@ -208,8 +208,7 @@ bool Tilemap::Save(std::filesystem::path filepath)
 	doc.InsertFirstChild(pRoot);
 	//doc.InsertEndChild(pRoot);
 
-	FILE* fp = fopen(filepath.string().c_str(), "wb");
-	tinyxml2::XMLError error =  doc.SaveFile(fp);
+	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
 

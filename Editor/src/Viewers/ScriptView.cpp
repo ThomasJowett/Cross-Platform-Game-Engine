@@ -171,7 +171,7 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 		return TextEditor::LanguageDefinition::Lua();
 	else if (ext == ".cpp" || ext == ".hpp")
 		return TextEditor::LanguageDefinition::CPlusPlus();
-	else if (ext == ".h" || ext == ".c")
+	else if (ext == ".h" || ext == ".c" || ext == ".cs")
 		return TextEditor::LanguageDefinition::C();
 	else if (ext == ".hlsl" || ext == ".fx")
 		return TextEditor::LanguageDefinition::HLSL();

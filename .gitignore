@@ -41,6 +41,7 @@ bin-int/
 *.user
 *.db
 *.vcxproj
+*.csproj
 *.sln
 *.filters
 *.aps

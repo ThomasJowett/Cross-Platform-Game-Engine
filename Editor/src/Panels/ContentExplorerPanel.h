@@ -84,6 +84,13 @@ public:
 class ContentExplorerPanel
 	:public Layer, public ICopyable
 {
+	enum class ZoomLevel
+	{
+		LIST = 0,
+		THUMBNAILS = 1,
+		DETAILS = 2
+	};
+
 public:
 	explicit ContentExplorerPanel(bool* show);
 	~ContentExplorerPanel() = default;
@@ -114,6 +121,13 @@ private:
 	bool Rename();
 
 	void OpenAllSelectedItems();
+
+	void ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName);
+	void CreateDragDropSource(size_t index);
+	void ClearSelected();
+
+	const std::string GetFileIconForFileType(std::filesystem::path& assetPath);
+
 private:
 	bool* m_Show;
 
@@ -131,6 +145,7 @@ private:
 	std::filesystem::path m_CurrentSelectedPath;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
+	ZoomLevel m_ZoomLevel = ZoomLevel::LIST;
 	History m_History;
 
 	bool m_EditLocationCheckButtonPressed = false;

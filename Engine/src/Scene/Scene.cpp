@@ -76,7 +76,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
 				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
 				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawQuad(transform, sprite.Tint);
+			Renderer2D::DrawSprite(transform, sprite);
 		});
 
 
@@ -114,6 +114,38 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 	);
 
 	Render(renderTarget, view, projection);
+}
+
+void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+{
+	if (renderTarget != nullptr)
+		renderTarget->Bind();
+
+	Renderer::BeginScene(cameraTransform, projection);
+
+	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+		[](const auto& sprite, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawSprite(transform, sprite);
+		});
+
+
+	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
+		[](const auto& mesh, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer::Submit(mesh.material, mesh.Geometry, transform);
+		});
+
+	Renderer::EndScene();
+
+	if (renderTarget != nullptr)
+		renderTarget->UnBind();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

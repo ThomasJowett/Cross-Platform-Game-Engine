@@ -67,33 +67,76 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 	m_Framebuffer->ClearAttachment(1, -1);
-	SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-	if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
-		&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
+	switch (SceneManager::GetSceneState())
 	{
-		m_Framebuffer->Bind();
-		m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-		//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
-		m_Framebuffer->UnBind();
-	}
+	case SceneState::Edit:
+	{
+		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-	if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
-	{
-		if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
+			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
-			CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
-			TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-			Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
-			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
-			m_CameraPreview->Bind();
-			RenderCommand::Clear();
-			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+			m_Framebuffer->Bind();
+			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
+			m_Framebuffer->UnBind();
 		}
+
+		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+		{
+			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+			{
+				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
+				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+				m_CameraPreview->Bind();
+				RenderCommand::Clear();
+				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+			}
+		}
+		break;
+	}
+	case SceneState::Play:
+		SceneManager::CurrentScene()->Render(m_Framebuffer);
+		break;
+	case SceneState::Pause:
+		SceneManager::CurrentScene()->Render(m_Framebuffer);
+		break;
+	case SceneState::Simulate:
+	{
+		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+
+		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
+			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
+		{
+			m_Framebuffer->Bind();
+			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
+			m_Framebuffer->UnBind();
+		}
+
+		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+		{
+			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+			{
+				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
+				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+				m_CameraPreview->Bind();
+				RenderCommand::Clear();
+				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+			}
+		}
+		break;
+	}
+	default:
+		break;
 	}
 
 	Renderer2D::ResetStats();
-
 }
 
 void ViewportPanel::OnFixedUpdate()
@@ -174,151 +217,140 @@ void ViewportPanel::OnImGuiRender()
 		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
-		if (ImGui::BeginDragDropTarget())
+		if (SceneManager::GetSceneState() == SceneState::Edit)
 		{
-			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+
+			if (ImGui::BeginDragDropTarget())
 			{
-				std::filesystem::path* file = (std::filesystem::path*)payload->Data;
-
-				if (file->extension() == ".staticMesh")
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 				{
-					std::string entityName = file->filename().string();
-					entityName = entityName.substr(0, entityName.find_last_of('.'));
-					Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
+					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					Mesh mesh(*file);
+					if (file->extension() == ".staticMesh")
+					{
+						std::string entityName = file->filename().string();
+						entityName = entityName.substr(0, entityName.find_last_of('.'));
+						Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
 
-					m_ShaderLibrary.Load("NormalMap");
-					Material material(m_ShaderLibrary.Get("NormalMap"));
+						Mesh mesh(*file);
 
-					material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
+						m_ShaderLibrary.Load("NormalMap");
+						Material material(m_ShaderLibrary.Get("NormalMap"));
 
-					staticMeshEntity.AddComponent<StaticMeshComponent>(mesh, material);
+						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
+
+						staticMeshEntity.AddComponent<StaticMeshComponent>(mesh, material);
+					}
+					else if (file->extension() == ".tmx")
+					{
+						Tilemap tilemap;
+						tilemap.Load(*file);
+
+						tilemap.Save(file->replace_filename("Test Copy.tmx"));
+					}
+					else if (file->extension() == ".scene")
+					{
+						SceneManager::ChangeScene(*file);
+					}
+
+					CLIENT_DEBUG(file->string());
 				}
-				else if (file->extension() == ".tmx")
-				{
-					Tilemap tilemap;
-					tilemap.Load(*file);
-
-					tilemap.Save(file->replace_filename("Test Copy.tmx"));
-				}
-				
-				CLIENT_DEBUG(file->string());
-			}
-			ImGui::EndDragDropTarget();
-		}
-
-		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
-		{
-			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
-			{
-				ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
-					pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
-				ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetComponent<TagComponent>().Tag.c_str(), NULL,
-					ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
-					| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-					| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-					| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
-				uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
-				ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
-				ImGui::End();
+				ImGui::EndDragDropTarget();
 			}
 		}
 
-		// Gizmos
-		Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
-
-		if (selectedEntity)
+		if (SceneManager::GetSceneState() != SceneState::Play)
 		{
-			ImGuizmo::SetOrthographic(true);
-			ImGuizmo::SetDrawlist();
-			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
-			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
-			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
-
-			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
-			Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-
-			cameraViewMat.Transpose();
-			cameraProjectionMat.Transpose();
-			transformMat.Transpose();
-
-			float cameraView[16] =
-			{ cameraViewMat[0][0], cameraViewMat[0][1],cameraViewMat[0][2],cameraViewMat[0][3],
-			  cameraViewMat[1][0], cameraViewMat[1][1],cameraViewMat[1][2],cameraViewMat[1][3],
-			  cameraViewMat[2][0], cameraViewMat[2][1],cameraViewMat[2][2],cameraViewMat[2][3],
-			  cameraViewMat[3][0], cameraViewMat[3][1],cameraViewMat[3][2],cameraViewMat[3][3] };
-
-			float cameraProjection[16] =
-			{ cameraProjectionMat[0][0], cameraProjectionMat[0][1],cameraProjectionMat[0][2],cameraProjectionMat[0][3],
-			  cameraProjectionMat[1][0], cameraProjectionMat[1][1],cameraProjectionMat[1][2],cameraProjectionMat[1][3],
-			  cameraProjectionMat[2][0], cameraProjectionMat[2][1],cameraProjectionMat[2][2],cameraProjectionMat[2][3],
-			  cameraProjectionMat[3][0], cameraProjectionMat[3][1],cameraProjectionMat[3][2],cameraProjectionMat[3][3] };
-
-			float transform[16] =
+			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
-			  transformMat[0][0], transformMat[0][1],transformMat[0][2],transformMat[0][3],
-			  transformMat[1][0], transformMat[1][1],transformMat[1][2],transformMat[1][3],
-			  transformMat[2][0], transformMat[2][1],transformMat[2][2],transformMat[2][3],
-			  transformMat[3][0], transformMat[3][1],transformMat[3][2],transformMat[3][3] };
-
-
-			bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
-			float snapValue = 0.5f;
-			if (m_Mode == Mode::Rotate)
-				snapValue = 10.0f;
-
-			//TODO: add a get bounds function method from sprite, camera and mesh
-			float bounds[6] = { -0.5f, -0.5f, -0.0f, 0.5f, 0.5f, 0.0f };
-
-			float snapValues[3] = { snapValue, snapValue, snapValue };
-
-			ImGuizmo::OPERATION gizmoMode = ImGuizmo::BOUNDS;
-			switch (m_Mode)
-			{
-			case ViewportPanel::Mode::Select:
-				gizmoMode = ImGuizmo::BOUNDS;
-				break;
-			case ViewportPanel::Mode::Move:
-				gizmoMode = ImGuizmo::OPERATION::TRANSLATE;
-				break;
-			case ViewportPanel::Mode::Rotate:
-				gizmoMode = ImGuizmo::OPERATION::ROTATE;
-				break;
-			case ViewportPanel::Mode::Scale:
-				gizmoMode = ImGuizmo::OPERATION::SCALE;
-				break;
-			default:
-				break;
+				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+				{
+					ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
+						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
+					ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetComponent<TagComponent>().Tag.c_str(), NULL,
+						ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
+						| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
+						| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
+						| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
+					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
+					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
+					ImGui::End();
+				}
 			}
 
-			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
-			ImGuizmo::Manipulate(cameraView, cameraProjection, gizmoMode, ImGuizmo::LOCAL, transform, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
+			// Gizmos
+			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 
-			CORE_ASSERT(!std::isnan(transform[0]), "Transform is not a number!");
-
-			if (ImGuizmo::IsUsing())
+			if (selectedEntity)
 			{
-				float translation[3], rotation[3], scale[3];
+				ImGuizmo::SetOrthographic(true);
+				ImGuizmo::SetDrawlist();
+				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
+				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
-				ImGuizmo::DecomposeMatrixToComponents(transform, translation, rotation, scale);
+				TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
+					* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+					* Matrix4x4::Scale(transformComp.Scale);
 
-				CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
+				cameraViewMat.Transpose();
+				cameraProjectionMat.Transpose();
+				transformMat.Transpose();
 
-				Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
-				if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
+				bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
+				float snapValue = 0.5f;
+				if (m_Mode == Mode::Rotate)
+					snapValue = 10.0f;
+
+				//TODO: add a get bounds function method from sprite, camera and mesh
+				float bounds[6] = { -0.5f, -0.5f, -0.0f, 0.5f, 0.5f, 0.0f };
+
+				float snapValues[3] = { snapValue, snapValue, snapValue };
+
+				ImGuizmo::OPERATION gizmoMode = ImGuizmo::BOUNDS;
+				switch (m_Mode)
 				{
-					transformComp.Position = Vector3f(translation[0], translation[1], translation[2]);
+				case ViewportPanel::Mode::Select:
+					gizmoMode = ImGuizmo::BOUNDS;
+					break;
+				case ViewportPanel::Mode::Move:
+					gizmoMode = ImGuizmo::OPERATION::TRANSLATE;
+					break;
+				case ViewportPanel::Mode::Rotate:
+					gizmoMode = ImGuizmo::OPERATION::ROTATE;
+					break;
+				case ViewportPanel::Mode::Scale:
+					gizmoMode = ImGuizmo::OPERATION::SCALE;
+					break;
+				default:
+					break;
 				}
-				if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
+
+				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16, gizmoMode, ImGuizmo::LOCAL, transformMat.m16, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
+
+
+				if (ImGuizmo::IsUsing())
 				{
-					transformComp.Rotation += deltaRotation;
-				}
-				if (gizmoMode == ImGuizmo::OPERATION::SCALE)
-				{
-					transformComp.Scale = Vector3f(scale[0], scale[1], scale[2]);
+					float translation[3], rotation[3], scale[3];
+
+					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
+
+					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
+
+					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
+					if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
+					{
+						transformComp.Position = Vector3f(translation[0], translation[1], translation[2]);
+					}
+					if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
+					{
+						transformComp.Rotation += deltaRotation;
+					}
+					if (gizmoMode == ImGuizmo::OPERATION::SCALE)
+					{
+						transformComp.Scale = Vector3f(scale[0], scale[1], scale[2]);
+					}
 				}
 			}
 		}

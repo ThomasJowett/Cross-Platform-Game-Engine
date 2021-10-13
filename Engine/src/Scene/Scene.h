@@ -26,10 +26,14 @@ public:
 	// Render the scene to the render target from the primary camera entity in the scene
 	void Render(Ref<FrameBuffer> renderTarget);
 
+	// Render the scene with all debug information visible from the camera transform and projection
+	void DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
+
 	void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
 	// Called once per frame
 	void OnUpdate(float deltaTime);
+
 
 	// Called 100 times a second
 	void OnFixedUpdate();

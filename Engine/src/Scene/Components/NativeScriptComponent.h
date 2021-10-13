@@ -8,13 +8,14 @@
 
 struct NativeScriptComponent
 {
-	std::function<ScriptableEntity*(const std::string&)> InstantiateScript;
+	std::function<ScriptableEntity* (const std::string&)> InstantiateScript;
 	std::function<void(NativeScriptComponent*)> DestroyScript;
 
 	ScriptableEntity* Instance = nullptr;
 
 	NativeScriptComponent() = default;
-	NativeScriptComponent(const std::string& name):Name(name) {Bind(Name); }
+	template<typename... Args>
+	NativeScriptComponent(const std::string& name, Args... args) :Name(name) { Bind(Name, args...); }
 	NativeScriptComponent(const NativeScriptComponent&) = default;
 
 	std::string Name;
@@ -29,10 +30,11 @@ struct NativeScriptComponent
 		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 	}
 
-	void Bind(const std::string& scriptName)// TODO: get factory with argument packs working
+	template<typename... Args>
+	void Bind(const std::string& scriptName, Args... args)// TODO: get factory with argument packs working
 	{
 		Name = scriptName;
-		InstantiateScript = [](const std::string& name) {return (Factory<ScriptableEntity>::CreateInstance(name)); };
+		InstantiateScript = [args...](const std::string& name) {return Factory<ScriptableEntity>::CreateInstance(name, args...); };
 		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
 	}
 

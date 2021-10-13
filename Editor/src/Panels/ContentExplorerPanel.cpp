@@ -1,5 +1,9 @@
 #include "ContentExplorerPanel.h"
 
+#include <chrono>
+#include <iomanip>
+#include <fstream>
+
 #include "imgui/imgui.h"
 
 #include "Engine.h"
@@ -15,6 +19,19 @@
 #include "Importers/ImportManager.h"
 
 #include "Scene/SceneManager.h"
+
+#include "Fonts/Fonts.h"
+
+static std::filesystem::path s_IconDirectory = Application::GetWorkingDirectory() / "resources" / "Icons";
+
+template <typename TP>
+std::time_t to_time_t(TP tp)
+{
+	using namespace std::chrono;
+	auto sctp = time_point_cast<system_clock::duration>(tp - TP::clock::now()
+		+ system_clock::now());
+	return system_clock::to_time_t(sctp);
+}
 
 void ContentExplorerPanel::Paste()
 {
@@ -210,7 +227,7 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 
 	SceneManager::CreateScene(newSceneFilepath);
 
-	SceneManager::ChangeScene(newSceneFilepath);
+	SceneManager::ChangeScene(std::filesystem::path(newSceneFilepath));
 
 	m_ForceRescan = true;
 
@@ -377,6 +394,105 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 	}
 }
 
+void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName)
+{
+	if (ImGui::BeginPopupContextItem(itemName.c_str()))
+	{
+		// if the file that this context menu is for is not selected then select it and unselect all that is selected
+
+		if (isDirectory)
+		{
+			if (!m_SelectedDirs[index])
+			{
+				ClearSelected();
+
+				m_SelectedDirs[index] = true;
+
+				m_NumberSelected = 1;
+			}
+
+			m_CurrentSelectedPath = m_Dirs[index];
+		}
+		else
+		{
+			if (!m_SelectedFiles[index])
+			{
+				ClearSelected();
+
+				m_SelectedFiles[index] = true;
+
+				m_NumberSelected = 1;
+			}
+			m_CurrentSelectedPath = m_Files[index];
+		}
+
+		m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+
+		if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+		{
+			ImGui::OpenPopup("Rename");
+		}
+		if (ImGui::BeginPopup("Rename"))
+		{
+			Rename();
+			ImGui::EndPopup();
+		}
+
+		ImGui::Separator();
+
+		if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+			Cut();
+		if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
+			Copy();
+		if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
+			Paste();
+		if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
+			Duplicate();
+		if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
+			Delete();
+
+		ImGui::EndPopup();
+	}
+}
+
+void ContentExplorerPanel::ClearSelected()
+{
+	m_SelectedDirs.clear();
+	m_SelectedDirs.resize(m_Dirs.size());
+	m_SelectedFiles.clear();
+	m_SelectedFiles.resize(m_Files.size());
+}
+
+const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::path& assetPath)
+{
+	switch (ViewerManager::GetFileType(assetPath))
+	{
+	case FileType::IMAGE:
+		return ICON_FA_FILE_IMAGE;
+	case FileType::MESH:
+		return ICON_FA_SHAPES;
+	case FileType::SCENE:
+		return ICON_FA_IMAGE;
+	case FileType::SCRIPT:
+		return ICON_FA_FILE_CODE;
+	case FileType::TEXT:
+		return ICON_FA_FILE_ALT;
+	case FileType::AUDIO:
+		return ICON_FA_FILE_AUDIO;
+	}
+	return ICON_FA_FILE;
+}
+
+void ContentExplorerPanel::CreateDragDropSource(size_t index)
+{
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+	{
+		ImGui::SetDragDropPayload("Asset", &m_Files[index], sizeof(std::filesystem::path));
+		ImGui::Text("%s", m_Files[index].filename().string().c_str());
+		ImGui::EndDragDropSource();
+	}
+}
+
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: m_Show(show), Layer("ContentExplorer")
 {
@@ -424,10 +540,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		m_Dirs = Directory::GetDirectories(m_CurrentPath, m_SortingMode);
 		m_Files = Directory::GetFiles(m_CurrentPath, m_SortingMode);
 
-		m_SelectedDirs.clear();
-		m_SelectedDirs.resize(m_Dirs.size());
-		m_SelectedFiles.clear();
-		m_SelectedFiles.resize(m_Files.size());
+		ClearSelected();
 
 		m_NumberSelected = 0;
 	}
@@ -559,6 +672,14 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_SORT_UP "\tType Reverse"))
 			m_ForceRescan = true;
 		//----------------------------------------------------------------------------------------------------
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
+		ImGui::SameLine();
+		if (ImGui::Combo("##Zoom Level", (int*)&m_ZoomLevel,
+			ICON_FA_TH_LIST "\tList\0"
+			ICON_FA_TH "\tThumbnails\0"
+			ICON_FA_LIST "\tDetails\0"))
+			m_ForceRescan = true;
+		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
 		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
@@ -628,84 +749,87 @@ void ContentExplorerPanel::OnImGuiRender()
 		// Split path control
 		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
 		{
-			bool mustSwitchSplitPath = false;
-
 			//Split Path
 			// tab:
+
+			const int numTabs = (int)m_CurrentSplitPath.size();
+
+			int pushpop = 0;
+
+			for (int t = 0; t < numTabs; t++)
 			{
-				const int numTabs = (int)m_CurrentSplitPath.size();
+				if (t == numTabs - 1)
+				{
+					ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
+				}
 
-				int pushpop = 0;
+				ImGui::PushID(t);
+				ImGui::SameLine();
 
-				for (int t = 0; t < numTabs; t++)
+				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
+				const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
+				if (t != numTabs - 1)
+				{
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(ImGui::GetFontSize());
+					if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
+					{
+						std::filesystem::path path = m_CurrentSplitPath[0];
+
+						if (path == path.root_name())
+						{
+							path += std::filesystem::path::preferred_separator;
+						}
+						for (int i = 1; i <= t; i++)
+						{
+							path /= m_CurrentSplitPath[i];
+						}
+
+						auto directories = Directory::GetDirectories(path, m_SortingMode);
+
+						for (int n = 0; n < directories.size(); n++)
+						{
+							std::filesystem::path directory = directories[n].filename();
+							const bool is_selected = false;
+							if (ImGui::Selectable(directory.string().c_str(), is_selected))
+							{
+								m_History.SwitchTo(directories[n]);
+								m_ForceRescan = true;
+
+								m_CurrentPath = *m_History.GetCurrentFolder();
+								break;
+							}
+						}
+						ImGui::EndCombo();
+					}
+				}
+				ImGui::PopStyleVar();
+				ImGui::PopID();
+
+				if (pressed)
 				{
 					if (t == numTabs - 1)
 					{
-						ImGui::PushStyleColor(ImGuiCol_Button, dummyButtonColour);
-						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, dummyButtonColour);
-						ImGui::PushStyleColor(ImGuiCol_ButtonActive, dummyButtonColour);
-					}
-
-					ImGui::PushID(t);
-					ImGui::SameLine();
-
-					ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
-					const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
-					if (t != numTabs - 1)
-					{
-						ImGui::SameLine();
-						ImGui::SetNextItemWidth(ImGui::GetFontSize());
-						if (ImGui::BeginCombo("", ICON_FA_ANGLE_RIGHT, ImGuiComboFlags_NoArrowButton))
-						{
-							std::filesystem::path path;
-							for (int i = 0; i <= t; i++)
-							{
-								path = path / m_CurrentSplitPath[i];
-							}
-
-							auto directories = Directory::GetDirectories(path, m_SortingMode);
-
-							for (int n = 0; n < directories.size(); n++)
-							{
-								std::filesystem::path directory = directories[n].filename();
-								const bool is_selected = false;
-								if (ImGui::Selectable(directory.string().c_str(), is_selected))
-								{
-									m_History.SwitchTo(directories[n]);
-									m_ForceRescan = true;
-
-									m_CurrentPath = *m_History.GetCurrentFolder();
-									break;
-								}
-							}
-							ImGui::EndCombo();
-						}
-					}
-					ImGui::PopStyleVar();
-					ImGui::PopID();
-
-					if (pressed)
-					{
-						if (t == numTabs - 1)
-						{
-							m_EditLocationCheckButtonPressed = true;
-							ImGui::PopStyleColor(3);
-							continue;
-						}
-
-						m_History.SwitchTo(GetPathForSplitPathIndex(t));
-						m_ForceRescan = true;
-
-						m_CurrentPath = *m_History.GetCurrentFolder();
-					}
-					if (t == numTabs - 1)
-					{
+						m_EditLocationCheckButtonPressed = true;
 						ImGui::PopStyleColor(3);
+						continue;
 					}
-				}
 
-				m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+					m_History.SwitchTo(GetPathForSplitPathIndex(t));
+					m_ForceRescan = true;
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
+				}
+				if (t == numTabs - 1)
+				{
+					ImGui::PopStyleColor(3);
+				}
 			}
+
+			m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+
 		}
 
 		ImGui::Separator();
@@ -714,25 +838,26 @@ void ContentExplorerPanel::OnImGuiRender()
 		//----------------------------------------------------------------------------------------------------
 		{
 			m_TotalNumBrowsingEntries = (uint32_t)(m_Dirs.size() + m_Files.size());
-			CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
-
-			ImGui::Columns(m_NumBrowsingColumns);
 
 			static int id;
 			ImGui::PushID(&id);
-			int cntEntries = 0;
-			//Directories -------------------------------------------------------------------------------
-			if (m_Dirs.size() > 0)
+
+			switch (m_ZoomLevel)
 			{
-				for (int i = 0; i < m_Dirs.size(); i++)
+			case ContentExplorerPanel::ZoomLevel::LIST:
+			{
+				CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
+				ImGui::Columns(m_NumBrowsingColumns);
+				int cntEntries = 0;
+				//Directories -------------------------------------------------------------------------------
+				for (size_t i = 0; i < m_Dirs.size(); i++)
 				{
 					std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 					if (ImGui::Selectable(dirName.c_str(), m_SelectedDirs[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
 						if (!ImGui::GetIO().KeyCtrl)
 						{
-							m_SelectedDirs.clear();
-							m_SelectedDirs.resize(m_Dirs.size());
+							ClearSelected();
 
 							m_SelectedDirs[i] = true;
 
@@ -747,7 +872,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_NumberSelected += m_SelectedDirs[i];
 						}
 
-						if (ImGui::IsMouseDoubleClicked(0))
+						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
 							//change directory on click
 							m_History.SwitchTo(m_Dirs[i]);
@@ -756,57 +881,17 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
-					if (ImGui::BeginPopupContextItem(dirName.c_str()))
-					{
-						if (!m_SelectedDirs[i])
-						{
-							m_SelectedDirs.clear();
-							m_SelectedDirs.resize(m_Dirs.size());
+					ItemContextMenu(i, true, dirName);
 
-							m_SelectedDirs[i] = true;
-
-							m_NumberSelected = 1;
-						}
-
-						m_CurrentSelectedPath = m_Dirs[i];
-
-						if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
-						{
-							ImGui::OpenPopup("Rename");
-						}
-						if (ImGui::BeginPopup("Rename"))
-						{
-							Rename();
-							ImGui::EndPopup();
-						}
-
-						ImGui::Separator();
-
-						if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
-							Cut();
-						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
-							Copy();
-						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
-							Paste();
-						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
-							Duplicate();
-						if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
-							Delete();
-						ImGui::EndPopup();
-					}
 					++cntEntries;
-					//TODO:: switch on view zoom
 					if (cntEntries == m_NumBrowsingEntriesPerColumn)
 					{
 						cntEntries = 0;
 						ImGui::NextColumn();
 					}
 				}
-			}
 
-			//Files -----------------------------------------------------------------------------------
-			if (m_Files.size() > 0)
-			{
+				//Files -----------------------------------------------------------------------------------
 				for (int i = 0; i < m_Files.size(); i++)
 				{
 					if (!std::filesystem::exists(m_Files[i]))
@@ -817,19 +902,20 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					ImGui::BeginGroup();
 
-					std::string filename = ICON_FA_FILE " " + m_Files[i].filename().string();
+					std::string filename = GetFileIconForFileType(m_Files[i]) + " " + m_Files[i].filename().string();
+
+					ImGui::PushID(i);
 
 					if (ImGui::Selectable(filename.c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
 						if (!ImGui::GetIO().KeyCtrl)
 						{
-							if (ImGui::IsMouseDoubleClicked(0))
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
 								ViewerManager::OpenViewer(m_Files[i]);
 							}
 
-							m_SelectedFiles.clear();
-							m_SelectedFiles.resize(m_Files.size());
+							ClearSelected();
 
 							m_SelectedFiles[i] = true;
 
@@ -846,80 +932,320 @@ void ContentExplorerPanel::OnImGuiRender()
 
 							m_NumberSelected += m_SelectedFiles[i];
 
-							if (ImGui::IsMouseDoubleClicked(0))
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
 								OpenAllSelectedItems();
 							}
 						}
 					}
 
-					if (ImGui::BeginPopupContextItem(filename.c_str()))
-					{
-						// if the file that this context menu is for is not selected then select it and unselect all that is selected
-						if (!m_SelectedFiles[i])
-						{
-							m_SelectedFiles.clear();
-							m_SelectedFiles.resize(m_Files.size());
+					ItemContextMenu(i, false, filename);
+					CreateDragDropSource(i);
 
-							m_SelectedFiles[i] = true;
-
-							m_NumberSelected = 1;
-						}
-
-						m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
-						m_CurrentSelectedPath = m_Files[i];
-
-						if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
-						{
-							ImGui::OpenPopup("Rename");
-						}
-						if (ImGui::BeginPopup("Rename"))
-						{
-							Rename();
-							ImGui::EndPopup();
-						}
-
-						ImGui::Separator();
-
-						if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
-							Cut();
-						if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
-							Copy();
-						if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
-							Paste();
-						if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
-							Duplicate();
-						if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
-							Delete();
-
-						ImGui::EndPopup();
-					}
-
-					if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
-					{
-						ImGui::SetDragDropPayload("Asset", &m_Files[i], sizeof(std::filesystem::path));
-						ImGui::Text("%s", m_Files[i].filename().string().c_str());
-						ImGui::EndDragDropSource();
-					}
 					ImGui::EndGroup();
 
-					if (!m_ForceRescan)
-					{
-						ImGui::SameLine(std::max(ImGui::CalcTextSize(m_Files[i].filename().string().c_str()).x + 15, 300.0f));
-						ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
-					}
-
 					++cntEntries;
-					//TODO:: switch on view zoom
 					if (cntEntries == m_NumBrowsingEntriesPerColumn)
 					{
 						cntEntries = 0;
 						ImGui::NextColumn();
 					}
+					ImGui::PopID();
+
 				}
+				break;
+			}
+			case ContentExplorerPanel::ZoomLevel::THUMBNAILS:
+			{
+				float thumbnailSize = 128;
+				ImGuiTableFlags table_flags =
+					ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY;
+
+				int width = ImGui::GetWindowSize().x;
+
+				ImGuiStyle& style = ImGui::GetStyle();
+
+				m_NumBrowsingColumns = width / (thumbnailSize + (style.FramePadding.x * 2));
+
+				if (m_NumBrowsingColumns == 0)
+					m_NumBrowsingColumns = 1;
+
+				if (ImGui::BeginTable("Thumbnails Table", m_NumBrowsingColumns, table_flags))
+				{
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
+					{
+						if (m_History.GoForward())
+							m_ForceRescan = true;
+					}
+
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
+					{
+						if (m_History.GoBack())
+							m_ForceRescan = true;
+					}
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
+
+					ImGui::TableNextRow();
+
+					//Directories -------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Dirs.size(); i++)
+					{
+						ImGui::TableNextColumn();
+						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
+						ImGui::BeginGroup();
+						ImGui::PushFont(Fonts::Icons);
+						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								ClearSelected();
+
+								m_SelectedDirs[i] = true;
+
+								m_NumberSelected = 1;
+								m_CurrentSelectedPath = m_Dirs[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedDirs[i];
+								m_SelectedDirs[i] = !m_SelectedDirs[i];
+
+								m_NumberSelected += m_SelectedDirs[i];
+							}
+
+						}
+						ImGui::PopFont();
+						ImGui::TextWrapped(dirName.c_str());
+						ImGui::EndGroup();
+						ItemContextMenu(i, true, dirName);
+
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							//change directory on click
+							m_History.SwitchTo(m_Dirs[i]);
+							m_CurrentPath = *m_History.GetCurrentFolder();
+							m_ForceRescan = true;
+						}
+
+					}
+
+					//Files -------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Files.size(); i++)
+					{
+						ImGui::TableNextColumn();
+						std::string filename = m_Files[i].filename().string();
+
+						ImGui::BeginGroup();
+
+						ImGui::PushFont(Fonts::Icons);
+
+						if (ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize }))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								ClearSelected();
+
+								m_SelectedFiles[i] = true;
+
+								m_NumberSelected = 1;
+
+								m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+								m_CurrentSelectedPath = m_Files[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedFiles[i];
+
+								m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+								m_NumberSelected += m_SelectedFiles[i];
+							}
+						}
+						CreateDragDropSource(i);
+						ImGui::PopFont();
+						ImGui::TextWrapped(filename.c_str());
+						ImGui::EndGroup();
+						ItemContextMenu(i, false, filename);
+
+						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+						{
+							OpenAllSelectedItems();
+						}
+					}
+
+					ImGui::EndTable();
+				}
+			}
+			break;
+			case ContentExplorerPanel::ZoomLevel::DETAILS:
+			{
+				ImGuiTableFlags table_flags =
+					ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable
+					| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
+					| ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY;
+
+
+				if (ImGui::BeginTable("Details Table", 3, table_flags))
+				{
+
+					ImGui::TableSetupColumn("Name");
+					ImGui::TableSetupColumn("Date Modified");
+					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupScrollFreeze(0, 1);
+
+					ImGui::TableHeadersRow();
+
+					//Forward button
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
+					{
+						if (m_History.GoForward())
+							m_ForceRescan = true;
+					}
+
+					//Back button
+					if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
+					{
+						if (m_History.GoBack())
+							m_ForceRescan = true;
+					}
+
+					m_CurrentPath = *m_History.GetCurrentFolder();
+
+					ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_SpanAllColumns
+						| ImGuiSelectableFlags_AllowItemOverlap
+						| ImGuiSelectableFlags_AllowDoubleClick;
+
+					//Directories -------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Dirs.size(); i++)
+					{
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
+						if (ImGui::Selectable(dirName.c_str(), m_SelectedDirs[i], selectable_flags))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								ClearSelected();
+
+								m_SelectedDirs[i] = true;
+
+								m_NumberSelected = 1;
+								m_CurrentSelectedPath = m_Dirs[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedDirs[i];
+								m_SelectedDirs[i] = !m_SelectedDirs[i];
+
+								m_NumberSelected += m_SelectedDirs[i];
+							}
+
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+							{
+								//change directory on click
+								m_History.SwitchTo(m_Dirs[i]);
+								m_CurrentPath = *m_History.GetCurrentFolder();
+								m_ForceRescan = true;
+							}
+						}
+
+						ItemContextMenu(i, true, dirName);
+
+						ImGui::TableSetColumnIndex(1);
+						if (!m_ForceRescan)
+						{
+							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Dirs[i]));
+
+							char buff[20];
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+
+							ImGui::Text("%s", buff);
+						}
+					}
+
+					//Files -----------------------------------------------------------------------------------
+					for (size_t i = 0; i < m_Files.size(); i++)
+					{
+						if (!std::filesystem::exists(m_Files[i]))
+						{
+							m_Files.erase(m_Files.begin() + i);
+							i--;
+							continue;
+						}
+
+						ImGui::BeginGroup();
+						std::string filename = GetFileIconForFileType(m_Files[i]) + " " + m_Files[i].filename().string();
+
+						ImGui::TableNextRow();
+
+						ImGui::TableSetColumnIndex(0);
+
+						if (ImGui::Selectable(filename.c_str(), m_SelectedFiles[i], selectable_flags))
+						{
+							if (!ImGui::GetIO().KeyCtrl)
+							{
+								if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+								{
+									ViewerManager::OpenViewer(m_Files[i]);
+								}
+
+								ClearSelected();
+
+								m_SelectedFiles[i] = true;
+
+								m_NumberSelected = 1;
+
+								m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
+								m_CurrentSelectedPath = m_Files[i];
+							}
+							else
+							{
+								m_NumberSelected -= m_SelectedFiles[i];
+
+								m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+								m_NumberSelected += m_SelectedFiles[i];
+
+								if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+								{
+									OpenAllSelectedItems();
+								}
+							}
+						}
+						ItemContextMenu(i, false, filename);
+						CreateDragDropSource(i);
+
+						ImGui::TableSetColumnIndex(1);
+						if (!m_ForceRescan)
+						{
+							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Files[i]));
+
+							char buff[20];
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+
+							ImGui::Text("%s", buff);
+						}
+
+						ImGui::TableSetColumnIndex(2);
+						if (!m_ForceRescan)
+						{
+							ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
+						}
+
+						ImGui::EndGroup();
+
+					}
+					ImGui::EndTable();
+				}
+				break;
+			}
+			default:
+				break;
 			}
 
 			ImGui::PopID();
+
 		}
 	}
 	ImGui::End();

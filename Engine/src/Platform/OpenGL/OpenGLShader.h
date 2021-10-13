@@ -13,6 +13,10 @@ public:
 	virtual void UnBind() const override;
 
 	virtual void SetMat4(const char* name, const Matrix4x4& value, bool transpose) override;
+	virtual void SetFloat2(const char* name, Vector2f value) override;
+	virtual void SetFloat2(const char* name, const float x, const float y) override;
+	virtual void SetFloat3(const char* name, Vector3f value) override;
+	virtual void SetFloat3(const char* name, const float x, const float y, const float z) override;
 	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
 	virtual void SetFloat4(const char * name, const Colour) override;
 	virtual void SetInt(const char* name, const int value) override;
@@ -23,6 +27,8 @@ public:
 	void UploadUniformInteger(const char* name, const int& integer);
 	void UploadUniformIntegerArray(const char* name, const int* integers, uint32_t count);
 	void UploadUniformFloat(const char* name, const float& Float);
+	void UploadUniformFloat2(const char* name, const float& x, const float& y);
+	void UploadUniformFloat3(const char* name, const float& x, const float& y, const float& z);
 	void UploadUniformFloat4(const char* name, const float& r, const float& g, const float& b, const float& a);
 	void UploadUniformMat4(const char* name, const Matrix4x4& matrix, bool transpose);
 
@@ -35,4 +41,6 @@ private:
 private:
 	uint32_t m_rendererID;
 	std::string m_Name;
+
+	std::unordered_map<unsigned int, std::vector<uint32_t>> m_OpenGLSPIRV;
 };

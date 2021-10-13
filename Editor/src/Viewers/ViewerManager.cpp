@@ -11,7 +11,8 @@ std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_Asset
 static const char* TextExtensions[] =
 {
 	".txt", ".ini", ".lua", ".cpp", ".h", ".c", ".hlsl", ".fx",
-	".glsl", ".frag", ".vert", ".tesc", ".tese", ".geom", ".comp"
+	".glsl", ".frag", ".vert", ".tesc", ".tese", ".geom", ".comp",
+	".json"
 };
 
 static const char* ImageExtensions[] =
@@ -50,6 +51,46 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		return;
 	}
 
+	switch (GetFileType(assetPath))
+	{
+	case FileType::IMAGE:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new TextureView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
+	case FileType::MESH:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new StaticMeshView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
+	case FileType::SCENE:
+	{
+		SceneManager::ChangeScene(assetPath);
+	}
+	return;
+	[[fallthrough]];
+	case FileType::SCRIPT:
+	case FileType::TEXT:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new ScriptView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
+	default:
+		return;
+	}
+}
+
+FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
+{
 	std::string extString = assetPath.extension().string();
 
 	std::transform(extString.begin(), extString.end(), extString.begin(), ::tolower);
@@ -60,11 +101,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		if (strcmp(ext, knownExt) == 0)
 		{
-			bool* show = new bool(true);
-			Layer* layer = new ScriptView(show, assetPath);
-			s_AssetViewers[assetPath] = std::make_pair(layer, show);
-			Application::Get().AddOverlay(layer);
-			return;
+			return FileType::TEXT;
 		}
 	}
 
@@ -72,11 +109,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		if (strcmp(ext, knownExt) == 0)
 		{
-			bool* show = new bool(true);
-			Layer* layer = new TextureView(show, assetPath);
-			s_AssetViewers[assetPath] = std::make_pair(layer, show);
-			Application::Get().AddOverlay(layer);
-			return;
+			return FileType::IMAGE;
 		}
 	}
 
@@ -84,16 +117,19 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		if (strcmp(ext, knownExt) == 0)
 		{
-			bool* show = new bool(true);
-			Layer* layer = new StaticMeshView(show, assetPath);
-			s_AssetViewers[assetPath] = std::make_pair(layer, show);
-			Application::Get().AddOverlay(layer);
-			return;
+			return FileType::MESH;
 		}
 	}
 
 	if (strcmp(ext, ".scene") == 0)
 	{
-		SceneManager::ChangeScene(assetPath);
+		return FileType::SCENE;
 	}
+
+	if (strcmp(ext, ".cs") == 0)
+	{
+		return FileType::SCRIPT;
+	}
+
+	return FileType::UNKNOWN;
 }

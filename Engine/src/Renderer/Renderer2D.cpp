@@ -460,6 +460,20 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp)
+{
+	if (spriteComp.Texture)
+	{
+		DrawQuad(transform, spriteComp.Texture, spriteComp.Tint, spriteComp.TilingFactor);
+	}
+	else
+	{
+		DrawQuad(transform, spriteComp.Tint);
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
 	if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)

@@ -6,6 +6,8 @@
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 
+#include "Viewers/ViewerManager.h"
+
 #include <cstring>
 
 PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)
@@ -86,7 +88,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		std::strncpy(buffer, tag.c_str(), sizeof(buffer));
+		strncpy_s(buffer, tag.c_str(), sizeof(buffer));
 
 		if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
 		{
@@ -106,8 +108,27 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [](auto& sprite)
 		{
 			float* tint[4] = { &sprite.Tint.r, &sprite.Tint.g, &sprite.Tint.b, &sprite.Tint.a };
+			float* tilingFactor = &sprite.TilingFactor;
 
 			if (ImGui::ColorEdit4("Tint", tint[0]))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				{
+					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+					if (ViewerManager::GetFileType(*file) == FileType::IMAGE)
+					{
+						sprite.Texture = Texture2D::Create(*file);
+					}
+				}
+				ImGui::EndDragDropTarget();
+			}
+			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
