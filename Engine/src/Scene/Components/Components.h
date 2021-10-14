@@ -15,5 +15,7 @@ TransformComponent,		\
 TagComponent,			\
 CameraComponent,		\
 SpriteComponent,		\
-NativeScriptComponent	\
+NativeScriptComponent,	\
+StaticMeshComponent,	\
+PrimitiveComponent		\
 

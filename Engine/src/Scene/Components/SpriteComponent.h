@@ -5,10 +5,12 @@
 #include "cereal/cereal.hpp"
 
 #include "Renderer/Texture.h"
+#include "Renderer/Material.h"
 
 struct SpriteComponent
 {
 	Colour Tint{ 1.0f, 1.0f,1.0f,1.0f };
+	Material material;
 	Ref<Texture2D> Texture;
 	float TilingFactor = 1.0f;
 
@@ -21,5 +23,7 @@ struct SpriteComponent
 	void serialize(Archive& archive)
 	{
 		archive(cereal::make_nvp("Tint", Tint));
+		archive(cereal::make_nvp("Material", material));
+		archive(cereal::make_nvp("Tiling Factor", TilingFactor));
 	}
 };
