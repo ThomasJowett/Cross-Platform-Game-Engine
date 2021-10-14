@@ -8,7 +8,7 @@
 #include "NativeScriptComponent.h"
 #include "PrimitiveComponent.h"
 #include "TilemapComponent.h"
-#include "RigidBody2D.h"
+#include "RigidBody2DComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS		\
