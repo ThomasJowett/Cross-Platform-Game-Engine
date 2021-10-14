@@ -203,3 +203,37 @@ project "TinyXml2"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+project "LiquidFun"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"LiquidFun/liquidfun/Box2D/Box2D/**.h",
+		"LiquidFun/liquidfun/Box2D/Box2D/**.cpp"
+	}
+
+	includedirs
+	{
+		"LiquidFun/liquidfun/Box2D"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "On"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"

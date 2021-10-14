@@ -17,6 +17,8 @@
 
 #include "Events/SceneEvent.h"
 
+#include "Box2D/Box2D.h"
+
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
 {
@@ -61,11 +63,33 @@ bool Scene::RemoveEntity(const Entity& entity)
 	return false;
 }
 
+void Scene::OnRuntimeStart()
+{
+	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
+
+	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
+		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, const auto& rigidBody2DComp)
+		{
+			b2BodyDef bodyDef;
+			bodyDef.type = (b2BodyType)rigidBody2DComp.Type;
+			bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
+			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
+			m_Box2DWorld->CreateBody(&bodyDef);
+		}
+	);
+}
+
+void Scene::OnRuntimeStop()
+{
+	delete m_Box2DWorld;
+	m_Box2DWorld = nullptr;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
-	if(renderTarget != nullptr)
+	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
@@ -78,7 +102,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawSprite(transform, sprite);
 		});
-
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
