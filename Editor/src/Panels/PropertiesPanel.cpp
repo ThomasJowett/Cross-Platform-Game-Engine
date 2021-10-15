@@ -418,6 +418,103 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				break;
 			}
 		});
+
+	//Rigid Body 2D--------------------------------------------------------------------------------------------------------------
+	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
+		{
+			const char* bodyTypeStrings[] = { "Static", "Kinematic", "Dynamic" };
+
+			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBody2D.Type];
+
+			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			{
+				for (int i = 0; i < 3; i++)
+				{
+					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+
+					if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
+					{
+						currentBodyTypeString = bodyTypeStrings[i];
+						rigidBody2D.Type = (RigidBody2DComponent::BodyType)i;
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+
+					if (isSelected)
+						ImGui::SetItemDefaultFocus();
+				}
+
+				ImGui::EndCombo();
+			}
+
+			ImGui::Checkbox("Fixed Rotation", &rigidBody2D.FixedRotation);
+		});
+
+	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
+	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
+		{
+			Vector2f& offset = boxCollider2D.Offset;
+			ImGui::Text("Offset");
+			ImGui::TextColored({ 245,0,0,255 }, "X");
+			ImGui::SameLine();
+
+			float width = ImGui::GetContentRegionAvailWidth();
+
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			ImGui::SameLine();
+			ImGui::TextColored({ 0,245,0,255 }, "Y");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			Vector2f& size = boxCollider2D.Size;
+			ImGui::Text("Size");
+			ImGui::TextColored({ 245,0,0,255 }, "X");
+			ImGui::SameLine();
+
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##sizeX", &size.x, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				size.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			ImGui::SameLine();
+			ImGui::TextColored({ 0,245,0,255 }, "Y");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##sizeY", &size.y, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				size.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if (ImGui::DragFloat("Density", &boxCollider2D.Density, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Friction", &boxCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Restitution", &boxCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
@@ -436,6 +533,8 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<SpriteComponent>("Sprite", entity);
 		AddComponentMenuItem<StaticMeshComponent>("Static Mesh", entity);
 		AddComponentMenuItem<PrimitiveComponent>("Primitive", entity);
+		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
+		AddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", entity);
 
 		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{

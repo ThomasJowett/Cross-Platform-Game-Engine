@@ -170,11 +170,13 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 	if (sceneState != s_SceneState)
 	{
 		s_SceneState = sceneState;
-
-		if (sceneState == SceneState::Play)
-			s_CurrentScene->OnRuntimeStart();
-		if (sceneState == SceneState::Edit)
-			s_CurrentScene->OnRuntimeStop();
+		if (IsSceneLoaded())
+		{
+			if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
+				s_CurrentScene->OnRuntimeStart();
+			if (sceneState == SceneState::Edit)
+				s_CurrentScene->OnRuntimeStop();
+		}
 		return true;
 	}
 	return false;

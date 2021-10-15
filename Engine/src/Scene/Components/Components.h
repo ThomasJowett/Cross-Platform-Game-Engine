@@ -9,6 +9,7 @@
 #include "PrimitiveComponent.h"
 #include "TilemapComponent.h"
 #include "RigidBody2DComponent.h"
+#include "BoxCollider2DComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS		\
@@ -19,4 +20,3 @@ SpriteComponent,		\
 NativeScriptComponent,	\
 StaticMeshComponent,	\
 PrimitiveComponent		\
-

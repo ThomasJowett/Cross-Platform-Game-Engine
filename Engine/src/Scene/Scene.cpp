@@ -19,6 +19,20 @@
 
 #include "Box2D/Box2D.h"
 
+b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
+{
+	switch (type)
+	{
+	case RigidBody2DComponent::BodyType::STATIC:
+		return b2BodyType::b2_staticBody;
+	case RigidBody2DComponent::BodyType::KINEMATIC:
+		return b2BodyType::b2_kinematicBody;
+	case RigidBody2DComponent::BodyType::DYNAMIC:
+		return b2BodyType::b2_dynamicBody;
+	}
+	return b2BodyType::b2_staticBody;
+}
+
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
 {
@@ -68,20 +82,43 @@ void Scene::OnRuntimeStart()
 	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
-		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, const auto& rigidBody2DComp)
+		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
 		{
 			b2BodyDef bodyDef;
-			bodyDef.type = (b2BodyType)rigidBody2DComp.Type;
+			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
 			bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
 			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
-			m_Box2DWorld->CreateBody(&bodyDef);
+			bodyDef.angle = DegToRad((float32)transformComp.Rotation.z);
+			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
+
+			rigidBody2DComp.RuntimeBody = body;
+			//body->SetFixedRotation(rigidBody2DComp.FixedRotation);
+
+			Entity entity = { physicsEntity, this };
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
+
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.Scale.x, boxColliderComp.Size.y * transformComp.Scale.y,
+					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
+					bodyDef.angle);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = boxColliderComp.Density;
+				fixtureDef.friction = boxColliderComp.Friction;
+				fixtureDef.restitution = boxColliderComp.Restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
 		}
 	);
 }
 
 void Scene::OnRuntimeStop()
 {
-	delete m_Box2DWorld;
+	if(m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
 }
 
@@ -283,6 +320,23 @@ void Scene::OnFixedUpdate()
 			else
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
+
+	// Physics
+	const int32_t velocityIterations = 6;
+	const int32_t positionIterations = 2;
+	if (m_Box2DWorld != nullptr)
+	{
+		m_Box2DWorld->Step(0.01f, 6, 2);
+
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+			{
+				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
+				const b2Vec2& position = body->GetPosition();
+				transformComp.Position.x = position.x;
+				transformComp.Position.y = position.y;
+				transformComp.Rotation.z = RadToDeg(body->GetAngle());
+			});
+	}
 
 	m_IsUpdating = false;
 }

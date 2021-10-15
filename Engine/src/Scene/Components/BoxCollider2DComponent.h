@@ -13,7 +13,6 @@ struct BoxCollider2DComponent
 	float Density = 1.0f;
 	float Friction = 0.5f;
 	float Restitution = 0.0f;
-	float RestitutionThreshold = 0.5f;
 
 	void* RuntimeFixture = nullptr;
 
@@ -28,6 +27,5 @@ struct BoxCollider2DComponent
 		archive(cereal::make_nvp("Density", Density));
 		archive(cereal::make_nvp("Friction", Friction));
 		archive(cereal::make_nvp("Restitution", Restitution));
-		archive(cereal::make_nvp("Restitution Threshold", RestitutionThreshold));
 	}
 };
