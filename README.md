@@ -49,3 +49,4 @@ The engine can now be build by running `make`.
 * [OpenFBX](https://github.com/nem0/OpenFBX) : Lightweight FBX Importer.
 * [cereal](https://github.com/USCiLab/cereal) : A C++11 library for serialization.
 * [tinyxml2](https://github.com/leethomason/tinyxml2) : A simple, small, efficient, C++ XML parser.
+* [LiquidFun](https://github.com/google/liquidfun) : 2D Physics library and Extension of Box2D that provides particle and fluid dynamics.
