@@ -17,6 +17,9 @@ TransformComponent,		\
 TagComponent,			\
 CameraComponent,		\
 SpriteComponent,		\
-NativeScriptComponent,	\
 StaticMeshComponent,	\
-PrimitiveComponent		\
+NativeScriptComponent,	\
+PrimitiveComponent,		\
+TilemapComponent,		\
+RigidBody2DComponent,	\
+BoxCollider2DComponent	\
