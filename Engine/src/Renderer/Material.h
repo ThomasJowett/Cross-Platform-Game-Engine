@@ -3,7 +3,11 @@
 #include "Shader.h"
 #include "Texture.h"
 
+#include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
+#include "Core/Application.h"
+
+#include "Utilities/FileUtils.h"
 
 class Material
 {
@@ -23,6 +27,9 @@ public:
 
 	void LoadMaterial(const std::filesystem::path& filepath);
 	void LoadMaterial();
+
+	bool SaveMaterial(const std::filesystem::path& filepath) const;
+	bool SaveMaterial() const;
 private:
 	Ref<Shader> m_Shader;
 
@@ -36,8 +43,9 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		std::filesystem::path relativepath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
-		archive(cereal::make_nvp("Filepath", relativepath.string()));
+		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
+		archive(cereal::make_nvp("Filepath", relativePath));
+		SaveMaterial();
 	}
 
 	template<typename Archive>

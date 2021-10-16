@@ -2,8 +2,10 @@
 
 #include "VertexArray.h"
 
+#include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
 #include "Utilities/FileUtils.h"
+#include "Core/Application.h"
 
 class Mesh
 {

@@ -23,3 +23,4 @@ PrimitiveComponent,		\
 TilemapComponent,		\
 RigidBody2DComponent,	\
 BoxCollider2DComponent	\
+

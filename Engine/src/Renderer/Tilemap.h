@@ -2,12 +2,14 @@
 
 #include <filesystem>
 
+#include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
 
 #include "Core/Colour.h"
 #include "Renderer/Texture.h"
 
-
+#include "Utilities/FileUtils.h"
+#include "Core/Application.h"
 
 class Tileset
 {
@@ -22,7 +24,7 @@ public:
 	Tileset() = default;
 
 	bool Load(std::filesystem::path& filepath);
-	bool Save(const std::filesystem::path& filepath);
+	bool Save(const std::filesystem::path& filepath) const;
 
 private:
 	std::string m_Name;
@@ -42,6 +44,8 @@ private:
 
 	std::vector<Tile> m_Tiles;
 };
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 class Tilemap
 {
@@ -96,7 +100,7 @@ class Tilemap
 public:
 	Tilemap() = default;
 	bool Load(std::filesystem::path);
-	bool Save(std::filesystem::path);
+	bool Save(const std::filesystem::path& filepath) const;
 
 private:
 	std::string m_Name;
@@ -124,13 +128,20 @@ private:
 
 	friend cereal::access;
 	template<typename Archive>
-	void save(Archive& archive)
+	void save(Archive& archive) const
 	{
+		Save(m_Filepath);
+		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
+		archive(cereal::make_nvp("Filepath", relativePath));
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
+		std::string relativePath;
+		archive(cereal::make_nvp("Filepath", relativePath));
+
+		m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+		Load(m_Filepath);
 	}
 };
-
