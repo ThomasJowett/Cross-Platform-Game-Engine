@@ -88,7 +88,7 @@ void Scene::OnRuntimeStart()
 			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
 			bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
 			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
-			bodyDef.angle = DegToRad((float32)transformComp.Rotation.z);
+			bodyDef.angle = (float32)transformComp.Rotation.z;
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
 			rigidBody2DComp.RuntimeBody = body;
@@ -102,7 +102,7 @@ void Scene::OnRuntimeStart()
 				b2PolygonShape boxShape;
 				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.Scale.x, boxColliderComp.Size.y * transformComp.Scale.y,
 					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
-					bodyDef.angle);
+					0.0f);
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &boxShape;
@@ -334,7 +334,7 @@ void Scene::OnFixedUpdate()
 				const b2Vec2& position = body->GetPosition();
 				transformComp.Position.x = position.x;
 				transformComp.Position.y = position.y;
-				transformComp.Rotation.z = RadToDeg(body->GetAngle());
+				transformComp.Rotation.z = (float)body->GetAngle();
 			});
 	}
 

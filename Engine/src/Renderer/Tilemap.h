@@ -15,7 +15,7 @@ class Tileset
 {
 	struct Tile
 	{
-		int Id;
+		int Id = -1;
 		std::string Type;
 		double Probability = 1.0f;
 
@@ -106,10 +106,10 @@ private:
 	std::string m_Name;
 	std::filesystem::path m_Filepath;
 
-	Orientation m_Orientation;
-	RenderingOrder m_RenderingOrder;
+	Orientation m_Orientation = Orientation::orthogonal;
+	RenderingOrder m_RenderingOrder = RenderingOrder::rightDown;
 
-	bool m_IsStaggered;
+	bool m_IsStaggered = false;
 
 	uint32_t m_Width, m_Height;
 	uint32_t m_TileWidth, m_TileHeight;
@@ -131,7 +131,7 @@ private:
 	void save(Archive& archive) const
 	{
 		Save(m_Filepath);
-		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
+		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 	}
 

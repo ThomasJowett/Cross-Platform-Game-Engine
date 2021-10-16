@@ -293,11 +293,11 @@ bool Tilemap::Layer::ParseCsv(const std::string& data)
 
 	ASSERT((uint32_t)SeperatedData.size() == m_Width * m_Height, "Data not the correct length");
 
-	for (uint32_t i = 0; i < m_Height; i++)
+	for (size_t i = 0; i < m_Height; i++)
 	{
-		for (uint32_t j = 0; j < m_Width; j++)
+		for (size_t j = 0; j < m_Width; j++)
 		{
-			int index = atoi(SeperatedData[(i * m_Width) + j].c_str());
+			uint32_t index = (uint32_t)atoi(SeperatedData[(i * (static_cast<size_t>(m_Width))) + j].c_str());
 			if (index == 0)
 				return false;
 			m_Tiles[j][i] = index - 1;
