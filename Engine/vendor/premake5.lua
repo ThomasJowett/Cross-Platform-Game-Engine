@@ -17,7 +17,7 @@ project "GLFW"
 		"GLFW/src/monitor.c",
 		"GLFW/src/vulkan.c",
 		"GLFW/src/window.c",
-		"GLFW/src/Platform.c",
+		"GLFW/src/platform.c",
 		"GLFW/src/null_init.c",
 		"GLFW/src/null_joystick.c",
 		"GLFW/src/null_monitor.c",
