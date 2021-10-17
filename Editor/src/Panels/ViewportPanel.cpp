@@ -263,11 +263,14 @@ void ViewportPanel::OnImGuiRender()
 		{
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
+				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+				TransformComponent& transformComp = selectedEntity.GetTransform();
+
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
 				{
 					ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
 						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
-					ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetComponent<TagComponent>().Tag.c_str(), NULL,
+					ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetTag().Tag.c_str(), NULL,
 						ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
 						| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
 						| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
@@ -276,20 +279,22 @@ void ViewportPanel::OnImGuiRender()
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
 					ImGui::End();
 				}
-			}
 
-			// Gizmos
-			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<BoxCollider2DComponent>())
+				{
+					BoxCollider2DComponent& collider = selectedEntity.GetComponent<BoxCollider2DComponent>();
+					
+					//TODO: draw an imgui rect for entities with collider2D
+				}
 
-			if (selectedEntity)
-			{
+
+				// Gizmos
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
-				TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
 				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
 					* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
 					* Matrix4x4::Scale(transformComp.Scale);
@@ -328,7 +333,6 @@ void ViewportPanel::OnImGuiRender()
 				}
 
 				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16, gizmoMode, ImGuizmo::LOCAL, transformMat.m16, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
-
 
 				if (ImGuizmo::IsUsing())
 				{
