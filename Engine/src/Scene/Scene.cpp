@@ -85,8 +85,11 @@ bool Scene::RemoveEntity(const Entity& entity)
 	return false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::OnRuntimeStart()
 {
+	m_Snapshot.clear();
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
@@ -131,6 +134,12 @@ void Scene::OnRuntimeStart()
 		}
 	);
 }
+
+void Scene::OnRuntimePause()
+{
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnRuntimeStop()
 {

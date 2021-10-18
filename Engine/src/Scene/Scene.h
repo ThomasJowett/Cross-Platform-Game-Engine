@@ -25,6 +25,7 @@ public:
 	bool RemoveEntity(const Entity& entity);
 
 	void OnRuntimeStart();
+	void OnRuntimePause();
 	void OnRuntimeStop();
 
 	// Render the scene to the render target from the camera transform and projection

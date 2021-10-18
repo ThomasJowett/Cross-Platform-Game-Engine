@@ -94,12 +94,10 @@ bool SceneManager::IsSceneLoaded()
 
 bool SceneManager::Update(float deltaTime)
 {
-	if (IsSceneLoaded())
+	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate
+		&& IsSceneLoaded() && !s_CurrentScene->IsUpdating())
 	{
-		if (!s_CurrentScene->IsUpdating())
-		{
-			s_CurrentScene->OnUpdate(deltaTime);
-		}
+		s_CurrentScene->OnUpdate(deltaTime);
 	}
 
 	if (!s_NextFilepath.empty() || !s_NextSceneName.empty())
@@ -113,12 +111,10 @@ bool SceneManager::Update(float deltaTime)
 
 bool SceneManager::FixedUpdate()
 {
-	if (IsSceneLoaded())
+	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate
+		&& IsSceneLoaded() && !s_CurrentScene->IsUpdating())
 	{
-		if (!s_CurrentScene->IsUpdating())
-		{
-			s_CurrentScene->OnFixedUpdate();
-		}
+		s_CurrentScene->OnFixedUpdate();
 	}
 	return false;
 }
@@ -169,14 +165,19 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 {
 	if (sceneState != s_SceneState)
 	{
-		s_SceneState = sceneState;
 		if (IsSceneLoaded())
 		{
-			if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
-				s_CurrentScene->OnRuntimeStart();
-			if (sceneState == SceneState::Edit)
-				s_CurrentScene->OnRuntimeStop();
+			if (s_SceneState != SceneState::Pause && s_SceneState != SceneState::SimulatePause)
+			{
+				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
+					s_CurrentScene->OnRuntimeStart();
+				if (sceneState == SceneState::Edit)
+					s_CurrentScene->OnRuntimeStop();
+				if (sceneState == SceneState::Pause || sceneState == SceneState::SimulatePause)
+					s_CurrentScene->OnRuntimePause();
+			}
 		}
+		s_SceneState = sceneState;
 		return true;
 	}
 	return false;
@@ -187,4 +188,15 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 SceneState SceneManager::GetSceneState()
 {
 	return s_SceneState;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void SceneManager::Restart()
+{
+	if (IsSceneLoaded())
+	{
+		s_CurrentScene->OnRuntimeStop();
+		s_CurrentScene->OnRuntimeStart();
+	}
 }
