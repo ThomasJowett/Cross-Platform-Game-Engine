@@ -86,13 +86,18 @@ void Scene::OnRuntimeStart()
 		{
 			b2BodyDef bodyDef;
 			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
-			bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
 			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
 			bodyDef.angle = (float32)transformComp.Rotation.z;
+			
+			if (rigidBody2DComp.Type == RigidBody2DComponent::BodyType::DYNAMIC)
+			{
+				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
+				bodyDef.angularDamping = rigidBody2DComp.AngularDamping;
+				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
+			}
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
 			rigidBody2DComp.RuntimeBody = body;
-			//body->SetFixedRotation(rigidBody2DComp.FixedRotation);
 
 			Entity entity = { physicsEntity, this };
 			if (entity.HasComponent<BoxCollider2DComponent>())

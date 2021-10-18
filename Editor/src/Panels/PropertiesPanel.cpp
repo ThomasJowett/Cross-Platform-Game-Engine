@@ -446,7 +446,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::EndCombo();
 			}
 
-			ImGui::Checkbox("Fixed Rotation", &rigidBody2D.FixedRotation);
+			if (rigidBody2D.Type == RigidBody2DComponent::BodyType::DYNAMIC)
+			{
+				ImGui::Checkbox("Fixed Rotation", &rigidBody2D.FixedRotation);
+				ImGui::DragFloat("Gravity Scale", &rigidBody2D.GravityScale, 0.01f, -1.0f, 2.0f);
+				ImGui::DragFloat("Angular Damping", &rigidBody2D.AngularDamping, 0.01f, 0.0f, 1.0f);
+			}
 		});
 
 	//Box Collider 2D--------------------------------------------------------------------------------------------------------------

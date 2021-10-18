@@ -13,6 +13,8 @@ struct RigidBody2DComponent
 
 	BodyType Type = BodyType::STATIC;
 	bool FixedRotation = false;
+	float GravityScale = 1.0f;
+	float AngularDamping = 0.0f;
 
 	void* RuntimeBody = nullptr;
 
