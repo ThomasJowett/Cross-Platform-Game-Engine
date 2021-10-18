@@ -58,9 +58,17 @@ Scene::~Scene()
 
 Entity Scene::CreateEntity(const std::string& name)
 {
+	return CreateEntity(Uuid(), name);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::CreateEntity(Uuid id, const std::string& name)
+{
 	Entity entity(m_Registry.create(), this, name);
-	entity.AddComponent<TransformComponent>();
+	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
+	entity.AddComponent<TransformComponent>();
 	m_Dirty = true;
 	return entity;
 }
@@ -79,6 +87,9 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::OnRuntimeStart()
 {
+	cereal::JSONOutputArchive output(m_Snapshot);
+	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+
 	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
@@ -123,6 +134,11 @@ void Scene::OnRuntimeStart()
 
 void Scene::OnRuntimeStop()
 {
+	m_Registry = entt::registry();
+	cereal::JSONInputArchive input(m_Snapshot);
+	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+	m_Snapshot.clear();
+
 	if(m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
 }

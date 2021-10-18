@@ -6,7 +6,7 @@
 
 #include "Components/TransformComponent.h"
 #include "Components/TagComponent.h"
-#include "Components/PrimitiveComponent.h"
+#include "Components/IDComponent.h"
 
 class Entity
 {
@@ -73,6 +73,9 @@ public:
 
 	// Get the tag component
 	TagComponent& GetTag();
+
+	// Get the ID component
+	IDComponent& GetID();
 
 	/**
 	 * Find if this Entity has a Component of certain type

@@ -15,3 +15,8 @@ TagComponent& Entity::GetTag()
 {
 	return GetComponent<TagComponent>();
 }
+
+IDComponent& Entity::GetID()
+{
+	return GetComponent<IDComponent>();
+}

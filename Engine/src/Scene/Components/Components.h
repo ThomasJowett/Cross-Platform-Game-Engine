@@ -1,7 +1,8 @@
 #pragma once
 
-#include "TransformComponent.h"
+#include "IDComponent.h"
 #include "TagComponent.h"
+#include "TransformComponent.h"
 #include "CameraComponent.h"
 #include "SpriteComponent.h"
 #include "StaticMeshComponent.h"
@@ -13,8 +14,9 @@
 
 //List of components that can be serialized
 #define COMPONENTS		\
-TransformComponent,		\
+IDComponent,			\
 TagComponent,			\
+TransformComponent,		\
 CameraComponent,		\
 SpriteComponent,		\
 StaticMeshComponent,	\
