@@ -4,8 +4,8 @@
 #include "Utilities/Random.h"
 
 Uuid::Uuid()
+	:m_UUID(Random::Int64())
 {
-	m_UUID = Random::Int64();
 }
 
 Uuid::Uuid(uint64_t uuid)
