@@ -317,9 +317,10 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
 		ImGui::Separator();
 
+		//Toolbars------------------------------------------------------------------------------------------------------------
 		if (m_ShowPlayPauseToolbar)
 		{
-			PlayPauseToolbar::Render();
+			m_PlayPauseToolbar.Render();
 		}
 
 		ImGui::EndMenuBar();
@@ -342,18 +343,6 @@ void MainDockSpace::OnImGuiRender()
 	}
 
 	ImGui::End();
-
-	//Toolbars------------------------------------------------------------------------------------------------------------
-
-	//if (ImGui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-	//{
-	//	if (m_ShowPlayPauseToolbar)
-	//	{
-	//		PlayPauseToolbar::Render();
-	//	}
-	//}
-
-	//ImGui::End();
 }
 
 

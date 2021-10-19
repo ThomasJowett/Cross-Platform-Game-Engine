@@ -94,7 +94,7 @@ bool SceneManager::IsSceneLoaded()
 
 bool SceneManager::Update(float deltaTime)
 {
-	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate
+	if ((s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate)
 		&& IsSceneLoaded() && !s_CurrentScene->IsUpdating())
 	{
 		s_CurrentScene->OnUpdate(deltaTime);
@@ -111,7 +111,7 @@ bool SceneManager::Update(float deltaTime)
 
 bool SceneManager::FixedUpdate()
 {
-	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate
+	if ((s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate)
 		&& IsSceneLoaded() && !s_CurrentScene->IsUpdating())
 	{
 		s_CurrentScene->OnFixedUpdate();
@@ -171,11 +171,11 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 			{
 				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
 					s_CurrentScene->OnRuntimeStart();
-				if (sceneState == SceneState::Edit)
-					s_CurrentScene->OnRuntimeStop();
-				if (sceneState == SceneState::Pause || sceneState == SceneState::SimulatePause)
-					s_CurrentScene->OnRuntimePause();
 			}
+			if(s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
+				s_CurrentScene->OnRuntimeStop();
+			if (sceneState == SceneState::Pause || sceneState == SceneState::SimulatePause)
+				s_CurrentScene->OnRuntimePause();
 		}
 		s_SceneState = sceneState;
 		return true;

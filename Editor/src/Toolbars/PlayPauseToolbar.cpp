@@ -7,8 +7,13 @@
 
 void PlayPauseToolbar::Render()
 {
-	static bool isPlaying = false;
 	ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg]);
+
+	bool sceneLoaded = SceneManager::IsSceneLoaded();
+	ImGui::BeginDisabled(!sceneLoaded);
+
+	if (!sceneLoaded)
+		SceneManager::ChangeSceneState(SceneState::Edit);
 
 	switch (SceneManager::GetSceneState())
 	{
@@ -40,6 +45,8 @@ void PlayPauseToolbar::Render()
 		break;
 	}
 	ImGui::PopStyleColor();
+
+	ImGui::EndDisabled();
 }
 
 void PlayPauseToolbar::PlayButton()

@@ -3,11 +3,11 @@
 class PlayPauseToolbar
 {
 public:
-	static void Render();
+	void Render();
 private:
-	static void PlayButton();
-	static void SimulateButton();
-	static void PauseButton();
-	static void StopButton();
-	static void RestartButton();
+	void PlayButton();
+	void SimulateButton();
+	void PauseButton();
+	void StopButton();
+	void RestartButton();
 };

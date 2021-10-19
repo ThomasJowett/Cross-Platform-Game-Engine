@@ -104,6 +104,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	case SceneState::Pause:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
 		break;
+		[[fallthrough]];
+	case SceneState::SimulatePause:
 	case SceneState::Simulate:
 	{
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
@@ -259,7 +261,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		if (SceneManager::GetSceneState() != SceneState::Play)
+		if (SceneManager::GetSceneState() != SceneState::Play || SceneManager::GetSceneState() != SceneState::Pause)
 		{
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
@@ -283,7 +285,7 @@ void ViewportPanel::OnImGuiRender()
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<BoxCollider2DComponent>())
 				{
 					BoxCollider2DComponent& collider = selectedEntity.GetComponent<BoxCollider2DComponent>();
-					
+
 					//TODO: draw an imgui rect for entities with collider2D
 				}
 
