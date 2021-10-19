@@ -261,7 +261,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		if (SceneManager::GetSceneState() != SceneState::Play || SceneManager::GetSceneState() != SceneState::Pause)
+		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{

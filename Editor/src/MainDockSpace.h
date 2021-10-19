@@ -4,6 +4,7 @@
 #include "Engine.h"
 
 #include "Toolbars/PlayPauseToolbar.h"
+#include "Toolbars/SaveOpenToolbar.h"
 
 class ContentExplorerPanel;
 
@@ -59,4 +60,5 @@ private:
 	std::vector<std::filesystem::path> m_RecentProjects;
 
 	PlayPauseToolbar m_PlayPauseToolbar;
+	SaveOpenToolbar m_SaveOpenToolbar;
 };

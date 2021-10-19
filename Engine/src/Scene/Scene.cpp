@@ -89,6 +89,9 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::OnRuntimeStart()
 {
+	if(m_Dirty)
+		Save();
+
 	m_Snapshot.clear();
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
@@ -394,6 +397,9 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 void Scene::Save(std::filesystem::path filepath, bool binary)
 {
 	PROFILE_FUNCTION();
+
+	if (m_Snapshot.rdbuf()->in_avail() != 0)
+		return;
 
 	m_IsSaving = true;
 
