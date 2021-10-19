@@ -17,6 +17,22 @@
 
 #include "Events/SceneEvent.h"
 
+#include "Box2D/Box2D.h"
+
+b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
+{
+	switch (type)
+	{
+	case RigidBody2DComponent::BodyType::STATIC:
+		return b2BodyType::b2_staticBody;
+	case RigidBody2DComponent::BodyType::KINEMATIC:
+		return b2BodyType::b2_kinematicBody;
+	case RigidBody2DComponent::BodyType::DYNAMIC:
+		return b2BodyType::b2_dynamicBody;
+	}
+	return b2BodyType::b2_staticBody;
+}
+
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
 {
@@ -42,9 +58,17 @@ Scene::~Scene()
 
 Entity Scene::CreateEntity(const std::string& name)
 {
+	return CreateEntity(Uuid(), name);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::CreateEntity(Uuid id, const std::string& name)
+{
 	Entity entity(m_Registry.create(), this, name);
-	entity.AddComponent<TransformComponent>();
+	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
+	entity.AddComponent<TransformComponent>();
 	m_Dirty = true;
 	return entity;
 }
@@ -63,9 +87,76 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Scene::OnRuntimeStart()
+{
+	m_Snapshot.clear();
+	cereal::JSONOutputArchive output(m_Snapshot);
+	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+
+	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
+
+	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
+		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
+		{
+			b2BodyDef bodyDef;
+			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
+			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
+			bodyDef.angle = (float32)transformComp.Rotation.z;
+			
+			if (rigidBody2DComp.Type == RigidBody2DComponent::BodyType::DYNAMIC)
+			{
+				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
+				bodyDef.angularDamping = rigidBody2DComp.AngularDamping;
+				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
+			}
+			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
+
+			rigidBody2DComp.RuntimeBody = body;
+
+			Entity entity = { physicsEntity, this };
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
+
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.Scale.x, boxColliderComp.Size.y * transformComp.Scale.y,
+					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
+					0.0f);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = boxColliderComp.Density;
+				fixtureDef.friction = boxColliderComp.Friction;
+				fixtureDef.restitution = boxColliderComp.Restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
+		}
+	);
+}
+
+void Scene::OnRuntimePause()
+{
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::OnRuntimeStop()
+{
+	m_Registry = entt::registry();
+	cereal::JSONInputArchive input(m_Snapshot);
+	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+	m_Snapshot.clear();
+
+	if(m_Box2DWorld != nullptr) delete m_Box2DWorld;
+	m_Box2DWorld = nullptr;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
-	if(renderTarget != nullptr)
+	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
@@ -78,7 +169,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawSprite(transform, sprite);
 		});
-
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
@@ -260,6 +350,23 @@ void Scene::OnFixedUpdate()
 			else
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
+
+	// Physics
+	const int32_t velocityIterations = 6;
+	const int32_t positionIterations = 2;
+	if (m_Box2DWorld != nullptr)
+	{
+		m_Box2DWorld->Step(0.01f, 6, 2);
+
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+			{
+				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
+				const b2Vec2& position = body->GetPosition();
+				transformComp.Position.x = position.x;
+				transformComp.Position.y = position.y;
+				transformComp.Rotation.z = (float)body->GetAngle();
+			});
+	}
 
 	m_IsUpdating = false;
 }

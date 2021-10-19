@@ -4,6 +4,10 @@
 
 #include "EnTT/entt.hpp"
 
+#include "Components/TransformComponent.h"
+#include "Components/TagComponent.h"
+#include "Components/IDComponent.h"
+
 class Entity
 {
 public:
@@ -46,7 +50,7 @@ public:
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
-		CORE_ASSERT(!HasComponent<T>(), "Entity already has this component");
+		CORE_ASSERT(!HasComponent<T>(), "Entity already has component of type " + std::string(typeid(T).name()));
 		m_Scene->MakeDirty();
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
@@ -60,9 +64,18 @@ public:
 	template<typename T>
 	T& GetComponent()
 	{
-		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(typeid(T).name()));
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}
+
+	// Get the transform component
+	TransformComponent& GetTransform();
+
+	// Get the tag component
+	TagComponent& GetTag();
+
+	// Get the ID component
+	IDComponent& GetID();
 
 	/**
 	 * Find if this Entity has a Component of certain type
@@ -85,7 +98,7 @@ public:
 	template<typename T>
 	void RemoveComponent()
 	{
-		CORE_ASSERT(HasComponent<T>(), "Entity does not have this component");
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(typeid(T).name()));
 		m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		m_Scene->MakeDirty();
 	}

@@ -7,6 +7,64 @@
 
 static std::string fileLoadErrorString = "Could not load tilemap {0}. {1}!";
 
+bool Tileset::Save(const std::filesystem::path& filepath) const
+{
+	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Tileset::Load(std::filesystem::path& filepath)
+{
+	tinyxml2::XMLDocument doc;
+
+	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	{
+		tinyxml2::XMLElement* pRoot;
+
+		pRoot = doc.FirstChildElement("tileset");
+
+		const char* name = pRoot->Attribute("name");
+		m_Name = name;
+
+		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
+		m_TileHeight = atoi(pRoot->Attribute("tileheight"));
+		m_Columns = atoi(pRoot->Attribute("columns"));
+		m_TileCount = atoi(pRoot->Attribute("tilecount"));
+
+		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
+
+
+		const char* textureSource = pImage->Attribute("source");
+
+		std::filesystem::path texturepath = filepath.remove_filename() / textureSource;
+		m_Texture = Texture2D::Create(texturepath);
+
+		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
+
+		while (pTile)
+		{
+			Tile tile;
+			tile.Id = atoi(pTile->Attribute("id"));
+			tile.Type = pTile->Attribute("type");
+			const char* probability = pTile->Attribute("probability");
+			if (probability != nullptr)
+				tile.Probability = atof(probability);
+
+			m_Tiles.push_back(tile);
+			pTile = pTile->NextSiblingElement("tile");
+		}
+	}
+	else
+	{
+		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
+	}
+	return true;
+}
+
+/* ================================================================================================================== */
+
 bool Tilemap::Load(std::filesystem::path filepath)
 {
 	tinyxml2::XMLDocument doc;
@@ -181,7 +239,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Tilemap::Save(std::filesystem::path filepath)
+bool Tilemap::Save(const std::filesystem::path& filepath) const
 {
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pRoot = doc.NewElement("map");
@@ -214,55 +272,6 @@ bool Tilemap::Save(std::filesystem::path filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Tileset::Load(std::filesystem::path& filepath)
-{
-	tinyxml2::XMLDocument doc;
-
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
-	{
-		tinyxml2::XMLElement* pRoot;
-
-		pRoot = doc.FirstChildElement("tileset");
-
-		const char* name = pRoot->Attribute("name");
-		m_Name = name;
-
-		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
-		m_TileHeight = atoi(pRoot->Attribute("tileheight"));
-		m_Columns = atoi(pRoot->Attribute("columns"));
-		m_TileCount = atoi(pRoot->Attribute("tilecount"));
-
-		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
-
-
-		const char* textureSource = pImage->Attribute("source");
-
-		std::filesystem::path texturepath = filepath.remove_filename() / textureSource;
-		m_Texture = Texture2D::Create(texturepath);
-
-		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
-
-		while (pTile)
-		{
-			Tile tile;
-			tile.Id = atoi(pTile->Attribute("id"));
-			tile.Type = pTile->Attribute("type");
-			const char* probability = pTile->Attribute("probability");
-			if (probability != nullptr)
-				tile.Probability = atof(probability);
-
-			m_Tiles.push_back(tile);
-			pTile = pTile->NextSiblingElement("tile");
-		}
-	}
-	else
-	{
-		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
-		return false;
-	}
-	return true;
-}
-
 Tilemap::Layer::Layer(uint32_t id, const std::string& name, uint32_t width, uint32_t height, Vector2f offset)
 	:m_Id(id), m_Name(name),
 	m_Width(width), m_Height(height),
@@ -276,17 +285,19 @@ Tilemap::Layer::Layer(uint32_t id, const std::string& name, uint32_t width, uint
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Tilemap::Layer::ParseCsv(const std::string& data)
 {
 	std::vector<std::string> SeperatedData = SplitString(data, ',');
 
 	ASSERT((uint32_t)SeperatedData.size() == m_Width * m_Height, "Data not the correct length");
 
-	for (uint32_t i = 0; i < m_Height; i++)
+	for (size_t i = 0; i < m_Height; i++)
 	{
-		for (uint32_t j = 0; j < m_Width; j++)
+		for (size_t j = 0; j < m_Width; j++)
 		{
-			int index = atoi(SeperatedData[(i * m_Width) + j].c_str());
+			uint32_t index = (uint32_t)atoi(SeperatedData[(i * (static_cast<size_t>(m_Width))) + j].c_str());
 			if (index == 0)
 				return false;
 			m_Tiles[j][i] = index - 1;

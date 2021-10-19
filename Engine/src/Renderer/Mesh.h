@@ -2,7 +2,10 @@
 
 #include "VertexArray.h"
 
+#include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
+#include "Utilities/FileUtils.h"
+#include "Core/Application.h"
 
 class Mesh
 {
@@ -27,11 +30,17 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
+		std::filesystem::path relativepath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
+		archive(cereal::make_nvp("Filepath", relativepath.string()));
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
+		std::string relativePath;
+		archive(cereal::make_nvp("Filepath", relativePath));
+
+		m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 		LoadModel();
 	}
 };

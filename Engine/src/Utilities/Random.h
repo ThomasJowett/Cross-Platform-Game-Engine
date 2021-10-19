@@ -13,7 +13,7 @@ public:
 	// random float between 0 and 1
 	static float Float()
 	{
-		return (float)s_UniformDistribution(s_RandomEngine) / (float)(std::numeric_limits<uint32_t>::max)();
+		return (float)s_UniformDistribution(s_RandomEngine) / (float)(std::numeric_limits<std::mt19937_64::result_type>::max)();
 	}
 
 	// random float in range with uniform distribution
@@ -28,8 +28,14 @@ public:
 		return (float)(s_NormalDistribution(s_RandomEngine) * sigma) + mean;
 	}
 
+	// random 64 bit integer
+	static uint64_t Int64()
+	{
+		return s_UniformDistribution(s_RandomEngine);
+	}
+
 private:
-	inline static std::mt19937 s_RandomEngine;
-	inline static std::uniform_int_distribution<std::mt19937::result_type> s_UniformDistribution;
+	inline static std::mt19937_64 s_RandomEngine;
+	inline static std::uniform_int_distribution<std::mt19937_64::result_type> s_UniformDistribution;
 	inline static std::normal_distribution<double> s_NormalDistribution;
 };

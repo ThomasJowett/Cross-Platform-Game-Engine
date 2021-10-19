@@ -56,7 +56,8 @@ project "Engine"
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/simpleini",
 		"%{prj.name}/vendor/EnTT",
-		"%{prj.name}/vendor/cereal/include"
+		"%{prj.name}/vendor/cereal/include",
+		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D"
 	}
 	
 	links
@@ -64,7 +65,8 @@ project "Engine"
 		"GLFW",
 		"GLAD",
 		"ImGui",
-		"TinyXml2"
+		"TinyXml2",
+		"LiquidFun"
 	}
 	
 	defines

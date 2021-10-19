@@ -46,7 +46,11 @@ void PlayPauseToolbar::PlayButton()
 {
 	if (ImGui::Button(ICON_FA_PLAY "##Play"))
 	{
-		SceneManager::ChangeSceneState(SceneState::Play);
+		if (SceneManager::GetSceneState() == SceneState::SimulatePause)
+			SceneManager::ChangeSceneState(SceneState::Simulate);
+		else if (SceneManager::GetSceneState() == SceneState::Pause
+			|| SceneManager::GetSceneState() == SceneState::Edit)
+			SceneManager::ChangeSceneState(SceneState::Play);
 	}
 	ImGui::Tooltip("Play");
 	ImGui::SameLine();
@@ -88,10 +92,7 @@ void PlayPauseToolbar::RestartButton()
 {
 	if (ImGui::Button(ICON_FA_UNDO_ALT "##Restart"))
 	{
-		if (SceneManager::GetSceneState() == SceneState::Simulate)
-			SceneManager::ChangeSceneState(SceneState::Simulate);
-		else if (SceneManager::GetSceneState() == SceneState::Play)
-			SceneManager::ChangeSceneState(SceneState::Play);
+		SceneManager::Restart();
 	}
 	ImGui::Tooltip("Restart");
 	ImGui::SameLine();

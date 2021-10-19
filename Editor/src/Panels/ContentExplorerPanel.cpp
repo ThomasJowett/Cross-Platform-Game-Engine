@@ -961,11 +961,11 @@ void ContentExplorerPanel::OnImGuiRender()
 				ImGuiTableFlags table_flags =
 					ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY;
 
-				int width = ImGui::GetWindowSize().x;
+				float width = ImGui::GetWindowSize().x;
 
 				ImGuiStyle& style = ImGui::GetStyle();
 
-				m_NumBrowsingColumns = width / (thumbnailSize + (style.FramePadding.x * 2));
+				m_NumBrowsingColumns = (int)(width / (thumbnailSize + (style.FramePadding.x * 2)));
 
 				if (m_NumBrowsingColumns == 0)
 					m_NumBrowsingColumns = 1;

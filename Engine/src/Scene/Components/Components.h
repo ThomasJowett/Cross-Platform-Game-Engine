@@ -1,19 +1,28 @@
 #pragma once
 
-#include "TransformComponent.h"
+#include "IDComponent.h"
 #include "TagComponent.h"
+#include "TransformComponent.h"
 #include "CameraComponent.h"
 #include "SpriteComponent.h"
 #include "StaticMeshComponent.h"
 #include "NativeScriptComponent.h"
 #include "PrimitiveComponent.h"
 #include "TilemapComponent.h"
+#include "RigidBody2DComponent.h"
+#include "BoxCollider2DComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS		\
-TransformComponent,		\
+IDComponent,			\
 TagComponent,			\
+TransformComponent,		\
 CameraComponent,		\
 SpriteComponent,		\
-NativeScriptComponent	\
+StaticMeshComponent,	\
+NativeScriptComponent,	\
+PrimitiveComponent,		\
+TilemapComponent,		\
+RigidBody2DComponent,	\
+BoxCollider2DComponent	\
 

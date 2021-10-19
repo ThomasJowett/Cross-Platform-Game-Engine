@@ -15,7 +15,7 @@ void Webpage::OpenWebpage(const std::wstring& url)
 {
 	std::string command = "xdg-open " + std::string(url.begin(), url.end());
 	
-	system(command.c_str());
+	int result = system(command.c_str());
 }
 #elif __APPLE__
 void Webpage::OpenWebpage(const std::wstring& url)

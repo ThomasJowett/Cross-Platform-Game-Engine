@@ -1,13 +1,16 @@
 #pragma once
 
 #include <filesystem>
+#include <sstream>
 
 #include "EnTT/entt.hpp"
 #include "math/Matrix.h"
+#include "Core/UUID.h"
 
 class Entity;
 class FrameBuffer;
 class Camera;
+class b2World;
 
 class Scene
 {
@@ -17,8 +20,13 @@ public:
 	~Scene();
 
 	Entity CreateEntity(const std::string& name = "");
+	Entity CreateEntity(Uuid id, const std::string& name = "");
 
 	bool RemoveEntity(const Entity& entity);
+
+	void OnRuntimeStart();
+	void OnRuntimePause();
+	void OnRuntimeStop();
 
 	// Render the scene to the render target from the camera transform and projection
 	void Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
@@ -70,6 +78,10 @@ protected:
 
 	bool m_IsUpdating = false;
 	bool m_IsSaving = false;
+
+	b2World* m_Box2DWorld = nullptr;
+
+	std::stringstream m_Snapshot;
 
 	friend class Entity;
 };

@@ -16,7 +16,12 @@ project "GLFW"
 		"GLFW/src/input.c",
 		"GLFW/src/monitor.c",
 		"GLFW/src/vulkan.c",
-		"GLFW/src/window.c"
+		"GLFW/src/window.c",
+		"GLFW/src/platform.c",
+		"GLFW/src/null_init.c",
+		"GLFW/src/null_joystick.c",
+		"GLFW/src/null_monitor.c",
+		"GLFW/src/null_window.c"
 	}
 	filter "system:linux"
 		pic "On"
@@ -32,6 +37,7 @@ project "GLFW"
 			"GLFW/src/xkb_unicode.c",
 			"GLFW/src/posix_time.c",
 			"GLFW/src/posix_thread.c",
+			"GLFW/src/posix_module.c",
 			"GLFW/src/glx_context.c",
 			"GLFW/src/egl_context.c",
 			"GLFW/src/osmesa_context.c",
@@ -55,6 +61,7 @@ project "GLFW"
 			"GLFW/src/win32_time.c",
 			"GLFW/src/win32_thread.c",
 			"GLFW/src/win32_window.c",
+			"GLFW/src/win32_module.c",
 			"GLFW/src/wgl_context.c",
 			"GLFW/src/egl_context.c",
 			"GLFW/src/osmesa_context.c"
@@ -190,6 +197,40 @@ project "TinyXml2"
 
 	systemversion "latest"
 	staticruntime "off"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "On"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"
+project "LiquidFun"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"LiquidFun/liquidfun/Box2D/Box2D/**.h",
+		"LiquidFun/liquidfun/Box2D/Box2D/**.cpp"
+	}
+
+	includedirs
+	{
+		"LiquidFun/liquidfun/Box2D"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
 
 	filter "configurations:Debug"
 		runtime "Debug"
