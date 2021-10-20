@@ -520,6 +520,50 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			if (ImGui::DragFloat("Restitution", &boxCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 		});
+
+	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
+	DrawComponent<CircleCollider2DComponent>(ICON_FA_CIRCLE_NOTCH" Circle Collider 2D", entity, [](auto& circleCollider2D)
+		{
+			Vector2f& offset = circleCollider2D.Offset;
+			ImGui::Text("Offset");
+			ImGui::TextColored({ 245,0,0,255 }, "X");
+			ImGui::SameLine();
+
+			float width = ImGui::GetContentRegionAvailWidth();
+
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			ImGui::SameLine();
+			ImGui::TextColored({ 0,245,0,255 }, "Y");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if(ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Density", &circleCollider2D.Density, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Friction", &circleCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Restitution", &circleCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
@@ -540,6 +584,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<PrimitiveComponent>("Primitive", entity);
 		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", entity);
+		AddComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", entity);
 
 		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{
