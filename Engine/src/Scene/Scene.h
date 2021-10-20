@@ -84,4 +84,5 @@ protected:
 	std::stringstream m_Snapshot;
 
 	friend class Entity;
+	friend class SceneSerializer;
 };

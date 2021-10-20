@@ -18,6 +18,7 @@
 #include "Events/SceneEvent.h"
 
 #include "Box2D/Box2D.h"
+#include "SceneSerializer.h"
 
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
@@ -153,6 +154,8 @@ void Scene::OnRuntimeStart()
 		}
 	);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnRuntimePause()
 {
@@ -445,15 +448,17 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	}
 	else
 	{
-		std::stringstream ss;
-		{
-			cereal::JSONOutputArchive output{ ss };
-			entt::snapshot{ m_Registry }.entities(output).component<COMPONENTS>(output);
-		}
-
-		std::ofstream file(finalPath);
-		file << ss.str();
-		file.close();
+		SceneSerializer sceneSerializer = SceneSerializer(this);
+		sceneSerializer.Serialize(finalPath);
+		//std::stringstream ss;
+		//{
+		//	cereal::JSONOutputArchive output{ ss };
+		//	entt::snapshot{ m_Registry }.entities(output).component<COMPONENTS>(output);
+		//}
+		//
+		//std::ofstream file(finalPath);
+		//file << ss.str();
+		//file.close();
 	}
 
 	m_Dirty = false;
@@ -493,10 +498,13 @@ bool Scene::Load(bool binary)
 	{
 		try
 		{
-			std::ifstream file(filepath);
-			cereal::JSONInputArchive input(file);
-			entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
-			file.close();
+			SceneSerializer sceneSerializer = SceneSerializer(this);
+			sceneSerializer.Serialize(filepath);
+
+			//std::ifstream file(filepath);
+			//cereal::JSONInputArchive input(file);
+			//entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+			//file.close();
 		}
 		catch (const std::exception& ex)
 		{
