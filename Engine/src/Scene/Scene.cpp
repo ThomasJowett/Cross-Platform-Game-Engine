@@ -134,6 +134,22 @@ void Scene::OnRuntimeStart()
 
 				body->CreateFixture(&fixtureDef);
 			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
+
+				b2CircleShape circleShape;
+				circleShape.m_radius = circleColliderComp.Radius;
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = circleColliderComp.Density;
+				fixtureDef.friction = circleColliderComp.Friction;
+				fixtureDef.restitution = circleColliderComp.Restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
 		}
 	);
 }
