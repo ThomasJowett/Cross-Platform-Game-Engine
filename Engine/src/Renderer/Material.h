@@ -23,7 +23,7 @@ public:
 	void SetTint(const Colour& tint) { m_Tint = tint; }
 	Colour GetTint() const { return m_Tint; }
 
-	std::filesystem::path& GetFilepath() { return m_Filepath; }
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 
 	void LoadMaterial(const std::filesystem::path& filepath);
 	void LoadMaterial();

@@ -101,6 +101,9 @@ public:
 	Tilemap() = default;
 	bool Load(std::filesystem::path);
 	bool Save(const std::filesystem::path& filepath) const;
+	bool Save() const;
+
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 
 private:
 	std::string m_Name;

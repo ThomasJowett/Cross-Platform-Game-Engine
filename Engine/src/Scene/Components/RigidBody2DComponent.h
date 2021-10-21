@@ -15,6 +15,7 @@ struct RigidBody2DComponent
 	bool FixedRotation = false;
 	float GravityScale = 1.0f;
 	float AngularDamping = 0.0f;
+	float LinearDamping = 0.0f;
 
 	void* RuntimeBody = nullptr;
 
@@ -28,5 +29,8 @@ struct RigidBody2DComponent
 	{
 		archive(cereal::make_nvp("BodyType", Type));
 		archive(cereal::make_nvp("FixedRotation", FixedRotation));
+		archive(cereal::make_nvp("GravityScale", GravityScale));
+		archive(cereal::make_nvp("AngularDamping", AngularDamping));
+		archive(cereal::make_nvp("LinearDamping", LinearDamping));
 	}
 };

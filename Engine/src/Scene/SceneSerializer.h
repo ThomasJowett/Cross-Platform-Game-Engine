@@ -14,10 +14,10 @@ public:
 	{
 	}
 
-	bool Serialize(const std::filesystem::path& filepath);
+	bool Serialize(const std::filesystem::path& filepath) const;
 	bool Deserialize(const std::filesystem::path& filepath);
 
 private:
-	void SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity);
+	void SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity) const;
 	Scene* m_Scene;
 };

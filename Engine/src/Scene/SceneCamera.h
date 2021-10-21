@@ -16,6 +16,7 @@ public:
 	void SetOrthoGraphic(float size, float nearClip, float farClip);
 	void SetPerspective(float fov, float nearClip, float farClip);
 	void SetAspectRatio(const float& aspectRatio);
+	float GetAspectRatio() const { return m_AspectRatio; }
 
 	ProjectionType GetProjectionType() const { return m_ProjectionType; }
 	void SetProjection(ProjectionType projectionType);
@@ -39,7 +40,6 @@ public:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Projection", m_ProjectionMatrix));
 		archive(cereal::make_nvp("ProjectionType", m_ProjectionType));
 		archive(cereal::make_nvp("OrthoSize", m_OrthographicSize));
 		archive(cereal::make_nvp("OrthoNear", m_OrthoGraphicNear));
@@ -48,6 +48,8 @@ public:
 		archive(cereal::make_nvp("PerspectiveFar", m_PerspectiveFar));
 		archive(cereal::make_nvp("FOV", m_Fov));
 		archive(cereal::make_nvp("AspectRatio", m_AspectRatio));
+
+		RecalculateProjection();
 	}
 
 private:

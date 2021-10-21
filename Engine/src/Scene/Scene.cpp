@@ -111,8 +111,10 @@ void Scene::OnRuntimeStart()
 			{
 				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
 				bodyDef.angularDamping = rigidBody2DComp.AngularDamping;
+				bodyDef.linearDamping = rigidBody2DComp.LinearDamping;
 				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
 			}
+			
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
 			rigidBody2DComp.RuntimeBody = body;
@@ -142,6 +144,7 @@ void Scene::OnRuntimeStart()
 
 				b2CircleShape circleShape;
 				circleShape.m_radius = circleColliderComp.Radius;
+				circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &circleShape;

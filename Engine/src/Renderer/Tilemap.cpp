@@ -270,6 +270,11 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 	return error == tinyxml2::XML_SUCCESS;
 }
 
+bool Tilemap::Save() const
+{
+	return Save(m_Filepath);
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 Tilemap::Layer::Layer(uint32_t id, const std::string& name, uint32_t width, uint32_t height, Vector2f offset)
