@@ -133,7 +133,10 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		Save(m_Filepath);
+		if (!m_Filepath.empty())
+		{
+			Save(m_Filepath);
+		}
 		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 	}
@@ -144,7 +147,10 @@ private:
 		std::string relativePath;
 		archive(cereal::make_nvp("Filepath", relativePath));
 
-		m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
-		Load(m_Filepath);
+		if (!relativePath.empty())
+		{
+			m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+			Load(m_Filepath);
+		}
 	}
 };

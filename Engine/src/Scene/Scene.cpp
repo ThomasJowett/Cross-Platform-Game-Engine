@@ -453,15 +453,6 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	{
 		SceneSerializer sceneSerializer = SceneSerializer(this);
 		sceneSerializer.Serialize(finalPath);
-		//std::stringstream ss;
-		//{
-		//	cereal::JSONOutputArchive output{ ss };
-		//	entt::snapshot{ m_Registry }.entities(output).component<COMPONENTS>(output);
-		//}
-		//
-		//std::ofstream file(finalPath);
-		//file << ss.str();
-		//file.close();
 	}
 
 	m_Dirty = false;
@@ -502,12 +493,7 @@ bool Scene::Load(bool binary)
 		try
 		{
 			SceneSerializer sceneSerializer = SceneSerializer(this);
-			sceneSerializer.Serialize(filepath);
-
-			//std::ifstream file(filepath);
-			//cereal::JSONInputArchive input(file);
-			//entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
-			//file.close();
+			sceneSerializer.Deserialize(filepath);
 		}
 		catch (const std::exception& ex)
 		{

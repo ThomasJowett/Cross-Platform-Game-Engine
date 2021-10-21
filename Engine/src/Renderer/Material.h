@@ -43,7 +43,9 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
+		std::string relativePath;
+		if(!m_Filepath.empty())
+			relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 		archive(cereal::make_nvp("Tint", m_Tint));
 		SaveMaterial();
@@ -54,8 +56,10 @@ private:
 	{
 		std::string relativePath;
 		archive(cereal::make_nvp("Filepath", relativePath));
-
-		m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+		if (!relativePath.empty())
+		{
+			m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+		}
 		LoadMaterial();
 	}
 };

@@ -12,11 +12,35 @@ void Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
 	pElement->SetAttribute("Y", vec2.y);
 }
 
+void Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2)
+{
+	if (pElement)
+	{
+		const char* xChar = pElement->Attribute("X");
+		const char* yChar = pElement->Attribute("Y");
+		if (xChar) vec2.x = atof(xChar);
+		if (yChar) vec2.y = atof(yChar);
+	}
+}
+
 void Encode(tinyxml2::XMLElement* pElement, const Vector3f& vec3)
 {
 	pElement->SetAttribute("X", vec3.x);
 	pElement->SetAttribute("Y", vec3.y);
 	pElement->SetAttribute("Z", vec3.z);
+}
+
+void Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3)
+{
+	if (pElement)
+	{
+		const char* xChar = pElement->Attribute("X");
+		const char* yChar = pElement->Attribute("Y");
+		const char* zChar = pElement->Attribute("Z");
+		if (xChar) vec3.x = atof(xChar);
+		if (yChar) vec3.y = atof(yChar);
+		if (zChar) vec3.y = atof(zChar);
+	}
 }
 
 void Encode(tinyxml2::XMLElement* pElement, const Colour& colour)
@@ -25,6 +49,22 @@ void Encode(tinyxml2::XMLElement* pElement, const Colour& colour)
 	pElement->SetAttribute("G", colour.g);
 	pElement->SetAttribute("B", colour.b);
 	pElement->SetAttribute("A", colour.a);
+
+}
+
+void Decode(tinyxml2::XMLElement* pElement, Colour& colour)
+{
+	if (pElement)
+	{
+		const char* rChar = pElement->Attribute("R");
+		const char* gChar = pElement->Attribute("G");
+		const char* bChar = pElement->Attribute("B");
+		const char* aChar = pElement->Attribute("A");
+		colour.r = atof(rChar);
+		colour.g = atof(gChar);
+		colour.b = atof(bChar);
+		colour.a = atof(aChar);
+	}
 }
 
 void Encode(tinyxml2::XMLElement* pElement, const Material& material)
@@ -71,6 +111,282 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	{
 		m_Scene->SetFilepath(filepath);
 
+		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Scene");
+
+		const char* sceneName = pRoot->Attribute("Name");
+
+		m_Scene->SetSceneName(sceneName);
+
+		//Entities
+		tinyxml2::XMLElement* pEntityElement = pRoot->FirstChildElement("Entity");
+
+		while (pEntityElement)
+		{
+			Entity entity;
+			const char* entityName = pEntityElement->Attribute("Name");
+			const char* uuidChar = pEntityElement->Attribute("ID");
+
+			if (uuidChar != nullptr)
+			{
+				Uuid uuid(std::stoull(uuidChar));
+				entity = m_Scene->CreateEntity(uuid, entityName);
+			}
+			else
+			{
+				entity = m_Scene->CreateEntity(entityName);
+			}
+
+			// Transform ----------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pTransformElement = pEntityElement->FirstChildElement("Transform");
+
+			if (pTransformElement)
+			{
+				TransformComponent& transformComp = entity.GetTransform();
+				Decode(pTransformElement->FirstChildElement("Position"), transformComp.Position);
+				Decode(pTransformElement->FirstChildElement("Rotation"), transformComp.Rotation);
+				Decode(pTransformElement->FirstChildElement("Scale"), transformComp.Scale);
+			}
+
+			// Camera -------------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pCamera = pEntityElement->FirstChildElement("Camera");
+
+			if (pCamera)
+			{
+				const char* primaryChar = pCamera->Attribute("Primary");
+				bool isPrimary = !strcmp(primaryChar, "true");
+
+				const char* fixedAspectRatioChar = pCamera->Attribute("FixedAspectRatio");
+				bool isFixedAspectRatio = !strcmp(fixedAspectRatioChar, "true");
+
+				SceneCamera sceneCamera;
+				tinyxml2::XMLElement* pSceneCameraElement = pCamera->FirstChildElement("SceneCamera");
+
+				if (pSceneCameraElement)
+				{
+					sceneCamera.SetProjection((SceneCamera::ProjectionType)atoi(pSceneCameraElement->Attribute("ProjectionType")));
+					sceneCamera.SetOrthoSize(atof(pSceneCameraElement->Attribute("OrthoSize")));
+					sceneCamera.SetOrthoNear(atof(pSceneCameraElement->Attribute("OrthoNear")));
+					sceneCamera.SetOrthoFar(atof(pSceneCameraElement->Attribute("OrthoFar")));
+					sceneCamera.SetPerspectiveNear(atof(pSceneCameraElement->Attribute("PerspectiveNear")));
+					sceneCamera.SetPerspectiveFar(atof(pSceneCameraElement->Attribute("PerspectiveFar")));
+					sceneCamera.SetVerticalFov(atof(pSceneCameraElement->Attribute("FOV")));
+					sceneCamera.SetAspectRatio(atof(pSceneCameraElement->Attribute("AspectRatio")));
+				}
+
+				entity.AddComponent<CameraComponent>(sceneCamera, isPrimary, isFixedAspectRatio);
+			}
+
+			// Sprite -------------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pSpriteElement = pEntityElement->FirstChildElement("Sprite");
+
+			if (pSpriteElement)
+			{
+				Colour tint;
+				Decode(pSpriteElement->FirstChildElement("Tint"), tint);
+				entity.AddComponent<SpriteComponent>(tint, atof(pSpriteElement->Attribute("TilingFactor")));
+				//TODO: load material
+			}
+
+			// Static Mesh -------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pStaticMeshElement = pEntityElement->FirstChildElement("StaticMesh");
+
+			if (pStaticMeshElement)
+			{
+				tinyxml2::XMLElement* pMeshElement = pStaticMeshElement->FirstChildElement("Mesh");
+				Mesh mesh;
+				Material material;
+
+				if (pMeshElement)
+				{
+					const char* meshFilepathChar = pMeshElement->Attribute("Filepath");
+					std::string meshFilepathStr(meshFilepathChar);
+					if (!meshFilepathStr.empty())
+					{
+						std::filesystem::path meshfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / meshFilepathStr);
+						mesh.LoadModel(meshfilepath);
+					}
+				}
+
+				tinyxml2::XMLElement* pMaterialElement = pStaticMeshElement->FirstChildElement("Material");
+
+				if (pMaterialElement)
+				{
+					const char* materialFilepathChar = pMeshElement->Attribute("Filepath");
+					std::string materialFilepathStr(materialFilepathChar);
+
+					if (!materialFilepathStr.empty())
+					{
+						std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
+						material.LoadMaterial(materailfilepath);
+					}
+				}
+				entity.AddComponent<StaticMeshComponent>(mesh, material);
+			}
+
+			// Native Script -----------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pNativeScriptElement = pEntityElement->FirstChildElement("NativeScript");
+
+			if (pNativeScriptElement)
+			{
+				const char* nativeScriptName = pNativeScriptElement->Attribute("Name");
+				entity.AddComponent<NativeScriptComponent>(nativeScriptName);
+			}
+
+			// Primitive -------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pPrimitiveElement = pEntityElement->FirstChildElement("Primitive");
+
+			if (pPrimitiveElement)
+			{
+				PrimitiveComponent::Shape type = (PrimitiveComponent::Shape)atoi(pPrimitiveElement->Attribute("Type"));
+
+				switch (type)
+				{
+				case PrimitiveComponent::Shape::Cube:
+				{
+					tinyxml2::XMLElement* pCubeElement = pPrimitiveElement->FirstChildElement("Cube");
+
+					if (pCubeElement)
+					{
+						entity.AddComponent<PrimitiveComponent>(
+							(float)atof(pCubeElement->Attribute("Width")),
+							(float)atof(pCubeElement->Attribute("Height")),
+							(float)atof(pCubeElement->Attribute("Depth")));
+					}
+					break;
+				}
+				case PrimitiveComponent::Shape::Sphere:
+				{
+					tinyxml2::XMLElement* pSphereElement = pPrimitiveElement->FirstChildElement("Sphere");
+
+					if (pSphereElement)
+					{
+						entity.AddComponent<PrimitiveComponent>(
+							(float)atof(pSphereElement->Attribute("Radius")),
+							(uint32_t)atoi(pSphereElement->Attribute("LongitudeLines")),
+							(uint32_t)atoi(pSphereElement->Attribute("LatitudeLines")));
+					}
+					break;
+				}
+				case PrimitiveComponent::Shape::Plane:
+				{
+					tinyxml2::XMLElement* pPlaneElement = pPrimitiveElement->FirstChildElement("Plane");
+
+					if (pPlaneElement)
+					{
+						entity.AddComponent<PrimitiveComponent>(
+							(float)atof(pPlaneElement->Attribute("Width")),
+							(float)atof(pPlaneElement->Attribute("Length")),
+							(uint32_t)atoi(pPlaneElement->Attribute("WidthLines")),
+							(uint32_t)atoi(pPlaneElement->Attribute("LengthLines")),
+							(float)atof(pPlaneElement->Attribute("TileU")),
+							(float)atof(pPlaneElement->Attribute("TileV")));
+					}
+					break;
+				}
+				case PrimitiveComponent::Shape::Cylinder:
+				{
+					tinyxml2::XMLElement* pCylinderElement = pPrimitiveElement->FirstChildElement("Cylinder");
+
+					if (pCylinderElement)
+					{
+						entity.AddComponent<PrimitiveComponent>(
+							(float)atof(pCylinderElement->Attribute("BottomRadius")),
+							(float)atof(pCylinderElement->Attribute("TopRadius")),
+							(float)atof(pCylinderElement->Attribute("Height")),
+							(uint32_t)atoi(pCylinderElement->Attribute("SliceCount")),
+							(uint32_t)atoi(pCylinderElement->Attribute("StackCount")));
+					}
+					break;
+				}
+				case PrimitiveComponent::Shape::Cone:
+				{
+					tinyxml2::XMLElement* pConeElement = pPrimitiveElement->FirstChildElement("Cone");
+
+					if (pConeElement)
+					{
+						entity.AddComponent<PrimitiveComponent>(
+							(float)atof(pConeElement->Attribute("BottomRadius")),
+							(float)atof(pConeElement->Attribute("Height")),
+							(uint32_t)atoi(pConeElement->Attribute("SliceCount")),
+							(uint32_t)atoi(pConeElement->Attribute("StackCount")));
+					}
+					break;
+				}
+				case PrimitiveComponent::Shape::Torus:
+				{
+					tinyxml2::XMLElement* pTorusElement = pPrimitiveElement->FirstChildElement("Torus");
+
+					if (pTorusElement)
+					{
+						float outerRadius = 1.0f, innerRadius = 0.4f;
+						uint32_t sliceCount = 32;
+
+						const char* outerRadiusChar = pTorusElement->Attribute("OuterRadius");
+						const char* innerRadiusChar = pTorusElement->Attribute("InnerRadius");
+						const char* sliceCountChar = pTorusElement->Attribute("SliceCount");
+
+						if (outerRadiusChar) outerRadius = atof(outerRadiusChar);
+						if (innerRadiusChar) innerRadius = atof(innerRadiusChar);
+						if (sliceCountChar) sliceCount = atoi(sliceCountChar);
+
+						entity.AddComponent<PrimitiveComponent>(outerRadius, innerRadius, sliceCount);
+					}
+				}
+				break;
+				default:
+					break;
+				}
+			}
+
+			// Tilemap ------------------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pTilemapElement = pEntityElement->FirstChildElement("Tilemap");
+
+			if (pTilemapElement)
+			{
+				Tilemap tilemap;
+				const char* tilemapChar = pTilemapElement->Attribute("Filepath");
+				if (tilemapChar)
+				{
+					std::string tilemapPath(tilemapChar);
+					if (!tilemapPath.empty())
+					{
+						std::filesystem::path tilemapfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / tilemapPath);
+						tilemap.Load(tilemapfilepath);
+					}
+				}
+				entity.AddComponent<TilemapComponent>(tilemap);
+			}
+
+			// RigidBody2D -----------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pRigidBody2DElement = pEntityElement->FirstChildElement("RigidBody2D");
+
+			if (pRigidBody2DElement)
+			{
+				//TODO
+				entity.AddComponent<RigidBody2DComponent>();
+			}
+
+			// BoxCollider2D -----------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pBoxCollider2DElement = pEntityElement->FirstChildElement("BoxCollider2D");
+
+			if (pBoxCollider2DElement)
+			{
+				//TODO
+				entity.AddComponent<BoxCollider2DComponent>();
+			}
+
+			// CircleCollider2D -----------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pCircleCollider2DElement = pEntityElement->FirstChildElement("CircleCollider2D");
+
+			if (pCircleCollider2DElement)
+			{
+				//TODO
+				entity.AddComponent<CircleCollider2DComponent>();
+			}
+
+			pEntityElement = pEntityElement->NextSiblingElement("Entity");
+		}
+
 		return true;
 	}
 	else
@@ -85,7 +401,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	pElement->SetAttribute("Name", entity.GetTag().Tag.c_str());
 	pElement->SetAttribute("ID", entity.GetID().ID);
 
-	TransformComponent & transformcomp = entity.GetTransform();
+	TransformComponent& transformcomp = entity.GetTransform();
 
 	tinyxml2::XMLElement* pTransformElement = pElement->InsertNewChildElement("Transform");
 	Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp.Position);
@@ -129,7 +445,11 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		StaticMeshComponent& component = entity.GetComponent<StaticMeshComponent>();
 
 		tinyxml2::XMLElement* pStaticMeshElement = pElement->InsertNewChildElement("StaticMesh");
-		std::filesystem::path relativepath = FileUtils::relativePath(component.Geometry.GetFilepath(), Application::GetOpenDocumentDirectory());
+		std::filesystem::path relativepath;
+		if (!component.Geometry.GetFilepath().empty())
+		{
+			relativepath = FileUtils::relativePath(component.Geometry.GetFilepath(), Application::GetOpenDocumentDirectory());
+		}
 		pStaticMeshElement->InsertNewChildElement("Mesh")->SetAttribute("Filepath", relativepath.string().c_str());
 
 		Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material);
@@ -187,7 +507,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		case PrimitiveComponent::Shape::Cylinder:
 		{
 			tinyxml2::XMLElement* pCylinderElement = pPrimitiveElement->InsertNewChildElement("Cylinder");
-			
+
 			pCylinderElement->SetAttribute("BottomRadius", component.CylinderBottomRadius);
 			pCylinderElement->SetAttribute("TopRadius", component.CylinderTopRadius);
 			pCylinderElement->SetAttribute("Height", component.CylinderHeight);

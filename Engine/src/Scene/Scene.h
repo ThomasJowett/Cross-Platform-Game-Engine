@@ -50,6 +50,7 @@ public:
 
 	entt::registry& GetRegistry() { return m_Registry; }
 	const std::string& GetSceneName() const { return m_SceneName; }
+	void SetSceneName(std::string name) { m_SceneName = name; }
 
 	virtual void Save(bool binary = false);
 	virtual void Save(std::filesystem::path filepath, bool binary = false);

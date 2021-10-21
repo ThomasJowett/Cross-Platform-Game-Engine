@@ -12,8 +12,10 @@ struct CameraComponent
 
 	CameraComponent() = default;
 	CameraComponent(const CameraComponent&) = default;
-	CameraComponent(const SceneCamera& camera, bool mainCamera = true, bool fixedAspectRatio = true)
-		:Camera(camera){}
+	CameraComponent(const SceneCamera& camera, bool primaryCamera = true, bool fixedAspectRatio = true)
+		:Camera(camera),
+		Primary(primaryCamera),
+		FixedAspectRatio(fixedAspectRatio) {}
 
 	operator SceneCamera& () { return Camera; }
 	operator const SceneCamera& () const { return Camera; }

@@ -16,8 +16,10 @@ struct SpriteComponent
 
 	SpriteComponent() = default;
 	SpriteComponent(const SpriteComponent&) = default;
-	SpriteComponent(const Colour& colour)
-		:Tint(colour) {}
+	SpriteComponent(const Colour& colour, float tilingFactor)
+		:Tint(colour),
+		TilingFactor(tilingFactor)
+	{}
 
 	template<typename Archive>
 	void serialize(Archive& archive)

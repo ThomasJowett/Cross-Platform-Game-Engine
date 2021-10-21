@@ -12,7 +12,7 @@ Material::Material(Ref<Shader> shader, Colour tint)
 
 void Material::BindTextures() const
 {
-	for (auto&&[texture, slot] : m_Textures)
+	for (auto&& [texture, slot] : m_Textures)
 	{
 		texture->Bind(slot);
 	}
@@ -29,6 +29,9 @@ void Material::AddTexture(Ref<Texture> texture, uint32_t slot)
 
 void Material::LoadMaterial(const std::filesystem::path& filepath)
 {
+	if (!std::filesystem::exists(filepath))
+		return;
+
 	tinyxml2::XMLDocument doc;
 
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
