@@ -60,10 +60,10 @@ void Decode(tinyxml2::XMLElement* pElement, Colour& colour)
 		const char* gChar = pElement->Attribute("G");
 		const char* bChar = pElement->Attribute("B");
 		const char* aChar = pElement->Attribute("A");
-		colour.r = atof(rChar);
-		colour.g = atof(gChar);
-		colour.b = atof(bChar);
-		colour.a = atof(aChar);
+		if (rChar) colour.r = atof(rChar);
+		if (gChar) colour.g = atof(gChar);
+		if (bChar) colour.b = atof(bChar);
+		if (aChar) colour.a = atof(aChar);
 	}
 }
 
@@ -72,6 +72,17 @@ void Encode(tinyxml2::XMLElement* pElement, const Material& material)
 	std::string relativePath = FileUtils::relativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 	pElement->SetAttribute("Filepath", relativePath.c_str());
 	material.SaveMaterial();
+}
+
+void Decode(const char* boolChar, bool& value)
+{
+	if (boolChar)
+	{
+		if (!strcmp(boolChar, "true"))
+			value = true;
+		else if (strcmp(boolChar, "false"))
+			value = false;
+	}
 }
 
 SceneSerializer::SceneSerializer(Scene* scene)
@@ -115,7 +126,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 		const char* sceneName = pRoot->Attribute("Name");
 
-		m_Scene->SetSceneName(sceneName);
+		if (sceneName)
+			m_Scene->SetSceneName(sceneName);
 
 		//Entities
 		tinyxml2::XMLElement* pEntityElement = pRoot->FirstChildElement("Entity");
@@ -126,14 +138,18 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			const char* entityName = pEntityElement->Attribute("Name");
 			const char* uuidChar = pEntityElement->Attribute("ID");
 
-			if (uuidChar != nullptr)
+			if (uuidChar && entityName)
 			{
 				Uuid uuid(std::stoull(uuidChar));
 				entity = m_Scene->CreateEntity(uuid, entityName);
 			}
-			else
+			else if (entityName)
 			{
 				entity = m_Scene->CreateEntity(entityName);
+			}
+			else
+			{
+				entity = m_Scene->CreateEntity();
 			}
 
 			// Transform ----------------------------------------------------------------------------------------------------------
@@ -152,28 +168,37 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pCamera)
 			{
-				const char* primaryChar = pCamera->Attribute("Primary");
-				bool isPrimary = !strcmp(primaryChar, "true");
+				CameraComponent& component = entity.AddComponent<CameraComponent>();
 
-				const char* fixedAspectRatioChar = pCamera->Attribute("FixedAspectRatio");
-				bool isFixedAspectRatio = !strcmp(fixedAspectRatioChar, "true");
+				Decode(pCamera->Attribute("Primary"), component.Primary);
+				Decode(pCamera->Attribute("FixedAspectRatio"), component.FixedAspectRatio);
 
 				SceneCamera sceneCamera;
 				tinyxml2::XMLElement* pSceneCameraElement = pCamera->FirstChildElement("SceneCamera");
 
 				if (pSceneCameraElement)
 				{
-					sceneCamera.SetProjection((SceneCamera::ProjectionType)atoi(pSceneCameraElement->Attribute("ProjectionType")));
-					sceneCamera.SetOrthoSize(atof(pSceneCameraElement->Attribute("OrthoSize")));
-					sceneCamera.SetOrthoNear(atof(pSceneCameraElement->Attribute("OrthoNear")));
-					sceneCamera.SetOrthoFar(atof(pSceneCameraElement->Attribute("OrthoFar")));
-					sceneCamera.SetPerspectiveNear(atof(pSceneCameraElement->Attribute("PerspectiveNear")));
-					sceneCamera.SetPerspectiveFar(atof(pSceneCameraElement->Attribute("PerspectiveFar")));
-					sceneCamera.SetVerticalFov(atof(pSceneCameraElement->Attribute("FOV")));
-					sceneCamera.SetAspectRatio(atof(pSceneCameraElement->Attribute("AspectRatio")));
+					const char* projectionType = pSceneCameraElement->Attribute("ProjectionType");
+
+					const char* orthoSize = pSceneCameraElement->Attribute("OrthoSize");
+					const char* orthoNear = pSceneCameraElement->Attribute("OrthoNear");
+					const char* orthoFar = pSceneCameraElement->Attribute("OrthoFar");
+					const char* perspectiveNear = pSceneCameraElement->Attribute("PerspectiveNear");
+					const char* perspectiveFar = pSceneCameraElement->Attribute("PerspectiveFar");
+					const char* fov = pSceneCameraElement->Attribute("FOV");
+					const char* aspectRatio = pSceneCameraElement->Attribute("AspectRatio");
+
+					if (projectionType) sceneCamera.SetProjection((SceneCamera::ProjectionType)atoi(projectionType));
+					if (orthoSize) sceneCamera.SetOrthoSize(atof(orthoSize));
+					if (orthoNear) sceneCamera.SetOrthoNear(atof(orthoNear));
+					if (orthoFar) sceneCamera.SetOrthoFar(atof(orthoFar));
+					if (perspectiveFar) sceneCamera.SetPerspectiveNear(atof(perspectiveNear));
+					if (perspectiveFar) sceneCamera.SetPerspectiveFar(atof(perspectiveFar));
+					if (fov) sceneCamera.SetVerticalFov(atof(fov));
+					if (aspectRatio) sceneCamera.SetAspectRatio(atof(aspectRatio));
 				}
 
-				entity.AddComponent<CameraComponent>(sceneCamera, isPrimary, isFixedAspectRatio);
+				component.Camera = sceneCamera;
 			}
 
 			// Sprite -------------------------------------------------------------------------------------------------------------
@@ -181,9 +206,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pSpriteElement)
 			{
-				Colour tint;
-				Decode(pSpriteElement->FirstChildElement("Tint"), tint);
-				entity.AddComponent<SpriteComponent>(tint, atof(pSpriteElement->Attribute("TilingFactor")));
+				SpriteComponent& component = entity.AddComponent<SpriteComponent>();
+
+				Decode(pSpriteElement->FirstChildElement("Tint"), component.Tint);
+				const char* tilingFactor = pSpriteElement->Attribute("Tilingfactor");
+				if (tilingFactor) component.TilingFactor = atof(tilingFactor);
+
 				//TODO: load material
 			}
 
@@ -199,11 +227,15 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				if (pMeshElement)
 				{
 					const char* meshFilepathChar = pMeshElement->Attribute("Filepath");
-					std::string meshFilepathStr(meshFilepathChar);
-					if (!meshFilepathStr.empty())
+
+					if (meshFilepathChar)
 					{
-						std::filesystem::path meshfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / meshFilepathStr);
-						mesh.LoadModel(meshfilepath);
+						std::string meshFilepathStr(meshFilepathChar);
+						if (!meshFilepathStr.empty())
+						{
+							std::filesystem::path meshfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / meshFilepathStr);
+							mesh.LoadModel(meshfilepath);
+						}
 					}
 				}
 
@@ -212,12 +244,16 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				if (pMaterialElement)
 				{
 					const char* materialFilepathChar = pMeshElement->Attribute("Filepath");
-					std::string materialFilepathStr(materialFilepathChar);
 
-					if (!materialFilepathStr.empty())
+					if (materialFilepathChar)
 					{
-						std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-						material.LoadMaterial(materailfilepath);
+						std::string materialFilepathStr(materialFilepathChar);
+
+						if (!materialFilepathStr.empty())
+						{
+							std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
+							material.LoadMaterial(materailfilepath);
+						}
 					}
 				}
 				entity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -229,7 +265,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			if (pNativeScriptElement)
 			{
 				const char* nativeScriptName = pNativeScriptElement->Attribute("Name");
-				entity.AddComponent<NativeScriptComponent>(nativeScriptName);
+				if (nativeScriptName)
+					entity.AddComponent<NativeScriptComponent>(nativeScriptName);
 			}
 
 			// Primitive -------------------------------------------------------------------------------------------------------
@@ -247,10 +284,15 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pCubeElement)
 					{
-						entity.AddComponent<PrimitiveComponent>(
-							(float)atof(pCubeElement->Attribute("Width")),
-							(float)atof(pCubeElement->Attribute("Height")),
-							(float)atof(pCubeElement->Attribute("Depth")));
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
+
+						const char* width = pCubeElement->Attribute("Width");
+						const char* height = pCubeElement->Attribute("Height");
+						const char* depth = pCubeElement->Attribute("Depth");
+
+						if (width)  component.CubeWidth = atof(width);
+						if (height) component.CubeHeight = atof(height);
+						if (depth) component.CubeDepth = atof(depth);
 					}
 					break;
 				}
@@ -260,10 +302,15 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pSphereElement)
 					{
-						entity.AddComponent<PrimitiveComponent>(
-							(float)atof(pSphereElement->Attribute("Radius")),
-							(uint32_t)atoi(pSphereElement->Attribute("LongitudeLines")),
-							(uint32_t)atoi(pSphereElement->Attribute("LatitudeLines")));
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
+
+						const char* radius = pSphereElement->Attribute("Radius");
+						const char* longitudeLines = pSphereElement->Attribute("LongitudeLines");
+						const char* latitudeLines = pSphereElement->Attribute("LatitudeLines");
+
+						if (radius) component.SphereRadius = atof(radius);
+						if (longitudeLines) component.SphereLongitudeLines = atoi(longitudeLines);
+						if (latitudeLines) component.SphereLatitudeLines = atoi(latitudeLines);
 					}
 					break;
 				}
@@ -273,13 +320,21 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pPlaneElement)
 					{
-						entity.AddComponent<PrimitiveComponent>(
-							(float)atof(pPlaneElement->Attribute("Width")),
-							(float)atof(pPlaneElement->Attribute("Length")),
-							(uint32_t)atoi(pPlaneElement->Attribute("WidthLines")),
-							(uint32_t)atoi(pPlaneElement->Attribute("LengthLines")),
-							(float)atof(pPlaneElement->Attribute("TileU")),
-							(float)atof(pPlaneElement->Attribute("TileV")));
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
+
+						const char* width = pPlaneElement->Attribute("Width");
+						const char* length = pPlaneElement->Attribute("Length");
+						const char* widthLines = pPlaneElement->Attribute("WidthLines");
+						const char* lengthLines = pPlaneElement->Attribute("LengthLines");
+						const char* tileU = pPlaneElement->Attribute("TileU");
+						const char* tileV = pPlaneElement->Attribute("TileV");
+
+						if (width) component.PlaneWidth = atof(width);
+						if (length) component.PlaneLength = atof(length);
+						if (widthLines) component.PlaneWidthLines = atoi(widthLines);
+						if (lengthLines) component.PlaneLengthLines = atoi(lengthLines);
+						if (tileU) component.PlaneTileU = atof(tileU);
+						if (tileV) component.PlaneTileV = atof(tileV);
 					}
 					break;
 				}
@@ -289,12 +344,19 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pCylinderElement)
 					{
-						entity.AddComponent<PrimitiveComponent>(
-							(float)atof(pCylinderElement->Attribute("BottomRadius")),
-							(float)atof(pCylinderElement->Attribute("TopRadius")),
-							(float)atof(pCylinderElement->Attribute("Height")),
-							(uint32_t)atoi(pCylinderElement->Attribute("SliceCount")),
-							(uint32_t)atoi(pCylinderElement->Attribute("StackCount")));
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
+
+						const char* bottomRadius = pCylinderElement->Attribute("BottomRadius");
+						const char* topRadius = pCylinderElement->Attribute("TopRadius");
+						const char* height = pCylinderElement->Attribute("Height");
+						const char* sliceCount = pCylinderElement->Attribute("SliceCount");
+						const char* stackCount = pCylinderElement->Attribute("StackCount");
+
+						if (bottomRadius) component.CylinderBottomRadius = atof(bottomRadius);
+						if (topRadius) component.CylinderTopRadius = atof(topRadius);
+						if (height) component.CylinderHeight = atof(height);
+						if (sliceCount) component.CylinderSliceCount = atoi(sliceCount);
+						if (stackCount) component.CylinderStackCount = atoi(stackCount);
 					}
 					break;
 				}
@@ -304,11 +366,17 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pConeElement)
 					{
-						entity.AddComponent<PrimitiveComponent>(
-							(float)atof(pConeElement->Attribute("BottomRadius")),
-							(float)atof(pConeElement->Attribute("Height")),
-							(uint32_t)atoi(pConeElement->Attribute("SliceCount")),
-							(uint32_t)atoi(pConeElement->Attribute("StackCount")));
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
+
+						const char* bottomRadius = pConeElement->Attribute("BottomRadius");
+						const char* height = pConeElement->Attribute("Height");
+						const char* sliceCount = pConeElement->Attribute("SliceCount");
+						const char* stackCount = pConeElement->Attribute("StackCount");
+
+						if (bottomRadius) component.ConeBottomRadius = atof(bottomRadius);
+						if (height) component.ConeHeight = atof(height);
+						if (sliceCount) component.ConeSliceCount = atoi(sliceCount);
+						if (stackCount) component.ConeStackCount = atoi(stackCount);
 					}
 					break;
 				}
@@ -318,21 +386,18 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 					if (pTorusElement)
 					{
-						float outerRadius = 1.0f, innerRadius = 0.4f;
-						uint32_t sliceCount = 32;
+						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 
 						const char* outerRadiusChar = pTorusElement->Attribute("OuterRadius");
 						const char* innerRadiusChar = pTorusElement->Attribute("InnerRadius");
 						const char* sliceCountChar = pTorusElement->Attribute("SliceCount");
 
-						if (outerRadiusChar) outerRadius = atof(outerRadiusChar);
-						if (innerRadiusChar) innerRadius = atof(innerRadiusChar);
-						if (sliceCountChar) sliceCount = atoi(sliceCountChar);
-
-						entity.AddComponent<PrimitiveComponent>(outerRadius, innerRadius, sliceCount);
+						if (outerRadiusChar) component.TorusOuterRadius = atof(outerRadiusChar);
+						if (innerRadiusChar) component.TorusInnerRadius = atof(innerRadiusChar);
+						if (sliceCountChar) component.TorusSliceCount = atoi(sliceCountChar);
 					}
+					break;
 				}
-				break;
 				default:
 					break;
 				}
