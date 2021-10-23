@@ -5,6 +5,7 @@
 #include "Scene/Entity.h"
 #include "Components/Components.h"
 #include "Core/Application.h"
+#include "Core/Version.h"
 
 void Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
 {
@@ -16,11 +17,11 @@ void Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2)
 {
 	if (pElement)
 	{
-		const char* xChar = pElement->Attribute("X");
-		const char* yChar = pElement->Attribute("Y");
-		if (xChar) vec2.x = atof(xChar);
-		if (yChar) vec2.y = atof(yChar);
+		pElement->QueryFloatAttribute("X", &vec2.x);
+		pElement->QueryFloatAttribute("Y", &vec2.y);
 	}
+	else
+		ENGINE_WARN("Could not find Vector2 element");
 }
 
 void Encode(tinyxml2::XMLElement* pElement, const Vector3f& vec3)
@@ -34,13 +35,12 @@ void Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3)
 {
 	if (pElement)
 	{
-		const char* xChar = pElement->Attribute("X");
-		const char* yChar = pElement->Attribute("Y");
-		const char* zChar = pElement->Attribute("Z");
-		if (xChar) vec3.x = atof(xChar);
-		if (yChar) vec3.y = atof(yChar);
-		if (zChar) vec3.y = atof(zChar);
+		pElement->QueryFloatAttribute("X", &vec3.x);
+		pElement->QueryFloatAttribute("Y", &vec3.y);
+		pElement->QueryFloatAttribute("Z", &vec3.z);
 	}
+	else
+		ENGINE_WARN("Could not find Vector3 element");
 }
 
 void Encode(tinyxml2::XMLElement* pElement, const Colour& colour)
@@ -56,15 +56,13 @@ void Decode(tinyxml2::XMLElement* pElement, Colour& colour)
 {
 	if (pElement)
 	{
-		const char* rChar = pElement->Attribute("R");
-		const char* gChar = pElement->Attribute("G");
-		const char* bChar = pElement->Attribute("B");
-		const char* aChar = pElement->Attribute("A");
-		if (rChar) colour.r = atof(rChar);
-		if (gChar) colour.g = atof(gChar);
-		if (bChar) colour.b = atof(bChar);
-		if (aChar) colour.a = atof(aChar);
+		pElement->QueryFloatAttribute("R", &colour.r);
+		pElement->QueryFloatAttribute("G", &colour.g);
+		pElement->QueryFloatAttribute("B", &colour.b);
+		pElement->QueryFloatAttribute("A", &colour.a);
 	}
+	else
+		ENGINE_WARN("Could not find Colour element");
 }
 
 void Encode(tinyxml2::XMLElement* pElement, const Material& material)
@@ -74,15 +72,25 @@ void Encode(tinyxml2::XMLElement* pElement, const Material& material)
 	material.SaveMaterial();
 }
 
-void Decode(const char* boolChar, bool& value)
+void Decode(tinyxml2::XMLElement* pElement, Material& material)
 {
-	if (boolChar)
+	if (pElement)
 	{
-		if (!strcmp(boolChar, "true"))
-			value = true;
-		else if (strcmp(boolChar, "false"))
-			value = false;
+		const char* materialFilepathChar = pElement->Attribute("Filepath");
+
+		if (materialFilepathChar)
+		{
+			std::string materialFilepathStr(materialFilepathChar);
+
+			if (!materialFilepathStr.empty())
+			{
+				std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
+				material.LoadMaterial(materailfilepath);
+			}
+		}
 	}
+	else
+		ENGINE_WARN("Could not find Material node");
 }
 
 SceneSerializer::SceneSerializer(Scene* scene)
@@ -97,6 +105,8 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	pRoot->SetAttribute("Name", m_Scene->GetSceneName().c_str());
 
+	pRoot->SetAttribute("EngineVersion", VERSION);
+
 	doc.InsertFirstChild(pRoot);
 
 
@@ -105,7 +115,7 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
-				return;
+				return false;
 
 			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity);
 		});
@@ -124,12 +134,25 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Scene");
 
+		if (!pRoot)
+		{
+			ENGINE_ERROR("Not a valid scene file. Could not find Scene node");
+			return false;
+		}
+
 		const char* sceneName = pRoot->Attribute("Name");
 
 		if (sceneName)
 			m_Scene->SetSceneName(sceneName);
 
-		//Entities
+		// Version
+		const char* version = pRoot->Attribute("EngineVersion");
+
+		if (version)
+			if (atoi(version) != VERSION)
+				ENGINE_WARN("Loading scene created with a different version of the engine");
+
+		// Entities
 		tinyxml2::XMLElement* pEntityElement = pRoot->FirstChildElement("Entity");
 
 		while (pEntityElement)
@@ -145,10 +168,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			}
 			else if (entityName)
 			{
+				ENGINE_WARN("Entity ID not found in file");
 				entity = m_Scene->CreateEntity(entityName);
 			}
 			else
 			{
+				ENGINE_WARN("Entity name not found in file");
 				entity = m_Scene->CreateEntity();
 			}
 
@@ -170,32 +195,26 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			{
 				CameraComponent& component = entity.AddComponent<CameraComponent>();
 
-				Decode(pCamera->Attribute("Primary"), component.Primary);
-				Decode(pCamera->Attribute("FixedAspectRatio"), component.FixedAspectRatio);
+				pCamera->QueryBoolAttribute("Primary", &component.Primary);
+				pCamera->QueryBoolAttribute("FixedAspectRatio", &component.FixedAspectRatio);
 
 				SceneCamera sceneCamera;
 				tinyxml2::XMLElement* pSceneCameraElement = pCamera->FirstChildElement("SceneCamera");
 
 				if (pSceneCameraElement)
 				{
-					const char* projectionType = pSceneCameraElement->Attribute("ProjectionType");
+					SceneCamera::ProjectionType projectionType = 
+						(SceneCamera::ProjectionType)pSceneCameraElement->IntAttribute("ProjectionType", (int)sceneCamera.GetProjectionType());
 
-					const char* orthoSize = pSceneCameraElement->Attribute("OrthoSize");
-					const char* orthoNear = pSceneCameraElement->Attribute("OrthoNear");
-					const char* orthoFar = pSceneCameraElement->Attribute("OrthoFar");
-					const char* perspectiveNear = pSceneCameraElement->Attribute("PerspectiveNear");
-					const char* perspectiveFar = pSceneCameraElement->Attribute("PerspectiveFar");
-					const char* fov = pSceneCameraElement->Attribute("FOV");
-					const char* aspectRatio = pSceneCameraElement->Attribute("AspectRatio");
+					pSceneCameraElement->QueryFloatAttribute("OrthoSize", &sceneCamera.m_OrthographicSize);
+					pSceneCameraElement->QueryFloatAttribute("OrthoNear", &sceneCamera.m_OrthoGraphicNear);
+					pSceneCameraElement->QueryFloatAttribute("OrthoFar", &sceneCamera.m_OrthoGraphicFar);
+					pSceneCameraElement->QueryFloatAttribute("PerspectiveNear", &sceneCamera.m_PerspectiveNear);
+					pSceneCameraElement->QueryFloatAttribute("PerspectiveFar", &sceneCamera.m_PerspectiveFar);
+					pSceneCameraElement->QueryFloatAttribute("FOV", &sceneCamera.m_Fov);
+					pSceneCameraElement->QueryFloatAttribute("AspectRatio", & sceneCamera.m_AspectRatio);
 
-					if (projectionType) sceneCamera.SetProjection((SceneCamera::ProjectionType)atoi(projectionType));
-					if (orthoSize) sceneCamera.SetOrthoSize(atof(orthoSize));
-					if (orthoNear) sceneCamera.SetOrthoNear(atof(orthoNear));
-					if (orthoFar) sceneCamera.SetOrthoFar(atof(orthoFar));
-					if (perspectiveFar) sceneCamera.SetPerspectiveNear(atof(perspectiveNear));
-					if (perspectiveFar) sceneCamera.SetPerspectiveFar(atof(perspectiveFar));
-					if (fov) sceneCamera.SetVerticalFov(atof(fov));
-					if (aspectRatio) sceneCamera.SetAspectRatio(atof(aspectRatio));
+					sceneCamera.SetProjection(projectionType);
 				}
 
 				component.Camera = sceneCamera;
@@ -209,10 +228,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				SpriteComponent& component = entity.AddComponent<SpriteComponent>();
 
 				Decode(pSpriteElement->FirstChildElement("Tint"), component.Tint);
-				const char* tilingFactor = pSpriteElement->Attribute("Tilingfactor");
-				if (tilingFactor) component.TilingFactor = atof(tilingFactor);
-
-				//TODO: load material
+				pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.TilingFactor);
+				Decode(pSpriteElement->FirstChildElement("Material"), component.material);
 			}
 
 			// Static Mesh -------------------------------------------------------------------------------------------------------
@@ -239,23 +256,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					}
 				}
 
-				tinyxml2::XMLElement* pMaterialElement = pStaticMeshElement->FirstChildElement("Material");
+				Decode(pStaticMeshElement->FirstChildElement("Material"), material);
 
-				if (pMaterialElement)
-				{
-					const char* materialFilepathChar = pMeshElement->Attribute("Filepath");
-
-					if (materialFilepathChar)
-					{
-						std::string materialFilepathStr(materialFilepathChar);
-
-						if (!materialFilepathStr.empty())
-						{
-							std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-							material.LoadMaterial(materailfilepath);
-						}
-					}
-				}
 				entity.AddComponent<StaticMeshComponent>(mesh, material);
 			}
 
@@ -274,7 +276,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pPrimitiveElement)
 			{
-				PrimitiveComponent::Shape type = (PrimitiveComponent::Shape)atoi(pPrimitiveElement->Attribute("Type"));
+				PrimitiveComponent::Shape type = 
+					(PrimitiveComponent::Shape)pPrimitiveElement->IntAttribute("Type", (int)PrimitiveComponent::Shape::Cube);
 
 				switch (type)
 				{
@@ -286,13 +289,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 
-						const char* width = pCubeElement->Attribute("Width");
-						const char* height = pCubeElement->Attribute("Height");
-						const char* depth = pCubeElement->Attribute("Depth");
-
-						if (width)  component.CubeWidth = atof(width);
-						if (height) component.CubeHeight = atof(height);
-						if (depth) component.CubeDepth = atof(depth);
+						pCubeElement->QueryFloatAttribute("Width", &component.CubeWidth);
+						pCubeElement->QueryFloatAttribute("Height", &component.CubeHeight);
+						pCubeElement->QueryFloatAttribute("Depth", &component.CubeDepth);
 					}
 					break;
 				}
@@ -304,13 +303,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 
-						const char* radius = pSphereElement->Attribute("Radius");
-						const char* longitudeLines = pSphereElement->Attribute("LongitudeLines");
-						const char* latitudeLines = pSphereElement->Attribute("LatitudeLines");
-
-						if (radius) component.SphereRadius = atof(radius);
-						if (longitudeLines) component.SphereLongitudeLines = atoi(longitudeLines);
-						if (latitudeLines) component.SphereLatitudeLines = atoi(latitudeLines);
+						pSphereElement->QueryFloatAttribute("Radius", &component.SphereRadius);
+						pSphereElement->QueryUnsignedAttribute("LongitudeLines", &component.SphereLongitudeLines);
+						pSphereElement->QueryUnsignedAttribute("LatitudeLines", &component.SphereLatitudeLines);
 					}
 					break;
 				}
@@ -322,19 +317,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 
-						const char* width = pPlaneElement->Attribute("Width");
-						const char* length = pPlaneElement->Attribute("Length");
-						const char* widthLines = pPlaneElement->Attribute("WidthLines");
-						const char* lengthLines = pPlaneElement->Attribute("LengthLines");
-						const char* tileU = pPlaneElement->Attribute("TileU");
-						const char* tileV = pPlaneElement->Attribute("TileV");
-
-						if (width) component.PlaneWidth = atof(width);
-						if (length) component.PlaneLength = atof(length);
-						if (widthLines) component.PlaneWidthLines = atoi(widthLines);
-						if (lengthLines) component.PlaneLengthLines = atoi(lengthLines);
-						if (tileU) component.PlaneTileU = atof(tileU);
-						if (tileV) component.PlaneTileV = atof(tileV);
+						pPlaneElement->QueryFloatAttribute("Width", &component.PlaneWidth);
+						pPlaneElement->QueryFloatAttribute("Length", &component.PlaneLength);
+						pPlaneElement->QueryUnsignedAttribute("WidthLines", &component.PlaneWidthLines);
+						pPlaneElement->QueryUnsignedAttribute("LengthLines", &component.PlaneLengthLines);
+						pPlaneElement->QueryFloatAttribute("TileU", &component.PlaneTileU);
+						pPlaneElement->QueryFloatAttribute("TileV", &component.PlaneTileV);
 					}
 					break;
 				}
@@ -346,17 +334,11 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 
-						const char* bottomRadius = pCylinderElement->Attribute("BottomRadius");
-						const char* topRadius = pCylinderElement->Attribute("TopRadius");
-						const char* height = pCylinderElement->Attribute("Height");
-						const char* sliceCount = pCylinderElement->Attribute("SliceCount");
-						const char* stackCount = pCylinderElement->Attribute("StackCount");
-
-						if (bottomRadius) component.CylinderBottomRadius = atof(bottomRadius);
-						if (topRadius) component.CylinderTopRadius = atof(topRadius);
-						if (height) component.CylinderHeight = atof(height);
-						if (sliceCount) component.CylinderSliceCount = atoi(sliceCount);
-						if (stackCount) component.CylinderStackCount = atoi(stackCount);
+						pCylinderElement->QueryFloatAttribute("BottomRadius", &component.CylinderBottomRadius);
+						pCylinderElement->QueryFloatAttribute("TopRadius", &component.CylinderTopRadius);
+						pCylinderElement->QueryFloatAttribute("Height", &component.CylinderHeight);
+						pCylinderElement->QueryUnsignedAttribute("SliceCount", &component.CylinderSliceCount);
+						pCylinderElement->QueryUnsignedAttribute("StackCount", &component.CylinderStackCount);
 					}
 					break;
 				}
@@ -368,15 +350,10 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 
-						const char* bottomRadius = pConeElement->Attribute("BottomRadius");
-						const char* height = pConeElement->Attribute("Height");
-						const char* sliceCount = pConeElement->Attribute("SliceCount");
-						const char* stackCount = pConeElement->Attribute("StackCount");
-
-						if (bottomRadius) component.ConeBottomRadius = atof(bottomRadius);
-						if (height) component.ConeHeight = atof(height);
-						if (sliceCount) component.ConeSliceCount = atoi(sliceCount);
-						if (stackCount) component.ConeStackCount = atoi(stackCount);
+						pConeElement->QueryFloatAttribute("BottomRadius", &component.ConeBottomRadius);
+						pConeElement->QueryFloatAttribute("Height", &component.ConeHeight);
+						pConeElement->QueryUnsignedAttribute("SliceCount", &component.ConeSliceCount);
+						pConeElement->QueryUnsignedAttribute("StackCount", &component.ConeStackCount);
 					}
 					break;
 				}
@@ -388,13 +365,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					{
 						PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 
-						const char* outerRadiusChar = pTorusElement->Attribute("OuterRadius");
-						const char* innerRadiusChar = pTorusElement->Attribute("InnerRadius");
-						const char* sliceCountChar = pTorusElement->Attribute("SliceCount");
-
-						if (outerRadiusChar) component.TorusOuterRadius = atof(outerRadiusChar);
-						if (innerRadiusChar) component.TorusInnerRadius = atof(innerRadiusChar);
-						if (sliceCountChar) component.TorusSliceCount = atoi(sliceCountChar);
+						pTorusElement->QueryFloatAttribute("OuterRadius", &component.TorusOuterRadius);
+						pTorusElement->QueryFloatAttribute("InnerRadius", &component.TorusInnerRadius);
+						pTorusElement->QueryUnsignedAttribute("SliceCount", &component.TorusSliceCount);
 					}
 					break;
 				}
@@ -427,8 +400,13 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pRigidBody2DElement)
 			{
-				//TODO
-				entity.AddComponent<RigidBody2DComponent>();
+				RigidBody2DComponent& component = entity.AddComponent<RigidBody2DComponent>();
+				
+				component.Type = (RigidBody2DComponent::BodyType)pRigidBody2DElement->IntAttribute("BodyType", (int)component.Type);
+				pRigidBody2DElement->QueryBoolAttribute("FixedRotation", &component.FixedRotation);
+				pRigidBody2DElement->QueryFloatAttribute("GravityScale", &component.GravityScale);
+				pRigidBody2DElement->QueryFloatAttribute("AngularDamping", &component.AngularDamping);
+				pRigidBody2DElement->QueryFloatAttribute("LinearDamping", &component.LinearDamping);
 			}
 
 			// BoxCollider2D -----------------------------------------------------------------------------------------------
@@ -436,8 +414,14 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pBoxCollider2DElement)
 			{
-				//TODO
-				entity.AddComponent<BoxCollider2DComponent>();
+				BoxCollider2DComponent& component = entity.AddComponent<BoxCollider2DComponent>();
+
+				pBoxCollider2DElement->QueryFloatAttribute("Density", &component.Density);
+				pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
+				pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+
+				Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.Offset);
+				Decode(pBoxCollider2DElement->FirstChildElement("Size"), component.Size);
 			}
 
 			// CircleCollider2D -----------------------------------------------------------------------------------------------
@@ -445,8 +429,13 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pCircleCollider2DElement)
 			{
-				//TODO
-				entity.AddComponent<CircleCollider2DComponent>();
+				CircleCollider2DComponent& component = entity.AddComponent<CircleCollider2DComponent>();
+
+				pBoxCollider2DElement->QueryFloatAttribute("Density", &component.Density);
+				pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
+				pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+
+				Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
 			}
 
 			pEntityElement = pEntityElement->NextSiblingElement("Entity");
@@ -655,5 +644,6 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCircleColliderElement->SetAttribute("Restitution", component.Restitution);
 
 		pCircleColliderElement->SetAttribute("Radius", component.Radius);
+		Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
 	}
 }

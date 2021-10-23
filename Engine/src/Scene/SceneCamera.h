@@ -66,4 +66,6 @@ private:
 	float m_Fov = (float)PI * 0.5f;
 
 	float m_AspectRatio = 16.0f / 9.0f;
+
+	friend class SceneSerializer;
 };

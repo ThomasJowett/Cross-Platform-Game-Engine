@@ -90,7 +90,7 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::OnRuntimeStart()
 {
-	if(m_Dirty)
+	if (m_Dirty)
 		Save();
 
 	m_Snapshot.clear();
@@ -106,7 +106,7 @@ void Scene::OnRuntimeStart()
 			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
 			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
 			bodyDef.angle = (float32)transformComp.Rotation.z;
-			
+
 			if (rigidBody2DComp.Type == RigidBody2DComponent::BodyType::DYNAMIC)
 			{
 				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
@@ -114,7 +114,7 @@ void Scene::OnRuntimeStart()
 				bodyDef.linearDamping = rigidBody2DComp.LinearDamping;
 				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
 			}
-			
+
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
 			rigidBody2DComp.RuntimeBody = body;
@@ -173,7 +173,7 @@ void Scene::OnRuntimeStop()
 	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	m_Snapshot.clear();
 
-	if(m_Box2DWorld != nullptr) delete m_Box2DWorld;
+	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
 }
 
@@ -452,7 +452,8 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	else
 	{
 		SceneSerializer sceneSerializer = SceneSerializer(this);
-		sceneSerializer.Serialize(finalPath);
+		if (!sceneSerializer.Serialize(finalPath))
+			ENGINE_ERROR("Failed to save scene to {0}.", finalPath.string());
 	}
 
 	m_Dirty = false;
@@ -490,16 +491,9 @@ bool Scene::Load(bool binary)
 	}
 	else
 	{
-		try
-		{
-			SceneSerializer sceneSerializer = SceneSerializer(this);
-			sceneSerializer.Deserialize(filepath);
-		}
-		catch (const std::exception& ex)
-		{
-			ENGINE_ERROR("Failed to load scene. Exception thrown: {0}", ex.what());
-			return false;
-		}
+		SceneSerializer sceneSerializer = SceneSerializer(this);
+		if (!sceneSerializer.Deserialize(filepath))
+			ENGINE_ERROR("Failed to load scene. Could not read file {0}", filepath);
 	}
 
 	m_Dirty = false;

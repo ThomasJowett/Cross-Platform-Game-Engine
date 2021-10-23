@@ -470,7 +470,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
-				offset.y = 0.0f;
+				offset.x = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
@@ -496,7 +496,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
-				size.y = 0.0f;
+				size.x = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
@@ -537,7 +537,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
-				offset.y = 0.0f;
+				offset.x = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
