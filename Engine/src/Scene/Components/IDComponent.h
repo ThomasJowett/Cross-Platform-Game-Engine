@@ -7,7 +7,7 @@ struct IDComponent
 	Uuid ID;
 
 	IDComponent() = default;
-	IDComponent(const const IDComponent&) = default;
+	IDComponent(const IDComponent&) = default;
 	IDComponent(Uuid id)
 		:ID(id) {}
 

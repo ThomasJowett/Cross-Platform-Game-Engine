@@ -115,9 +115,10 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
-				return false;
+				return;
 
 			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity);
+			return;
 		});
 
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
