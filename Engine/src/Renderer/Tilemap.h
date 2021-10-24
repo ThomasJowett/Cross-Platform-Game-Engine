@@ -97,6 +97,44 @@ class Tilemap
 		void Offset(float vertical, float horizontal);
 	};
 
+	struct Object
+	{
+		uint32_t m_Id;
+		std::string m_Name;
+		std::string m_Type;
+		bool m_Visible = true;
+		Vector2f m_Position;
+		float m_Rotation;
+	};
+
+	struct RectangleObject : public Object
+	{
+		float m_Width;
+		float m_Height;
+	};
+
+	struct EllipseObject : public Object
+	{
+
+	};
+
+	struct PolygonObject : public Object
+	{
+		std::vector<Vector2f> m_Points;
+	};
+
+	struct TextObject : public Object
+	{
+		std::string m_Text;
+		bool m_WordWrap;
+		Colour m_Colour;
+	};
+
+	struct Tile : public Object
+	{
+		uint32_t m_Gid;
+	};
+
 public:
 	Tilemap() = default;
 	bool Load(std::filesystem::path);
@@ -128,6 +166,7 @@ private:
 	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets;
 
 	std::vector<Layer> m_Layers;
+	std::vector<Object> m_Objects;
 
 	friend cereal::access;
 	template<typename Archive>

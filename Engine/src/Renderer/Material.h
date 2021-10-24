@@ -17,6 +17,7 @@ public:
 
 	const Ref<Shader> GetShader() const { return m_Shader; };
 	void BindTextures() const;
+	const Ref<Texture> GetTexture(uint32_t slot) const;
 
 	void AddTexture(Ref<Texture>, uint32_t slot);
 
@@ -24,6 +25,7 @@ public:
 	Colour GetTint() const { return m_Tint; }
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
+	std::filesystem::path& GetFilepath() { return m_Filepath; }
 
 	void LoadMaterial(const std::filesystem::path& filepath);
 	void LoadMaterial();
@@ -33,7 +35,7 @@ public:
 private:
 	Ref<Shader> m_Shader;
 
-	std::unordered_map<Ref<Texture>, uint32_t> m_Textures;
+	std::unordered_map<uint32_t, Ref<Texture>> m_Textures;
 
 	Colour m_Tint;
 

@@ -6,92 +6,7 @@
 #include "Components/Components.h"
 #include "Core/Application.h"
 #include "Core/Version.h"
-
-void Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
-{
-	pElement->SetAttribute("X", vec2.x);
-	pElement->SetAttribute("Y", vec2.y);
-}
-
-void Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2)
-{
-	if (pElement)
-	{
-		pElement->QueryFloatAttribute("X", &vec2.x);
-		pElement->QueryFloatAttribute("Y", &vec2.y);
-	}
-	else
-		ENGINE_WARN("Could not find Vector2 element");
-}
-
-void Encode(tinyxml2::XMLElement* pElement, const Vector3f& vec3)
-{
-	pElement->SetAttribute("X", vec3.x);
-	pElement->SetAttribute("Y", vec3.y);
-	pElement->SetAttribute("Z", vec3.z);
-}
-
-void Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3)
-{
-	if (pElement)
-	{
-		pElement->QueryFloatAttribute("X", &vec3.x);
-		pElement->QueryFloatAttribute("Y", &vec3.y);
-		pElement->QueryFloatAttribute("Z", &vec3.z);
-	}
-	else
-		ENGINE_WARN("Could not find Vector3 element");
-}
-
-void Encode(tinyxml2::XMLElement* pElement, const Colour& colour)
-{
-	pElement->SetAttribute("R", colour.r);
-	pElement->SetAttribute("G", colour.g);
-	pElement->SetAttribute("B", colour.b);
-	pElement->SetAttribute("A", colour.a);
-
-}
-
-void Decode(tinyxml2::XMLElement* pElement, Colour& colour)
-{
-	if (pElement)
-	{
-		pElement->QueryFloatAttribute("R", &colour.r);
-		pElement->QueryFloatAttribute("G", &colour.g);
-		pElement->QueryFloatAttribute("B", &colour.b);
-		pElement->QueryFloatAttribute("A", &colour.a);
-	}
-	else
-		ENGINE_WARN("Could not find Colour element");
-}
-
-void Encode(tinyxml2::XMLElement* pElement, const Material& material)
-{
-	std::string relativePath = FileUtils::relativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-	pElement->SetAttribute("Filepath", relativePath.c_str());
-	material.SaveMaterial();
-}
-
-void Decode(tinyxml2::XMLElement* pElement, Material& material)
-{
-	if (pElement)
-	{
-		const char* materialFilepathChar = pElement->Attribute("Filepath");
-
-		if (materialFilepathChar)
-		{
-			std::string materialFilepathStr(materialFilepathChar);
-
-			if (!materialFilepathStr.empty())
-			{
-				std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-				material.LoadMaterial(materailfilepath);
-			}
-		}
-	}
-	else
-		ENGINE_WARN("Could not find Material node");
-}
+#include "Utilities/SerializationUtils.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -190,9 +105,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			if (pTransformElement)
 			{
 				TransformComponent& transformComp = entity.GetTransform();
-				Decode(pTransformElement->FirstChildElement("Position"), transformComp.Position);
-				Decode(pTransformElement->FirstChildElement("Rotation"), transformComp.Rotation);
-				Decode(pTransformElement->FirstChildElement("Scale"), transformComp.Scale);
+				SerializationUtils::Decode(pTransformElement->FirstChildElement("Position"), transformComp.Position);
+				SerializationUtils::Decode(pTransformElement->FirstChildElement("Rotation"), transformComp.Rotation);
+				SerializationUtils::Decode(pTransformElement->FirstChildElement("Scale"), transformComp.Scale);
 			}
 
 			// Camera -------------------------------------------------------------------------------------------------------------
@@ -210,7 +125,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 				if (pSceneCameraElement)
 				{
-					SceneCamera::ProjectionType projectionType = 
+					SceneCamera::ProjectionType projectionType =
 						(SceneCamera::ProjectionType)pSceneCameraElement->IntAttribute("ProjectionType", (int)sceneCamera.GetProjectionType());
 
 					pSceneCameraElement->QueryFloatAttribute("OrthoSize", &sceneCamera.m_OrthographicSize);
@@ -219,7 +134,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					pSceneCameraElement->QueryFloatAttribute("PerspectiveNear", &sceneCamera.m_PerspectiveNear);
 					pSceneCameraElement->QueryFloatAttribute("PerspectiveFar", &sceneCamera.m_PerspectiveFar);
 					pSceneCameraElement->QueryFloatAttribute("FOV", &sceneCamera.m_Fov);
-					pSceneCameraElement->QueryFloatAttribute("AspectRatio", & sceneCamera.m_AspectRatio);
+					pSceneCameraElement->QueryFloatAttribute("AspectRatio", &sceneCamera.m_AspectRatio);
 
 					sceneCamera.SetProjection(projectionType);
 				}
@@ -234,9 +149,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			{
 				SpriteComponent& component = entity.AddComponent<SpriteComponent>();
 
-				Decode(pSpriteElement->FirstChildElement("Tint"), component.Tint);
+				SerializationUtils::Decode(pSpriteElement->FirstChildElement("Tint"), component.Tint);
 				pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.TilingFactor);
-				Decode(pSpriteElement->FirstChildElement("Material"), component.material);
+				SerializationUtils::Decode(pSpriteElement->FirstChildElement("Material"), component.material);
 			}
 
 			// Static Mesh -------------------------------------------------------------------------------------------------------
@@ -263,7 +178,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 					}
 				}
 
-				Decode(pStaticMeshElement->FirstChildElement("Material"), material);
+				SerializationUtils::Decode(pStaticMeshElement->FirstChildElement("Material"), material);
 
 				entity.AddComponent<StaticMeshComponent>(mesh, material);
 			}
@@ -283,7 +198,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 			if (pPrimitiveElement)
 			{
-				PrimitiveComponent::Shape type = 
+				PrimitiveComponent::Shape type =
 					(PrimitiveComponent::Shape)pPrimitiveElement->IntAttribute("Type", (int)PrimitiveComponent::Shape::Cube);
 
 				switch (type)
@@ -408,7 +323,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			if (pRigidBody2DElement)
 			{
 				RigidBody2DComponent& component = entity.AddComponent<RigidBody2DComponent>();
-				
+
 				component.Type = (RigidBody2DComponent::BodyType)pRigidBody2DElement->IntAttribute("BodyType", (int)component.Type);
 				pRigidBody2DElement->QueryBoolAttribute("FixedRotation", &component.FixedRotation);
 				pRigidBody2DElement->QueryFloatAttribute("GravityScale", &component.GravityScale);
@@ -427,8 +342,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
 				pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
 
-				Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.Offset);
-				Decode(pBoxCollider2DElement->FirstChildElement("Size"), component.Size);
+				SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.Offset);
+				SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Size"), component.Size);
 			}
 
 			// CircleCollider2D -----------------------------------------------------------------------------------------------
@@ -442,7 +357,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
 				pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
 
-				Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
+				SerializationUtils::Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
 			}
 
 			pEntityElement = pEntityElement->NextSiblingElement("Entity");
@@ -467,9 +382,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	TransformComponent& transformcomp = entity.GetTransform();
 
 	tinyxml2::XMLElement* pTransformElement = pElement->InsertNewChildElement("Transform");
-	Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp.Position);
-	Encode(pTransformElement->InsertNewChildElement("Rotation"), transformcomp.Rotation);
-	Encode(pTransformElement->InsertNewChildElement("Scale"), transformcomp.Scale);
+	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp.Position);
+	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Rotation"), transformcomp.Rotation);
+	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Scale"), transformcomp.Scale);
 
 	if (entity.HasComponent<CameraComponent>())
 	{
@@ -499,8 +414,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.TilingFactor);
 
-		Encode(pSpriteElement->InsertNewChildElement("Tint"), component.Tint);
-		Encode(pSpriteElement->InsertNewChildElement("Material"), component.material);
+		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.Tint);
+		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Material"), component.material);
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -515,7 +430,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		}
 		pStaticMeshElement->InsertNewChildElement("Mesh")->SetAttribute("Filepath", relativepath.string().c_str());
 
-		Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material);
+		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material);
 	}
 
 	if (entity.HasComponent<NativeScriptComponent>())
@@ -638,8 +553,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pBoxColliderElement->SetAttribute("Friction", component.Friction);
 		pBoxColliderElement->SetAttribute("Restitution", component.Restitution);
 
-		Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.Offset);
-		Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.Size);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.Offset);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.Size);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
@@ -653,6 +568,6 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCircleColliderElement->SetAttribute("Restitution", component.Restitution);
 
 		pCircleColliderElement->SetAttribute("Radius", component.Radius);
-		Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
+		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
 	}
 }

@@ -40,7 +40,7 @@ public:
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Colour& colour = Colours::WHITE);
 
 	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE);
-	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
 
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp);

@@ -73,6 +73,11 @@ std::string OpenGLTexture2D::GetName() const
 	return m_Path.filename().string();
 }
 
+const std::filesystem::path& OpenGLTexture2D::GetFilepath() const
+{
+	return m_Path;
+}
+
 uint32_t OpenGLTexture2D::GetRendererID() const
 {
 	return m_RendererID;

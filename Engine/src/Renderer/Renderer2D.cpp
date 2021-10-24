@@ -367,7 +367,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture2D>& texture, const Colour& colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor)
 {
 	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
 	{
@@ -462,9 +462,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp)
 {
-	if (spriteComp.Texture)
+	if (spriteComp.material.GetTexture(0))
 	{
-		DrawQuad(transform, spriteComp.Texture, spriteComp.Tint, spriteComp.TilingFactor);
+		DrawQuad(transform, spriteComp.material.GetTexture(0), spriteComp.Tint, spriteComp.TilingFactor);
 	}
 	else
 	{

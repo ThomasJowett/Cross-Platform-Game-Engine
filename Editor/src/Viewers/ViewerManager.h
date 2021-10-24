@@ -4,6 +4,8 @@
 
 #include <map>
 
+#include "Core/Layer.h"
+
 enum class FileType
 {
 	UNKNOWN,
@@ -12,7 +14,8 @@ enum class FileType
 	MESH,
 	SCENE,
 	SCRIPT,
-	AUDIO
+	AUDIO,
+	MATERIAL
 };
 
 class ViewerManager

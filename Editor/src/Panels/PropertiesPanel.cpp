@@ -112,20 +112,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			ImGui::Button("Texture", ImVec2(100.0f, 0.0f));
-			if (ImGui::BeginDragDropTarget())
-			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-				{
-					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
-
-					if (ViewerManager::GetFileType(*file) == FileType::IMAGE)
-					{
-						sprite.Texture = Texture2D::Create(*file);
-					}
-				}
-				ImGui::EndDragDropTarget();
-			}
+			if(ImGui::FileEdit("Material", sprite.material.GetFilepath(), FileType::MATERIAL))
+				sprite.material.LoadMaterial();
+			
 			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
@@ -135,10 +124,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [](auto& staticMesh)
 		{
-			if (ImGui::FileEdit("Static Mesh", staticMesh.Geometry.GetFilepath(), L"Static Mesh (.staticMesh)\0*.staticMesh\0"))
+			if (ImGui::FileEdit("Static Mesh", staticMesh.Geometry.GetFilepath(), FileType::MESH))
 				staticMesh.Geometry.LoadModel();
-			//if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), L"Material (.material)\0*.material\0"))
-			//	staticMesh.material.LoadMaterial();
+			if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), FileType::MATERIAL))
+				staticMesh.material.LoadMaterial();
 		});
 
 	//Native Script------------------------------------------------------------------------------------------------------------

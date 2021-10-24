@@ -81,7 +81,7 @@ void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x
 
 	material.BindTextures();
 
-	auto vertexArray = mesh.GetVertexArray();
+	Ref<VertexArray> vertexArray = mesh.GetVertexArray();
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 

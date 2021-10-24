@@ -11,7 +11,6 @@ struct SpriteComponent
 {
 	Colour Tint{ 1.0f, 1.0f,1.0f,1.0f };
 	Material material;
-	Ref<Texture2D> Texture;
 	float TilingFactor = 1.0f;
 
 	SpriteComponent() = default;

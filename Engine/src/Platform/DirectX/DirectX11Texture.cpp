@@ -56,6 +56,11 @@ std::string DirectX11Texture2D::GetName() const
 	return m_Path.filename().string();
 }
 
+const std::filesystem::path& DirectX11Texture2D::GetFilepath() const
+{
+	return m_Path;
+}
+
 uint32_t DirectX11Texture2D::GetRendererID() const
 {
 	return uint32_t(); // TODO: return renderer

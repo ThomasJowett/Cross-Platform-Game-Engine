@@ -27,10 +27,10 @@ bool Tileset::Load(std::filesystem::path& filepath)
 		const char* name = pRoot->Attribute("name");
 		m_Name = name;
 
-		m_TileWidth = atoi(pRoot->Attribute("tilewidth"));
-		m_TileHeight = atoi(pRoot->Attribute("tileheight"));
-		m_Columns = atoi(pRoot->Attribute("columns"));
-		m_TileCount = atoi(pRoot->Attribute("tilecount"));
+		pRoot->QueryUnsignedAttribute("tilewidth", &m_TileWidth);
+		pRoot->QueryUnsignedAttribute("tileheight", &m_TileHeight);
+		pRoot->QueryUnsignedAttribute("columns", &m_Columns);
+		pRoot->QueryUnsignedAttribute("tilecount", &m_TileCount);
 
 		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
 
@@ -244,6 +244,8 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pRoot = doc.NewElement("map");
 
+	doc.InsertFirstChild(pRoot);
+
 	switch (m_Orientation)
 	{
 	case Tilemap::Orientation::orthogonal:
@@ -262,9 +264,53 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 		break;
 	}
 
-	
-	doc.InsertFirstChild(pRoot);
-	//doc.InsertEndChild(pRoot);
+	switch (m_RenderingOrder)
+	{
+	case Tilemap::RenderingOrder::leftDown:
+		pRoot->SetAttribute("renderorder", "left-down");
+		break;
+	case Tilemap::RenderingOrder::leftUp:
+		pRoot->SetAttribute("renderorder", "left-up");
+		break;
+	case Tilemap::RenderingOrder::rightDown:
+		pRoot->SetAttribute("renderorder", "right-down");
+		break;
+	case Tilemap::RenderingOrder::rightUp:
+		pRoot->SetAttribute("renderorder", "up");
+		break;
+	}
+
+	pRoot->SetAttribute("width", m_Width);
+	pRoot->SetAttribute("height", m_Height);
+	pRoot->SetAttribute("tilewidth", m_TileWidth);
+	pRoot->SetAttribute("tileheight", m_TileHeight);
+	pRoot->SetAttribute("infinite", m_Infinite);
+
+	switch (m_StaggerAxis)
+	{
+	case Tilemap::StaggerAxis::X:
+	pRoot->SetAttribute("staggeraxis", "x");
+		break;
+	case Tilemap::StaggerAxis::Y:
+	pRoot->SetAttribute("staggeraxis", "y");
+		break;
+	}
+
+	switch (m_StaggerIndex)
+	{
+	case Tilemap::StaggerIndex::even:
+	pRoot->SetAttribute("staggerindex", "even");
+		break;
+	case Tilemap::StaggerIndex::odd:
+	pRoot->SetAttribute("staggerindex", "odd");
+		break;
+	}
+
+	pRoot->SetAttribute("backgroundcolor", m_BackgroundColour.HexCode().c_str());
+
+	pRoot->SetAttribute("nextlayerid", m_Layers.size() + 1);
+
+	pRoot->SetAttribute("nextobjectid", m_Objects.size() + 1);
 
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
