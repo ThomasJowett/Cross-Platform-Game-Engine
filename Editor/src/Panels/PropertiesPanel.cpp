@@ -553,7 +553,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if(ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
+			if (ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
 			if (ImGui::DragFloat("Density", &circleCollider2D.Density, 0.01f, 0.0f, 10.0f))

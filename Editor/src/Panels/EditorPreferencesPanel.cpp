@@ -20,6 +20,8 @@ EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	m_StyleFilename = (Application::GetWorkingDirectory() / "styles" / " Editor.style").string();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void EditorPreferencesPanel::OnImGuiRender()
 {
 	if (!*m_Show)
@@ -76,6 +78,8 @@ void EditorPreferencesPanel::OnImGuiRender()
 	ImGui::End();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void EditorPreferencesPanel::OnAttach()
 {
 	ImGui::LoadStyle(m_StyleFilename.c_str(), m_Style);
@@ -87,10 +91,14 @@ void EditorPreferencesPanel::OnAttach()
 	ConsolePanel::SetDarkTheme(style.Colors[ImGuiCol_WindowBg].x + style.Colors[ImGuiCol_WindowBg].y + style.Colors[ImGuiCol_WindowBg].z < 1.5f);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void EditorPreferencesPanel::OnDetach()
 {
 	ImGui::SaveStyle(m_StyleFilename.c_str(), m_Style);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void EditorPreferencesPanel::ShowStyleEditor()
 {
@@ -256,6 +264,8 @@ void EditorPreferencesPanel::ShowStyleEditor()
 
 	m_Style = style;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool EditorPreferencesPanel::ShowStyleSelector()
 {

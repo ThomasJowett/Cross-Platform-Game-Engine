@@ -93,10 +93,14 @@ void Decode(tinyxml2::XMLElement* pElement, Material& material)
 		ENGINE_WARN("Could not find Material node");
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 SceneSerializer::SceneSerializer(Scene* scene)
 	:m_Scene(scene)
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 {
@@ -124,6 +128,8 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 {
@@ -450,6 +456,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 		return false;
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity) const
 {

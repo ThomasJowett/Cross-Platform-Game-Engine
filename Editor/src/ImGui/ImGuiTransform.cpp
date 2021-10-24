@@ -14,10 +14,6 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
 
 	ImGui::TextColored({ 245,0,0,255 }, "X");
-	//ImGui::PushStyleColor(ImGuiCol_Button, { 225,0,0,255 });
-	//if (ImGui::Button("X", buttonSize))
-	//	position.x = 0.0f;
-	//ImGui::PopStyleColor();
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
 	if (ImGui::DragFloat("##posX", &position.x, 0.1f))

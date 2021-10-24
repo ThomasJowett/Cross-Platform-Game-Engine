@@ -30,7 +30,6 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 
 void ViewportPanel::OnAttach()
 {
-	//TODO: Render the scene with the camera controller when not in "play" mode.
 	//TODO: Load where the camera was in the scene and load that
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 }

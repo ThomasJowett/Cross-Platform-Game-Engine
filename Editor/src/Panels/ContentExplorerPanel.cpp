@@ -33,6 +33,8 @@ std::time_t to_time_t(TP tp)
 	return system_clock::to_time_t(sctp);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::Paste()
 {
 	if (m_Cut)
@@ -97,11 +99,15 @@ void ContentExplorerPanel::Paste()
 	m_ForceRescan = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::Duplicate()
 {
 	Copy();
 	Paste();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::Delete()
 {
@@ -125,6 +131,8 @@ void ContentExplorerPanel::Delete()
 	m_ForceRescan = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::SelectAll()
 {
 	for (auto file : m_SelectedFiles)
@@ -134,10 +142,14 @@ void ContentExplorerPanel::SelectAll()
 		dir = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool ContentExplorerPanel::HasSelection() const
 {
 	return m_NumberSelected > 0;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool ContentExplorerPanel::Rename()
 {
@@ -190,6 +202,8 @@ bool ContentExplorerPanel::Rename()
 	return false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 {
 	m_CurrentPath = path;
@@ -206,6 +220,8 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	m_History.SwitchTo(m_CurrentPath);
 	m_ForceRescan = true;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
@@ -234,6 +250,8 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 	m_CurrentSelectedPath = newSceneFilepath;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -246,6 +264,8 @@ std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 
 	return std::filesystem::path(path);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
 {
@@ -283,6 +303,8 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 		++m_NumBrowsingEntriesPerColumn;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -308,6 +330,8 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 			ImGui::OpenPopup("Rename");
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::RightClickMenu()
 {
@@ -385,6 +409,8 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PopStyleVar(2);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OpenAllSelectedItems()
 {
 	for (size_t i = 0; i < m_Files.size(); i++)
@@ -393,6 +419,8 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 			ViewerManager::OpenViewer(m_Files[i]);
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName)
 {
@@ -455,6 +483,8 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::ClearSelected()
 {
 	m_SelectedDirs.clear();
@@ -462,6 +492,8 @@ void ContentExplorerPanel::ClearSelected()
 	m_SelectedFiles.clear();
 	m_SelectedFiles.resize(m_Files.size());
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::path& assetPath)
 {
@@ -483,6 +515,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 	return ICON_FA_FILE;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::CreateDragDropSource(size_t index)
 {
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -492,6 +526,8 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 		ImGui::EndDragDropSource();
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: m_Show(show), Layer("ContentExplorer")
@@ -503,13 +539,19 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_Cut = false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OnAttach()
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OnUpdate(float deltaTime)
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::OnImGuiRender()
 {

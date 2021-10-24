@@ -25,6 +25,8 @@ std::vector<std::filesystem::path> Directory::GetDirectories(const std::filesyst
 	return result;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 std::vector<std::filesystem::path> Directory::GetFiles(const std::filesystem::path& path, Sorting sorting)
 {
 	std::vector<std::filesystem::path> result;
@@ -44,6 +46,8 @@ std::vector<std::filesystem::path> Directory::GetFiles(const std::filesystem::pa
 	}
 	return result;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 std::vector<std::filesystem::path> Directory::GetFiles(const char* directoryName, const char* wantedExtensions, const char* unwantedExtensions, Sorting sorting)
 {
@@ -79,6 +83,8 @@ std::vector<std::filesystem::path> Directory::GetFiles(const char* directoryName
 	return result;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SortingHelper::Sort(std::vector<std::filesystem::path>& paths, Sorting sortOrder)
 {
 	switch (sortOrder)
@@ -94,6 +100,8 @@ void SortingHelper::Sort(std::vector<std::filesystem::path>& paths, Sorting sort
 	default: break;
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SortingHelper::CompareAlphabetic(std::filesystem::path& first, std::filesystem::path& second)
 {

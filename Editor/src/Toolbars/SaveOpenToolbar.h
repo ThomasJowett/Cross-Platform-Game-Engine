@@ -4,5 +4,4 @@ class SaveOpenToolbar
 {
 public:
 	void Render();
-
 };
