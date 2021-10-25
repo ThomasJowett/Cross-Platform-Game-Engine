@@ -4,6 +4,7 @@
 #include "TextureView.h"
 #include "ScriptView.h"
 #include "StaticMeshView.h"
+#include "MaterialView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
@@ -84,6 +85,14 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		Application::Get().AddOverlay(layer);
 		return;
 	}
+	case FileType::MATERIAL:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new MaterialView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
 	default:
 		return;
 	}
@@ -129,6 +138,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 	if (strcmp(ext, ".cs") == 0)
 	{
 		return FileType::SCRIPT;
+	}
+
+	if (strcmp(ext, ".material") == 0)
+	{
+		return FileType::MATERIAL;
 	}
 
 	return FileType::UNKNOWN;

@@ -370,6 +370,10 @@ void ContentExplorerPanel::RightClickMenu()
 			CreateNewScene();
 			ImGui::OpenPopup("Rename");
 		}
+		if (ImGui::SmallButton("Material"))
+		{
+
+		}
 		if (ImGui::SmallButton("Object"))
 			CLIENT_DEBUG("new object");
 
@@ -456,7 +460,10 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 
 		m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 
-		if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+		ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_None | ImGuiSelectableFlags_DontClosePopups;
+
+		static bool renameSelected = false;
+		if(ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
 		{
 			ImGui::OpenPopup("Rename");
 		}
