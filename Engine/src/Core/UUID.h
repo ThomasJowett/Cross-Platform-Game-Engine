@@ -1,7 +1,5 @@
 #pragma once
 
-#include <unordered_map>
-
 class Uuid
 {
 public:
@@ -16,12 +14,14 @@ private:
 
 namespace std 
 {
+	template <typename T> struct hash;
+
 	template<>
 	struct hash<Uuid>
 	{
 		std::size_t operator()(const Uuid& uuid) const
 		{
-			return hash<uint64_t>()((uint64_t)uuid);
+			return (uint64_t)uuid;
 		}
 	};
 }
