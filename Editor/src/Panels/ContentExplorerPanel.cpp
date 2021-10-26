@@ -1207,7 +1207,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Dirs[i]));
 
 							char buff[20];
-							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
 
 							ImGui::Text("%s", buff);
 						}
@@ -1271,7 +1271,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Files[i]));
 
 							char buff[20];
-							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
 
 							ImGui::Text("%s", buff);
 						}

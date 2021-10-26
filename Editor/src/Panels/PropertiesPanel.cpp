@@ -73,6 +73,17 @@ void PropertiesPanel::OnImGuiRender()
 				ImGui::EndDragDropTarget();
 			}
 		}
+		else if(SceneManager::IsSceneLoaded())
+		{
+			char buffer[256];
+			memset(buffer, 0, sizeof(buffer));
+			std::strncpy(buffer, SceneManager::CurrentScene()->GetSceneName().c_str(), sizeof(buffer));
+
+			if (ImGui::InputText("Scene Name", buffer, sizeof(buffer)))
+			{
+				SceneManager::CurrentScene()->SetSceneName(buffer);
+			}
+		}
 	}
 	ImGui::End();
 }
