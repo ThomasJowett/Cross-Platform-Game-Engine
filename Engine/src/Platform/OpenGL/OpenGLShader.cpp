@@ -46,7 +46,8 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSou
 OpenGLShader::~OpenGLShader()
 {
 	PROFILE_FUNCTION();
-	glDeleteProgram(m_rendererID);
+	if (Application::Get().IsRunning())
+		glDeleteProgram(m_rendererID);
 }
 
 void OpenGLShader::Bind() const

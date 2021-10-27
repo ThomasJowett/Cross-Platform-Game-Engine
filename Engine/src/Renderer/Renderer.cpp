@@ -16,9 +16,16 @@ SceneData s_Data;
 
 bool Renderer::Init()
 {
-	if(RenderCommand::Init())
+	if (RenderCommand::Init())
 		return Renderer2D::Init();
 	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Renderer::Shutdown()
+{
+	Renderer2D::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -15,7 +15,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	}
 
 	ImGui::BeginGroup();
-	ImGui::Text(label);
+	ImGui::Text("%s", label);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth() - 32);
 	if (ImGui::InputText(("##Filepath" + std::string(label)).c_str(), inputBuffer, sizeof(inputBuffer),
@@ -43,7 +43,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 
 			std::wstring filterStr = filter;
 
-			if (filterStr.find(file->extension()) != std::string::npos)
+			if (filterStr.find(ConvertToWideChar(file->extension())) != std::string::npos)
 			{
 				filepath = *file;
 				edited = true;

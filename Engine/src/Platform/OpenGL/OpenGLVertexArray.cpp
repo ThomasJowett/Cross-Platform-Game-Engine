@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLVertexArray.h"
+#include "Core/Application.h"
 
 #include <glad/glad.h>
 
@@ -36,7 +37,8 @@ OpenGLVertexArray::OpenGLVertexArray()
 OpenGLVertexArray::~OpenGLVertexArray()
 {
 	PROFILE_FUNCTION();
-	glDeleteVertexArrays(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteVertexArrays(1, &m_RendererID);
 }
 
 void OpenGLVertexArray::Bind() const
@@ -103,7 +105,7 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 			}
 			break;
 		}
-		default: 
+		default:
 			CORE_ASSERT(false, "Unknown ShaderDataType");
 		}
 	}

@@ -463,7 +463,7 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 		ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_None | ImGuiSelectableFlags_DontClosePopups;
 
 		static bool renameSelected = false;
-		if(ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
+		if (ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
 		{
 			ImGui::OpenPopup("Rename");
 		}
@@ -1065,7 +1065,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						}
 						ImGui::PopFont();
-						ImGui::TextWrapped(dirName.c_str());
+						ImGui::TextWrapped("%s", dirName.c_str());
 						ImGui::EndGroup();
 						ItemContextMenu(i, true, dirName);
 
@@ -1113,7 +1113,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 						CreateDragDropSource(i);
 						ImGui::PopFont();
-						ImGui::TextWrapped(filename.c_str());
+						ImGui::TextWrapped("%s", filename.c_str());
 						ImGui::EndGroup();
 						ItemContextMenu(i, false, filename);
 

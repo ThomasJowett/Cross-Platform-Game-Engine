@@ -40,7 +40,7 @@ void JoystickInfoPanel::OnImGuiRender()
 		{
 			Joysticks::Joystick joystick = Joysticks::GetJoystick(i);
 
-			ImGui::Text(joystick.Name);
+			ImGui::Text("%s", joystick.Name);
 
 			if (joystick.IsMapped)
 			{

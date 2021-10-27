@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLTexture.h"
+#include "Core/Application.h"
 
 #include <stb/stb_image.h>
 #include <filesystem>
@@ -43,7 +44,8 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 OpenGLTexture2D::~OpenGLTexture2D()
 {
 	PROFILE_FUNCTION();
-	glDeleteTextures(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteTextures(1, &m_RendererID);
 }
 
 void OpenGLTexture2D::SetData(void* data, uint32_t size)

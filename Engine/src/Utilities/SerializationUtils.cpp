@@ -61,9 +61,12 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Colour& colour)
 
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Material& material)
 {
-	std::string relativePath = FileUtils::relativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-	pElement->SetAttribute("Filepath", relativePath.c_str());
-	material.SaveMaterial();
+	if (std::filesystem::exists(material.GetFilepath()))
+	{
+		std::string relativePath = FileUtils::relativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		pElement->SetAttribute("Filepath", relativePath.c_str());
+		material.SaveMaterial();
+	}
 }
 
 void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Material& material)

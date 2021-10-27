@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "OpenGLBuffer.h"
 
+#include "Core/Application.h"
+
 #include <glad/glad.h>
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
@@ -12,7 +14,7 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 }
 
-OpenGLVertexBuffer::OpenGLVertexBuffer(float * vertices, uint32_t size)
+OpenGLVertexBuffer::OpenGLVertexBuffer(float* vertices, uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
@@ -24,7 +26,8 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(float * vertices, uint32_t size)
 OpenGLVertexBuffer::~OpenGLVertexBuffer()
 {
 	PROFILE_FUNCTION();
-	glDeleteBuffers(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteBuffers(1, &m_RendererID);
 }
 
 void OpenGLVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
@@ -55,7 +58,7 @@ void OpenGLVertexBuffer::UnBind() const
 
 //------------------------------------------------------------------------------------
 
-OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t * indices, uint32_t count)
+OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 	:m_Count(count)
 {
 	PROFILE_FUNCTION();
@@ -67,7 +70,8 @@ OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t * indices, uint32_t count)
 OpenGLIndexBuffer::~OpenGLIndexBuffer()
 {
 	PROFILE_FUNCTION();
-	glDeleteBuffers(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteBuffers(1, &m_RendererID);
 }
 
 void OpenGLIndexBuffer::Bind() const

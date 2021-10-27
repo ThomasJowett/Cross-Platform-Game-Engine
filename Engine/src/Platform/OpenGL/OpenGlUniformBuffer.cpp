@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGlUniformBuffer.h"
+#include "Core/Application.h"
 
 #include <glad/glad.h>
 
@@ -12,7 +13,8 @@ OpenGLUniformBuffer::OpenGLUniformBuffer(uint32_t size, uint32_t binding)
 
 OpenGLUniformBuffer::~OpenGLUniformBuffer()
 {
-	glDeleteBuffers(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteBuffers(1, &m_RendererID);
 }
 
 void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
