@@ -24,7 +24,8 @@ First install dependencies by opening a console window and running the following
 * `sudo apt-get install -y libxi-dev`
 * `sudo apt-get install -y libxinerama-dev`
 * `sudo apt-get install -y libgl1-mesa-dev`
-* `sudo apt-get install -y libxcursor-dev`.
+* `sudo apt-get install -y libxcursor-dev`
+* `sudo apt-get install -y mesa-common-dev`
 
 If using a virtual machine you may also need:
 * `sudo apt-get install xserver-xorg-input-all`
