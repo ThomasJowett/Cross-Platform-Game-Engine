@@ -18,26 +18,19 @@ For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2017.bat
 ### Mac
 For Xcode, run the shell script `Progen_Xcode.sh`
 ### Linux
-First install dependencies by opening a console window and running the following commands:
-* `sudo apt-get install -y libx11-dev`
-* `sudo apt-get install -y libxrandr-dev`
-* `sudo apt-get install -y libxi-dev`
-* `sudo apt-get install -y libxinerama-dev`
-* `sudo apt-get install -y libgl1-mesa-dev`
-* `sudo apt-get install -y libxcursor-dev`
-* `sudo apt-get install -y mesa-common-dev`
-
-If using a virtual machine you may also need:
-* `sudo apt-get install xserver-xorg-input-all`
-
-You will also require g++ compiler and make commands to be installed.
-
-Then make the premake5 file executable by running `chmod +x vendor/bin/premake/premake5`.
-
-Then make the shell script executable by running `chmod +x Progen_gmake.sh`.
-
-Then run the shell script with `./Progen_gmake.sh`.
-
+First install dependencies by opening a console window and running the following command:
+```
+sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev g++ make
+```
+Then make the premake5 and shell script file executable by running 
+```
+chmod +x vendor/bin/premake/premake5
+chmod +x Progen_gmake.sh
+```
+Then run the shell script to generate the make files 
+```
+./Progen_gmake.sh
+```
 The engine can now be build by running `make`.
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
