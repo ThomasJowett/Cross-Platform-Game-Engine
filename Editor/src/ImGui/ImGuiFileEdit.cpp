@@ -43,7 +43,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 
 			std::wstring filterStr = filter;
 
-			if (filterStr.find(ConvertToWideChar(file->extension())) != std::string::npos)
+			if (filterStr.find(ConvertToWideChar(file->extension().string())) != std::string::npos)
 			{
 				filepath = *file;
 				edited = true;

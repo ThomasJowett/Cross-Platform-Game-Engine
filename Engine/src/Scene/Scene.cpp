@@ -168,9 +168,12 @@ void Scene::OnRuntimePause()
 
 void Scene::OnRuntimeStop()
 {
-	m_Registry = entt::registry();
-	cereal::JSONInputArchive input(m_Snapshot);
-	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+	if (m_Snapshot.rdbuf()->in_avail() != 0)
+	{
+		m_Registry = entt::registry();
+		cereal::JSONInputArchive input(m_Snapshot);
+		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+	}
 	m_Snapshot.clear();
 
 	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
