@@ -90,12 +90,15 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::OnRuntimeStart()
 {
+	PROFILE_FUNCTION();
+	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
 
-	m_Snapshot.clear();
+	std::stringstream().swap(m_Snapshot);
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+
 
 	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
 
@@ -168,13 +171,15 @@ void Scene::OnRuntimePause()
 
 void Scene::OnRuntimeStop()
 {
+	PROFILE_FUNCTION();
 	if (m_Snapshot.rdbuf()->in_avail() != 0)
 	{
+		ENGINE_DEBUG("Runtime End");
 		m_Registry = entt::registry();
 		cereal::JSONInputArchive input(m_Snapshot);
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
-	m_Snapshot.clear();
+	std::stringstream().swap(m_Snapshot);
 
 	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
@@ -184,6 +189,7 @@ void Scene::OnRuntimeStop()
 
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
+	PROFILE_FUNCTION();
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
@@ -196,6 +202,15 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
 				* Matrix4x4::Scale(transformComp.Scale);
 			Renderer2D::DrawSprite(transform, sprite);
+		});
+	
+	m_Registry.group<CircleRendererComponent>(entt::get<TransformComponent>).each(
+		[](const auto& circle, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawCircle(transform, circle);
 		});
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
@@ -250,6 +265,14 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 			Renderer2D::DrawSprite(transform, sprite);
 		});
 
+	m_Registry.group<CircleRendererComponent>(entt::get<TransformComponent>).each(
+		[](const auto& circle, const auto& transformComp)
+		{
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
+				* Matrix4x4::Scale(transformComp.Scale);
+			Renderer2D::DrawCircle(transform, circle);
+		});
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)

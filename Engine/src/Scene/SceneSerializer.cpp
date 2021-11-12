@@ -353,11 +353,25 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			{
 				CircleCollider2DComponent& component = entity.AddComponent<CircleCollider2DComponent>();
 
-				pBoxCollider2DElement->QueryFloatAttribute("Density", &component.Density);
-				pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
-				pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+				pCircleCollider2DElement->QueryFloatAttribute("Density", &component.Density);
+				pCircleCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
+				pCircleCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
 
 				SerializationUtils::Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
+			}
+
+			// CircleRenderer -----------------------------------------------------------------------------------------------
+			tinyxml2::XMLElement* pCircleRendererElement = pEntityElement->FirstChildElement("CircleRenderer");
+			
+			if (pCircleRendererElement)
+			{
+				CircleRendererComponent& component = entity.AddComponent<CircleRendererComponent>();
+
+				pCircleRendererElement->QueryFloatAttribute("Radius", &component.Radius);
+				pCircleRendererElement->QueryFloatAttribute("Thickness", &component.Thickness);
+				pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
+
+				SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.Colour);
 			}
 
 			pEntityElement = pEntityElement->NextSiblingElement("Entity");
@@ -569,5 +583,18 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		pCircleColliderElement->SetAttribute("Radius", component.Radius);
 		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
+	}
+
+	if (entity.HasComponent<CircleRendererComponent>())
+	{
+		CircleRendererComponent& component = entity.GetComponent<CircleRendererComponent>();
+
+		tinyxml2::XMLElement* pCircleRendererElement = pElement->InsertNewChildElement("CircleRenderer");
+
+		pCircleRendererElement->SetAttribute("Radius", component.Radius);
+		pCircleRendererElement->SetAttribute("Thickness", component.Thickness);
+		pCircleRendererElement->SetAttribute("Fade", component.Fade);
+
+		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.Colour);
 	}
 }

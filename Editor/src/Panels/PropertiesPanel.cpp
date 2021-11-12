@@ -565,6 +565,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			if (ImGui::DragFloat("Restitution", &circleCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 		});
+
+	// Circle Renderer------------------------------------------------------------------------------------------------------------------
+	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
+		{
+			float* colour[4] = { &circleRenderer.Colour.r, &circleRenderer.Colour.g, &circleRenderer.Colour.b, &circleRenderer.Colour.a };
+			ImGui::ColorEdit4("Colour", colour[0]);
+			ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025f, 0.0f, 1.0f);
+			ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025f, 0.0f, 1.0f);
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
@@ -586,6 +595,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", entity);
+		AddComponentMenuItem<CircleRendererComponent>("Circle Renderer", entity);
 
 		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{

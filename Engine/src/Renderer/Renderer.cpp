@@ -64,7 +64,6 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
-	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);
 }
 
@@ -92,6 +91,5 @@ void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
-	vertexArray->Bind();
 	RenderCommand::DrawIndexed(vertexArray);
 }

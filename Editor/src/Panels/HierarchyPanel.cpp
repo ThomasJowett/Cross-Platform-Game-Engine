@@ -145,9 +145,17 @@ void HierarchyPanel::OnImGuiRender()
 					entity.AddComponent<SpriteComponent>();
 					m_SelectedEntity = entity;
 				}
-				if (ImGui::MenuItem("Tilemap", "", nullptr, false))
+				if (ImGui::MenuItem("Circle"))
 				{
-					//TODO: create tilemap
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
+					entity.AddComponent<CircleRendererComponent>();
+					m_SelectedEntity = entity;
+				}
+				if (ImGui::MenuItem("Tilemap"))
+				{
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
+					entity.AddComponent<TilemapComponent>();
+					m_SelectedEntity = entity;
 				}
 				ImGui::EndMenu();
 			}

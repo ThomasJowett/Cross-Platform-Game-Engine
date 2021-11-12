@@ -7,6 +7,7 @@
 #include "Core/Colour.h"
 
 #include "Scene/Components/SpriteComponent.h"
+#include "Scene/Components/CircleRendererComponent.h"
 
 class Renderer2D
 {
@@ -18,7 +19,8 @@ public:
 	static void BeginScene(const Matrix4x4& transform, const Matrix4x4& projection);
 	static void EndScene();
 
-	static void Flush();
+	static void FlushQuads();
+	static void FlushCircles();
 
 	//primitives
 
@@ -43,7 +45,12 @@ public:
 	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
 
+	// Sprite
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp);
+
+	// Circle
+	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f);
+	static void DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp);
 
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
@@ -66,6 +73,8 @@ public:
 	static void ResetStats();
 
 private:
-	static void StartBatch();
-	static void NextBatch();
+	static void StartQuadsBatch();
+	static void StartCirclesBatch();
+	static void NextQuadsBatch();
+	static void NextCirclesBatch();
 };
