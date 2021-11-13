@@ -41,16 +41,16 @@ public:
 	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Colour& colour = Colours::WHITE);
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Colour& colour = Colours::WHITE);
 
-	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE);
-	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
-	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f);
+	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f, int entityId = -1);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f, int entityId = -1);
 
 	// Sprite
-	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp);
+	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);
 
 	// Circle
-	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f);
-	static void DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp);
+	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f, int entityId = -1);
+	static void DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp, int entityId = -1);
 
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);

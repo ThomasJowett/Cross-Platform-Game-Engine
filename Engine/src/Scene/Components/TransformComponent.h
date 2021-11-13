@@ -16,6 +16,12 @@ struct TransformComponent
 		:Position(position) {}
 	TransformComponent(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
 		:Position(position), Rotation(rotation), Scale(scale) {}
+
+	Matrix4x4 GetMatrix()
+	{
+		return Matrix4x4::Translate(Position) * Matrix4x4::Rotate(Quaternion(Rotation)) * Matrix4x4::Scale(Scale);
+	}
+
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

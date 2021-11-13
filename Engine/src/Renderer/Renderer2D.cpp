@@ -418,7 +418,7 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
 
@@ -435,6 +435,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 		s_Data.QuadVertexBufferPtr->colour = colour;
 		s_Data.QuadVertexBufferPtr->TexCoords = texCoords[i];
 		s_Data.QuadVertexBufferPtr->TexIndex = 0.0f;
+		s_Data.QuadVertexBufferPtr->EntityId = entityId;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -445,7 +446,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
 {
 	if (s_Data.QuadIndexCount >= s_Data.MaxIndices)
 	{
@@ -480,6 +481,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 		s_Data.QuadVertexBufferPtr->colour = colour;
 		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->EntityId = entityId;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -490,7 +492,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, float tilingFactor, int entityId)
 {
 	PROFILE_FUNCTION();
 
@@ -521,13 +523,13 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 		s_Data.TextureSlotIndex++;
 	}
 
-
 	for (size_t i = 0; i < 4; i++)
 	{
 		s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
 		s_Data.QuadVertexBufferPtr->colour = colour;
 		s_Data.QuadVertexBufferPtr->TexCoords = tilingFactor * texCoords[i];
 		s_Data.QuadVertexBufferPtr->TexIndex = textureIndex;
+		s_Data.QuadVertexBufferPtr->EntityId = entityId;
 		s_Data.QuadVertexBufferPtr++;
 	}
 
@@ -538,21 +540,21 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp)
+void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId)
 {
 	if (spriteComp.material.GetTexture(0))
 	{
-		DrawQuad(transform, spriteComp.material.GetTexture(0), spriteComp.Tint, spriteComp.TilingFactor);
+		DrawQuad(transform, spriteComp.material.GetTexture(0), spriteComp.Tint, spriteComp.TilingFactor, entityId);
 	}
 	else
 	{
-		DrawQuad(transform, spriteComp.Tint);
+		DrawQuad(transform, spriteComp.Tint, entityId);
 	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness, float fade)
+void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness, float fade, int entityId)
 {
 	PROFILE_FUNCTION();
 
@@ -568,6 +570,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 		s_Data.CircleVertexBufferPtr->colour = colour;
 		s_Data.CircleVertexBufferPtr->Thickness = thickness;
 		s_Data.CircleVertexBufferPtr->Fade = fade;
+		s_Data.CircleVertexBufferPtr->EntityId = entityId;
 		s_Data.CircleVertexBufferPtr++;
 	}
 
@@ -576,9 +579,9 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 	s_Data.Statistics.QuadCount++;
 }
 
-void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp)
+void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp, int entityId)
 {
-	DrawCircle(transform, circleComp.Colour, circleComp.Thickness, circleComp.Fade);
+	DrawCircle(transform, circleComp.Colour, circleComp.Thickness, circleComp.Fade, entityId);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

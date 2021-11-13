@@ -12,7 +12,7 @@ struct VertexOutput
 };
 
 layout (location = 0) in VertexOutput Input;
-layout (location = 4) in flat int v_EntityID;
+layout (location = 4) in flat int v_EntityId;
 
 void main()
 {
@@ -21,9 +21,11 @@ void main()
 	float alpha = smoothstep(0.0, Input.Fade, dist);
 	alpha *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, dist);
 	
+	if(alpha <= 0.0001)
+		discard;
 	// Set output colour
 	frag_colour = Input.Colour;
 	frag_colour.a *= alpha;
 	
-	entityId = v_EntityID;
+	entityId = v_EntityId;
 }

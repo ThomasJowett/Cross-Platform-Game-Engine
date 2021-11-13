@@ -61,7 +61,6 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 
 	CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer Layout has no elements");
 
-	//uint32_t index = 0;
 	const BufferLayout& layout = vertexBuffer->GetLayout();
 	for (const BufferElement& element : layout)
 	{
@@ -71,6 +70,17 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		case ShaderDataType::Float2:
 		case ShaderDataType::Float3:
 		case ShaderDataType::Float4:
+		{
+			glEnableVertexAttribArray(m_VertexBufferIndex);
+			glVertexAttribPointer(m_VertexBufferIndex,
+				element.Count(),
+				ShaderDataTypeToOpenGLBaseType(element.Type),
+				element.Normalized ? GL_TRUE : GL_FALSE,
+				layout.GetStride(),
+				(const void*)element.Offset);
+			m_VertexBufferIndex++;
+			break;
+		}
 		case ShaderDataType::Int:
 		case ShaderDataType::Int2:
 		case ShaderDataType::Int3:
@@ -78,10 +88,9 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		case ShaderDataType::Bool:
 		{
 			glEnableVertexAttribArray(m_VertexBufferIndex);
-			glVertexAttribPointer(m_VertexBufferIndex,
+			glVertexAttribIPointer(m_VertexBufferIndex,
 				element.Count(),
 				ShaderDataTypeToOpenGLBaseType(element.Type),
-				element.Normalized ? GL_TRUE : GL_FALSE,
 				layout.GetStride(),
 				(const void*)element.Offset);
 			m_VertexBufferIndex++;
