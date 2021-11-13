@@ -79,7 +79,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		{
 			m_Framebuffer->Bind();
 			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
+			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 			m_Framebuffer->UnBind();
 		}
 
@@ -115,7 +115,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		{
 			m_Framebuffer->Bind();
 			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
+			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 			m_Framebuffer->UnBind();
 		}
 
@@ -165,12 +165,14 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
+
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
+		ImVec2 topLeft = ImGui::GetCursorPos();
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
 
@@ -180,10 +182,6 @@ void ViewportPanel::OnImGuiRender()
 		{
 			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 			{
-				ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
-				Application::GetWindow().SetCursor(Cursors::CrossHair);
-
-
 			}
 
 			if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) || Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -268,27 +266,29 @@ void ViewportPanel::OnImGuiRender()
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();
 
+				// Draw a camera preview if the selected entity has a camera
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
 				{
-					ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
-						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
-					ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetTag().Tag.c_str(), NULL,
-						ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
-						| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-						| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-						| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
+					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
+						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f);
+
+					ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
+						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
+						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].z * 255.0f) << 16) |
+						255 << 24;
+
+					ImGui::GetWindowDrawList()->AddRectFilled(cameraPreviewPosition,
+						ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().Width + 2,
+							cameraPreviewPosition.y + m_CameraPreview->GetSpecification().Height + 24.0f),
+						color, ImGui::GetStyle().WindowRounding);
+
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
+					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width;
+					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 21.0f));
+					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().Tag.c_str());
+					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
-					ImGui::End();
 				}
-
-				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<BoxCollider2DComponent>())
-				{
-					BoxCollider2DComponent& collider = selectedEntity.GetComponent<BoxCollider2DComponent>();
-
-					//TODO: draw an imgui rect for entities with collider2D
-				}
-
 
 				// Gizmos
 				ImGuizmo::SetOrthographic(true);
@@ -360,25 +360,17 @@ void ViewportPanel::OnImGuiRender()
 				}
 			}
 		}
+
+		ImVec2 toolbarPosistion = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
+		ImGui::SetCursorPos(toolbarPosistion);
+		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0,0,0,30), 3.0f);
+		ImGui::Text("%.1f", io.Framerate);
+		ImGui::SameLine();
+		if (m_HoveredEntity)
+			ImGui::Text("%s", m_HoveredEntity.GetTag().Tag.c_str());
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
-
-	if (viewShown)
-	{
-		ImGui::SetNextWindowPos(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y));
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.2f));
-		ImGui::Begin("FPS", m_Show, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
-			| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
-			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-			| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
-
-		ImGui::Text("%.1f", io.Framerate);
-		ImGui::Text("%i", m_PixelData);
-		ImGui::End();
-		ImGui::PopStyleColor();
-	}
 }
 
 void ViewportPanel::Copy()
