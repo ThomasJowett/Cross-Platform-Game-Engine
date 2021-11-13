@@ -220,6 +220,11 @@ void HierarchyPanel::OnImGuiRender()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void HierarchyPanel::SetSelectedEntity(Entity entity)
+{
+	m_SelectedEntity = entity;
+}
+
 void HierarchyPanel::DrawNode(Entity entity)
 {
 	auto& tag = entity.GetComponent<TagComponent>().Tag;

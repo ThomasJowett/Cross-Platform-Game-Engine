@@ -66,38 +66,10 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 	m_Framebuffer->ClearAttachment(1, -1);
+	m_HoveredEntity = Entity();
 
 	switch (SceneManager::GetSceneState())
 	{
-	case SceneState::Edit:
-	{
-		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
-		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
-
-		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
-			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
-		{
-			m_Framebuffer->Bind();
-			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-			m_Framebuffer->UnBind();
-		}
-
-		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
-		{
-			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
-			{
-				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
-				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
-				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
-				m_CameraPreview->Bind();
-				RenderCommand::Clear();
-				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
-			}
-		}
-		break;
-	}
 	case SceneState::Play:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
 		break;
@@ -106,11 +78,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		break;
 		[[fallthrough]];
 	case SceneState::SimulatePause:
+		[[fallthrough]];
+	case SceneState::Edit:
 	case SceneState::Simulate:
 	{
+		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
+		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
 			m_Framebuffer->Bind();

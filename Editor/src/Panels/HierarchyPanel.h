@@ -14,6 +14,7 @@ public:
     void OnImGuiRender() override;
 
     Entity GetSelectedEntity() { return m_SelectedEntity; }
+    void SetSelectedEntity(Entity entity);
 private:
     void DrawNode(Entity entity);
 private:
