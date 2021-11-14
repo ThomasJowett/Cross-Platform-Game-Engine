@@ -24,6 +24,8 @@ public:
 
 	bool RemoveEntity(const Entity& entity);
 
+	void DuplicateEntity(Entity entity);
+
 	void OnRuntimeStart();
 	void OnRuntimePause();
 	void OnRuntimeStop();

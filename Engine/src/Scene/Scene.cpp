@@ -34,6 +34,22 @@ b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 	return b2BodyType::b2_staticBody;
 }
 
+template<typename Component>
+static void CopyComponentIfExits(entt::entity dst, entt::entity src, entt::registry& registry)
+{
+	if (registry.has<Component>(src))
+	{
+		auto& srcComponent = registry.get<Component>(src);
+		registry.emplace_or_replace<Component>(dst, srcComponent);
+	}
+}
+
+template<typename... Component>
+static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& registry)
+{
+	(CopyComponentIfExits<Component>(dst, src, registry), ...);
+}
+
 Scene::Scene(std::filesystem::path filepath)
 	:m_Filepath(filepath)
 {
@@ -84,6 +100,16 @@ bool Scene::RemoveEntity(const Entity& entity)
 	}
 	m_Dirty = true;
 	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::DuplicateEntity(Entity entity)
+{
+	std::string name = entity.GetTag();
+	Entity newEntity = CreateEntity(name);
+
+	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

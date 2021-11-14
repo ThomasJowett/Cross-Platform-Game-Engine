@@ -7,7 +7,8 @@ struct IDComponent
 	Uuid ID;
 
 	IDComponent() = default;
-	IDComponent(const IDComponent&) = default;
+	IDComponent(const IDComponent&)
+		:ID() {} // Id components must be unique so cannot be copied
 	IDComponent(Uuid id)
 		:ID(id) {}
 

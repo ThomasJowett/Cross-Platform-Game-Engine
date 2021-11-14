@@ -17,7 +17,8 @@ public:
 	bool Serialize(const std::filesystem::path& filepath) const;
 	bool Deserialize(const std::filesystem::path& filepath);
 
+	static void SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity);
+	static Entity DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement);
 private:
-	void SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity) const;
 	Scene* m_Scene;
 };

@@ -6,6 +6,7 @@
 #include "Engine.h"
 
 #include "Utilities/GeometryGenerator.h"
+#include "Scene/SceneSerializer.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
@@ -259,4 +260,66 @@ void HierarchyPanel::DrawNode(Entity entity)
 			m_SelectedEntity = {};
 		SceneManager::CurrentScene()->RemoveEntity(entity);
 	}
+}
+
+void HierarchyPanel::Copy()
+{
+	CLIENT_DEBUG("Copied");
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, m_SelectedEntity);
+	pEntityElement->SetAttribute("ID", Uuid());
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+	ImGui::SetClipboardText(printer.CStr());
+}
+
+void HierarchyPanel::Cut()
+{
+	Copy();
+	Delete();
+}
+
+void HierarchyPanel::Paste()
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError error = doc.Parse(ImGui::GetClipboardText());
+
+	if (error == tinyxml2::XMLError::XML_SUCCESS)
+	{
+		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
+		if (pEntityElement)
+		{
+			SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), pEntityElement);
+			SceneManager::CurrentScene()->MakeDirty();
+		}
+	}
+}
+
+void HierarchyPanel::Duplicate()
+{
+	CLIENT_DEBUG("Duplicated");
+	SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity);
+}
+
+void HierarchyPanel::Delete()
+{
+	SceneManager::CurrentScene()->RemoveEntity(m_SelectedEntity);
+	m_SelectedEntity = {};
+}
+
+bool HierarchyPanel::HasSelection() const
+{
+	return m_SelectedEntity;
+}
+
+void HierarchyPanel::SelectAll()
+{
+	CLIENT_ERROR("Multi select entites not implemented yet!");
+}
+
+bool HierarchyPanel::IsReadOnly() const
+{
+	return false;
 }

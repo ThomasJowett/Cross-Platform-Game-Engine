@@ -260,7 +260,7 @@ void ViewportPanel::OnImGuiRender()
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
 					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width;
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 21.0f));
-					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().Tag.c_str());
+					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().c_str());
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
 				}
@@ -342,7 +342,7 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::Text("%.1f", io.Framerate);
 		ImGui::SameLine();
 		if (m_HoveredEntity)
-			ImGui::Text("%s", m_HoveredEntity.GetTag().Tag.c_str());
+			ImGui::Text("%s", m_HoveredEntity.GetTag().c_str());
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -350,49 +350,37 @@ void ViewportPanel::OnImGuiRender()
 
 void ViewportPanel::Copy()
 {
-	// TODO: viewport copy
-	CLIENT_DEBUG("Copied");
+	m_HierarchyPanel->Copy();
 }
 
 void ViewportPanel::Cut()
 {
-	// TODO: viewport cut
-	CLIENT_DEBUG("Cut");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Cut();
 }
 
 void ViewportPanel::Paste()
 {
-	//TODO: viewport paste
-	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Paste();
 }
 
 void ViewportPanel::Duplicate()
 {
-	//TODO: viewport duplicate
-	CLIENT_DEBUG("Duplicated");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Duplicate();
 }
 
 void ViewportPanel::Delete()
 {
-	//TODO: viewport delete
-	CLIENT_DEBUG("Deleted");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Delete();
 }
 
 void ViewportPanel::SelectAll()
 {
+	m_HierarchyPanel->SelectAll();
 }
 
 bool ViewportPanel::HasSelection() const
 {
-	return false;
+	return m_HierarchyPanel->GetSelectedEntity();
 }
 
 bool ViewportPanel::CanUndo() const
