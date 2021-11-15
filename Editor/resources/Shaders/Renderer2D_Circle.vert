@@ -7,6 +7,10 @@ layout(location = 3) in float a_Thickness;
 layout(location = 4) in float a_Fade;
 layout(location = 5) in int a_EntityId;
 
+layout(std140, binding = 0) uniform Camera
+{
+	mat4 u_ViewProjection;
+};
 
 struct VertexOutput
 {
@@ -16,7 +20,6 @@ struct VertexOutput
 	float Fade;
 };
 
-uniform mat4 u_ViewProjection;
 layout (location = 0) out VertexOutput Output;
 layout (location = 4) out int EntityId;
 

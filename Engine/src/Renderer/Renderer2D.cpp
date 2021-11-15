@@ -5,6 +5,7 @@
 #include "Shader.h"
 
 #include "RenderCommand.h"
+#include "UniformBuffer.h"
 
 struct QuadVertex
 {
@@ -85,10 +86,16 @@ struct Renderer2DData
 
 	Vector3f QuadVertexPositions[4];
 
-	Matrix4x4 ViewProjectionMatrix;
 	uint32_t ScreenWidth = 1920, ScreenHeight = 1080;
 
 	Renderer2D::Stats Statistics;
+
+	struct CameraData
+	{
+		Matrix4x4 ViewProjectionMatrix;
+	};
+	CameraData CameraBuffer;
+	Ref<UniformBuffer> CameraUniformBuffer;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -220,7 +227,7 @@ bool Renderer2D::Init()
 	s_Data.QuadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
 	s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
-
+	s_Data.CameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	return s_Data.QuadShader == nullptr;
 }
 
@@ -241,12 +248,9 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
-	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
-	s_Data.QuadShader->Bind();
-	s_Data.QuadShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
+	s_Data.CameraBuffer.ViewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
 
-	s_Data.CircleShader->Bind();
-	s_Data.CircleShader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
+	s_Data.CameraUniformBuffer->SetData(&s_Data.CameraBuffer, sizeof(Renderer2DData::CameraData));
 
 	StartQuadsBatch();
 	StartCirclesBatch();
@@ -588,83 +592,83 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
-	if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
-		NextQuadsBatch();
-
-	//world to clip
-	Vector3f clipI = s_Data.ViewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
-	Vector3f clipJ = s_Data.ViewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
-
-	//clip to pixel
-	Vector2f pixelStart, pixelEnd;
-	pixelStart.x = 0.5f * (float)s_Data.ScreenWidth * (clipI.x / 1.0f + 1.0f);
-	pixelStart.y = 0.5f * (float)s_Data.ScreenHeight * (1.0f - clipI.y / 1.0f);
-	pixelEnd.x = 0.5f * (float)s_Data.ScreenWidth * (clipJ.x / 1.0f + 1.0f);
-	pixelEnd.y = 0.5f * (float)s_Data.ScreenHeight * (1.0f - clipJ.y / 1.0f);
-
-	Vector2f direction = pixelEnd - pixelStart;
-	float lineLength = direction.Magnitude();
-
-	if (lineLength < 1e-10) return;
-
-	direction = direction / lineLength;
-	Vector2f normal(-direction.y, +direction.x);
-
-	float d = 0.5f * thickness;
-
-	float dOverWidth = d / (float)s_Data.ScreenWidth;
-	float dOverHeight = d / (float)s_Data.ScreenHeight;
-
-	Vector3f offset;
-
-	offset.x = (-direction.x + normal.x) * dOverWidth;
-	offset.y = (+direction.y + normal.y) * dOverHeight;
-	s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
-	s_Data.LineVertexBufferPtr->colour = colour;
-	s_Data.LineVertexBufferPtr->TexCoords = { -d, +d };
-	s_Data.LineVertexBufferPtr->Width = 2 * d;
-	s_Data.LineVertexBufferPtr->Length = lineLength;
-	s_Data.LineVertexBufferPtr++;
-
-	offset.x = (+direction.x + normal.x) * dOverWidth;
-	offset.y = (-direction.y - normal.y) * dOverHeight;
-	s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
-	s_Data.LineVertexBufferPtr->colour = colour;
-	s_Data.LineVertexBufferPtr->TexCoords = { lineLength + d, +d };
-	s_Data.LineVertexBufferPtr->Width = 2 * d;
-	s_Data.LineVertexBufferPtr->Length = lineLength;
-	s_Data.LineVertexBufferPtr++;
-
-	offset.x = (+direction.x - normal.x) * dOverWidth;
-	offset.y = (-direction.y + normal.y) * dOverHeight;
-	s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
-	s_Data.LineVertexBufferPtr->colour = colour;
-	s_Data.LineVertexBufferPtr->TexCoords = { lineLength + d, -d };
-	s_Data.LineVertexBufferPtr->Width = 2 * d;
-	s_Data.LineVertexBufferPtr->Length = lineLength;
-	s_Data.LineVertexBufferPtr++;
-
-	offset.x = (-direction.x - normal.x) * dOverWidth;
-	offset.y = (+direction.y + normal.y) * dOverHeight;
-	s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
-	s_Data.LineVertexBufferPtr->colour = colour;
-	s_Data.LineVertexBufferPtr->TexCoords = { -d, -d };
-	s_Data.LineVertexBufferPtr->Width = 2 * d;
-	s_Data.LineVertexBufferPtr->Length = lineLength;
-	s_Data.LineVertexBufferPtr++;
-
-	offset.x = (-direction.x + normal.x) * dOverWidth;
-	offset.y = (+direction.y + normal.y) * dOverHeight;
-	s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
-	s_Data.LineVertexBufferPtr->colour = colour;
-	s_Data.LineVertexBufferPtr->TexCoords = { -d, +d };
-	s_Data.LineVertexBufferPtr->Width = 2 * d;
-	s_Data.LineVertexBufferPtr->Length = lineLength;
-	s_Data.LineVertexBufferPtr++;
-
-	s_Data.LineIndexCount += 6;
-
-	s_Data.Statistics.QuadCount++;
+	//if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
+	//	NextQuadsBatch();
+	//
+	////world to clip
+	//Vector3f clipI = s_Data.ViewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
+	//Vector3f clipJ = s_Data.ViewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
+	//
+	////clip to pixel
+	//Vector2f pixelStart, pixelEnd;
+	//pixelStart.x = 0.5f * (float)s_Data.ScreenWidth * (clipI.x / 1.0f + 1.0f);
+	//pixelStart.y = 0.5f * (float)s_Data.ScreenHeight * (1.0f - clipI.y / 1.0f);
+	//pixelEnd.x = 0.5f * (float)s_Data.ScreenWidth * (clipJ.x / 1.0f + 1.0f);
+	//pixelEnd.y = 0.5f * (float)s_Data.ScreenHeight * (1.0f - clipJ.y / 1.0f);
+	//
+	//Vector2f direction = pixelEnd - pixelStart;
+	//float lineLength = direction.Magnitude();
+	//
+	//if (lineLength < 1e-10) return;
+	//
+	//direction = direction / lineLength;
+	//Vector2f normal(-direction.y, +direction.x);
+	//
+	//float d = 0.5f * thickness;
+	//
+	//float dOverWidth = d / (float)s_Data.ScreenWidth;
+	//float dOverHeight = d / (float)s_Data.ScreenHeight;
+	//
+	//Vector3f offset;
+	//
+	//offset.x = (-direction.x + normal.x) * dOverWidth;
+	//offset.y = (+direction.y + normal.y) * dOverHeight;
+	//s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
+	//s_Data.LineVertexBufferPtr->colour = colour;
+	//s_Data.LineVertexBufferPtr->TexCoords = { -d, +d };
+	//s_Data.LineVertexBufferPtr->Width = 2 * d;
+	//s_Data.LineVertexBufferPtr->Length = lineLength;
+	//s_Data.LineVertexBufferPtr++;
+	//
+	//offset.x = (+direction.x + normal.x) * dOverWidth;
+	//offset.y = (-direction.y - normal.y) * dOverHeight;
+	//s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
+	//s_Data.LineVertexBufferPtr->colour = colour;
+	//s_Data.LineVertexBufferPtr->TexCoords = { lineLength + d, +d };
+	//s_Data.LineVertexBufferPtr->Width = 2 * d;
+	//s_Data.LineVertexBufferPtr->Length = lineLength;
+	//s_Data.LineVertexBufferPtr++;
+	//
+	//offset.x = (+direction.x - normal.x) * dOverWidth;
+	//offset.y = (-direction.y + normal.y) * dOverHeight;
+	//s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
+	//s_Data.LineVertexBufferPtr->colour = colour;
+	//s_Data.LineVertexBufferPtr->TexCoords = { lineLength + d, -d };
+	//s_Data.LineVertexBufferPtr->Width = 2 * d;
+	//s_Data.LineVertexBufferPtr->Length = lineLength;
+	//s_Data.LineVertexBufferPtr++;
+	//
+	//offset.x = (-direction.x - normal.x) * dOverWidth;
+	//offset.y = (+direction.y + normal.y) * dOverHeight;
+	//s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
+	//s_Data.LineVertexBufferPtr->colour = colour;
+	//s_Data.LineVertexBufferPtr->TexCoords = { -d, -d };
+	//s_Data.LineVertexBufferPtr->Width = 2 * d;
+	//s_Data.LineVertexBufferPtr->Length = lineLength;
+	//s_Data.LineVertexBufferPtr++;
+	//
+	//offset.x = (-direction.x + normal.x) * dOverWidth;
+	//offset.y = (+direction.y + normal.y) * dOverHeight;
+	//s_Data.LineVertexBufferPtr->ClipCoord = clipI + offset;
+	//s_Data.LineVertexBufferPtr->colour = colour;
+	//s_Data.LineVertexBufferPtr->TexCoords = { -d, +d };
+	//s_Data.LineVertexBufferPtr->Width = 2 * d;
+	//s_Data.LineVertexBufferPtr->Length = lineLength;
+	//s_Data.LineVertexBufferPtr++;
+	//
+	//s_Data.LineIndexCount += 6;
+	//
+	//s_Data.Statistics.QuadCount++;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
