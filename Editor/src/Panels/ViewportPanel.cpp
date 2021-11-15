@@ -88,10 +88,15 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
-			m_Framebuffer->Bind();
-			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-			m_Framebuffer->UnBind();
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				m_Framebuffer->Bind();
+				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
+				m_Framebuffer->UnBind();
+				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver())
+					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
+			}
 		}
 
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
@@ -338,7 +343,7 @@ void ViewportPanel::OnImGuiRender()
 
 		ImVec2 toolbarPosistion = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
 		ImGui::SetCursorPos(toolbarPosistion);
-		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0,0,0,30), 3.0f);
+		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 		ImGui::Text("%.1f", io.Framerate);
 		ImGui::SameLine();
 		if (m_HoveredEntity)
@@ -410,8 +415,6 @@ void ViewportPanel::Redo(int astep)
 
 void ViewportPanel::Save()
 {
-	//if (!m_SceneDirty)
-	//	return;
 	CLIENT_DEBUG("Saving...");
 
 	SceneManager::CurrentScene()->Save(false);
