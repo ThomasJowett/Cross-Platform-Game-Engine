@@ -9,9 +9,9 @@
 
 struct SpriteComponent
 {
-	Colour Tint{ 1.0f, 1.0f,1.0f,1.0f };
+	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
 	Material material;
-	float TilingFactor = 1.0f;
+	float tilingFactor = 1.0f;
 
 	SpriteComponent() = default;
 	SpriteComponent(const SpriteComponent&) = default;
@@ -19,8 +19,8 @@ struct SpriteComponent
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Tint", Tint));
+		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Material", material));
-		archive(cereal::make_nvp("Tiling Factor", TilingFactor));
+		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
 	}
 };

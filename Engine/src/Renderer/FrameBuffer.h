@@ -20,9 +20,9 @@ struct FrameBufferTextureSpecification
 {
 	FrameBufferTextureSpecification() = default;
 	FrameBufferTextureSpecification(FrameBufferTextureFormat format)
-		:TextureFormat(format) {}
+		:textureFormat(format) {}
 
-	FrameBufferTextureFormat TextureFormat;
+	FrameBufferTextureFormat textureFormat;
 	// TODO: filtering/wrap
 };
 
@@ -32,20 +32,20 @@ struct FrameBufferAttachmentSpecification
 {
 	FrameBufferAttachmentSpecification() = default;
 	FrameBufferAttachmentSpecification(std::initializer_list<FrameBufferTextureSpecification> attachments)
-		:Attachments(attachments) {}
+		:attachments(attachments) {}
 
-	std::vector<FrameBufferTextureSpecification> Attachments;
+	std::vector<FrameBufferTextureSpecification> attachments;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 struct FrameBufferSpecification
 {
-	uint32_t Width, Height;
-	FrameBufferAttachmentSpecification Attachments;
-	uint32_t Samples = 1;
+	uint32_t width, height;
+	FrameBufferAttachmentSpecification attachments;
+	uint32_t samples = 1;
 
-	bool SwapChainTarget = false;
+	bool swapChainTarget = false;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */

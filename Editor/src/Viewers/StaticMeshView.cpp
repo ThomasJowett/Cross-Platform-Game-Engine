@@ -7,7 +7,7 @@ StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8};
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8};
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -157,7 +157,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 void StaticMeshView::OnFixedUpdate()
 {
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
+	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);

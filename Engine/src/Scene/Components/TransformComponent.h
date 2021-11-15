@@ -6,27 +6,27 @@
 
 struct TransformComponent
 {
-	Vector3f Position = Vector3f(0.0f, 0.0f, 0.0f);
-	Vector3f Rotation = Vector3f(0.0f, 0.0f, 0.0f);
-	Vector3f Scale = Vector3f(1.0f, 1.0f, 1.0f);
+	Vector3f position = Vector3f(0.0f, 0.0f, 0.0f);
+	Vector3f rotation = Vector3f(0.0f, 0.0f, 0.0f);
+	Vector3f scale = Vector3f(1.0f, 1.0f, 1.0f);
 
 	TransformComponent() = default;
 	TransformComponent(const TransformComponent&) = default;
 	TransformComponent(const Vector3f & position)
-		:Position(position) {}
+		:position(position) {}
 	TransformComponent(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
-		:Position(position), Rotation(rotation), Scale(scale) {}
+		:position(position), rotation(rotation), scale(scale) {}
 
 	Matrix4x4 GetMatrix()
 	{
-		return Matrix4x4::Translate(Position) * Matrix4x4::Rotate(Quaternion(Rotation)) * Matrix4x4::Scale(Scale);
+		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);
 	}
 
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Position", Position));
-		archive(cereal::make_nvp("Rotation", Rotation));
-		archive(cereal::make_nvp("Scale", Scale));
+		archive(cereal::make_nvp("Position", position));
+		archive(cereal::make_nvp("Rotation", rotation));
+		archive(cereal::make_nvp("Scale", scale));
 	}
 };

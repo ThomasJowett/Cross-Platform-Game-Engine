@@ -16,11 +16,11 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
-	frameBufferSpecificationEditorCamera.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
+	frameBufferSpecificationEditorCamera.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
-	frameBufferSpecificationPreview.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Mode = Mode::Select;
@@ -58,7 +58,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	}
 
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
+	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
@@ -105,7 +105,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
 				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
 				m_CameraPreview->Bind();
 				RenderCommand::Clear();
@@ -249,8 +249,8 @@ void ViewportPanel::OnImGuiRender()
 				// Draw a camera preview if the selected entity has a camera
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
 				{
-					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
-						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f);
+					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
+						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
 
 					ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
 						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
@@ -258,16 +258,16 @@ void ViewportPanel::OnImGuiRender()
 						255 << 24;
 
 					ImGui::GetWindowDrawList()->AddRectFilled(cameraPreviewPosition,
-						ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().Width + 2,
-							cameraPreviewPosition.y + m_CameraPreview->GetSpecification().Height + 24.0f),
+						ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().width + 2,
+							cameraPreviewPosition.y + m_CameraPreview->GetSpecification().height + 24.0f),
 						color, ImGui::GetStyle().WindowRounding);
 
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
-					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width;
-					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 21.0f));
+					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
+					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
 					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().c_str());
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
-					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
+					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}
 
 				// Gizmos
@@ -277,9 +277,9 @@ void ViewportPanel::OnImGuiRender()
 				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
-				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
-					* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-					* Matrix4x4::Scale(transformComp.Scale);
+				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
+					* Matrix4x4::Scale(transformComp.scale);
 
 				cameraViewMat.Transpose();
 				cameraProjectionMat.Transpose();
@@ -324,18 +324,18 @@ void ViewportPanel::OnImGuiRender()
 
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
-					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
+					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
 					if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
 					{
-						transformComp.Position = Vector3f(translation[0], translation[1], translation[2]);
+						transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 					}
 					if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
 					{
-						transformComp.Rotation += deltaRotation;
+						transformComp.rotation += deltaRotation;
 					}
 					if (gizmoMode == ImGuizmo::OPERATION::SCALE)
 					{
-						transformComp.Scale = Vector3f(scale[0], scale[1], scale[2]);
+						transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 					}
 				}
 			}

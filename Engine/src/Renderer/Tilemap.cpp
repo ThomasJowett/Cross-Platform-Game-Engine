@@ -45,11 +45,11 @@ bool Tileset::Load(std::filesystem::path& filepath)
 		while (pTile)
 		{
 			Tile tile;
-			tile.Id = atoi(pTile->Attribute("id"));
-			tile.Type = pTile->Attribute("type");
+			tile.id = atoi(pTile->Attribute("id"));
+			tile.type = pTile->Attribute("type");
 			const char* probability = pTile->Attribute("probability");
 			if (probability != nullptr)
-				tile.Probability = atof(probability);
+				tile.probability = atof(probability);
 
 			m_Tiles.push_back(tile);
 			pTile = pTile->NextSiblingElement("tile");

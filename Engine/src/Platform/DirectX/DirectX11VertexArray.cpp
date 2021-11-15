@@ -65,12 +65,12 @@ void DirectX11VertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer
 	D3D11_INPUT_ELEMENT_DESC* elementDescriptions = new D3D11_INPUT_ELEMENT_DESC[numElements];
 	for (const BufferElement& element : layout)
 	{
-		elementDescriptions[index].Format = ShaderDataTypeToDXGIBaseTypes(element.Type);
+		elementDescriptions[index].Format = ShaderDataTypeToDXGIBaseTypes(element.type);
 		elementDescriptions[index].InputSlot = 0;
 		elementDescriptions[index].AlignedByteOffset = index == 0 ? 0 : D3D11_APPEND_ALIGNED_ELEMENT;
 		elementDescriptions[index].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
 
-		switch (element.Type)
+		switch (element.type)
 		{
 		case ShaderDataType::Float:
 		{

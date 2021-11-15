@@ -40,11 +40,11 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int width = LOWORD(lParam);
 		int height = HIWORD(lParam);
 
-		data->Width = width;
-		data->Height = height;
+		data->width = width;
+		data->height = height;
 
 		WindowResizeEvent event(width, height);
-		data->EventCallback(event);
+		data->eventCallback(event);
 
 		switch (wParam)
 		{
@@ -52,20 +52,20 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		{
 			bool maximize = true;
 
-			data->Maximized = maximize;
+			data->maximized = maximize;
 
 			WindowMaximizedEvent event(maximize);
-			data->EventCallback(event);
+			data->eventCallback(event);
 			break;
 		}
 		case SIZE_RESTORED:
 		{
 			bool maximize = false;
 
-			data->Maximized = maximize;
+			data->maximized = maximize;
 
 			WindowMaximizedEvent event(maximize);
-			data->EventCallback(event);
+			data->eventCallback(event);
 			break;
 		}
 		default:
@@ -76,20 +76,20 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 	case WM_CLOSE:
 	{
 		WindowCloseEvent event;
-		data->EventCallback(event);
+		data->eventCallback(event);
 
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	case WM_SETFOCUS:
 	{
 		WindowFocusEvent event;
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_KILLFOCUS:
 	{
 		WindowFocusLostEvent event;
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_MOVE:
@@ -97,11 +97,11 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int posX = LOWORD(lParam);
 		int posY = HIWORD(lParam);
 
-		data->PosX = posX;
-		data->PosY = posY;
+		data->posX = posX;
+		data->posY = posY;
 
 		WindowMoveEvent event(posX, posY);
-		data->EventCallback(event);
+		data->eventCallback(event);
 
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -111,43 +111,43 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int yPos = GET_Y_LPARAM(lParam);
 
 		MouseMotionEvent event((float)xPos, (float)yPos);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_LBUTTONDOWN:
 	{
 		MouseButtonPressedEvent event(MOUSE_BUTTON_LEFT);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_LBUTTONUP:
 	{
 		MouseButtonReleasedEvent event(MOUSE_BUTTON_LEFT);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_RBUTTONDOWN:
 	{
 		MouseButtonPressedEvent event(MOUSE_BUTTON_RIGHT);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_RBUTTONUP:
 	{
 		MouseButtonReleasedEvent event(MOUSE_BUTTON_RIGHT);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_MBUTTONDOWN:
 	{
 		MouseButtonPressedEvent event(MOUSE_BUTTON_MIDDLE);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_MBUTTONUP:
 	{
 		MouseButtonReleasedEvent event(MOUSE_BUTTON_MIDDLE);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_MOUSEHWHEEL:
@@ -155,7 +155,7 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
 		MouseWheelEvent event((float)delta, 0);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_MOUSEWHEEL:
@@ -163,25 +163,25 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		int delta = std::clamp((int)GET_WHEEL_DELTA_WPARAM(wParam), -1, 1);
 
 		MouseWheelEvent event(0, (float)delta);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_KEYDOWN:
 	{
 		KeyPressedEvent event(VirtualCodesToKeyCodes((int)wParam), 0);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_KEYUP:
 	{
 		KeyReleasedEvent event(VirtualCodesToKeyCodes((int)wParam));
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 	case WM_CHAR:
 	{
 		KeyTypedEvent event((int)wParam);
-		data->EventCallback(event);
+		data->eventCallback(event);
 		break;
 	}
 
@@ -215,12 +215,12 @@ void Win32Window::OnUpdate()
 void Win32Window::SetVSync(bool enabled)
 {
 	//TODO: set vsync
-	m_Data.VSync = enabled;
+	m_Data.vSync = enabled;
 }
 
 bool Win32Window::IsVSync() const
 {
-	return m_Data.VSync;
+	return m_Data.vSync;
 }
 
 void Win32Window::SetIcon(const std::filesystem::path& path)
@@ -267,12 +267,12 @@ HRESULT Win32Window::Init(const WindowProps& props)
 	Input::SetInput(RendererAPI::GetAPI());
 	m_Instance = GetModuleHandle(0);
 
-	m_Data.Title = props.Title;
-	m_Data.Width = Settings::GetInt("Display", "Screen_Width");
-	m_Data.Height = Settings::GetInt("Display", "Screen_Height");
-	m_Data.PosX = Settings::GetInt("Display", "Window_Position_X");
-	m_Data.PosY = Settings::GetInt("Display", "Window_Position_Y");
-	m_Data.Mode = WindowMode::WINDOWED;
+	m_Data.title = props.title;
+	m_Data.width = Settings::GetInt("Display", "Screen_Width");
+	m_Data.height = Settings::GetInt("Display", "Screen_Height");
+	m_Data.posX = Settings::GetInt("Display", "Window_Position_X");
+	m_Data.posY = Settings::GetInt("Display", "Window_Position_Y");
+	m_Data.mode = WindowMode::WINDOWED;
 
 	//Register class
 	WNDCLASSEX wcex;
@@ -295,24 +295,24 @@ HRESULT Win32Window::Init(const WindowProps& props)
 		return E_FAIL;
 
 	int len;
-	int slength = (int)m_Data.Title.length() + 1;
-	len = MultiByteToWideChar(CP_ACP, 0, m_Data.Title.c_str(), slength, 0, 0);
+	int slength = (int)m_Data.title.length() + 1;
+	len = MultiByteToWideChar(CP_ACP, 0, m_Data.title.c_str(), slength, 0, 0);
 	wchar_t* buf = new wchar_t[len];
-	MultiByteToWideChar(CP_ACP, 0, m_Data.Title.c_str(), slength, buf, len);
+	MultiByteToWideChar(CP_ACP, 0, m_Data.title.c_str(), slength, buf, len);
 	std::wstring wTitle(buf);
 	delete[] buf;
 
 	//create the window
-	RECT rc = { 0,0, (LONG)m_Data.Width, (LONG)m_Data.Height };
+	RECT rc = { 0,0, (LONG)m_Data.width, (LONG)m_Data.height };
 	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
 	m_Window = CreateWindow(wcex.lpszClassName, wTitle.c_str(), WS_OVERLAPPEDWINDOW,
-		m_Data.PosX, m_Data.PosY, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
+		m_Data.posX, m_Data.posY, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, m_Instance, nullptr);
 
 	if (!m_Window)
 		return E_FAIL;
 
 
-	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.Title, m_Data.Width, m_Data.Height);
+	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.title, m_Data.width, m_Data.height);
 
 	ShowWindow(m_Window, SW_SHOWNORMAL);
 	SetWindowLongPtr(m_Window, GWLP_USERDATA, (LONG_PTR)&m_Data);

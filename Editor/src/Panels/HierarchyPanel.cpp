@@ -228,7 +228,7 @@ void HierarchyPanel::SetSelectedEntity(Entity entity)
 
 void HierarchyPanel::DrawNode(Entity entity)
 {
-	auto& tag = entity.GetComponent<TagComponent>().Tag;
+	auto& tag = entity.GetComponent<TagComponent>().tag;
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 

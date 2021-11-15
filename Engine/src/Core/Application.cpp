@@ -328,10 +328,10 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	const char* display = "Display";
 	const char* audio = "Audio";
 
-	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
-	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
-	Settings::SetDefaultInt(display, "Window_Position_X", props.PosX);
-	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
+	Settings::SetDefaultInt(display, "Screen_Width", props.width);
+	Settings::SetDefaultInt(display, "Screen_Height", props.height);
+	Settings::SetDefaultInt(display, "Window_Position_X", props.posX);
+	Settings::SetDefaultInt(display, "Window_Position_Y", props.posY);
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);

@@ -11,26 +11,26 @@ struct RigidBody2DComponent
 		DYNAMIC = 2,
 	};
 
-	BodyType Type = BodyType::STATIC;
-	bool FixedRotation = false;
-	float GravityScale = 1.0f;
-	float AngularDamping = 0.0f;
-	float LinearDamping = 0.0f;
+	BodyType type = BodyType::STATIC;
+	bool fixedRotation = false;
+	float gravityScale = 1.0f;
+	float angularDamping = 0.0f;
+	float linearDamping = 0.0f;
 
 	void* RuntimeBody = nullptr;
 
 	RigidBody2DComponent() = default;
 	RigidBody2DComponent(const RigidBody2DComponent&) = default;
 	RigidBody2DComponent(BodyType type, bool fixedRotation)
-		:Type(type), FixedRotation(fixedRotation) {}
+		:type(type), fixedRotation(fixedRotation) {}
 	
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("BodyType", Type));
-		archive(cereal::make_nvp("FixedRotation", FixedRotation));
-		archive(cereal::make_nvp("GravityScale", GravityScale));
-		archive(cereal::make_nvp("AngularDamping", AngularDamping));
-		archive(cereal::make_nvp("LinearDamping", LinearDamping));
+		archive(cereal::make_nvp("BodyType", type));
+		archive(cereal::make_nvp("FixedRotation", fixedRotation));
+		archive(cereal::make_nvp("GravityScale", gravityScale));
+		archive(cereal::make_nvp("AngularDamping", angularDamping));
+		archive(cereal::make_nvp("LinearDamping", linearDamping));
 	}
 };

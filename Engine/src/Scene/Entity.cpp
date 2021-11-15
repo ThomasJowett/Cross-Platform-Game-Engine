@@ -13,7 +13,7 @@ TransformComponent& Entity::GetTransform()
 
 std::string& Entity::GetTag()
 {
-	return GetComponent<TagComponent>().Tag;
+	return GetComponent<TagComponent>().tag;
 }
 
 Uuid Entity::GetID()

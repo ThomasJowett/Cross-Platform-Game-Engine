@@ -58,12 +58,12 @@ void glfwWindow::SetVSync(bool enabled)
 	}
 
 	Settings::SetBool("Display", "V-Sync", enabled);
-	m_Data.VSync = enabled;
+	m_Data.vSync = enabled;
 }
 
 bool glfwWindow::IsVSync() const
 {
-	return m_Data.VSync;
+	return m_Data.vSync;
 }
 
 void glfwWindow::SetIcon(const std::filesystem::path& path)
@@ -122,17 +122,17 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 {
 	if (!m_Window)
 		return;
-	if (mode == m_Data.Mode)
+	if (mode == m_Data.mode)
 		return;
 
 	GLFWmonitor* monitor = nullptr;
 
 
-	if (m_Data.Mode == WindowMode::WINDOWED)
+	if (m_Data.mode == WindowMode::WINDOWED)
 	{
-		m_OldWindowedParams.width = m_Data.Width;
-		m_OldWindowedParams.Height = m_Data.Height;
-		glfwGetWindowPos(m_Window, &(m_OldWindowedParams.XPos), &(m_OldWindowedParams.YPos));
+		m_OldWindowedParams.width = m_Data.width;
+		m_OldWindowedParams.Height = m_Data.height;
+		glfwGetWindowPos(m_Window, &(m_OldWindowedParams.xPos), &(m_OldWindowedParams.yPos));
 	}
 
 	if (mode == WindowMode::BORDERLESS)
@@ -150,8 +150,8 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 	{
 		if (width == 0 || height == 0)
 		{
-			width = m_Data.Width;
-			height = m_Data.Height;
+			width = m_Data.width;
+			height = m_Data.height;
 		}
 		monitor = glfwGetPrimaryMonitor();
 	}
@@ -166,19 +166,19 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 		mode = (WindowMode)Settings::GetDefaultInt("Display", "Window_Mode");
 	}
 
-	m_Data.Width = width;
-	m_Data.Height = height;
+	m_Data.width = width;
+	m_Data.height = height;
 
-	if (m_Data.EventCallback)
+	if (m_Data.eventCallback)
 	{
 		WindowResizeEvent event(width, height);
-		m_Data.EventCallback(event);
+		m_Data.eventCallback(event);
 	}
 
 	Settings::SetInt("Display", "Window_Mode", (int)mode);
-	m_Data.Mode = mode;
+	m_Data.mode = mode;
 
-	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.XPos, m_OldWindowedParams.YPos, width, height, m_BaseVideoMode.refreshRate);
+	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.xPos, m_OldWindowedParams.yPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
 void glfwWindow::MaximizeWindow()
@@ -211,14 +211,14 @@ void glfwWindow::Init(const WindowProps& props)
 	Input::SetInput(RendererAPI::GetAPI());
 	PROFILE_FUNCTION();
 
-	m_Data.Title = props.Title;
-	m_Data.Width = Settings::GetInt("Display", "Screen_Width");
-	m_Data.Height = Settings::GetInt("Display", "Screen_Height");
-	m_Data.PosX = Settings::GetInt("Display", "Window_Position_X");
-	m_Data.PosY = Settings::GetInt("Display", "Window_Position_Y");
-	m_Data.Mode = WindowMode::WINDOWED;
+	m_Data.title = props.title;
+	m_Data.width = Settings::GetInt("Display", "Screen_Width");
+	m_Data.height = Settings::GetInt("Display", "Screen_Height");
+	m_Data.posX = Settings::GetInt("Display", "Window_Position_X");
+	m_Data.posY = Settings::GetInt("Display", "Window_Position_Y");
+	m_Data.mode = WindowMode::WINDOWED;
 
-	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.Title, m_Data.Width, m_Data.Height);
+	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.title, m_Data.width, m_Data.height);
 
 	if (s_GLFWWindowCount == 0)
 	{
@@ -247,7 +247,7 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
-		m_Window = glfwCreateWindow((int)m_Data.Width, (int)m_Data.Height, m_Data.Title.c_str(), nullptr, nullptr);
+		m_Window = glfwCreateWindow((int)m_Data.width, (int)m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
 		++s_GLFWWindowCount;
 	}
 
@@ -258,10 +258,10 @@ void glfwWindow::Init(const WindowProps& props)
 
 	m_Context->Init();
 
-	m_OldWindowedParams.width = m_Data.Width;
-	m_OldWindowedParams.Height = m_Data.Height;
-	glfwSetWindowPos(m_Window, (int)m_Data.PosX, (int)m_Data.PosY);
-	glfwGetWindowPos(m_Window, &(m_OldWindowedParams.XPos), &(m_OldWindowedParams.YPos));
+	m_OldWindowedParams.width = m_Data.width;
+	m_OldWindowedParams.Height = m_Data.height;
+	glfwSetWindowPos(m_Window, (int)m_Data.posX, (int)m_Data.posY);
+	glfwGetWindowPos(m_Window, &(m_OldWindowedParams.xPos), &(m_OldWindowedParams.yPos));
 
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 	SetVSync(Settings::GetBool("Display", "V-Sync"));
@@ -270,37 +270,37 @@ void glfwWindow::Init(const WindowProps& props)
 	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Width = width;
-			data.Height = height;
+			data.width = width;
+			data.height = height;
 
 			WindowResizeEvent event(width, height);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.Maximized = maximized;
+			data.maximized = maximized;
 
 			WindowMaximizedEvent event(maximized);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int posX, int posY)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.PosX = posX;
-			data.PosY = posY;
+			data.posX = posX;
+			data.posY = posY;
 
 			WindowMoveEvent event(posX, posY);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
 		{
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 			WindowCloseEvent event;
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
@@ -310,12 +310,12 @@ void glfwWindow::Init(const WindowProps& props)
 			if (focused == GLFW_TRUE)
 			{
 				WindowFocusEvent event;
-				data.EventCallback(event);
+				data.eventCallback(event);
 			}
 			else
 			{
 				WindowFocusLostEvent event;
-				data.EventCallback(event);
+				data.eventCallback(event);
 			}
 		});
 
@@ -328,19 +328,19 @@ void glfwWindow::Init(const WindowProps& props)
 			case GLFW_PRESS:
 			{
 				KeyPressedEvent event(key, 0);
-				data.EventCallback(event);
+				data.eventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
 				KeyReleasedEvent event(key);
-				data.EventCallback(event);
+				data.eventCallback(event);
 				break;
 			}
 			case GLFW_REPEAT:
 			{
 				KeyPressedEvent event(key, 1);
-				data.EventCallback(event);
+				data.eventCallback(event);
 				break;
 			}
 			}
@@ -351,7 +351,7 @@ void glfwWindow::Init(const WindowProps& props)
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			KeyTypedEvent event(keycode);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
@@ -363,13 +363,13 @@ void glfwWindow::Init(const WindowProps& props)
 			case GLFW_PRESS:
 			{
 				MouseButtonPressedEvent event(button);
-				data.EventCallback(event);
+				data.eventCallback(event);
 				break;
 			}
 			case GLFW_RELEASE:
 			{
 				MouseButtonReleasedEvent event(button);
-				data.EventCallback(event);
+				data.eventCallback(event);
 				break;
 			}
 			}
@@ -380,7 +380,7 @@ void glfwWindow::Init(const WindowProps& props)
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			MouseWheelEvent event((float)xOffset, (float)yOffset);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
@@ -388,7 +388,7 @@ void glfwWindow::Init(const WindowProps& props)
 			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
 			MouseMotionEvent event((float)xPos, (float)yPos);
-			data.EventCallback(event);
+			data.eventCallback(event);
 		});
 
 	for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
@@ -397,12 +397,12 @@ void glfwWindow::Init(const WindowProps& props)
 		{
 			GLFWgamepadstate state;
 			Joysticks::Joystick joystick;
-			joystick.ID = jid;
-			joystick.Name = glfwGetJoystickName(joystick.ID);
-			joystick.IsMapped = glfwGetGamepadState(joystick.ID, &state);
-			glfwGetJoystickAxes(joystick.ID, &joystick.Axes);
-			glfwGetJoystickButtons(joystick.ID, &joystick.Buttons);
-			glfwGetJoystickHats(joystick.ID, &joystick.Hats);
+			joystick.id = jid;
+			joystick.name = glfwGetJoystickName(joystick.id);
+			joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
+			glfwGetJoystickAxes(joystick.id, &joystick.axes);
+			glfwGetJoystickButtons(joystick.id, &joystick.buttons);
+			glfwGetJoystickHats(joystick.id, &joystick.hats);
 			Joysticks::AddJoystick(joystick);
 		}
 	}
@@ -413,12 +413,12 @@ void glfwWindow::Init(const WindowProps& props)
 			{
 				GLFWgamepadstate state;
 				Joysticks::Joystick joystick;
-				joystick.ID = jid;
-				joystick.Name = glfwGetJoystickName(joystick.ID);
-				joystick.IsMapped = glfwGetGamepadState(joystick.ID, &state);
-				glfwGetJoystickAxes(joystick.ID, &joystick.Axes);
-				glfwGetJoystickButtons(joystick.ID, &joystick.Buttons);
-				glfwGetJoystickHats(joystick.ID, &joystick.Hats);
+				joystick.id = jid;
+				joystick.name = glfwGetJoystickName(joystick.id);
+				joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
+				glfwGetJoystickAxes(joystick.id, &joystick.axes);
+				glfwGetJoystickButtons(joystick.id, &joystick.buttons);
+				glfwGetJoystickHats(joystick.id, &joystick.hats);
 				Joysticks::AddJoystick(joystick);
 				JoystickConnected event(jid);
 				Application::CallEvent(event);

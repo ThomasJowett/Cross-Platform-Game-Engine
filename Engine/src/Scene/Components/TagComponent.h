@@ -5,19 +5,19 @@
 
 struct TagComponent
 {
-	std::string Tag;
+	std::string tag;
 
 	TagComponent() = default;
 	TagComponent(const TagComponent& tag) = default;
 	TagComponent(const std::string& tag)
-		:Tag(tag) {}
+		:tag(tag) {}
 
-	operator std::string& () { return Tag; }
-	operator const std::string& () const { return Tag; }
+	operator std::string& () { return tag; }
+	operator const std::string& () const { return tag; }
 
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Tag", Tag));
+		archive(cereal::make_nvp("Tag", tag));
 	}
 };

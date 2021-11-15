@@ -88,8 +88,8 @@ void ExampleLayer2D::OnImGuiRender()
 
 	Renderer2D::Stats stats = Renderer2D::GetStats();
 	ImGui::Text("Renderer Stats: ");
-	ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-	ImGui::Text("Quad Count: %d", stats.QuadCount);
+	ImGui::Text("Draw Calls: %d", stats.drawCalls);
+	ImGui::Text("Quad Count: %d", stats.quadCount);
 	ImGui::Text("Vertices: %d", stats.GetTotalVertexCount());
 	ImGui::Text("Indices: %d", stats.GetTotalIndexCount());
 

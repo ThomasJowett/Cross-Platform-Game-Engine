@@ -9,11 +9,11 @@
 
 struct ParticleProps
 {
-	Vector2f Position;
-	Vector2f Velocity, VelocityVariation;
-	Colour BeginColour, EndColour;
-	float SizeBegin, SizeEnd, SizeVariation;
-	float LifeTime;
+	Vector2f position;
+	Vector2f velocity, velocityVariation;
+	Colour beginColour, endColour;
+	float sizeBegin, sizeEnd, sizeVariation;
+	float lifeTime;
 };
 
 class ParticleSystem

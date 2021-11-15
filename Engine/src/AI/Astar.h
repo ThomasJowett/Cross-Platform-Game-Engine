@@ -81,8 +81,8 @@ namespace Astar
 	struct Node
 	{
 		uint32_t G, H;
-		GridCoord m_Coordinates;
-		Node * m_Parent;
+		GridCoord coordinates;
+		Node * parent;
 
 		Node(GridCoord coordinates, Node * parent = nullptr);
 

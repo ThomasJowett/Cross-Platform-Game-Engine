@@ -8,11 +8,11 @@ public:
 	Rotator(Vector3f rotation) : m_Rotation(rotation) {}
 	void OnFixedUpdate() override
 	{
-		GetComponent<TransformComponent>().Rotation += m_Rotation;
+		GetComponent<TransformComponent>().rotation += m_Rotation;
 	}
 	void OnUpdate(float deltaTime)override
 	{
-		GetComponent<TransformComponent>().Rotation += m_Rotation * deltaTime;
+		GetComponent<TransformComponent>().rotation += m_Rotation * deltaTime;
 	}
 
 	void SetRotation(Vector3f rotation) { m_Rotation = rotation; }
@@ -54,38 +54,38 @@ void ExampleLayer3D::OnAttach()
 	Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
-	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
+	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
-	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1] + 1.0f, m_Position[2] };
+	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] + 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(-0.0011f, 0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
-	entity.GetComponent<TransformComponent>().Position = { m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] };
+	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, -0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Torus");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
-	entity.GetComponent<TransformComponent>().Position = { m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] };
+	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, -0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Plane");
 	entity.AddComponent<StaticMeshComponent>(mesh, material);
 	entity.AddComponent<PrimitiveComponent>(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
-	entity.GetComponent<TransformComponent>().Position = { m_Position[0], m_Position[1], m_Position[2] - 0.5f };
-	entity.GetComponent<TransformComponent>().Rotation = { (float)PI / 2.0f, 0.0f, 0.0f };
+	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1], m_Position[2] - 0.5f };
+	entity.GetComponent<TransformComponent>().rotation = { (float)PI / 2.0f, 0.0f, 0.0f };
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Camera");
 	SceneCamera camera;
 	camera.SetPerspective(45, 1, 100);
 	entity.AddComponent<CameraComponent>(camera, true, false);
-	entity.GetComponent<TransformComponent>().Position = { 0.0,0.0,10.0 };
+	entity.GetComponent<TransformComponent>().position = { 0.0,0.0,10.0 };
 }
 
 void ExampleLayer3D::OnDetach()

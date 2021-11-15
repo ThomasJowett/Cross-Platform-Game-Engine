@@ -18,20 +18,20 @@ enum class WindowMode
 
 struct WindowProps
 {
-	std::string Title;
-	unsigned int Width;
-	unsigned int Height;
+	std::string title;
+	unsigned int width;
+	unsigned int height;
 
-	unsigned int PosX;
-	unsigned int PosY;
+	unsigned int posX;
+	unsigned int posY;
 
 	WindowProps(const std::string& title = "Example Game",
 		unsigned int width = 1920,
 		unsigned int height = 1080,
 		unsigned int posX = 20,
 		unsigned int posY = 50)
-		:Title(title), Width(width), Height(height),
-		PosX(posX), PosY(posY)
+		:title(title), width(width), height(height),
+		posX(posX), posY(posY)
 	{
 	}
 };

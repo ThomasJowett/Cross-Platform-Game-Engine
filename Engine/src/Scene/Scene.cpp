@@ -131,16 +131,16 @@ void Scene::OnRuntimeStart()
 		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
 		{
 			b2BodyDef bodyDef;
-			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
-			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
-			bodyDef.angle = (float32)transformComp.Rotation.z;
+			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
+			bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
+			bodyDef.angle = (float32)transformComp.rotation.z;
 
-			if (rigidBody2DComp.Type == RigidBody2DComponent::BodyType::DYNAMIC)
+			if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
 			{
-				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
-				bodyDef.angularDamping = rigidBody2DComp.AngularDamping;
-				bodyDef.linearDamping = rigidBody2DComp.LinearDamping;
-				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
+				bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
+				bodyDef.angularDamping = rigidBody2DComp.angularDamping;
+				bodyDef.linearDamping = rigidBody2DComp.linearDamping;
+				bodyDef.gravityScale = rigidBody2DComp.gravityScale;
 			}
 
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
@@ -153,7 +153,7 @@ void Scene::OnRuntimeStart()
 				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
 
 				b2PolygonShape boxShape;
-				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.Scale.x, boxColliderComp.Size.y * transformComp.Scale.y,
+				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
 					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
 					0.0f);
 
@@ -238,7 +238,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : staticMeshGroup)
 	{
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get<TransformComponent, StaticMeshComponent>(entity);
-		Renderer::Submit(staticMeshComp.material, staticMeshComp.Geometry, transformComp.GetMatrix());
+		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetMatrix());
 	}
 
 	Renderer::EndScene();
@@ -259,7 +259,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		{
 			if (cameraComp.Primary)
 			{
-				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate(Quaternion(transformComp.Rotation));
+				view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
 				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}
@@ -294,20 +294,20 @@ void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraT
 	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 		[](const auto& sprite, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawQuad(transform, sprite.Tint);
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
+				* Matrix4x4::Scale(transformComp.scale);
+			Renderer2D::DrawQuad(transform, sprite.tint);
 		});
 
 
 	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 		[](const auto& mesh, const auto& transformComp)
 		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer::Submit(mesh.material, mesh.Geometry, transform);
+			Matrix4x4 transform = Matrix4x4::Translate(transformComp.position)
+				* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
+				* Matrix4x4::Scale(transformComp.scale);
+			Renderer::Submit(mesh.material, mesh.mesh, transform);
 		});
 
 	Renderer::EndScene();
@@ -339,32 +339,32 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
 		{
-			if (primitiveComponent.NeedsUpdating)
+			if (primitiveComponent.needsUpdating)
 			{
-				switch (primitiveComponent.Type)
+				switch (primitiveComponent.type)
 				{
 				case PrimitiveComponent::Shape::Cube:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.CubeWidth, primitiveComponent.CubeHeight, primitiveComponent.CubeDepth), "Cube");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
 					break;
 				case PrimitiveComponent::Shape::Sphere:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.SphereRadius, primitiveComponent.SphereLongitudeLines, primitiveComponent.SphereLatitudeLines), "Sphere");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
 					break;
 				case PrimitiveComponent::Shape::Plane:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.PlaneWidth, primitiveComponent.PlaneLength, primitiveComponent.PlaneLengthLines, primitiveComponent.PlaneWidthLines, primitiveComponent.PlaneTileU, primitiveComponent.PlaneTileV), "Plane");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
 					break;
 				case PrimitiveComponent::Shape::Cylinder:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.CylinderBottomRadius, primitiveComponent.CylinderTopRadius, primitiveComponent.CylinderHeight, primitiveComponent.CylinderSliceCount, primitiveComponent.CylinderStackCount), "Cylinder");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
 					break;
 				case PrimitiveComponent::Shape::Cone:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.ConeBottomRadius, 0.00001f, primitiveComponent.ConeHeight, primitiveComponent.ConeSliceCount, primitiveComponent.ConeStackCount), "Cone");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
 					break;
 				case PrimitiveComponent::Shape::Torus:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.TorusOuterRadius, primitiveComponent.TorusInnerRadius, primitiveComponent.TorusSliceCount), "Torus");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
 					break;
 				default:
 					break;
 				}
-				primitiveComponent.NeedsUpdating = false;
+				primitiveComponent.needsUpdating = false;
 			}
 		});
 
@@ -405,9 +405,9 @@ void Scene::OnFixedUpdate()
 			{
 				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
 				const b2Vec2& position = body->GetPosition();
-				transformComp.Position.x = position.x;
-				transformComp.Position.y = position.y;
-				transformComp.Rotation.z = (float)body->GetAngle();
+				transformComp.position.x = position.x;
+				transformComp.position.y = position.y;
+				transformComp.rotation.z = (float)body->GetAngle();
 			});
 	}
 

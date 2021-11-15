@@ -7,7 +7,7 @@
 
 struct SceneData
 {
-	Matrix4x4 ViewProjectionMatrix;
+	Matrix4x4 viewProjectionMatrix;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -39,7 +39,7 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
-	s_Data.ViewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
+	s_Data.viewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
 	Renderer2D::BeginScene(transform, projection);
 }
 
@@ -59,7 +59,7 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 {
 	//TODO: submit the vertex array to a render queue
 	shader->Bind();
-	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
+	shader->SetMat4("u_ViewProjection", s_Data.viewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
@@ -77,7 +77,7 @@ void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x
 		return;
 
 	shader->Bind();
-	shader->SetMat4("u_ViewProjection", s_Data.ViewProjectionMatrix, true);
+	shader->SetMat4("u_ViewProjection", s_Data.viewProjectionMatrix, true);
 	shader->SetMat4("u_ModelMatrix", transform, true);
 
 	shader->SetFloat4("u_colour", material.GetTint());

@@ -38,21 +38,21 @@ static uint32_t ShaderDataTypeSize(ShaderDataType type)
 }
 struct BufferElement
 {
-	std::string Name;
-	ShaderDataType Type;
-	size_t Offset;
-	uint32_t Size;
-	bool Normalized;
+	std::string name;
+	ShaderDataType type;
+	size_t offset;
+	uint32_t size;
+	bool normalized;
 
 	BufferElement()
-		:Name(""), Type(ShaderDataType::None), Normalized(false), Size(0), Offset(0) {}
+		:name(""), type(ShaderDataType::None), normalized(false), size(0), offset(0) {}
 
 	BufferElement(ShaderDataType type, const std::string& name, bool normalized = false)
-		:Name(name), Type(type), Normalized(normalized), Size(ShaderDataTypeSize(type)), Offset(0) {}
+		:name(name), type(type), normalized(normalized), size(ShaderDataTypeSize(type)), offset(0) {}
 
 	uint32_t Count() const
 	{
-		switch (Type)
+		switch (type)
 		{
 		case ShaderDataType::Float:		return 1;
 		case ShaderDataType::Float2:	return 2;
@@ -117,9 +117,9 @@ private:
 		m_Stride = 0;
 		for (BufferElement& element : m_Elements)
 		{
-			element.Offset = offset;
-			offset += element.Size;
-			m_Stride += element.Size;
+			element.offset = offset;
+			offset += element.size;
+			m_Stride += element.size;
 		}
 	}
 

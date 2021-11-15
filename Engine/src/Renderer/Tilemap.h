@@ -15,9 +15,9 @@ class Tileset
 {
 	struct Tile
 	{
-		int Id = -1;
-		std::string Type;
-		double Probability = 1.0f;
+		int id = -1;
+		std::string type;
+		double probability = 1.0f;
 
 	};
 public:
@@ -99,12 +99,12 @@ class Tilemap
 
 	struct Object
 	{
-		uint32_t m_Id;
-		std::string m_Name;
-		std::string m_Type;
-		bool m_Visible = true;
-		Vector2f m_Position;
-		float m_Rotation;
+		uint32_t id;
+		std::string name;
+		std::string type;
+		bool visible = true;
+		Vector2f position;
+		float rotation;
 	};
 
 	struct RectangleObject : public Object

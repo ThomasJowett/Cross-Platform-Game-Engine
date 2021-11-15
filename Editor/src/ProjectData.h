@@ -6,14 +6,14 @@
 
 struct ProjectData
 {
-	std::string DefaultScene;
+	std::string defaultScene;
 
-	std::string Description;
+	std::string description;
 
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Default Scene", DefaultScene));
-		archive(cereal::make_nvp("Description", Description));
+		archive(cereal::make_nvp("Default Scene", defaultScene));
+		archive(cereal::make_nvp("Description", description));
 	}
 };

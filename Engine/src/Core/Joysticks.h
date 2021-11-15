@@ -8,12 +8,12 @@ public:
 
 	struct Joystick
 	{
-		const char* Name = "";
-		bool IsMapped = false;
-		int ID = 0;
-		int Axes = 0;
-		int Buttons = 0;
-		int Hats = 0;
+		const char* name = "";
+		bool isMapped = false;
+		int id = 0;
+		int axes = 0;
+		int buttons = 0;
+		int hats = 0;
 	};
 
 	static void AddJoystick(Joystick joystick)
@@ -27,7 +27,7 @@ public:
 
 		for (i = 0; i < s_JoystickCount; i++)
 		{
-			if (s_Joysticks[i].ID == joystickID)
+			if (s_Joysticks[i].id == joystickID)
 				break;
 		}
 

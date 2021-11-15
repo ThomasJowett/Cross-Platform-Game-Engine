@@ -40,9 +40,9 @@ void JoystickInfoPanel::OnImGuiRender()
 		{
 			Joysticks::Joystick joystick = Joysticks::GetJoystick(i);
 
-			ImGui::Text("%s", joystick.Name);
+			ImGui::Text("%s", joystick.name);
 
-			if (joystick.IsMapped)
+			if (joystick.isMapped)
 			{
 				const char* button_names[] =
 				{
@@ -76,7 +76,7 @@ void JoystickInfoPanel::OnImGuiRender()
 					ImGui::PopStyleColor();
 				}
 
-				for (int j = 1; j <= joystick.Hats; j++)
+				for (int j = 1; j <= joystick.hats; j++)
 				{
 
 					ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -132,14 +132,14 @@ void JoystickInfoPanel::OnImGuiRender()
 			}
 			else
 			{
-				for (int j = 0; j < joystick.Axes; j++)
+				for (int j = 0; j < joystick.axes; j++)
 				{
 					float axisValue = (float)Input::GetJoyStickAxis(i, j);
 					ImGui::SliderFloat(("Axis " + std::to_string(j)).c_str(), &axisValue, -1.0f, 1.0f);
 				}
 
 
-				for (int j = 0; j < joystick.Buttons; j++)
+				for (int j = 0; j < joystick.buttons; j++)
 				{
 					if (j > 0)
 						ImGui::SameLine();
