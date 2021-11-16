@@ -64,6 +64,7 @@ public:
 	{
 		uint32_t drawCalls = 0;
 		uint32_t quadCount = 0;
+		uint32_t lineCount = 0;
 
 		uint32_t GetTotalVertexCount() { return quadCount * 4; }
 		uint32_t GetTotalIndexCount() { return quadCount * 6; }
@@ -75,6 +76,8 @@ public:
 private:
 	static void StartQuadsBatch();
 	static void StartCirclesBatch();
+	static void StartLinesBatch();
 	static void NextQuadsBatch();
 	static void NextCirclesBatch();
+	static void NextLinesBatch();
 };

@@ -13,7 +13,7 @@ layout (location = 0) in VertexOutput Input;
 layout (location = 2) in flat float v_TexIndex;
 layout (location = 3) in flat int v_EntityId;
 
-uniform sampler2D u_Textures[32];
+layout (binding = 0) uniform sampler2D u_Textures[32];
 
 void main()
 {

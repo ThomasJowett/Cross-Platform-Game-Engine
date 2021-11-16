@@ -17,7 +17,7 @@ void StaticMeshView::OnAttach()
 
 	m_Mesh = CreateRef<Mesh>(m_FilePath);
 
-	m_ShaderLibrary.Load("NormalMap");
+	m_ShaderLibrary.Load("Standard");
 	m_Texture = Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
@@ -119,7 +119,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
+	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
 	shader->Bind();
 
 	shader->SetInt("u_texture", 0);

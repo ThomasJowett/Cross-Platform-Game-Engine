@@ -65,7 +65,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
 					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -77,7 +77,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
 					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -89,7 +89,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
 					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -101,7 +101,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -113,7 +113,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -125,7 +125,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
 					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);

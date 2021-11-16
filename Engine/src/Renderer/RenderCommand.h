@@ -61,6 +61,12 @@ public:
 		vertexArray->Bind();
 		s_RendererAPI->DrawIndexed(vertexArray, indexCount, drawMode);
 	}
+
+	inline static void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount = 0)
+	{
+		vertexArray->Bind();
+		s_RendererAPI->DrawLines(vertexArray, vertexCount);
+	}
 private:
 	static Scope<RendererAPI> s_RendererAPI;
 };

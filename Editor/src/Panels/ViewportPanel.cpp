@@ -88,15 +88,15 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
+			m_Framebuffer->Bind();
+			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				m_Framebuffer->Bind();
-				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				m_Framebuffer->UnBind();
 				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver())
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 			}
+				m_Framebuffer->UnBind();
 		}
 
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
@@ -214,8 +214,8 @@ void ViewportPanel::OnImGuiRender()
 
 						Mesh mesh(*file);
 
-						m_ShaderLibrary.Load("NormalMap");
-						Material material(m_ShaderLibrary.Get("NormalMap"));
+						m_ShaderLibrary.Load("Standard");
+						Material material(m_ShaderLibrary.Get("Standard"));
 
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 
@@ -346,8 +346,8 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 		ImGui::Text("%.1f", io.Framerate);
 		ImGui::SameLine();
-		if (m_HoveredEntity)
-			ImGui::Text("%s", m_HoveredEntity.GetTag().c_str());
+		//if (m_HoveredEntity)
+			ImGui::Text("%i", (int)m_PixelData);
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();

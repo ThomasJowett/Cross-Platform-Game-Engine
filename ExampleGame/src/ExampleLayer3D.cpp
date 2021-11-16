@@ -41,14 +41,14 @@ void ExampleLayer3D::OnAttach()
 	m_CylinderVertexArray = GeometryGenerator::CreateCylinder(0.25f, 0.1f, 1.0f, 20, 1);
 	m_TorusVertexArray = GeometryGenerator::CreateTorus(0.7f, 0.25f, 30);
 
-	m_ShaderLibrary.Load("NormalMap");
+	m_ShaderLibrary.Load("Standard");
 	m_Texture = Texture2D::Create(Application::Get().GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0,0.0,10.0 });
 
 	Mesh mesh;
 	mesh.LoadModel(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-	Material material(m_ShaderLibrary.Get("NormalMap"));
+	Material material(m_ShaderLibrary.Get("Standard"));
 	material.AddTexture(m_Texture, 0);
 	
 	Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");

@@ -238,7 +238,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : staticMeshGroup)
 	{
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get<TransformComponent, StaticMeshComponent>(entity);
-		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetMatrix());
+		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetMatrix(), (int)entity);
 	}
 
 	Renderer::EndScene();

@@ -61,7 +61,7 @@ void PropertiesPanel::OnImGuiRender()
 						//TODO: Store the material in the mesh file
 						Mesh mesh(*file);
 
-						Material material(Shader::Create("NormalMap"));
+						Material material(Shader::Create("Standard"));
 
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 

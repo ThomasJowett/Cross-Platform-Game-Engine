@@ -90,7 +90,7 @@ struct Renderer2DData
 
 	Renderer2D::Stats statistics;
 
-	struct CameraData
+	__declspec(align(16)) struct CameraData
 	{
 		Matrix4x4 viewProjectionMatrix;
 	};
@@ -215,7 +215,7 @@ bool Renderer2D::Init()
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
 	s_Data.circleShader->Bind();
 
-	s_Data.lineShader = Shader::Create("Line");
+	s_Data.lineShader = Shader::Create("Renderer2D_Line");
 	s_Data.lineShader->Bind();
 	s_Data.lineShader->SetInt("u_Caps", 3);
 
@@ -592,83 +592,83 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
-	//if (s_Data.LineIndexCount >= s_Data.MaxLineIndices)
-	//	NextQuadsBatch();
-	//
-	////world to clip
-	//Vector3f clipI = s_Data.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
-	//Vector3f clipJ = s_Data.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
-	//
-	////clip to pixel
-	//Vector2f pixelStart, pixelEnd;
-	//pixelStart.x = 0.5f * (float)s_Data.screenWidth * (clipI.x / 1.0f + 1.0f);
-	//pixelStart.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipI.y / 1.0f);
-	//pixelEnd.x = 0.5f * (float)s_Data.screenWidth * (clipJ.x / 1.0f + 1.0f);
-	//pixelEnd.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipJ.y / 1.0f);
-	//
-	//Vector2f direction = pixelEnd - pixelStart;
-	//float lineLength = direction.Magnitude();
-	//
-	//if (lineLength < 1e-10) return;
-	//
-	//direction = direction / lineLength;
-	//Vector2f normal(-direction.y, +direction.x);
-	//
-	//float d = 0.5f * thickness;
-	//
-	//float dOverWidth = d / (float)s_Data.screenWidth;
-	//float dOverHeight = d / (float)s_Data.screenHeight;
-	//
-	//Vector3f offset;
-	//
-	//offset.x = (-direction.x + normal.x) * dOverWidth;
-	//offset.y = (+direction.y + normal.y) * dOverHeight;
-	//s_Data.lineVertexBufferPtr->ClipCoord = clipI + offset;
-	//s_Data.lineVertexBufferPtr->colour = colour;
-	//s_Data.lineVertexBufferPtr->TexCoords = { -d, +d };
-	//s_Data.lineVertexBufferPtr->Width = 2 * d;
-	//s_Data.lineVertexBufferPtr->Length = lineLength;
-	//s_Data.lineVertexBufferPtr++;
-	//
-	//offset.x = (+direction.x + normal.x) * dOverWidth;
-	//offset.y = (-direction.y - normal.y) * dOverHeight;
-	//s_Data.lineVertexBufferPtr->ClipCoord = clipI + offset;
-	//s_Data.lineVertexBufferPtr->colour = colour;
-	//s_Data.lineVertexBufferPtr->TexCoords = { lineLength + d, +d };
-	//s_Data.lineVertexBufferPtr->Width = 2 * d;
-	//s_Data.lineVertexBufferPtr->Length = lineLength;
-	//s_Data.lineVertexBufferPtr++;
-	//
-	//offset.x = (+direction.x - normal.x) * dOverWidth;
-	//offset.y = (-direction.y + normal.y) * dOverHeight;
-	//s_Data.lineVertexBufferPtr->ClipCoord = clipI + offset;
-	//s_Data.lineVertexBufferPtr->colour = colour;
-	//s_Data.lineVertexBufferPtr->TexCoords = { lineLength + d, -d };
-	//s_Data.lineVertexBufferPtr->Width = 2 * d;
-	//s_Data.lineVertexBufferPtr->Length = lineLength;
-	//s_Data.lineVertexBufferPtr++;
-	//
-	//offset.x = (-direction.x - normal.x) * dOverWidth;
-	//offset.y = (+direction.y + normal.y) * dOverHeight;
-	//s_Data.lineVertexBufferPtr->ClipCoord = clipI + offset;
-	//s_Data.lineVertexBufferPtr->colour = colour;
-	//s_Data.lineVertexBufferPtr->TexCoords = { -d, -d };
-	//s_Data.lineVertexBufferPtr->Width = 2 * d;
-	//s_Data.lineVertexBufferPtr->Length = lineLength;
-	//s_Data.lineVertexBufferPtr++;
-	//
-	//offset.x = (-direction.x + normal.x) * dOverWidth;
-	//offset.y = (+direction.y + normal.y) * dOverHeight;
-	//s_Data.lineVertexBufferPtr->ClipCoord = clipI + offset;
-	//s_Data.lineVertexBufferPtr->colour = colour;
-	//s_Data.lineVertexBufferPtr->TexCoords = { -d, +d };
-	//s_Data.lineVertexBufferPtr->Width = 2 * d;
-	//s_Data.lineVertexBufferPtr->Length = lineLength;
-	//s_Data.lineVertexBufferPtr++;
-	//
-	//s_Data.LineIndexCount += 6;
-	//
-	//s_Data.statistics.QuadCount++;
+	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
+		NextQuadsBatch();
+	
+	//world to clip
+	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
+	Vector3f clipJ = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
+	
+	//clip to pixel
+	Vector2f pixelStart, pixelEnd;
+	pixelStart.x = 0.5f * (float)s_Data.screenWidth * (clipI.x / 1.0f + 1.0f);
+	pixelStart.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipI.y / 1.0f);
+	pixelEnd.x = 0.5f * (float)s_Data.screenWidth * (clipJ.x / 1.0f + 1.0f);
+	pixelEnd.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipJ.y / 1.0f);
+	
+	Vector2f direction = pixelEnd - pixelStart;
+	float lineLength = direction.Magnitude();
+	
+	if (lineLength < 1e-10) return;
+	
+	direction = direction / lineLength;
+	Vector2f normal(-direction.y, +direction.x);
+	
+	float d = 0.5f * thickness;
+	
+	float dOverWidth = d / (float)s_Data.screenWidth;
+	float dOverHeight = d / (float)s_Data.screenHeight;
+	
+	Vector3f offset;
+	
+	offset.x = (-direction.x + normal.x) * dOverWidth;
+	offset.y = (+direction.y + normal.y) * dOverHeight;
+	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
+	s_Data.lineVertexBufferPtr->colour = colour;
+	s_Data.lineVertexBufferPtr->texCoords = { -d, +d };
+	s_Data.lineVertexBufferPtr->width = 2 * d;
+	s_Data.lineVertexBufferPtr->length = lineLength;
+	s_Data.lineVertexBufferPtr++;
+	
+	offset.x = (+direction.x + normal.x) * dOverWidth;
+	offset.y = (-direction.y - normal.y) * dOverHeight;
+	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
+	s_Data.lineVertexBufferPtr->colour = colour;
+	s_Data.lineVertexBufferPtr->texCoords = { lineLength + d, +d };
+	s_Data.lineVertexBufferPtr->width = 2 * d;
+	s_Data.lineVertexBufferPtr->length = lineLength;
+	s_Data.lineVertexBufferPtr++;
+	
+	offset.x = (+direction.x - normal.x) * dOverWidth;
+	offset.y = (-direction.y + normal.y) * dOverHeight;
+	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
+	s_Data.lineVertexBufferPtr->colour = colour;
+	s_Data.lineVertexBufferPtr->texCoords = { lineLength + d, -d };
+	s_Data.lineVertexBufferPtr->width = 2 * d;
+	s_Data.lineVertexBufferPtr->length = lineLength;
+	s_Data.lineVertexBufferPtr++;
+	
+	offset.x = (-direction.x - normal.x) * dOverWidth;
+	offset.y = (+direction.y + normal.y) * dOverHeight;
+	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
+	s_Data.lineVertexBufferPtr->colour = colour;
+	s_Data.lineVertexBufferPtr->texCoords = { -d, -d };
+	s_Data.lineVertexBufferPtr->width = 2 * d;
+	s_Data.lineVertexBufferPtr->length = lineLength;
+	s_Data.lineVertexBufferPtr++;
+	
+	offset.x = (-direction.x + normal.x) * dOverWidth;
+	offset.y = (+direction.y + normal.y) * dOverHeight;
+	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
+	s_Data.lineVertexBufferPtr->colour = colour;
+	s_Data.lineVertexBufferPtr->texCoords = { -d, +d };
+	s_Data.lineVertexBufferPtr->width = 2 * d;
+	s_Data.lineVertexBufferPtr->length = lineLength;
+	s_Data.lineVertexBufferPtr++;
+	
+	s_Data.lineIndexCount += 6;
+	
+	s_Data.statistics.lineCount++;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

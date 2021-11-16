@@ -14,7 +14,7 @@ void GridLayer::OnAttach()
 
 	m_EarthVertexArray = GeometryGenerator::CreateSphere(6371.0f, 300, 200);
 
-	m_ShaderLibrary.Load("NormalMap");
+	m_ShaderLibrary.Load("Standard");
 
 	m_Texture = Texture2D::Create(1, 1);
 	uint32_t textureData = Colour(Colours::WHITE).HexValue();
@@ -56,7 +56,7 @@ void GridLayer::OnUpdate(float deltaTime)
 	m_TargetLocation = TargetLocation(m_Time);
 	GenerateLaserVertices();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
+	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
 	shader->Bind();
 
 	shader->SetFloat4("u_colour", Colours::WHITE);

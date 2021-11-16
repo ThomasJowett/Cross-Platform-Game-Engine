@@ -4,10 +4,27 @@
 #include "RenderCommand.h"
 
 #include "FrameBuffer.h"
+#include "UniformBuffer.h"
 
 struct SceneData
 {
-	Matrix4x4 viewProjectionMatrix;
+	__declspec(align(16)) struct ConstantBuffer
+	{
+		Matrix4x4 viewProjectionMatrix;
+	};
+	__declspec(align(16)) struct ModelBuffer
+	{
+		Matrix4x4 modelMatrix;
+		Colour colour;
+		float tilingFactor = 1.0f;
+		int entityId = -1;
+	};
+
+	ConstantBuffer constantBuffer;
+	ModelBuffer modelBuffer;
+	
+	Ref<UniformBuffer> constantUniformBuffer;
+	Ref<UniformBuffer> modelUniformBuffer;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -16,6 +33,9 @@ SceneData s_Data;
 
 bool Renderer::Init()
 {
+	s_Data.constantUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ConstantBuffer), 0);
+	s_Data.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
+	
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
 	return false;
@@ -39,7 +59,9 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
-	s_Data.viewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
+	s_Data.constantBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
+
+	s_Data.constantUniformBuffer->SetData(&s_Data.constantBuffer, sizeof(SceneData::ConstantBuffer));
 	Renderer2D::BeginScene(transform, projection);
 }
 
@@ -55,12 +77,17 @@ void Renderer::EndScene()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform)
+void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, int entityId)
 {
 	//TODO: submit the vertex array to a render queue
 	shader->Bind();
-	shader->SetMat4("u_ViewProjection", s_Data.viewProjectionMatrix, true);
-	shader->SetMat4("u_ModelMatrix", transform, true);
+
+	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
+	s_Data.modelBuffer.colour = Colours::WHITE;
+	//TODO: each texture should have it's own tiling factor
+	s_Data.modelBuffer.tilingFactor = 1.0f;
+	s_Data.modelBuffer.entityId = entityId;
+	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
@@ -69,7 +96,7 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform)
+void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform, int entityId)
 {
 	Ref<Shader> shader = material.GetShader();
 
@@ -77,13 +104,12 @@ void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x
 		return;
 
 	shader->Bind();
-	shader->SetMat4("u_ViewProjection", s_Data.viewProjectionMatrix, true);
-	shader->SetMat4("u_ModelMatrix", transform, true);
-
-	shader->SetFloat4("u_colour", material.GetTint());
-
+	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
+	s_Data.modelBuffer.colour = material.GetTint();
 	//TODO: each texture should have it's own tiling factor
-	shader->SetFloat("u_tilingFactor", 1.0f);
+	s_Data.modelBuffer.tilingFactor = 1.0f;
+	s_Data.modelBuffer.entityId = entityId;
+	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
 
 	material.BindTextures();
 
