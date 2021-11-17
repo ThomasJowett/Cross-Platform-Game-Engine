@@ -1,4 +1,5 @@
 #include "MonteCarloLayer.h"
+#include "math/Quaternion.h"
 
 MonteCarloLayer::MonteCarloLayer()
 	:Layer("Monte Carlo")
@@ -12,7 +13,7 @@ MonteCarloLayer::~MonteCarloLayer()
 
 void MonteCarloLayer::OnAttach()
 {
-	m_CameraController.SetPosition({ 0.0f, 0.5f, 0.0f });
+	m_CameraController.SetPosition({ 0.5f, 0.5f, 0.0f });
 	m_CameraController.SetZoom(0.7f);
 	RunMonteCarlo();
 }
@@ -36,6 +37,8 @@ void MonteCarloLayer::OnUpdate(float deltaTime)
 	{
 		Renderer2D::DrawQuad(position, Vector2f(0.01f, 0.01f), Colours::RED);
 	}
+
+	Renderer2D::DrawQuad({ 0.5f, 0.5f }, { 1.0f, 1.0f }, Colours::WHITE);
 	Renderer2D::EndScene();
 }
 
@@ -64,8 +67,10 @@ void MonteCarloLayer::OnImGuiRender()
 	ImGui::DragInt("Number of runs", &m_Runs, 1, 0, 100000);
 	//if (ImGui::Button("Run Monte Carlo"))
 	//	RunMonteCarlo();
-	std::string pi = "PI = " + std::to_string((double)(m_RedPositions.size()) / (double)m_BluePositions.size());
-	ImGui::Text("%s", pi.c_str());
+	double pi = 4*((double)(m_RedPositions.size()) / ((double)m_BluePositions.size() + (double)(m_RedPositions.size())));
+	double difference = abs(PI - pi);
+	ImGui::Text("PI = %s", std::to_string(pi).c_str());
+	ImGui::Text("Difference = %s", std::to_string(difference).c_str());
 	ImGui::End();
 };
 void MonteCarloLayer::RunMonteCarlo()
