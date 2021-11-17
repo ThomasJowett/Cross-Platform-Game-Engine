@@ -59,15 +59,12 @@ void GridLayer::OnUpdate(float deltaTime)
 	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
 	shader->Bind();
 
-	shader->SetFloat4("u_colour", Colours::WHITE);
-	shader->SetFloat("u_tilingFactor", 1.0f);
-
 	m_CameraController.OnUpdate(deltaTime);
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera().GetProjectionMatrix());
 	m_Texture->Bind();
 
-	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(Vector3f()));
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(Vector3f()), Colours::WHITE);
 
 	Renderer::Submit(shader, m_TargetVertexArray, Matrix4x4::Translate(m_TargetLocation) * Matrix4x4::Rotate(m_PlaneRotation));
 
@@ -75,30 +72,23 @@ void GridLayer::OnUpdate(float deltaTime)
 	Renderer::Submit(shader, m_EarthVertexArray, Matrix4x4::Translate(Vector3f(0.0f, -6371.0f, 0.0f)) * Matrix4x4::RotateZ(0.57f) * Matrix4x4::RotateY(0.1305f));
 
 	m_Texture->Bind();
-	shader->SetFloat4("u_colour", Colours::RED);
-	Renderer::Submit(shader, m_IncidentLaserVertexArray, m_IncidentBeamTransform);
 
-	shader->SetFloat4("u_colour", Colours::YELLOW);
-	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian((float)DegToRad(m_Azimuth), (float)DegToRad(m_Elevation), m_Distance)));
+	Renderer::Submit(shader, m_IncidentLaserVertexArray, m_IncidentBeamTransform, Colours::RED);
 
-	shader->SetFloat4("u_colour", Colours::CYAN);
+	Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(ConvertPolarToCartesian((float)DegToRad(m_Azimuth), (float)DegToRad(m_Elevation), m_Distance)), Colours::YELLOW);
 
 	for (Vector3f position : m_Positions)
 	{
 		if (IsPositionIlluminated(position))
 		{
-			shader->SetFloat4("u_colour", Colours::YELLOW);
+			Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(position), Colours::YELLOW);
 		}
 		else
 		{
-			shader->SetFloat4("u_colour", Colours::CYAN);
+			Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(position), Colours::CYAN);
 		}
-		Renderer::Submit(shader, m_CubeVertexArray, Matrix4x4::Translate(position));
 	}
-
-	shader->SetFloat4("u_colour", Colour(0.0f, 0.5f, 0.0f, 0.5f) );
-	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform);
-
+	Renderer::Submit(shader, m_ReflectionLaserVertexArray, m_ReflectedBeamTransform, Colour(0.0f, 0.5f, 0.0f, 0.5f));
 
 	Renderer::EndScene();
 }
@@ -115,13 +105,13 @@ void GridLayer::OnImGuiRender()
 		GeneratePositions();
 	ImGui::SliderInt("Number of Positions", &m_NumberOfPositions, 0, 1000);
 	ImGui::SliderFloat("Minimum distance", &m_MinimumDistance, 0, 1.0);
-	ImGui::InputFloat("Lower Limit X", &m_LowerXLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Upper Limit X", &m_UpperXLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Lower Limit Y", &m_LowerYLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Upper Limit Y", &m_UpperYLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Lower Limit Z", &m_LowerZLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Upper Limit Z", &m_UpperZLimit ,1.0f, 10.0f, "%.6f");
-	ImGui::InputFloat("Incline", &m_Incline ,1.0f, 10.0f, "%.2f");
+	ImGui::InputFloat("Lower Limit X", &m_LowerXLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit X", &m_UpperXLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Lower Limit Y", &m_LowerYLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit Y", &m_UpperYLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Lower Limit Z", &m_LowerZLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Upper Limit Z", &m_UpperZLimit, 1.0f, 10.0f, "%.6f");
+	ImGui::InputFloat("Incline", &m_Incline, 1.0f, 10.0f, "%.2f");
 
 	ImGui::Text("%s", std::to_string(m_Positions.size()).c_str());
 	ImGui::Separator();
@@ -242,7 +232,7 @@ void GridLayer::GenerateLaserVertices()
 
 	m_PlaneRotation = planeOrientation.EulerAngles();
 
-	Vector3f normal = Vector3f(0.0,0.0, 1.0);
+	Vector3f normal = Vector3f(0.0, 0.0, 1.0);
 
 	m_PlaneNormal = planeOrientation.RotateVectorByQuaternion(normal);
 
@@ -255,7 +245,7 @@ void GridLayer::GenerateLaserVertices()
 
 	m_ReflectedDirection = Vector3f::Reflect(m_TargetLocation.GetNormalized(), m_PlaneNormal);
 
-	Vector3f reflectedTranslation = m_TargetLocation + (m_ReflectedDirection * (m_ReflectedLength *0.5f));
+	Vector3f reflectedTranslation = m_TargetLocation + (m_ReflectedDirection * (m_ReflectedLength * 0.5f));
 
 	m_ReflectedBeamTransform = Matrix4x4::Translate(reflectedTranslation) * Matrix4x4::LookAt(Vector3f(), m_ReflectedDirection, Vector3f(0, 1.0, 0.0)) * Matrix4x4::RotateX(-(float)PI / 2);
 }

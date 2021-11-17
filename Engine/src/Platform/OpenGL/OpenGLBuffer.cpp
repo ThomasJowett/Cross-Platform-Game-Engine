@@ -32,7 +32,7 @@ OpenGLVertexBuffer::~OpenGLVertexBuffer()
 
 void OpenGLVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 {
-	CORE_ASSERT(size < m_Size, "Size must be less than the buffer size");
+	CORE_ASSERT(size <= m_Size, "Size must be less than the buffer size");
 
 	PROFILE_FUNCTION();
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);

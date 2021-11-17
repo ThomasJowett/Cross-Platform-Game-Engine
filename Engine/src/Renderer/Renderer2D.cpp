@@ -204,20 +204,14 @@ bool Renderer2D::Init()
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
 	s_Data.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
-	int32_t samplers[s_Data.maxTexturesSlots];
-	for (uint32_t i = 0; i < s_Data.maxTexturesSlots; i++)
-		samplers[i] = i;
-
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.quadShader->Bind();
-	s_Data.quadShader->SetIntArray("u_Textures", samplers, s_Data.maxTexturesSlots);
 
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
 	s_Data.circleShader->Bind();
 
 	s_Data.lineShader = Shader::Create("Renderer2D_Line");
 	s_Data.lineShader->Bind();
-	s_Data.lineShader->SetInt("u_Caps", 3);
 
 	// set the texture slot at [0] to white texture
 	s_Data.textureSlots[0] = s_Data.whiteTexture;

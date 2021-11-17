@@ -34,6 +34,12 @@ public:
 		return s_UniformDistribution(s_RandomEngine);
 	}
 
+	// random bool
+	static bool Bool()
+	{
+		return std::uniform_int_distribution<>{0,1}(s_RandomEngine);
+	}
+
 private:
 	inline static std::mt19937_64 s_RandomEngine;
 	inline static std::uniform_int_distribution<std::mt19937_64::result_type> s_UniformDistribution;

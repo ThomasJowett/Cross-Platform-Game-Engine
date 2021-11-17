@@ -122,9 +122,9 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
 	shader->Bind();
 
-	shader->SetInt("u_texture", 0);
-	shader->SetFloat4("u_colour", Colours::WHITE);
-	shader->SetFloat("u_tilingFactor", 1.0f);
+	//shader->SetInt("u_texture", 0);
+	//shader->SetFloat4("u_colour", Colours::WHITE);
+	//shader->SetFloat("u_tilingFactor", 1.0f);
 
 	//m_CursorDisabled = false;
 	//TODO: fix the cursor position stuff
@@ -148,6 +148,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 	m_Texture->Bind();
 
+	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
 	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
 
 	Renderer::EndScene();

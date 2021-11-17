@@ -77,15 +77,15 @@ void Renderer::EndScene()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, int entityId)
+void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, Colour colour, float tilingFactor, int entityId)
 {
 	//TODO: submit the vertex array to a render queue
 	shader->Bind();
 
 	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_Data.modelBuffer.colour = Colours::WHITE;
+	s_Data.modelBuffer.colour = colour;
 	//TODO: each texture should have it's own tiling factor
-	s_Data.modelBuffer.tilingFactor = 1.0f;
+	s_Data.modelBuffer.tilingFactor = tilingFactor;
 	s_Data.modelBuffer.entityId = entityId;
 	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
 
