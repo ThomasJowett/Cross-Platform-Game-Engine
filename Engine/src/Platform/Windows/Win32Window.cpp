@@ -214,8 +214,9 @@ void Win32Window::OnUpdate()
 
 void Win32Window::SetVSync(bool enabled)
 {
-	//TODO: set vsync
 	m_Data.vSync = enabled;
+	Settings::SetBool("Display", "V-Sync", enabled);
+	m_Context->SetSwapInterval(enabled ? 1 : 0);
 }
 
 bool Win32Window::IsVSync() const

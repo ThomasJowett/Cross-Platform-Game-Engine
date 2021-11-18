@@ -48,14 +48,7 @@ void glfwWindow::SetVSync(bool enabled)
 {
 	PROFILE_FUNCTION();
 
-	if (enabled)
-	{
-		glfwSwapInterval(1);
-	}
-	else
-	{
-		glfwSwapInterval(0);
-	}
+	m_Context->SetSwapInterval(enabled ? 1 : 0);
 
 	Settings::SetBool("Display", "V-Sync", enabled);
 	m_Data.vSync = enabled;

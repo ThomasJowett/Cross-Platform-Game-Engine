@@ -26,3 +26,8 @@ void OpenGLContext::SwapBuffers()
 	PROFILE_FUNCTION();
 	glfwSwapBuffers(m_windowHandle);
 }
+
+void OpenGLContext::SetSwapInterval(uint32_t interval) 
+{
+	glfwSwapInterval((int)interval);
+}

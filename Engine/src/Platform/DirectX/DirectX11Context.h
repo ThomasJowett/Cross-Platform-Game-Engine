@@ -15,6 +15,8 @@ public:
 	virtual void Init()override;
 	virtual void SwapBuffers()override;
 
+	virtual void SetSwapInterval(uint32_t interval)override;
+
 	ID3D11RenderTargetView* GetRenderTargetView() { return m_RenderTargetView; }
 	ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }
 private:
@@ -24,7 +26,8 @@ private:
 	ID3D11DepthStencilView* m_DepthStencilView;
 	ID3D11Texture2D* m_DepthStencilBuffer;
 
-	
 	D3D_DRIVER_TYPE m_DriverType;
 	D3D_FEATURE_LEVEL m_FeatureLevel;
+
+	UINT m_SyncInterval;
 };

@@ -33,7 +33,9 @@ DirectX11Context::~DirectX11Context()
 void DirectX11Context::Init()
 {
 	int renderWidth = Settings::GetInt("Display", "Screen_Width");
-	int renderHeight = Settings::GetInt("Display", "Screen_Height");;
+	int renderHeight = Settings::GetInt("Display", "Screen_Height");
+
+	m_SyncInterval = (Settings::GetBool("Display", "V-Sync")) ? 1 : 0;
 
 	HRESULT hr = S_OK;
 
@@ -124,11 +126,25 @@ void DirectX11Context::Init()
 	depthStencilDesc.CPUAccessFlags = 0;
 	depthStencilDesc.MiscFlags = 0;
 
-	g_D3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &m_DepthStencilBuffer);
-	g_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
+	hr = g_D3dDevice->CreateTexture2D(&depthStencilDesc, nullptr, &m_DepthStencilBuffer);
+	if (FAILED(hr))
+	{
+		ENGINE_CRITICAL("Failed to create depth stencil buffer: {0}", hr);
+	}
+
+	hr = g_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
+	if (FAILED(hr))
+	{
+		ENGINE_CRITICAL("Failed to create depth stencil view: {0}", hr);
+	}
 }
 
 void DirectX11Context::SwapBuffers()
 {
-	m_SwapChain->Present(0, 0);
+	m_SwapChain->Present(m_SyncInterval, 0);
+}
+
+void DirectX11Context::SetSwapInterval(uint32_t interval) 
+{
+	m_SyncInterval = (UINT)interval;
 }
