@@ -14,31 +14,46 @@ struct NativeScriptComponent
 	ScriptableEntity* Instance = nullptr;
 
 	NativeScriptComponent() = default;
-	template<typename... Args>
-	NativeScriptComponent(const std::string& name, Args... args) :Name(name) { Bind(Name, args...); }
+	template <typename... Args>
+	NativeScriptComponent(const std::string& name, Args... args) : Name(name) { Bind(Name, args...); }
 	NativeScriptComponent(const NativeScriptComponent&) = default;
 
 	std::string Name;
 
 	std::filesystem::path file;
 
-	template<typename T, typename... Args>
+	template <typename T, typename... Args>
 	void Bind(Args... args)
 	{
 		Name = typeid(T).name();
-		InstantiateScript = [args...](const std::string&) {return static_cast<ScriptableEntity*>(new T(args...)); };
-		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		InstantiateScript = [args...](const std::string&)
+		{ return static_cast<ScriptableEntity*>(new T(args...)); };
+
+		DestroyScript = [](NativeScriptComponent* nsc)
+		{
+			delete nsc->Instance;
+			nsc->Instance = nullptr;
+		};
 	}
 
-	template<typename... Args>
-	void Bind(const std::string& scriptName, Args... args)// TODO: get factory with argument packs working
+	template <typename... Args>
+	void Bind(const std::string& scriptName, Args... args) // TODO: get factory with argument packs working
 	{
 		Name = scriptName;
-		InstantiateScript = [args...](const std::string& name) {return Factory<ScriptableEntity>::CreateInstance(name, args...); };
-		DestroyScript = [](NativeScriptComponent* nsc) { delete nsc->Instance; nsc->Instance = nullptr; };
+		InstantiateScript = [args...](const std::string& name)
+		{
+			ASSERT(Factory<ScriptableEntity>::Contains(name), "Could not find Native Script");
+			return Factory<ScriptableEntity>::CreateInstance(name, args...);
+		};
+
+		DestroyScript = [](NativeScriptComponent* nsc)
+		{
+			delete nsc->Instance;
+			nsc->Instance = nullptr;
+		};
 	}
 
-	template<typename Archive>
+	template <typename Archive>
 	void serialize(Archive& archive)
 	{
 		archive(cereal::make_nvp("Script", Name));

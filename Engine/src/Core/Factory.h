@@ -22,6 +22,11 @@ struct Factory
 		}
 		return s_LookUpTable;
 	}
+
+	static bool Contains(const std::string& name)
+	{
+		return GetMap()->find(name) != GetMap()->end();
+	}
 private:
 	static map_Type* s_LookUpTable;
 };
