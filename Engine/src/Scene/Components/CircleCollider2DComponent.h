@@ -19,7 +19,8 @@ struct CircleCollider2DComponent
 
 	CircleCollider2DComponent() = default;
 	CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

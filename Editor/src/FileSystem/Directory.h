@@ -36,7 +36,7 @@ public:
 	static std::vector<std::filesystem::path> GetDirectories(const std::filesystem::path& path, Sorting sorting = Sorting::ALPHABETIC);
 	static std::vector<std::filesystem::path> GetFiles(const std::filesystem::path& path, Sorting sorting = Sorting::ALPHABETIC);
 
-	// e.g. ".txt;.jpg;.png". To use unwantedExtensions, set wantedExtensions="".
-	static std::vector<std::filesystem::path> GetFiles(const char* directoryName, const char* wantedExtensions, const char* unwantedExtensions = NULL, Sorting sorting = Sorting::ALPHABETIC);
+	// e.g. .txt .jpg .png To use unwantedExtensions, leave wantedExtensions empty.
+	static std::vector<std::filesystem::path> GetFilesRecursive(const std::filesystem::path& path, 
+		std::vector<std::string> wantedExtensions, std::vector<std::string> unwantedExtensions = std::vector<std::string>(), Sorting sorting = Sorting::ALPHABETIC);
 };
-

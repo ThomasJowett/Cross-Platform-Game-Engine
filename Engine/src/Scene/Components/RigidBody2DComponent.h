@@ -23,7 +23,8 @@ struct RigidBody2DComponent
 	RigidBody2DComponent(const RigidBody2DComponent&) = default;
 	RigidBody2DComponent(BodyType type, bool fixedRotation)
 		:type(type), fixedRotation(fixedRotation) {}
-	
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

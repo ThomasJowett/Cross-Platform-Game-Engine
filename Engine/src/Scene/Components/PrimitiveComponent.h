@@ -108,7 +108,8 @@ struct PrimitiveComponent
 
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

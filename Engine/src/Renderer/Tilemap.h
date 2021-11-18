@@ -176,7 +176,7 @@ private:
 		{
 			Save(m_Filepath);
 		}
-		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
+		std::string relativePath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 	}
 

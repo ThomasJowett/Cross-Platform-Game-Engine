@@ -17,7 +17,7 @@ public:
 
 	const Ref<Shader> GetShader() const { return m_Shader; };
 	void BindTextures() const;
-	const Ref<Texture> GetTexture(uint32_t slot) const;
+	Ref<Texture> GetTexture(uint32_t slot) const;
 
 	void AddTexture(Ref<Texture>, uint32_t slot);
 
@@ -47,7 +47,7 @@ private:
 	{
 		std::string relativePath;
 		if(!m_Filepath.empty())
-			relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
+			relativePath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 		archive(cereal::make_nvp("Tint", m_Tint));
 		SaveMaterial();

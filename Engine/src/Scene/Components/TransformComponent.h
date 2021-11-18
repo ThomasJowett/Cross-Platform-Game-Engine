@@ -21,7 +21,8 @@ struct TransformComponent
 	{
 		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);
 	}
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

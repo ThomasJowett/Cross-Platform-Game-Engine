@@ -49,27 +49,25 @@ std::vector<std::filesystem::path> Directory::GetFiles(const std::filesystem::pa
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-std::vector<std::filesystem::path> Directory::GetFiles(const char* directoryName, const char* wantedExtensions, const char* unwantedExtensions, Sorting sorting)
+std::vector<std::filesystem::path> Directory::GetFilesRecursive(const std::filesystem::path& path, std::vector<std::string> wantedExtensions, std::vector<std::string> unwantedExtensions, Sorting sorting)
 {
 	std::vector<std::filesystem::path> result;
 
 	try
 	{
-		if (strcmp(wantedExtensions, "") != 0)
+		if (!wantedExtensions.empty())
 		{
-			std::vector<std::string> extensions = SplitString(wantedExtensions, ';');
-			for (const auto& entry : std::filesystem::directory_iterator(directoryName))
+			for (const auto& entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 			{
-				if (entry.is_regular_file() && std::find(extensions.begin(), extensions.end(), entry.path().extension()) != extensions.end())
+				if (entry.is_regular_file() && std::find(wantedExtensions.begin(), wantedExtensions.end(), entry.path().extension()) != wantedExtensions.end())
 					result.push_back(entry.path());
 			}
 		}
 		else
 		{
-			std::vector<std::string> extensions = SplitString(unwantedExtensions, ';');
-			for (const auto& entry : std::filesystem::directory_iterator(directoryName))
+			for (const auto& entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 			{
-				if (entry.is_regular_file() && std::find(extensions.begin(), extensions.end(), entry.path().extension()) == extensions.end())
+				if (entry.is_regular_file() && std::find(unwantedExtensions.begin(), unwantedExtensions.end(), entry.path().extension()) == unwantedExtensions.end())
 					result.push_back(entry.path());
 			}
 		}

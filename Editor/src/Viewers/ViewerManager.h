@@ -26,6 +26,8 @@ public:
 
 	static FileType GetFileType(const std::filesystem::path& assetPath);
 
+	static std::vector<std::string> GetExtensions(FileType fileType);
+
 private:
 
 	static std::map<std::filesystem::path, std::pair<Layer*, bool*>> s_AssetViewers;

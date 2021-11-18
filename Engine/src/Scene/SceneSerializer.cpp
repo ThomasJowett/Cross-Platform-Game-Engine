@@ -135,9 +135,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
+		if(component.texture)
+			pSpriteElement->SetAttribute("Texture", SerializationUtils::RelativePath(component.texture->GetFilepath()).c_str());
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
-		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Material"), component.material);
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -148,7 +149,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		std::filesystem::path relativepath;
 		if (!component.mesh.GetFilepath().empty())
 		{
-			relativepath = FileUtils::relativePath(component.mesh.GetFilepath(), Application::GetOpenDocumentDirectory());
+			relativepath = FileUtils::RelativePath(component.mesh.GetFilepath(), Application::GetOpenDocumentDirectory());
 		}
 		pStaticMeshElement->InsertNewChildElement("Mesh")->SetAttribute("Filepath", relativepath.string().c_str());
 
@@ -245,7 +246,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		std::string relativePath = FileUtils::relativePath(component.tilemap.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		std::string relativePath = FileUtils::RelativePath(component.tilemap.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 
 		pTilemapElement->SetAttribute("Filepath", relativePath.c_str());
 
@@ -383,7 +384,10 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Tint"), component.tint);
 		pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
-		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Material"), component.material);
+
+		const char* textureRelativePath = pSpriteElement->Attribute("Texture");
+		if(textureRelativePath != nullptr)
+			component.texture = Texture2D::Create(SerializationUtils::AbsolutePath(textureRelativePath));
 	}
 
 	// Static Mesh -------------------------------------------------------------------------------------------------------

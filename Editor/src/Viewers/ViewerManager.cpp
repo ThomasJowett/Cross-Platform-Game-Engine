@@ -27,6 +27,11 @@ static const char* MeshExtensions[] =
 	//".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
 };
 
+static const char* AudioExtensions[] =
+{
+	".ogg", ".mp3", ".wav"
+};
+
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 {
 	//check if any old ones can be closed
@@ -93,6 +98,10 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		Application::Get().AddOverlay(layer);
 		return;
 	}
+	case FileType::AUDIO:
+	{
+		CLIENT_WARN("No audio viewer implemented");
+	}
 	default:
 		return;
 	}
@@ -145,5 +154,65 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		return FileType::MATERIAL;
 	}
 
+	for (const char* knownExt : AudioExtensions)
+	{
+		if (strcmp(ext, knownExt) == 0)
+		{
+			return FileType::AUDIO;
+		}
+	}
+
 	return FileType::UNKNOWN;
+}
+
+std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
+{
+	std::vector<std::string> extensions;
+	switch (fileType)
+	{
+	case FileType::TEXT:
+	{
+		for (const char* ext : TextExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::IMAGE:
+	{
+		for (const char* ext : ImageExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::MESH:
+	{
+		for (const char* ext : MeshExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::SCENE:
+	{
+		extensions.push_back(".scene");
+		break;
+	}
+	case FileType::SCRIPT:
+		extensions.push_back(".cs");
+		break;
+	case FileType::AUDIO:
+	{
+		for (const char* ext : AudioExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::MATERIAL:
+		extensions.push_back(".mat");
+		break;
+	}
+	return extensions;
 }

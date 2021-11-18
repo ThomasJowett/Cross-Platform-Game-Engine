@@ -18,7 +18,8 @@ struct BoxCollider2DComponent
 
 	BoxCollider2DComponent() = default;
 	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

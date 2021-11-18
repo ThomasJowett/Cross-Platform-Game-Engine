@@ -5,6 +5,7 @@
 
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
+#include "ImGui/ImGuiTextureEdit.h"
 
 #include "Viewers/ViewerManager.h"
 
@@ -123,8 +124,13 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			if(ImGui::FileEdit("Material", sprite.material.GetFilepath(), FileType::MATERIAL))
-				sprite.material.LoadMaterial();
+			//if(ImGui::FileEdit("Material", sprite.material.GetFilepath(), FileType::MATERIAL))
+			//	sprite.material.LoadMaterial();
+
+			if (ImGui::Texture2DEdit("Texture", sprite.texture))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
 			
 			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
 			{

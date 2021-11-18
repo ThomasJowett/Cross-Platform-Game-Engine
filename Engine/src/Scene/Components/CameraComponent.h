@@ -15,7 +15,8 @@ struct CameraComponent
 
 	operator SceneCamera& () { return Camera; }
 	operator const SceneCamera& () const { return Camera; }
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

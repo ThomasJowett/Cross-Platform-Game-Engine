@@ -14,7 +14,8 @@ struct TagComponent
 
 	operator std::string& () { return tag; }
 	operator const std::string& () const { return tag; }
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

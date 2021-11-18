@@ -11,7 +11,8 @@ struct IDComponent
 		:ID() {} // Id components must be unique so cannot be copied
 	IDComponent(Uuid id)
 		:ID(id) {}
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

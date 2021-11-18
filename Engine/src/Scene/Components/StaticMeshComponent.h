@@ -13,7 +13,8 @@ struct StaticMeshComponent
 	StaticMeshComponent(const StaticMeshComponent&) = default;
 	StaticMeshComponent(const Mesh& mesh, const Material& material)
 		:mesh(mesh),material(material) {}
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

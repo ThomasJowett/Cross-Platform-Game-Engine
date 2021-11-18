@@ -20,7 +20,7 @@ void Material::BindTextures() const
 	}
 }
 
-const Ref<Texture> Material::GetTexture(uint32_t slot) const
+Ref<Texture> Material::GetTexture(uint32_t slot) const
 {
 	if (m_Textures.find(slot) == m_Textures.end())
 		return nullptr;
@@ -109,7 +109,7 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 
 		pTexturesElement->SetAttribute("Slot", slot);
 
-		std::filesystem::path textureFilepath = FileUtils::relativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory());
+		std::filesystem::path textureFilepath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory());
 
 		pTexturesElement->SetAttribute("Filepath", textureFilepath.string().c_str());
 	}

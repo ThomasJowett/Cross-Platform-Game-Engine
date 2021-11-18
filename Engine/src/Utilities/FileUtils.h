@@ -2,5 +2,5 @@
 #include <filesystem>
 namespace FileUtils
 {
-	std::filesystem::path relativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to);
+	std::filesystem::path RelativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to);
 }

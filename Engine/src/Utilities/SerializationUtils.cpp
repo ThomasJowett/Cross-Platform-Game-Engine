@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SerializationUtils.h"
+#include "FileUtils.h"
 
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
 {
@@ -63,7 +64,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Material& 
 {
 	if (std::filesystem::exists(material.GetFilepath()))
 	{
-		std::string relativePath = FileUtils::relativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		std::string relativePath = FileUtils::RelativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		pElement->SetAttribute("Filepath", relativePath.c_str());
 		material.SaveMaterial();
 	}
@@ -88,4 +89,17 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Material& materi
 	}
 	else
 		ENGINE_WARN("Could not find Material node");
+}
+
+std::string SerializationUtils::RelativePath(const std::filesystem::path& path)
+{
+	return FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).string();
+}
+
+std::filesystem::path SerializationUtils::AbsolutePath(const char* path)
+{
+	if (path != nullptr)
+		return std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path);
+	else
+		return std::filesystem::path();
 }

@@ -11,7 +11,8 @@ struct CircleRendererComponent
 
 	CircleRendererComponent() = default;
 	CircleRendererComponent(const CircleRendererComponent&) = default;
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

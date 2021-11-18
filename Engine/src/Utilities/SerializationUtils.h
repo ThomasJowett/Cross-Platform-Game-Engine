@@ -27,4 +27,7 @@ namespace SerializationUtils
 	void Encode(tinyxml2::XMLElement* pElement, const Material& material);
 
 	void Decode(tinyxml2::XMLElement* pElement, Material& material);
+
+	std::string RelativePath(const std::filesystem::path& path);
+	std::filesystem::path AbsolutePath(const char* path);
 }

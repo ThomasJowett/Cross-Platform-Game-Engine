@@ -32,7 +32,7 @@ private:
 	{
 		std::filesystem::path relativepath;
 		if (!m_Filepath.empty())
-			relativepath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory());
+			relativepath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory());
 		archive(cereal::make_nvp("Filepath", relativepath.string()));
 	}
 

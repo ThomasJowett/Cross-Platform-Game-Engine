@@ -540,9 +540,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId)
 {
-	if (spriteComp.material.GetTexture(0))
+	if (spriteComp.texture)
 	{
-		DrawQuad(transform, spriteComp.material.GetTexture(0), spriteComp.tint, spriteComp.tilingFactor, entityId);
+		DrawQuad(transform, spriteComp.texture, spriteComp.tint, spriteComp.tilingFactor, entityId);
 	}
 	else
 	{
