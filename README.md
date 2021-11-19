@@ -14,7 +14,10 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 
 ## Project Generation
 ### Windows
-For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2017.bat`
+For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat`
+
+_(A bug in premake5 means you may need to edit the .sln file and change the version to 17 if you want it to open in Visual Studio 2022)_
+
 ### Mac
 For Xcode, run the shell script `Progen_Xcode.sh`
 ### Linux
