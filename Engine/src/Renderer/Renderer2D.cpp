@@ -90,10 +90,10 @@ struct Renderer2DData
 
 	Renderer2D::Stats statistics;
 
-	__declspec(align(16)) struct CameraData
+	ALIGNED_TYPE(struct, 16)
 	{
 		Matrix4x4 viewProjectionMatrix;
-	};
+	}CameraData;
 	CameraData cameraBuffer;
 	Ref<UniformBuffer> cameraUniformBuffer;
 };
@@ -588,33 +588,33 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 {
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
 		NextQuadsBatch();
-	
+
 	//world to clip
 	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
 	Vector3f clipJ = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
-	
+
 	//clip to pixel
 	Vector2f pixelStart, pixelEnd;
 	pixelStart.x = 0.5f * (float)s_Data.screenWidth * (clipI.x / 1.0f + 1.0f);
 	pixelStart.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipI.y / 1.0f);
 	pixelEnd.x = 0.5f * (float)s_Data.screenWidth * (clipJ.x / 1.0f + 1.0f);
 	pixelEnd.y = 0.5f * (float)s_Data.screenHeight * (1.0f - clipJ.y / 1.0f);
-	
+
 	Vector2f direction = pixelEnd - pixelStart;
 	float lineLength = direction.Magnitude();
-	
+
 	if (lineLength < 1e-10) return;
-	
+
 	direction = direction / lineLength;
 	Vector2f normal(-direction.y, +direction.x);
-	
+
 	float d = 0.5f * thickness;
-	
+
 	float dOverWidth = d / (float)s_Data.screenWidth;
 	float dOverHeight = d / (float)s_Data.screenHeight;
-	
+
 	Vector3f offset;
-	
+
 	offset.x = (-direction.x + normal.x) * dOverWidth;
 	offset.y = (+direction.y + normal.y) * dOverHeight;
 	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
@@ -623,7 +623,7 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.lineVertexBufferPtr->width = 2 * d;
 	s_Data.lineVertexBufferPtr->length = lineLength;
 	s_Data.lineVertexBufferPtr++;
-	
+
 	offset.x = (+direction.x + normal.x) * dOverWidth;
 	offset.y = (-direction.y - normal.y) * dOverHeight;
 	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
@@ -632,7 +632,7 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.lineVertexBufferPtr->width = 2 * d;
 	s_Data.lineVertexBufferPtr->length = lineLength;
 	s_Data.lineVertexBufferPtr++;
-	
+
 	offset.x = (+direction.x - normal.x) * dOverWidth;
 	offset.y = (-direction.y + normal.y) * dOverHeight;
 	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
@@ -641,7 +641,7 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.lineVertexBufferPtr->width = 2 * d;
 	s_Data.lineVertexBufferPtr->length = lineLength;
 	s_Data.lineVertexBufferPtr++;
-	
+
 	offset.x = (-direction.x - normal.x) * dOverWidth;
 	offset.y = (+direction.y + normal.y) * dOverHeight;
 	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
@@ -650,7 +650,7 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.lineVertexBufferPtr->width = 2 * d;
 	s_Data.lineVertexBufferPtr->length = lineLength;
 	s_Data.lineVertexBufferPtr++;
-	
+
 	offset.x = (-direction.x + normal.x) * dOverWidth;
 	offset.y = (+direction.y + normal.y) * dOverHeight;
 	s_Data.lineVertexBufferPtr->clipCoord = clipI + offset;
@@ -659,9 +659,9 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.lineVertexBufferPtr->width = 2 * d;
 	s_Data.lineVertexBufferPtr->length = lineLength;
 	s_Data.lineVertexBufferPtr++;
-	
+
 	s_Data.lineIndexCount += 6;
-	
+
 	s_Data.statistics.lineCount++;
 }
 

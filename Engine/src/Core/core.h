@@ -55,6 +55,16 @@
 	#define CORE_ASSERT(z, ...)
 #endif // ENABLE_ASSERTS
 
+#if defined(_MSC_VER)
+#define ALIGNED_(x) __declspec(align(x))
+#else
+#if defined(__GNUC__)
+#define ALIGNED_(x) __attribute__ ((aligned(x)))
+#endif
+#endif
+
+#define ALIGNED_TYPE(t,x) typedef t ALIGNED_(x)
+
 
 #define BIT(x) (1 << x)
 

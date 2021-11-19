@@ -6,19 +6,23 @@
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
 
+#include "Core/core.h"
+
 struct SceneData
 {
-	__declspec(align(16)) struct ConstantBuffer
+	ALIGNED_TYPE(struct, 16)
+	//typedef struct ALIGNED_(16) tagSTRUCTALIGNED16
 	{
-		Matrix4x4 viewProjectionMatrix;
-	};
-	__declspec(align(16)) struct ModelBuffer
+	    Matrix4x4 viewProjectionMatrix;
+	}ConstantBuffer;
+
+	typedef struct ALIGNED_(16) tagSTRUCTALIGNED16
 	{
 		Matrix4x4 modelMatrix;
 		Colour colour;
 		float tilingFactor = 1.0f;
 		int entityId = -1;
-	};
+	}ModelBuffer;
 
 	ConstantBuffer constantBuffer;
 	ModelBuffer modelBuffer;
