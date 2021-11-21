@@ -12,8 +12,8 @@ ExampleGame::ExampleGame(const WindowProps& props)
 
 	//PushLayer(new GridLayer());
 	//PushLayer(new ExampleLayer3D());
-	//PushLayer(new ExampleLayer2D());
-	PushLayer(new MonteCarloLayer());
+	PushLayer(new ExampleLayer2D());
+	//PushLayer(new MonteCarloLayer());
 	
 
 	//Application::GetWindow().SetIcon("resources/Circle.png");

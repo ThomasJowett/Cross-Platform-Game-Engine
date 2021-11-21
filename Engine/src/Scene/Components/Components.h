@@ -5,6 +5,7 @@
 #include "TransformComponent.h"
 #include "CameraComponent.h"
 #include "SpriteComponent.h"
+#include "AnimatedSpriteComponent.h"
 #include "StaticMeshComponent.h"
 #include "NativeScriptComponent.h"
 #include "PrimitiveComponent.h"
@@ -21,6 +22,7 @@ TagComponent,				\
 TransformComponent,			\
 CameraComponent,			\
 SpriteComponent,			\
+AnimatedSpriteComponent,	\
 StaticMeshComponent,		\
 NativeScriptComponent,		\
 PrimitiveComponent,			\
