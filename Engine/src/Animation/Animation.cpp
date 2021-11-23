@@ -29,6 +29,13 @@ float Animation::GetAnimationLength()
 	return m_HoldTime * m_FrameCount;
 }
 
+void Animation::SetStartFrame(uint32_t startFrame)
+{
+	m_StartFrame = startFrame;
+	if (m_CurrentFrame < m_StartFrame)
+		m_CurrentFrame = m_StartFrame;
+}
+
 void Animation::Advance()
 {
 	if (++m_CurrentFrame >= m_StartFrame + m_FrameCount)

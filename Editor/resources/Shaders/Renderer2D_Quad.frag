@@ -18,5 +18,7 @@ layout (binding = 0) uniform sampler2D u_Textures[32];
 void main()
 {
 	frag_colour = texture(u_Textures[int(v_TexIndex)], Input.TexCoord) * Input.Colour;
+	if(frag_colour.a <= 0.0001)
+		discard;
 	entityId = v_EntityId;
 }

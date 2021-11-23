@@ -14,7 +14,7 @@ public:
 	float GetAnimationLength();
 
 	uint32_t GetStartFrame() { return m_StartFrame; }
-	void SetStartFrame(uint32_t startFrame) { m_StartFrame = startFrame; }
+	void SetStartFrame(uint32_t startFrame);
 
 	uint32_t GetFrameCount() { return m_FrameCount; }
 	void SetFrameCount(uint32_t frameCount) { m_FrameCount = frameCount; }

@@ -202,13 +202,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 					std::string starFrameStr = "##startFrame" + std::to_string(index);
 					if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
+					{
+						if (frameStart < 0)
+							frameStart = 0;
 						animation.SetStartFrame((uint32_t)frameStart);
+					}
 
 					ImGui::TableSetColumnIndex(2);
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
 					std::string frameCountStr = "##frameCount" + std::to_string(index);
 					if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
+					{
+						if (frameCount < 0)
+							frameCount = 0;
 						animation.SetFrameCount((uint32_t)frameCount);
+					}
 
 					ImGui::TableSetColumnIndex(3);
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
@@ -680,6 +688,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 	{
 		AddComponentMenuItem<CameraComponent>("Camera", entity);
 		AddComponentMenuItem<SpriteComponent>("Sprite", entity);
+		AddComponentMenuItem<AnimatedSpriteComponent>("Animated Sprite", entity);
 		AddComponentMenuItem<StaticMeshComponent>("Static Mesh", entity);
 		AddComponentMenuItem<PrimitiveComponent>("Primitive", entity);
 		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
