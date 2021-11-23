@@ -337,9 +337,9 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, rotation, colour, tilingFactor);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, rotation, colour);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -352,10 +352,10 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour, float tilingFactor)
+void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const float& rotation, const Colour& colour)
 {
 	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation) * Matrix4x4::Scale({ size.x, size.y, 1.0f });
-	DrawQuad(transform, subtexture, colour, tilingFactor);
+	DrawQuad(transform, subtexture, colour);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -384,7 +384,7 @@ void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
-	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, 0.0f, colour);
+	DrawQuad(Vector3f(position.x, position.y, 0.0f), size, subtexture, colour);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -398,7 +398,7 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
-	DrawQuad(position, size, subtexture, 0.0f, colour);
+	DrawQuad(position, size, subtexture, colour);
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -490,7 +490,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, float tilingFactor, int entityId)
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
 
@@ -502,30 +502,33 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 	float textureIndex = 0.0f;
 	const Vector2f* texCoords = subtexture->GetTextureCoordinates();
 
-	for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
+	if (subtexture->GetTexture())
 	{
-		if (*s_Data.textureSlots[i].get() == *subtexture->GetTexture().get())
+		for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
 		{
-			textureIndex = (float)i;
-			break;
+			if (*s_Data.textureSlots[i].get() == *subtexture->GetTexture().get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
 		}
-	}
 
-	if (textureIndex == 0.0f)
-	{
-		if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
-			NextQuadsBatch();
+		if (textureIndex == 0.0f)
+		{
+			if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
+				NextQuadsBatch();
 
-		textureIndex = (float)s_Data.textureSlotIndex;
-		s_Data.textureSlots[s_Data.textureSlotIndex] = subtexture->GetTexture();
-		s_Data.textureSlotIndex++;
+			textureIndex = (float)s_Data.textureSlotIndex;
+			s_Data.textureSlots[s_Data.textureSlotIndex] = subtexture->GetTexture();
+			s_Data.textureSlotIndex++;
+		}
 	}
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
-		s_Data.quadVertexBufferPtr->texCoords = tilingFactor * texCoords[i];
+		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
 		s_Data.quadVertexBufferPtr->texIndex = textureIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;

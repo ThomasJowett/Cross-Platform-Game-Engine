@@ -146,6 +146,12 @@ void HierarchyPanel::OnImGuiRender()
 					entity.AddComponent<SpriteComponent>();
 					m_SelectedEntity = entity;
 				}
+				if (ImGui::MenuItem("Animated Sprite"))
+				{
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
+					entity.AddComponent<AnimatedSpriteComponent>();
+					m_SelectedEntity = entity;
+				}
 				if (ImGui::MenuItem("Circle"))
 				{
 					Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");

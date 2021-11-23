@@ -22,25 +22,26 @@ public:
 	float GetFrameTime() { return m_HoldTime; }
 	void SetFrameTime(float frameTime) { m_HoldTime = frameTime; }
 
-	void SetTexture(Ref<SubTexture2D> texture) { m_Texture = texture; }
+	void SetTexture(Ref<SubTexture2D> texture) { m_SpriteSheet = texture; }
 
 	const std::string& GetName() { return m_Name; }
 	void SetName(const std::string& name) { m_Name = name; }
 private:
 	void Advance();
 
-	uint32_t m_StartFrame = 0, m_FrameCount = 1, m_CurrentFrame = 0;
-	float m_HoldTime = 100.0f;
+	std::string m_Name;
+	uint32_t m_StartFrame = 0, m_FrameCount = 1;
+	float m_HoldTime = 0.01f;
+	uint32_t m_CurrentFrame = 0;
 	float m_CurrentFrameTime = 0.0f;
 
-	Ref<SubTexture2D> m_Texture;
-	std::string m_Name;
+	Ref<SubTexture2D> m_SpriteSheet;
 
 	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(m_StartFrame, m_FrameCount, m_HoldTime);
+		archive(m_Name, m_StartFrame, m_FrameCount, m_HoldTime);
 	}
 
 };

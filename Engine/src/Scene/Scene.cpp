@@ -227,6 +227,13 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 		Renderer2D::DrawSprite(transformComp.GetMatrix(), spriteComp, (int)entity);
 	}
 
+	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
+	for (auto entity : animatedSpriteGroup)
+	{
+		auto [transformComp, spriteComp] = animatedSpriteGroup.get<TransformComponent, AnimatedSpriteComponent>(entity);
+		Renderer2D::DrawQuad(transformComp.GetMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
+	}
+
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
 	for (auto entity : circleGroup)
 	{
@@ -283,43 +290,47 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
-{
-	renderTarget->Bind();
-
-	RenderCommand::Clear();
-
-	Renderer::BeginScene(cameraTransform, projection);
-
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
-				* Matrix4x4::Scale(transformComp.scale);
-			Renderer2D::DrawQuad(transform, sprite.tint);
-		});
-
-
-	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
-				* Matrix4x4::Scale(transformComp.scale);
-			Renderer::Submit(mesh.material, mesh.mesh, transform);
-		});
-
-	Renderer::EndScene();
-
-	renderTarget->UnBind();
-}
+//void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+//{
+//	renderTarget->Bind();
+//
+//	RenderCommand::Clear();
+//
+//	Renderer::BeginScene(cameraTransform, projection);
+//
+//	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& sprite, const auto& transformComp)
+//		{
+//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.tint);
+//		});
+//
+//	m_Registry.group<AnimatedSpriteComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& animatedSprite, const auto& transformComp)
+//		{
+//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.animator.GetSpriteSheet(), sprite.tint);
+//		});
+//
+//	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& mesh, const auto& transformComp)
+//		{
+//			Renderer::Submit(mesh.material, mesh.mesh, transformComp.GetMatrix());
+//		});
+//
+//	Renderer::EndScene();
+//
+//	renderTarget->UnBind();
+//}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnUpdate(float deltaTime)
 {
 	m_IsUpdating = true;
+	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
+	{
+		animatedSpriteComp.animator.Animate(deltaTime);
+	});
+
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
 			if (nsc.InstantiateScript != nullptr)

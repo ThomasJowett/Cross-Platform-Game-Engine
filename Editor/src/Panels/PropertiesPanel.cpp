@@ -74,7 +74,7 @@ void PropertiesPanel::OnImGuiRender()
 				ImGui::EndDragDropTarget();
 			}
 		}
-		else if(SceneManager::IsSceneLoaded())
+		else if (SceneManager::IsSceneLoaded())
 		{
 			char buffer[256];
 			memset(buffer, 0, sizeof(buffer));
@@ -124,17 +124,101 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			//if(ImGui::FileEdit("Material", sprite.material.GetFilepath(), FileType::MATERIAL))
-			//	sprite.material.LoadMaterial();
 
 			if (ImGui::Texture2DEdit("Texture", sprite.texture))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			
+
 			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
+			}
+		});
+
+	//Animated Sprite--------------------------------------------------------------------------------------------------------------
+	DrawComponent<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity, [](auto& sprite)
+		{
+			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
+
+			if (ImGui::ColorEdit4("Tint", tint[0]))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			// Sprite Sheet
+			if (ImGui::Texture2DEdit("Sprite Sheet", sprite.animator.GetSpriteSheet()->GetTexture()))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+				sprite.animator.GetSpriteSheet()->RecalculateCellsDimensions();
+			}
+
+			// Sprite Size
+			int spriteSize[2] = { sprite.animator.GetSpriteSheet()->GetSpriteWidth(), sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
+			if (ImGui::InputInt2("Sprite Size", spriteSize))
+			{
+				sprite.animator.GetSpriteSheet()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
+			}
+
+			if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
+			{
+				sprite.animator.AddAnimation();
+			}
+			ImGui::Tooltip("Add animation");
+
+			ImGuiTableFlags table_flags =
+				ImGuiTableFlags_Resizable;
+			if (ImGui::BeginTable("Animations", 4))
+			{
+				ImGui::TableSetupColumn("Name");
+				ImGui::TableSetupColumn("Start Frame");
+				ImGui::TableSetupColumn("Frame Count");
+				ImGui::TableSetupColumn("Frame Time (ms)");
+				ImGui::TableSetupScrollFreeze(0, 1);
+				ImGui::TableHeadersRow();
+
+				static char inputBuffer[1024] = "";
+
+				int index = 0;
+				for (Animation& animation : sprite.animator.GetAnimations())
+				{
+					memset(inputBuffer, 0, sizeof(inputBuffer));
+					for (int i = 0; i < animation.GetName().length(); i++)
+					{
+						inputBuffer[i] = animation.GetName()[i];
+					}
+					ImGui::TableNextRow();
+					ImGui::TableSetColumnIndex(0);
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					std::string nameStr = "##name" + std::to_string(index);
+					ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll);
+					animation.SetName(inputBuffer);
+
+					int frameStart = (int)animation.GetStartFrame();
+					int frameCount = (int)animation.GetFrameCount();
+					float frameTime = animation.GetFrameTime();
+
+					ImGui::TableSetColumnIndex(1);
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					std::string starFrameStr = "##startFrame" + std::to_string(index);
+					if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
+						animation.SetStartFrame((uint32_t)frameStart);
+
+					ImGui::TableSetColumnIndex(2);
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					std::string frameCountStr = "##frameCount" + std::to_string(index);
+					if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
+						animation.SetFrameCount((uint32_t)frameCount);
+
+					ImGui::TableSetColumnIndex(3);
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					std::string frameTimeStr = "##frameTime" + std::to_string(index);
+					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
+						animation.SetFrameTime(frameTime);
+
+					index++;
+				}
+				ImGui::EndTable();
 			}
 		});
 

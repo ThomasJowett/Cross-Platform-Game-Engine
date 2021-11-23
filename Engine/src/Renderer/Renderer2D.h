@@ -27,8 +27,8 @@ public:
 	// Quad
 	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE }, float tilingFactor = 1.0f);
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<Texture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE }, float tilingFactor = 1.0f);
-	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE }, float tilingFactor = 1.0f);
-	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE }, float tilingFactor = 1.0f);
+	static void DrawQuad(const Vector2f& position, const Vector2f& size, const Ref<SubTexture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE });
+	static void DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& texture, const float& rotation = 0.0f, const Colour& colour = { Colours::WHITE });
 
 	static void DrawQuad(const Vector2f& position, const Vector2f& size, const float& rotation = 0.0f, const Colour& colour = Colours::WHITE);
 	static void DrawQuad(const Vector3f& position, const Vector2f& size, const float& rotation = 0.0f, const Colour& colour = Colours::WHITE);
@@ -43,7 +43,7 @@ public:
 
 	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f, int entityId = -1);
-	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f, int entityId = -1);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	// Sprite
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);

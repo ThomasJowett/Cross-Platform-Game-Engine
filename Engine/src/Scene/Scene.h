@@ -39,7 +39,7 @@ public:
 	// Render the scene with all debug information visible from the camera transform and projection
 	void DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
-	void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
+	//void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
 	// Called once per frame
 	void OnUpdate(float deltaTime);
