@@ -35,7 +35,7 @@ b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 }
 
 template<typename Component>
-static void CopyComponentIfExits(entt::entity dst, entt::entity src, entt::registry& registry)
+static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
 {
 	if (registry.has<Component>(src))
 	{
@@ -47,7 +47,7 @@ static void CopyComponentIfExits(entt::entity dst, entt::entity src, entt::regis
 template<typename... Component>
 static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& registry)
 {
-	(CopyComponentIfExits<Component>(dst, src, registry), ...);
+	(CopyComponentIfExists<Component>(dst, src, registry), ...);
 }
 
 Scene::Scene(std::filesystem::path filepath)
