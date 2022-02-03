@@ -592,6 +592,8 @@ void ContentExplorerPanel::OnImGuiRender()
 		ClearSelected();
 
 		m_NumberSelected = 0;
+
+		m_TextureLibrary.Clear();
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
@@ -1089,7 +1091,15 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						ImGui::PushFont(Fonts::Icons);
 
-						if (ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize }))
+						// try to get the image to display the thumbnail
+						if(ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
+						{
+							ImGui::ImageButton(m_TextureLibrary.Load(m_Files[i]), { thumbnailSize, thumbnailSize });
+						}
+						else
+							ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize });
+
+						if ((ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
 						{
 							if (!ImGui::GetIO().KeyCtrl)
 							{

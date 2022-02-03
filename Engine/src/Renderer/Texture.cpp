@@ -95,6 +95,13 @@ Ref<Texture2D> TextureLibrary2D::Get(const std::string& name)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void TextureLibrary2D::Clear() 
+{
+	m_Textures.clear();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool TextureLibrary2D::Exists(const std::string& name) const
 {
 	return m_Textures.find(name) != m_Textures.end();

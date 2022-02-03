@@ -40,6 +40,7 @@ public:
 	void Add(const Ref<Texture2D>& texture);
 	Ref<Texture2D> Load(const std::filesystem::path& path);
 	Ref<Texture2D> Get(const std::string& name);
+	void Clear();
 
 	bool Exists(const std::string& name) const;
 private:
