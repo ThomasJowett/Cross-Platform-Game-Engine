@@ -7,7 +7,7 @@ StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.Attachments = { FrameBufferTextureFormat::RGBA8};
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8};
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -17,7 +17,7 @@ void StaticMeshView::OnAttach()
 
 	m_Mesh = CreateRef<Mesh>(m_FilePath);
 
-	m_ShaderLibrary.Load("NormalMap");
+	m_ShaderLibrary.Load("Standard");
 	m_Texture = Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png");
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
@@ -119,12 +119,12 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("NormalMap");
+	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
 	shader->Bind();
 
-	shader->SetInt("u_texture", 0);
-	shader->SetFloat4("u_colour", Colours::WHITE);
-	shader->SetFloat("u_tilingFactor", 1.0f);
+	//shader->SetInt("u_texture", 0);
+	//shader->SetFloat4("u_colour", Colours::WHITE);
+	//shader->SetFloat("u_tilingFactor", 1.0f);
 
 	//m_CursorDisabled = false;
 	//TODO: fix the cursor position stuff
@@ -149,6 +149,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	m_Texture->Bind();
 
 	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
+	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();
@@ -157,7 +158,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 void StaticMeshView::OnFixedUpdate()
 {
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
+	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);

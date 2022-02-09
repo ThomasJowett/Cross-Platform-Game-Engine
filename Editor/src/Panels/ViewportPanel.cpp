@@ -16,11 +16,11 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
-	frameBufferSpecificationEditorCamera.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
+	frameBufferSpecificationEditorCamera.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
-	frameBufferSpecificationPreview.Attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Mode = Mode::Select;
@@ -30,7 +30,6 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 
 void ViewportPanel::OnAttach()
 {
-	//TODO: Render the scene with the camera controller when not in "play" mode.
 	//TODO: Load where the camera was in the scene and load that
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 }
@@ -59,7 +58,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	}
 
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-	if (((uint32_t)m_ViewportSize.x != spec.Width || (uint32_t)m_ViewportSize.y != spec.Height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
+	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
@@ -67,54 +66,37 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 	m_Framebuffer->ClearAttachment(1, -1);
+	m_HoveredEntity = Entity();
 
 	switch (SceneManager::GetSceneState())
 	{
-	case SceneState::Edit:
-	{
-		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
-
-		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
-			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
-		{
-			m_Framebuffer->Bind();
-			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
-			m_Framebuffer->UnBind();
-		}
-
-		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
-		{
-			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
-			{
-				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
-				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
-				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
-				m_CameraPreview->Bind();
-				RenderCommand::Clear();
-				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
-			}
-		}
-		break;
-	}
 	case SceneState::Play:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
 		break;
 	case SceneState::Pause:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
 		break;
+		[[fallthrough]];
+	case SceneState::SimulatePause:
+		[[fallthrough]];
+	case SceneState::Edit:
 	case SceneState::Simulate:
 	{
+		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y >= 0.0f
+		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
-			m_Framebuffer->Bind();
-			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			//m_HoveredEntity = pixelData == -1 ? Entity() : Entity((entt::entity)pixelData, SceneManager::CurrentScene());
-			m_Framebuffer->UnBind();
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			{
+				m_Framebuffer->Bind();
+				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
+				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver())
+					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
+				m_Framebuffer->UnBind();
+			}
 		}
 
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
@@ -123,7 +105,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
 				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate({ transformComp.Rotation });
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
 				m_CameraPreview->Bind();
 				RenderCommand::Clear();
@@ -163,12 +145,14 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
 
+
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
+		ImVec2 topLeft = ImGui::GetCursorPos();
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
 
@@ -178,10 +162,6 @@ void ViewportPanel::OnImGuiRender()
 		{
 			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 			{
-				ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
-				Application::GetWindow().SetCursor(Cursors::CrossHair);
-
-
 			}
 
 			if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) || Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
@@ -234,8 +214,8 @@ void ViewportPanel::OnImGuiRender()
 
 						Mesh mesh(*file);
 
-						m_ShaderLibrary.Load("NormalMap");
-						Material material(m_ShaderLibrary.Get("NormalMap"));
+						m_ShaderLibrary.Load("Standard");
+						Material material(m_ShaderLibrary.Get("Standard"));
 
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 
@@ -259,34 +239,36 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		if (SceneManager::GetSceneState() != SceneState::Play)
+		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();
 
+				// Draw a camera preview if the selected entity has a camera
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
 				{
-					ImGui::SetNextWindowPos(ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().Width,
-						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().Height - 24.0f));
-					ImGui::Begin(m_HierarchyPanel->GetSelectedEntity().GetTag().Tag.c_str(), NULL,
-						ImGuiWindowFlags_NoDocking | ImGuiTabBarFlags_NoTooltip
-						| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-						| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-						| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
+					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
+						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
+
+					ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
+						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
+						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].z * 255.0f) << 16) |
+						255 << 24;
+
+					ImGui::GetWindowDrawList()->AddRectFilled(cameraPreviewPosition,
+						ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().width + 2,
+							cameraPreviewPosition.y + m_CameraPreview->GetSpecification().height + 24.0f),
+						color, ImGui::GetStyle().WindowRounding);
+
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
-					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().Width, (float)m_CameraPreview->GetSpecification().Height), ImVec2(0, 1), ImVec2(1, 0));
-					ImGui::End();
+					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
+					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
+					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().c_str());
+					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
+					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}
-
-				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<BoxCollider2DComponent>())
-				{
-					BoxCollider2DComponent& collider = selectedEntity.GetComponent<BoxCollider2DComponent>();
-					
-					//TODO: draw an imgui rect for entities with collider2D
-				}
-
 
 				// Gizmos
 				ImGuizmo::SetOrthographic(true);
@@ -295,9 +277,9 @@ void ViewportPanel::OnImGuiRender()
 				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
-				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.Position)
-					* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-					* Matrix4x4::Scale(transformComp.Scale);
+				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
+					* Matrix4x4::Scale(transformComp.scale);
 
 				cameraViewMat.Transpose();
 				cameraProjectionMat.Transpose();
@@ -342,88 +324,65 @@ void ViewportPanel::OnImGuiRender()
 
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
-					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.Rotation;
+					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
 					if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
 					{
-						transformComp.Position = Vector3f(translation[0], translation[1], translation[2]);
+						transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 					}
 					if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
 					{
-						transformComp.Rotation += deltaRotation;
+						transformComp.rotation += deltaRotation;
 					}
 					if (gizmoMode == ImGuizmo::OPERATION::SCALE)
 					{
-						transformComp.Scale = Vector3f(scale[0], scale[1], scale[2]);
+						transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 					}
 				}
 			}
 		}
+
+		ImVec2 toolbarPosistion = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
+		ImGui::SetCursorPos(toolbarPosistion);
+		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
+		ImGui::Text("%.1f", io.Framerate);
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
-
-	if (viewShown)
-	{
-		ImGui::SetNextWindowPos(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y));
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.1f, 0.1f, 0.1f, 0.2f));
-		ImGui::Begin("FPS", m_Show, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration
-			| ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar
-			| ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize
-			| ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing
-			| ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoInputs);
-
-		ImGui::Text("%.1f", io.Framerate);
-		ImGui::Text("%i", m_PixelData);
-		ImGui::End();
-		ImGui::PopStyleColor();
-	}
 }
 
 void ViewportPanel::Copy()
 {
-	// TODO: viewport copy
-	CLIENT_DEBUG("Copied");
+	m_HierarchyPanel->Copy();
 }
 
 void ViewportPanel::Cut()
 {
-	// TODO: viewport cut
-	CLIENT_DEBUG("Cut");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Cut();
 }
 
 void ViewportPanel::Paste()
 {
-	//TODO: viewport paste
-	CLIENT_DEBUG("Pasted {0}", std::string(ImGui::GetClipboardText()));
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Paste();
 }
 
 void ViewportPanel::Duplicate()
 {
-	//TODO: viewport duplicate
-	CLIENT_DEBUG("Duplicated");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Duplicate();
 }
 
 void ViewportPanel::Delete()
 {
-	//TODO: viewport delete
-	CLIENT_DEBUG("Deleted");
-
-	SceneManager::CurrentScene()->MakeDirty();
+	m_HierarchyPanel->Delete();
 }
 
 void ViewportPanel::SelectAll()
 {
+	m_HierarchyPanel->SelectAll();
 }
 
 bool ViewportPanel::HasSelection() const
 {
-	return false;
+	return m_HierarchyPanel->GetSelectedEntity();
 }
 
 bool ViewportPanel::CanUndo() const
@@ -453,8 +412,6 @@ void ViewportPanel::Redo(int astep)
 
 void ViewportPanel::Save()
 {
-	//if (!m_SceneDirty)
-	//	return;
 	CLIENT_DEBUG("Saving...");
 
 	SceneManager::CurrentScene()->Save(false);

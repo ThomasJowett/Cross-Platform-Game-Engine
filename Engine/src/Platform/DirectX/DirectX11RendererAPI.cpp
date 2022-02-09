@@ -62,3 +62,7 @@ void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint
 	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 	g_ImmediateContext->DrawIndexed(count, 0, 0);
 }
+
+void DirectX11RendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount)
+{
+}

@@ -3,27 +3,43 @@
 #include "Core/Colour.h"
 
 #include "cereal/cereal.hpp"
+#include "cereal/access.hpp"
 
 #include "Renderer/Texture.h"
 #include "Renderer/Material.h"
 
 struct SpriteComponent
 {
-	Colour Tint{ 1.0f, 1.0f,1.0f,1.0f };
-	Material material;
-	Ref<Texture2D> Texture;
-	float TilingFactor = 1.0f;
+	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
+	Ref<Texture2D> texture;
+	float tilingFactor = 1.0f;
 
 	SpriteComponent() = default;
 	SpriteComponent(const SpriteComponent&) = default;
-	SpriteComponent(const Colour& colour)
-		:Tint(colour) {}
+
+private:
+	friend cereal::access;
+	template<typename Archive>
+	void save(Archive& archive) const
+	{
+		std::string relativePath;
+		if (texture && !texture->GetFilepath().empty())
+			relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(cereal::make_nvp("Tint", tint));
+		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
+	}
 
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void load(Archive& archive)
 	{
-		archive(cereal::make_nvp("Tint", Tint));
-		archive(cereal::make_nvp("Material", material));
-		archive(cereal::make_nvp("Tiling Factor", TilingFactor));
+		std::string relativePath;
+		archive(cereal::make_nvp("Filepath", relativePath));
+		if (!relativePath.empty())
+		{
+			texture = Texture2D::Create(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		}
+		archive(cereal::make_nvp("Tint", tint));
+		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
 	}
 };

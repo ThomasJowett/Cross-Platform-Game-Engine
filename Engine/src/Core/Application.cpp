@@ -17,7 +17,7 @@
 
 #include "Utilities/StringUtils.h"
 
-Application *Application::s_Instance = nullptr;
+Application* Application::s_Instance = nullptr;
 
 std::filesystem::path Application::s_OpenDocument;
 std::filesystem::path Application::s_OpenDocumentDirectory;
@@ -27,7 +27,7 @@ Application::EventCallbackFn Application::s_EventCallback;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Application::Application(const WindowProps &props)
+Application::Application(const WindowProps& props)
 {
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
@@ -59,32 +59,33 @@ Application::~Application()
 {
 	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
+	Renderer::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::AddLayer(Layer *layer)
+void Application::AddLayer(Layer* layer)
 {
 	m_WaitingLayers.push_back(layer);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::AddOverlay(Layer *layer)
+void Application::AddOverlay(Layer* layer)
 {
 	m_WaitingOverlays.push_back(layer);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::RemoveLayer(Layer *layer)
+void Application::RemoveLayer(Layer* layer)
 {
 	m_DeadLayers.push_back(layer);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::RemoveOverlay(Layer *layer)
+void Application::RemoveOverlay(Layer* layer)
 {
 	m_DeadOverlays.push_back(layer);
 }
@@ -119,7 +120,7 @@ void Application::Run()
 			{
 				OnFixedUpdate();
 
-				for (Layer *layer : m_LayerStack)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
 				}
@@ -137,7 +138,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				for (Layer *layer : m_LayerStack)
+				for (Layer* layer : m_LayerStack)
 				{
 					layer->OnUpdate((float)frameTime);
 				}
@@ -150,7 +151,7 @@ void Application::Run()
 		if (m_ImGuiManager->IsUsing())
 		{
 			m_ImGuiManager->Begin();
-			for (Layer *layer : m_LayerStack)
+			for (Layer* layer : m_LayerStack)
 			{
 				layer->OnImGuiRender();
 			}
@@ -160,12 +161,12 @@ void Application::Run()
 		m_Window->OnUpdate();
 
 		// Push any layers that were created during the update to the stack
-		for (Layer *layer : m_WaitingLayers)
+		for (Layer* layer : m_WaitingLayers)
 		{
 			PushLayer(layer);
 		}
 
-		for (Layer *overlay : m_WaitingOverlays)
+		for (Layer* overlay : m_WaitingOverlays)
 		{
 			PushOverlay(overlay);
 		}
@@ -174,12 +175,12 @@ void Application::Run()
 		m_WaitingOverlays.clear();
 
 		// Remove any layers that were deleted during the update
-		for (Layer *layer : m_DeadLayers)
+		for (Layer* layer : m_DeadLayers)
 		{
 			PopLayer(layer);
 		}
 
-		for (Layer *layer : m_DeadOverlays)
+		for (Layer* layer : m_DeadOverlays)
 		{
 			PopOverlay(layer);
 		}
@@ -191,7 +192,7 @@ void Application::Run()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::OnEvent(Event &e)
+void Application::OnEvent(Event& e)
 {
 	PROFILE_FUNCTION();
 
@@ -203,18 +204,18 @@ void Application::OnEvent(Event &e)
 	dispatcher.Dispatch<WindowResizeEvent>(BIND_EVENT_FN(Application::OnWindowResize));
 	dispatcher.Dispatch<WindowMoveEvent>(BIND_EVENT_FN(Application::OnWindowMove));
 
-	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected &event) {
+	dispatcher.Dispatch<JoystickConnected>([](JoystickConnected& event) {
 		ENGINE_INFO(event.to_string());
 		return false;
-	});
-	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected &event) {
+		});
+	dispatcher.Dispatch<JoystickDisconnected>([](JoystickDisconnected& event) {
 		ENGINE_INFO(event.to_string());
 		return false;
-	});
-	dispatcher.Dispatch<SceneChanged>([](SceneChanged &event) {
+		});
+	dispatcher.Dispatch<SceneChanged>([](SceneChanged& event) {
 		ENGINE_INFO(event.to_string());
 		return false;
-	});
+		});
 
 	m_ImGuiManager->OnEvent(e);
 
@@ -228,7 +229,7 @@ void Application::OnEvent(Event &e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::PushLayer(Layer *layer)
+void Application::PushLayer(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -238,7 +239,7 @@ void Application::PushLayer(Layer *layer)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::PushOverlay(Layer *layer)
+void Application::PushOverlay(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -247,7 +248,7 @@ void Application::PushOverlay(Layer *layer)
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::PopLayer(Layer *layer)
+void Application::PopLayer(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -259,7 +260,7 @@ void Application::PopLayer(Layer *layer)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::PopOverlay(Layer *layer)
+void Application::PopOverlay(Layer* layer)
 {
 	PROFILE_FUNCTION();
 
@@ -271,7 +272,7 @@ void Application::PopOverlay(Layer *layer)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Application::OnWindowClose(WindowCloseEvent &e)
+bool Application::OnWindowClose(WindowCloseEvent& e)
 {
 	m_Running = false;
 	return true;
@@ -279,7 +280,7 @@ bool Application::OnWindowClose(WindowCloseEvent &e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Application::OnWindowResize(WindowResizeEvent &e)
+bool Application::OnWindowResize(WindowResizeEvent& e)
 {
 	PROFILE_FUNCTION();
 
@@ -302,7 +303,7 @@ bool Application::OnWindowResize(WindowResizeEvent &e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Application::OnWindowMove(WindowMoveEvent &e)
+bool Application::OnWindowMove(WindowMoveEvent& e)
 {
 	if (!Settings::GetBool("Display", "Maximized"))
 	{
@@ -314,7 +315,7 @@ bool Application::OnWindowMove(WindowMoveEvent &e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Application::OnMaximize(WindowMaximizedEvent &e)
+bool Application::OnMaximize(WindowMaximizedEvent& e)
 {
 	Settings::SetBool("Display", "Maximized", e.IsMaximized());
 	return false;
@@ -322,15 +323,15 @@ bool Application::OnMaximize(WindowMaximizedEvent &e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::SetDefaultSettings(const WindowProps &props)
+void Application::SetDefaultSettings(const WindowProps& props)
 {
-	const char *display = "Display";
-	const char *audio = "Audio";
+	const char* display = "Display";
+	const char* audio = "Audio";
 
-	Settings::SetDefaultInt(display, "Screen_Width", props.Width);
-	Settings::SetDefaultInt(display, "Screen_Height", props.Height);
-	Settings::SetDefaultInt(display, "Window_Position_X", props.PosX);
-	Settings::SetDefaultInt(display, "Window_Position_Y", props.PosY);
+	Settings::SetDefaultInt(display, "Screen_Width", props.width);
+	Settings::SetDefaultInt(display, "Screen_Height", props.height);
+	Settings::SetDefaultInt(display, "Window_Position_X", props.posX);
+	Settings::SetDefaultInt(display, "Window_Position_Y", props.posY);
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
@@ -363,7 +364,7 @@ double Application::GetTime()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::SetOpenDocument(const std::filesystem::path &filepath)
+void Application::SetOpenDocument(const std::filesystem::path& filepath)
 {
 	if (std::filesystem::exists(filepath))
 	{
@@ -408,14 +409,14 @@ void Application::SetOpenDocument(const std::filesystem::path &filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const std::filesystem::path &Application::GetOpenDocument()
+const std::filesystem::path& Application::GetOpenDocument()
 {
 	return s_OpenDocument;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const std::filesystem::path &Application::GetOpenDocumentDirectory()
+const std::filesystem::path& Application::GetOpenDocumentDirectory()
 {
 	return s_OpenDocumentDirectory;
 }

@@ -6,19 +6,26 @@
 #include "Engine.h"
 
 #include "Utilities/GeometryGenerator.h"
+#include "Scene/SceneSerializer.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void HierarchyPanel::OnAttach()
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void HierarchyPanel::OnFixedUpdate()
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void HierarchyPanel::OnImGuiRender()
 {
@@ -58,7 +65,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
 					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -70,7 +77,7 @@ void HierarchyPanel::OnImGuiRender()
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
 					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
 					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
@@ -82,9 +89,9 @@ void HierarchyPanel::OnImGuiRender()
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
 					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
@@ -94,9 +101,9 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
@@ -106,9 +113,9 @@ void HierarchyPanel::OnImGuiRender()
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
 					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
@@ -118,9 +125,9 @@ void HierarchyPanel::OnImGuiRender()
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
 					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-					Material material(Shader::Create("NormalMap"));
+					Material material(Shader::Create("Standard"));
 					material.SetTint(Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
@@ -139,9 +146,23 @@ void HierarchyPanel::OnImGuiRender()
 					entity.AddComponent<SpriteComponent>();
 					m_SelectedEntity = entity;
 				}
-				if (ImGui::MenuItem("Tilemap", "", nullptr, false))
+				if (ImGui::MenuItem("Animated Sprite"))
 				{
-					//TODO: create tilemap
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
+					entity.AddComponent<AnimatedSpriteComponent>();
+					m_SelectedEntity = entity;
+				}
+				if (ImGui::MenuItem("Circle"))
+				{
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
+					entity.AddComponent<CircleRendererComponent>();
+					m_SelectedEntity = entity;
+				}
+				if (ImGui::MenuItem("Tilemap"))
+				{
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
+					entity.AddComponent<TilemapComponent>();
+					m_SelectedEntity = entity;
 				}
 				ImGui::EndMenu();
 			}
@@ -204,9 +225,16 @@ void HierarchyPanel::OnImGuiRender()
 	ImGui::End();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void HierarchyPanel::SetSelectedEntity(Entity entity)
+{
+	m_SelectedEntity = entity;
+}
+
 void HierarchyPanel::DrawNode(Entity entity)
 {
-	auto& tag = entity.GetComponent<TagComponent>().Tag;
+	auto& tag = entity.GetComponent<TagComponent>().tag;
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
@@ -238,4 +266,66 @@ void HierarchyPanel::DrawNode(Entity entity)
 			m_SelectedEntity = {};
 		SceneManager::CurrentScene()->RemoveEntity(entity);
 	}
+}
+
+void HierarchyPanel::Copy()
+{
+	CLIENT_DEBUG("Copied");
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, m_SelectedEntity);
+	pEntityElement->SetAttribute("ID", Uuid());
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+	ImGui::SetClipboardText(printer.CStr());
+}
+
+void HierarchyPanel::Cut()
+{
+	Copy();
+	Delete();
+}
+
+void HierarchyPanel::Paste()
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError error = doc.Parse(ImGui::GetClipboardText());
+
+	if (error == tinyxml2::XMLError::XML_SUCCESS)
+	{
+		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
+		if (pEntityElement)
+		{
+			SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), pEntityElement);
+			SceneManager::CurrentScene()->MakeDirty();
+		}
+	}
+}
+
+void HierarchyPanel::Duplicate()
+{
+	CLIENT_DEBUG("Duplicated");
+	SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity);
+}
+
+void HierarchyPanel::Delete()
+{
+	SceneManager::CurrentScene()->RemoveEntity(m_SelectedEntity);
+	m_SelectedEntity = {};
+}
+
+bool HierarchyPanel::HasSelection() const
+{
+	return m_SelectedEntity;
+}
+
+void HierarchyPanel::SelectAll()
+{
+	CLIENT_ERROR("Multi select entites not implemented yet!");
+}
+
+bool HierarchyPanel::IsReadOnly() const
+{
+	return false;
 }

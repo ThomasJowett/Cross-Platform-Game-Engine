@@ -1,8 +1,12 @@
 #pragma once
 
 #include <unordered_map>
+#include <filesystem>
 
 #include "Core/core.h"
+
+#include "cereal/cereal.hpp"
+#include "cereal/access.hpp"
 
 class Texture
 {
@@ -15,10 +19,10 @@ public:
 
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
-	virtual std::string GetName()const = 0;
+	virtual std::string GetName() const = 0;
+	virtual const std::filesystem::path& GetFilepath() const = 0;
 
-	virtual uint32_t GetRendererID()const = 0;
-
+	virtual uint32_t GetRendererID() const = 0;
 
 	virtual bool operator==(const Texture& other) const = 0;
 };
@@ -36,6 +40,7 @@ public:
 	void Add(const Ref<Texture2D>& texture);
 	Ref<Texture2D> Load(const std::filesystem::path& path);
 	Ref<Texture2D> Get(const std::string& name);
+	void Clear();
 
 	bool Exists(const std::string& name) const;
 private:

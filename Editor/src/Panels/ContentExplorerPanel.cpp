@@ -33,6 +33,8 @@ std::time_t to_time_t(TP tp)
 	return system_clock::to_time_t(sctp);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::Paste()
 {
 	if (m_Cut)
@@ -97,11 +99,15 @@ void ContentExplorerPanel::Paste()
 	m_ForceRescan = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::Duplicate()
 {
 	Copy();
 	Paste();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::Delete()
 {
@@ -125,6 +131,8 @@ void ContentExplorerPanel::Delete()
 	m_ForceRescan = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::SelectAll()
 {
 	for (auto file : m_SelectedFiles)
@@ -134,10 +142,14 @@ void ContentExplorerPanel::SelectAll()
 		dir = true;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool ContentExplorerPanel::HasSelection() const
 {
 	return m_NumberSelected > 0;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 bool ContentExplorerPanel::Rename()
 {
@@ -190,6 +202,8 @@ bool ContentExplorerPanel::Rename()
 	return false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 {
 	m_CurrentPath = path;
@@ -206,6 +220,8 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 	m_History.SwitchTo(m_CurrentPath);
 	m_ForceRescan = true;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
@@ -234,6 +250,8 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 	m_CurrentSelectedPath = newSceneFilepath;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 {
 	std::string path;
@@ -246,6 +264,8 @@ std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
 
 	return std::filesystem::path(path);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize)
 {
@@ -283,6 +303,8 @@ void ContentExplorerPanel::CalculateBrowsingDataTableSizes(const ImVec2& childWi
 		++m_NumBrowsingEntriesPerColumn;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -308,6 +330,8 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 			ImGui::OpenPopup("Rename");
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::RightClickMenu()
 {
@@ -345,6 +369,10 @@ void ContentExplorerPanel::RightClickMenu()
 		{
 			CreateNewScene();
 			ImGui::OpenPopup("Rename");
+		}
+		if (ImGui::SmallButton("Material"))
+		{
+
 		}
 		if (ImGui::SmallButton("Object"))
 			CLIENT_DEBUG("new object");
@@ -385,6 +413,8 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PopStyleVar(2);
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OpenAllSelectedItems()
 {
 	for (size_t i = 0; i < m_Files.size(); i++)
@@ -393,6 +423,8 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 			ViewerManager::OpenViewer(m_Files[i]);
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName)
 {
@@ -428,7 +460,10 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 
 		m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 
-		if (ImGui::Button("Rename", ImVec2(ImGui::GetContentRegionAvailWidth(), ImGui::GetFontSize())) && m_NumberSelected == 1)
+		ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_None | ImGuiSelectableFlags_DontClosePopups;
+
+		static bool renameSelected = false;
+		if (ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
 		{
 			ImGui::OpenPopup("Rename");
 		}
@@ -455,6 +490,8 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::ClearSelected()
 {
 	m_SelectedDirs.clear();
@@ -462,6 +499,8 @@ void ContentExplorerPanel::ClearSelected()
 	m_SelectedFiles.clear();
 	m_SelectedFiles.resize(m_Files.size());
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::path& assetPath)
 {
@@ -483,6 +522,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 	return ICON_FA_FILE;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::CreateDragDropSource(size_t index)
 {
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -492,6 +533,8 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 		ImGui::EndDragDropSource();
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: m_Show(show), Layer("ContentExplorer")
@@ -503,13 +546,19 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_Cut = false;
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OnAttach()
 {
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::OnUpdate(float deltaTime)
 {
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::OnImGuiRender()
 {
@@ -543,6 +592,8 @@ void ContentExplorerPanel::OnImGuiRender()
 		ClearSelected();
 
 		m_NumberSelected = 0;
+
+		m_TextureLibrary.Clear();
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
@@ -1016,7 +1067,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						}
 						ImGui::PopFont();
-						ImGui::TextWrapped(dirName.c_str());
+						ImGui::TextWrapped("%s", dirName.c_str());
 						ImGui::EndGroup();
 						ItemContextMenu(i, true, dirName);
 
@@ -1040,7 +1091,15 @@ void ContentExplorerPanel::OnImGuiRender()
 
 						ImGui::PushFont(Fonts::Icons);
 
-						if (ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize }))
+						// try to get the image to display the thumbnail
+						if(ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
+						{
+							ImGui::ImageButton(m_TextureLibrary.Load(m_Files[i]), { thumbnailSize, thumbnailSize });
+						}
+						else
+							ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize });
+
+						if ((ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)))
 						{
 							if (!ImGui::GetIO().KeyCtrl)
 							{
@@ -1064,7 +1123,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 						CreateDragDropSource(i);
 						ImGui::PopFont();
-						ImGui::TextWrapped(filename.c_str());
+						ImGui::TextWrapped("%s", filename.c_str());
 						ImGui::EndGroup();
 						ItemContextMenu(i, false, filename);
 
@@ -1158,7 +1217,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Dirs[i]));
 
 							char buff[20];
-							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
 
 							ImGui::Text("%s", buff);
 						}
@@ -1222,7 +1281,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Files[i]));
 
 							char buff[20];
-							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
 
 							ImGui::Text("%s", buff);
 						}

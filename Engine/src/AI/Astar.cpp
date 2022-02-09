@@ -44,7 +44,7 @@ namespace Astar
 	{
 		for (Node* node : nodes)
 		{
-			if (node->m_Coordinates == coordinates)
+			if (node->coordinates == coordinates)
 			{
 				return node;
 			}
@@ -109,7 +109,7 @@ namespace Astar
 				}
 			}
 
-			if (current->m_Coordinates == goalCoords)
+			if (current->coordinates == goalCoords)
 			{
 				break; // found the goal so exit
 			}
@@ -119,7 +119,7 @@ namespace Astar
 
 			for (uint32_t i = 0; i < m_Directions; i++)
 			{
-				GridCoord newCoords(current->m_Coordinates + m_Direction[i]);
+				GridCoord newCoords(current->coordinates + m_Direction[i]);
 
 				if (grid->DetectCollision(newCoords) || FindNodeOnList(closedSet, newCoords))
 					continue;
@@ -132,12 +132,12 @@ namespace Astar
 				{
 					successor = new Node(newCoords, current);
 					successor->G = totalcost;
-					successor->H = m_Heuristic(successor->m_Coordinates, goalCoords);
+					successor->H = m_Heuristic(successor->coordinates, goalCoords);
 					openSet.insert(successor);
 				}
 				else if (totalcost < successor->G)
 				{
-					successor->m_Parent = current;
+					successor->parent = current;
 					successor->G = totalcost;
 				}
 			}
@@ -147,9 +147,9 @@ namespace Astar
 		{
 			/*convert coordinates back into world positions*/
 			Vector2f position;
-			grid->GridCoordToPosition(current->m_Coordinates, position);
+			grid->GridCoordToPosition(current->coordinates, position);
 			path.push_back(position);
-			current = current->m_Parent;
+			current = current->parent;
 		}
 
 		ReleaseNodes(openSet);
@@ -158,7 +158,7 @@ namespace Astar
 	}
 
 	Node::Node(GridCoord coordinates, Node* parent)
-		:m_Parent(parent), m_Coordinates(coordinates)
+		:parent(parent), coordinates(coordinates)
 	{
 		G = H = 0;
 	}

@@ -92,11 +92,11 @@ void CameraController::OnUpdate(float deltaTime)
 void CameraController::Walk(float d)
 {
 	// Calculate the forward direction from the transform
-	Quaternion quat(m_TransformComponent.Rotation);
+	Quaternion quat(m_TransformComponent.rotation);
 	float axis;
 	Vector3f angle;
 	quat.AxisAngle(axis, angle);
-	m_TransformComponent.Position = (d * angle) + m_TransformComponent.Position;
+	m_TransformComponent.position = (d * angle) + m_TransformComponent.position;
 }
 
 void CameraController::Strafe(float d)

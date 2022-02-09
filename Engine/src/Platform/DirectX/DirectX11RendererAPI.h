@@ -12,7 +12,7 @@ class DirectX11RendererAPI : public RendererAPI
 	virtual void Clear() override;
 
 	virtual void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode = DrawMode::FILL) override;
-
+	virtual void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount) override;
 private:
 	D3D11_VIEWPORT m_Viewport;
 

@@ -18,6 +18,8 @@ public:
 
 	virtual std::string GetName() const override;
 
+	virtual const std::filesystem::path& GetFilepath() const override;
+
 	virtual uint32_t GetRendererID() const override;
 
 

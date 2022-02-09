@@ -18,6 +18,7 @@
 #include "Events/SceneEvent.h"
 
 #include "Box2D/Box2D.h"
+#include "SceneSerializer.h"
 
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
@@ -31,6 +32,22 @@ b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 		return b2BodyType::b2_dynamicBody;
 	}
 	return b2BodyType::b2_staticBody;
+}
+
+template<typename Component>
+static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
+{
+	if (registry.has<Component>(src))
+	{
+		auto& srcComponent = registry.get<Component>(src);
+		registry.emplace_or_replace<Component>(dst, srcComponent);
+	}
+}
+
+template<typename... Component>
+static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& registry)
+{
+	(CopyComponentIfExists<Component>(dst, src, registry), ...);
 }
 
 Scene::Scene(std::filesystem::path filepath)
@@ -87,9 +104,24 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Scene::DuplicateEntity(Entity entity)
+{
+	std::string name = entity.GetTag();
+	Entity newEntity = CreateEntity(name);
+
+	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::OnRuntimeStart()
 {
-	m_Snapshot.clear();
+	PROFILE_FUNCTION();
+	ENGINE_DEBUG("Runtime Start");
+	if (m_Dirty)
+		Save();
+
+	std::stringstream().swap(m_Snapshot);
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
@@ -99,16 +131,18 @@ void Scene::OnRuntimeStart()
 		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
 		{
 			b2BodyDef bodyDef;
-			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.Type);
-			bodyDef.position = b2Vec2(transformComp.Position.x, transformComp.Position.y);
-			bodyDef.angle = (float32)transformComp.Rotation.z;
-			
-			if (rigidBody2DComp.Type == RigidBody2DComponent::BodyType::DYNAMIC)
+			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
+			bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
+			bodyDef.angle = (float32)transformComp.rotation.z;
+
+			if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
 			{
-				bodyDef.fixedRotation = rigidBody2DComp.FixedRotation;
-				bodyDef.angularDamping = rigidBody2DComp.AngularDamping;
-				bodyDef.gravityScale = rigidBody2DComp.GravityScale;
+				bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
+				bodyDef.angularDamping = rigidBody2DComp.angularDamping;
+				bodyDef.linearDamping = rigidBody2DComp.linearDamping;
+				bodyDef.gravityScale = rigidBody2DComp.gravityScale;
 			}
+
 			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
 			rigidBody2DComp.RuntimeBody = body;
@@ -119,7 +153,7 @@ void Scene::OnRuntimeStart()
 				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
 
 				b2PolygonShape boxShape;
-				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.Scale.x, boxColliderComp.Size.y * transformComp.Scale.y,
+				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
 					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
 					0.0f);
 
@@ -131,9 +165,28 @@ void Scene::OnRuntimeStart()
 
 				body->CreateFixture(&fixtureDef);
 			}
+
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
+
+				b2CircleShape circleShape;
+				circleShape.m_radius = circleColliderComp.Radius;
+				circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = circleColliderComp.Density;
+				fixtureDef.friction = circleColliderComp.Friction;
+				fixtureDef.restitution = circleColliderComp.Restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
 		}
 	);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnRuntimePause()
 {
@@ -143,12 +196,17 @@ void Scene::OnRuntimePause()
 
 void Scene::OnRuntimeStop()
 {
-	m_Registry = entt::registry();
-	cereal::JSONInputArchive input(m_Snapshot);
-	entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
-	m_Snapshot.clear();
+	PROFILE_FUNCTION();
+	if (m_Snapshot.rdbuf()->in_avail() != 0)
+	{
+		ENGINE_DEBUG("Runtime End");
+		m_Registry = entt::registry();
+		cereal::JSONInputArchive input(m_Snapshot);
+		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
+	}
+	std::stringstream().swap(m_Snapshot);
 
-	if(m_Box2DWorld != nullptr) delete m_Box2DWorld;
+	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
 }
 
@@ -156,28 +214,39 @@ void Scene::OnRuntimeStop()
 
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
+	PROFILE_FUNCTION();
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
 
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawSprite(transform, sprite);
-		});
+	auto spriteGroup = m_Registry.view<TransformComponent, SpriteComponent>();
+	for (auto entity : spriteGroup)
+	{
+		auto [transformComp, spriteComp] = spriteGroup.get<TransformComponent, SpriteComponent>(entity);
+		Renderer2D::DrawSprite(transformComp.GetMatrix(), spriteComp, (int)entity);
+	}
 
-	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer::Submit(mesh.material, mesh.Geometry, transform);
-		});
+	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
+	for (auto entity : animatedSpriteGroup)
+	{
+		auto [transformComp, spriteComp] = animatedSpriteGroup.get<TransformComponent, AnimatedSpriteComponent>(entity);
+		Renderer2D::DrawQuad(transformComp.GetMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
+	}
+
+	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
+	for (auto entity : circleGroup)
+	{
+		auto [transformComp, circleComp] = circleGroup.get<TransformComponent, CircleRendererComponent>(entity);
+		Renderer2D::DrawCircle(transformComp.GetMatrix(), circleComp, (int)entity);
+	}
+
+	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
+	for (auto entity : staticMeshGroup)
+	{
+		auto [transformComp, staticMeshComp] = staticMeshGroup.get<TransformComponent, StaticMeshComponent>(entity);
+		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetMatrix(), (int)entity);
+	}
 
 	Renderer::EndScene();
 
@@ -197,7 +266,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		{
 			if (cameraComp.Primary)
 			{
-				view = Matrix4x4::Translate(transformComp.Position) * Matrix4x4::Rotate(Quaternion(transformComp.Rotation));
+				view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
 				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}
@@ -213,25 +282,6 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 
 	Renderer::BeginScene(cameraTransform, projection);
 
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawSprite(transform, sprite);
-		});
-
-
-	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer::Submit(mesh.material, mesh.Geometry, transform);
-		});
-
 	Renderer::EndScene();
 
 	if (renderTarget != nullptr)
@@ -240,43 +290,47 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
-{
-	renderTarget->Bind();
-
-	RenderCommand::Clear();
-
-	Renderer::BeginScene(cameraTransform, projection);
-
-	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-		[](const auto& sprite, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer2D::DrawQuad(transform, sprite.Tint);
-		});
-
-
-	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-		[](const auto& mesh, const auto& transformComp)
-		{
-			Matrix4x4 transform = Matrix4x4::Translate(transformComp.Position)
-				* Matrix4x4::Rotate(Quaternion(transformComp.Rotation))
-				* Matrix4x4::Scale(transformComp.Scale);
-			Renderer::Submit(mesh.material, mesh.Geometry, transform);
-		});
-
-	Renderer::EndScene();
-
-	renderTarget->UnBind();
-}
+//void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+//{
+//	renderTarget->Bind();
+//
+//	RenderCommand::Clear();
+//
+//	Renderer::BeginScene(cameraTransform, projection);
+//
+//	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& sprite, const auto& transformComp)
+//		{
+//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.tint);
+//		});
+//
+//	m_Registry.group<AnimatedSpriteComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& animatedSprite, const auto& transformComp)
+//		{
+//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.animator.GetSpriteSheet(), sprite.tint);
+//		});
+//
+//	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
+//		[](const auto& mesh, const auto& transformComp)
+//		{
+//			Renderer::Submit(mesh.material, mesh.mesh, transformComp.GetMatrix());
+//		});
+//
+//	Renderer::EndScene();
+//
+//	renderTarget->UnBind();
+//}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnUpdate(float deltaTime)
 {
 	m_IsUpdating = true;
+	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
+	{
+		animatedSpriteComp.animator.Animate(deltaTime);
+	});
+
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
 			if (nsc.InstantiateScript != nullptr)
@@ -296,32 +350,32 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
 		{
-			if (primitiveComponent.NeedsUpdating)
+			if (primitiveComponent.needsUpdating)
 			{
-				switch (primitiveComponent.Type)
+				switch (primitiveComponent.type)
 				{
 				case PrimitiveComponent::Shape::Cube:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.CubeWidth, primitiveComponent.CubeHeight, primitiveComponent.CubeDepth), "Cube");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
 					break;
 				case PrimitiveComponent::Shape::Sphere:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.SphereRadius, primitiveComponent.SphereLongitudeLines, primitiveComponent.SphereLatitudeLines), "Sphere");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
 					break;
 				case PrimitiveComponent::Shape::Plane:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.PlaneWidth, primitiveComponent.PlaneLength, primitiveComponent.PlaneLengthLines, primitiveComponent.PlaneWidthLines, primitiveComponent.PlaneTileU, primitiveComponent.PlaneTileV), "Plane");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
 					break;
 				case PrimitiveComponent::Shape::Cylinder:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.CylinderBottomRadius, primitiveComponent.CylinderTopRadius, primitiveComponent.CylinderHeight, primitiveComponent.CylinderSliceCount, primitiveComponent.CylinderStackCount), "Cylinder");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
 					break;
 				case PrimitiveComponent::Shape::Cone:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.ConeBottomRadius, 0.00001f, primitiveComponent.ConeHeight, primitiveComponent.ConeSliceCount, primitiveComponent.ConeStackCount), "Cone");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
 					break;
 				case PrimitiveComponent::Shape::Torus:
-					staticMeshComponent.Geometry.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.TorusOuterRadius, primitiveComponent.TorusInnerRadius, primitiveComponent.TorusSliceCount), "Torus");
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
 					break;
 				default:
 					break;
 				}
-				primitiveComponent.NeedsUpdating = false;
+				primitiveComponent.needsUpdating = false;
 			}
 		});
 
@@ -362,9 +416,9 @@ void Scene::OnFixedUpdate()
 			{
 				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
 				const b2Vec2& position = body->GetPosition();
-				transformComp.Position.x = position.x;
-				transformComp.Position.y = position.y;
-				transformComp.Rotation.z = (float)body->GetAngle();
+				transformComp.position.x = position.x;
+				transformComp.position.y = position.y;
+				transformComp.rotation.z = (float)body->GetAngle();
 			});
 	}
 
@@ -395,6 +449,9 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 {
 	PROFILE_FUNCTION();
 
+	if (m_Snapshot.rdbuf()->in_avail() != 0)
+		return;
+
 	m_IsSaving = true;
 
 	std::filesystem::path finalPath = filepath;
@@ -423,15 +480,9 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	}
 	else
 	{
-		std::stringstream ss;
-		{
-			cereal::JSONOutputArchive output{ ss };
-			entt::snapshot{ m_Registry }.entities(output).component<COMPONENTS>(output);
-		}
-
-		std::ofstream file(finalPath);
-		file << ss.str();
-		file.close();
+		SceneSerializer sceneSerializer = SceneSerializer(this);
+		if (!sceneSerializer.Serialize(finalPath))
+			ENGINE_ERROR("Failed to save scene to {0}.", finalPath.string());
 	}
 
 	m_Dirty = false;
@@ -469,18 +520,9 @@ bool Scene::Load(bool binary)
 	}
 	else
 	{
-		try
-		{
-			std::ifstream file(filepath);
-			cereal::JSONInputArchive input(file);
-			entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
-			file.close();
-		}
-		catch (const std::exception& ex)
-		{
-			ENGINE_ERROR("Failed to load scene. Exception thrown: {0}", ex.what());
-			return false;
-		}
+		SceneSerializer sceneSerializer = SceneSerializer(this);
+		if (!sceneSerializer.Deserialize(filepath))
+			ENGINE_ERROR("Failed to load scene. Could not read file {0}", filepath);
 	}
 
 	m_Dirty = false;

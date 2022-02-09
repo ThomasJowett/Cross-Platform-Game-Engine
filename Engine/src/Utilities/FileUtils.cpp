@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "FileUtils.h"
 
-std::filesystem::path FileUtils::relativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to)
+std::filesystem::path FileUtils::RelativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to)
 {
     // create absolute paths
     std::filesystem::path p = std::filesystem::absolute(path);

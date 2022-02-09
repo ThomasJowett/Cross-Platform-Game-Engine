@@ -13,13 +13,13 @@ public:
 
 	void OnUpdate() override;
 
-	inline unsigned int GetWidth() const override { return m_Data.Width; }
-	inline unsigned int GetHeight() const override { return m_Data.Height; }
+	inline unsigned int GetWidth() const override { return m_Data.width; }
+	inline unsigned int GetHeight() const override { return m_Data.height; }
 
-	inline unsigned int GetPosX() const override { return m_Data.PosX; }
-	inline unsigned int GetPosY() const override { return m_Data.PosY; }
+	inline unsigned int GetPosX() const override { return m_Data.posX; }
+	inline unsigned int GetPosY() const override { return m_Data.posY; }
 
-	void SetEventCallback(const EventCallbackFn& callback) override { m_Data.EventCallback = callback; }
+	void SetEventCallback(const EventCallbackFn& callback) override { m_Data.eventCallback = callback; }
 	void SetVSync(bool enabled) override;
 	bool IsVSync() const override;
 
@@ -45,13 +45,13 @@ private:
 
 	struct WindowData
 	{
-		std::string Title;
-		unsigned int Width, Height, PosX, PosY;
-		bool VSync;
-		WindowMode Mode;
-		bool Maximized;
+		std::string title;
+		unsigned int width, height, posX, posY;
+		bool vSync;
+		WindowMode mode;
+		bool maximized;
 
-		EventCallbackFn EventCallback;
+		EventCallbackFn eventCallback;
 	};
 
 	GLFWwindow* m_Window;
@@ -60,7 +60,7 @@ private:
 
 	struct WindowModeParams {
 		unsigned int width, Height;
-		int XPos, YPos;
+		int xPos, yPos;
 	};
 
 	WindowModeParams m_OldWindowedParams;

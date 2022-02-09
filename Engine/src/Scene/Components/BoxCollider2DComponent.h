@@ -9,7 +9,7 @@ struct BoxCollider2DComponent
 	Vector2f Offset = { 0.0f, 0.0f };
 	Vector2f Size = { 0.5f, 0.5f };
 
-	//TODO: create physics materiald
+	//TODO: create physics material
 	float Density = 1.0f;
 	float Friction = 0.5f;
 	float Restitution = 0.0f;
@@ -18,7 +18,8 @@ struct BoxCollider2DComponent
 
 	BoxCollider2DComponent() = default;
 	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

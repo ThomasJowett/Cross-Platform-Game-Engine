@@ -14,15 +14,15 @@ using FloatingPointMicroSeconds = std::chrono::duration<double, std::micro>;
 
 struct ProfileResult
 {
-	std::string Name;
-	FloatingPointMicroSeconds Start;
-	std::chrono::microseconds ElapsedTime;
-	std::thread::id ThreadID;
+	std::string name;
+	FloatingPointMicroSeconds start;
+	std::chrono::microseconds elapsedTime;
+	std::thread::id threadID;
 };
 
 struct InstrumentationSession
 {
-	std::string Name;
+	std::string name;
 };
 
 class Instrumentor
@@ -50,7 +50,7 @@ public:
 			ENGINE_WARN("Beginning new session before last has ended. Force ending last session...");
 			// If there is already a current session, then close it before beginning a new one.
 			// Subsequent profiling output meant for the original session will end up in the new one instead.
-			InternalEndSession(m_CurrentSession->Name);
+			InternalEndSession(m_CurrentSession->name);
 		}
 
 		m_OutputStream.open(filepath);
@@ -81,18 +81,18 @@ public:
 
 		std::stringstream json;
 
-		std::string name = result.Name;
+		std::string name = result.name;
 		std::replace(name.begin(), name.end(), '"', '\'');
 
 		json << std::setprecision(3) << std::fixed;
 		json << ",{";
 		json << "\"cat\":\"function\",";
-		json << "\"dur\":" << (result.ElapsedTime.count()) << ',';
+		json << "\"dur\":" << (result.elapsedTime.count()) << ',';
 		json << "\"name\":\"" << name << "\",";
 		json << "\"ph\":\"X\",";
 		json << "\"pid\":0,";
-		json << "\"tid\":" << result.ThreadID << ",";
-		json << "\"ts\":" << result.Start.count();
+		json << "\"tid\":" << result.threadID << ",";
+		json << "\"ts\":" << result.start.count();
 		json << "}";
 
 		std::lock_guard lock(m_Mutex);
@@ -141,9 +141,9 @@ private:
 	{
 		if (m_CurrentSession)
 		{
-			if (m_CurrentSession->Name != name)
+			if (m_CurrentSession->name != name)
 			{
-				ENGINE_WARN("Attempting to end session \"{0}\" but does not match current session \"{1}\"", name, m_CurrentSession->Name);
+				ENGINE_WARN("Attempting to end session \"{0}\" but does not match current session \"{1}\"", name, m_CurrentSession->name);
 			}
 			WriteFooter();
 			m_OutputStream.close();

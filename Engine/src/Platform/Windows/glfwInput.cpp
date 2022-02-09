@@ -67,11 +67,11 @@ double glfwInput::GetMouseXImpl()
 bool glfwInput::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 {
 	Joysticks::Joystick joystick = Joysticks::GetJoystick(joystickSlot);
-	if (joystick.IsMapped)
+	if (joystick.isMapped)
 	{
 		GLFWgamepadstate state;
 
-		if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).ID, &state) && button <= GLFW_GAMEPAD_BUTTON_LAST)
+		if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).id, &state) && button <= GLFW_GAMEPAD_BUTTON_LAST)
 		{
 			return state.buttons[button] == GLFW_PRESS;
 		}
@@ -91,7 +91,7 @@ double glfwInput::GetJoystickAxisImpl(int joystickSlot, int axis)
 {
 	GLFWgamepadstate state;
 
-	if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).ID, &state) && axis <= GLFW_GAMEPAD_AXIS_LAST)
+	if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).id, &state) && axis <= GLFW_GAMEPAD_AXIS_LAST)
 	{
 		if (state.axes[axis] >= Joysticks::GetDeadZone() || state.axes[axis] <= -Joysticks::GetDeadZone())
 			return state.axes[axis];

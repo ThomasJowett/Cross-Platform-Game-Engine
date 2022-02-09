@@ -85,48 +85,6 @@ void DirectX11Shader::UnBind() const
 	if (m_PixelShader) g_ImmediateContext->PSSetShader(nullptr, nullptr, 0);
 }
 
-void DirectX11Shader::SetMat4(const char* name, const Matrix4x4& value, bool transpose)
-{
-}
-
-void DirectX11Shader::SetFloat2(const char* name, Vector2f value)
-{
-}
-
-void DirectX11Shader::SetFloat2(const char* name, const float x, const float y)
-{
-}
-
-void DirectX11Shader::SetFloat3(const char* name, Vector3f value)
-{
-}
-
-void DirectX11Shader::SetFloat3(const char* name, const float x, const float y, const float z)
-{
-}
-
-void DirectX11Shader::SetFloat4(const char* name, const float r, const float g, const float b, const float a)
-{
-}
-
-void DirectX11Shader::SetFloat4(const char* name, const Colour colour)
-{
-	D3D11_SHADER_INPUT_BIND_DESC shaderInputBindingDesc;
-	if (m_VertexShader) m_VertexReflector->GetResourceBindingDescByName(name, &shaderInputBindingDesc);
-}
-
-void DirectX11Shader::SetInt(const char* name, const int value)
-{
-}
-
-void DirectX11Shader::SetIntArray(const char* name, const int values[], uint32_t count)
-{
-}
-
-void DirectX11Shader::SetFloat(const char* name, const float value)
-{
-}
-
 HRESULT DirectX11Shader::CompileShaderFromFile(const std::filesystem::path& filename, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
 	HRESULT hr;

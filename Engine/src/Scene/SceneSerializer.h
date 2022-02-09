@@ -3,17 +3,22 @@
 #include "Scene.h"
 #include "Core/core.h"
 
+#include "TinyXml2/tinyxml2.h"
+
 class SceneSerializer
 {
 public:
-	SceneSerializer(const Ref<Scene>& scene);
+	SceneSerializer(Scene* scene);
 
 	~SceneSerializer()
 	{
 	}
 
-	bool Serialize(const std::filesystem::path& filepath);
+	bool Serialize(const std::filesystem::path& filepath) const;
+	bool Deserialize(const std::filesystem::path& filepath);
 
+	static void SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity);
+	static Entity DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement);
 private:
-	Ref<Scene> m_Scene;
+	Scene* m_Scene;
 };

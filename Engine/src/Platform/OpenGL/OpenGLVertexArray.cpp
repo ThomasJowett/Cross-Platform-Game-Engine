@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLVertexArray.h"
+#include "Core/Application.h"
 
 #include <glad/glad.h>
 
@@ -36,7 +37,8 @@ OpenGLVertexArray::OpenGLVertexArray()
 OpenGLVertexArray::~OpenGLVertexArray()
 {
 	PROFILE_FUNCTION();
-	glDeleteVertexArrays(1, &m_RendererID);
+	if (Application::Get().IsRunning())
+		glDeleteVertexArrays(1, &m_RendererID);
 }
 
 void OpenGLVertexArray::Bind() const
@@ -59,16 +61,26 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 
 	CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer Layout has no elements");
 
-	//uint32_t index = 0;
 	const BufferLayout& layout = vertexBuffer->GetLayout();
 	for (const BufferElement& element : layout)
 	{
-		switch (element.Type)
+		switch (element.type)
 		{
 		case ShaderDataType::Float:
 		case ShaderDataType::Float2:
 		case ShaderDataType::Float3:
 		case ShaderDataType::Float4:
+		{
+			glEnableVertexAttribArray(m_VertexBufferIndex);
+			glVertexAttribPointer(m_VertexBufferIndex,
+				element.Count(),
+				ShaderDataTypeToOpenGLBaseType(element.type),
+				element.normalized ? GL_TRUE : GL_FALSE,
+				layout.GetStride(),
+				(const void*)element.offset);
+			m_VertexBufferIndex++;
+			break;
+		}
 		case ShaderDataType::Int:
 		case ShaderDataType::Int2:
 		case ShaderDataType::Int3:
@@ -76,12 +88,11 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		case ShaderDataType::Bool:
 		{
 			glEnableVertexAttribArray(m_VertexBufferIndex);
-			glVertexAttribPointer(m_VertexBufferIndex,
+			glVertexAttribIPointer(m_VertexBufferIndex,
 				element.Count(),
-				ShaderDataTypeToOpenGLBaseType(element.Type),
-				element.Normalized ? GL_TRUE : GL_FALSE,
+				ShaderDataTypeToOpenGLBaseType(element.type),
 				layout.GetStride(),
-				(const void*)element.Offset);
+				(const void*)element.offset);
 			m_VertexBufferIndex++;
 			break;
 		}
@@ -94,8 +105,8 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 				glEnableVertexAttribArray(m_VertexBufferIndex);
 				glVertexAttribPointer(m_VertexBufferIndex,
 					count,
-					ShaderDataTypeToOpenGLBaseType(element.Type),
-					element.Normalized ? GL_TRUE : GL_FALSE,
+					ShaderDataTypeToOpenGLBaseType(element.type),
+					element.normalized ? GL_TRUE : GL_FALSE,
 					layout.GetStride(),
 					(const void*)(sizeof(float) * count * i));
 				glVertexAttribDivisor(m_VertexBufferIndex, 1);
@@ -103,7 +114,7 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 			}
 			break;
 		}
-		default: 
+		default:
 			CORE_ASSERT(false, "Unknown ShaderDataType");
 		}
 	}

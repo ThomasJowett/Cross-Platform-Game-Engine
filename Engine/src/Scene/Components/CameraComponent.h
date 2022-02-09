@@ -12,12 +12,11 @@ struct CameraComponent
 
 	CameraComponent() = default;
 	CameraComponent(const CameraComponent&) = default;
-	CameraComponent(const SceneCamera& camera, bool mainCamera = true, bool fixedAspectRatio = true)
-		:Camera(camera){}
 
 	operator SceneCamera& () { return Camera; }
 	operator const SceneCamera& () const { return Camera; }
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

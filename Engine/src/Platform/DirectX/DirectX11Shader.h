@@ -13,17 +13,6 @@ public:
 	virtual void Bind() const override;
 	virtual void UnBind() const override;
 
-	virtual void SetMat4(const char* name, const Matrix4x4& value, bool transpose) override;
-	virtual void SetFloat2(const char* name, Vector2f value) override;
-	virtual void SetFloat2(const char* name, const float x, const float y) override;
-	virtual void SetFloat3(const char* name, Vector3f value) override;
-	virtual void SetFloat3(const char* name, const float x, const float y, const float z) override;
-	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) override;
-	virtual void SetFloat4(const char* name, const Colour) override;
-	virtual void SetInt(const char* name, const int value) override;
-	virtual void SetIntArray(const char* name, const int values[], uint32_t count) override;
-	virtual void SetFloat(const char* name, const float value) override;
-
 	virtual std::string GetName()const override { return m_Name; }
 
 	static const std::string& GetShaderVersion() { return s_ShaderVersion; }

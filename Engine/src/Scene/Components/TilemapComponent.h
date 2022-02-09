@@ -13,7 +13,8 @@ struct TilemapComponent
 
 	operator Tilemap& () { return tilemap; }
 	operator const Tilemap& () const { return tilemap; }
-
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

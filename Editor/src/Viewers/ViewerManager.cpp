@@ -4,6 +4,7 @@
 #include "TextureView.h"
 #include "ScriptView.h"
 #include "StaticMeshView.h"
+#include "MaterialView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
@@ -24,6 +25,11 @@ static const char* MeshExtensions[] =
 {
 	".staticmesh"
 	//".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
+};
+
+static const char* AudioExtensions[] =
+{
+	".ogg", ".mp3", ".wav"
 };
 
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
@@ -84,6 +90,18 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		Application::Get().AddOverlay(layer);
 		return;
 	}
+	case FileType::MATERIAL:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new MaterialView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
+	case FileType::AUDIO:
+	{
+		CLIENT_WARN("No audio viewer implemented");
+	}
 	default:
 		return;
 	}
@@ -131,5 +149,70 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		return FileType::SCRIPT;
 	}
 
+	if (strcmp(ext, ".material") == 0)
+	{
+		return FileType::MATERIAL;
+	}
+
+	for (const char* knownExt : AudioExtensions)
+	{
+		if (strcmp(ext, knownExt) == 0)
+		{
+			return FileType::AUDIO;
+		}
+	}
+
 	return FileType::UNKNOWN;
+}
+
+std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
+{
+	std::vector<std::string> extensions;
+	switch (fileType)
+	{
+	case FileType::TEXT:
+	{
+		for (const char* ext : TextExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::IMAGE:
+	{
+		for (const char* ext : ImageExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::MESH:
+	{
+		for (const char* ext : MeshExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::SCENE:
+	{
+		extensions.push_back(".scene");
+		break;
+	}
+	case FileType::SCRIPT:
+		extensions.push_back(".cs");
+		break;
+	case FileType::AUDIO:
+	{
+		for (const char* ext : AudioExtensions)
+		{
+			extensions.push_back(ext);
+		}
+		break;
+	}
+	case FileType::MATERIAL:
+		extensions.push_back(".mat");
+		break;
+	}
+	return extensions;
 }

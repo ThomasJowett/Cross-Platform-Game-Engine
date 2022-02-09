@@ -16,17 +16,6 @@ public:
 	virtual void Bind() const = 0;
 	virtual void UnBind() const = 0;
 
-	virtual void SetMat4(const char* name, const Matrix4x4& value, bool transpose) = 0;
-	virtual void SetFloat(const char* name, const float value) = 0;
-	virtual void SetFloat2(const char* name, Vector2f value) = 0;
-	virtual void SetFloat2(const char* name, const float x, const float y) = 0;
-	virtual void SetFloat3(const char* name, Vector3f value) = 0;
-	virtual void SetFloat3(const char* name, const float x, const float y, const float z) = 0;
-	virtual void SetFloat4(const char* name, const float r, const float g, const float b, const float a) = 0;
-	virtual void SetFloat4(const char* name, const Colour colour) = 0;
-	virtual void SetInt(const char* name, const int value) = 0;
-	virtual void SetIntArray(const char* name, const int values[], uint32_t count) = 0;
-
 	virtual std::string GetName() const = 0;
 
 	// Create Shader from file

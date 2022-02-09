@@ -24,6 +24,8 @@ public:
 
 	bool RemoveEntity(const Entity& entity);
 
+	void DuplicateEntity(Entity entity);
+
 	void OnRuntimeStart();
 	void OnRuntimePause();
 	void OnRuntimeStop();
@@ -37,7 +39,7 @@ public:
 	// Render the scene with all debug information visible from the camera transform and projection
 	void DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
-	void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
+	//void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
 	// Called once per frame
 	void OnUpdate(float deltaTime);
@@ -50,6 +52,7 @@ public:
 
 	entt::registry& GetRegistry() { return m_Registry; }
 	const std::string& GetSceneName() const { return m_SceneName; }
+	void SetSceneName(std::string name) { m_SceneName = name; MakeDirty(); }
 
 	virtual void Save(bool binary = false);
 	virtual void Save(std::filesystem::path filepath, bool binary = false);
@@ -84,4 +87,5 @@ protected:
 	std::stringstream m_Snapshot;
 
 	friend class Entity;
+	friend class SceneSerializer;
 };

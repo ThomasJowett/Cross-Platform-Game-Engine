@@ -125,7 +125,7 @@ void ProjectsStartScreen::OnImGuiRender()
 						std::string sceneName = "Untitled.scene";
 
 						ProjectData data;
-						data.DefaultScene = "Scenes/" + sceneName;
+						data.defaultScene = "Scenes/" + sceneName;
 
 						Ref<Scene> newScene = CreateRef<Scene>(sceneDirectory / sceneName);
 

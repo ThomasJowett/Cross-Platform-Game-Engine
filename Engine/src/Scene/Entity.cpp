@@ -11,12 +11,17 @@ TransformComponent& Entity::GetTransform()
 	return GetComponent<TransformComponent>();
 }
 
-TagComponent& Entity::GetTag()
+std::string& Entity::GetTag()
 {
-	return GetComponent<TagComponent>();
+	return GetComponent<TagComponent>().tag;
 }
 
-IDComponent& Entity::GetID()
+Uuid Entity::GetID()
 {
-	return GetComponent<IDComponent>();
+	return GetComponent<IDComponent>().ID;
+}
+
+entt::entity Entity::GetHandle()
+{
+	return m_EntityHandle;
 }

@@ -59,7 +59,7 @@ MainDockSpace::MainDockSpace()
 	m_ShowLandscapeToolbar = false;
 	m_ShowFoliageToolbar = false;
 	m_ShowMultiplayerToolbar = false;
-	m_ShowSaveOpenToolbar = false;
+	m_ShowSaveOpenToolbar = true;
 	m_ShowTargetPlatformToolbar = false;
 
 	m_ContentExplorer = nullptr;
@@ -81,6 +81,9 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
 
+	Settings::SetDefaultBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
+	Settings::SetDefaultBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
+
 	m_ShowViewport = Settings::GetBool("Windows", "Viewport");
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
 	m_ShowEditorPreferences = Settings::GetBool("Windows", "EditorPreferences");
@@ -90,6 +93,9 @@ void MainDockSpace::OnAttach()
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierarchy = Settings::GetBool("Windows", "Hierarchy");
+
+	m_ShowPlayPauseToolbar = Settings::GetBool("Toolbars", "PlayPause");
+	m_ShowSaveOpenToolbar = Settings::GetBool("Toolbars", "SaveOpen");
 
 	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
@@ -133,6 +139,9 @@ void MainDockSpace::OnDetach()
 	Settings::SetBool("Windows", "Hierarchy", m_ShowHierarchy);
 	Settings::SetBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetBool("Windows", "ErrorList", m_ShowErrorList);
+
+	Settings::SetBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
+	Settings::SetBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
 	Settings::SaveSettings();
 }
@@ -293,13 +302,13 @@ void MainDockSpace::OnImGuiRender()
 		if (ImGui::BeginMenu("Tools"))
 		{
 			//TODO: create a toolbar for these tools
-			ImGui::MenuItem(ICON_FA_PLAY" Play", "", &m_ShowPlayPauseToolbar); //TODO: create a play/pause tool
+			ImGui::MenuItem(ICON_FA_PLAY" Play", "", &m_ShowPlayPauseToolbar);
 			ImGui::MenuItem(ICON_FA_LIGHTBULB" Lights", "", &m_ShowLightsToolbar, false); //TODO: create a lights tool
 			ImGui::MenuItem(ICON_FA_VECTOR_SQUARE" Volumes", "", &m_ShowVolumesToolbar, false); //TODO: Create a Volumes tool e.g. blocking volumes
 			ImGui::MenuItem(ICON_FA_MOUNTAIN" Landscape", "", &m_ShowLandscapeToolbar, false); //TODO: create landscape tool
 			ImGui::MenuItem(ICON_FA_SEEDLING" Foliage", "", &m_ShowFoliageToolbar, false); //TODO: create a foliage tool
 			ImGui::MenuItem(ICON_FA_NETWORK_WIRED" Multiplayer", "", &m_ShowMultiplayerToolbar, false); //TODO: Create multiplayer tool
-			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", &m_ShowSaveOpenToolbar, false); //TODO: Create Save/openTool
+			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", &m_ShowSaveOpenToolbar); //TODO: Create Save/openTool
 			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
@@ -314,13 +323,30 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::EndMenu();
 		}
 
+		//Toolbars------------------------------------------------------------------------------------------------------------
+		int numberToolbarsOpen = 0;
+		numberToolbarsOpen += m_ShowPlayPauseToolbar;
+		numberToolbarsOpen += m_ShowSaveOpenToolbar;
+
+		ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_MenuBarBg]);
 		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
-		ImGui::Separator();
 
 		if (m_ShowPlayPauseToolbar)
 		{
-			PlayPauseToolbar::Render();
+			ImGui::Separator();
+			m_PlayPauseToolbar.Render();
 		}
+
+		if (m_ShowSaveOpenToolbar)
+		{
+			ImGui::Separator();
+			m_SaveOpenToolbar.Render();
+		}
+
+		ImGui::PopStyleColor();
+
+		if (numberToolbarsOpen > 0)
+			ImGui::Separator();
 
 		ImGui::EndMenuBar();
 	}
@@ -342,18 +368,6 @@ void MainDockSpace::OnImGuiRender()
 	}
 
 	ImGui::End();
-
-	//Toolbars------------------------------------------------------------------------------------------------------------
-
-	//if (ImGui::Begin("Toolbar", nullptr, ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse))
-	//{
-	//	if (m_ShowPlayPauseToolbar)
-	//	{
-	//		PlayPauseToolbar::Render();
-	//	}
-	//}
-
-	//ImGui::End();
 }
 
 
@@ -372,7 +386,7 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	SceneManager::ChangeScene(std::filesystem::path(data.DefaultScene));
+	SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)

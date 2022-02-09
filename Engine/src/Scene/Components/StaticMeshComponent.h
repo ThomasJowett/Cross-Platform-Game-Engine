@@ -6,18 +6,19 @@
 
 struct StaticMeshComponent
 {
-	Mesh Geometry;
+	Mesh mesh;
 	Material material;
 
 	StaticMeshComponent() = default;
 	StaticMeshComponent(const StaticMeshComponent&) = default;
 	StaticMeshComponent(const Mesh& mesh, const Material& material)
-		:Geometry(mesh),material(material) {}
-
+		:mesh(mesh),material(material) {}
+private:
+	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Mesh", Geometry));
+		archive(cereal::make_nvp("Mesh", mesh));
 		archive(cereal::make_nvp("Material", material));
 	}
 };

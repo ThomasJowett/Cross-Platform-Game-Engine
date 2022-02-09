@@ -58,21 +58,21 @@ void ProjectSettingsPanel::ReadProjectFile()
 
 	file.close();
 
-	for (int i = 0; i < m_ProjectData.DefaultScene.length(); i++)
+	for (int i = 0; i < m_ProjectData.defaultScene.length(); i++)
 	{
-		m_DefaultSceneBuffer[i] = m_ProjectData.DefaultScene[i];
+		m_DefaultSceneBuffer[i] = m_ProjectData.defaultScene[i];
 	}
 
-	for (int i = 0; i < m_ProjectData.Description.length(); i++)
+	for (int i = 0; i < m_ProjectData.description.length(); i++)
 	{
-		m_DescriptionBuffer[i] = m_ProjectData.Description[i];
+		m_DescriptionBuffer[i] = m_ProjectData.description[i];
 	}
 }
 
 void ProjectSettingsPanel::SaveProjectFile()
 {
-	m_ProjectData.DefaultScene = m_DefaultSceneBuffer;
-	m_ProjectData.Description = m_DescriptionBuffer;
+	m_ProjectData.defaultScene = m_DefaultSceneBuffer;
+	m_ProjectData.description = m_DescriptionBuffer;
 
 	const std::filesystem::path& projectFile = Application::GetOpenDocument();
 	std::ofstream file(projectFile);

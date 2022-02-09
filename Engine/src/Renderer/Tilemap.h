@@ -15,9 +15,9 @@ class Tileset
 {
 	struct Tile
 	{
-		int Id = -1;
-		std::string Type;
-		double Probability = 1.0f;
+		int id = -1;
+		std::string type;
+		double probability = 1.0f;
 
 	};
 public:
@@ -97,10 +97,51 @@ class Tilemap
 		void Offset(float vertical, float horizontal);
 	};
 
+	struct Object
+	{
+		uint32_t id;
+		std::string name;
+		std::string type;
+		bool visible = true;
+		Vector2f position;
+		float rotation;
+	};
+
+	struct RectangleObject : public Object
+	{
+		float m_Width;
+		float m_Height;
+	};
+
+	struct EllipseObject : public Object
+	{
+
+	};
+
+	struct PolygonObject : public Object
+	{
+		std::vector<Vector2f> m_Points;
+	};
+
+	struct TextObject : public Object
+	{
+		std::string m_Text;
+		bool m_WordWrap;
+		Colour m_Colour;
+	};
+
+	struct Tile : public Object
+	{
+		uint32_t m_Gid;
+	};
+
 public:
 	Tilemap() = default;
 	bool Load(std::filesystem::path);
 	bool Save(const std::filesystem::path& filepath) const;
+	bool Save() const;
+
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 
 private:
 	std::string m_Name;
@@ -125,13 +166,17 @@ private:
 	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets;
 
 	std::vector<Layer> m_Layers;
+	std::vector<Object> m_Objects;
 
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		Save(m_Filepath);
-		std::string relativePath = FileUtils::relativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
+		if (!m_Filepath.empty())
+		{
+			Save(m_Filepath);
+		}
+		std::string relativePath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 	}
 
@@ -141,7 +186,10 @@ private:
 		std::string relativePath;
 		archive(cereal::make_nvp("Filepath", relativePath));
 
-		m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
-		Load(m_Filepath);
+		if (!relativePath.empty())
+		{
+			m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+			Load(m_Filepath);
+		}
 	}
 };

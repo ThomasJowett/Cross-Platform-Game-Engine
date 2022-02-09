@@ -3,6 +3,9 @@
 #include "Core/Layer.h"
 #include "Engine.h"
 
+#include "Toolbars/PlayPauseToolbar.h"
+#include "Toolbars/SaveOpenToolbar.h"
+
 class ContentExplorerPanel;
 
 class MainDockSpace :
@@ -55,4 +58,7 @@ private:
 	ContentExplorerPanel* m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
+
+	PlayPauseToolbar m_PlayPauseToolbar;
+	SaveOpenToolbar m_SaveOpenToolbar;
 };
