@@ -135,10 +135,36 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
-		if(component.texture)
+		if (component.texture)
 			pSpriteElement->SetAttribute("Texture", SerializationUtils::RelativePath(component.texture->GetFilepath()).c_str());
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
+	}
+
+	if (entity.HasComponent<AnimatedSpriteComponent>())
+	{
+		AnimatedSpriteComponent& component = entity.GetComponent<AnimatedSpriteComponent>();
+
+		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
+		tinyxml2::XMLElement* pAnimatorElement = pAnimatedSpriteElement->InsertNewChildElement("Animator");
+
+		if (component.animator.GetSpriteSheet()->GetTexture())
+			pAnimatorElement->SetAttribute("Texture",
+				SerializationUtils::RelativePath(component.animator.GetSpriteSheet()->GetTexture()->GetFilepath()).c_str());
+
+		pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
+		pAnimatorElement->SetAttribute("SpriteHeight", component.animator.GetSpriteSheet()->GetSpriteHeight());
+
+		for (Animation& animation : component.animator.GetAnimations())
+		{
+			tinyxml2::XMLElement* pAnimationElement = pAnimatorElement->InsertNewChildElement("Animation");
+			pAnimationElement->SetAttribute("Name", animation.GetName().c_str());
+			pAnimationElement->SetAttribute("StartFrame", animation.GetStartFrame());
+			pAnimationElement->SetAttribute("FrameCount", animation.GetFrameCount());
+			pAnimationElement->SetAttribute("FrameTime", animation.GetFrameTime());
+		}
+
+		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -386,7 +412,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
 
 		const char* textureRelativePath = pSpriteElement->Attribute("Texture");
-		if(textureRelativePath != nullptr)
+		if (textureRelativePath != nullptr)
 			component.texture = Texture2D::Create(SerializationUtils::AbsolutePath(textureRelativePath));
 	}
 

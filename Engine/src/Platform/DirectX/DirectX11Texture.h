@@ -22,6 +22,7 @@ public:
 
 	virtual uint32_t GetRendererID() const override;
 
+	virtual void Reload() override;
 
 	virtual bool operator==(const Texture& other) const;
 private:

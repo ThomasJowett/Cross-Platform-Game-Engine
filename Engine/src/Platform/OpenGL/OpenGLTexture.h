@@ -23,12 +23,16 @@ public:
 
 	virtual uint32_t GetRendererID() const override;
 
+	virtual void Reload() override;
+
 	virtual bool operator==(const Texture& other) const override;
 private:
 	// sets the texture to be the null texture
 	void NullTexture();
 
 	bool LoadTextureFromFile();
+
+	void SetFilteringAndWrappingMethod();
 	std::filesystem::path m_Path;
 	uint32_t m_Width, m_Height;
 

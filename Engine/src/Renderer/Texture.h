@@ -11,6 +11,19 @@
 class Texture
 {
 public:
+	enum class FilterMethod
+	{
+		Linear,
+		Nearest
+	};
+
+	enum class WrapMethod
+	{
+		Clamp,
+		Mirror,
+		Repeat
+	};
+
 	virtual ~Texture() = default;
 	virtual uint32_t GetWidth() const = 0;
 	virtual uint32_t GetHeight() const = 0;
@@ -24,7 +37,18 @@ public:
 
 	virtual uint32_t GetRendererID() const = 0;
 
+	virtual void Reload() = 0;
+
+	FilterMethod GetFilterMethod() { return m_FilterMethod; }
+	void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }	
+	
+	WrapMethod GetWrapMethod() { return m_WrapMethod; }
+	void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
+
 	virtual bool operator==(const Texture& other) const = 0;
+
+	FilterMethod m_FilterMethod = FilterMethod::Linear;
+	WrapMethod m_WrapMethod = WrapMethod::Repeat;
 };
 
 class Texture2D :public Texture
