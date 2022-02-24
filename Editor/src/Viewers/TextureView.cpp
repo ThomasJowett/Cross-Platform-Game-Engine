@@ -20,72 +20,58 @@ void TextureView::OnImGuiRender()
 
 	ImVec2 displaySize = ImVec2((float)m_Texture->GetWidth() * m_Zoom, (float)m_Texture->GetHeight() * m_Zoom);
 
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ImGuiWindowFlags_AlwaysHorizontalScrollbar))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
-		ImGuiTableFlags table_flags =
-			ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY | ImGuiTableFlags_Borders;
+		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());
+		ImGui::Text(size.c_str());
+		ImGui::Text(m_Texture->GetFilepath().string().c_str());
 
-		if (ImGui::BeginTable("Texture Details", 2, table_flags))
+		const bool is_selected = false;
+		bool edited = false;
+		if (ImGui::BeginCombo("Wrap Method", GetWrapMethodName(m_Texture->GetWrapMethod())))
 		{
-			ImGui::TableSetupColumn("Texture",
-				ImGuiTableColumnFlags_NoHeaderLabel |
-				ImGuiTableColumnFlags_WidthStretch);
-
-			ImGui::TableSetupColumn("Details",
-				ImGuiTableColumnFlags_WidthFixed,
-				250.0f);
-
-			ImGui::TableNextRow();
-			ImGui::TableNextColumn();
-			ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 4.0f, "%.2f");
-			ImGui::Image(m_Texture, displaySize);
-			ImGui::TableNextColumn();
-
-			std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());
-			ImGui::Text(size.c_str());
-			ImGui::Text(m_Texture->GetFilepath().string().c_str());
-
-			const bool is_selected = false;
-			bool edited = false;
-			if (ImGui::BeginCombo("Wrap Method", GetWrapMethodName(m_Texture->GetWrapMethod())))
+			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Clamp), is_selected))
 			{
-				if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Clamp), is_selected))
-				{
-					m_Texture->SetWrapMethod(Texture::WrapMethod::Clamp);
-					edited = true;
-				}
-				if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Mirror), is_selected))
-				{
-					m_Texture->SetWrapMethod(Texture::WrapMethod::Mirror);
-					edited = true;
-				}
-				if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Repeat), is_selected))
-				{
-					m_Texture->SetWrapMethod(Texture::WrapMethod::Repeat);
-					edited = true;
-				}
-				ImGui::EndCombo();
+				m_Texture->SetWrapMethod(Texture::WrapMethod::Clamp);
+				edited = true;
 			}
-			if (ImGui::BeginCombo("Filter Method", GetFilterMethodName(m_Texture->GetFilterMethod())))
+			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Mirror), is_selected))
 			{
-				if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Linear), is_selected))
-				{
-					m_Texture->SetFilterMethod(Texture::FilterMethod::Linear);
-					edited = true;
-				}
-				if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Nearest), is_selected))
-				{
-					m_Texture->SetFilterMethod(Texture::FilterMethod::Nearest);
-					edited = true;
-				}
-				ImGui::EndCombo();
+				m_Texture->SetWrapMethod(Texture::WrapMethod::Mirror);
+				edited = true;
 			}
-			if (edited)
+			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Repeat), is_selected))
 			{
-				m_Texture->Reload();
+				m_Texture->SetWrapMethod(Texture::WrapMethod::Repeat);
+				edited = true;
 			}
-			ImGui::EndTable();
+			ImGui::EndCombo();
 		}
+		if (ImGui::BeginCombo("Filter Method", GetFilterMethodName(m_Texture->GetFilterMethod())))
+		{
+			if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Linear), is_selected))
+			{
+				m_Texture->SetFilterMethod(Texture::FilterMethod::Linear);
+				edited = true;
+			}
+			if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Nearest), is_selected))
+			{
+				m_Texture->SetFilterMethod(Texture::FilterMethod::Nearest);
+				edited = true;
+			}
+			ImGui::EndCombo();
+		}
+		if (edited)
+		{
+			m_Texture->Reload();
+		}
+
+		ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 4.0f, "%.2f");
+
+		ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar;
+		ImGui::BeginChild("Image", ImGui::GetContentRegionAvail(), false, window_flags_image);
+		ImGui::Image(m_Texture, displaySize);
+		ImGui::EndChild();
 	}
 	ImGui::End();
 }
