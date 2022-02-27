@@ -112,7 +112,7 @@ void Application::Run()
 		accumulator += frameTime;
 
 		// On Fixed update
-		while (accumulator >= deltaTime)
+		while (accumulator >= m_FixedUpdateInterval)
 		{
 			PROFILE_SCOPE("Layer Stack Fixed Update");
 
@@ -127,7 +127,7 @@ void Application::Run()
 
 				SceneManager::FixedUpdate();
 			}
-			accumulator -= deltaTime;
+			accumulator -= m_FixedUpdateInterval;
 		}
 
 		// On Update

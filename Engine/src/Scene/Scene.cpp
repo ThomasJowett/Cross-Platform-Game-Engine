@@ -410,7 +410,7 @@ void Scene::OnFixedUpdate()
 	const int32_t positionIterations = 2;
 	if (m_Box2DWorld != nullptr)
 	{
-		m_Box2DWorld->Step(0.01f, 6, 2);
+		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), 6, 2);
 
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
