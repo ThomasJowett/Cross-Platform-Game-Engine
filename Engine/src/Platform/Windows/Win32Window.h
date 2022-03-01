@@ -29,6 +29,7 @@ public:
 
 	virtual void SetIcon(const std::filesystem::path& path) override;
 	virtual void SetCursor(Cursors cursorType) override;
+	virtual void SetTitle(const char* title) override;
 
 	virtual void DisableCursor() override;
 	virtual void EnableCursor() override;
