@@ -14,6 +14,7 @@
 #include "BoxCollider2DComponent.h"
 #include "CircleCollider2DComponent.h"
 #include "CircleRendererComponent.h"
+#include "HierarchyComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -30,5 +31,6 @@ TilemapComponent,			\
 RigidBody2DComponent,		\
 BoxCollider2DComponent,		\
 CircleCollider2DComponent,	\
-CircleRendererComponent		\
+CircleRendererComponent,	\
+HierarchyComponent			\
 

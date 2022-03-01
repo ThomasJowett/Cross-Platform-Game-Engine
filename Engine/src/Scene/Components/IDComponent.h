@@ -2,6 +2,8 @@
 
 #include "Core/UUID.h"
 
+#include "cereal/cereal.hpp"
+
 struct IDComponent
 {
 	Uuid ID;

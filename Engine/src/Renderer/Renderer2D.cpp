@@ -398,7 +398,7 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
-	DrawQuad(position, size, subtexture, colour);
+	DrawQuad(position, size, subtexture, 0.0f, colour);
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 

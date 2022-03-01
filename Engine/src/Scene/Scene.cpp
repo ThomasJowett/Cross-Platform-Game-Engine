@@ -19,6 +19,7 @@
 
 #include "Box2D/Box2D.h"
 #include "SceneSerializer.h"
+#include "SceneGraph.h"
 
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
@@ -86,6 +87,7 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
 	entity.AddComponent<TransformComponent>();
+	entity.AddComponent<HierarchyComponent>();
 	m_Dirty = true;
 	return entity;
 }
@@ -215,6 +217,7 @@ void Scene::OnRuntimeStop()
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
+	SceneGraph::Traverse(m_Registry);
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
@@ -224,28 +227,28 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : spriteGroup)
 	{
 		auto [transformComp, spriteComp] = spriteGroup.get<TransformComponent, SpriteComponent>(entity);
-		Renderer2D::DrawSprite(transformComp.GetMatrix(), spriteComp, (int)entity);
+		Renderer2D::DrawSprite(transformComp.GetWorldMatrix(), spriteComp, (int)entity);
 	}
 
 	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
 	for (auto entity : animatedSpriteGroup)
 	{
 		auto [transformComp, spriteComp] = animatedSpriteGroup.get<TransformComponent, AnimatedSpriteComponent>(entity);
-		Renderer2D::DrawQuad(transformComp.GetMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
+		Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
 	}
 
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
 	for (auto entity : circleGroup)
 	{
 		auto [transformComp, circleComp] = circleGroup.get<TransformComponent, CircleRendererComponent>(entity);
-		Renderer2D::DrawCircle(transformComp.GetMatrix(), circleComp, (int)entity);
+		Renderer2D::DrawCircle(transformComp.GetWorldMatrix(), circleComp, (int)entity);
 	}
 
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 	for (auto entity : staticMeshGroup)
 	{
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get<TransformComponent, StaticMeshComponent>(entity);
-		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetMatrix(), (int)entity);
+		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	Renderer::EndScene();
@@ -258,6 +261,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 void Scene::Render(Ref<FrameBuffer> renderTarget)
 {
+	SceneGraph::Traverse(m_Registry);
 	Matrix4x4 view;
 	Matrix4x4 projection;
 
@@ -301,19 +305,19 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 //	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
 //		[](const auto& sprite, const auto& transformComp)
 //		{
-//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.tint);
+//			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), sprite.tint);
 //		});
 //
 //	m_Registry.group<AnimatedSpriteComponent>(entt::get<TransformComponent>).each(
 //		[](const auto& animatedSprite, const auto& transformComp)
 //		{
-//			Renderer2D::DrawQuad(transformComp.GetMatrix(), sprite.animator.GetSpriteSheet(), sprite.tint);
+//			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), sprite.animator.GetSpriteSheet(), sprite.tint);
 //		});
 //
 //	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
 //		[](const auto& mesh, const auto& transformComp)
 //		{
-//			Renderer::Submit(mesh.material, mesh.mesh, transformComp.GetMatrix());
+//			Renderer::Submit(mesh.material, mesh.mesh, transformComp.GetWorldMatrix());
 //		});
 //
 //	Renderer::EndScene();
@@ -549,3 +553,5 @@ void Scene::SetFilepath(std::filesystem::path filepath)
 		}
 	}
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
