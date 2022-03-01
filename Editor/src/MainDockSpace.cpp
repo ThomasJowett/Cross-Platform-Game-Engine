@@ -35,6 +35,8 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
+#include "RuntimeExporter.h"
+
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
 MainDockSpace::MainDockSpace()
@@ -239,6 +241,17 @@ void MainDockSpace::OnImGuiRender()
 			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
 			{
 				SceneManager::CurrentScene()->Save(false);
+			}
+			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
+			{
+				
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
+				if (exportLocation.has_value())
+				{
+					RuntimeExporter exporter;
+					exporter.Init(exportLocation.value());
+					exporter.ExportGame();
+				}
 			}
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();

@@ -47,7 +47,7 @@ public:
 
 	virtual bool operator==(const Texture& other) const = 0;
 
-	FilterMethod m_FilterMethod = FilterMethod::Linear;
+	FilterMethod m_FilterMethod = FilterMethod::Nearest;
 	WrapMethod m_WrapMethod = WrapMethod::Repeat;
 };
 

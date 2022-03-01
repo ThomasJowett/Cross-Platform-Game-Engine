@@ -234,6 +234,11 @@ void Win32Window::SetCursor(Cursors cursorType)
 	//TODO: set cursor
 }
 
+void Win32Window::SetTitle(const char* title)
+{
+	SetWindowTextA(m_Window, title);
+}
+
 void Win32Window::DisableCursor()
 {
 	//TODO: disable cursor

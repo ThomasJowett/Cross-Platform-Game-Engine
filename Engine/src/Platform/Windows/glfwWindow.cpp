@@ -111,6 +111,11 @@ void glfwWindow::SetCursor(Cursors cursorType)
 	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
 }
 
+void glfwWindow::SetTitle(const char* title) 
+{
+	glfwSetWindowTitle(m_Window, title);
+}
+
 void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)

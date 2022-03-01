@@ -347,3 +347,83 @@ project "Editor"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
+project "Runtime"
+	location "Runtime"
+	kind "ConsoleApp"
+	cppdialect "C++17"
+	language "C++"
+
+	targetdir("bin/" .. outputdir .. "/%{prj.name}")
+	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"%{prj.name}/src/**.h",
+		"%{prj.name}/src/**.cpp"
+	}
+
+	includedirs
+	{
+		"{prj.name}/src",
+		"Engine/src",
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include"
+	}
+
+	links
+	{
+		"Engine"
+	}
+
+	filter "system:windows"
+		staticruntime "Off"
+		systemversion "latest"
+
+		defines
+		{
+			"__WINDOWS__"
+		}
+		
+	filter "system:linux"
+		links
+		{
+			"GLFW",
+			"GLAD",
+			"ImGui",
+			"TinyXml2",
+			"LiquidFun",
+			"Xrandr",
+			"Xi",
+			"GL",
+			"X11",
+			"dl",
+			"pthread",
+			"stdc++fs"
+		}
+		
+		defines
+		{
+			"__linux__"
+		}
+
+	filter "configurations:Debug"
+		defines 
+		{
+			"DEBUG",
+			"ENABLE_ASSERTS"
+		}
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		defines "RELEASE"
+		runtime "Release"
+		optimize "On"
+		symbols "Off"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"

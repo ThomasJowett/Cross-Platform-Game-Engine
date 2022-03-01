@@ -331,9 +331,9 @@ void Scene::OnUpdate(float deltaTime)
 {
 	m_IsUpdating = true;
 	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
-	{
-		animatedSpriteComp.animator.Animate(deltaTime);
-	});
+		{
+			animatedSpriteComp.animator.Animate(deltaTime);
+		});
 
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
@@ -465,10 +465,20 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 
 	if (!std::filesystem::exists(finalPath))
 	{
-		if (!std::filesystem::exists(filepath.remove_filename()))
+		std::filesystem::path filepathStem = finalPath;
+		filepathStem.remove_filename();
+		if (!std::filesystem::exists(filepathStem))
 		{
 			CLIENT_INFO("Creating Directory {0}", filepath);
-			std::filesystem::create_directory(filepath.remove_filename());
+			try
+			{
+				std::filesystem::create_directories(filepathStem);
+			}
+			catch (const std::exception& e)
+			{
+				std::cerr << e.what() << '\n';
+			}
+
 		}
 	}
 
