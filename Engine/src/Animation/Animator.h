@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Animation.h"
-#include <cereal/types/vector.hpp> 
+#include <cereal/types/vector.hpp>
+#include "Utilities/FileUtils.h"
+#include "Core/Application.h"
 
 class Animator
 {

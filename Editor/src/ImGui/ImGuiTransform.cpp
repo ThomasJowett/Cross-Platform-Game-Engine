@@ -8,7 +8,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	bool edited = false;
 
 	ImGui::Text("Position");
-	float width = ImGui::GetContentRegionAvailWidth();
+	float width = ImGui::GetContentRegionAvail().x;
 
 	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
 	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };

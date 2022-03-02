@@ -189,7 +189,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					}
 					ImGui::TableNextRow();
 					ImGui::TableSetColumnIndex(0);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string nameStr = "##name" + std::to_string(index);
 					ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll);
 					animation.SetName(inputBuffer);
@@ -199,7 +199,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					float frameTime = animation.GetFrameTime();
 
 					ImGui::TableSetColumnIndex(1);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string starFrameStr = "##startFrame" + std::to_string(index);
 					if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
 					{
@@ -209,7 +209,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					}
 
 					ImGui::TableSetColumnIndex(2);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string frameCountStr = "##frameCount" + std::to_string(index);
 					if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
 					{
@@ -219,7 +219,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					}
 
 					ImGui::TableSetColumnIndex(3);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvailWidth());
+					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string frameTimeStr = "##frameTime" + std::to_string(index);
 					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
 						animation.SetFrameTime(frameTime);
@@ -561,7 +561,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::TextColored({ 245,0,0,255 }, "X");
 			ImGui::SameLine();
 
-			float width = ImGui::GetContentRegionAvailWidth();
+			float width = ImGui::GetContentRegionAvail().x;
 
 			ImGui::SetNextItemWidth(width / 2 - 20);
 			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
@@ -628,7 +628,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::TextColored({ 245,0,0,255 }, "X");
 			ImGui::SameLine();
 
-			float width = ImGui::GetContentRegionAvailWidth();
+			float width = ImGui::GetContentRegionAvail().x;
 
 			ImGui::SetNextItemWidth(width / 2 - 20);
 			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
@@ -677,7 +677,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 void PropertiesPanel::DrawAddComponent(Entity entity)
 {
 	ImGui::Dummy({ 0,0 });
-	float width = ImGui::GetContentRegionAvailWidth();
+	float width = ImGui::GetContentRegionAvail().x;
 	ImGui::SameLine((width / 2.0f) - (ImGui::CalcTextSize("Add Component").x / 2.0f));
 	if (ImGui::Button("Add Component"))
 	{
