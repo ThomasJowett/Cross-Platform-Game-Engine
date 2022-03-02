@@ -91,18 +91,18 @@ void PropertiesPanel::OnImGuiRender()
 
 void PropertiesPanel::DrawComponents(Entity entity)
 {
-	//Tag------------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<TagComponent>())
+	//Name------------------------------------------------------------------------------------------------------------------
+	if (entity.HasComponent<NameComponent>())
 	{
-		auto& tag = entity.GetComponent<TagComponent>().tag;
+		auto& name = entity.GetComponent<NameComponent>().name;
 
 		char buffer[256];
 		memset(buffer, 0, sizeof(buffer));
-		std::strncpy(buffer, tag.c_str(), sizeof(buffer));
+		std::strncpy(buffer, name.c_str(), sizeof(buffer));
 
-		if (ImGui::InputText("##Tag", buffer, sizeof(buffer)))
+		if (ImGui::InputText("##Name", buffer, sizeof(buffer)))
 		{
-			tag = std::string(buffer);
+			name = std::string(buffer);
 			SceneManager::CurrentScene()->MakeDirty();
 		}
 	}

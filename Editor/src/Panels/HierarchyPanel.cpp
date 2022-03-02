@@ -213,7 +213,7 @@ void HierarchyPanel::OnImGuiRender()
 			{
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
 					{
-						auto& name = SceneManager::CurrentScene()->GetRegistry().get<TagComponent>(entityID);
+						auto& name = SceneManager::CurrentScene()->GetRegistry().get<NameComponent>(entityID);
 						Entity entity{ entityID, SceneManager::CurrentScene(),  name };
 						DrawNode(entity);
 					});
@@ -234,11 +234,11 @@ void HierarchyPanel::SetSelectedEntity(Entity entity)
 
 void HierarchyPanel::DrawNode(Entity entity)
 {
-	auto& tag = entity.GetComponent<TagComponent>().tag;
+	auto& name = entity.GetComponent<NameComponent>().name;
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
-	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
 	if (ImGui::IsItemClicked())
 	{
@@ -246,7 +246,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 	}
 
 	bool entityDeleted = false;
-	if (ImGui::BeginPopupContextItem(std::string(tag.c_str() + std::to_string((uint32_t)entity)).c_str()))
+	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
 		if (ImGui::MenuItem("Delete Entity"))
 		{

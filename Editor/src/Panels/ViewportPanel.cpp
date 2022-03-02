@@ -265,7 +265,7 @@ void ViewportPanel::OnImGuiRender()
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
 					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
-					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().c_str());
+					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetName().c_str());
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}

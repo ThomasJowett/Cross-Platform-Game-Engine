@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IDComponent.h"
-#include "TagComponent.h"
+#include "NameComponent.h"
 #include "TransformComponent.h"
 #include "CameraComponent.h"
 #include "SpriteComponent.h"
@@ -19,7 +19,7 @@
 //List of components that can be serialized
 #define COMPONENTS			\
 IDComponent,				\
-TagComponent,				\
+NameComponent,				\
 TransformComponent,			\
 CameraComponent,			\
 SpriteComponent,			\

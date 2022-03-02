@@ -5,7 +5,7 @@
 #include "EnTT/entt.hpp"
 
 #include "Components/TransformComponent.h"
-#include "Components/TagComponent.h"
+#include "Components/NameComponent.h"
 #include "Components/IDComponent.h"
 
 class Entity
@@ -62,6 +62,8 @@ public:
 		return m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
+	void AddChild(Entity child);
+
 	/**
 	 * Get a reference to a Component of this Entity
 	 * 
@@ -78,14 +80,17 @@ public:
 	// Get the transform component
 	TransformComponent& GetTransform();
 
-	// Get the tag
-	std::string& GetTag();
+	// Get the name
+	std::string& GetName();
 
 	// Get the ID component
 	Uuid GetID();
 
 	// Get the entt handle
 	entt::entity GetHandle();
+
+	// Get the scene this entity belongs to
+	Scene* GetScene();
 
 	/**
 	 * Find if this Entity has a Component of certain type

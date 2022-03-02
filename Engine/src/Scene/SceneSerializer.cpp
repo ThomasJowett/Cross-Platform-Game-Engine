@@ -98,7 +98,7 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity)
 {
-	pElement->SetAttribute("Name", entity.GetTag().c_str());
+	pElement->SetAttribute("Name", entity.GetName().c_str());
 	pElement->SetAttribute("ID", entity.GetID());
 
 	TransformComponent& transformcomp = entity.GetTransform();

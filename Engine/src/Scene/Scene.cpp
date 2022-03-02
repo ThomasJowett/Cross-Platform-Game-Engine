@@ -85,7 +85,7 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 {
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<IDComponent>(id);
-	entity.AddComponent<TagComponent>(name.empty() ? "Unnamed Entity" : name);
+	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
 	entity.AddComponent<TransformComponent>();
 	entity.AddComponent<HierarchyComponent>();
 	m_Dirty = true;
@@ -108,7 +108,7 @@ bool Scene::RemoveEntity(const Entity& entity)
 
 void Scene::DuplicateEntity(Entity entity)
 {
-	std::string name = entity.GetTag();
+	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
 
 	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
