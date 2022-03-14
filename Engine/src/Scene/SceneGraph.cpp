@@ -10,7 +10,7 @@ void SceneGraph::Traverse(entt::registry& registry)
 
 	for (auto entity : nonHierarchyView)
 	{
-		registry.get<TransformComponent>(entity);
+		registry.get<TransformComponent>(entity).SetWorldMatrix(Matrix4x4());
 	}
 
 	registry.view<TransformComponent, HierarchyComponent>().each(

@@ -87,7 +87,6 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
 	entity.AddComponent<TransformComponent>();
-	entity.AddComponent<HierarchyComponent>();
 	m_Dirty = true;
 	return entity;
 }
