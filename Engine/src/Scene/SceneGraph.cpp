@@ -24,8 +24,37 @@ void SceneGraph::Traverse(entt::registry& registry)
 		});
 }
 
-void SceneGraph::Reparent()
+void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry)
 {
+	HierarchyComponent& hierarchyComp = entity.GetOrAddComponent<HierarchyComponent>();
+
+	hierarchyComp.parent = entt::null;
+	hierarchyComp.nextSibling = entt::null;
+	hierarchyComp.previousSibling = entt::null;
+
+	if(parent.GetHandle() != entt::null)
+	{
+		hierarchyComp.parent = parent.GetHandle();
+
+		HierarchyComponent& parentHierarchyComp = parent.GetOrAddComponent<HierarchyComponent>();
+		if(parentHierarchyComp.firstChild == entt::null)
+		{
+			parentHierarchyComp.firstChild = entity.GetHandle();
+		}
+		else
+		{
+			entt::entity previousSibling = parentHierarchyComp.firstChild;
+			HierarchyComponent* currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
+			while (currentHierachyComp != nullptr && currentHierachyComp->nextSibling != entt::null)
+			{
+				previousSibling = currentHierachyComp->nextSibling;
+				currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
+			}
+			
+			currentHierachyComp->nextSibling = entity.GetHandle();
+			hierarchyComp.previousSibling = previousSibling;
+		}
+	}
 }
 
 void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyComponent* hierarchyComp, entt::registry& registry)

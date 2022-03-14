@@ -77,6 +77,18 @@ public:
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}
 
+	/**
+	 * Get a reference to a Component of this Entity creating if needed
+	 * @tparam T 
+	 * @return T& 
+	 */
+	template<typename T, typename... Args>
+	T& GetOrAddComponent(Args&&... args)
+	{
+		m_Scene->MakeDirty();
+		return m_Scene->GetRegistry().get_or_emplace<T>(m_EntityHandle, std::forward<args>(args)...);
+	}
+
 	// Get the transform component
 	TransformComponent& GetTransform();
 

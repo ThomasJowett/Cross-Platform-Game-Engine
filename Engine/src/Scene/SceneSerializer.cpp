@@ -332,6 +332,20 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.colour);
 	}
+
+	if (entity.HasComponent<HierarchyComponent>())
+	{
+		HierarchyComponent& component = entity.GetComponent<HierarchyComponent>();
+
+		tinyxml2::XMLElement* pChildElement = pElement->InsertNewChildElement("Entity");
+
+		if (component.firstChild != entt::null)
+		{
+			//Entity child = { component.firstChild, entity.GetScene() };
+
+			//SerializeEntity(pChildElement, child);
+		}
+	}
 }
 
 Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement)

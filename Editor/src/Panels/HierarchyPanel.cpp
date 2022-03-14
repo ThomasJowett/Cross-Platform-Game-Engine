@@ -7,6 +7,7 @@
 
 #include "Utilities/GeometryGenerator.h"
 #include "Scene/SceneSerializer.h"
+#include "Scene/SceneGraph.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
@@ -234,11 +235,32 @@ void HierarchyPanel::SetSelectedEntity(Entity entity)
 
 void HierarchyPanel::DrawNode(Entity entity)
 {
-	auto& name = entity.GetComponent<NameComponent>().name;
+	std::string& name = entity.GetName();
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
+
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
+
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+	{
+		ImGui::SetDragDropPayload("Entity", &entity, sizeof(Entity));
+		ImGui::Text(name.c_str());
+		ImGui::EndDragDropSource();
+	}
+
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
+		{
+			Entity* childEntity = (Entity*)payload->Data;
+			if (*childEntity != entity)
+			{
+				SceneGraph::Reparent(*childEntity, entity, SceneManager::CurrentScene()->GetRegistry());
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
 
 	if (ImGui::IsItemClicked())
 	{
