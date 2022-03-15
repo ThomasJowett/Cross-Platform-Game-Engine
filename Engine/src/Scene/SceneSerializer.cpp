@@ -74,15 +74,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				ENGINE_WARN("Loading scene created with a different version of the engine");
 
 		// Entities
-		tinyxml2::XMLElement* pEntityElement = pRoot->FirstChildElement("Entity");
-
-
+		tinyxml2::XMLElement* pEntityElement = pRoot->LastChildElement("Entity");
 
 		while (pEntityElement)
 		{
 			DeserializeEntity(m_Scene, pEntityElement);
-
-			pEntityElement = pEntityElement->NextSiblingElement("Entity");
+			pEntityElement = pEntityElement->PreviousSiblingElement("Entity");
 		}
 
 		return true;
