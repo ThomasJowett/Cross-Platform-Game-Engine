@@ -216,7 +216,11 @@ void HierarchyPanel::OnImGuiRender()
 					{
 						auto& name = SceneManager::CurrentScene()->GetRegistry().get<NameComponent>(entityID);
 						Entity entity{ entityID, SceneManager::CurrentScene(),  name };
-						DrawNode(entity);
+
+						// Only draw a node for root entites, children are drawn recursively
+						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+						if (!hierarchyComp || hierarchyComp->parent == entt::null)
+							DrawNode(entity);
 					});
 
 				ImGui::TreePop();
@@ -236,9 +240,18 @@ void HierarchyPanel::SetSelectedEntity(Entity entity)
 void HierarchyPanel::DrawNode(Entity entity)
 {
 	std::string& name = entity.GetName();
+
+	bool hasChildren = false;
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	if (hierarchyComp != nullptr && hierarchyComp->firstChild != entt::null)
+		hasChildren = true;
+
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
 
+	if (!hasChildren)
+		flags |= ImGuiTreeNodeFlags_Leaf;
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
@@ -262,7 +275,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 		ImGui::EndDragDropTarget();
 	}
 
-	if (ImGui::IsItemClicked())
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		m_SelectedEntity = entity;
 	}
@@ -270,7 +283,15 @@ void HierarchyPanel::DrawNode(Entity entity)
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
-		if (ImGui::MenuItem("Delete Entity"))
+		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+			Cut();
+		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
+			Copy();
+		if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, ImGui::GetClipboardText() != nullptr))
+			Paste();
+		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
+			Duplicate();
+		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
 		{
 			entityDeleted = true;
 		}

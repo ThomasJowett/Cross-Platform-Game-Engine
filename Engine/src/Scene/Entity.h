@@ -24,7 +24,9 @@ public:
 	 * @param scene the entity belongs to
 	 * @param debugName name of the entity used only for debugging
 	 */
-	Entity(entt::entity handle, Scene* scene, const std::string& debugName = "");
+	Entity(entt::entity handle, Scene* scene, const std::string& debugName);
+
+	Entity(entt::entity handle, Scene* scene);
 
 	/**
 	 * Construct a new Entity object from another
@@ -55,6 +57,13 @@ public:
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
+	/**
+	 * Add or replace a component of this entity
+	 * @tparam T 
+	 * @tparam Args 
+	 * @param args 
+	 * @return T& 
+	 */
 	template<typename T, typename... Args>
 	T& AddOrReplaceComponent(Args&&... args)
 	{
@@ -87,6 +96,17 @@ public:
 	{
 		m_Scene->MakeDirty();
 		return m_Scene->GetRegistry().get_or_emplace<T>(m_EntityHandle, std::forward<args>(args)...);
+	}
+
+	/**
+	 * Tries to get the component
+	 * @tparam T 
+	 * @return T* nullptr if component does not exist
+	 */
+	template<typename T>
+	T* TryGetComponent()
+	{
+		return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 	}
 
 	// Get the transform component

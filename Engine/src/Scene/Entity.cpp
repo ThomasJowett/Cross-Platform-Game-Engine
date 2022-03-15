@@ -6,6 +6,12 @@ Entity::Entity(entt::entity handle, Scene* scene, const std::string& name)
 {
 }
 
+Entity::Entity(entt::entity handle, Scene* scene)
+	:m_EntityHandle(handle), m_Scene(scene)
+{
+	m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
+}
+
 TransformComponent& Entity::GetTransform()
 {
 	return GetComponent<TransformComponent>();

@@ -3,10 +3,10 @@
 
 struct HierarchyComponent
 {
-	entt::entity parent;
-	entt::entity firstChild;
-	entt::entity previousSibling;
-	entt::entity nextSibling;
+	entt::entity parent = entt::null;
+	entt::entity firstChild = entt::null;
+	entt::entity previousSibling = entt::null;
+	entt::entity nextSibling = entt::null;
 	bool isActive;
 
 private:
