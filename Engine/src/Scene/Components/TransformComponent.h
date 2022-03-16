@@ -33,6 +33,8 @@ struct TransformComponent
 		m_WorldMatrix = parentMatrix * GetLocalMatrix();
 	}
 
+	const Matrix4x4& GetParentMatrix() const { return m_ParentMatrix; }
+
 private:
 	Matrix4x4 m_WorldMatrix;
 	Matrix4x4 m_ParentMatrix;

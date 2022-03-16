@@ -276,10 +276,8 @@ void ViewportPanel::OnImGuiRender()
 				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
-
-				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.position)
-					* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
-					* Matrix4x4::Scale(transformComp.scale);
+				
+				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
 
 				cameraViewMat.Transpose();
 				cameraProjectionMat.Transpose();
@@ -318,6 +316,11 @@ void ViewportPanel::OnImGuiRender()
 
 				if (ImGuizmo::IsUsing())
 				{
+					transformMat.Transpose();
+					Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp.GetParentMatrix());
+					transformMat = parentMatrix * transformMat;
+					transformMat.Transpose();
+
 					float translation[3], rotation[3], scale[3];
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
