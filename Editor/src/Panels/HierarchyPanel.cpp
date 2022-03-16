@@ -212,6 +212,19 @@ void HierarchyPanel::OnImGuiRender()
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
 			{
+				if (ImGui::BeginDragDropTarget())
+				{
+					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
+					{
+						Entity* childEntity = (Entity*)payload->Data;
+						ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
+
+						SceneGraph::Unparent(*childEntity, SceneManager::CurrentScene()->GetRegistry());
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+					ImGui::EndDragDropTarget();
+				}
+
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
 					{
 						auto& name = SceneManager::CurrentScene()->GetRegistry().get<NameComponent>(entityID);
@@ -248,10 +261,8 @@ void HierarchyPanel::DrawNode(Entity entity)
 		hasChildren = true;
 
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
-		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
-
-	if (!hasChildren)
-		flags |= ImGuiTreeNodeFlags_Leaf;
+		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
+		| (!hasChildren ? ImGuiTreeNodeFlags_Leaf : 0);
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
@@ -267,9 +278,12 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
 		{
 			Entity* childEntity = (Entity*)payload->Data;
+			ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
+
 			if (*childEntity != entity)
 			{
 				SceneGraph::Reparent(*childEntity, entity, SceneManager::CurrentScene()->GetRegistry());
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -298,8 +312,26 @@ void HierarchyPanel::DrawNode(Entity entity)
 		ImGui::EndPopup();
 	}
 
+
 	if (opened)
 	{
+		if (hasChildren)
+		{
+			entt::entity child = hierarchyComp->firstChild;
+			while (child != entt::null)
+			{
+				Entity childEntity = { child, SceneManager::CurrentScene() };
+
+				DrawNode(childEntity);
+
+				HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
+
+				ASSERT(childHierarchyComp != nullptr, "Child does not have a Hierarchy Component!");
+
+				child = childHierarchyComp->nextSibling;
+			}
+		}
+
 		ImGui::TreePop();
 	}
 

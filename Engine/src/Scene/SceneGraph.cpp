@@ -26,34 +26,100 @@ void SceneGraph::Traverse(entt::registry& registry)
 
 void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry)
 {
+	Unparent(entity, registry);
+
+	ASSERT(parent.GetHandle() != entt::null, "Parent must not be null");
+	ASSERT(entity.GetHandle() != entt::null, "Entity must be valid!");
+
+	//is the parent a child of this entity
+	entt::entity parentCheck = parent.GetHandle();
+	while (parentCheck != entt::null)
+	{
+		if(parentCheck == entity.GetHandle())
+			return;
+		HierarchyComponent* parentCheckHierarchyComp = registry.try_get<HierarchyComponent>(parentCheck);
+		if(parentCheckHierarchyComp == nullptr)
+			break;
+		parentCheck = parentCheckHierarchyComp->parent;
+	}
+
 	HierarchyComponent& hierarchyComp = entity.GetOrAddComponent<HierarchyComponent>();
 
 	hierarchyComp.parent = entt::null;
 	hierarchyComp.nextSibling = entt::null;
 	hierarchyComp.previousSibling = entt::null;
+	hierarchyComp.parent = parent.GetHandle();
 
-	if(parent.GetHandle() != entt::null)
+	HierarchyComponent& parentHierarchyComp = parent.GetOrAddComponent<HierarchyComponent>();
+	if (parentHierarchyComp.firstChild == entt::null)
 	{
-		hierarchyComp.parent = parent.GetHandle();
+		parentHierarchyComp.firstChild = entity.GetHandle();
+	}
+	else
+	{
+		entt::entity previousSibling = parentHierarchyComp.firstChild;
+		HierarchyComponent* currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
+		while (currentHierachyComp != nullptr && currentHierachyComp->nextSibling != entt::null)
+		{
+			previousSibling = currentHierachyComp->nextSibling;
+			currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
+		}
 
-		HierarchyComponent& parentHierarchyComp = parent.GetOrAddComponent<HierarchyComponent>();
-		if(parentHierarchyComp.firstChild == entt::null)
+		currentHierachyComp->nextSibling = entity.GetHandle();
+		hierarchyComp.previousSibling = previousSibling;
+	}
+}
+
+void SceneGraph::Unparent(Entity entity, entt::registry& registry)
+{
+	HierarchyComponent* hierachyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	if (hierachyComp != nullptr && hierachyComp->parent != entt::null)
+	{
+		HierarchyComponent* parentHierachyComp = registry.try_get<HierarchyComponent>(hierachyComp->parent);
+
+		if (parentHierachyComp != nullptr)
 		{
-			parentHierarchyComp.firstChild = entity.GetHandle();
-		}
-		else
-		{
-			entt::entity previousSibling = parentHierarchyComp.firstChild;
-			HierarchyComponent* currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
-			while (currentHierachyComp != nullptr && currentHierachyComp->nextSibling != entt::null)
+			// if this is the first child of the parent fix update that link
+			if (parentHierachyComp->firstChild == entity.GetHandle())
+				parentHierachyComp->firstChild = hierachyComp->nextSibling;
+
+			if (parentHierachyComp->firstChild == entt::null
+				&& parentHierachyComp->parent == entt::null
+				&& parentHierachyComp->nextSibling == entt::null
+				&& parentHierachyComp->previousSibling == entt::null)
 			{
-				previousSibling = currentHierachyComp->nextSibling;
-				currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
+				registry.remove<HierarchyComponent>(hierachyComp->parent);
 			}
-			
-			currentHierachyComp->nextSibling = entity.GetHandle();
-			hierarchyComp.previousSibling = previousSibling;
 		}
+
+		// update the links of any siblings
+		if (hierachyComp->nextSibling != entt::null && hierachyComp->previousSibling != entt::null)
+		{
+			HierarchyComponent* nextSiblingHierarchyComp = registry.try_get<HierarchyComponent>(hierachyComp->nextSibling);
+			HierarchyComponent* previousSiblingHierarchyComp = registry.try_get<HierarchyComponent>(hierachyComp->previousSibling);
+			nextSiblingHierarchyComp->previousSibling = hierachyComp->previousSibling;
+			previousSiblingHierarchyComp->nextSibling = hierachyComp->nextSibling;
+		}
+		else if (hierachyComp->nextSibling != entt::null)
+		{
+			HierarchyComponent* nextSiblingHierarchyComp = registry.try_get<HierarchyComponent>(hierachyComp->nextSibling);
+			nextSiblingHierarchyComp->previousSibling = entt::null;
+		}
+		else if (hierachyComp->previousSibling != entt::null)
+		{
+			HierarchyComponent* previousSiblingHierarchyComp = registry.try_get<HierarchyComponent>(hierachyComp->previousSibling);
+			previousSiblingHierarchyComp->nextSibling = entt::null;
+		}
+
+
+		hierachyComp->parent = entt::null;
+		hierachyComp->nextSibling = entt::null;
+		hierachyComp->previousSibling = entt::null;
+
+		// if there is no children then the HierarchyComponent is not needed
+		if (hierachyComp->firstChild == entt::null)
+			entity.RemoveComponent<HierarchyComponent>();
 	}
 }
 

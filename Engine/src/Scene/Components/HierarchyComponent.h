@@ -7,7 +7,7 @@ struct HierarchyComponent
 	entt::entity firstChild = entt::null;
 	entt::entity previousSibling = entt::null;
 	entt::entity nextSibling = entt::null;
-	bool isActive;
+	bool isActive = true;
 
 private:
 	friend cereal::access;
