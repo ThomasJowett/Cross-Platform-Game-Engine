@@ -317,7 +317,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 	{
 		if (hasChildren)
 		{
-			entt::entity child = hierarchyComp->firstChild;
+			entt::entity child = entity.TryGetComponent<HierarchyComponent>()->firstChild;
 			while (child != entt::null)
 			{
 				Entity childEntity = { child, SceneManager::CurrentScene() };

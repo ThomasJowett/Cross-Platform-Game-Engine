@@ -122,7 +122,7 @@ public:
 	entt::entity GetHandle();
 
 	// Get the scene this entity belongs to
-	Scene* GetScene();
+	Scene* GetScene() { return m_Scene; }
 
 	/**
 	 * Find if this Entity has a Component of certain type

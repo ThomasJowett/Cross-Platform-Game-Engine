@@ -30,10 +30,18 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	m_Scene->m_Registry.each([&](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene};
+			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
 				return;
+
+			HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+			if (hierarchyComp != nullptr)
+			{
+				if (hierarchyComp->parent != entt::null)
+					return;
+			}
 
 			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity);
 			return;
@@ -334,13 +342,24 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	{
 		HierarchyComponent& component = entity.GetComponent<HierarchyComponent>();
 
-		tinyxml2::XMLElement* pChildElement = pElement->InsertNewChildElement("Entity");
 
 		if (component.firstChild != entt::null)
 		{
-			//Entity child = { component.firstChild, entity.GetScene() };
+			Entity child = { component.firstChild, entity.GetScene() };
 
-			//SerializeEntity(pChildElement, child);
+			SerializeEntity(pElement->InsertNewChildElement("Entity"), child);
+		}
+
+		entt::entity next = entity.GetComponent<HierarchyComponent>().nextSibling;
+		while (next != entt::null)
+		{
+			component = entity.GetComponent<HierarchyComponent>();
+			Entity nextSibling = { component.nextSibling, entity.GetScene() };
+
+			SerializeEntity(pElement->InsertNewChildElement("Entity"), nextSibling);
+
+			HierarchyComponent* siblingHierarchyComp = nextSibling.TryGetComponent<HierarchyComponent>();
+			next = siblingHierarchyComp->nextSibling;
 		}
 	}
 }
@@ -645,6 +664,30 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
 
 		SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// Hierarachy ---------------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity");
+	if (pChildElement)
+	{
+		entity.AddComponent<HierarchyComponent>();
+
+		Entity previousChild;
+		
+		while (pChildElement)
+		{
+			Entity childEntity = DeserializeEntity(scene, pChildElement);
+			HierarchyComponent& childHierarchyComp = childEntity.GetOrAddComponent<HierarchyComponent>();
+			childHierarchyComp.parent = entity.GetHandle();
+
+			childHierarchyComp.nextSibling = previousChild.GetHandle();
+			if(previousChild.GetHandle() != entt::null)
+				previousChild.GetComponent<HierarchyComponent>().previousSibling = childEntity.GetHandle();
+			previousChild = childEntity;
+			
+			entity.GetComponent<HierarchyComponent>().firstChild = childEntity.GetHandle();
+			pChildElement = pChildElement->PreviousSiblingElement("Entity");
+		}
 	}
 
 	return entity;
