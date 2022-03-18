@@ -29,16 +29,16 @@ void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry
 	Unparent(entity, registry);
 
 	ASSERT(parent.GetHandle() != entt::null, "Parent must not be null");
-	ASSERT(entity.GetHandle() != entt::null, "Entity must be valid!");
+	ASSERT(entity.IsValid(), "Entity must be valid!");
 
 	//is the parent a child of this entity
 	entt::entity parentCheck = parent.GetHandle();
 	while (parentCheck != entt::null)
 	{
-		if(parentCheck == entity.GetHandle())
+		if (parentCheck == entity.GetHandle())
 			return;
 		HierarchyComponent* parentCheckHierarchyComp = registry.try_get<HierarchyComponent>(parentCheck);
-		if(parentCheckHierarchyComp == nullptr)
+		if (parentCheckHierarchyComp == nullptr)
 			break;
 		parentCheck = parentCheckHierarchyComp->parent;
 	}
@@ -121,6 +121,26 @@ void SceneGraph::Unparent(Entity entity, entt::registry& registry)
 		if (hierachyComp->firstChild == entt::null)
 			entity.RemoveComponent<HierarchyComponent>();
 	}
+}
+
+void SceneGraph::Remove(Entity entity, entt::registry& registry)
+{
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	if (hierarchyComp != nullptr)
+	{
+		entt::entity child = hierarchyComp->firstChild;
+		while (child != entt::null)
+		{
+			Entity childEntity = {child, entity.GetScene() };
+			Remove(childEntity, registry);
+			child = hierarchyComp->firstChild;
+		}
+	}
+	Unparent(entity, registry);
+
+	ENGINE_DEBUG("Removed {0}", entity.GetName());
+	registry.destroy(entity);
 }
 
 void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyComponent* hierarchyComp, entt::registry& registry)

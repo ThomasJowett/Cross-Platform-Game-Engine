@@ -22,7 +22,7 @@ public:
 	Entity CreateEntity(const std::string& name = "");
 	Entity CreateEntity(Uuid id, const std::string& name = "");
 
-	bool RemoveEntity(const Entity& entity);
+	bool RemoveEntity(Entity& entity);
 
 	void DuplicateEntity(Entity entity);
 

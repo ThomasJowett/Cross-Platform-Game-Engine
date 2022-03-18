@@ -13,13 +13,13 @@ class Entity
 public:
 	/**
 	 * Construct a new Empty Entity
-	 * 
+	 *
 	 */
 	Entity() = default;
 
 	/**
 	 * Construct a new Entity object
-	 * 
+	 *
 	 * @param handle entt id
 	 * @param scene the entity belongs to
 	 * @param debugName name of the entity used only for debugging
@@ -30,24 +30,24 @@ public:
 
 	/**
 	 * Construct a new Entity object from another
-	 * 
-	 * @param other 
+	 *
+	 * @param other
 	 */
 	Entity(const Entity& other) = default;
 
 	/**
 	 * Destroy the Entity object
-	 * 
+	 *
 	 */
 	~Entity() = default;
 
 	/**
 	 * Add a component to this entity
-	 * 
-	 * @tparam T 
-	 * @tparam Args 
-	 * @param args 
-	 * @return T& 
+	 *
+	 * @tparam T
+	 * @tparam Args
+	 * @param args
+	 * @return T&
 	 */
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
@@ -59,10 +59,10 @@ public:
 
 	/**
 	 * Add or replace a component of this entity
-	 * @tparam T 
-	 * @tparam Args 
-	 * @param args 
-	 * @return T& 
+	 * @tparam T
+	 * @tparam Args
+	 * @param args
+	 * @return T&
 	 */
 	template<typename T, typename... Args>
 	T& AddOrReplaceComponent(Args&&... args)
@@ -75,9 +75,9 @@ public:
 
 	/**
 	 * Get a reference to a Component of this Entity
-	 * 
+	 *
 	 * @tparam T type of component
-	 * @return T& 
+	 * @return T&
 	 */
 	template<typename T>
 	T& GetComponent()
@@ -88,8 +88,8 @@ public:
 
 	/**
 	 * Get a reference to a Component of this Entity creating if needed
-	 * @tparam T 
-	 * @return T& 
+	 * @tparam T
+	 * @return T&
 	 */
 	template<typename T, typename... Args>
 	T& GetOrAddComponent(Args&&... args)
@@ -100,7 +100,7 @@ public:
 
 	/**
 	 * Tries to get the component
-	 * @tparam T 
+	 * @tparam T
 	 * @return T* nullptr if component does not exist
 	 */
 	template<typename T>
@@ -126,21 +126,21 @@ public:
 
 	/**
 	 * Find if this Entity has a Component of certain type
-	 * 
+	 *
 	 * @tparam T type of Component
 	 * @return true Entity has this component
 	 * @return false Entity does not have this component
 	 */
 	template<typename T>
-	bool HasComponent()
+	bool HasComponent() const
 	{
 		return m_Scene->m_Registry.has<T>(m_EntityHandle);
 	}
 
 	/**
 	 * If the Entity has this component, then remove it
-	 * 
-	 * @tparam T 
+	 *
+	 * @tparam T
 	 */
 	template<typename T>
 	void RemoveComponent()
@@ -152,23 +152,28 @@ public:
 
 	/**
 	 * Does this entity belong to the given scene
-	 * 
-	 * @param scene 
-	 * @return true 
-	 * @return false 
+	 *
+	 * @param scene
+	 * @return true
+	 * @return false
 	 */
 	bool BelongsToScene(Scene* scene) const
 	{
 		return scene == m_Scene;
 	}
 
+	bool IsValid() const
+	{
+		return m_Scene->m_Registry.valid(m_EntityHandle);
+	}
+
 	operator bool() const { return m_EntityHandle != entt::null; }
 	operator uint32_t() const { return (uint32_t)m_EntityHandle; }
 	operator entt::entity() const { return m_EntityHandle; }
 
-	bool operator==(const Entity& other)const 
-	{ 
-		return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene; 
+	bool operator==(const Entity& other)const
+	{
+		return m_EntityHandle == other.m_EntityHandle && m_Scene == other.m_Scene;
 	}
 
 	bool operator!=(const Entity& other)const
@@ -178,5 +183,7 @@ public:
 private:
 	entt::entity m_EntityHandle{ entt::null };
 	Scene* m_Scene = nullptr;
+#ifdef DEBUG
 	std::string m_DebugName;
+#endif
 };

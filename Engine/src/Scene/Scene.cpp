@@ -93,11 +93,19 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Scene::RemoveEntity(const Entity& entity)
+bool Scene::RemoveEntity(Entity& entity)
 {
 	if (entity.BelongsToScene(this))
 	{
-		m_Registry.destroy(entity);
+		if (entity.HasComponent<HierarchyComponent>())
+		{
+			SceneGraph::Remove(entity, m_Registry);
+		}
+		else
+		{
+			ENGINE_DEBUG("Removed {0}", entity.GetName());
+			m_Registry.destroy(entity);
+		}
 	}
 	m_Dirty = true;
 	return false;

@@ -2,14 +2,22 @@
 #include "Entity.h"
 
 Entity::Entity(entt::entity handle, Scene* scene, const std::string& name)
-	:m_EntityHandle(handle), m_Scene(scene), m_DebugName(name)
+	:m_EntityHandle(handle), m_Scene(scene)
+#ifdef DEBUG
+	, m_DebugName(name)
+#endif // DEBUG
 {
+	ASSERT(IsValid(), "This entity is not valid!");
 }
 
 Entity::Entity(entt::entity handle, Scene* scene)
 	:m_EntityHandle(handle), m_Scene(scene)
 {
+	ASSERT(IsValid(), "This entity is not valid!");
+
+#ifdef DEBUG
 	m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
+#endif // DEBUG
 }
 
 TransformComponent& Entity::GetTransform()

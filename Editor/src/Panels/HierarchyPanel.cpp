@@ -227,13 +227,15 @@ void HierarchyPanel::OnImGuiRender()
 
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
 					{
-						auto& name = SceneManager::CurrentScene()->GetRegistry().get<NameComponent>(entityID);
-						Entity entity{ entityID, SceneManager::CurrentScene(),  name };
+						if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
+						{
+							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-						// Only draw a node for root entites, children are drawn recursively
-						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
-						if (!hierarchyComp || hierarchyComp->parent == entt::null)
-							DrawNode(entity);
+							// Only draw a node for root entites, children are drawn recursively
+							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+							if (!hierarchyComp || hierarchyComp->parent == entt::null)
+								DrawNode(entity);
+						}
 					});
 
 				ImGui::TreePop();
@@ -324,11 +326,18 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 				DrawNode(childEntity);
 
-				HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
+				if (childEntity.IsValid())
+				{
+					HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
 
-				ASSERT(childHierarchyComp != nullptr, "Child does not have a Hierarchy Component!");
+					ASSERT(childHierarchyComp != nullptr, "Child does not have a Hierarchy Component!");
 
-				child = childHierarchyComp->nextSibling;
+					child = childHierarchyComp->nextSibling;
+				}
+				else
+				{
+					child = entt::null;
+				}
 			}
 		}
 
