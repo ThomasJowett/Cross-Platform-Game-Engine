@@ -66,7 +66,8 @@ project "Engine"
 		"GLAD",
 		"ImGui",
 		"TinyXml2",
-		"LiquidFun"
+		"LiquidFun",
+		"SPIRV-Cross"
 	}
 	
 	defines

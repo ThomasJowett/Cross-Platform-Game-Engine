@@ -65,6 +65,10 @@ MainDockSpace::MainDockSpace()
 	m_ShowTargetPlatformToolbar = false;
 
 	m_ContentExplorer = nullptr;
+
+#ifdef DEBUG
+	m_ShowImGuiDemo = true;
+#endif // DEBUG
 }
 
 void MainDockSpace::OnAttach()
@@ -82,6 +86,12 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
+
+#ifdef DEBUG
+	Settings::SetDefaultBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
+	m_ShowImGuiDemo = Settings::GetBool("Windows", "ImGuiDemo");
+#endif // DEBUG
+
 
 	Settings::SetDefaultBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetDefaultBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
@@ -142,6 +152,11 @@ void MainDockSpace::OnDetach()
 	Settings::SetBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetBool("Windows", "ErrorList", m_ShowErrorList);
 
+#ifdef DEBUG
+	Settings::SetBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
+#endif // DEBUG
+
+
 	Settings::SetBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
@@ -160,8 +175,9 @@ void MainDockSpace::OnUpdate(float deltaTime)
 
 void MainDockSpace::OnImGuiRender()
 {
-	static bool showDemoWindow = true;
-	ImGui::ShowDemoWindow(&showDemoWindow);//TEMP 
+#ifdef DEBUG
+	if(m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
+#endif // DEBUG
 
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -244,7 +260,7 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
-				
+
 				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
 				if (exportLocation.has_value())
 				{
@@ -309,6 +325,9 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
 			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
+#ifdef DEBUG
+			ImGui::MenuItem("ImGui Demo", "", &m_ShowImGuiDemo);
+#endif // DEBUG
 			ImGui::EndMenu();
 		}
 

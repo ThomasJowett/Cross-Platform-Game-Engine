@@ -44,6 +44,11 @@ private:
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
 
+#ifdef DEBUG
+	bool m_ShowImGuiDemo;
+#endif // DEBUG
+
+
 	bool m_ShowPlayPauseToolbar;
 	bool m_ShowLightsToolbar;
 	bool m_ShowVolumesToolbar;
