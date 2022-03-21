@@ -15,6 +15,7 @@
 #include "CircleCollider2DComponent.h"
 #include "CircleRendererComponent.h"
 #include "HierarchyComponent.h"
+#include "LuaScriptComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -32,5 +33,6 @@ RigidBody2DComponent,		\
 BoxCollider2DComponent,		\
 CircleCollider2DComponent,	\
 CircleRendererComponent,	\
-HierarchyComponent			\
+HierarchyComponent,			\
+LuaScriptComponent			\
 

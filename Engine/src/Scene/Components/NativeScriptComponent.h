@@ -20,8 +20,6 @@ struct NativeScriptComponent
 
 	std::string Name;
 
-	std::filesystem::path file;
-
 	template <typename T, typename... Args>
 	void Bind(Args... args)
 	{
