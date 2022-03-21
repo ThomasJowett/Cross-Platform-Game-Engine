@@ -67,7 +67,8 @@ project "Engine"
 		"ImGui",
 		"TinyXml2",
 		"LiquidFun",
-		"SPIRV-Cross"
+		"SPIRV-Cross",
+		"lua"
 	}
 	
 	defines

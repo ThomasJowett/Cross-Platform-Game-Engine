@@ -211,6 +211,7 @@ project "TinyXml2"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
 project "LiquidFun"
 	kind "StaticLib"
 	language "C++"
@@ -245,13 +246,14 @@ project "LiquidFun"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
 project "SPIRV-Cross"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++11"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files
 	{
@@ -290,6 +292,54 @@ project "SPIRV-Cross"
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "On"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "On"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"
+
+project "lua"
+	kind "StaticLib"
+	language "C++"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	defines
+	{
+		"LUA_COMPAT_MATHLIB=1"
+	}
+
+	files
+	{
+		"lua/*.h",
+		"lua/*.c"
+	}
+
+	removefiles
+	{
+		"lua/luac.c",
+		"lua/lua.c",
+		"lua/onelua.c"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "system:linux"
+		buildoptions
+		{
+			"-fPIC"
+		}
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "On"
+		defines "LUA_USE_APICHECK=1"
 
 	filter "configurations:Release"
 		runtime "Release"
