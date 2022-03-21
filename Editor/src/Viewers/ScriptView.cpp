@@ -3,6 +3,7 @@
 #include "MainDockSpace.h"
 #include "IconsFontAwesome5.h"
 #include "FileSystem/FileDialog.h"
+#include "Core/Settings.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -26,6 +27,8 @@ void ScriptView::OnAttach()
 		m_TextEditor.SetText(str);
 		m_TextEditor.SetFilePath(m_FilePath);
 	}
+	Settings::SetDefaultBool("TextEditor", "ShowWhiteSpace", true);
+	m_TextEditor.SetShowWhitespaces(Settings::GetBool("TextEditor", "ShowWhiteSpace"));
 }
 
 void ScriptView::OnImGuiRender()
@@ -124,6 +127,7 @@ void ScriptView::OnImGuiRender()
 				if (ImGui::MenuItem("Show white Space", "", &showWhiteSpace))
 				{
 					m_TextEditor.SetShowWhitespaces(showWhiteSpace);
+					Settings::SetBool("TextEditor", "ShowWhiteSpace", showWhiteSpace);
 				}
 
 				bool colourize = m_TextEditor.IsColorizerEnabled();

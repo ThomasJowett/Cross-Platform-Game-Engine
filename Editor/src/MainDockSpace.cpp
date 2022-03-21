@@ -92,7 +92,6 @@ void MainDockSpace::OnAttach()
 	m_ShowImGuiDemo = Settings::GetBool("Windows", "ImGuiDemo");
 #endif // DEBUG
 
-
 	Settings::SetDefaultBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetDefaultBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
@@ -155,7 +154,6 @@ void MainDockSpace::OnDetach()
 #ifdef DEBUG
 	Settings::SetBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
 #endif // DEBUG
-
 
 	Settings::SetBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
