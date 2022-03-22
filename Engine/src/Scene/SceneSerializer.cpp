@@ -276,9 +276,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		std::string relativePath = FileUtils::RelativePath(component.tilemap.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-
-		pTilemapElement->SetAttribute("Filepath", relativePath.c_str());
+		SerializationUtils::Encode(pTilemapElement, component.tilemap.GetFilepath());
 
 		component.tilemap.Save();
 	}
@@ -335,6 +333,15 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCircleRendererElement->SetAttribute("Fade", component.Fade);
 
 		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.colour);
+	}
+
+	if (entity.HasComponent<LuaScriptComponent>())
+	{
+		LuaScriptComponent& component = entity.GetComponent<LuaScriptComponent>();
+
+		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
+
+		SerializationUtils::Encode(pLuaScriptElement, component.filepath);
 	}
 
 	if (entity.HasComponent<HierarchyComponent>())
@@ -458,10 +465,9 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (meshFilepathChar)
 			{
-				std::string meshFilepathStr(meshFilepathChar);
-				if (!meshFilepathStr.empty())
+				std::filesystem::path meshfilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+				if (!meshfilepath.empty())
 				{
-					std::filesystem::path meshfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / meshFilepathStr);
 					mesh.LoadModel(meshfilepath);
 				}
 			}
@@ -594,12 +600,12 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		Tilemap tilemap;
 		const char* tilemapChar = pTilemapElement->Attribute("Filepath");
+
 		if (tilemapChar)
 		{
-			std::string tilemapPath(tilemapChar);
-			if (!tilemapPath.empty())
+			std::filesystem::path tilemapfilepath = SerializationUtils::AbsolutePath(tilemapChar);
+			if (!tilemapfilepath.empty())
 			{
-				std::filesystem::path tilemapfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / tilemapPath);
 				tilemap.Load(tilemapfilepath);
 			}
 		}
@@ -661,6 +667,16 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
 
 		SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// LuaScript -----------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pLuaScriptElement = pEntityElement->FirstChildElement("LuaScript");
+
+	if (pCircleRendererElement)
+	{
+		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
+
+		SerializationUtils::Decode(pLuaScriptElement, component.filepath);
 	}
 
 	// Hierarachy ---------------------------------------------------------------------------------------------------
