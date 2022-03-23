@@ -83,6 +83,25 @@ std::vector<std::filesystem::path> Directory::GetFilesRecursive(const std::files
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+std::filesystem::path Directory::GetNextNewFileName(const std::filesystem::path& directory, const std::string& filename, const std::string& extension)
+{
+	std::string newFilepath = (directory / filename).string();
+
+	int suffix = 1;
+	if(std::filesystem::exists(newFilepath + extension))
+	{
+		while (std::filesystem::exists(newFilepath + " (" + std::to_string(suffix)+ ")" + extension))
+		{
+			suffix++;
+		}
+		newFilepath += '(' + std::to_string(suffix) + ')';
+	}
+
+	newFilepath += extension;
+
+	return std::filesystem::path(newFilepath);
+}
+
 void SortingHelper::Sort(std::vector<std::filesystem::path>& paths, Sorting sortOrder)
 {
 	switch (sortOrder)

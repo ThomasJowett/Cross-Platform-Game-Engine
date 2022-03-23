@@ -15,6 +15,7 @@ public:
     void OnAttach() override;
     void OnFixedUpdate() override;
     void OnImGuiRender() override;
+    virtual void OnEvent(Event& event) override;
 
     Entity GetSelectedEntity() { return m_SelectedEntity; }
     void SetSelectedEntity(Entity entity);

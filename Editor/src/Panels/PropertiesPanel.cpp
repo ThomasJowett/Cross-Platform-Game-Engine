@@ -8,6 +8,7 @@
 #include "ImGui/ImGuiTextureEdit.h"
 
 #include "Viewers/ViewerManager.h"
+#include "FileSystem/Directory.h"
 
 PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel)
@@ -67,6 +68,10 @@ void PropertiesPanel::OnImGuiRender()
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 
 						entity.AddComponent<StaticMeshComponent>(mesh, material);
+					}
+					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
+					{
+						entity.AddComponent<LuaScriptComponent>(*file);
 					}
 
 					CLIENT_DEBUG(file->string());
@@ -154,7 +159,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 
 			// Sprite Size
-			int spriteSize[2] = { sprite.animator.GetSpriteSheet()->GetSpriteWidth(), sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
+			int spriteSize[2] = { (int)sprite.animator.GetSpriteSheet()->GetSpriteWidth(), (int)sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
 			if (ImGui::InputInt2("Sprite Size", spriteSize))
 			{
 				sprite.animator.GetSpriteSheet()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
@@ -672,6 +677,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025f, 0.0f, 1.0f);
 			ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025f, 0.0f, 1.0f);
 		});
+
+	// Lua Script ---------------------------------------------------------------------------------------------------------------------
+	if (entity.HasComponent<LuaScriptComponent>())
+	{
+		LuaScriptComponent& scriptComp = entity.GetComponent<LuaScriptComponent>();
+
+		std::string scriptName = scriptComp.filepath.filename().string();
+		scriptName = scriptName.substr(0, scriptName.find_last_of('.'));
+
+		scriptName = std::string(ICON_FA_FILE_CODE) + " " + scriptName;
+
+		DrawComponent<LuaScriptComponent>(scriptName.c_str(), entity, [](auto& luaScript)
+			{
+
+			});
+	}
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)
@@ -703,6 +724,20 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 				if (ImGui::MenuItem(key.c_str()))
 				{
 					entity.AddComponent<NativeScriptComponent>().Bind(key);
+				}
+			}
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Lua Script", !entity.HasComponent<LuaScriptComponent>()))
+		{
+			for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
+			{
+				const bool is_selected = false;
+				if (ImGui::MenuItem(file.filename().string().c_str(), is_selected))
+				{
+					entity.AddComponent<LuaScriptComponent>(file);
+					break;
 				}
 			}
 			ImGui::EndMenu();

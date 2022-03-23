@@ -7,7 +7,7 @@
 struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
-	LuaScriptComponent(const std::string& filepath) : filepath(filepath) { }
+	LuaScriptComponent(const std::filesystem::path& filepath) : filepath(filepath) { }
 	LuaScriptComponent(const LuaScriptComponent&) = default;
 
 	std::filesystem::path filepath;

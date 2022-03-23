@@ -8,6 +8,7 @@
 #include "Utilities/GeometryGenerator.h"
 #include "Scene/SceneSerializer.h"
 #include "Scene/SceneGraph.h"
+#include "Events/ApplicationEvent.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
@@ -243,6 +244,16 @@ void HierarchyPanel::OnImGuiRender()
 		}
 	}
 	ImGui::End();
+}
+
+void HierarchyPanel::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
+		{
+			m_SelectedEntity = Entity();
+			return false;
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

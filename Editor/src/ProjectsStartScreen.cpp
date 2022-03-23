@@ -10,7 +10,7 @@
 #include "cereal/archives/json.hpp"
 
 ProjectsStartScreen::ProjectsStartScreen(bool createProject)
-	:m_CreateProject(createProject)
+	:m_CreateProject(createProject), Layer("Project Start Screen")
 {
 	m_CanGoBack = !createProject;
 }
@@ -133,7 +133,7 @@ void ProjectsStartScreen::OnImGuiRender()
 
 						{
 							cereal::JSONOutputArchive output(file);
-							output(cereal::make_nvp(projectPath.string(), data));
+							output(cereal::make_nvp(projectPath.filename().string(), data));
 						}
 
 						file.close();

@@ -66,8 +66,6 @@ private:
 
 	Mode m_Mode;
 
-	std::filesystem::path m_SceneFilepath;
-
 	HierarchyPanel* m_HierarchyPanel;
 	Entity m_HoveredEntity;
 

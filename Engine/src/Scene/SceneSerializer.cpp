@@ -672,7 +672,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	// LuaScript -----------------------------------------------------------------------------------------------
 	tinyxml2::XMLElement* pLuaScriptElement = pEntityElement->FirstChildElement("LuaScript");
 
-	if (pCircleRendererElement)
+	if (pLuaScriptElement)
 	{
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
 

@@ -225,29 +225,39 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
-	std::string newSceneFilepath = (m_CurrentPath / "Untitled").string();
-
-	int suffix = 1;
-
-	if (std::filesystem::exists(newSceneFilepath + ".scene"))
-	{
-		while (std::filesystem::exists(newSceneFilepath + '(' + std::to_string(suffix) + ").scene"))
-		{
-			suffix++;
-		}
-
-		newSceneFilepath += '(' + std::to_string(suffix) + ')';
-	}
-
-	newSceneFilepath += ".scene";
+	std::filesystem::path newSceneFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Scene", ".scene");
 
 	SceneManager::CreateScene(newSceneFilepath);
 
-	SceneManager::ChangeScene(std::filesystem::path(newSceneFilepath));
+	SceneManager::ChangeScene(newSceneFilepath);
 
 	m_ForceRescan = true;
 
 	m_CurrentSelectedPath = newSceneFilepath;
+}
+
+void ContentExplorerPanel::CreateNewLuaScript()
+{
+	std::filesystem::path newLuaScriptFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Script", ".lua");
+
+	std::ofstream file(newLuaScriptFilepath);
+
+	if (file.is_open())
+	{
+		file << "-- Called when entity is created" << std::endl;
+		file << "function OnCreate()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << std::endl;
+		file << "-- Called once per frame" << std::endl;
+		file << "function OnUpdate()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+	}
+	file.close();
+
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newLuaScriptFilepath;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -376,6 +386,12 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 		if (ImGui::SmallButton("Object"))
 			CLIENT_DEBUG("new object");
+
+		if (ImGui::SmallButton("Lua Script"))
+		{
+			CreateNewLuaScript();
+			ImGui::OpenPopup("Rename");
+		}
 
 		if (ImGui::BeginPopup("Rename"))
 		{
@@ -1092,7 +1108,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::PushFont(Fonts::Icons);
 
 						// try to get the image to display the thumbnail
-						if(ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
+						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
 						{
 							ImGui::ImageButton(m_TextureLibrary.Load(m_Files[i]), { thumbnailSize, thumbnailSize });
 						}
