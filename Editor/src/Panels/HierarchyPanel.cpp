@@ -246,11 +246,14 @@ void HierarchyPanel::OnImGuiRender()
 	ImGui::End();
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void HierarchyPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
 		{
+			// Clear the selected entity when project changes
 			m_SelectedEntity = Entity();
 			return false;
 		});
