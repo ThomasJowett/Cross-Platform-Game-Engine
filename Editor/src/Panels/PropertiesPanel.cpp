@@ -1,6 +1,7 @@
 #include "PropertiesPanel.h"
 
 #include "IconsFontAwesome5.h"
+#include "IconsMaterialDesign.h"
 #include "MainDockSpace.h"
 
 #include "ImGui/ImGuiTransform.h"
@@ -626,7 +627,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
-	DrawComponent<CircleCollider2DComponent>(ICON_FA_CIRCLE_NOTCH" Circle Collider 2D", entity, [](auto& circleCollider2D)
+	DrawComponent<CircleCollider2DComponent>(ICON_MD_PANORAMA_FISHEYE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 		{
 			Vector2f& offset = circleCollider2D.Offset;
 			ImGui::Text("Offset");
