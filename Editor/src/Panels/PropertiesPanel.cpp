@@ -730,9 +730,11 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Lua Script", !entity.HasComponent<LuaScriptComponent>()))
+		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));
+
+		if (ImGui::BeginMenu("Lua Script", !entity.HasComponent<LuaScriptComponent>() && scripts.size() > 0))
 		{
-			for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
+			for (std::filesystem::path& file : scripts)
 			{
 				const bool is_selected = false;
 				if (ImGui::MenuItem(file.filename().string().c_str(), is_selected))
