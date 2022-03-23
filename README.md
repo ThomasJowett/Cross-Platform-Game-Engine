@@ -34,7 +34,7 @@ Then run the shell script to generate the make files
 ```
 ./Progen_gmake.sh
 ```
-The engine can now be build by running `make`.
+The engine can now be built by running `make`.
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 * [Entt](https://github.com/skypjack/entt) : Fast and reliable entity-component system (ECS) 
@@ -47,3 +47,5 @@ The engine can now be build by running `make`.
 * [cereal](https://github.com/USCiLab/cereal) : A C++11 library for serialization.
 * [tinyxml2](https://github.com/leethomason/tinyxml2) : A simple, small, efficient, C++ XML parser.
 * [LiquidFun](https://github.com/google/liquidfun) : 2D Physics library and Extension of Box2D that provides particle and fluid dynamics.
+* [lua](https://github.com/lua/lua) : A powerful, efficient, lightweight, embeddable scripting language.
+* [SPIR-V Cross](https://github.com/KhronosGroup/SPIRV-Cross) : A tool designed for parsing and converting SPIR-V to other shader languages.
