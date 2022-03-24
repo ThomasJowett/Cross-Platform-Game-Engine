@@ -785,6 +785,8 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		ImGui::PopStyleColor();
 
+		//----------------------------------------------------------------------------------------------------
+		// Manual path edit control
 		if (m_EditLocationCheckButtonPressed)
 		{
 			ImGui::SameLine();
@@ -819,14 +821,14 @@ void ContentExplorerPanel::OnImGuiRender()
 					CLIENT_ERROR(e.what());
 				}
 			}
+
+			ImGui::Dummy(ImVec2(0, 0));
 		}
 
 		//----------------------------------------------------------------------------------------------------
 		// Split path control
-		else//(!m_EditLocationCheckButtonPressed)// && !editlocationInputTextReturnPressed)
+		else
 		{
-			//Split Path
-
 			const int numTabs = (int)m_CurrentSplitPath.size();
 
 			int pushpop = 0;
@@ -905,6 +907,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 			m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 
+			ImGui::Dummy(ImVec2(0, ImGui::GetStyle().ItemSpacing.y));
 		}
 
 		ImGui::Separator();
