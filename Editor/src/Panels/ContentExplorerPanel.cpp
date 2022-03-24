@@ -566,6 +566,10 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 
 void ContentExplorerPanel::OnAttach()
 {
+	Settings::SetDefaultInt("ContentExplorer", "ZoomLevel", 0);
+	Settings::SetDefaultInt("ContentExplorer", "SortingMode", 0);
+	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
+	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -737,7 +741,10 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
 			ICON_FA_SORT_DOWN "\tType\0"
 			ICON_FA_SORT_UP "\tType Reverse"))
+		{
 			m_ForceRescan = true;
+			Settings::SetInt("ContentExplorer", "SortingMode", (int)m_SortingMode);
+		}
 		//----------------------------------------------------------------------------------------------------
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
@@ -745,55 +752,55 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_TH_LIST "\tList\0"
 			ICON_FA_TH "\tThumbnails\0"
 			ICON_FA_LIST "\tDetails\0"))
+		{
 			m_ForceRescan = true;
+			Settings::SetInt("ContentExplorer", "ZoomLevel", (int)m_ZoomLevel);
+		}
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
 		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;
+
+		ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FOLDER))
 		{
-			bool mustValidateInputPath = false;
-			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+			m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
+		}
 
+		bool editLocationButtonDown = false;
+		if (ImGui::IsItemActive())
+			editLocationButtonDown = true;
+
+		static bool editLocationShouldHaveFocus = false;
+		if (m_EditLocationCheckButtonPressed != editLocationShouldHaveFocus)
+		{
+			editLocationShouldHaveFocus = !editLocationShouldHaveFocus;
+			if (editLocationShouldHaveFocus)
+				ImGui::SetKeyboardFocusHere();
+		}
+
+		ImGui::PopStyleColor();
+
+		if (m_EditLocationCheckButtonPressed)
+		{
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_FOLDER))
+			editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
+				ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
+
+			static bool once = false;
+			if (!ImGui::IsItemActive() && editLocationShouldHaveFocus)
 			{
-				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
+				editlocationInputTextReturnPressed = once;
+				once = true;
 			}
 
-			static bool hasFocus = false;
-			if (m_EditLocationCheckButtonPressed != hasFocus)
+			if (editlocationInputTextReturnPressed)
 			{
-				hasFocus = !hasFocus;
-				if (hasFocus)
-					ImGui::SetKeyboardFocusHere();
-			}
-
-			ImGui::PopStyleColor();
-
-			if (m_EditLocationCheckButtonPressed)
-			{
-				ImGui::SameLine();
-				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
-					ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
-
-				static bool once = false;
-				if (!ImGui::IsItemActive())
-				{
-					editlocationInputTextReturnPressed = once;
-					once = true;
-				}
-
-				if (editlocationInputTextReturnPressed)
-				{
-					once = false;
-					mustValidateInputPath = true;
-				}
-			}
-
-			if (mustValidateInputPath)
-			{
+				once = false;
 				try
 				{
 					if (std::filesystem::exists(inputBuffer))
@@ -804,7 +811,8 @@ void ContentExplorerPanel::OnImGuiRender()
 					{
 						m_ForceRescan = false;
 					}
-					m_EditLocationCheckButtonPressed = false;
+					if(!editLocationButtonDown)
+						m_EditLocationCheckButtonPressed = false;
 				}
 				catch (const std::exception& e)
 				{
@@ -812,12 +820,12 @@ void ContentExplorerPanel::OnImGuiRender()
 				}
 			}
 		}
+
 		//----------------------------------------------------------------------------------------------------
 		// Split path control
-		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
+		else//(!m_EditLocationCheckButtonPressed)// && !editlocationInputTextReturnPressed)
 		{
 			//Split Path
-			// tab:
 
 			const int numTabs = (int)m_CurrentSplitPath.size();
 
@@ -1149,8 +1157,15 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
+					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					{
+						RightClickMenu();
+						ImGui::EndPopup();
+					}
+
 					ImGui::EndTable();
 				}
+
 			}
 			break;
 			case ContentExplorerPanel::ZoomLevel::DETAILS:
@@ -1311,6 +1326,13 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::EndGroup();
 
 					}
+
+					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					{
+						RightClickMenu();
+						ImGui::EndPopup();
+					}
+
 					ImGui::EndTable();
 				}
 				break;

@@ -300,7 +300,7 @@ void MainDockSpace::OnImGuiRender()
 				iCopy->Copy();
 			if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, copyable && ImGui::GetClipboardText() != nullptr))
 				iCopy->Paste();
-			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable))
+			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Duplicate();
 			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Delete();
