@@ -2,28 +2,20 @@
 #include "LuaManager.h"
 
 #include "Bindings/LuaLogging.h"
+#include "sol/sol.hpp"
 
-namespace Lua
+sol::state LuaManager::s_State = nullptr;
+
+void LuaManager::Init()
 {
-	lua_State* L = nullptr;
-	std::filesystem::path s_ScriptPath;
+	s_State = sol::state(nullptr);
 
-	void Lua::Initialize()
-	{
-		L = luaL_newstate();
-		luaL_openlibs(L);
+	s_State.open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table);
 
-		Logging::Bind(L);
-	}
-
-	void Shutdown()
-	{
-		lua_close(L);
-	}
-
-	lua_State* GetState()
-	{
-		return L;
-	}
+	Lua::Logging::Bind(s_State);
 }
 
+sol::state& LuaManager::GetState()
+{
+	return s_State;
+}

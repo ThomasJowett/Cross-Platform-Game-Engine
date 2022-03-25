@@ -57,7 +57,8 @@ project "Engine"
 		"%{prj.name}/vendor/simpleini",
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
-		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D"
+		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D",
+		"%{prj.name}/vendor/lua"
 	}
 	
 	links
@@ -184,7 +185,8 @@ project "ExampleGame"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 	
 	links
@@ -277,7 +279,8 @@ project "Editor"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 	
 	links
@@ -371,7 +374,8 @@ project "Runtime"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 
 	links

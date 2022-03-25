@@ -684,7 +684,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		LuaScriptComponent& scriptComp = entity.GetComponent<LuaScriptComponent>();
 
-		std::string scriptName = scriptComp.filepath.filename().string();
+		std::string scriptName = scriptComp.absolutefilepath.filename().string();
 		scriptName = scriptName.substr(0, scriptName.find_last_of('.'));
 
 		scriptName = std::string(ICON_FA_FILE_CODE) + " " + scriptName;

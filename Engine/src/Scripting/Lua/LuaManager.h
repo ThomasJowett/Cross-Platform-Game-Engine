@@ -1,15 +1,14 @@
 #pragma once
 
-#include "lua/lua.h"
-#include "lua/lualib.h"
-#include "lua/lauxlib.h"
+#include "sol/sol.hpp"
 
-namespace Lua
+class LuaManager
 {
-	void Initialize();
-	void Shutdown();
+public:
+	static void Init();
 
-	lua_State* GetState();
+	static sol::state& GetState();
 
-
-}
+private:
+	static sol::state s_State;
+};

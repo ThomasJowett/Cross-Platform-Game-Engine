@@ -341,7 +341,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
 
-		SerializationUtils::Encode(pLuaScriptElement, component.filepath);
+		SerializationUtils::Encode(pLuaScriptElement, component.absolutefilepath);
 	}
 
 	if (entity.HasComponent<HierarchyComponent>())
@@ -676,7 +676,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
 
-		SerializationUtils::Decode(pLuaScriptElement, component.filepath);
+		SerializationUtils::Decode(pLuaScriptElement, component.absolutefilepath);
 	}
 
 	// Hierarachy ---------------------------------------------------------------------------------------------------

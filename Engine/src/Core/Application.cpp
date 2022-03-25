@@ -16,6 +16,7 @@
 #include "Logging/Logger.h"
 
 #include "Utilities/StringUtils.h"
+#include "Scripting/Lua/LuaManager.h"
 
 Application* Application::s_Instance = nullptr;
 
@@ -34,6 +35,7 @@ Application::Application(const WindowProps& props)
 
 	Settings::Init();
 	Random::Init();
+	LuaManager::Init();
 
 	SetDefaultSettings(props);
 

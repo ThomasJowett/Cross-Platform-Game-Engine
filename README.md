@@ -48,4 +48,5 @@ The engine can now be built by running `make`.
 * [tinyxml2](https://github.com/leethomason/tinyxml2) : A simple, small, efficient, C++ XML parser.
 * [LiquidFun](https://github.com/google/liquidfun) : 2D Physics library and Extension of Box2D that provides particle and fluid dynamics.
 * [lua](https://github.com/lua/lua) : A powerful, efficient, lightweight, embeddable scripting language.
+* [sol2](https://github.com/ThePhD/sol2) : A C++ single header library binding to Lua.
 * [SPIR-V Cross](https://github.com/KhronosGroup/SPIRV-Cross) : A tool designed for parsing and converting SPIR-V to other shader languages.

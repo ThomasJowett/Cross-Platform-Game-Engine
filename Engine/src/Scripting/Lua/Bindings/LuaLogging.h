@@ -1,6 +1,7 @@
 #pragma once
 
 #include "lua/lua.h"
+#include "sol/sol.hpp"
 
 #include "Logging/Logger.h"
 
@@ -8,16 +9,36 @@ namespace Lua
 {
 	namespace Logging
 	{
-		void Bind(lua_State* L)
+		void Bind(sol::state& state)
 		{
-			lua_register(L, "Log", lua_Log);
-		}
+			PROFILE_FUNCTION();
 
-		int lua_Log(lua_State* L)
-		{
-			const char* message = lua_tostring(L, 1);
-			CLIENT_DEBUG(message);
-			return 0;
+			sol::table log = state.create_table("Log");
+
+			log.set_function("Trace", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_TRACE(message);
+				});
+
+			log.set_function("Info", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_INFO(message);
+				});
+
+			log.set_function("Debug", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_DEBUG(message);
+				});
+
+			log.set_function("Error", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_ERROR(message);
+				});
+
+			log.set_function("Critical", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_CRITICAL(message);
+				});
 		}
 	}
 }

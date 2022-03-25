@@ -193,6 +193,13 @@ void Scene::OnRuntimeStart()
 			}
 		}
 	);
+
+	m_Registry.view<LuaScriptComponent>().each(
+		[](const auto entity, auto& scriptComponent)
+		{
+			scriptComponent.ParseScript();
+		}
+	);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -359,6 +366,16 @@ void Scene::OnUpdate(float deltaTime)
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
 
+	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
+		{
+			if (!luaScriptComp.created)
+			{
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
+			}
+			luaScriptComp.OnUpdate(deltaTime);
+		});
+
 	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
 		{
 			if (primitiveComponent.needsUpdating)
@@ -414,6 +431,16 @@ void Scene::OnFixedUpdate()
 			}
 			else
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
+		});
+
+	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
+		{
+			if (!luaScriptComp.created)
+			{
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
+			}
+			luaScriptComp.OnFixedUpdate();
 		});
 
 	// Physics
