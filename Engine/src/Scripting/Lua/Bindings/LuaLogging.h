@@ -1,6 +1,4 @@
 #pragma once
-
-#include "lua/lua.h"
 #include "sol/sol.hpp"
 
 #include "Logging/Logger.h"
@@ -28,6 +26,11 @@ namespace Lua
 			log.set_function("Debug", [&](sol::this_state s, std::string_view message)
 				{
 					CLIENT_DEBUG(message);
+				});
+
+			log.set_function("Warn", [&](sol::this_state s, std::string_view message)
+				{
+					CLIENT_WARN(message);
 				});
 
 			log.set_function("Error", [&](sol::this_state s, std::string_view message)

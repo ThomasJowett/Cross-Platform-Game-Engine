@@ -680,20 +680,29 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
-	if (entity.HasComponent<LuaScriptComponent>())
-	{
-		LuaScriptComponent& scriptComp = entity.GetComponent<LuaScriptComponent>();
-
-		std::string scriptName = scriptComp.absolutefilepath.filename().string();
-		scriptName = scriptName.substr(0, scriptName.find_last_of('.'));
-
-		scriptName = std::string(ICON_FA_FILE_CODE) + " " + scriptName;
-
-		DrawComponent<LuaScriptComponent>(scriptName.c_str(), entity, [](auto& luaScript)
+	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [](auto& luaScript)
+		{
+			if (ImGui::BeginCombo("##luaScript", luaScript.absoluteFilepath.filename().string().c_str()))
 			{
-
-			});
-	}
+				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
+				{
+					const bool is_selected = false;
+					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
+					{
+						luaScript.absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file);
+						SceneManager::CurrentScene()->MakeDirty();
+						break;
+					}
+				}
+				ImGui::EndCombo();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_FILE_CODE))
+			{
+				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
+			}
+			ImGui::Tooltip("Edit script");
+		});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)

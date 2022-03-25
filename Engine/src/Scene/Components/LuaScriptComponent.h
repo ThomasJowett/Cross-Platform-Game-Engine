@@ -5,13 +5,18 @@
 #include <vector>
 #include <filesystem>
 
+#include "Core/Application.h"
+#include "Utilities/FileUtils.h"
+
 struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
-	LuaScriptComponent(const std::filesystem::path& filepath) : absolutefilepath(filepath) { }
+	LuaScriptComponent(const std::filesystem::path& filepath) : absoluteFilepath(filepath) { }
 	LuaScriptComponent(const LuaScriptComponent&) = default;
 
-	std::filesystem::path absolutefilepath;
+	~LuaScriptComponent();
+
+	std::filesystem::path absoluteFilepath;
 	bool created = false;
 
 	bool ParseScript();
@@ -28,8 +33,8 @@ private:
 	void save(Archive& archive) const
 	{
 		std::string relativePath;
-		if (!absolutefilepath.empty())
-			relativePath = FileUtils::RelativePath(absolutefilepath, Application::GetOpenDocumentDirectory()).string();
+		if (!absoluteFilepath.empty())
+			relativePath = FileUtils::RelativePath(absoluteFilepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Script", relativePath));
 	}
 
@@ -39,7 +44,7 @@ private:
 		std::string relativePath;
 		archive(cereal::make_nvp("Script", relativePath));
 		if (!relativePath.empty())
-			absolutefilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 	}
 
 	Ref<sol::environment> m_SolEnvironment;

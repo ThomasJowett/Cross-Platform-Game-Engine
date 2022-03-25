@@ -250,7 +250,15 @@ void ContentExplorerPanel::CreateNewLuaScript()
 		file << "end" << std::endl;
 		file << std::endl;
 		file << "-- Called once per frame" << std::endl;
-		file << "function OnUpdate()" << std::endl;
+		file << "function OnUpdate(deltaTime)" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << "-- Called on a fixed interval" << std::endl;
+		file << "function OnFixedUpdate()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << "-- Called when entity is destroyed" << std::endl;
+		file << "function OnDestroy()" << std::endl;
 		file << std::endl;
 		file << "end" << std::endl;
 	}

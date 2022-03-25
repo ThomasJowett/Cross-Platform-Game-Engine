@@ -3,16 +3,27 @@
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
 
+LuaScriptComponent::~LuaScriptComponent()
+{
+	if (m_SolEnvironment)
+	{
+		OnDestroy();
+	}
+}
+
 bool LuaScriptComponent::ParseScript()
 {
+	if (absoluteFilepath.empty())
+		return false;
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
-	sol::protected_function_result result = LuaManager::GetState().script_file(absolutefilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+	sol::protected_function_result result = LuaManager::GetState().script_file(absoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
 
 	if (!result.valid())
 	{
 		sol::error error = result;
-		ENGINE_ERROR("Failed to parse lua script {0}: {1}", absolutefilepath, error.what());
+		ENGINE_ERROR("Failed to parse lua script {0}: {1}", absoluteFilepath, error.what());
+		return false;
 	}
 
 	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
@@ -34,14 +45,13 @@ bool LuaScriptComponent::ParseScript()
 		m_OnFixedUpdateFunc.reset();
 
 	LuaManager::GetState().collect_garbage();
-	return false;
+	return true;
 }
 
 void LuaScriptComponent::OnCreate()
 {
 	if (m_OnCreateFunc)
 	{
-
 		sol::protected_function_result result = m_OnCreateFunc->call();
 		if (!result.valid())
 		{
@@ -55,7 +65,7 @@ void LuaScriptComponent::OnDestroy()
 {
 	if (m_OnDestroyFunc)
 	{
-		sol::protected_function_result result = m_OnUpdateFunc->call();
+		sol::protected_function_result result = m_OnDestroyFunc->call();
 		if (!result.valid())
 		{
 			sol::error error = result;
