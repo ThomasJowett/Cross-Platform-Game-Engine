@@ -137,6 +137,11 @@ bool SceneManager::FinalChangeScene()
 		s_EditingScene = s_CurrentScene->GetFilepath();
 	}
 
+	if (s_SceneState != SceneState::Edit || s_SceneState != SceneState::Pause)
+	{
+		s_CurrentScene->OnRuntimeStop();
+	}
+
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
 	else if (!s_NextSceneName.empty())
