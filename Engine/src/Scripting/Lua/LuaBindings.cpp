@@ -4,6 +4,8 @@
 #include "Logging/Logger.h"
 #include "Logging/Instrumentor.h"
 #include "Core/Application.h"
+#include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneManager.h"
@@ -100,5 +102,20 @@ namespace Lua
 	{
 		PROFILE_FUNCTION();
 
+		sol::table input = state.create_table("Input");
+
+		input.set_function("IsKeyPressed", [&](char c) -> bool
+			{
+				return Input::IsKeyPressed((int)c);
+			});
+		input.set_function("IsMouseButtonPressed", &Input::IsMouseButtonPressed);
+		input.set_function("GetMousePos", &Input::GetMousePos);
+
+		std::initializer_list<std::pair<sol::string_view, int>> mouseItems = {
+			{ "Left", MOUSE_BUTTON_LEFT },
+			{ "Right", MOUSE_BUTTON_RIGHT },
+			{ "Middle", MOUSE_BUTTON_MIDDLE },
+		};
+		state.new_enum("MouseButton", mouseItems);
 	}
 }

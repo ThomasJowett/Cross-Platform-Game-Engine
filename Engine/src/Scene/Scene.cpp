@@ -308,39 +308,6 @@ void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTr
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-//void Scene::DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
-//{
-//	renderTarget->Bind();
-//
-//	RenderCommand::Clear();
-//
-//	Renderer::BeginScene(cameraTransform, projection);
-//
-//	m_Registry.group<SpriteComponent>(entt::get<TransformComponent>).each(
-//		[](const auto& sprite, const auto& transformComp)
-//		{
-//			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), sprite.tint);
-//		});
-//
-//	m_Registry.group<AnimatedSpriteComponent>(entt::get<TransformComponent>).each(
-//		[](const auto& animatedSprite, const auto& transformComp)
-//		{
-//			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), sprite.animator.GetSpriteSheet(), sprite.tint);
-//		});
-//
-//	m_Registry.group<StaticMeshComponent>(entt::get<TransformComponent>).each(
-//		[](const auto& mesh, const auto& transformComp)
-//		{
-//			Renderer::Submit(mesh.material, mesh.mesh, transformComp.GetWorldMatrix());
-//		});
-//
-//	Renderer::EndScene();
-//
-//	renderTarget->UnBind();
-//}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 void Scene::OnUpdate(float deltaTime)
 {
 	m_IsUpdating = true;
