@@ -32,4 +32,5 @@ private:
 	static std::filesystem::path s_NextFilepath;
 	static std::string s_NextSceneName;
 	static SceneState s_SceneState;
+	static std::filesystem::path s_EditingScene;
 };

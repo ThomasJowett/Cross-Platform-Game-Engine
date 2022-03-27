@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Entity.h"
+#include "SceneGraph.h"
 
 Entity::Entity(entt::entity handle, Scene* scene, const std::string& name)
 	:m_EntityHandle(handle), m_Scene(scene)
@@ -18,6 +19,11 @@ Entity::Entity(entt::entity handle, Scene* scene)
 #ifdef DEBUG
 	m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
 #endif // DEBUG
+}
+
+void Entity::AddChild(Entity child)
+{
+	SceneGraph::Reparent(child, this, m_Scene->GetRegistry());
 }
 
 TransformComponent& Entity::GetTransform()
