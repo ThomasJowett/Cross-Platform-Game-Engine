@@ -6,9 +6,11 @@ class LuaManager
 {
 public:
 	static void Init();
+	static void Shutdown();
+	static void CleanUp();
 
 	static sol::state& GetState();
 
 private:
-	static sol::state s_State;
+	static Scope<sol::state> s_State;
 };

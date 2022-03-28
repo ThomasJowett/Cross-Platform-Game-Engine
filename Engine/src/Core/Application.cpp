@@ -62,6 +62,7 @@ Application::~Application()
 	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
 	Renderer::Shutdown();
+	LuaManager::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -102,6 +103,8 @@ void Application::Run()
 
 	double currentTime = GetTime();
 	double accumulator = 0.0f;
+
+	m_Running = true;
 
 	while (m_Running)
 	{
@@ -276,7 +279,7 @@ void Application::PopOverlay(Layer* layer)
 
 bool Application::OnWindowClose(WindowCloseEvent& e)
 {
-	m_Running = false;
+	Close();
 	return true;
 }
 

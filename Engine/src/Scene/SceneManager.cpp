@@ -37,21 +37,14 @@ bool SceneManager::ChangeScene(std::filesystem::path filepath)
 
 	if (IsSceneLoaded())
 	{
-		if (s_CurrentScene->GetFilepath() != finalpath)
+		s_NextFilepath = finalpath;
+		if (s_CurrentScene->IsUpdating())
 		{
-			s_NextFilepath = finalpath;
-			if (s_CurrentScene->IsUpdating())
-			{
-				return false;
-			}
-			else
-			{
-				return FinalChangeScene();
-			}
+			return false;
 		}
 		else
 		{
-			return false;
+			return FinalChangeScene();
 		}
 	}
 
@@ -132,7 +125,7 @@ bool SceneManager::FinalChangeScene()
 		}
 	}
 
-	if (s_SceneState != SceneState::Edit)
+	if (s_SceneState != SceneState::Edit && s_EditingScene.empty())
 	{
 		s_EditingScene = s_CurrentScene->GetFilepath();
 	}
@@ -186,14 +179,14 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
 					s_CurrentScene->OnRuntimeStart();
 			}
-			if(s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
+			if (s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
 				s_CurrentScene->OnRuntimeStop();
 			if (sceneState == SceneState::Pause || sceneState == SceneState::SimulatePause)
 				s_CurrentScene->OnRuntimePause();
 		}
 		s_SceneState = sceneState;
 
-		if (!s_EditingScene.empty())
+		if (!s_EditingScene.empty() && s_SceneState == SceneState::Edit)
 		{
 			ChangeScene(s_EditingScene);
 			s_EditingScene.clear();

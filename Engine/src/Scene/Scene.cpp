@@ -20,6 +20,7 @@
 #include "Box2D/Box2D.h"
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
+#include "Scripting/Lua/LuaManager.h"
 
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
@@ -70,6 +71,7 @@ Scene::Scene(std::string name)
 
 Scene::~Scene()
 {
+	LuaManager::CleanUp();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

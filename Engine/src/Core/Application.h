@@ -145,7 +145,7 @@ private:
 private:
 	Scope<Window> m_Window;
 	ImGuiManager* m_ImGuiManager;
-	bool m_Running = true;
+	bool m_Running = false;
 	bool m_Minimized = false;
 	float m_FixedUpdateInterval = 0.01f;
 	LayerStack m_LayerStack;
