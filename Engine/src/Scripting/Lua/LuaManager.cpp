@@ -18,6 +18,7 @@ void LuaManager::Init()
 	Lua::BindScene(*s_State);
 	Lua::BindEntity(*s_State);
 	Lua::BindInput(*s_State);
+	Lua::BindMath(*s_State);
 }
 
 void LuaManager::Shutdown()

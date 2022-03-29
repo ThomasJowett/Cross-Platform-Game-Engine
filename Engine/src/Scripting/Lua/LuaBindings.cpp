@@ -118,4 +118,26 @@ namespace Lua
 		};
 		state.new_enum("MouseButton", mouseItems);
 	}
+
+	//--------------------------------------------------------------------------------------------------------------
+
+	void BindMath(sol::state& state)
+	{
+		PROFILE_FUNCTION();
+
+		sol::usertype<Vector2f> vector2_type = state.new_usertype<Vector2f>(
+			"Vec2",
+			sol::constructors<Vector2f(float, float)>(),
+			"x", &Vector2f::x,
+			"y", &Vector2f::y,
+			sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
+			sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; }
+		);
+
+		vector2_type.set_function("Length", &Vector2f::Magnitude);
+		vector2_type.set_function("SqrLength", &Vector2f::SqrMagnitude);
+		vector2_type.set_function("Normalize", &Vector2f::Normalize);
+		vector2_type.set_function("Clamp", &Vector2f::Clamp);
+		vector2_type.set_function("Perpendicular", &Vector2f::Perpendicular);
+	}
 }
