@@ -139,5 +139,19 @@ namespace Lua
 		vector2_type.set_function("Normalize", &Vector2f::Normalize);
 		vector2_type.set_function("Clamp", &Vector2f::Clamp);
 		vector2_type.set_function("Perpendicular", &Vector2f::Perpendicular);
+
+		sol::usertype<Vector3f> vector3_type = state.new_usertype<Vector3f>(
+			"Vec3",
+			sol::constructors<Vector3f(float, float, float)>(),
+			"x", &Vector3f::x,
+			"y", &Vector3f::y,
+			"z", &Vector3f::z,
+			sol::meta_function::addition, [](const Vector3f& a, const Vector3f& b) { return a + b; },
+			sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; }
+		);
+
+		vector3_type.set_function("Length", &Vector3f::Magnitude);
+		vector3_type.set_function("SqrLength", &Vector3f::SqrMagnitude);
+		vector3_type.set_function("Normalize", &Vector3f::Normalize);
 	}
 }
