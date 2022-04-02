@@ -101,16 +101,43 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
-			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+
+			if (selectedEntity.HasComponent<CameraComponent>())
 			{
-				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
-				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate({ transformComp.rotation });
+				CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
 				m_CameraPreview->Bind();
 				RenderCommand::Clear();
 				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
 			}
+			m_Framebuffer->Bind();
+			Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+			if (selectedEntity.HasComponent<CircleCollider2DComponent>())
+			{
+				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
+
+				Matrix4x4 transform = transformComp.GetParentMatrix();
+
+				Vector3f translation = Vector3f(circleComp.Offset.x, circleComp.Offset.y, 0.001f) + transformComp.position;
+
+				transform = transform * Matrix4x4::Translate(translation) * Matrix4x4::Scale(Vector3f(circleComp.Radius * 2, circleComp.Radius * 2, 1.0f));
+
+				//transform.Translate(Vector3f(0, 0, -0.1f));
+
+				Renderer2D::DrawCircle(transform, Colours::LIME_GREEN, 0.05f, 0.004f);
+			}
+
+			if (selectedEntity.HasComponent<BoxCollider2DComponent>())
+			{
+				BoxCollider2DComponent& boxComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
+
+				//Renderer2D::DrawLine()
+			}
+			Renderer2D::EndScene();
+			m_Framebuffer->UnBind();
 		}
 		break;
 	}
@@ -270,13 +297,15 @@ void ViewportPanel::OnImGuiRender()
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}
 
+
+
 				// Gizmos
 				ImGuizmo::SetOrthographic(true);
 				ImGuizmo::SetDrawlist();
 				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
-				
+
 				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
 
 				cameraViewMat.Transpose();

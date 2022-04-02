@@ -21,6 +21,7 @@ public:
 
 	static void FlushQuads();
 	static void FlushCircles();
+	static void FlushLines();
 
 	//primitives
 
@@ -54,11 +55,10 @@ public:
 
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
-	static void DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour = Colours::WHITE);
+	static void DrawHairLine(const Vector3f& start, Vector3f& end, const Colour& colour = Colours::WHITE);
 
 	// Poly-line
 	static void DrawPolyline(const std::vector<Vector2f>& points, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
-	static void DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour = Colours::WHITE);
 
 	struct Stats
 	{

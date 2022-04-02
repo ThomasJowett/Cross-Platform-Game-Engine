@@ -18,7 +18,7 @@ public:
 		{ return s_Instance->GetMouseYImpl(); }
 	inline static bool IsJoystickButtonPressed(int joystickSlot, int button) 
 		{ return s_Instance->IsJoystickButtonPressedImpl(joystickSlot, button); }
-	inline static double GetJoyStickAxis(int joystickSlot, int axis) 
+	inline static double GetJoystickAxis(int joystickSlot, int axis) 
 		{ return s_Instance->GetJoystickAxisImpl(joystickSlot, axis); }
 
 	static void SetInput(RendererAPI::API api);

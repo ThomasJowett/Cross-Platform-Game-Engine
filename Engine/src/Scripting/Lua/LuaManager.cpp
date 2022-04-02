@@ -40,3 +40,8 @@ sol::state& LuaManager::GetState()
 {
 	return *s_State;
 }
+
+bool LuaManager::IsValid()
+{
+	return (bool)s_State;
+}

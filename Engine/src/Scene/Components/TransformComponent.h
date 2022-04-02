@@ -22,6 +22,11 @@ struct TransformComponent
 		return m_WorldMatrix;
 	}
 
+	const Vector3f GetWorldPosition() const
+	{
+		return m_WorldMatrix * position;
+	}
+
 	Matrix4x4 GetLocalMatrix()
 	{
 		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);

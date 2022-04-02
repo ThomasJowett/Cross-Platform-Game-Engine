@@ -9,6 +9,7 @@ std::string SceneManager::s_NextSceneName;
 SceneState SceneManager::s_SceneState = SceneState::Play;
 std::filesystem::path SceneManager::s_EditingScene;
 
+
 Scene* SceneManager::CurrentScene()
 {
 	return s_CurrentScene.get();
@@ -217,4 +218,15 @@ void SceneManager::Restart()
 		s_CurrentScene->OnRuntimeStop();
 		s_CurrentScene->OnRuntimeStart();
 	}
+}
+
+void SceneManager::Shutdown()
+{
+	if (s_SceneState != SceneState::Edit && IsSceneLoaded())
+		s_CurrentScene->OnRuntimeStop();
+
+	s_CurrentScene.reset();
+	s_NextFilepath.clear();
+	s_NextSceneName.clear();
+	s_EditingScene.clear();
 }

@@ -59,6 +59,7 @@ Application::Application(const WindowProps& props)
 
 Application::~Application()
 {
+	SceneManager::Shutdown();
 	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
 	Renderer::Shutdown();

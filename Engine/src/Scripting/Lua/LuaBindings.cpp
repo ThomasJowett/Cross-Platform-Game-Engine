@@ -6,6 +6,7 @@
 #include "Core/Application.h"
 #include "Core/Input.h"
 #include "Core/MouseButtonCodes.h"
+#include "Core/Joysticks.h"
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneManager.h"
@@ -19,34 +20,34 @@ namespace Lua
 		sol::table log = state.create_table("Log");
 
 		log.set_function("Trace", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_TRACE(message);
-			});
+		{
+			CLIENT_TRACE(message);
+		});
 
 		log.set_function("Info", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_INFO(message);
-			});
+		{
+			CLIENT_INFO(message);
+		});
 
 		log.set_function("Debug", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_DEBUG(message);
-			});
+		{
+			CLIENT_DEBUG(message);
+		});
 
 		log.set_function("Warn", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_WARN(message);
-			});
+		{
+			CLIENT_WARN(message);
+		});
 
 		log.set_function("Error", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_ERROR(message);
-			});
+		{
+			CLIENT_ERROR(message);
+		});
 
 		log.set_function("Critical", [&](sol::this_state s, std::string_view message)
-			{
-				CLIENT_CRITICAL(message);
-			});
+		{
+			CLIENT_CRITICAL(message);
+		});
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
@@ -61,9 +62,9 @@ namespace Lua
 		application.set_function("ToggleImGui", &Application::ToggleImGui);
 
 		application.set_function("GetFixedUpdateInterval", [&](sol::this_state s) -> float
-			{
-				return Application::Get().GetFixedUpdateInterval();
-			});
+		{
+			return Application::Get().GetFixedUpdateInterval();
+		});
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
@@ -105,9 +106,9 @@ namespace Lua
 		sol::table input = state.create_table("Input");
 
 		input.set_function("IsKeyPressed", [&](char c) -> bool
-			{
-				return Input::IsKeyPressed((int)c);
-			});
+		{
+			return Input::IsKeyPressed((int)c);
+		});
 		input.set_function("IsMouseButtonPressed", &Input::IsMouseButtonPressed);
 		input.set_function("GetMousePos", &Input::GetMousePos);
 
@@ -117,6 +118,44 @@ namespace Lua
 			{ "Middle", MOUSE_BUTTON_MIDDLE },
 		};
 		state.new_enum("MouseButton", mouseItems);
+
+		std::initializer_list<std::pair<sol::string_view, int>> joystickItems = {
+			{ "A", GAMEPAD_BUTTON_A },
+			{ "B", GAMEPAD_BUTTON_B },
+			{ "X", GAMEPAD_BUTTON_X },
+			{ "Y", GAMEPAD_BUTTON_Y },
+			{ "LeftBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
+			{ "RightBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
+			{ "Back", GAMEPAD_BUTTON_BACK },
+			{ "Start", GAMEPAD_BUTTON_START },
+			{ "Guide",GAMEPAD_BUTTON_GUIDE },
+			{ "LeftThumbStick", GAMEPAD_BUTTON_LEFT_THUMB },
+			{ "RightThumbStick", GAMEPAD_BUTTON_RIGHT_THUMB },
+			{ "Up", GAMEPAD_BUTTON_DPAD_UP },
+			{ "Right", GAMEPAD_BUTTON_DPAD_RIGHT },
+			{ "Down", GAMEPAD_BUTTON_DPAD_DOWN },
+			{ "Left", GAMEPAD_BUTTON_DPAD_LEFT },
+			{ "Cross", GAMEPAD_BUTTON_CROSS },
+			{ "Circle", GAMEPAD_BUTTON_CIRCLE },
+			{ "Square", GAMEPAD_BUTTON_SQUARE },
+			{ "Triangle", GAMEPAD_BUTTON_TRIANGLE }
+		};
+		state.new_enum("JoystickButton", joystickItems);
+
+		std::initializer_list<std::pair<sol::string_view, int>> joystickAxisItems =
+		{
+			{ "LeftX", GAMEPAD_AXIS_LEFT_X },
+			{ "LeftY", GAMEPAD_AXIS_LEFT_Y },
+			{ "RightX", GAMEPAD_AXIS_RIGHT_X },
+			{ "RightY", GAMEPAD_AXIS_RIGHT_Y },
+			{ "LeftTrigger", GAMEPAD_AXIS_LEFT_TRIGGER },
+			{ "RightTrigger", GAMEPAD_AXIS_RIGHT_TRIGGER }
+		};
+		state.new_enum("JoystickAxis", joystickAxisItems);
+
+		input.set_function("GetJoyStickCount", &Joysticks::GetJoystickCount);
+		input.set_function("IsJoystickButtonPressed", &Input::IsJoystickButtonPressed);
+		input.set_function("GetJoystickAxis", &Input::GetJoystickAxis);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------

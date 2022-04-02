@@ -61,7 +61,7 @@ void JoystickInfoPanel::OnImGuiRender()
 
 				for (int j = 0; j <= 5; j++)
 				{
-					float axisValue = (float)Input::GetJoyStickAxis(i, j);
+					float axisValue = (float)Input::GetJoystickAxis(i, j);
 					ImGui::SliderFloat(axis_names[j], &axisValue, -1.0f, 1.0f);
 				}
 
@@ -134,7 +134,7 @@ void JoystickInfoPanel::OnImGuiRender()
 			{
 				for (int j = 0; j < joystick.axes; j++)
 				{
-					float axisValue = (float)Input::GetJoyStickAxis(i, j);
+					float axisValue = (float)Input::GetJoystickAxis(i, j);
 					ImGui::SliderFloat(("Axis " + std::to_string(j)).c_str(), &axisValue, -1.0f, 1.0f);
 				}
 

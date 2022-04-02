@@ -41,6 +41,9 @@ struct LineVertex
 	Vector2f texCoords;
 	float width;
 	float length;
+
+	// Editor only
+	int EntityId;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -248,6 +251,7 @@ void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& project
 
 	StartQuadsBatch();
 	StartCirclesBatch();
+	StartLinesBatch();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -258,6 +262,7 @@ void Renderer2D::EndScene()
 
 	FlushQuads();
 	FlushCircles();
+	FlushLines();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -276,12 +281,6 @@ void Renderer2D::FlushQuads()
 	s_Data.quadVertexBuffer->Bind();
 	s_Data.quadShader->Bind();
 	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount);
-
-	//s_Data.LineVertexBuffer->Bind();
-	//s_Data.LineShader->Bind();
-	//s_Data.LineVertexArray->Bind();
-	//RenderCommand::DrawIndexed(s_Data.LineVertexArray, s_Data.LineIndexCount);
-
 	s_Data.statistics.drawCalls++;
 }
 
@@ -295,6 +294,19 @@ void Renderer2D::FlushCircles()
 	s_Data.circleVertexBuffer->Bind();
 	s_Data.circleShader->Bind();
 	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount);
+	s_Data.statistics.drawCalls++;
+}
+
+void Renderer2D::FlushLines()
+{
+	if (s_Data.lineIndexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.lineVertexBufferPtr - (uint8_t*)s_Data.lineVertexBufferBase);
+	s_Data.lineVertexBuffer->SetData(s_Data.lineVertexBufferBase, dataSize);
+
+	s_Data.lineVertexBuffer->Bind();
+	s_Data.lineShader->Bind();
+	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount);
 	s_Data.statistics.drawCalls++;
 }
 
@@ -314,6 +326,12 @@ void Renderer2D::StartCirclesBatch()
 	s_Data.circleVertexBufferPtr = s_Data.circleVertexBufferBase;
 }
 
+void Renderer2D::StartLinesBatch()
+{
+	s_Data.lineIndexCount = 0;
+	s_Data.lineVertexBufferPtr = s_Data.lineVertexBufferBase;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::NextQuadsBatch()
@@ -326,6 +344,12 @@ void Renderer2D::NextCirclesBatch()
 {
 	FlushCircles();
 	StartCirclesBatch();
+}
+
+void Renderer2D::NextLinesBatch()
+{
+	FlushLines();
+	StartLinesBatch();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -590,7 +614,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
 {
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
-		NextQuadsBatch();
+		NextLinesBatch();
 
 	//world to clip
 	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
@@ -670,23 +694,9 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour)
-{
-	DrawLine(start, end, 1.0f, colour);
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float& thickness, const Colour& colour)
 {
 	//TODO draw polyline
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour)
-{
-	DrawPolyline(points, 1.0f, colour);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

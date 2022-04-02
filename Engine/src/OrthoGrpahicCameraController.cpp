@@ -45,8 +45,8 @@ void OrthographicCameraController::OnUpdate(float deltaTime)
 		m_Position.y -= m_TranslationSpeed * deltaTime;
 	}
 
-	m_Position.x += (float)Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_X) * deltaTime;
-	m_Position.y -= (float)Input::GetJoyStickAxis(0, GAMEPAD_AXIS_LEFT_Y) * deltaTime;
+	m_Position.x += (float)Input::GetJoystickAxis(0, GAMEPAD_AXIS_LEFT_X) * deltaTime;
+	m_Position.y -= (float)Input::GetJoystickAxis(0, GAMEPAD_AXIS_LEFT_Y) * deltaTime;
 }
 
 void OrthographicCameraController::OnEvent(Event& event)

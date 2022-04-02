@@ -286,7 +286,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		{
 			if (cameraComp.Primary)
 			{
-				view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+				view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
 				projection = cameraComp.Camera.GetProjectionMatrix();
 			}
 		}

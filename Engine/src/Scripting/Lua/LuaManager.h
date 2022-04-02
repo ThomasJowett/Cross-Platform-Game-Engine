@@ -11,6 +11,8 @@ public:
 
 	static sol::state& GetState();
 
+	static bool IsValid();
+
 private:
 	static Scope<sol::state> s_State;
 };

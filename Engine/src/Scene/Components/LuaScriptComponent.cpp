@@ -5,7 +5,7 @@
 
 LuaScriptComponent::~LuaScriptComponent()
 {
-	if (m_SolEnvironment)
+	if (m_SolEnvironment && LuaManager::IsValid())
 	{
 		OnDestroy();
 	}
