@@ -10,6 +10,27 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneManager.h"
+#include "Scene/Components/Components.h"
+#include "Utilities/StringUtils.h"
+
+template<typename Component>
+void RegisterComp(sol::state& state)
+{
+	std::string name = type_name_struct<Component>().data();
+	name.pop_back();
+	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
+	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
+	entity_Type.set_function("Add" + name, static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
+	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
+	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
+	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
+}
+
+template<typename... Component>
+void RegisterAllComponents(sol::state& state)
+{
+	(RegisterComp<Component>(state), ...);
+}
 
 namespace Lua
 {
@@ -92,9 +113,30 @@ namespace Lua
 	{
 		PROFILE_FUNCTION();
 
-		sol::usertype<Entity> entity_Type = state.new_usertype<Entity>("Entity");
-		entity_Type.set_function("IsValid", &Entity::IsValid);
-		entity_Type.set_function("GetName", &Entity::GetName);
+		sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity");
+		entity_type.set_function("IsValid", &Entity::IsValid);
+		entity_type.set_function("GetName", &Entity::GetName);
+		entity_type.set_function("SetName", &Entity::SetName);
+
+		RegisterAllComponents<COMPONENTS>(state);
+
+		auto transform_type = state["TransformComponent"].get_or_create<sol::usertype<TransformComponent>>();
+		transform_type["Position"] = &TransformComponent::position;
+		transform_type["Rotation"] = &TransformComponent::rotation;
+		transform_type["Scale"] = &TransformComponent::scale;
+		transform_type.set_function("GetWorldPosition", &TransformComponent::GetWorldPosition);
+
+		sol::usertype<SceneCamera> sceneCamera_type = state.new_usertype<SceneCamera>("Camera");
+		sceneCamera_type.set_function("SetOrthographic", &SceneCamera::SetOrthographic);
+		sceneCamera_type.set_function("SetPerspective", &SceneCamera::SetPerspective);
+
+		auto camera_type = state["CameraComponent"].get_or_create<sol::usertype<CameraComponent>>();
+		camera_type["Camera"] = &CameraComponent::Camera;
+		
+		auto sprite_type = state["SpriteComponent"].get_or_create<sol::usertype<SpriteComponent>>();
+		sprite_type["Tint"] = &SpriteComponent::tint;
+		sprite_type["Texture"] = &SpriteComponent::texture;
+		sprite_type["TilingFactor"] = &SpriteComponent::tilingFactor;
 	}
 
 	//--------------------------------------------------------------------------------------------------------------

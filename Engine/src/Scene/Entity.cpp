@@ -36,6 +36,11 @@ std::string& Entity::GetName()
 	return GetComponent<NameComponent>().name;
 }
 
+void Entity::SetName(const std::string& name)
+{
+	GetComponent<NameComponent>().name = name;
+}
+
 Uuid Entity::GetID()
 {
 	return GetComponent<IDComponent>().ID;

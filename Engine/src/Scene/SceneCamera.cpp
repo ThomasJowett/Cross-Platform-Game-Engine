@@ -8,7 +8,7 @@ SceneCamera::SceneCamera()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void SceneCamera::SetOrthoGraphic(float size, float nearClip, float farClip)
+void SceneCamera::SetOrthographic(float size, float nearClip, float farClip)
 {
 	m_ProjectionType = ProjectionType::orthographic;
 	m_OrthographicSize = size;

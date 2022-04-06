@@ -77,6 +77,11 @@ project "Engine"
 		"GLFW_INCLUDE_NONE"
 	}
 
+	buildoptions
+	{
+		"/bigobj"
+	}
+
 	filter "system:windows"
 		staticruntime "Off"
 		systemversion "latest"

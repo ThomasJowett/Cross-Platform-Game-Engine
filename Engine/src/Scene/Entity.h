@@ -114,6 +114,7 @@ public:
 
 	// Get the name
 	std::string& GetName();
+	void SetName(const std::string& name);
 
 	// Get the ID component
 	Uuid GetID();
