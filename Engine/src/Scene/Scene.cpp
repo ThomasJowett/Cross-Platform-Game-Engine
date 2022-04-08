@@ -64,7 +64,6 @@ Scene::Scene(std::filesystem::path filepath)
 Scene::Scene(std::string name)
 	:m_SceneName(name)
 {
-
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -223,6 +222,7 @@ void Scene::OnRuntimeStop()
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
 	std::stringstream().swap(m_Snapshot);
+	m_Dirty = false;
 
 	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
@@ -283,9 +283,12 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 
 	Entity cameraEntity = GetPrimaryCameraEntity();
 
-	auto [cameraComp, transformComp] = cameraEntity.GetComponent<CameraComponent, TransformComponent>();
-	view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-	projection = cameraComp.Camera.GetProjectionMatrix();
+	if (cameraEntity)
+	{
+		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+		projection = cameraComp.Camera.GetProjectionMatrix();
+	}
 
 	Render(renderTarget, view, projection);
 }
@@ -572,6 +575,7 @@ Entity Scene::GetPrimaryCameraEntity()
 		if (cameraComp.Primary)
 			return Entity{ entity, this };
 	}
+	return Entity();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

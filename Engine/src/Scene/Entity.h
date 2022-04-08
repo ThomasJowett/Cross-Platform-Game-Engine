@@ -88,7 +88,7 @@ public:
 	}
 
 	template<typename... T>
-	std::tuple<T&...> GetComponent()
+	std::tuple<T&...> GetComponents()
 	{
 		return m_Scene->m_Registry.get<T...>(m_EntityHandle);
 	}

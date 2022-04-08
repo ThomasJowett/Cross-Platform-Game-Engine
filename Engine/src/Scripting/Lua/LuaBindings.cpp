@@ -24,6 +24,7 @@ void RegisterComponent(sol::state& state)
 	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
 	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
 	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
+	entity_Type.set_function("Get" + name, &Entity::GetComponent<Component>);
 }
 
 template<typename... Component>

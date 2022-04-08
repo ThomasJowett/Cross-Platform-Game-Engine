@@ -61,6 +61,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
 	m_Framebuffer->Bind();
@@ -211,6 +212,7 @@ void ViewportPanel::OnImGuiRender()
 			m_ViewportSize = panelSize;
 			m_CameraController.SetViewPortSize(Vector2f(m_ViewportSize.x, m_ViewportSize.y));
 			m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+			SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		pos = ImGui::GetCursorScreenPos();
