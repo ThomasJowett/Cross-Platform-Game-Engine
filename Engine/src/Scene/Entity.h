@@ -7,6 +7,7 @@
 #include "Components/TransformComponent.h"
 #include "Components/NameComponent.h"
 #include "Components/IDComponent.h"
+#include "Utilities/StringUtils.h"
 
 class Entity
 {
@@ -52,7 +53,7 @@ public:
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
-		CORE_ASSERT(!HasComponent<T>(), "Entity already has component of type " + std::string(typeid(T).name()));
+		CORE_ASSERT(!HasComponent<T>(), "Entity already has component of type " + std::string(type_name<T>().data()));
 		m_Scene->MakeDirty();
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
@@ -82,8 +83,14 @@ public:
 	template<typename T>
 	T& GetComponent()
 	{
-		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(typeid(T).name()));
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(type_name<T>().data()));
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
+	}
+
+	template<typename... T>
+	std::tuple<T&...> GetComponent()
+	{
+		return m_Scene->m_Registry.get<T...>(m_EntityHandle);
 	}
 
 	/**
@@ -146,7 +153,7 @@ public:
 	template<typename T>
 	void RemoveComponent()
 	{
-		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(typeid(T).name()));
+		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(type_name<T>().data()));
 		m_Scene->m_Registry.remove<T>(m_EntityHandle);
 		m_Scene->MakeDirty();
 	}

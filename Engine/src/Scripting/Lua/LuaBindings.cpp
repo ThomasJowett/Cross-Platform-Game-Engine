@@ -14,9 +14,9 @@
 #include "Utilities/StringUtils.h"
 
 template<typename Component>
-void RegisterComp(sol::state& state)
+void RegisterComponent(sol::state& state)
 {
-	std::string name = type_name_struct<Component>().data();
+	std::string name = type_name<Component>().data();
 	name.pop_back();
 	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
@@ -29,7 +29,7 @@ void RegisterComp(sol::state& state)
 template<typename... Component>
 void RegisterAllComponents(sol::state& state)
 {
-	(RegisterComp<Component>(state), ...);
+	(RegisterComponent<Component>(state), ...);
 }
 
 namespace Lua
@@ -105,6 +105,7 @@ namespace Lua
 		scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
 		scene_type.set_function("GetName", &Scene::GetSceneName);
 		scene_type.set_function("SetName", &Scene::SetSceneName);
+		scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
@@ -117,6 +118,7 @@ namespace Lua
 		entity_type.set_function("IsValid", &Entity::IsValid);
 		entity_type.set_function("GetName", &Entity::GetName);
 		entity_type.set_function("SetName", &Entity::SetName);
+		entity_type.set_function("AddChild", &Entity::AddChild);
 
 		RegisterAllComponents<COMPONENTS>(state);
 
@@ -129,10 +131,25 @@ namespace Lua
 		sol::usertype<SceneCamera> sceneCamera_type = state.new_usertype<SceneCamera>("Camera");
 		sceneCamera_type.set_function("SetOrthographic", &SceneCamera::SetOrthographic);
 		sceneCamera_type.set_function("SetPerspective", &SceneCamera::SetPerspective);
+		sceneCamera_type.set_function("SetAspectRatio", &SceneCamera::SetAspectRatio);
+		sceneCamera_type.set_function("GetAspectRatio", &SceneCamera::GetAspectRatio);
+		sceneCamera_type.set_function("GetOrthoNear", &SceneCamera::GetOrthoNear);
+		sceneCamera_type.set_function("SetOrthoNear", &SceneCamera::GetOrthoNear);
+		sceneCamera_type.set_function("GetOrthoFar", &SceneCamera::GetOrthoFar);
+		sceneCamera_type.set_function("SetOrthoFar", &SceneCamera::SetOrthoFar);
+		sceneCamera_type.set_function("GetOrthoSize", &SceneCamera::GetOrthoSize);
+		sceneCamera_type.set_function("SetOrthoSize", &SceneCamera::SetOrthoSize);
+		sceneCamera_type.set_function("GetPerspectiveNear", &SceneCamera::GetPerspectiveNear);
+		sceneCamera_type.set_function("SetPerspectiveNear", &SceneCamera::SetPerspectiveNear);
+		sceneCamera_type.set_function("GetPerspectiveFar", &SceneCamera::GetPerspectiveFar);
+		sceneCamera_type.set_function("SetFov", &SceneCamera::SetVerticalFov);
+		sceneCamera_type.set_function("SetFov", &SceneCamera::SetVerticalFov);
 
 		auto camera_type = state["CameraComponent"].get_or_create<sol::usertype<CameraComponent>>();
 		camera_type["Camera"] = &CameraComponent::Camera;
-		
+		camera_type["Primary"] = &CameraComponent::Primary;
+		camera_type["FixedAspectRatio"] = &CameraComponent::FixedAspectRatio;
+
 		auto sprite_type = state["SpriteComponent"].get_or_create<sol::usertype<SpriteComponent>>();
 		sprite_type["Tint"] = &SpriteComponent::tint;
 		sprite_type["Texture"] = &SpriteComponent::texture;

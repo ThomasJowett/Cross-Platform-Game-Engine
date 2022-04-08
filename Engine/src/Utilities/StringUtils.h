@@ -92,13 +92,13 @@ constexpr auto type_name_array()
 }
 
 template <typename T>
-struct type_name_holder_struct {
+struct type_name_holder {
 	static inline constexpr auto value = type_name_array<T>();
 };
 
 template <typename T>
-constexpr auto type_name_struct() -> std::string_view
+constexpr auto type_name() -> std::string_view
 {
-	constexpr auto& value = type_name_holder_struct<T>::value;
+	constexpr auto& value = type_name_holder<T>::value;
 	return std::string_view{ value.data(), value.size() };
 }

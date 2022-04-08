@@ -64,6 +64,8 @@ public:
 	const std::filesystem::path GetFilepath() const { return m_Filepath; }
 	void SetFilepath(std::filesystem::path filepath);
 
+	Entity GetPrimaryCameraEntity();
+
 private:
 	entt::registry m_Registry;
 
