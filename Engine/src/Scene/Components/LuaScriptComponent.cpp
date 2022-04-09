@@ -2,6 +2,7 @@
 #include "LuaScriptComponent.h"
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
+#include "Scene/Entity.h"
 
 LuaScriptComponent::~LuaScriptComponent()
 {
@@ -11,7 +12,7 @@ LuaScriptComponent::~LuaScriptComponent()
 	}
 }
 
-bool LuaScriptComponent::ParseScript()
+bool LuaScriptComponent::ParseScript(Entity entity)
 {
 	if (absoluteFilepath.empty())
 		return false;
@@ -27,6 +28,7 @@ bool LuaScriptComponent::ParseScript()
 	}
 
 	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
+	(*m_SolEnvironment)["Entity"] = entity;
 
 	m_OnCreateFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnCreate"]);
 	if (!m_OnCreateFunc->valid())

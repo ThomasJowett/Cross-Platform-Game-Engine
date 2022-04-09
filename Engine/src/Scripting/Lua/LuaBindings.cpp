@@ -96,11 +96,23 @@ namespace Lua
 		SceneManager::ChangeScene(std::filesystem::path(sceneFilepath));
 	}
 
+	Entity FindEntity(std::string_view name)
+	{
+		auto view = SceneManager::CurrentScene()->GetRegistry().view<NameComponent>();
+		for (auto entity : view)
+		{
+			auto [nameComp] = view.get(entity);
+			if (name == nameComp.name)
+				return Entity(entity, SceneManager::CurrentScene());
+		}
+	}
+
 	void BindScene(sol::state& state)
 	{
 		PROFILE_FUNCTION();
 
 		state.set_function("ChangeScene", &ChangeScene);
+		state.set_function("FindEntity", &FindEntity);
 
 		sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 		scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
@@ -110,6 +122,11 @@ namespace Lua
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
+
+	void PhysicsApplyImpulse2D(Vector2f impulse)
+	{
+
+	}
 
 	void BindEntity(sol::state& state)
 	{
@@ -155,6 +172,41 @@ namespace Lua
 		sprite_type["Tint"] = &SpriteComponent::tint;
 		sprite_type["Texture"] = &SpriteComponent::texture;
 		sprite_type["TilingFactor"] = &SpriteComponent::tilingFactor;
+
+		std::initializer_list<std::pair<sol::string_view, int>> rigidBodyTypesItems =
+		{
+			{ "Static", (int)RigidBody2DComponent::BodyType::STATIC },
+			{ "Kinematic", (int)RigidBody2DComponent::BodyType::KINEMATIC },
+			{ "Dynamic", (int)RigidBody2DComponent::BodyType::DYNAMIC }
+		};
+		state.new_enum("BodyType", rigidBodyTypesItems);
+
+		auto rigidBody2D_type = state["RigidBody2DComponent"].get_or_create<sol::usertype<RigidBody2DComponent>>();
+		rigidBody2D_type["Type"] = &RigidBody2DComponent::type;
+		rigidBody2D_type["FixedRotation"] = &RigidBody2DComponent::fixedRotation;
+		rigidBody2D_type["GravityScale"] = &RigidBody2DComponent::gravityScale;
+		rigidBody2D_type["AngularDamping"] = &RigidBody2DComponent::angularDamping;
+		rigidBody2D_type["LinearDamping"] = &RigidBody2DComponent::linearDamping;
+		
+		auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
+		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::Offset;
+		boxCollider2D_type["Size"] = &BoxCollider2DComponent::Size;
+		boxCollider2D_type["Desity"] = &BoxCollider2DComponent::Density;
+		boxCollider2D_type["Friction"] = &BoxCollider2DComponent::Friction;
+		boxCollider2D_type["Restitution"] = &BoxCollider2DComponent::Restitution;
+		
+		auto circleCollider2D_type = state["CircleCollider2DComponent"].get_or_create<sol::usertype<CircleCollider2DComponent>>();
+		circleCollider2D_type["Offset"] = &CircleCollider2DComponent::Offset;
+		circleCollider2D_type["Radius"] = &CircleCollider2DComponent::Radius;
+		circleCollider2D_type["Desity"] = &CircleCollider2DComponent::Density;
+		circleCollider2D_type["Friction"] = &CircleCollider2DComponent::Friction;
+		circleCollider2D_type["Restitution"] = &CircleCollider2DComponent::Restitution;
+		
+		auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
+		circleRenderer_type["Colour"] = &CircleRendererComponent::colour;
+		circleRenderer_type["Radius"] = &CircleRendererComponent::Radius;
+		circleRenderer_type["Thickness"] = &CircleRendererComponent::Thickness;
+		circleRenderer_type["Fade"] = &CircleRendererComponent::Fade;
 	}
 
 	//--------------------------------------------------------------------------------------------------------------

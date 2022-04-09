@@ -181,7 +181,7 @@ void Scene::OnRuntimeStart()
 			auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
 
 			b2CircleShape circleShape;
-			circleShape.m_radius = circleColliderComp.Radius;
+			circleShape.m_radius = circleColliderComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
 			circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
 
 			b2FixtureDef fixtureDef;
@@ -192,15 +192,13 @@ void Scene::OnRuntimeStart()
 
 			body->CreateFixture(&fixtureDef);
 		}
-	}
-	);
+	});
 
 	m_Registry.view<LuaScriptComponent>().each(
-		[](const auto entity, auto& scriptComponent)
+		[=](const auto entity, auto& scriptComponent)
 	{
-		scriptComponent.ParseScript();
-	}
-	);
+		scriptComponent.ParseScript(Entity{ entity, this });
+	});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -291,19 +289,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 	}
 
 	Render(renderTarget, view, projection);
-}
-
-void Scene::DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
-{
-	if (renderTarget != nullptr)
-		renderTarget->Bind();
-
-	Renderer::BeginScene(cameraTransform, projection);
-
-	Renderer::EndScene();
-
-	if (renderTarget != nullptr)
-		renderTarget->UnBind();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -576,6 +561,14 @@ Entity Scene::GetPrimaryCameraEntity()
 			return Entity{ entity, this };
 	}
 	return Entity();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::DestroyBody(b2Body* body)
+{
+	if (m_Box2DWorld)
+		m_Box2DWorld->DestroyBody(body);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

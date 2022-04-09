@@ -8,6 +8,8 @@
 #include "Core/Application.h"
 #include "Utilities/FileUtils.h"
 
+class Entity;
+
 struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
@@ -19,7 +21,7 @@ struct LuaScriptComponent
 	std::filesystem::path absoluteFilepath;
 	bool created = false;
 
-	bool ParseScript();
+	bool ParseScript(Entity entity);
 
 	void OnCreate();
 	void OnDestroy();

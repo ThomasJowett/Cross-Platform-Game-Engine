@@ -83,7 +83,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	case SceneState::Edit:
 	case SceneState::Simulate:
 	{
-		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
