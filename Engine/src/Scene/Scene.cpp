@@ -10,6 +10,7 @@
 #include "Renderer/FrameBuffer.h"
 
 #include "Utilities/GeometryGenerator.h"
+#include "Utilities/Box2DDebugDraw.h"
 
 #include "cereal/archives/binary.hpp"
 #include "cereal/archives/json.hpp"
@@ -136,6 +137,8 @@ void Scene::OnRuntimeStart()
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
 	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
+	if (m_Box2DDraw)
+		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
 		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
@@ -264,6 +267,9 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
 		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 	}
+
+	if (m_Box2DDraw && m_Box2DWorld)
+		m_Box2DWorld->DrawDebugData();
 
 	Renderer::EndScene();
 
@@ -569,6 +575,22 @@ void Scene::DestroyBody(b2Body* body)
 {
 	if (m_Box2DWorld)
 		m_Box2DWorld->DestroyBody(body);
+}
+
+void Scene::SetShowDebug(bool show)
+{
+	if (show && !m_Box2DDraw)
+	{
+		m_Box2DDraw = new Box2DDebugDraw();
+		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
+		if (m_Box2DWorld)
+			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
+	}
+	else if(!show)
+	{
+		delete m_Box2DDraw;
+		m_Box2DDraw = nullptr;
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

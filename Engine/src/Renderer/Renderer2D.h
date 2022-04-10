@@ -22,6 +22,7 @@ public:
 	static void FlushQuads();
 	static void FlushCircles();
 	static void FlushLines();
+	static void FlushHairLines();
 
 	//primitives
 
@@ -55,10 +56,17 @@ public:
 
 	// Line
 	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
-	static void DrawHairLine(const Vector3f& start, Vector3f& end, const Colour& colour = Colours::WHITE);
 
 	// Poly-line
 	static void DrawPolyline(const std::vector<Vector2f>& points, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
+
+	// Hair Lines
+	static void DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineRect(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineCircle(const Vector3f& position, float radius, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	struct Stats
 	{
@@ -77,7 +85,9 @@ private:
 	static void StartQuadsBatch();
 	static void StartCirclesBatch();
 	static void StartLinesBatch();
+	static void StartHairLinesBatch();
 	static void NextQuadsBatch();
 	static void NextCirclesBatch();
 	static void NextLinesBatch();
+	static void NextHairLinesBatch();
 };

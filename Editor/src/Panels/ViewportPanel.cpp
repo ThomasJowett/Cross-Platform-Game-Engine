@@ -99,6 +99,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			}
 		}
 
+		SceneManager::CurrentScene()->SetShowDebug(true);
+
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
@@ -119,22 +121,28 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
 
-				Matrix4x4 transform = transformComp.GetParentMatrix();
+				float scale = circleComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
 
-				Vector3f translation = Vector3f(circleComp.Offset.x, circleComp.Offset.y, 0.001f) + transformComp.position;
+				Matrix4x4 transform = transformComp.GetParentMatrix()
+					* Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::Translate(Vector3f(circleComp.Offset.x, circleComp.Offset.y, 0.001f))
+					* Matrix4x4::Scale(Vector3f(scale, scale, 1.0f));
 
-				transform = transform * Matrix4x4::Translate(translation) * Matrix4x4::Scale(Vector3f(circleComp.Radius * 2, circleComp.Radius * 2, 1.0f));
-
-				//transform.Translate(Vector3f(0, 0, -0.1f));
-
-				Renderer2D::DrawCircle(transform, Colours::LIME_GREEN, 0.05f, 0.004f);
+				Renderer2D::DrawHairLineCircle(transform, 60, Colours::LIME_GREEN, selectedEntity);
 			}
 
 			if (selectedEntity.HasComponent<BoxCollider2DComponent>())
 			{
 				BoxCollider2DComponent& boxComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
 
-				//Renderer2D::DrawLine()
+				Matrix4x4 transform = transformComp.GetParentMatrix()
+					* Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::Translate(Vector3f(boxComp.Offset.x, boxComp.Offset.y, 0.001f))
+					* Matrix4x4::Scale(Vector3f(boxComp.Size.x * transformComp.scale.x * 2, boxComp.Size.y * transformComp.scale.y * 2, 1.0f));
+
+				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
 			}
 			Renderer2D::EndScene();
 			m_Framebuffer->UnBind();

@@ -12,6 +12,7 @@ class FrameBuffer;
 class Camera;
 class b2World;
 class b2Body;
+class b2Draw;
 
 class Scene
 {
@@ -65,6 +66,7 @@ public:
 	Entity GetPrimaryCameraEntity();
 
 	void DestroyBody(b2Body* body);
+	void SetShowDebug(bool show);
 
 private:
 	entt::registry m_Registry;
@@ -82,6 +84,7 @@ protected:
 	bool m_IsSaving = false;
 
 	b2World* m_Box2DWorld = nullptr;
+	b2Draw* m_Box2DDraw = nullptr;
 
 	std::stringstream m_Snapshot;
 
