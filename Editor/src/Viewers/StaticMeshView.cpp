@@ -49,8 +49,8 @@ void StaticMeshView::OnImGuiRender()
 		{
 			if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 			{
-				ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
-				Application::GetWindow().SetCursor(Cursors::CrossHair);
+				//ImGui::SetMouseCursor(ImGuiMouseCursor_COUNT); //HACK: this is to stop imgui from changing the cursor back to something every frame
+				//Application::GetWindow().SetCursor(Cursors::CrossHair);
 			}
 		}
 
@@ -149,7 +149,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	m_Texture->Bind();
 
 	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
-	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
+	//Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

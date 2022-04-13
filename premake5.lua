@@ -77,11 +77,6 @@ project "Engine"
 		"GLFW_INCLUDE_NONE"
 	}
 
-	buildoptions
-	{
-		"/bigobj"
-	}
-
 	filter "system:windows"
 		staticruntime "Off"
 		systemversion "latest"
@@ -108,6 +103,11 @@ project "Engine"
 			"%{prj.name}/src/Platform/Linux**.cpp",
 			"%{prj.name}/src/Platform/Mac OS**.h",
 			"%{prj.name}/src/Platform/Mac OS**.cpp"
+		}
+
+		buildoptions
+		{
+			"/bigobj"
 		}
 	
 	filter "system:linux"

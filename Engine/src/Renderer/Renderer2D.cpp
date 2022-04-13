@@ -667,7 +667,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
+void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const float& thickness, const Colour& colour)
 {
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
 		NextLinesBatch();
@@ -763,6 +763,7 @@ void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const 
 	s_Data.hairLineVertexBufferPtr++;
 
 	s_Data.hairLineVertexCount += 2;
+	s_Data.statistics.hairLineCount++;
 }
 
 void Renderer2D::DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour, int entityId)

@@ -55,7 +55,7 @@ public:
 	static void DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp, int entityId = -1);
 
 	// Line
-	static void DrawLine(const Vector2f& start, Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
+	static void DrawLine(const Vector2f& start, const Vector2f& end, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
 
 	// Poly-line
 	static void DrawPolyline(const std::vector<Vector2f>& points, const float& thickness = 1.0f, const Colour& colour = Colours::WHITE);
@@ -73,6 +73,7 @@ public:
 		uint32_t drawCalls = 0;
 		uint32_t quadCount = 0;
 		uint32_t lineCount = 0;
+		uint32_t hairLineCount = 0;
 
 		uint32_t GetTotalVertexCount() { return quadCount * 4; }
 		uint32_t GetTotalIndexCount() { return quadCount * 6; }

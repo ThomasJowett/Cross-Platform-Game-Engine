@@ -105,6 +105,7 @@ namespace Lua
 			if (name == nameComp.name)
 				return Entity(entity, SceneManager::CurrentScene());
 		}
+		return Entity();
 	}
 
 	void BindScene(sol::state& state)
