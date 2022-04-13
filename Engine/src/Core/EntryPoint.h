@@ -17,6 +17,8 @@ int main(int argc, char* argv[])
 {
 	InputParser input(argc, argv);
 
+	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+
 	Logger::Init();
 
 	if (AnotherInstance())
@@ -27,8 +29,6 @@ int main(int argc, char* argv[])
 	{
 		//TODO: create the server
 	}
-
-	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{

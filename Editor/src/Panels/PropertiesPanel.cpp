@@ -745,8 +745,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		{
 			for (std::filesystem::path& file : scripts)
 			{
-				const bool is_selected = false;
-				if (ImGui::MenuItem(file.filename().string().c_str(), is_selected))
+				if (ImGui::MenuItem(file.filename().string().c_str()))
 				{
 					entity.AddComponent<LuaScriptComponent>(file);
 					break;

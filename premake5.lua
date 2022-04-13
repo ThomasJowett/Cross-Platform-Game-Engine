@@ -196,7 +196,8 @@ project "ExampleGame"
 	
 	links
 	{
-		"Engine"
+		"Engine",
+		"lua"
 	}
 
 	postbuildcommands
@@ -291,7 +292,8 @@ project "Editor"
 	links
 	{
 		"Engine",
-		"OpenFBX"
+		"OpenFBX",
+		"lua"
 	}
 
 	defines
@@ -385,7 +387,8 @@ project "Runtime"
 
 	links
 	{
-		"Engine"
+		"Engine",
+		"lua"
 	}
 
 	filter "system:windows"

@@ -386,6 +386,14 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::SetCursorPos(toolbarPosistion);
 		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 		ImGui::Text("%.1f", io.Framerate);
+
+		ImGui::SameLine(30.0f);
+		static bool CameraIs2D = true;
+		if (ImGui::RadioButton("2D", CameraIs2D))
+		{
+			CameraIs2D = !CameraIs2D;
+			m_CameraController.SwitchCamera(CameraIs2D);
+		}
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
