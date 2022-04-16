@@ -1189,7 +1189,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 				if (ImGui::BeginTable("Details Table", 3, table_flags))
 				{
-
 					ImGui::TableSetupColumn("Name");
 					ImGui::TableSetupColumn("Date Modified");
 					ImGui::TableSetupColumn("Size");

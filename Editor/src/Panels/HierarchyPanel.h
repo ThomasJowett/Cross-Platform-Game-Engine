@@ -31,6 +31,7 @@ public:
 
 private:
     void DrawNode(Entity entity);
+    void DragDropTarget(Entity parent);
 private:
     bool* m_Show;
 

@@ -37,6 +37,7 @@ public:
 	virtual void SaveAs() override;
 private:
 	TextEditor::LanguageDefinition DetermineLanguageDefinition();
+	void ParseLuaScript();
 private:
 	bool* m_Show;
 

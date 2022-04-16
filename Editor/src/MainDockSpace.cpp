@@ -23,6 +23,7 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
 #include "Panels/ConsolePanel.h"
+#include "Panels/ErrorListPanel.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
@@ -48,7 +49,7 @@ MainDockSpace::MainDockSpace()
 	m_ShowProjectSettings = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
-	m_ShowErrorList = false;
+	m_ShowErrorList = true;
 	m_ShowTaskList = false;
 	m_ShowProperties = true;
 	m_ShowHierarchy = true;
@@ -104,6 +105,7 @@ void MainDockSpace::OnAttach()
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierarchy = Settings::GetBool("Windows", "Hierarchy");
+	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 
 	m_ShowPlayPauseToolbar = Settings::GetBool("Toolbars", "PlayPause");
 	m_ShowSaveOpenToolbar = Settings::GetBool("Toolbars", "SaveOpen");
@@ -119,6 +121,7 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(hierarchyPanel);
 	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel));
 	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel));
+	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
 
 	if (!Application::GetOpenDocument().empty())
 	{
@@ -320,7 +323,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
-			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
+			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList);
 			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
 #ifdef DEBUG

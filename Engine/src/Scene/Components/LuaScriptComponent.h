@@ -21,7 +21,7 @@ struct LuaScriptComponent
 	std::filesystem::path absoluteFilepath;
 	bool created = false;
 
-	bool ParseScript(Entity entity);
+	std::optional<std::pair<int, std::string>> ParseScript(Entity entity);
 
 	void OnCreate();
 	void OnDestroy();

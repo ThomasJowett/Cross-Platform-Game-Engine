@@ -3,8 +3,6 @@
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
 
-#include "Engine.h"
-
 #include "Utilities/GeometryGenerator.h"
 #include "Scene/SceneSerializer.h"
 #include "Scene/SceneGraph.h"
@@ -213,34 +211,27 @@ void HierarchyPanel::OnImGuiRender()
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
 			{
-				if (ImGui::BeginDragDropTarget())
-				{
-					if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
-					{
-						Entity* childEntity = (Entity*)payload->Data;
-						ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
-
-						SceneGraph::Unparent(*childEntity, SceneManager::CurrentScene()->GetRegistry());
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-					ImGui::EndDragDropTarget();
-				}
+				DragDropTarget(Entity());
 
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
+				{
+					if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
 					{
-						if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
-						{
-							Entity entity{ entityID, SceneManager::CurrentScene() };
+						Entity entity{ entityID, SceneManager::CurrentScene() };
 
-							// Only draw a node for root entites, children are drawn recursively
-							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
-							if (!hierarchyComp || hierarchyComp->parent == entt::null)
-								DrawNode(entity);
-						}
-					});
-
+						// Only draw a node for root entites, children are drawn recursively
+						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+						if (!hierarchyComp || hierarchyComp->parent == entt::null)
+							DrawNode(entity);
+					}
+				});
 				ImGui::TreePop();
 			}
+
+			ImVec2 available = ImGui::GetContentRegionAvail();
+			ImGui::Dummy(available);
+			DragDropTarget(Entity());
+			
 		}
 	}
 	ImGui::End();
@@ -252,11 +243,11 @@ void HierarchyPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
-		{
-			// Clear the selected entity when project changes
-			m_SelectedEntity = Entity();
-			return false;
-		});
+	{
+		// Clear the selected entity when project changes
+		m_SelectedEntity = Entity();
+		return false;
+	});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -288,22 +279,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 		ImGui::Text(name.c_str());
 		ImGui::EndDragDropSource();
 	}
-
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
-		{
-			Entity* childEntity = (Entity*)payload->Data;
-			ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
-
-			if (*childEntity != entity)
-			{
-				SceneGraph::Reparent(*childEntity, entity, SceneManager::CurrentScene()->GetRegistry());
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-		}
-		ImGui::EndDragDropTarget();
-	}
+	DragDropTarget(entity);
 
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
@@ -363,6 +339,25 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (m_SelectedEntity == entity)
 			m_SelectedEntity = {};
 		SceneManager::CurrentScene()->RemoveEntity(entity);
+	}
+}
+
+void HierarchyPanel::DragDropTarget(Entity parent)
+{
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
+		{
+			Entity* childEntity = (Entity*)payload->Data;
+			ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
+
+			if (parent)
+				SceneGraph::Reparent(*childEntity, parent, SceneManager::CurrentScene()->GetRegistry());
+			else
+				SceneGraph::Unparent(*childEntity, SceneManager::CurrentScene()->GetRegistry());
+			SceneManager::CurrentScene()->MakeDirty();
+		}
+		ImGui::EndDragDropTarget();
 	}
 }
 

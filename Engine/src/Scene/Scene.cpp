@@ -200,7 +200,11 @@ void Scene::OnRuntimeStart()
 	m_Registry.view<LuaScriptComponent>().each(
 		[=](const auto entity, auto& scriptComponent)
 	{
-		scriptComponent.ParseScript(Entity{ entity, this });
+		std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
+		if (result.has_value())
+		{
+			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
+		}
 	});
 }
 
@@ -224,6 +228,8 @@ void Scene::OnRuntimeStop()
 	}
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
+
+	LuaManager::CleanUp();
 
 	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
@@ -586,7 +592,7 @@ void Scene::SetShowDebug(bool show)
 		if (m_Box2DWorld)
 			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 	}
-	else if(!show)
+	else if (!show)
 	{
 		delete m_Box2DDraw;
 		m_Box2DDraw = nullptr;

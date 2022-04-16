@@ -1,6 +1,7 @@
 #include "PlayPauseToolbar.h"
 
 #include "IconsFontAwesome5.h"
+#include "Viewers/ViewerManager.h"
 
 #include "ImGui/ImGuiUtilites.h"
 #include "Scene/SceneManager.h"
@@ -50,6 +51,9 @@ void PlayPauseToolbar::PlayButton()
 {
 	if (ImGui::Button(ICON_FA_PLAY "##Play"))
 	{
+		if (SceneManager::GetSceneState() == SceneState::Edit)
+			ViewerManager::SaveAll();
+
 		if (SceneManager::GetSceneState() == SceneState::SimulatePause)
 			SceneManager::ChangeSceneState(SceneState::Simulate);
 		else if (SceneManager::GetSceneState() == SceneState::Pause
@@ -64,6 +68,9 @@ void PlayPauseToolbar::SimulateButton()
 {
 	if (ImGui::Button(ICON_FA_PLAY_CIRCLE "##Simulate"))
 	{
+		if (SceneManager::GetSceneState() == SceneState::Edit)
+			ViewerManager::SaveAll();
+
 		SceneManager::ChangeSceneState(SceneState::Simulate);
 	}
 	ImGui::Tooltip("Simulation");

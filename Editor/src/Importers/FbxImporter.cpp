@@ -113,7 +113,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		size_t numIndices = indicesList.size();
 
 		std::filesystem::path outFilename = destination / meshName.substr(meshName.find_last_of("::") + 1);
-		outFilename.replace_extension(".staticMesh");
+		outFilename.replace_extension(".staticmesh");
 		std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
 		outbin.write((char*)&vertexCount, sizeof(uint32_t));
 		outbin.write((char*)&numIndices, sizeof(uint32_t));

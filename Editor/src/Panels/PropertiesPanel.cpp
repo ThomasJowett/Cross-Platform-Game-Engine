@@ -20,8 +20,42 @@ void PropertiesPanel::OnAttach()
 {
 }
 
-void PropertiesPanel::OnFixedUpdate()
+void PropertiesPanel::OnUpdate(float deltaTime)
 {
+	Entity entity = m_HierarchyPanel->GetSelectedEntity();
+	if (entity && entity.HasComponent<PrimitiveComponent>())
+	{
+		StaticMeshComponent& staticMeshComp = m_HierarchyPanel->GetSelectedEntity().GetOrAddComponent<StaticMeshComponent>();
+		PrimitiveComponent& primitiveComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<PrimitiveComponent>();
+
+		if (primitiveComp.needsUpdating)
+		{
+			switch (primitiveComp.type)
+			{
+			case PrimitiveComponent::Shape::Cube:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
+				break;
+			case PrimitiveComponent::Shape::Sphere:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
+				break;
+			case PrimitiveComponent::Shape::Plane:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
+				break;
+			case PrimitiveComponent::Shape::Cylinder:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
+				break;
+			case PrimitiveComponent::Shape::Cone:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
+				break;
+			case PrimitiveComponent::Shape::Torus:
+				staticMeshComp.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
+				break;
+			default:
+				break;
+			}
+			primitiveComp.needsUpdating = false;
+		}
+	}
 }
 
 void PropertiesPanel::OnImGuiRender()
@@ -59,7 +93,7 @@ void PropertiesPanel::OnImGuiRender()
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					if (file->extension() == ".staticmesh" && !entity.HasComponent<StaticMeshComponent>())
+					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
 					{
 						//TODO: Store the material in the mesh file
 						Mesh mesh(*file);
@@ -115,594 +149,594 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	//Transform------------------------------------------------------------------------------------------------------------
 	DrawComponent<TransformComponent>("Transform", entity, [](auto& transform)
-		{
-			ImGui::Transform(transform.position, transform.rotation, transform.scale);
-		}, false);
+	{
+		ImGui::Transform(transform.position, transform.rotation, transform.scale);
+	}, false);
 
 
 	//Sprite--------------------------------------------------------------------------------------------------------------
 	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [](auto& sprite)
+	{
+		float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
+		float* tilingFactor = &sprite.tilingFactor;
+
+		if (ImGui::ColorEdit4("Tint", tint[0]))
 		{
-			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
-			float* tilingFactor = &sprite.tilingFactor;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			if (ImGui::ColorEdit4("Tint", tint[0]))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		if (ImGui::Texture2DEdit("Texture", sprite.texture))
+		{
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			if (ImGui::Texture2DEdit("Texture", sprite.texture))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-		});
+		if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
+		{
+			SceneManager::CurrentScene()->MakeDirty();
+		}
+	});
 
 	//Animated Sprite--------------------------------------------------------------------------------------------------------------
 	DrawComponent<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity, [](auto& sprite)
+	{
+		float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
+
+		if (ImGui::ColorEdit4("Tint", tint[0]))
 		{
-			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			if (ImGui::ColorEdit4("Tint", tint[0]))
+		// Sprite Sheet
+		if (ImGui::Texture2DEdit("Sprite Sheet", sprite.animator.GetSpriteSheet()->GetTexture()))
+		{
+			SceneManager::CurrentScene()->MakeDirty();
+			sprite.animator.GetSpriteSheet()->RecalculateCellsDimensions();
+		}
+
+		// Sprite Size
+		int spriteSize[2] = { (int)sprite.animator.GetSpriteSheet()->GetSpriteWidth(), (int)sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
+		if (ImGui::InputInt2("Sprite Size", spriteSize))
+		{
+			sprite.animator.GetSpriteSheet()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
+		}
+
+		if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
+		{
+			sprite.animator.AddAnimation();
+		}
+		ImGui::Tooltip("Add animation");
+
+		ImGuiTableFlags table_flags =
+			ImGuiTableFlags_Resizable;
+		if (ImGui::BeginTable("Animations", 4))
+		{
+			ImGui::TableSetupColumn("Name");
+			ImGui::TableSetupColumn("Start Frame");
+			ImGui::TableSetupColumn("Frame Count");
+			ImGui::TableSetupColumn("Frame Time (ms)");
+			ImGui::TableSetupScrollFreeze(0, 1);
+			ImGui::TableHeadersRow();
+
+			static char inputBuffer[1024] = "";
+
+			int index = 0;
+			for (Animation& animation : sprite.animator.GetAnimations())
 			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			// Sprite Sheet
-			if (ImGui::Texture2DEdit("Sprite Sheet", sprite.animator.GetSpriteSheet()->GetTexture()))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-				sprite.animator.GetSpriteSheet()->RecalculateCellsDimensions();
-			}
-
-			// Sprite Size
-			int spriteSize[2] = { (int)sprite.animator.GetSpriteSheet()->GetSpriteWidth(), (int)sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
-			if (ImGui::InputInt2("Sprite Size", spriteSize))
-			{
-				sprite.animator.GetSpriteSheet()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
-			}
-
-			if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
-			{
-				sprite.animator.AddAnimation();
-			}
-			ImGui::Tooltip("Add animation");
-
-			ImGuiTableFlags table_flags =
-				ImGuiTableFlags_Resizable;
-			if (ImGui::BeginTable("Animations", 4))
-			{
-				ImGui::TableSetupColumn("Name");
-				ImGui::TableSetupColumn("Start Frame");
-				ImGui::TableSetupColumn("Frame Count");
-				ImGui::TableSetupColumn("Frame Time (ms)");
-				ImGui::TableSetupScrollFreeze(0, 1);
-				ImGui::TableHeadersRow();
-
-				static char inputBuffer[1024] = "";
-
-				int index = 0;
-				for (Animation& animation : sprite.animator.GetAnimations())
+				memset(inputBuffer, 0, sizeof(inputBuffer));
+				for (int i = 0; i < animation.GetName().length(); i++)
 				{
-					memset(inputBuffer, 0, sizeof(inputBuffer));
-					for (int i = 0; i < animation.GetName().length(); i++)
-					{
-						inputBuffer[i] = animation.GetName()[i];
-					}
-					ImGui::TableNextRow();
-					ImGui::TableSetColumnIndex(0);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					std::string nameStr = "##name" + std::to_string(index);
-					ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll);
-					animation.SetName(inputBuffer);
-
-					int frameStart = (int)animation.GetStartFrame();
-					int frameCount = (int)animation.GetFrameCount();
-					float frameTime = animation.GetFrameTime();
-
-					ImGui::TableSetColumnIndex(1);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					std::string starFrameStr = "##startFrame" + std::to_string(index);
-					if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
-					{
-						if (frameStart < 0)
-							frameStart = 0;
-						animation.SetStartFrame((uint32_t)frameStart);
-					}
-
-					ImGui::TableSetColumnIndex(2);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					std::string frameCountStr = "##frameCount" + std::to_string(index);
-					if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
-					{
-						if (frameCount < 0)
-							frameCount = 0;
-						animation.SetFrameCount((uint32_t)frameCount);
-					}
-
-					ImGui::TableSetColumnIndex(3);
-					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-					std::string frameTimeStr = "##frameTime" + std::to_string(index);
-					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
-						animation.SetFrameTime(frameTime);
-
-					index++;
+					inputBuffer[i] = animation.GetName()[i];
 				}
-				ImGui::EndTable();
+				ImGui::TableNextRow();
+				ImGui::TableSetColumnIndex(0);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				std::string nameStr = "##name" + std::to_string(index);
+				ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer), ImGuiInputTextFlags_AutoSelectAll);
+				animation.SetName(inputBuffer);
+
+				int frameStart = (int)animation.GetStartFrame();
+				int frameCount = (int)animation.GetFrameCount();
+				float frameTime = animation.GetFrameTime();
+
+				ImGui::TableSetColumnIndex(1);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				std::string starFrameStr = "##startFrame" + std::to_string(index);
+				if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
+				{
+					if (frameStart < 0)
+						frameStart = 0;
+					animation.SetStartFrame((uint32_t)frameStart);
+				}
+
+				ImGui::TableSetColumnIndex(2);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				std::string frameCountStr = "##frameCount" + std::to_string(index);
+				if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
+				{
+					if (frameCount < 0)
+						frameCount = 0;
+					animation.SetFrameCount((uint32_t)frameCount);
+				}
+
+				ImGui::TableSetColumnIndex(3);
+				ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+				std::string frameTimeStr = "##frameTime" + std::to_string(index);
+				if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
+					animation.SetFrameTime(frameTime);
+
+				index++;
 			}
-		});
+			ImGui::EndTable();
+		}
+	});
 
 	//Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [](auto& staticMesh)
-		{
-			if (ImGui::FileEdit("Static Mesh", staticMesh.mesh.GetFilepath(), FileType::MESH))
-				staticMesh.mesh.LoadModel();
-			if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), FileType::MATERIAL))
-				staticMesh.material.LoadMaterial();
-		});
+	{
+		if (ImGui::FileEdit("Static Mesh", staticMesh.mesh.GetFilepath(), FileType::MESH))
+			staticMesh.mesh.LoadModel();
+		if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), FileType::MATERIAL))
+			staticMesh.material.LoadMaterial();
+	});
 
 	//Native Script------------------------------------------------------------------------------------------------------------
 	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
-		{
-			ImGui::Text("%s", script.Name.c_str());
-		});
+	{
+		ImGui::Text("%s", script.Name.c_str());
+	});
 
 	//Camera------------------------------------------------------------------------------------------------------------
 	DrawComponent<CameraComponent>(ICON_FA_VIDEO" Camera", entity, [](auto& cameraComp)
+	{
+		auto& camera = cameraComp.Camera;
+
+		ImGui::Checkbox("Primary", &cameraComp.Primary);
+		ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio);
+
+		const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
+
+		const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
+
+		if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
 		{
-			auto& camera = cameraComp.Camera;
-
-			ImGui::Checkbox("Primary", &cameraComp.Primary);
-			ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio);
-
-			const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
-
-			const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
-
-			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+			for (int i = 0; i < 2; i++)
 			{
-				for (int i = 0; i < 2; i++)
+				bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
+
+				if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
 				{
-					bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
-
-					if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
-					{
-						currentProjectionTypeString = projectionTypeStrings[i];
-						camera.SetProjection((SceneCamera::ProjectionType)i);
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
+					currentProjectionTypeString = projectionTypeStrings[i];
+					camera.SetProjection((SceneCamera::ProjectionType)i);
+					SceneManager::CurrentScene()->MakeDirty();
 				}
 
-				ImGui::EndCombo();
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
 			}
 
+			ImGui::EndCombo();
+		}
 
-			switch (camera.GetProjectionType())
+
+		switch (camera.GetProjectionType())
+		{
+		case SceneCamera::ProjectionType::perspective:
+		{
+			float fov = (float)RadToDeg(camera.GetVerticalFov());
+			if (ImGui::DragFloat("FOV", &fov, 1.0f, 1.0f, 180.0f))
 			{
-			case SceneCamera::ProjectionType::perspective:
+				camera.SetVerticalFov((float)DegToRad(fov));
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			float nearClip = camera.GetPerspectiveNear();
+			if (ImGui::DragFloat("Near Clip##Perspective", &nearClip, 1.0f, 0.001f, 10000.0f))
 			{
-				float fov = (float)RadToDeg(camera.GetVerticalFov());
-				if (ImGui::DragFloat("FOV", &fov, 1.0f, 1.0f, 180.0f))
-				{
-					camera.SetVerticalFov((float)DegToRad(fov));
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				float nearClip = camera.GetPerspectiveNear();
-				if (ImGui::DragFloat("Near Clip##Perspective", &nearClip, 1.0f, 0.001f, 10000.0f))
-				{
-					camera.SetPerspectiveNear(nearClip);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				float farClip = camera.GetPerspectiveFar();
-				if (ImGui::DragFloat("Far Clip##Perspective", &farClip, 1.0f, 0.001f, 10000.0f))
-				{
-					camera.SetPerspectiveFar(farClip);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				camera.RecalculateProjection();
-				break;
+				camera.SetPerspectiveNear(nearClip);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
-			case SceneCamera::ProjectionType::orthographic:
+
+			float farClip = camera.GetPerspectiveFar();
+			if (ImGui::DragFloat("Far Clip##Perspective", &farClip, 1.0f, 0.001f, 10000.0f))
 			{
-				float size = camera.GetOrthoSize();
-				if (ImGui::DragFloat("Size", &size, 0.1f, 0.0f, 100.0f))
-				{
-					camera.SetOrthoSize(size);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				float nearClip = camera.GetOrthoNear();
-				if (ImGui::DragFloat("Near Clip##Orthographic", &nearClip))
-				{
-					camera.SetOrthoNear(nearClip);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				float farClip = camera.GetOrthoFar();
-				if (ImGui::DragFloat("Far Clip##Orthographic", &farClip))
-				{
-					camera.SetOrthoFar(farClip);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-
-				camera.RecalculateProjection();
-				break;
+				camera.SetPerspectiveFar(farClip);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
+
+			camera.RecalculateProjection();
+			break;
+		}
+		case SceneCamera::ProjectionType::orthographic:
+		{
+			float size = camera.GetOrthoSize();
+			if (ImGui::DragFloat("Size", &size, 0.1f, 0.0f, 100.0f))
+			{
+				camera.SetOrthoSize(size);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
-		});
+
+			float nearClip = camera.GetOrthoNear();
+			if (ImGui::DragFloat("Near Clip##Orthographic", &nearClip))
+			{
+				camera.SetOrthoNear(nearClip);
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			float farClip = camera.GetOrthoFar();
+			if (ImGui::DragFloat("Far Clip##Orthographic", &farClip))
+			{
+				camera.SetOrthoFar(farClip);
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			camera.RecalculateProjection();
+			break;
+		}
+		}
+	});
 
 	//Primitive--------------------------------------------------------------------------------------------------------------
-	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [](auto& primitive)
+	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [=](auto& primitive)
+	{
+		const char* shapeTypeStrings[] = { "Cube", "Sphere", "Plane", "Cylinder", "Cone", "Torus" };
+
+		const char* currentShapeTypeString = shapeTypeStrings[(int)primitive.type];
+
+		if (ImGui::BeginCombo("Shape", currentShapeTypeString))
 		{
-			const char* shapeTypeStrings[] = { "Cube", "Sphere", "Plane", "Cylinder", "Cone", "Torus" };
-
-			const char* currentShapeTypeString = shapeTypeStrings[(int)primitive.type];
-
-			if (ImGui::BeginCombo("Shape", currentShapeTypeString))
+			for (int i = 0; i < 6; i++)
 			{
-				for (int i = 0; i < 6; i++)
+				bool isSelected = currentShapeTypeString == shapeTypeStrings[i];
+
+				if (ImGui::Selectable(shapeTypeStrings[i], isSelected))
 				{
-					bool isSelected = currentShapeTypeString == shapeTypeStrings[i];
-
-					if (ImGui::Selectable(shapeTypeStrings[i], isSelected))
-					{
-						currentShapeTypeString = shapeTypeStrings[i];
-						primitive.type = (PrimitiveComponent::Shape)i;
-						primitive.needsUpdating = true;
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
+					currentShapeTypeString = shapeTypeStrings[i];
+					primitive.type = (PrimitiveComponent::Shape)i;
+					primitive.needsUpdating = true;
+					SceneManager::CurrentScene()->MakeDirty();
 				}
 
-				ImGui::EndCombo();
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
 			}
-			switch (primitive.type)
+
+			ImGui::EndCombo();
+		}
+		switch (primitive.type)
+		{
+			int tempInt;
+		case PrimitiveComponent::Shape::Cube:
+			if (ImGui::DragFloat("Width##cube", &primitive.cubeWidth, 0.1f, 0.0f))
 			{
-				int tempInt;
-			case PrimitiveComponent::Shape::Cube:
-				if (ImGui::DragFloat("Width##cube", &primitive.cubeWidth, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Height##cube", &primitive.cubeHeight, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Depth##cube", &primitive.cubeDepth, 0.1f, 0.0f))
-					primitive.needsUpdating = true;
-				break;
-			case PrimitiveComponent::Shape::Sphere:
-				if (ImGui::DragFloat("Radius##Sphere", &primitive.sphereRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.sphereLongitudeLines;
-				if (ImGui::DragInt("Longitude Lines##Sphere", &tempInt, 1.0f, 3, 600))
-				{
-					primitive.sphereLongitudeLines = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.sphereLatitudeLines;
-				if (ImGui::DragInt("Latitude Lines##Sphere", &tempInt, 1.0f, 2, 600))
-				{
-					primitive.sphereLatitudeLines = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				break;
-			case PrimitiveComponent::Shape::Plane:
-				if (ImGui::DragFloat("Width##Plane", &primitive.planeWidth, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Length##Plane", &primitive.planeLength, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.planeWidthLines;
-				if (ImGui::DragInt("Width Lines##Plane", &tempInt, 1.0f, 2, 1000))
-				{
-					primitive.planeWidthLines = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.planeLengthLines;
-				if (ImGui::DragInt("Length Lines##Plane", &tempInt, 1.0f, 2, 1000))
-				{
-					primitive.planeLengthLines = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Tile U##Plane", &primitive.planeTileU, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Tile V##Plane", &primitive.planeTileV, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				break;
-			case PrimitiveComponent::Shape::Cylinder:
-				if (ImGui::DragFloat("Bottom Radius##Cylinder", &primitive.cylinderBottomRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Top Radius##Cylinder", &primitive.cylinderTopRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Height##Cylinder", &primitive.cylinderHeight, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.cylinderSliceCount;
-				if (ImGui::DragInt("Slice Count##Cylinder", &tempInt, 1.0f, 3, 600))
-				{
-					primitive.cylinderSliceCount = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.cylinderStackCount;
-				if (ImGui::DragInt("Stack Count##Cylinder", &tempInt, 1.0f, 1, 600))
-				{
-					primitive.cylinderStackCount = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				break;
-			case PrimitiveComponent::Shape::Cone:
-				if (ImGui::DragFloat("Bottom Radius##Cone", &primitive.coneBottomRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Height##Cone", &primitive.coneHeight, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.coneSliceCount;
-				if (ImGui::DragInt("Slice Count##Cone", &tempInt, 1.0f, 3, 600))
-				{
-					primitive.coneSliceCount = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.coneStackCount;
-				if (ImGui::DragInt("Stack Count##Cone", &tempInt, 1.0f, 1, 600))
-				{
-					primitive.coneStackCount = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				break;
-			case PrimitiveComponent::Shape::Torus:
-				if (ImGui::DragFloat("Outer Radius##Torus", &primitive.torusOuterRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				if (ImGui::DragFloat("Inner Radius##Torus", &primitive.torusInnerRadius, 0.1f, 0.0f))
-				{
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				tempInt = primitive.torusSliceCount;
-				if (ImGui::DragInt("Slice Count##Torus", &tempInt, 1.0f, 3, 600))
-				{
-					primitive.torusSliceCount = tempInt;
-					primitive.needsUpdating = true;
-					SceneManager::CurrentScene()->MakeDirty();
-				}
-				break;
-			default:
-				break;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
 			}
-		});
+			if (ImGui::DragFloat("Height##cube", &primitive.cubeHeight, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Depth##cube", &primitive.cubeDepth, 0.1f, 0.0f))
+				primitive.needsUpdating = true;
+			break;
+		case PrimitiveComponent::Shape::Sphere:
+			if (ImGui::DragFloat("Radius##Sphere", &primitive.sphereRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.sphereLongitudeLines;
+			if (ImGui::DragInt("Longitude Lines##Sphere", &tempInt, 1.0f, 3, 600))
+			{
+				primitive.sphereLongitudeLines = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.sphereLatitudeLines;
+			if (ImGui::DragInt("Latitude Lines##Sphere", &tempInt, 1.0f, 2, 600))
+			{
+				primitive.sphereLatitudeLines = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			break;
+		case PrimitiveComponent::Shape::Plane:
+			if (ImGui::DragFloat("Width##Plane", &primitive.planeWidth, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Length##Plane", &primitive.planeLength, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.planeWidthLines;
+			if (ImGui::DragInt("Width Lines##Plane", &tempInt, 1.0f, 2, 1000))
+			{
+				primitive.planeWidthLines = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.planeLengthLines;
+			if (ImGui::DragInt("Length Lines##Plane", &tempInt, 1.0f, 2, 1000))
+			{
+				primitive.planeLengthLines = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Tile U##Plane", &primitive.planeTileU, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Tile V##Plane", &primitive.planeTileV, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			break;
+		case PrimitiveComponent::Shape::Cylinder:
+			if (ImGui::DragFloat("Bottom Radius##Cylinder", &primitive.cylinderBottomRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Top Radius##Cylinder", &primitive.cylinderTopRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Height##Cylinder", &primitive.cylinderHeight, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.cylinderSliceCount;
+			if (ImGui::DragInt("Slice Count##Cylinder", &tempInt, 1.0f, 3, 600))
+			{
+				primitive.cylinderSliceCount = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.cylinderStackCount;
+			if (ImGui::DragInt("Stack Count##Cylinder", &tempInt, 1.0f, 1, 600))
+			{
+				primitive.cylinderStackCount = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			break;
+		case PrimitiveComponent::Shape::Cone:
+			if (ImGui::DragFloat("Bottom Radius##Cone", &primitive.coneBottomRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Height##Cone", &primitive.coneHeight, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.coneSliceCount;
+			if (ImGui::DragInt("Slice Count##Cone", &tempInt, 1.0f, 3, 600))
+			{
+				primitive.coneSliceCount = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.coneStackCount;
+			if (ImGui::DragInt("Stack Count##Cone", &tempInt, 1.0f, 1, 600))
+			{
+				primitive.coneStackCount = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			break;
+		case PrimitiveComponent::Shape::Torus:
+			if (ImGui::DragFloat("Outer Radius##Torus", &primitive.torusOuterRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			if (ImGui::DragFloat("Inner Radius##Torus", &primitive.torusInnerRadius, 0.1f, 0.0f))
+			{
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			tempInt = primitive.torusSliceCount;
+			if (ImGui::DragInt("Slice Count##Torus", &tempInt, 1.0f, 3, 600))
+			{
+				primitive.torusSliceCount = tempInt;
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			break;
+		default:
+			break;
+		}
+	});
 
 	//Rigid Body 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
+	{
+		const char* bodyTypeStrings[] = { "Static", "Kinematic", "Dynamic" };
+
+		const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBody2D.type];
+
+		if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
 		{
-			const char* bodyTypeStrings[] = { "Static", "Kinematic", "Dynamic" };
-
-			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBody2D.type];
-
-			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			for (int i = 0; i < 3; i++)
 			{
-				for (int i = 0; i < 3; i++)
+				bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
+
+				if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
 				{
-					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
-
-					if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
-					{
-						currentBodyTypeString = bodyTypeStrings[i];
-						rigidBody2D.type = (RigidBody2DComponent::BodyType)i;
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
+					currentBodyTypeString = bodyTypeStrings[i];
+					rigidBody2D.type = (RigidBody2DComponent::BodyType)i;
+					SceneManager::CurrentScene()->MakeDirty();
 				}
 
-				ImGui::EndCombo();
+				if (isSelected)
+					ImGui::SetItemDefaultFocus();
 			}
 
-			if (rigidBody2D.type == RigidBody2DComponent::BodyType::DYNAMIC)
-			{
-				ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation);
-				ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f);
-				ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f);
-			}
-		});
+			ImGui::EndCombo();
+		}
+
+		if (rigidBody2D.type == RigidBody2DComponent::BodyType::DYNAMIC)
+		{
+			ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation);
+			ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f);
+			ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f);
+			ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f);
+		}
+	});
 
 	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
+	{
+		Vector2f& offset = boxCollider2D.Offset;
+		ImGui::Text("Offset");
+		ImGui::TextColored({ 245,0,0,255 }, "X");
+		ImGui::SameLine();
+
+		float width = ImGui::GetContentRegionAvail().x;
+
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
-			Vector2f& offset = boxCollider2D.Offset;
-			ImGui::Text("Offset");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
+			offset.x = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			float width = ImGui::GetContentRegionAvail().x;
+		ImGui::SameLine();
+		ImGui::TextColored({ 0,245,0,255 }, "Y");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			offset.y = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		Vector2f& size = boxCollider2D.Size;
+		ImGui::Text("Size");
+		ImGui::TextColored({ 245,0,0,255 }, "X");
+		ImGui::SameLine();
 
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.y = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##sizeX", &size.x, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			size.x = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			Vector2f& size = boxCollider2D.Size;
-			ImGui::Text("Size");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
+		ImGui::SameLine();
+		ImGui::TextColored({ 0,245,0,255 }, "Y");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##sizeY", &size.y, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			size.y = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##sizeX", &size.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				size.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		if (ImGui::DragFloat("Density", &boxCollider2D.Density, 0.01f, 0.0f, 10.0f))
+			SceneManager::CurrentScene()->MakeDirty();
 
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##sizeY", &size.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				size.y = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		if (ImGui::DragFloat("Friction", &boxCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+			SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Density", &boxCollider2D.Density, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Friction", &boxCollider2D.Friction, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Restitution", &boxCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-		});
+		if (ImGui::DragFloat("Restitution", &boxCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+			SceneManager::CurrentScene()->MakeDirty();
+	});
 
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MD_PANORAMA_FISHEYE" Circle Collider 2D", entity, [](auto& circleCollider2D)
+	{
+		Vector2f& offset = circleCollider2D.Offset;
+		ImGui::Text("Offset");
+		ImGui::TextColored({ 245,0,0,255 }, "X");
+		ImGui::SameLine();
+
+		float width = ImGui::GetContentRegionAvail().x;
+
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 		{
-			Vector2f& offset = circleCollider2D.Offset;
-			ImGui::Text("Offset");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
+			offset.x = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			float width = ImGui::GetContentRegionAvail().x;
+		ImGui::SameLine();
+		ImGui::TextColored({ 0,245,0,255 }, "Y");
+		ImGui::SameLine();
+		ImGui::SetNextItemWidth(width / 2 - 20);
+		if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
+			SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			offset.y = 0.0f;
+			SceneManager::CurrentScene()->MakeDirty();
+		}
 
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		if (ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
+			SceneManager::CurrentScene()->MakeDirty();
 
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.y = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+		if (ImGui::DragFloat("Density", &circleCollider2D.Density, 0.01f, 0.0f, 10.0f))
+			SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
+		if (ImGui::DragFloat("Friction", &circleCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+			SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Density", &circleCollider2D.Density, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Friction", &circleCollider2D.Friction, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Restitution", &circleCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-		});
+		if (ImGui::DragFloat("Restitution", &circleCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+			SceneManager::CurrentScene()->MakeDirty();
+	});
 
 	// Circle Renderer------------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
-		{
-			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
-			ImGui::ColorEdit4("Colour", colour[0]);
-			ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025f, 0.0f, 1.0f);
-			ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025f, 0.0f, 1.0f);
-		});
+	{
+		float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
+		ImGui::ColorEdit4("Colour", colour[0]);
+		ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025f, 0.0f, 1.0f);
+		ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025f, 0.0f, 1.0f);
+	});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [](auto& luaScript)
+	{
+		if (ImGui::BeginCombo("##luaScript", luaScript.absoluteFilepath.filename().string().c_str()))
 		{
-			if (ImGui::BeginCombo("##luaScript", luaScript.absoluteFilepath.filename().string().c_str()))
+			for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
 			{
-				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
+				const bool is_selected = false;
+				if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 				{
-					const bool is_selected = false;
-					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
-					{
-						luaScript.absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file);
-						SceneManager::CurrentScene()->MakeDirty();
-						break;
-					}
+					luaScript.absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file);
+					SceneManager::CurrentScene()->MakeDirty();
+					break;
 				}
-				ImGui::EndCombo();
 			}
-			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_FILE_CODE))
-			{
-				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
-			}
-			ImGui::Tooltip("Edit script");
-		});
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FILE_CODE))
+		{
+			ViewerManager::OpenViewer(luaScript.absoluteFilepath);
+		}
+		ImGui::Tooltip("Edit script");
+	});
 }
 
 void PropertiesPanel::DrawAddComponent(Entity entity)

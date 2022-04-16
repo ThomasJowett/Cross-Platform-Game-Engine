@@ -12,10 +12,14 @@ LuaScriptComponent::~LuaScriptComponent()
 	}
 }
 
-bool LuaScriptComponent::ParseScript(Entity entity)
+std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entity entity)
 {
+	LuaManager::GetState().collect_garbage();
 	if (absoluteFilepath.empty())
-		return false;
+	{
+		return std::make_pair(0, "No file loaded");
+	}
+
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
 	sol::protected_function_result result = LuaManager::GetState().script_file(absoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
@@ -23,8 +27,17 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	if (!result.valid())
 	{
 		sol::error error = result;
-		ENGINE_ERROR("Failed to parse lua script {0}: {1}", absoluteFilepath, error.what());
-		return false;
+
+		std::string errorStr = error.what();
+		int line = 1;
+		auto linepos = errorStr.find(".lua:");
+		std::string errorLine = errorStr.substr(linepos + 5); //+4 .lua: + 1
+		auto lineposEnd = errorLine.find(":");
+		errorLine = errorLine.substr(0, lineposEnd);
+		line = std::stoi(errorLine);
+		errorStr = errorStr.substr(linepos + errorLine.size() + lineposEnd + 4); //+4 .lua:
+
+		return std::make_pair(line, errorStr);
 	}
 
 	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
@@ -47,7 +60,7 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 		m_OnFixedUpdateFunc.reset();
 
 	LuaManager::GetState().collect_garbage();
-	return true;
+	return std::nullopt;
 }
 
 void LuaScriptComponent::OnCreate()
