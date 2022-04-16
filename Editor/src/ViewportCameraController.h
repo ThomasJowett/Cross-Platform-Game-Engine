@@ -12,6 +12,9 @@ public:
 
 	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position; }
 	Vector3f GetPosition() const;
+	const Vector3f GetUp() const { return m_Up; }
+	const Vector3f GetForward() const { return m_Forward; }
+	const Vector3f GetRight() const { return m_Right; }
 
 	void SetAspectRatio(const float& aspectRatio);
 	void SetViewPortSize(const Vector2f& viewportSize) { m_ViewPortSize = viewportSize; }

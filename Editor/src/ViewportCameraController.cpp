@@ -104,11 +104,19 @@ void ViewportCameraController::OnMouseMotion(Vector2f mousePosition)
 {
 	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
 
-	if (!m_Is3DCamera && Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
 	{
 		Application::GetWindow().SetCursor(Cursors::ResizeAll);
-		m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
-		m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+		if (m_Is3DCamera)
+		{
+			Strafe(-m_MouseRelativeVelocity.x * 5.0f / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			Raise(m_MouseRelativeVelocity.y * 5.0f / (m_ViewPortSize.y * 0.5f));
+		}
+		else
+		{
+			m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+		}
 	}
 
 	m_MouseLastPosition = mousePosition;
