@@ -15,12 +15,19 @@
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
-	enum class Mode
+	enum class OperationMode
 	{
 		Select = 0,
 		Move,
 		Rotate,
-		Scale
+		Scale,
+		Universal
+	};
+
+	enum class TranslationMode
+	{
+		Local,
+		World
 	};
 
 public:
@@ -64,7 +71,11 @@ private:
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
 
-	Mode m_Mode;
+	OperationMode m_Operation;
+	TranslationMode m_Translation;
+	bool m_Is2DMode = true;
+	bool m_DrawGrid = true;
+	char m_GridAxis = 'z';
 
 	HierarchyPanel* m_HierarchyPanel;
 	Entity m_HoveredEntity;

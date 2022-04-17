@@ -24,7 +24,7 @@ struct TransformComponent
 
 	const Vector3f GetWorldPosition() const
 	{
-		return m_WorldMatrix * position;
+		return m_ParentMatrix * position;
 	}
 
 	Matrix4x4 GetLocalMatrix()

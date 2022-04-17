@@ -191,7 +191,7 @@ void glfwWindow::RestoreWindow()
 
 void glfwWindow::DisableCursor()
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 void glfwWindow::EnableCursor()

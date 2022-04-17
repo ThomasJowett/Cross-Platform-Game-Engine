@@ -6,6 +6,7 @@
 
 #include "Engine.h"
 #include "FileSystem/FileDialog.h"
+#include "Viewers/ViewerManager.h"
 
 #include "HierarchyPanel.h"
 #include "Scene/Components/Components.h"
@@ -13,7 +14,8 @@
 #include "ImGui/ImGuizmo.h"
 
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
-	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
+	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel),
+	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
 	frameBufferSpecificationEditorCamera.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
@@ -22,8 +24,6 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
 	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
-
-	m_Mode = Mode::Select;
 
 	m_Framebuffer->ClearAttachment(1, -1);
 }
@@ -101,6 +101,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		SceneManager::CurrentScene()->SetShowDebug(true);
 
+		m_Framebuffer->Bind();
+		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
@@ -115,8 +117,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				RenderCommand::Clear();
 				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
 			}
-			m_Framebuffer->Bind();
-			Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 			if (selectedEntity.HasComponent<CircleCollider2DComponent>())
 			{
 				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
@@ -144,9 +144,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
 			}
-			Renderer2D::EndScene();
-			m_Framebuffer->UnBind();
 		}
+
+		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetRight(), Colours::RED);
+		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetUp(), Colours::GREEN);
+		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetForward(), Colours::BLUE);
+		Renderer2D::DrawHairLineCircle(m_CameraController.GetPosition(), 0.5f);
+		Renderer2D::EndScene();
+		m_Framebuffer->UnBind();
 		break;
 	}
 	default:
@@ -235,14 +240,13 @@ void ViewportPanel::OnImGuiRender()
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 		{
-
 			if (ImGui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					if (file->extension() == ".staticMesh")
+					if (ViewerManager::GetFileType(*file) == FileType::MESH)
 					{
 						std::string entityName = file->filename().string();
 						entityName = entityName.substr(0, entityName.find_last_of('.'));
@@ -275,12 +279,39 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
+		float translation[3], rotation[3], scale[3];
+
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
+			ImGuizmo::SetOrthographic(m_Is2DMode);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
+
+			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
+			cameraViewMat.Transpose();
+			cameraProjectionMat.Transpose();
+
+			if (m_DrawGrid)
+			{
+				Matrix4x4 gridTransform;
+				if (m_GridAxis == 'x')
+					gridTransform = Matrix4x4::RotateZ((float)DegToRad(90.0));
+				if (m_GridAxis == 'z')
+					gridTransform = Matrix4x4::RotateX((float)DegToRad(90.0));
+				//ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
+			}
+
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();
+
+				if (m_HierarchyPanel->IsFocused())
+				{
+					m_CameraController.LookAt(transformComp.GetWorldPosition(), transformComp.scale.x); // TODO: get the bounds of the object and offset the camera by that amount
+					m_HierarchyPanel->HasFocused();
+				}
 
 				// Draw a camera preview if the selected entity has a camera
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
@@ -306,24 +337,17 @@ void ViewportPanel::OnImGuiRender()
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}
 
-
-
 				// Gizmos
-				ImGuizmo::SetOrthographic(true);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
-				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
-				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
 				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
 
-				cameraViewMat.Transpose();
-				cameraProjectionMat.Transpose();
 				transformMat.Transpose();
+
+				ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
 				bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
 				float snapValue = 0.5f;
-				if (m_Mode == Mode::Rotate)
+				if (m_Operation == OperationMode::Rotate)
 					snapValue = 10.0f;
 
 				//TODO: add a get bounds function method from sprite, camera and mesh
@@ -331,26 +355,47 @@ void ViewportPanel::OnImGuiRender()
 
 				float snapValues[3] = { snapValue, snapValue, snapValue };
 
-				ImGuizmo::OPERATION gizmoMode = ImGuizmo::BOUNDS;
-				switch (m_Mode)
+				ImGuizmo::OPERATION gizmoOperation = ImGuizmo::BOUNDS;
+				switch (m_Operation)
 				{
-				case ViewportPanel::Mode::Select:
-					gizmoMode = ImGuizmo::BOUNDS;
+				case ViewportPanel::OperationMode::Select:
+					gizmoOperation = ImGuizmo::BOUNDS;
 					break;
-				case ViewportPanel::Mode::Move:
-					gizmoMode = ImGuizmo::OPERATION::TRANSLATE;
+				case ViewportPanel::OperationMode::Move:
+					gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 					break;
-				case ViewportPanel::Mode::Rotate:
-					gizmoMode = ImGuizmo::OPERATION::ROTATE;
+				case ViewportPanel::OperationMode::Rotate:
+					gizmoOperation = ImGuizmo::OPERATION::ROTATE;
 					break;
-				case ViewportPanel::Mode::Scale:
-					gizmoMode = ImGuizmo::OPERATION::SCALE;
+				case ViewportPanel::OperationMode::Scale:
+					gizmoOperation = ImGuizmo::OPERATION::SCALE;
+					break;
+					//case ViewportPanel::OperationMode::Universal:
+					//	gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
+					//	break;
+				default:
+					break;
+				}
+
+				ImGuizmo::MODE gizmoMode = ImGuizmo::LOCAL;
+				switch (m_Translation)
+				{
+				case ViewportPanel::TranslationMode::Local:
+					gizmoMode = ImGuizmo::LOCAL;
+					break;
+				case ViewportPanel::TranslationMode::World:
+					gizmoMode = ImGuizmo::WORLD;
 					break;
 				default:
 					break;
 				}
 
-				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16, gizmoMode, ImGuizmo::LOCAL, transformMat.m16, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
+				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16,
+					gizmoOperation, gizmoMode,
+					transformMat.m16,
+					NULL, snap ? &snapValues[0] : NULL,
+					gizmoOperation == ImGuizmo::BOUNDS ? bounds : NULL,
+					snap ? snapValues : NULL);
 
 				if (ImGuizmo::IsUsing())
 				{
@@ -359,22 +404,22 @@ void ViewportPanel::OnImGuiRender()
 					transformMat = parentMatrix * transformMat;
 					transformMat.Transpose();
 
-					float translation[3], rotation[3], scale[3];
+
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
 					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
-					if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
+					if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE)
 					{
 						transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 					}
-					if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
+					if (gizmoOperation == ImGuizmo::OPERATION::ROTATE)
 					{
 						transformComp.rotation += deltaRotation;
 					}
-					if (gizmoMode == ImGuizmo::OPERATION::SCALE)
+					if (gizmoOperation == ImGuizmo::OPERATION::SCALE)
 					{
 						transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 					}
@@ -386,13 +431,29 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::SetCursorPos(toolbarPosistion);
 		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 		ImGui::Text("%.1f", io.Framerate);
+		ImGui::Text("Position: %s", m_CameraController.GetPosition().to_string().c_str());
+		ImGui::Text("Up: %s", m_CameraController.GetUp().to_string().c_str());
+		ImGui::Text("Forward: %s", m_CameraController.GetForward().to_string().c_str());
+		ImGui::Text("Right: %s", m_CameraController.GetRight().to_string().c_str());
+		ImGui::Text("View: %s", m_CameraController.GetTransformMatrix().to_string().c_str());
 
-		ImGui::SameLine(30.0f);
-		static bool CameraIs2D = true;
-		if (ImGui::RadioButton("2D", CameraIs2D))
+		ImGui::Text("Rotation: %f", rotation[2]);
+
+		//ImGui::SameLine(40.0f);
+
+		if (ImGui::RadioButton("2D", m_Is2DMode))
 		{
-			CameraIs2D = !CameraIs2D;
-			m_CameraController.SwitchCamera(CameraIs2D);
+			m_Is2DMode = !m_Is2DMode;
+			if (m_Is2DMode)
+				m_GridAxis = 'z';
+			else
+				m_GridAxis = 'y';
+			m_CameraController.SwitchCamera(!m_Is2DMode);
+		}
+
+		if (ImGui::RadioButton("Local", m_Translation == TranslationMode::Local))
+		{
+			m_Translation = m_Translation == TranslationMode::Local ? TranslationMode::World : TranslationMode::Local;
 		}
 	}
 	ImGui::End();
@@ -481,16 +542,18 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (m_WindowHovered)
+	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
 		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
-			m_Mode = Mode::Select;
+			m_Operation = OperationMode::Select;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
-			m_Mode = Mode::Move;
+			m_Operation = OperationMode::Move;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
-			m_Mode = Mode::Rotate;
+			m_Operation = OperationMode::Rotate;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
-			m_Mode = Mode::Scale;
+			m_Operation = OperationMode::Scale;
+		//else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
+		//	m_Operation = OperationMode::Universal;
 	}
 
 	if (m_WindowFocussed)

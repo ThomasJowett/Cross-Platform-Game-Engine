@@ -19,6 +19,7 @@ public:
 
     Entity GetSelectedEntity() { return m_SelectedEntity; }
     void SetSelectedEntity(Entity entity);
+
     // Inherited via ICopyable
     virtual void Copy() override;
     virtual void Cut() override;
@@ -29,6 +30,8 @@ public:
     virtual void SelectAll() override;
     virtual bool IsReadOnly() const override;
 
+    bool IsFocused() { return m_Focused; }
+    void HasFocused() { m_Focused = false; }
 private:
     void DrawNode(Entity entity);
     void DragDropTarget(Entity parent);
@@ -36,4 +39,5 @@ private:
     bool* m_Show;
 
     Entity m_SelectedEntity;
+    bool m_Focused = false;
 };

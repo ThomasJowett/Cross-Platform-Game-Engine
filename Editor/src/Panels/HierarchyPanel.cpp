@@ -284,6 +284,10 @@ void HierarchyPanel::DrawNode(Entity entity)
 	if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		m_SelectedEntity = entity;
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			m_Focused = true;
+		}
 	}
 
 	bool entityDeleted = false;

@@ -91,8 +91,8 @@ void StaticMeshView::OnImGuiRender()
 			{
 				if (ImGui::MenuItem("Reset camera"))
 				{
-					m_CameraController.SetPosition(Vector3f(0.0f, 0.0f, 0.0f));
-					m_CameraController.LookAt(Vector3f(0.0f, 0.0f, 0.0f));
+					//m_CameraController.SetPosition(Vector3f(0.0f, 0.0f, 0.0f));
+					m_CameraController.LookAt(Vector3f(0.0f, 0.0f, 0.0f), 1.0f);
 				}
 				ImGui::EndMenu();
 			}

@@ -27,13 +27,13 @@ public:
 	void OnMouseWheel(float mouseWheel);
 	void SwitchCamera(bool is3D);
 
-	void LookAt(Vector3f focalPoint);
+	void LookAt(Vector3f focalPoint, float distance);
 
 private:
 
 	void Walk(float d);
 	void Strafe(float d);
-	void Raise(float d);
+	void Raise(float d, const Vector3f& up);
 
 	void Pitch(float angle);
 	void Yaw(float angle);
