@@ -24,7 +24,6 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 		edited = true;
 	}
 
-
 	ImGui::SameLine();
 	ImGui::TextColored({ 0,245,0,255 }, "Y");
 	ImGui::SameLine();

@@ -101,6 +101,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		SceneManager::CurrentScene()->SetShowDebug(true);
 
+		// Debug render pass
 		m_Framebuffer->Bind();
 		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
@@ -145,11 +146,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
 			}
 		}
-
-		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetRight(), Colours::RED);
-		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetUp(), Colours::GREEN);
-		Renderer2D::DrawHairLine(Vector3f(0.0f, 0.0f, 0.0f), m_CameraController.GetForward(), Colours::BLUE);
-		Renderer2D::DrawHairLineCircle(m_CameraController.GetPosition(), 0.5f);
 		Renderer2D::EndScene();
 		m_Framebuffer->UnBind();
 		break;
@@ -279,7 +275,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		float translation[3], rotation[3], scale[3];
+		
 
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
@@ -342,6 +338,8 @@ void ViewportPanel::OnImGuiRender()
 				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
 
 				transformMat.Transpose();
+
+				float translation[3], rotation[3], scale[3];
 
 				ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
@@ -431,13 +429,6 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::SetCursorPos(toolbarPosistion);
 		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 		ImGui::Text("%.1f", io.Framerate);
-		ImGui::Text("Position: %s", m_CameraController.GetPosition().to_string().c_str());
-		ImGui::Text("Up: %s", m_CameraController.GetUp().to_string().c_str());
-		ImGui::Text("Forward: %s", m_CameraController.GetForward().to_string().c_str());
-		ImGui::Text("Right: %s", m_CameraController.GetRight().to_string().c_str());
-		ImGui::Text("View: %s", m_CameraController.GetTransformMatrix().to_string().c_str());
-
-		ImGui::Text("Rotation: %f", rotation[2]);
 
 		//ImGui::SameLine(40.0f);
 
