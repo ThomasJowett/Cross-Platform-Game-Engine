@@ -1156,11 +1156,11 @@ void ContentExplorerPanel::OnImGuiRender()
 								m_NumberSelected += m_SelectedFiles[i];
 							}
 						}
-						CreateDragDropSource(i);
 						ImGui::PopFont();
+						ItemContextMenu(i, false, filename);
+						CreateDragDropSource(i);
 						ImGui::TextWrapped("%s", filename.c_str());
 						ImGui::EndGroup();
-						ItemContextMenu(i, false, filename);
 
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{

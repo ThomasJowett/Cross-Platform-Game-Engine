@@ -11,12 +11,23 @@
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
 {
+	m_TextFilter = new ImGuiTextFilter();
+}
+
+HierarchyPanel::~HierarchyPanel()
+{
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void HierarchyPanel::OnAttach()
 {
+	
+}
+
+void HierarchyPanel::OnDetach()
+{
+	m_TextFilter->Clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -33,6 +44,7 @@ void HierarchyPanel::OnImGuiRender()
 
 	if (!*m_Show)
 	{
+		m_TextFilter->Clear();
 		return;
 	}
 
@@ -204,6 +216,11 @@ void HierarchyPanel::OnImGuiRender()
 			ImGui::EndPopup();
 		}
 
+		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::SameLine();
+		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
+		ImGui::Tooltip("Filter (\"incl,-excl\")");
+
 		if (SceneManager::IsSceneLoaded())
 		{
 			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
@@ -221,7 +238,8 @@ void HierarchyPanel::OnImGuiRender()
 
 						// Only draw a node for root entites, children are drawn recursively
 						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
-						if (!hierarchyComp || hierarchyComp->parent == entt::null)
+						if (!hierarchyComp || hierarchyComp->parent == entt::null 
+							|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
 							DrawNode(entity);
 					}
 				});
@@ -261,6 +279,9 @@ void HierarchyPanel::DrawNode(Entity entity)
 {
 	std::string& name = entity.GetName();
 
+	if(m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
+		return;
+
 	bool hasChildren = false;
 	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
 
@@ -269,7 +290,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
-		| (!hasChildren ? ImGuiTreeNodeFlags_Leaf : 0);
+		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
@@ -308,10 +329,9 @@ void HierarchyPanel::DrawNode(Entity entity)
 		ImGui::EndPopup();
 	}
 
-
 	if (opened)
 	{
-		if (hasChildren)
+		if (hasChildren  && !m_TextFilter->IsActive() )
 		{
 			entt::entity child = entity.TryGetComponent<HierarchyComponent>()->firstChild;
 			while (child != entt::null)

@@ -105,7 +105,7 @@ void ConsolePanel::ImGuiRenderHeader()
 	ImGui::SameLine(0.0f, spacing);
 	m_TextFilter->Draw("Search", 180);
 
-	ImGui::Tooltip("Filter (\"incl,-excl\") (\"error\")");
+	ImGui::Tooltip("Filter (\"incl,-excl\")");
 
 	ImGui::SameLine(0.0f, spacing);
 

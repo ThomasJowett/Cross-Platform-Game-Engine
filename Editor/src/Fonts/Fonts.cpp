@@ -47,8 +47,6 @@ void Fonts::LoadFonts(float fontSize)
 	//icons_config.MergeMode = false;
 	//icons_config.GlyphOffset.y = 0.0f;
 
-	Consolas = io.Fonts->AddFontFromMemoryCompressedTTF(Consolas_compressed_data, Consolas_compressed_size, fontSize);
-
 	ImFontConfig icons_large_config;
 	icons_large_config.MergeMode = false;
 	icons_large_config.PixelSnapH = true;
@@ -57,4 +55,6 @@ void Fonts::LoadFonts(float fontSize)
 
 	Icons = io.Fonts->AddFontFromMemoryCompressedTTF(fa_solid_compressed_data, fa_solid_compressed_size, 72.0f, &icons_large_config, fa_icons_ranges);
 	io.Fonts->AddFontFromMemoryCompressedTTF(md_regular_compressed_data, md_regular_compressed_size, 72.0f, &icons_large_config, md_icons_ranges);
+
+	Consolas = io.Fonts->AddFontFromMemoryCompressedTTF(Consolas_compressed_data, Consolas_compressed_size, fontSize);
 }

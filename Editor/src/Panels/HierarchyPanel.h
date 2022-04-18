@@ -10,9 +10,10 @@ class HierarchyPanel :
 {
 public:
     explicit HierarchyPanel(bool* show);
-    ~HierarchyPanel() = default;
+    ~HierarchyPanel();
 
     void OnAttach() override;
+    void OnDetach() override;
     void OnFixedUpdate() override;
     void OnImGuiRender() override;
     virtual void OnEvent(Event& event) override;
@@ -40,4 +41,6 @@ private:
 
     Entity m_SelectedEntity;
     bool m_Focused = false;
+
+    ImGuiTextFilter* m_TextFilter;
 };
