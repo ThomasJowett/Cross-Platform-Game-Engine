@@ -35,6 +35,7 @@ public:
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
+	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
@@ -74,12 +75,12 @@ private:
 	OperationMode m_Operation;
 	TranslationMode m_Translation;
 	bool m_Is2DMode = true;
-	bool m_DrawGrid = true;
 	char m_GridAxis = 'z';
 
 	bool m_ShowCollision = false;
 	bool m_ShowFrameRate = true;
-	bool m_ShowStats = true;
+	bool m_ShowGrid = false;
+	bool m_ShowStats = false;
 	bool m_ShowShadows = true;
 	bool m_ShowLighting = true;
 	bool m_ShowReflections = true;

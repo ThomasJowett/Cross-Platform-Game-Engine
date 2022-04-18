@@ -35,7 +35,38 @@ void ViewportPanel::OnAttach()
 {
 	//TODO: Load where the camera was in the scene and load that
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
+
+	Settings::SetDefaultBool("Viewport", "ShowCollision", false);
+	Settings::SetDefaultBool("Viewport", "ShowFps", true);
+	Settings::SetDefaultBool("Viewport", "ShowStats", false);
+	Settings::SetDefaultBool("Viewport", "ShowGrid", false);
+	Settings::SetDefaultBool("Viewport", "ShowShadows", true);
+	Settings::SetDefaultBool("Viewport", "ShowLighting", true);
+	Settings::SetDefaultBool("Viewport", "ShowReflections", true);
+	Settings::SetDefaultBool("Viewport", "Is2D", true);
+
+	m_ShowCollision = Settings::GetBool("Viewport", "ShowCollision");
+	m_ShowFrameRate = Settings::GetBool("Viewport", "ShowFps");
+	m_ShowStats = Settings::GetBool("Viewport", "ShowStats");
+	m_ShowGrid = Settings::GetBool("Viewport", "ShowGrid");
+	m_ShowShadows = Settings::GetBool("Viewport", "ShowShadows");
+	m_ShowLighting = Settings::GetBool("Viewport", "ShowLighting");
+	m_ShowReflections = Settings::GetBool("Viewport", "ShowReflections");
+	m_Is2DMode = Settings::GetBool("Viewport", "Is2D");
 }
+
+void ViewportPanel::OnDetach()
+{
+	Settings::SetBool("Viewport", "ShowCollision", m_ShowCollision);
+	Settings::SetBool("Viewport", "ShowFps", m_ShowFrameRate);
+	Settings::SetBool("Viewport", "ShowStats", m_ShowStats);
+	Settings::SetBool("Viewport", "ShowGrid", m_ShowGrid);
+	Settings::SetBool("Viewport", "ShowShadows", m_ShowShadows);
+	Settings::SetBool("Viewport", "ShowLighting", m_ShowLighting);
+	Settings::SetBool("Viewport", "ShowReflections", m_ShowReflections);
+	Settings::SetBool("Viewport", "Is2D", m_Is2DMode);
+}
+
 void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
@@ -156,8 +187,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	default:
 		break;
 	}
-
-	
 }
 
 void ViewportPanel::OnFixedUpdate()
@@ -192,6 +221,7 @@ void ViewportPanel::OnImGuiRender()
 	{
 		if (ImGui::BeginMenuBar())
 		{
+			ImGui::PopStyleVar();
 			bool selected = false;
 
 			// Select ------------------------------------------------------------------------------
@@ -271,17 +301,20 @@ void ViewportPanel::OnImGuiRender()
 				ImGui::PopStyleColor();
 
 			ImGui::Separator();
+			
 			if (ImGui::BeginMenu("Show"))
 			{
 				ImGui::MenuItem("Collision", "", &m_ShowCollision);
 				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
 				ImGui::MenuItem("Statistics", "", &m_ShowStats);
+				ImGui::MenuItem("Grid", "", &m_ShowGrid);
 				ImGui::MenuItem("Shadows", "", &m_ShowShadows, false);
 				ImGui::MenuItem("Lighting", "", &m_ShowLighting, false);
 				ImGui::MenuItem("Reflections", "", &m_ShowReflections, false);
 
 				ImGui::EndMenu();
 			}
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGui::EndMenuBar();
 		}
 		ImVec2 topLeft = ImGui::GetCursorPos();
@@ -384,14 +417,17 @@ void ViewportPanel::OnImGuiRender()
 			cameraViewMat.Transpose();
 			cameraProjectionMat.Transpose();
 
-			if (m_DrawGrid)
+			if (m_ShowGrid)
 			{
 				Matrix4x4 gridTransform;
-				if (m_GridAxis == 'x')
-					gridTransform = Matrix4x4::RotateZ((float)DegToRad(90.0));
+				// TODO: draw a better grid instead of an imgui overlay
+				//gridTransform = Matrix4x4::RotateY((float)DegToRad(angle));
+				/*if (m_GridAxis == 'x')
+					gridTransform = Matrix4x4::RotateZ((float)DegToRad(angle));
 				if (m_GridAxis == 'z')
-					gridTransform = Matrix4x4::RotateX((float)DegToRad(90.0));
-				//ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
+					gridTransform = Matrix4x4::RotateX((float)DegToRad(angle));
+				gridTransform.Transpose();*/
+				ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
 			}
 
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
@@ -497,8 +533,6 @@ void ViewportPanel::OnImGuiRender()
 					Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp.GetParentMatrix());
 					transformMat = parentMatrix * transformMat;
 					transformMat.Transpose();
-
-
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
