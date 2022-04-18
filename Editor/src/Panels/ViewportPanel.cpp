@@ -3,6 +3,9 @@
 #include "MainDockSpace.h"
 
 #include "IconsFontAwesome5.h"
+#include "Fonts/IconsMaterialDesignIcons.h"
+#include "IconsMaterialDesign.h"
+#include "Fonts/Fonts.h"
 
 #include "Engine.h"
 #include "FileSystem/FileDialog.h"
@@ -99,7 +102,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			}
 		}
 
-		SceneManager::CurrentScene()->SetShowDebug(true);
+		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 
 		// Debug render pass
 		m_Framebuffer->Bind();
@@ -154,7 +157,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		break;
 	}
 
-	Renderer2D::ResetStats();
+	
 }
 
 void ViewportPanel::OnFixedUpdate()
@@ -179,8 +182,7 @@ void ViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
-
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
@@ -188,6 +190,100 @@ void ViewportPanel::OnImGuiRender()
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
+		if (ImGui::BeginMenuBar())
+		{
+			bool selected = false;
+
+			// Select ------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Select;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_FA_MOUSE_POINTER))
+				m_Operation = OperationMode::Select;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Select (Q)");
+
+			// Move --------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Move;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_FA_ARROWS_ALT))
+				m_Operation = OperationMode::Move;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Move (W)");
+
+			// Rotate ------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Rotate;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_MDI_ROTATE_ORBIT))
+				m_Operation = OperationMode::Rotate;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Rotate (E)");
+
+			// Scale -------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Scale;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_MDI_RESIZE))
+				m_Operation = OperationMode::Scale;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Scale (R)");
+
+			ImGui::Separator();
+			if (m_Translation == TranslationMode::Local)
+			{
+				if (ImGui::Button(ICON_FA_CUBE))
+					m_Translation = TranslationMode::World;
+			}
+			else
+			{
+				if (ImGui::Button(ICON_FA_GLOBE_EUROPE))
+					m_Translation = TranslationMode::Local;
+			}
+			ImGui::Separator();
+
+			selected = m_Is2DMode;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+			if (ImGui::Button("2D"))
+			{
+				m_Is2DMode = !m_Is2DMode;
+				if (m_Is2DMode)
+					m_GridAxis = 'z';
+				else
+					m_GridAxis = 'y';
+				m_CameraController.SwitchCamera(!m_Is2DMode);
+			}
+			if (!selected)
+				ImGui::PopStyleColor();
+
+			ImGui::Separator();
+			if (ImGui::BeginMenu("Show"))
+			{
+				ImGui::MenuItem("Collision", "", &m_ShowCollision);
+				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
+				ImGui::MenuItem("Statistics", "", &m_ShowStats);
+				ImGui::MenuItem("Shadows", "", &m_ShowShadows, false);
+				ImGui::MenuItem("Lighting", "", &m_ShowLighting, false);
+				ImGui::MenuItem("Reflections", "", &m_ShowReflections, false);
+
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
 		ImVec2 topLeft = ImGui::GetCursorPos();
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
@@ -275,7 +371,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		
+
 
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
@@ -425,27 +521,23 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		ImVec2 toolbarPosistion = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
-		ImGui::SetCursorPos(toolbarPosistion);
-		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
-		ImGui::Text("%.1f", io.Framerate);
-
-		//ImGui::SameLine(40.0f);
-
-		if (ImGui::RadioButton("2D", m_Is2DMode))
+		ImVec2 statsBoxPosition = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
+		ImGui::SetCursorPos(statsBoxPosition);
+		if (m_ShowFrameRate)
 		{
-			m_Is2DMode = !m_Is2DMode;
-			if (m_Is2DMode)
-				m_GridAxis = 'z';
-			else
-				m_GridAxis = 'y';
-			m_CameraController.SwitchCamera(!m_Is2DMode);
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 50, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::Text("%.1f", io.Framerate);
 		}
 
-		if (ImGui::RadioButton("Local", m_Translation == TranslationMode::Local))
+		if (m_ShowStats)
 		{
-			m_Translation = m_Translation == TranslationMode::Local ? TranslationMode::World : TranslationMode::Local;
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 250, pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::Text("Draw Calls: %i", Renderer2D::GetStats().drawCalls);
+			ImGui::Text("Quad Count: %i", Renderer2D::GetStats().quadCount);
+			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);
+			ImGui::Text("Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
 		}
+		Renderer2D::ResetStats();
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();

@@ -2,6 +2,8 @@
 
 #include "IconsFontAwesome5.h"
 #include "IconsMaterialDesign.h"
+#include "Fonts/IconsMaterialDesignIcons.h"
+#include "Fonts/Fonts.h"
 #include "MainDockSpace.h"
 
 #include "ImGui/ImGuiTransform.h"
@@ -148,11 +150,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	}
 
 	//Transform------------------------------------------------------------------------------------------------------------
-	DrawComponent<TransformComponent>("Transform", entity, [](auto& transform)
+	DrawComponent<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity, [](auto& transform)
 	{
 		ImGui::Transform(transform.position, transform.rotation, transform.scale);
 	}, false);
-
 
 	//Sprite--------------------------------------------------------------------------------------------------------------
 	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [](auto& sprite)
@@ -661,7 +662,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	});
 
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
-	DrawComponent<CircleCollider2DComponent>(ICON_MD_PANORAMA_FISHEYE" Circle Collider 2D", entity, [](auto& circleCollider2D)
+	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 	{
 		Vector2f& offset = circleCollider2D.Offset;
 		ImGui::Text("Offset");

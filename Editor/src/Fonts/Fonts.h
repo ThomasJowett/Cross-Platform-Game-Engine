@@ -9,4 +9,5 @@ public:
 	static ImFont* DroidSans;
 	static ImFont* Consolas;
 	static ImFont* Icons;
+	static ImFont* MDIcons;
 };

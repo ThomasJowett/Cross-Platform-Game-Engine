@@ -77,6 +77,13 @@ private:
 	bool m_DrawGrid = true;
 	char m_GridAxis = 'z';
 
+	bool m_ShowCollision = false;
+	bool m_ShowFrameRate = true;
+	bool m_ShowStats = true;
+	bool m_ShowShadows = true;
+	bool m_ShowLighting = true;
+	bool m_ShowReflections = true;
+
 	HierarchyPanel* m_HierarchyPanel;
 	Entity m_HoveredEntity;
 
