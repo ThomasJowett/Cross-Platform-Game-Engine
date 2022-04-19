@@ -3,6 +3,7 @@
 #define MAX_ASSET_VIEWERS 2
 
 #include <map>
+#include <filesystem>
 
 #include "Core/Layer.h"
 
@@ -28,7 +29,8 @@ public:
 
 	static std::vector<std::string> GetExtensions(FileType fileType);
 
-private:
+	static void SaveAll();
 
+private:
 	static std::map<std::filesystem::path, std::pair<Layer*, bool*>> s_AssetViewers;
 };

@@ -25,6 +25,7 @@ public:
 
 	void SetIcon(const std::filesystem::path& path) override;
 	void SetCursor(Cursors cursorType) override;
+	void SetTitle(const char* title) override;
 
 	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0);
 

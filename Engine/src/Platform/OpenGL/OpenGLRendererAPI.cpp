@@ -33,6 +33,7 @@ bool OpenGLRendererAPI::Init()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glLineWidth(1.5f);
 	return true;
 }
 

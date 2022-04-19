@@ -35,7 +35,14 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 			if (!entity)
 				return;
 
-			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity);
+			HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+			if (hierarchyComp != nullptr)
+			{
+				if (hierarchyComp->parent != entt::null)
+					return;
+			}
+			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity, pRoot);
 			return;
 		});
 
@@ -74,15 +81,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 				ENGINE_WARN("Loading scene created with a different version of the engine");
 
 		// Entities
-		tinyxml2::XMLElement* pEntityElement = pRoot->FirstChildElement("Entity");
-
-
+		tinyxml2::XMLElement* pEntityElement = pRoot->LastChildElement("Entity");
 
 		while (pEntityElement)
 		{
 			DeserializeEntity(m_Scene, pEntityElement);
-
-			pEntityElement = pEntityElement->NextSiblingElement("Entity");
+			pEntityElement = pEntityElement->PreviousSiblingElement("Entity");
 		}
 
 		return true;
@@ -96,9 +100,9 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity)
+void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity, tinyxml2::XMLElement* pParentNode)
 {
-	pElement->SetAttribute("Name", entity.GetTag().c_str());
+	pElement->SetAttribute("Name", entity.GetName().c_str());
 	pElement->SetAttribute("ID", entity.GetID());
 
 	TransformComponent& transformcomp = entity.GetTransform();
@@ -135,10 +139,36 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
-		if(component.texture)
+		if (component.texture)
 			pSpriteElement->SetAttribute("Texture", SerializationUtils::RelativePath(component.texture->GetFilepath()).c_str());
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
+	}
+
+	if (entity.HasComponent<AnimatedSpriteComponent>())
+	{
+		AnimatedSpriteComponent& component = entity.GetComponent<AnimatedSpriteComponent>();
+
+		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
+		tinyxml2::XMLElement* pAnimatorElement = pAnimatedSpriteElement->InsertNewChildElement("Animator");
+
+		if (component.animator.GetSpriteSheet()->GetTexture())
+			pAnimatorElement->SetAttribute("Texture",
+				SerializationUtils::RelativePath(component.animator.GetSpriteSheet()->GetTexture()->GetFilepath()).c_str());
+
+		pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
+		pAnimatorElement->SetAttribute("SpriteHeight", component.animator.GetSpriteSheet()->GetSpriteHeight());
+
+		for (Animation& animation : component.animator.GetAnimations())
+		{
+			tinyxml2::XMLElement* pAnimationElement = pAnimatorElement->InsertNewChildElement("Animation");
+			pAnimationElement->SetAttribute("Name", animation.GetName().c_str());
+			pAnimationElement->SetAttribute("StartFrame", animation.GetStartFrame());
+			pAnimationElement->SetAttribute("FrameCount", animation.GetFrameCount());
+			pAnimationElement->SetAttribute("FrameTime", animation.GetFrameTime());
+		}
+
+		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -246,9 +276,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		std::string relativePath = FileUtils::RelativePath(component.tilemap.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-
-		pTilemapElement->SetAttribute("Filepath", relativePath.c_str());
+		SerializationUtils::Encode(pTilemapElement, component.tilemap.GetFilepath());
 
 		component.tilemap.Save();
 	}
@@ -305,6 +333,38 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCircleRendererElement->SetAttribute("Fade", component.Fade);
 
 		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.colour);
+	}
+
+	if (entity.HasComponent<LuaScriptComponent>())
+	{
+		LuaScriptComponent& component = entity.GetComponent<LuaScriptComponent>();
+
+		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
+
+		SerializationUtils::Encode(pLuaScriptElement, component.absoluteFilepath);
+	}
+
+	if (entity.HasComponent<HierarchyComponent>())
+	{
+		HierarchyComponent& component = entity.GetComponent<HierarchyComponent>();
+
+		if (component.firstChild != entt::null)
+		{
+			Entity child = { component.firstChild, entity.GetScene() };
+
+			SerializeEntity(pElement->InsertNewChildElement("Entity"), child, pElement);
+		}
+
+		if (pParentNode != nullptr)
+		{
+			entt::entity next = entity.GetComponent<HierarchyComponent>().nextSibling;
+			if (next != entt::null)
+			{
+				Entity siblingEntity = { next, entity.GetScene() };
+				SerializeEntity(pParentNode->InsertNewChildElement("Entity"), siblingEntity, pParentNode);
+				return;
+			}
+		}
 	}
 }
 
@@ -386,7 +446,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
 
 		const char* textureRelativePath = pSpriteElement->Attribute("Texture");
-		if(textureRelativePath != nullptr)
+		if (textureRelativePath != nullptr)
 			component.texture = Texture2D::Create(SerializationUtils::AbsolutePath(textureRelativePath));
 	}
 
@@ -405,10 +465,9 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (meshFilepathChar)
 			{
-				std::string meshFilepathStr(meshFilepathChar);
-				if (!meshFilepathStr.empty())
+				std::filesystem::path meshfilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+				if (!meshfilepath.empty())
 				{
-					std::filesystem::path meshfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / meshFilepathStr);
 					mesh.LoadModel(meshfilepath);
 				}
 			}
@@ -541,12 +600,12 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		Tilemap tilemap;
 		const char* tilemapChar = pTilemapElement->Attribute("Filepath");
+
 		if (tilemapChar)
 		{
-			std::string tilemapPath(tilemapChar);
-			if (!tilemapPath.empty())
+			std::filesystem::path tilemapfilepath = SerializationUtils::AbsolutePath(tilemapChar);
+			if (!tilemapfilepath.empty())
 			{
-				std::filesystem::path tilemapfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / tilemapPath);
 				tilemap.Load(tilemapfilepath);
 			}
 		}
@@ -608,6 +667,40 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
 
 		SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// LuaScript -----------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pLuaScriptElement = pEntityElement->FirstChildElement("LuaScript");
+
+	if (pLuaScriptElement)
+	{
+		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
+
+		SerializationUtils::Decode(pLuaScriptElement, component.absoluteFilepath);
+	}
+
+	// Hierarachy ---------------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity");
+	if (pChildElement)
+	{
+		entity.AddComponent<HierarchyComponent>();
+
+		Entity previousChild;
+
+		while (pChildElement)
+		{
+			Entity childEntity = DeserializeEntity(scene, pChildElement);
+			HierarchyComponent& childHierarchyComp = childEntity.GetOrAddComponent<HierarchyComponent>();
+			childHierarchyComp.parent = entity.GetHandle();
+
+			childHierarchyComp.nextSibling = previousChild.GetHandle();
+			if (previousChild.GetHandle() != entt::null)
+				previousChild.GetComponent<HierarchyComponent>().previousSibling = childEntity.GetHandle();
+			previousChild = childEntity;
+
+			entity.GetComponent<HierarchyComponent>().firstChild = childEntity.GetHandle();
+			pChildElement = pChildElement->PreviousSiblingElement("Entity");
+		}
 	}
 
 	return entity;

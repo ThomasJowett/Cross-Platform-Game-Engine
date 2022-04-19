@@ -17,12 +17,18 @@ int main(int argc, char* argv[])
 {
 	InputParser input(argc, argv);
 
-	if (AnotherInstance())
-		return 1;
-
 	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 
 	Logger::Init();
+
+	if (AnotherInstance())
+	{
+		//TODO: use second instance as a client to the first server instance
+	}
+	else
+	{
+		//TODO: create the server
+	}
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{
@@ -88,13 +94,8 @@ bool AnotherInstance()
 	ourMutex = CreateMutex(NULL, true, L"Use_a_different_string_here_for_each_program_48161-XYZZY");
 	if (GetLastError() == ERROR_ALREADY_EXISTS)
 	{
-		//TODO: use second instance as a client to the first server instance
-		ENGINE_ERROR("Application already open");
+		ENGINE_INFO("Application instance found");
 		return true;
-	}
-	else
-	{
-		//TODO: create the server
 	}
 #endif // __WINDOWS__
 	return false;

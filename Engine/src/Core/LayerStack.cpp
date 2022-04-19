@@ -10,10 +10,10 @@ LayerStack::LayerStack()
 
 LayerStack::~LayerStack()
 {
-	for (Layer* layer : m_Layers)
+	for(std::vector<Layer*>::reverse_iterator it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 	{
-		layer->OnDetach();
-		delete layer;
+		(*it)->OnDetach();
+		delete (*it);
 	}
 }
 

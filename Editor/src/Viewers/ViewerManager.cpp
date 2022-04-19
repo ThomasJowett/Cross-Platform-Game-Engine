@@ -144,7 +144,7 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		return FileType::SCENE;
 	}
 
-	if (strcmp(ext, ".cs") == 0)
+	if (strcmp(ext, ".lua") == 0)
 	{
 		return FileType::SCRIPT;
 	}
@@ -200,7 +200,7 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		break;
 	}
 	case FileType::SCRIPT:
-		extensions.push_back(".cs");
+		extensions.push_back(".lua");
 		break;
 	case FileType::AUDIO:
 	{
@@ -215,4 +215,13 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		break;
 	}
 	return extensions;
+}
+
+void ViewerManager::SaveAll()
+{
+	for (auto&& [path, viewer] : s_AssetViewers)
+	{
+		if (ISaveable* saveableView = dynamic_cast<ISaveable*>(viewer.first))
+			saveableView->Save();
+	}
 }

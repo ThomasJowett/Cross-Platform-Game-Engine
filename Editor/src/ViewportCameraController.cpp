@@ -51,16 +51,16 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 
 		if (Input::IsKeyPressed(KEY_Q))
 		{
-			Raise(-1.0f * m_TranslationSpeed * deltaTime);
+			Raise(-1.0f * m_TranslationSpeed * deltaTime, Vector3f(0.0f, 1.0f, 0.0f));
 		}
 
 		if (Input::IsKeyPressed(KEY_E))
 		{
-			Raise(+1.0f * m_TranslationSpeed * deltaTime);
+			Raise(+1.0f * m_TranslationSpeed * deltaTime, Vector3f(0.0f, 1.0f, 0.0f));
 		}
 
-		Yaw(-m_MouseRelativeVelocity.x * m_Sensitivity);
 		Pitch(-m_MouseRelativeVelocity.y * m_Sensitivity);
+		Yaw(-m_MouseRelativeVelocity.x * m_Sensitivity);
 
 
 		//make sure right and forward are orthogonal to each other
@@ -104,11 +104,19 @@ void ViewportCameraController::OnMouseMotion(Vector2f mousePosition)
 {
 	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
 
-	if (!m_Is3DCamera && Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
 	{
 		Application::GetWindow().SetCursor(Cursors::ResizeAll);
-		m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
-		m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+		if (m_Is3DCamera)
+		{
+			Strafe(-m_MouseRelativeVelocity.x * 5.0f / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			Raise(m_MouseRelativeVelocity.y * 5.0f / (m_ViewPortSize.y * 0.5f), m_Up);
+		}
+		else
+		{
+			m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+		}
 	}
 
 	m_MouseLastPosition = mousePosition;
@@ -155,9 +163,15 @@ void ViewportCameraController::SwitchCamera(bool is3D)
 	}
 }
 
-void ViewportCameraController::LookAt(Vector3f focalPoint)
+void ViewportCameraController::LookAt(Vector3f focalPoint, float distance)
 {
-	//TODO: rotate vectors to look at focal point
+	if(m_Is3DCamera)
+		m_3DCameraPosition = focalPoint - (distance * m_Forward);
+	else
+	{
+		m_2DCameraPosition = focalPoint;
+		m_2DCameraPosition.z = 0.0f;
+	}
 }
 
 void ViewportCameraController::Walk(float d)
@@ -170,14 +184,14 @@ void ViewportCameraController::Strafe(float d)
 	m_3DCameraPosition = (d * m_Right) + m_3DCameraPosition;
 }
 
-void ViewportCameraController::Raise(float d)
+void ViewportCameraController::Raise(float d, const Vector3f& up)
 {
-	m_3DCameraPosition = (d * m_Up) + m_3DCameraPosition;
+	m_3DCameraPosition = (d * up) + m_3DCameraPosition;
 }
 
 void ViewportCameraController::Pitch(float angle)
 {
-	m_3DCameraRotation = m_3DCameraRotation + Vector3f(angle, 0.0f, 0.0f);
+	m_3DCameraRotation.x += angle;
 
 	if (m_3DCameraRotation.x > PI * 0.5)
 		m_3DCameraRotation.x = (float)(PI * 0.5);
@@ -187,19 +201,29 @@ void ViewportCameraController::Pitch(float angle)
 	{
 		Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_Right, angle));
 		m_Forward = rotation * m_Forward;
+		m_Forward.Normalize();
+
+		m_Up = Vector3f::Cross(m_Right, m_Forward);
+		m_Up.Normalize();
 	}
 }
 
 void ViewportCameraController::Yaw(float angle)
 {
-	Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_Up, angle));
-	m_Forward = rotation * m_Forward;
-	m_Right = rotation * m_Right;
-
-	m_3DCameraRotation = m_3DCameraRotation + Vector3f(0.0f, angle, 0.0f);
+	m_3DCameraRotation.y += angle;
 
 	if (m_3DCameraRotation.y > PI)
 		m_3DCameraRotation.y -= (float)(PI * 2);
 	else if (m_3DCameraRotation.y < -PI)
 		m_3DCameraRotation.y += (float)(PI * 2);
+
+	Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(Vector3f(0.0f, 1.0f, 0.0f), angle));
+	m_Right = rotation * m_Right;
+	m_Right.Normalize();
+
+	m_Forward = Vector3f::Cross(m_Up, m_Right);
+	m_Forward.Normalize();
+
+	m_Up = Vector3f::Cross(m_Right, m_Forward);
+	m_Up.Normalize();
 }

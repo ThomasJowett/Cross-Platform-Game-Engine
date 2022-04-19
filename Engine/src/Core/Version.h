@@ -14,3 +14,6 @@
 
 #include "spdlog/version.h"
 #include "cereal/version.hpp"
+#include "lua/lua.h"
+#include "SPIRV-Cross/spirv.h"
+#include "LiquidFun/liquidfun/Box2D/Box2D/Common/b2Settings.h"

@@ -17,11 +17,11 @@ static inline void rtrim(std::string& s)
 {
 	s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
 		return !isspace(ch);
-		}).base(), s.end());
+	}).base(), s.end());
 }
 
 // splits a string into a vector
-static std::vector<std::string> SplitString(const std::string &s, char delim)
+static std::vector<std::string> SplitString(const std::string& s, char delim)
 {
 	std::vector<std::string> elems;
 
@@ -54,4 +54,51 @@ static wchar_t* ConvertToWideChar(const std::string& s)
 	wideString[s.length()] = 0;
 
 	return wideString;
+}
+
+template <std::size_t...Idxs>
+constexpr auto substring_as_array(std::string_view str, std::index_sequence<Idxs...>)
+{
+	return std::array{ str[Idxs]..., '\n' };
+}
+
+template <typename T>
+constexpr auto type_name_array()
+{
+#if defined(__clang__)
+	constexpr auto prefix = std::string_view{ "[T = " };
+	constexpr auto suffix = std::string_view{ "]" };
+	constexpr auto function = std::string_view{ __PRETTY_FUNCTION__ };
+#elif defined(__GNUC__)
+	constexpr auto prefix = std::string_view{ "with T = " };
+	constexpr auto suffix = std::string_view{ "]" };
+	constexpr auto function = std::string_view{ __PRETTY_FUNCTION__ };
+#elif defined(_MSC_VER)
+	constexpr std::string_view prefix("type_name_array<");
+	constexpr std::string_view suffix(">(void)");
+	constexpr std::string_view function( __FUNCSIG__ );
+#else
+# error Unsupported compiler
+#endif
+
+	constexpr auto start = function.find(prefix) + prefix.size();
+	constexpr auto end = function.rfind(suffix);
+
+	static_assert(start < end);
+
+	constexpr auto fullname = function.substr(start, (end - start));
+	constexpr auto name = fullname.substr(fullname.find(" ") + 1);
+	return substring_as_array(name, std::make_index_sequence<name.size()>{});
+}
+
+template <typename T>
+struct type_name_holder {
+	static inline constexpr auto value = type_name_array<T>();
+};
+
+template <typename T>
+constexpr auto type_name() -> std::string_view
+{
+	constexpr auto& value = type_name_holder<T>::value;
+	return std::string_view{ value.data(), value.size() };
 }

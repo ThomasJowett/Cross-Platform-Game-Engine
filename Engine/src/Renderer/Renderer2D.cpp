@@ -41,6 +41,18 @@ struct LineVertex
 	Vector2f texCoords;
 	float width;
 	float length;
+
+	// Editor only
+	int EntityId;
+};
+
+struct HairLineVertex
+{
+	Vector3f position;
+	Colour colour;
+
+	// Editor only
+	int EntityId;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -69,6 +81,10 @@ struct Renderer2DData
 	Ref<VertexBuffer> lineVertexBuffer;
 	Ref<Shader> lineShader;
 
+	Ref<VertexArray> hairLineVertexArray;
+	Ref<VertexBuffer> hairLineVertexBuffer;
+	Ref<Shader> hairLineShader;
+
 	uint32_t quadIndexCount = 0;
 	QuadVertex* quadVertexBufferBase = nullptr;
 	QuadVertex* quadVertexBufferPtr = nullptr;
@@ -80,6 +96,10 @@ struct Renderer2DData
 	uint32_t lineIndexCount = 0;
 	LineVertex* lineVertexBufferBase = nullptr;
 	LineVertex* lineVertexBufferPtr = nullptr;
+
+	uint32_t hairLineVertexCount = 0;
+	HairLineVertex* hairLineVertexBufferBase = nullptr;
+	HairLineVertex* hairLineVertexBufferPtr = nullptr;
 
 	std::array<Ref<Texture>, maxTexturesSlots> textureSlots;
 	uint32_t textureSlotIndex = 1;
@@ -198,6 +218,22 @@ bool Renderer2D::Init()
 	s_Data.lineVertexArray->SetIndexBuffer(lineIndexBuffer);
 	delete[] lineIndices;
 
+	// Hair Lines ------------------------------------------------------------------------------------
+
+	s_Data.hairLineVertexArray = VertexArray::Create();
+
+	s_Data.hairLineVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(HairLineVertex));
+
+	s_Data.hairLineVertexBuffer->SetLayout({
+			{ShaderDataType::Float3, "a_LocalPosition"},
+			{ShaderDataType::Float4, "a_Colour"},
+			{ShaderDataType::Int, "a_EntityId"}
+		});
+
+	s_Data.hairLineVertexArray->AddVertexBuffer(s_Data.hairLineVertexBuffer);
+
+	s_Data.hairLineVertexBufferBase = new HairLineVertex[s_Data.maxVertices];
+
 	// Textures & Shaders -------------------------------------------------------------------------------
 
 	s_Data.whiteTexture = Texture2D::Create(1, 1);
@@ -205,13 +241,9 @@ bool Renderer2D::Init()
 	s_Data.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
-	s_Data.quadShader->Bind();
-
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
-	s_Data.circleShader->Bind();
-
 	s_Data.lineShader = Shader::Create("Renderer2D_Line");
-	s_Data.lineShader->Bind();
+	s_Data.hairLineShader = Shader::Create("Renderer2D_HairLine");
 
 	// set the texture slot at [0] to white texture
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
@@ -248,6 +280,8 @@ void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& project
 
 	StartQuadsBatch();
 	StartCirclesBatch();
+	StartLinesBatch();
+	StartHairLinesBatch();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -258,6 +292,8 @@ void Renderer2D::EndScene()
 
 	FlushQuads();
 	FlushCircles();
+	FlushLines();
+	FlushHairLines();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -276,12 +312,6 @@ void Renderer2D::FlushQuads()
 	s_Data.quadVertexBuffer->Bind();
 	s_Data.quadShader->Bind();
 	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount);
-
-	//s_Data.LineVertexBuffer->Bind();
-	//s_Data.LineShader->Bind();
-	//s_Data.LineVertexArray->Bind();
-	//RenderCommand::DrawIndexed(s_Data.LineVertexArray, s_Data.LineIndexCount);
-
 	s_Data.statistics.drawCalls++;
 }
 
@@ -295,6 +325,32 @@ void Renderer2D::FlushCircles()
 	s_Data.circleVertexBuffer->Bind();
 	s_Data.circleShader->Bind();
 	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount);
+	s_Data.statistics.drawCalls++;
+}
+
+void Renderer2D::FlushLines()
+{
+	if (s_Data.lineIndexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.lineVertexBufferPtr - (uint8_t*)s_Data.lineVertexBufferBase);
+	s_Data.lineVertexBuffer->SetData(s_Data.lineVertexBufferBase, dataSize);
+
+	s_Data.lineVertexBuffer->Bind();
+	s_Data.lineShader->Bind();
+	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount);
+	s_Data.statistics.drawCalls++;
+}
+
+void Renderer2D::FlushHairLines()
+{
+	if (s_Data.hairLineVertexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.hairLineVertexBufferPtr - (uint8_t*)s_Data.hairLineVertexBufferBase);
+	s_Data.hairLineVertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
+
+	s_Data.hairLineVertexBuffer->Bind();
+	s_Data.hairLineShader->Bind();
+	RenderCommand::DrawLines(s_Data.hairLineVertexArray, s_Data.hairLineVertexCount);
 	s_Data.statistics.drawCalls++;
 }
 
@@ -314,6 +370,18 @@ void Renderer2D::StartCirclesBatch()
 	s_Data.circleVertexBufferPtr = s_Data.circleVertexBufferBase;
 }
 
+void Renderer2D::StartLinesBatch()
+{
+	s_Data.lineIndexCount = 0;
+	s_Data.lineVertexBufferPtr = s_Data.lineVertexBufferBase;
+}
+
+void Renderer2D::StartHairLinesBatch()
+{
+	s_Data.hairLineVertexCount = 0;
+	s_Data.hairLineVertexBufferPtr = s_Data.hairLineVertexBufferBase;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::NextQuadsBatch()
@@ -326,6 +394,18 @@ void Renderer2D::NextCirclesBatch()
 {
 	FlushCircles();
 	StartCirclesBatch();
+}
+
+void Renderer2D::NextLinesBatch()
+{
+	FlushLines();
+	StartLinesBatch();
+}
+
+void Renderer2D::NextHairLinesBatch()
+{
+	FlushHairLines();
+	StartHairLinesBatch();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -398,7 +478,7 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const Ref<SubTexture2D>& subtexture, const Colour& colour)
 {
-	DrawQuad(position, size, subtexture, colour);
+	DrawQuad(position, size, subtexture, 0.0f, colour);
 }
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -587,10 +667,10 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thickness, const Colour& colour)
+void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const float& thickness, const Colour& colour)
 {
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
-		NextQuadsBatch();
+		NextLinesBatch();
 
 	//world to clip
 	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
@@ -668,11 +748,83 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const float& thi
 	s_Data.statistics.lineCount++;
 }
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const Colour& colour)
+void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour, int entityId)
 {
-	DrawLine(start, end, 1.0f, colour);
+	if (s_Data.hairLineVertexCount >= s_Data.maxLineIndices)
+		NextHairLinesBatch();
+	s_Data.hairLineVertexBufferPtr->position = start;
+	s_Data.hairLineVertexBufferPtr->colour = colour;
+	s_Data.hairLineVertexBufferPtr->EntityId = entityId;
+	s_Data.hairLineVertexBufferPtr++;
+
+	s_Data.hairLineVertexBufferPtr->position = end;
+	s_Data.hairLineVertexBufferPtr->colour = colour;
+	s_Data.hairLineVertexBufferPtr->EntityId = entityId;
+	s_Data.hairLineVertexBufferPtr++;
+
+	s_Data.hairLineVertexCount += 2;
+	s_Data.statistics.hairLineCount++;
+}
+
+void Renderer2D::DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour, int entityId)
+{
+	Vector3f p0 = Vector3f(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+	Vector3f p1 = Vector3f(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
+	Vector3f p2 = Vector3f(position.x + size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+	Vector3f p3 = Vector3f(position.x - size.x * 0.5f, position.y + size.y * 0.5f, position.z);
+
+	DrawHairLine(p0, p1, colour, entityId);
+	DrawHairLine(p1, p2, colour, entityId);
+	DrawHairLine(p2, p3, colour, entityId);
+	DrawHairLine(p3, p0, colour, entityId);
+}
+
+void Renderer2D::DrawHairLineRect(const Matrix4x4& transform, const Colour& colour, int entityId)
+{
+	Vector3f lineVertices[4];
+	for (size_t i = 0; i < 4; i++)
+		lineVertices[i] = transform * s_Data.quadVertexPositions[i];
+
+	DrawHairLine(lineVertices[0], lineVertices[1], colour, entityId);
+	DrawHairLine(lineVertices[1], lineVertices[2], colour, entityId);
+	DrawHairLine(lineVertices[2], lineVertices[3], colour, entityId);
+	DrawHairLine(lineVertices[3], lineVertices[0], colour, entityId);
+}
+
+void Renderer2D::DrawHairLineCircle(const Vector3f& position, float radius, uint32_t segments, const Colour& colour, int entityId)
+{
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(radius, radius, 1.0f));
+	DrawHairLineCircle(transform, segments, colour, entityId);
+}
+
+void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments, const Colour& colour, int entityId)
+{
+	Vector3f previousPoint ( 1.0f, 0.0f, 0.0f);
+	Vector3f currentPoint;
+
+	previousPoint = transform * previousPoint;
+
+	float step = (2 * PI) / segments;
+
+	for (float angle = step; angle <= 2 * PI; angle += step)
+	{
+		currentPoint.x = cos(angle);
+		currentPoint.y = sin(angle);
+		currentPoint.z = 0.0f;
+		currentPoint = transform * currentPoint;
+
+		DrawHairLine(previousPoint, currentPoint, colour, entityId);
+		previousPoint = currentPoint;
+	}
+}
+
+void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour, int entityId)
+{
+	for (uint32_t i = 0; i < vertices.size() - 1; i++)
+	{
+		DrawHairLine(vertices[i], vertices[i + 1], colour, entityId);
+	}
+	DrawHairLine(vertices[vertices.size() - 1], vertices[0], colour, entityId);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -680,13 +832,6 @@ void Renderer2D::DrawLine(const Vector2f& start, Vector2f& end, const Colour& co
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float& thickness, const Colour& colour)
 {
 	//TODO draw polyline
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const Colour& colour)
-{
-	DrawPolyline(points, 1.0f, colour);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

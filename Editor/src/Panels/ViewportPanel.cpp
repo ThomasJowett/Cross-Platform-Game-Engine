@@ -3,9 +3,13 @@
 #include "MainDockSpace.h"
 
 #include "IconsFontAwesome5.h"
+#include "Fonts/IconsMaterialDesignIcons.h"
+#include "IconsMaterialDesign.h"
+#include "Fonts/Fonts.h"
 
 #include "Engine.h"
 #include "FileSystem/FileDialog.h"
+#include "Viewers/ViewerManager.h"
 
 #include "HierarchyPanel.h"
 #include "Scene/Components/Components.h"
@@ -13,7 +17,8 @@
 #include "ImGui/ImGuizmo.h"
 
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
-	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel)
+	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel),
+	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };
 	frameBufferSpecificationEditorCamera.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
@@ -23,8 +28,6 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
 	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
-	m_Mode = Mode::Select;
-
 	m_Framebuffer->ClearAttachment(1, -1);
 }
 
@@ -32,7 +35,38 @@ void ViewportPanel::OnAttach()
 {
 	//TODO: Load where the camera was in the scene and load that
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
+
+	Settings::SetDefaultBool("Viewport", "ShowCollision", false);
+	Settings::SetDefaultBool("Viewport", "ShowFps", true);
+	Settings::SetDefaultBool("Viewport", "ShowStats", false);
+	Settings::SetDefaultBool("Viewport", "ShowGrid", false);
+	Settings::SetDefaultBool("Viewport", "ShowShadows", true);
+	Settings::SetDefaultBool("Viewport", "ShowLighting", true);
+	Settings::SetDefaultBool("Viewport", "ShowReflections", true);
+	Settings::SetDefaultBool("Viewport", "Is2D", true);
+
+	m_ShowCollision = Settings::GetBool("Viewport", "ShowCollision");
+	m_ShowFrameRate = Settings::GetBool("Viewport", "ShowFps");
+	m_ShowStats = Settings::GetBool("Viewport", "ShowStats");
+	m_ShowGrid = Settings::GetBool("Viewport", "ShowGrid");
+	m_ShowShadows = Settings::GetBool("Viewport", "ShowShadows");
+	m_ShowLighting = Settings::GetBool("Viewport", "ShowLighting");
+	m_ShowReflections = Settings::GetBool("Viewport", "ShowReflections");
+	m_Is2DMode = Settings::GetBool("Viewport", "Is2D");
 }
+
+void ViewportPanel::OnDetach()
+{
+	Settings::SetBool("Viewport", "ShowCollision", m_ShowCollision);
+	Settings::SetBool("Viewport", "ShowFps", m_ShowFrameRate);
+	Settings::SetBool("Viewport", "ShowStats", m_ShowStats);
+	Settings::SetBool("Viewport", "ShowGrid", m_ShowGrid);
+	Settings::SetBool("Viewport", "ShowShadows", m_ShowShadows);
+	Settings::SetBool("Viewport", "ShowLighting", m_ShowLighting);
+	Settings::SetBool("Viewport", "ShowReflections", m_ShowReflections);
+	Settings::SetBool("Viewport", "Is2D", m_Is2DMode);
+}
+
 void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
@@ -61,6 +95,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
 	m_Framebuffer->Bind();
@@ -82,7 +117,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	case SceneState::Edit:
 	case SceneState::Simulate:
 	{
-		SceneManager::CurrentScene()->DebugRender(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
@@ -99,26 +133,60 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			}
 		}
 
+		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
+
+		// Debug render pass
+		m_Framebuffer->Bind();
+		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
-			if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+
+			if (selectedEntity.HasComponent<CameraComponent>())
 			{
-				CameraComponent& cameraComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<CameraComponent>();
-				TransformComponent& transformComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<TransformComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.position) * Matrix4x4::Rotate({ transformComp.rotation });
+				CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
 				m_CameraPreview->Bind();
 				RenderCommand::Clear();
 				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
 			}
+			if (selectedEntity.HasComponent<CircleCollider2DComponent>())
+			{
+				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
+
+				float scale = circleComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
+
+				Matrix4x4 transform = transformComp.GetParentMatrix()
+					* Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::Translate(Vector3f(circleComp.Offset.x, circleComp.Offset.y, 0.001f))
+					* Matrix4x4::Scale(Vector3f(scale, scale, 1.0f));
+
+				Renderer2D::DrawHairLineCircle(transform, 60, Colours::LIME_GREEN, selectedEntity);
+			}
+
+			if (selectedEntity.HasComponent<BoxCollider2DComponent>())
+			{
+				BoxCollider2DComponent& boxComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
+
+				Matrix4x4 transform = transformComp.GetParentMatrix()
+					* Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::Translate(Vector3f(boxComp.Offset.x, boxComp.Offset.y, 0.001f))
+					* Matrix4x4::Scale(Vector3f(boxComp.Size.x * transformComp.scale.x * 2, boxComp.Size.y * transformComp.scale.y * 2, 1.0f));
+
+				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
+			}
 		}
+		Renderer2D::EndScene();
+		m_Framebuffer->UnBind();
 		break;
 	}
 	default:
 		break;
 	}
-
-	Renderer2D::ResetStats();
 }
 
 void ViewportPanel::OnFixedUpdate()
@@ -143,8 +211,7 @@ void ViewportPanel::OnImGuiRender()
 
 	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar;
-
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
@@ -152,6 +219,104 @@ void ViewportPanel::OnImGuiRender()
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
+		if (ImGui::BeginMenuBar())
+		{
+			ImGui::PopStyleVar();
+			bool selected = false;
+
+			// Select ------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Select;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_FA_MOUSE_POINTER))
+				m_Operation = OperationMode::Select;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Select (Q)");
+
+			// Move --------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Move;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_FA_ARROWS_ALT))
+				m_Operation = OperationMode::Move;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Move (W)");
+
+			// Rotate ------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Rotate;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_MDI_ROTATE_ORBIT))
+				m_Operation = OperationMode::Rotate;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Rotate (E)");
+
+			// Scale -------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Scale;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_MDI_RESIZE))
+				m_Operation = OperationMode::Scale;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Scale (R)");
+
+			ImGui::Separator();
+			if (m_Translation == TranslationMode::Local)
+			{
+				if (ImGui::Button(ICON_FA_CUBE))
+					m_Translation = TranslationMode::World;
+			}
+			else
+			{
+				if (ImGui::Button(ICON_FA_GLOBE_EUROPE))
+					m_Translation = TranslationMode::Local;
+			}
+			ImGui::Separator();
+
+			selected = m_Is2DMode;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+			if (ImGui::Button("2D"))
+			{
+				m_Is2DMode = !m_Is2DMode;
+				if (m_Is2DMode)
+					m_GridAxis = 'z';
+				else
+					m_GridAxis = 'y';
+				m_CameraController.SwitchCamera(!m_Is2DMode);
+			}
+			if (!selected)
+				ImGui::PopStyleColor();
+
+			ImGui::Separator();
+			
+			if (ImGui::BeginMenu("Show"))
+			{
+				ImGui::MenuItem("Collision", "", &m_ShowCollision);
+				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
+				ImGui::MenuItem("Statistics", "", &m_ShowStats);
+				ImGui::MenuItem("Grid", "", &m_ShowGrid);
+				ImGui::MenuItem("Shadows", "", &m_ShowShadows, false);
+				ImGui::MenuItem("Lighting", "", &m_ShowLighting, false);
+				ImGui::MenuItem("Reflections", "", &m_ShowReflections, false);
+
+				ImGui::EndMenu();
+			}
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+			ImGui::EndMenuBar();
+		}
 		ImVec2 topLeft = ImGui::GetCursorPos();
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
@@ -184,6 +349,7 @@ void ViewportPanel::OnImGuiRender()
 			m_ViewportSize = panelSize;
 			m_CameraController.SetViewPortSize(Vector2f(m_ViewportSize.x, m_ViewportSize.y));
 			m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+			SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		pos = ImGui::GetCursorScreenPos();
@@ -199,14 +365,13 @@ void ViewportPanel::OnImGuiRender()
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 		{
-
 			if (ImGui::BeginDragDropTarget())
 			{
 				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					if (file->extension() == ".staticMesh")
+					if (ViewerManager::GetFileType(*file) == FileType::MESH)
 					{
 						std::string entityName = file->filename().string();
 						entityName = entityName.substr(0, entityName.find_last_of('.'));
@@ -239,12 +404,42 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
+
+
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
+			ImGuizmo::SetOrthographic(m_Is2DMode);
+			ImGuizmo::SetDrawlist();
+			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
+
+			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
+			cameraViewMat.Transpose();
+			cameraProjectionMat.Transpose();
+
+			if (m_ShowGrid)
+			{
+				Matrix4x4 gridTransform;
+				// TODO: draw a better grid instead of an imgui overlay
+				//gridTransform = Matrix4x4::RotateY((float)DegToRad(angle));
+				/*if (m_GridAxis == 'x')
+					gridTransform = Matrix4x4::RotateZ((float)DegToRad(angle));
+				if (m_GridAxis == 'z')
+					gridTransform = Matrix4x4::RotateX((float)DegToRad(angle));
+				gridTransform.Transpose();*/
+				ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
+			}
+
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();
+
+				if (m_HierarchyPanel->IsFocused())
+				{
+					m_CameraController.LookAt(transformComp.GetWorldPosition(), transformComp.scale.x); // TODO: get the bounds of the object and offset the camera by that amount
+					m_HierarchyPanel->HasFocused();
+				}
 
 				// Draw a camera preview if the selected entity has a camera
 				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
@@ -265,29 +460,24 @@ void ViewportPanel::OnImGuiRender()
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
 					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
-					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetTag().c_str());
+					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetName().c_str());
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}
 
 				// Gizmos
-				ImGuizmo::SetOrthographic(true);
-				ImGuizmo::SetDrawlist();
-				ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
-				Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
-				Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 
-				Matrix4x4 transformMat = Matrix4x4::Translate(transformComp.position)
-					* Matrix4x4::Rotate(Quaternion(transformComp.rotation))
-					* Matrix4x4::Scale(transformComp.scale);
+				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
 
-				cameraViewMat.Transpose();
-				cameraProjectionMat.Transpose();
 				transformMat.Transpose();
+
+				float translation[3], rotation[3], scale[3];
+
+				ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
 				bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
 				float snapValue = 0.5f;
-				if (m_Mode == Mode::Rotate)
+				if (m_Operation == OperationMode::Rotate)
 					snapValue = 10.0f;
 
 				//TODO: add a get bounds function method from sprite, camera and mesh
@@ -295,45 +485,69 @@ void ViewportPanel::OnImGuiRender()
 
 				float snapValues[3] = { snapValue, snapValue, snapValue };
 
-				ImGuizmo::OPERATION gizmoMode = ImGuizmo::BOUNDS;
-				switch (m_Mode)
+				ImGuizmo::OPERATION gizmoOperation = ImGuizmo::BOUNDS;
+				switch (m_Operation)
 				{
-				case ViewportPanel::Mode::Select:
-					gizmoMode = ImGuizmo::BOUNDS;
+				case ViewportPanel::OperationMode::Select:
+					gizmoOperation = ImGuizmo::BOUNDS;
 					break;
-				case ViewportPanel::Mode::Move:
-					gizmoMode = ImGuizmo::OPERATION::TRANSLATE;
+				case ViewportPanel::OperationMode::Move:
+					gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
 					break;
-				case ViewportPanel::Mode::Rotate:
-					gizmoMode = ImGuizmo::OPERATION::ROTATE;
+				case ViewportPanel::OperationMode::Rotate:
+					gizmoOperation = ImGuizmo::OPERATION::ROTATE;
 					break;
-				case ViewportPanel::Mode::Scale:
-					gizmoMode = ImGuizmo::OPERATION::SCALE;
+				case ViewportPanel::OperationMode::Scale:
+					gizmoOperation = ImGuizmo::OPERATION::SCALE;
+					break;
+					//case ViewportPanel::OperationMode::Universal:
+					//	gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
+					//	break;
+				default:
+					break;
+				}
+
+				ImGuizmo::MODE gizmoMode = ImGuizmo::LOCAL;
+				switch (m_Translation)
+				{
+				case ViewportPanel::TranslationMode::Local:
+					gizmoMode = ImGuizmo::LOCAL;
+					break;
+				case ViewportPanel::TranslationMode::World:
+					gizmoMode = ImGuizmo::WORLD;
 					break;
 				default:
 					break;
 				}
 
-				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16, gizmoMode, ImGuizmo::LOCAL, transformMat.m16, NULL, snap ? &snapValues[0] : NULL, gizmoMode == ImGuizmo::BOUNDS ? bounds : NULL, snap ? snapValues : NULL);
+				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16,
+					gizmoOperation, gizmoMode,
+					transformMat.m16,
+					NULL, snap ? &snapValues[0] : NULL,
+					gizmoOperation == ImGuizmo::BOUNDS ? bounds : NULL,
+					snap ? snapValues : NULL);
 
 				if (ImGuizmo::IsUsing())
 				{
-					float translation[3], rotation[3], scale[3];
+					transformMat.Transpose();
+					Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp.GetParentMatrix());
+					transformMat = parentMatrix * transformMat;
+					transformMat.Transpose();
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
 					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
-					if (gizmoMode == ImGuizmo::OPERATION::TRANSLATE)
+					if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE)
 					{
 						transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 					}
-					if (gizmoMode == ImGuizmo::OPERATION::ROTATE)
+					if (gizmoOperation == ImGuizmo::OPERATION::ROTATE)
 					{
 						transformComp.rotation += deltaRotation;
 					}
-					if (gizmoMode == ImGuizmo::OPERATION::SCALE)
+					if (gizmoOperation == ImGuizmo::OPERATION::SCALE)
 					{
 						transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 					}
@@ -341,10 +555,23 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		ImVec2 toolbarPosistion = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
-		ImGui::SetCursorPos(toolbarPosistion);
-		ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 100, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
-		ImGui::Text("%.1f", io.Framerate);
+		ImVec2 statsBoxPosition = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
+		ImGui::SetCursorPos(statsBoxPosition);
+		if (m_ShowFrameRate)
+		{
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 50, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::Text("%.1f", io.Framerate);
+		}
+
+		if (m_ShowStats)
+		{
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 250, pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::Text("Draw Calls: %i", Renderer2D::GetStats().drawCalls);
+			ImGui::Text("Quad Count: %i", Renderer2D::GetStats().quadCount);
+			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);
+			ImGui::Text("Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
+		}
+		Renderer2D::ResetStats();
 	}
 	ImGui::End();
 	ImGui::PopStyleVar();
@@ -432,16 +659,18 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (m_WindowHovered)
+	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
 		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
-			m_Mode = Mode::Select;
+			m_Operation = OperationMode::Select;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
-			m_Mode = Mode::Move;
+			m_Operation = OperationMode::Move;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
-			m_Mode = Mode::Rotate;
+			m_Operation = OperationMode::Rotate;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
-			m_Mode = Mode::Scale;
+			m_Operation = OperationMode::Scale;
+		//else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
+		//	m_Operation = OperationMode::Universal;
 	}
 
 	if (m_WindowFocussed)

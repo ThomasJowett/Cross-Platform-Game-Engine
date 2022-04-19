@@ -15,12 +15,19 @@
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
-	enum class Mode
+	enum class OperationMode
 	{
 		Select = 0,
 		Move,
 		Rotate,
-		Scale
+		Scale,
+		Universal
+	};
+
+	enum class TranslationMode
+	{
+		Local,
+		World
 	};
 
 public:
@@ -28,6 +35,7 @@ public:
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
+	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
@@ -64,9 +72,18 @@ private:
 	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
 
-	Mode m_Mode;
+	OperationMode m_Operation;
+	TranslationMode m_Translation;
+	bool m_Is2DMode = true;
+	char m_GridAxis = 'z';
 
-	std::filesystem::path m_SceneFilepath;
+	bool m_ShowCollision = false;
+	bool m_ShowFrameRate = true;
+	bool m_ShowGrid = false;
+	bool m_ShowStats = false;
+	bool m_ShowShadows = true;
+	bool m_ShowLighting = true;
+	bool m_ShowReflections = true;
 
 	HierarchyPanel* m_HierarchyPanel;
 	Entity m_HoveredEntity;

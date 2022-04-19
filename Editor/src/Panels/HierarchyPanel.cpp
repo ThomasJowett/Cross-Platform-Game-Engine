@@ -3,13 +3,18 @@
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
 
-#include "Engine.h"
-
 #include "Utilities/GeometryGenerator.h"
 #include "Scene/SceneSerializer.h"
+#include "Scene/SceneGraph.h"
+#include "Events/ApplicationEvent.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:m_Show(show), Layer("Hierarchy")
+{
+	m_TextFilter = new ImGuiTextFilter();
+}
+
+HierarchyPanel::~HierarchyPanel()
 {
 }
 
@@ -17,6 +22,12 @@ HierarchyPanel::HierarchyPanel(bool* show)
 
 void HierarchyPanel::OnAttach()
 {
+	
+}
+
+void HierarchyPanel::OnDetach()
+{
+	m_TextFilter->Clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -33,6 +44,7 @@ void HierarchyPanel::OnImGuiRender()
 
 	if (!*m_Show)
 	{
+		m_TextFilter->Clear();
 		return;
 	}
 
@@ -204,6 +216,11 @@ void HierarchyPanel::OnImGuiRender()
 			ImGui::EndPopup();
 		}
 
+		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::SameLine();
+		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
+		ImGui::Tooltip("Filter (\"incl,-excl\")");
+
 		if (SceneManager::IsSceneLoaded())
 		{
 			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
@@ -211,18 +228,44 @@ void HierarchyPanel::OnImGuiRender()
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
 			{
-				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
-					{
-						auto& name = SceneManager::CurrentScene()->GetRegistry().get<TagComponent>(entityID);
-						Entity entity{ entityID, SceneManager::CurrentScene(),  name };
-						DrawNode(entity);
-					});
+				DragDropTarget(Entity());
 
+				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
+				{
+					if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
+					{
+						Entity entity{ entityID, SceneManager::CurrentScene() };
+
+						// Only draw a node for root entites, children are drawn recursively
+						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+						if (!hierarchyComp || hierarchyComp->parent == entt::null 
+							|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
+							DrawNode(entity);
+					}
+				});
 				ImGui::TreePop();
 			}
+
+			ImVec2 available = ImGui::GetContentRegionAvail();
+			ImGui::Dummy(available);
+			DragDropTarget(Entity());
+			
 		}
 	}
 	ImGui::End();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void HierarchyPanel::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
+	{
+		// Clear the selected entity when project changes
+		m_SelectedEntity = Entity();
+		return false;
+	});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -234,21 +277,52 @@ void HierarchyPanel::SetSelectedEntity(Entity entity)
 
 void HierarchyPanel::DrawNode(Entity entity)
 {
-	auto& tag = entity.GetComponent<TagComponent>().tag;
+	std::string& name = entity.GetName();
+
+	if(m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
+		return;
+
+	bool hasChildren = false;
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	if (hierarchyComp != nullptr && hierarchyComp->firstChild != entt::null)
+		hasChildren = true;
+
 	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
-		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0);
+		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
+		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
-	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, tag.c_str());
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
 
-	if (ImGui::IsItemClicked())
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+	{
+		ImGui::SetDragDropPayload("Entity", &entity, sizeof(Entity));
+		ImGui::Text(name.c_str());
+		ImGui::EndDragDropSource();
+	}
+	DragDropTarget(entity);
+
+	if (ImGui::IsItemClicked(ImGuiMouseButton_Right) || ImGui::IsItemClicked(ImGuiMouseButton_Left))
 	{
 		m_SelectedEntity = entity;
+		if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+		{
+			m_Focused = true;
+		}
 	}
 
 	bool entityDeleted = false;
-	if (ImGui::BeginPopupContextItem(std::string(tag.c_str() + std::to_string((uint32_t)entity)).c_str()))
+	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
-		if (ImGui::MenuItem("Delete Entity"))
+		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+			Cut();
+		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
+			Copy();
+		if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, ImGui::GetClipboardText() != nullptr))
+			Paste();
+		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
+			Duplicate();
+		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
 		{
 			entityDeleted = true;
 		}
@@ -257,6 +331,30 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 	if (opened)
 	{
+		if (hasChildren  && !m_TextFilter->IsActive() )
+		{
+			entt::entity child = entity.TryGetComponent<HierarchyComponent>()->firstChild;
+			while (child != entt::null)
+			{
+				Entity childEntity = { child, SceneManager::CurrentScene() };
+
+				DrawNode(childEntity);
+
+				if (childEntity.IsValid())
+				{
+					HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
+
+					ASSERT(childHierarchyComp != nullptr, "Child does not have a Hierarchy Component!");
+
+					child = childHierarchyComp->nextSibling;
+				}
+				else
+				{
+					child = entt::null;
+				}
+			}
+		}
+
 		ImGui::TreePop();
 	}
 
@@ -265,6 +363,25 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (m_SelectedEntity == entity)
 			m_SelectedEntity = {};
 		SceneManager::CurrentScene()->RemoveEntity(entity);
+	}
+}
+
+void HierarchyPanel::DragDropTarget(Entity parent)
+{
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity", ImGuiDragDropFlags_None))
+		{
+			Entity* childEntity = (Entity*)payload->Data;
+			ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
+
+			if (parent)
+				SceneGraph::Reparent(*childEntity, parent, SceneManager::CurrentScene()->GetRegistry());
+			else
+				SceneGraph::Unparent(*childEntity, SceneManager::CurrentScene()->GetRegistry());
+			SceneManager::CurrentScene()->MakeDirty();
+		}
+		ImGui::EndDragDropTarget();
 	}
 }
 

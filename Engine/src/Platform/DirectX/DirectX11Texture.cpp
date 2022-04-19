@@ -66,6 +66,12 @@ uint32_t DirectX11Texture2D::GetRendererID() const
 	return uint32_t(); // TODO: return renderer
 }
 
+void DirectX11Texture2D::Reload()
+{
+	if (!m_Path.empty() || m_Path != "NO DATA")
+		LoadTextureFromFile();
+}
+
 bool DirectX11Texture2D::operator==(const Texture& other) const
 {
 	return false; // TODO: compare rendererIDs

@@ -23,6 +23,7 @@
 #include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
 #include "Panels/ConsolePanel.h"
+#include "Panels/ErrorListPanel.h"
 #include "Toolbars/PlayPauseToolbar.h"
 
 #include "Interfaces/ICopyable.h"
@@ -35,6 +36,8 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
+#include "RuntimeExporter.h"
+
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
 MainDockSpace::MainDockSpace()
@@ -46,7 +49,7 @@ MainDockSpace::MainDockSpace()
 	m_ShowProjectSettings = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
-	m_ShowErrorList = false;
+	m_ShowErrorList = true;
 	m_ShowTaskList = false;
 	m_ShowProperties = true;
 	m_ShowHierarchy = true;
@@ -63,6 +66,10 @@ MainDockSpace::MainDockSpace()
 	m_ShowTargetPlatformToolbar = false;
 
 	m_ContentExplorer = nullptr;
+
+#ifdef DEBUG
+	m_ShowImGuiDemo = true;
+#endif // DEBUG
 }
 
 void MainDockSpace::OnAttach()
@@ -81,6 +88,11 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
 
+#ifdef DEBUG
+	Settings::SetDefaultBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
+	m_ShowImGuiDemo = Settings::GetBool("Windows", "ImGuiDemo");
+#endif // DEBUG
+
 	Settings::SetDefaultBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetDefaultBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
@@ -93,6 +105,7 @@ void MainDockSpace::OnAttach()
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 	m_ShowProperties = Settings::GetBool("Windows", "Properties");
 	m_ShowHierarchy = Settings::GetBool("Windows", "Hierarchy");
+	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
 
 	m_ShowPlayPauseToolbar = Settings::GetBool("Toolbars", "PlayPause");
 	m_ShowSaveOpenToolbar = Settings::GetBool("Toolbars", "SaveOpen");
@@ -108,6 +121,7 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(hierarchyPanel);
 	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel));
 	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel));
+	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
 
 	if (!Application::GetOpenDocument().empty())
 	{
@@ -140,6 +154,10 @@ void MainDockSpace::OnDetach()
 	Settings::SetBool("Windows", "Properties", m_ShowProperties);
 	Settings::SetBool("Windows", "ErrorList", m_ShowErrorList);
 
+#ifdef DEBUG
+	Settings::SetBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
+#endif // DEBUG
+
 	Settings::SetBool("Toolbars", "PlayPause", m_ShowPlayPauseToolbar);
 	Settings::SetBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
@@ -158,8 +176,9 @@ void MainDockSpace::OnUpdate(float deltaTime)
 
 void MainDockSpace::OnImGuiRender()
 {
-	static bool showDemoWindow = true;
-	ImGui::ShowDemoWindow(&showDemoWindow);//TEMP 
+#ifdef DEBUG
+	if(m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
+#endif // DEBUG
 
 	static bool opt_fullscreen_persistant = true;
 	bool opt_fullscreen = opt_fullscreen_persistant;
@@ -240,6 +259,17 @@ void MainDockSpace::OnImGuiRender()
 			{
 				SceneManager::CurrentScene()->Save(false);
 			}
+			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
+			{
+
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
+				if (exportLocation.has_value())
+				{
+					RuntimeExporter exporter;
+					exporter.Init(exportLocation.value());
+					exporter.ExportGame();
+				}
+			}
 			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
@@ -273,7 +303,7 @@ void MainDockSpace::OnImGuiRender()
 				iCopy->Copy();
 			if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, copyable && ImGui::GetClipboardText() != nullptr))
 				iCopy->Paste();
-			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable))
+			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Duplicate();
 			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Delete();
@@ -293,9 +323,12 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
-			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList, false);//TODO: Create Error list panel
+			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList);
 			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
+#ifdef DEBUG
+			ImGui::MenuItem("ImGui Demo", "", &m_ShowImGuiDemo);
+#endif // DEBUG
 			ImGui::EndMenu();
 		}
 
@@ -362,15 +395,17 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::Text("spd log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 		ImGui::Text("cereal version: %i.%i.%i", CEREAL_VERSION_MAJOR, CEREAL_VERSION_MINOR, CEREAL_VERSION_PATCH);
 		ImGui::Text("Simple ini version: 4.17");
-		ImGui::Text("entt version: 3.5.2");
+		ImGui::Text("entt version: 3.9.0");
+		ImGui::Text("SPIR-V Cross version: %i", SPV_VERSION);
+		ImGui::Text("lua version: %s.%s.%s", LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE);
+		ImGui::Text("Box2D version: %i.%i.%i", b2_version.major, b2_version.minor, b2_version.revision);
+		ImGui::Text("liquidfun version: %i.%i.%i", b2_liquidFunVersion.major, b2_liquidFunVersion.minor, b2_liquidFunVersion.revision);
 		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 		ImGui::EndPopup();
 	}
 
 	ImGui::End();
 }
-
-
 
 void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 {

@@ -39,6 +39,10 @@ private:
 		{
 			texture = Texture2D::Create(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
+		else
+		{
+			texture = nullptr;
+		}
 		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
 	}

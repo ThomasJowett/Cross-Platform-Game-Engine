@@ -57,7 +57,8 @@ project "Engine"
 		"%{prj.name}/vendor/simpleini",
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
-		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D"
+		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D",
+		"%{prj.name}/vendor/lua"
 	}
 	
 	links
@@ -66,7 +67,9 @@ project "Engine"
 		"GLAD",
 		"ImGui",
 		"TinyXml2",
-		"LiquidFun"
+		"LiquidFun",
+		"SPIRV-Cross",
+		"lua"
 	}
 	
 	defines
@@ -100,6 +103,11 @@ project "Engine"
 			"%{prj.name}/src/Platform/Linux**.cpp",
 			"%{prj.name}/src/Platform/Mac OS**.h",
 			"%{prj.name}/src/Platform/Mac OS**.cpp"
+		}
+
+		buildoptions
+		{
+			"/bigobj"
 		}
 	
 	filter "system:linux"
@@ -182,12 +190,14 @@ project "ExampleGame"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 	
 	links
 	{
-		"Engine"
+		"Engine",
+		"lua"
 	}
 
 	postbuildcommands
@@ -276,13 +286,15 @@ project "Editor"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 	
 	links
 	{
 		"Engine",
-		"OpenFBX"
+		"OpenFBX",
+		"lua"
 	}
 
 	defines
@@ -402,7 +414,8 @@ project "EngineDLL"
 
 	links
 	{
-		"Engine"
+		"Engine",
+		"lua"
 	}
 
 	includedirs
@@ -410,7 +423,8 @@ project "EngineDLL"
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include"
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/lua"
 	}
 
 	postbuildcommands

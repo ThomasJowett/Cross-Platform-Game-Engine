@@ -12,7 +12,7 @@ public:
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
-	void OnFixedUpdate() override;
+	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 private:
 	void DrawComponents(Entity entity);

@@ -225,29 +225,47 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
 {
-	std::string newSceneFilepath = (m_CurrentPath / "Untitled").string();
-
-	int suffix = 1;
-
-	if (std::filesystem::exists(newSceneFilepath + ".scene"))
-	{
-		while (std::filesystem::exists(newSceneFilepath + '(' + std::to_string(suffix) + ").scene"))
-		{
-			suffix++;
-		}
-
-		newSceneFilepath += '(' + std::to_string(suffix) + ')';
-	}
-
-	newSceneFilepath += ".scene";
+	std::filesystem::path newSceneFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Scene", ".scene");
 
 	SceneManager::CreateScene(newSceneFilepath);
 
-	SceneManager::ChangeScene(std::filesystem::path(newSceneFilepath));
+	SceneManager::ChangeScene(newSceneFilepath);
 
 	m_ForceRescan = true;
 
 	m_CurrentSelectedPath = newSceneFilepath;
+}
+
+void ContentExplorerPanel::CreateNewLuaScript()
+{
+	std::filesystem::path newLuaScriptFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Script", ".lua");
+
+	std::ofstream file(newLuaScriptFilepath);
+
+	if (file.is_open())
+	{
+		file << "-- Called when entity is created" << std::endl;
+		file << "function OnCreate()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << std::endl;
+		file << "-- Called once per frame" << std::endl;
+		file << "function OnUpdate(deltaTime)" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << "-- Called on a fixed interval" << std::endl;
+		file << "function OnFixedUpdate()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+		file << "-- Called when entity is destroyed" << std::endl;
+		file << "function OnDestroy()" << std::endl;
+		file << std::endl;
+		file << "end" << std::endl;
+	}
+	file.close();
+
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newLuaScriptFilepath;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -376,6 +394,12 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 		if (ImGui::SmallButton("Object"))
 			CLIENT_DEBUG("new object");
+
+		if (ImGui::SmallButton("Lua Script"))
+		{
+			CreateNewLuaScript();
+			ImGui::OpenPopup("Rename");
+		}
 
 		if (ImGui::BeginPopup("Rename"))
 		{
@@ -550,6 +574,10 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 
 void ContentExplorerPanel::OnAttach()
 {
+	Settings::SetDefaultInt("ContentExplorer", "ZoomLevel", 0);
+	Settings::SetDefaultInt("ContentExplorer", "SortingMode", 0);
+	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
+	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -721,7 +749,10 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
 			ICON_FA_SORT_DOWN "\tType\0"
 			ICON_FA_SORT_UP "\tType Reverse"))
+		{
 			m_ForceRescan = true;
+			Settings::SetInt("ContentExplorer", "SortingMode", (int)m_SortingMode);
+		}
 		//----------------------------------------------------------------------------------------------------
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
@@ -729,55 +760,57 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_TH_LIST "\tList\0"
 			ICON_FA_TH "\tThumbnails\0"
 			ICON_FA_LIST "\tDetails\0"))
+		{
 			m_ForceRescan = true;
+			Settings::SetInt("ContentExplorer", "ZoomLevel", (int)m_ZoomLevel);
+		}
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
 		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;
+
+		ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FOLDER))
 		{
-			bool mustValidateInputPath = false;
-			ImGui::PushStyleColor(ImGuiCol_Button, m_EditLocationCheckButtonPressed ? dummyButtonColour : style.Colors[ImGuiCol_Button]);
+			m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
+		}
 
+		bool editLocationButtonDown = false;
+		if (ImGui::IsItemActive())
+			editLocationButtonDown = true;
+
+		static bool editLocationShouldHaveFocus = false;
+		if (m_EditLocationCheckButtonPressed != editLocationShouldHaveFocus)
+		{
+			editLocationShouldHaveFocus = !editLocationShouldHaveFocus;
+			if (editLocationShouldHaveFocus)
+				ImGui::SetKeyboardFocusHere();
+		}
+
+		ImGui::PopStyleColor();
+
+		//----------------------------------------------------------------------------------------------------
+		// Manual path edit control
+		if (m_EditLocationCheckButtonPressed)
+		{
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_FOLDER))
+			editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
+				ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
+
+			static bool once = false;
+			if (!ImGui::IsItemActive() && editLocationShouldHaveFocus)
 			{
-				m_EditLocationCheckButtonPressed = !m_EditLocationCheckButtonPressed;
+				editlocationInputTextReturnPressed = once;
+				once = true;
 			}
 
-			static bool hasFocus = false;
-			if (m_EditLocationCheckButtonPressed != hasFocus)
+			if (editlocationInputTextReturnPressed)
 			{
-				hasFocus = !hasFocus;
-				if (hasFocus)
-					ImGui::SetKeyboardFocusHere();
-			}
-
-			ImGui::PopStyleColor();
-
-			if (m_EditLocationCheckButtonPressed)
-			{
-				ImGui::SameLine();
-				editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
-					ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
-
-				static bool once = false;
-				if (!ImGui::IsItemActive())
-				{
-					editlocationInputTextReturnPressed = once;
-					once = true;
-				}
-
-				if (editlocationInputTextReturnPressed)
-				{
-					once = false;
-					mustValidateInputPath = true;
-				}
-			}
-
-			if (mustValidateInputPath)
-			{
+				once = false;
 				try
 				{
 					if (std::filesystem::exists(inputBuffer))
@@ -788,21 +821,22 @@ void ContentExplorerPanel::OnImGuiRender()
 					{
 						m_ForceRescan = false;
 					}
-					m_EditLocationCheckButtonPressed = false;
+					if(!editLocationButtonDown)
+						m_EditLocationCheckButtonPressed = false;
 				}
 				catch (const std::exception& e)
 				{
 					CLIENT_ERROR(e.what());
 				}
 			}
+
+			ImGui::Dummy(ImVec2(0, 0));
 		}
+
 		//----------------------------------------------------------------------------------------------------
 		// Split path control
-		if (!m_EditLocationCheckButtonPressed && !editlocationInputTextReturnPressed)
+		else
 		{
-			//Split Path
-			// tab:
-
 			const int numTabs = (int)m_CurrentSplitPath.size();
 
 			int pushpop = 0;
@@ -881,6 +915,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 			m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 
+			ImGui::Dummy(ImVec2(0, ImGui::GetStyle().ItemSpacing.y));
 		}
 
 		ImGui::Separator();
@@ -1092,7 +1127,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::PushFont(Fonts::Icons);
 
 						// try to get the image to display the thumbnail
-						if(ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
+						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
 						{
 							ImGui::ImageButton(m_TextureLibrary.Load(m_Files[i]), { thumbnailSize, thumbnailSize });
 						}
@@ -1121,11 +1156,11 @@ void ContentExplorerPanel::OnImGuiRender()
 								m_NumberSelected += m_SelectedFiles[i];
 							}
 						}
-						CreateDragDropSource(i);
 						ImGui::PopFont();
+						ItemContextMenu(i, false, filename);
+						CreateDragDropSource(i);
 						ImGui::TextWrapped("%s", filename.c_str());
 						ImGui::EndGroup();
-						ItemContextMenu(i, false, filename);
 
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
@@ -1133,8 +1168,15 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
+					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					{
+						RightClickMenu();
+						ImGui::EndPopup();
+					}
+
 					ImGui::EndTable();
 				}
+
 			}
 			break;
 			case ContentExplorerPanel::ZoomLevel::DETAILS:
@@ -1147,7 +1189,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 				if (ImGui::BeginTable("Details Table", 3, table_flags))
 				{
-
 					ImGui::TableSetupColumn("Name");
 					ImGui::TableSetupColumn("Date Modified");
 					ImGui::TableSetupColumn("Size");
@@ -1295,6 +1336,13 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::EndGroup();
 
 					}
+
+					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					{
+						RightClickMenu();
+						ImGui::EndPopup();
+					}
+
 					ImGui::EndTable();
 				}
 				break;

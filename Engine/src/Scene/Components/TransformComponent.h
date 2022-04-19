@@ -17,11 +17,33 @@ struct TransformComponent
 	TransformComponent(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
 		:position(position), rotation(rotation), scale(scale) {}
 
-	Matrix4x4 GetMatrix()
+	Matrix4x4 GetWorldMatrix()
+	{
+		return m_WorldMatrix;
+	}
+
+	const Vector3f GetWorldPosition() const
+	{
+		return m_ParentMatrix * position;
+	}
+
+	Matrix4x4 GetLocalMatrix()
 	{
 		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);
 	}
+
+	void SetWorldMatrix(Matrix4x4 parentMatrix) 
+	{ 
+		m_ParentMatrix = parentMatrix;
+		m_WorldMatrix = parentMatrix * GetLocalMatrix();
+	}
+
+	const Matrix4x4& GetParentMatrix() const { return m_ParentMatrix; }
+
 private:
+	Matrix4x4 m_WorldMatrix;
+	Matrix4x4 m_ParentMatrix;
+
 	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)

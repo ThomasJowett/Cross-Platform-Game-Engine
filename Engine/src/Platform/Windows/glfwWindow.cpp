@@ -111,6 +111,11 @@ void glfwWindow::SetCursor(Cursors cursorType)
 	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
 }
 
+void glfwWindow::SetTitle(const char* title) 
+{
+	glfwSetWindowTitle(m_Window, title);
+}
+
 void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
@@ -186,7 +191,7 @@ void glfwWindow::RestoreWindow()
 
 void glfwWindow::DisableCursor()
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
 }
 
 void glfwWindow::EnableCursor()

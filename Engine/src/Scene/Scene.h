@@ -11,6 +11,8 @@ class Entity;
 class FrameBuffer;
 class Camera;
 class b2World;
+class b2Body;
+class b2Draw;
 
 class Scene
 {
@@ -22,7 +24,7 @@ public:
 	Entity CreateEntity(const std::string& name = "");
 	Entity CreateEntity(Uuid id, const std::string& name = "");
 
-	bool RemoveEntity(const Entity& entity);
+	bool RemoveEntity(Entity& entity);
 
 	void DuplicateEntity(Entity entity);
 
@@ -36,14 +38,8 @@ public:
 	// Render the scene to the render target from the primary camera entity in the scene
 	void Render(Ref<FrameBuffer> renderTarget);
 
-	// Render the scene with all debug information visible from the camera transform and projection
-	void DebugRender(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
-
-	//void DrawIDBuffer(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
-
 	// Called once per frame
 	void OnUpdate(float deltaTime);
-
 
 	// Called 100 times a second
 	void OnFixedUpdate();
@@ -67,6 +63,11 @@ public:
 	const std::filesystem::path GetFilepath() const { return m_Filepath; }
 	void SetFilepath(std::filesystem::path filepath);
 
+	Entity GetPrimaryCameraEntity();
+
+	void DestroyBody(b2Body* body);
+	void SetShowDebug(bool show);
+
 private:
 	entt::registry m_Registry;
 
@@ -83,6 +84,7 @@ protected:
 	bool m_IsSaving = false;
 
 	b2World* m_Box2DWorld = nullptr;
+	b2Draw* m_Box2DDraw = nullptr;
 
 	std::stringstream m_Snapshot;
 

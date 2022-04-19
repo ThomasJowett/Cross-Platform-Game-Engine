@@ -26,10 +26,12 @@ public:
 	static bool ChangeSceneState(SceneState sceneState);
 	static SceneState GetSceneState();
 	static void Restart();
+	static void Shutdown();
 private:
 	static bool FinalChangeScene();
 	static Scope<Scene> s_CurrentScene;
 	static std::filesystem::path s_NextFilepath;
 	static std::string s_NextSceneName;
 	static SceneState s_SceneState;
+	static std::filesystem::path s_EditingScene;
 };

@@ -2,7 +2,10 @@
 #include "Fonts/Fonts.h"
 #include "MainDockSpace.h"
 #include "IconsFontAwesome5.h"
+
+#include "Scripting/Lua/LuaManager.h"
 #include "FileSystem/FileDialog.h"
+#include "Core/Settings.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -25,6 +28,13 @@ void ScriptView::OnAttach()
 
 		m_TextEditor.SetText(str);
 		m_TextEditor.SetFilePath(m_FilePath);
+	}
+	Settings::SetDefaultBool("TextEditor", "ShowWhiteSpace", true);
+	m_TextEditor.SetShowWhitespaces(Settings::GetBool("TextEditor", "ShowWhiteSpace"));
+
+	if (m_FilePath.extension() == ".lua")
+	{
+		ParseLuaScript();
 	}
 }
 
@@ -62,8 +72,6 @@ void ScriptView::OnImGuiRender()
 		}
 		return;
 	}
-
-	
 
 	ImGui::SetNextWindowSize(ImVec2(800, 600), ImGuiCond_FirstUseEver);
 
@@ -124,6 +132,7 @@ void ScriptView::OnImGuiRender()
 				if (ImGui::MenuItem("Show white Space", "", &showWhiteSpace))
 				{
 					m_TextEditor.SetShowWhitespaces(showWhiteSpace);
+					Settings::SetBool("TextEditor", "ShowWhiteSpace", showWhiteSpace);
 				}
 
 				bool colourize = m_TextEditor.IsColorizerEnabled();
@@ -148,6 +157,11 @@ void ScriptView::Save()
 {
 	if (!IsReadOnly())
 		m_TextEditor.SaveTextToFile(m_FilePath);
+
+	if (m_FilePath.extension() == ".lua")
+	{
+		ParseLuaScript();
+	}
 }
 
 void ScriptView::SaveAs()
@@ -183,4 +197,31 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 		return TextEditor::LanguageDefinition::AngelScript();
 
 	return TextEditor::LanguageDefinition();
+}
+
+void ScriptView::ParseLuaScript()
+{
+	Ref<sol::environment> m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
+	sol::protected_function_result result = LuaManager::GetState().script_file(m_FilePath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+
+	TextEditor::ErrorMarkers errorMarkers;
+	if (!result.valid())
+	{
+		sol::error error = result;
+		std::string errorStr = error.what();
+		int line = 1;
+		auto linepos = errorStr.find(".lua:");
+		std::string errorLine = errorStr.substr(linepos + 5); //+4 .lua: + 1
+		auto lineposEnd = errorLine.find(":");
+		errorLine = errorLine.substr(0, lineposEnd);
+		line = std::stoi(errorLine);
+		errorStr = errorStr.substr(linepos + errorLine.size() + lineposEnd + 4); //+4 .lua:
+
+		errorMarkers.insert({ line, errorStr });
+		m_TextEditor.SetErrorMarkers(errorMarkers);
+	}
+	else
+	{
+		m_TextEditor.SetErrorMarkers(errorMarkers);
+	}
 }

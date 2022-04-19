@@ -91,6 +91,27 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Material& materi
 		ENGINE_WARN("Could not find Material node");
 }
 
+void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath)
+{
+	if (!filepath.empty())
+	{
+		std::string relativePath = RelativePath(filepath);
+		pElement->SetAttribute("Filepath", relativePath.c_str());
+	}
+}
+
+void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, std::filesystem::path& filepath)
+{
+	if (pElement)
+	{
+		const char* relativePath = pElement->Attribute("Filepath");
+		if (relativePath)
+		{
+			filepath = AbsolutePath(relativePath);
+		}
+	}
+}
+
 std::string SerializationUtils::RelativePath(const std::filesystem::path& path)
 {
 	return FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).string();

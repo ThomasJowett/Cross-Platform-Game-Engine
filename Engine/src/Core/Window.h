@@ -59,6 +59,7 @@ public:
 
 	virtual void SetIcon(const std::filesystem::path& path) = 0;
 	virtual void SetCursor(Cursors cursorType) = 0;
+	virtual void SetTitle(const char* title) = 0;
 
 	virtual void DisableCursor() = 0;
 	virtual void EnableCursor() = 0;

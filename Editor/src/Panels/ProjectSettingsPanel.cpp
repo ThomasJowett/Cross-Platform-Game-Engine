@@ -6,7 +6,7 @@
 #include "cereal/archives/json.hpp"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
-	:m_Show(show)
+	:m_Show(show), Layer("Project Settings Panel")
 {
 }
 

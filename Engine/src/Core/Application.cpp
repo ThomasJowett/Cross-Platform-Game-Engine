@@ -16,6 +16,7 @@
 #include "Logging/Logger.h"
 
 #include "Utilities/StringUtils.h"
+#include "Scripting/Lua/LuaManager.h"
 
 Application* Application::s_Instance = nullptr;
 
@@ -34,6 +35,7 @@ Application::Application(const WindowProps& props)
 
 	Settings::Init();
 	Random::Init();
+	LuaManager::Init();
 
 	SetDefaultSettings(props);
 
@@ -57,9 +59,11 @@ Application::Application(const WindowProps& props)
 
 Application::~Application()
 {
+	SceneManager::Shutdown();
 	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
 	Renderer::Shutdown();
+	LuaManager::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -101,6 +105,8 @@ void Application::Run()
 	double currentTime = GetTime();
 	double accumulator = 0.0f;
 
+	m_Running = true;
+
 	while (m_Running)
 	{
 		PROFILE_SCOPE("Run Loop");
@@ -112,7 +118,7 @@ void Application::Run()
 		accumulator += frameTime;
 
 		// On Fixed update
-		while (accumulator >= deltaTime)
+		while (accumulator >= m_FixedUpdateInterval)
 		{
 			PROFILE_SCOPE("Layer Stack Fixed Update");
 
@@ -127,7 +133,7 @@ void Application::Run()
 
 				SceneManager::FixedUpdate();
 			}
-			accumulator -= deltaTime;
+			accumulator -= m_FixedUpdateInterval;
 		}
 
 		// On Update
@@ -274,7 +280,7 @@ void Application::PopOverlay(Layer* layer)
 
 bool Application::OnWindowClose(WindowCloseEvent& e)
 {
-	m_Running = false;
+	Close();
 	return true;
 }
 

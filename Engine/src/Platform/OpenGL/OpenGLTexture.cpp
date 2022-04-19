@@ -5,6 +5,41 @@
 #include <stb/stb_image.h>
 #include <filesystem>
 
+void OpenGLTexture2D::SetFilteringAndWrappingMethod()
+{
+	switch (m_FilterMethod)
+	{
+	case Texture::FilterMethod::Linear:
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		break;
+	case Texture::FilterMethod::Nearest:
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		break;
+	default:
+		break;
+	}
+
+	switch (m_WrapMethod)
+	{
+	case Texture::WrapMethod::Clamp:
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		break;
+	case Texture::WrapMethod::Mirror:
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+		break;
+	case Texture::WrapMethod::Repeat:
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		break;
+	default:
+		break;
+	}
+}
+
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 	:m_Width(width), m_Height(height), m_Path("NO DATA")
 {
@@ -15,10 +50,7 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	SetFilteringAndWrappingMethod();
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
@@ -83,6 +115,15 @@ const std::filesystem::path& OpenGLTexture2D::GetFilepath() const
 uint32_t OpenGLTexture2D::GetRendererID() const
 {
 	return m_RendererID;
+}
+
+void OpenGLTexture2D::Reload()
+{
+	if (!m_Path.empty() || m_Path != "NO DATA")
+	{
+		glDeleteTextures(1, &m_RendererID);
+		LoadTextureFromFile();
+	}
 }
 
 bool OpenGLTexture2D::operator==(const Texture& other) const
@@ -168,10 +209,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	SetFilteringAndWrappingMethod();
 
 	if (m_Width % 8 == 0)
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);

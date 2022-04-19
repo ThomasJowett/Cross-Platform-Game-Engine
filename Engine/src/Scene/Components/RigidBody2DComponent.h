@@ -2,6 +2,8 @@
 
 #include "cereal/cereal.hpp"
 
+class b2Body;
+
 struct RigidBody2DComponent
 {
 	enum class BodyType 
@@ -17,12 +19,24 @@ struct RigidBody2DComponent
 	float angularDamping = 0.0f;
 	float linearDamping = 0.0f;
 
-	void* RuntimeBody = nullptr;
+	b2Body* RuntimeBody = nullptr;
 
 	RigidBody2DComponent() = default;
 	RigidBody2DComponent(const RigidBody2DComponent&) = default;
 	RigidBody2DComponent(BodyType type, bool fixedRotation)
 		:type(type), fixedRotation(fixedRotation) {}
+
+	~RigidBody2DComponent();
+
+	void ApplyImpulse(Vector2f impulse);
+	void ApplyImpulseAtPoint(Vector2f impulse, Vector2f center);
+	void ApplyForce(Vector2f force);
+	void ApplyForceAtPoint(Vector2f force, Vector2f center);
+	void ApplyTorque(float torque);
+
+	void SetLinearVelocity(Vector2f velocity);
+	Vector2f GetLinearVelocity();
+
 private:
 	friend cereal::access;
 	template<typename Archive>

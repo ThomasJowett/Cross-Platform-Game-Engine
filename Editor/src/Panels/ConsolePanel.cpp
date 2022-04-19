@@ -105,7 +105,7 @@ void ConsolePanel::ImGuiRenderHeader()
 	ImGui::SameLine(0.0f, spacing);
 	m_TextFilter->Draw("Search", 180);
 
-	ImGui::Tooltip("Filter (\"incl,-excl\") (\"error\")");
+	ImGui::Tooltip("Filter (\"incl,-excl\")");
 
 	ImGui::SameLine(0.0f, spacing);
 
@@ -185,7 +185,7 @@ void ConsolePanel::RenderMessage(const InternalConsole::Message& message)
 	if (level != Level::Invalid && level >= m_LevelFilter && m_TextFilter->PassFilter(message.first.c_str()))
 	{
 		Colour colour = GetRenderColour(level);
-		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ImGui::GetContentRegionAvailWidth());
+		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ImGui::GetContentRegionAvail().x);
 		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", message.first.c_str());
 		ImGui::PopTextWrapPos();
 	}

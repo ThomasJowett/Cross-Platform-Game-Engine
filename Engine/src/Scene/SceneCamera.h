@@ -13,7 +13,7 @@ public:
 	SceneCamera();
 	virtual ~SceneCamera() = default;
 
-	void SetOrthoGraphic(float size, float nearClip, float farClip);
+	void SetOrthographic(float size, float nearClip, float farClip);
 	void SetPerspective(float fov, float nearClip, float farClip);
 	void SetAspectRatio(const float& aspectRatio);
 	float GetAspectRatio() const { return m_AspectRatio; }

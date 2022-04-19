@@ -1,6 +1,7 @@
 #include "SaveOpenToolbar.h"
 
 #include "IconsFontAwesome5.h"
+#include "Viewers/ViewerManager.h"
 
 #include "ImGui/ImGuiUtilites.h"
 #include "Scene/SceneManager.h"
@@ -14,7 +15,7 @@ void SaveOpenToolbar::Render()
 	{
 		SceneManager::CurrentScene()->Save();
 
-		// TODO: save all open assets
+		ViewerManager::SaveAll();
 	}
 	ImGui::Tooltip("Save all");
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "IDComponent.h"
-#include "TagComponent.h"
+#include "NameComponent.h"
 #include "TransformComponent.h"
 #include "CameraComponent.h"
 #include "SpriteComponent.h"
@@ -14,11 +14,13 @@
 #include "BoxCollider2DComponent.h"
 #include "CircleCollider2DComponent.h"
 #include "CircleRendererComponent.h"
+#include "HierarchyComponent.h"
+#include "LuaScriptComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
 IDComponent,				\
-TagComponent,				\
+NameComponent,				\
 TransformComponent,			\
 CameraComponent,			\
 SpriteComponent,			\
@@ -30,5 +32,7 @@ TilemapComponent,			\
 RigidBody2DComponent,		\
 BoxCollider2DComponent,		\
 CircleCollider2DComponent,	\
-CircleRendererComponent		\
+CircleRendererComponent,	\
+HierarchyComponent,			\
+LuaScriptComponent			\
 
