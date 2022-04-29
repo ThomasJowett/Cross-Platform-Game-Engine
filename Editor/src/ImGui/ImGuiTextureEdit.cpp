@@ -58,7 +58,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 			}
 			else
 			{
-				tooltipSize = ImVec2(textureWidth, textureHeight);
+				tooltipSize = ImVec2((float)textureWidth, (float)textureHeight);
 			}
 			ImGui::BeginTooltip();
 			ImGui::Image(texture, tooltipSize);

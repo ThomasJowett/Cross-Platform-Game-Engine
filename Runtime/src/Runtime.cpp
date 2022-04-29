@@ -2,8 +2,6 @@
 #include "Scene/SceneManager.h"
 #include "Engine.h"
 
-//#include "MainLayer.h"
-
 Runtime::Runtime(const WindowProps& props)
     :Application(props)
 {
@@ -23,7 +21,6 @@ Runtime::Runtime(const WindowProps& props)
 	file.close();
 
 	SceneManager::ChangeScene(std::filesystem::path(defaultScene), true);
-	//PushLayer(new MainLayer());
 }
 
 void Runtime::OnUpdate()
