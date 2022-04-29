@@ -66,6 +66,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Material& 
 	{
 		std::string relativePath = FileUtils::RelativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		pElement->SetAttribute("Filepath", relativePath.c_str());
+		pElement->SetAttribute("Shader", material.GetShader().c_str());
 		material.SaveMaterial();
 	}
 }

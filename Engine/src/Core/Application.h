@@ -20,22 +20,6 @@ public:
 	virtual ~Application();
 
 	/**
-	 * Called when an event triggers
-	 * @param e event
-	 */
-	void OnEvent(Event& e);
-
-	/**
-	 * Called once per frame
-	 */
-	virtual void OnUpdate() {};
-
-	/**
-	 * Called 100 times a second
-	 */
-	virtual void OnFixedUpdate() {};
-
-	/**
 	 * Gets the static instance of the application
 	 * @return Application& The instance of the application
 	 */
@@ -129,10 +113,20 @@ public:
 	 * @param event
 	 */
 	static void CallEvent(Event& event) { s_EventCallback(event); }
+protected:
+	/**
+	 * Called once per frame
+	 */
+	virtual void OnUpdate() {};
 
+	/**
+	 * Called 100 times a second
+	 */
+	virtual void OnFixedUpdate() {};
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();
+	void OnEvent(Event& e);
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
 	bool OnWindowMove(WindowMoveEvent& e);

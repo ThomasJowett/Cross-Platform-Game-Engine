@@ -211,7 +211,7 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		break;
 	}
 	case FileType::MATERIAL:
-		extensions.push_back(".mat");
+		extensions.push_back(".material");
 		break;
 	}
 	return extensions;

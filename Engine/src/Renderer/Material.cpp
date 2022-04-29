@@ -5,7 +5,12 @@
 #include "Utilities/SerializationUtils.h"
 #include "Utilities/FileUtils.h"
 
-Material::Material(Ref<Shader> shader, Colour tint)
+Material::Material(const std::filesystem::path& filepath)
+{
+	LoadMaterial(filepath);
+}
+
+Material::Material(const std::string& shader, Colour tint)
 	:m_Shader(shader), m_Tint(tint)
 {
 }
@@ -100,6 +105,8 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 	doc.InsertFirstChild(pRoot);
 
 	SerializationUtils::Encode(pRoot->InsertNewChildElement("Tint"), m_Tint);
+
+	pRoot->SetAttribute("Shader", m_Shader.c_str());
 
 	tinyxml2::XMLElement* pTexturesElement = pRoot->InsertNewChildElement("Textures");
 

@@ -53,6 +53,7 @@ void ViewportPanel::OnAttach()
 	m_ShowLighting = Settings::GetBool("Viewport", "ShowLighting");
 	m_ShowReflections = Settings::GetBool("Viewport", "ShowReflections");
 	m_Is2DMode = Settings::GetBool("Viewport", "Is2D");
+	m_CameraController.SwitchCamera(!m_Is2DMode);
 }
 
 void ViewportPanel::OnDetach()
@@ -380,7 +381,7 @@ void ViewportPanel::OnImGuiRender()
 						Mesh mesh(*file);
 
 						m_ShaderLibrary.Load("Standard");
-						Material material(m_ShaderLibrary.Get("Standard"));
+						Material material("Standard", Colours::WHITE);
 
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 

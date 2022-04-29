@@ -9,6 +9,7 @@
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
+#include "ImGui/ImGuiMaterialEdit.h"
 
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
@@ -100,7 +101,7 @@ void PropertiesPanel::OnImGuiRender()
 						//TODO: Store the material in the mesh file
 						Mesh mesh(*file);
 
-						Material material(Shader::Create("Standard"));
+						Material material("Standard", Colours::WHITE);
 
 						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 
@@ -276,8 +277,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	{
 		if (ImGui::FileEdit("Static Mesh", staticMesh.mesh.GetFilepath(), FileType::MESH))
 			staticMesh.mesh.LoadModel();
-		if (ImGui::FileEdit("Material", staticMesh.material.GetFilepath(), FileType::MATERIAL))
-			staticMesh.material.LoadMaterial();
+		if (ImGui::MaterialEdit("Material", staticMesh.material))
+			SceneManager::CurrentScene()->MakeDirty();
 	});
 
 	//Native Script------------------------------------------------------------------------------------------------------------

@@ -34,6 +34,7 @@ struct SceneData
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 SceneData s_Data;
+ShaderLibrary s_ShaderLibary;
 
 bool Renderer::Init()
 {
@@ -102,7 +103,7 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 
 void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform, int entityId)
 {
-	Ref<Shader> shader = material.GetShader();
+	Ref<Shader> shader = s_ShaderLibary.Load(material.GetShader());
 
 	if (!shader)
 		return;

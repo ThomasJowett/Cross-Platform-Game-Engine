@@ -804,7 +804,7 @@ void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segment
 
 	previousPoint = transform * previousPoint;
 
-	float step = (2 * PI) / segments;
+	float step = (float)(2 * PI) / segments;
 
 	for (float angle = step; angle <= 2 * PI; angle += step)
 	{

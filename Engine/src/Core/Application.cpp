@@ -52,7 +52,10 @@ Application::Application(const WindowProps& props)
 	m_ImGuiManager->Init();
 
 	if (Settings::GetBool("Display", "Maximized"))
+	{
 		m_Window->MaximizeWindow();
+		Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
