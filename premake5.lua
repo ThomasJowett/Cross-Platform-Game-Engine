@@ -460,6 +460,11 @@ project "EditorWpf"
 		"%{prj.name}/**.xaml"
 	}
 
+	dependson
+	{
+		"EngineDLL"
+	}
+
 	links
 	{
 		"Microsoft.Csharp",
