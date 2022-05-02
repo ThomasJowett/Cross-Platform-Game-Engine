@@ -12,5 +12,6 @@ public:
     void ExportScene(Ref<Scene> scene);
 private:
     std::filesystem::path m_ExportLocation;
+    std::filesystem::path m_GameName;
     ProjectData m_Data;
 };

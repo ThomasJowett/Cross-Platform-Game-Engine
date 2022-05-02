@@ -236,6 +236,16 @@ void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the 
 	m_CurrentSelectedPath = newSceneFilepath;
 }
 
+void ContentExplorerPanel::CreateNewMaterial()
+{
+	std::filesystem::path newMaterialFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Material", ".material");
+
+	Material material("Standard", Colours::WHITE);
+	material.SaveMaterial(newMaterialFilepath);
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newMaterialFilepath;
+}
+
 void ContentExplorerPanel::CreateNewLuaScript()
 {
 	std::filesystem::path newLuaScriptFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Script", ".lua");
@@ -390,10 +400,11 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 		if (ImGui::SmallButton("Material"))
 		{
-
+			CreateNewMaterial();
+			ImGui::OpenPopup("Rename");
 		}
-		if (ImGui::SmallButton("Object"))
-			CLIENT_DEBUG("new object");
+		if (ImGui::SmallButton("Prefab"))
+			CLIENT_DEBUG("new prefab");
 
 		if (ImGui::SmallButton("Lua Script"))
 		{

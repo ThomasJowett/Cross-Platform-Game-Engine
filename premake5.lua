@@ -308,6 +308,11 @@ project "Editor"
 		"{COPY} imgui.ini ../bin/" .. outputdir .. "/%{prj.name}"
 	}
 
+	dependson 
+	{
+		"Runtime"
+	}
+
 	filter "system:windows"
 		staticruntime "Off"
 		systemversion "latest"
@@ -367,7 +372,7 @@ project "Runtime"
 	cppdialect "C++17"
 	language "C++"
 
-	targetdir("bin/" .. outputdir .. "/%{prj.name}")
+	targetdir("bin/" .. outputdir .. "/Editor/runtime")
 	objdir("bin-int/" .. outputdir .. "/%{prj.name}")
 
 	files

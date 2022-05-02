@@ -16,7 +16,6 @@ public:
 	virtual void OnImGuiRender() override;
 
 private:
-	ShaderLibrary m_ShaderLibrary;
 	PerspectiveCameraController m_CameraController;
 	Ref<VertexArray> m_CubeVertexArray;
 	Ref<VertexArray> m_SphereVertexArray;

@@ -13,9 +13,11 @@ class Material
 {
 public:
 	Material() = default;
-	Material(Ref<Shader> shader, Colour tint = Colours::WHITE);
+	Material(const std::filesystem::path& filepath);
+	Material(const std::string& shader, Colour tint = Colours::WHITE);
 
-	const Ref<Shader> GetShader() const { return m_Shader; };
+	const std::string& GetShader() const { return m_Shader; }
+	void SetShader(const std::string& shader) { m_Shader = shader; }
 	void BindTextures() const;
 	Ref<Texture> GetTexture(uint32_t slot) const;
 
@@ -33,7 +35,7 @@ public:
 	bool SaveMaterial(const std::filesystem::path& filepath) const;
 	bool SaveMaterial() const;
 private:
-	Ref<Shader> m_Shader;
+	std::string m_Shader;
 
 	std::unordered_map<uint32_t, Ref<Texture>> m_Textures;
 
@@ -50,6 +52,7 @@ private:
 			relativePath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 		archive(cereal::make_nvp("Tint", m_Tint));
+		archive(cereal::make_nvp("Shader", m_Shader));
 		SaveMaterial();
 	}
 
@@ -62,6 +65,8 @@ private:
 		{
 			m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 		}
+		archive(cereal::make_nvp("Tint", m_Tint));
+		archive(cereal::make_nvp("Shader", m_Shader));
 		LoadMaterial();
 	}
 };

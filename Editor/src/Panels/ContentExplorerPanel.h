@@ -112,6 +112,7 @@ public:
 	void SwitchTo(const std::filesystem::path& path);
 
 	void CreateNewScene();
+	void CreateNewMaterial();
 	void CreateNewLuaScript();
 
 private:

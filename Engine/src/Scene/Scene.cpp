@@ -482,7 +482,6 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	if (binary)
 	{
 		std::ofstream file(finalPath, std::ios::binary);
-
 		{
 			cereal::BinaryOutputArchive output(file);
 			entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
@@ -524,6 +523,7 @@ bool Scene::Load(bool binary)
 
 	if (binary)
 	{
+		m_Registry.clear();
 		std::ifstream file(filepath, std::ios::binary);
 		cereal::BinaryInputArchive input(file);
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
