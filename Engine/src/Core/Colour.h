@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sstream>
+#include <iomanip>
 
 #include "Logging/Logger.h"
 #include "Utilities/Random.h"
@@ -169,7 +170,7 @@ public:
 	std::string HexCode() const
 	{
 		std::stringstream stream;
-		stream << "#" << std::hex << HexValue();
+		stream << "#" << std::hex << std::setw(8) << std::setfill('0') << HexValue();
 		return stream.str();
 	}
 	
@@ -179,7 +180,7 @@ public:
 		int green = (int)(g * 255);
 		int blue = (int)(b * 255);
 		int alpha = (int)(a * 255);
-		return ((red & 0xff) << 24) + ((green & 0xff) << 16) + ((blue & 0xff) << 8) + (alpha & 0xff);
+		return ((alpha & 0xff) << 24) + ((red & 0xff) << 16) + ((green & 0xff) << 8) + (blue & 0xff);
 	}
 
 	std::string to_string() const
