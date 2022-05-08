@@ -274,6 +274,13 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
+	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
+	for (auto entity : tilemapGroup)
+	{
+		auto [transformComp, tilemapComp] = tilemapGroup.get(entity);
+		tilemapComp.tilemap.Render(transformComp.GetWorldMatrix(), (int)entity);
+	}
+
 	if (m_Box2DDraw && m_Box2DWorld)
 		m_Box2DWorld->DrawDebugData();
 

@@ -392,7 +392,12 @@ void ViewportPanel::OnImGuiRender()
 						Tilemap tilemap;
 						tilemap.Load(*file);
 
-						tilemap.Save(file->replace_filename("Test Copy.tmx"));
+						//tilemap.Save(file->replace_filename("Test Copy.tmx"));
+						std::string entityName = file->filename().string();
+						entityName = entityName.substr(0, entityName.find_last_of('.'));
+
+						Entity tilemapEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
+						tilemapEntity.AddComponent<TilemapComponent>(tilemap);
 					}
 					else if (file->extension() == ".scene")
 					{

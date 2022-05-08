@@ -7,6 +7,7 @@
 
 #include "Core/Colour.h"
 #include "Renderer/Texture.h"
+#include "Renderer/SubTexture2D.h"
 
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
@@ -26,9 +27,16 @@ public:
 	bool Load(std::filesystem::path& filepath);
 	bool Save(const std::filesystem::path& filepath) const;
 
+	const std::filesystem::path& Source() const { return m_Filepath; }
+	const Ref<SubTexture2D> GetTexture() const { return m_Texture; }
+
+	const uint32_t GetTileWidth() const { return m_TileWidth; }
+	const uint32_t GetTileHeight() const { return m_TileHeight; }
+
+	void SetCurrentTile(uint32_t tile) { m_Texture->SetCurrentCell(tile); }
 private:
 	std::string m_Name;
-	Ref<Texture2D> m_Texture;
+	Ref<SubTexture2D> m_Texture;
 
 	uint32_t m_TileWidth;
 	uint32_t m_TileHeight;
@@ -49,6 +57,7 @@ private:
 
 class Tilemap
 {
+public:
 	enum class Orientation
 	{
 		orthogonal,
@@ -94,7 +103,12 @@ class Tilemap
 		bool ParseCsv(const std::string& data);
 
 		void Resize(uint32_t width, uint32_t height);
-		void Offset(float vertical, float horizontal);
+		void SetOffset(float vertical, float horizontal) { m_Offset = { horizontal, vertical }; }
+		Vector2f GetOffset() const { return m_Offset; }
+		
+		uint32_t GetTile(uint32_t x, uint32_t y) const { return m_Tiles[y][x]; }
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
 	};
 
 	struct Object
@@ -141,7 +155,23 @@ public:
 	bool Save(const std::filesystem::path& filepath) const;
 	bool Save() const;
 
+	void Render(const Matrix4x4& transform, int entityId);
+
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
+	Orientation GetOrientation() const { return m_Orientation; }
+	void SetOrientation(Orientation orientaion) { m_Orientation = orientaion; }
+
+	uint32_t GetWidth() const { return m_Width; }
+	void SetWidth(uint32_t width) { m_Width = width; }
+
+	uint32_t GetHeight() const { return m_Height; }
+	void SetHeight(uint32_t height) { m_Height = height; }
+
+	uint32_t GetTileWidth() const { return m_TileWidth; }
+	void SetTileWidth(uint32_t tileWidth) { m_TileWidth = tileWidth; }
+
+	uint32_t GetTileHeight() const { return m_TileHeight; }
+	void SetTileHeight(uint32_t tileHeight) { m_TileHeight = tileHeight; }
 
 private:
 	std::string m_Name;
@@ -163,7 +193,7 @@ private:
 
 	bool m_Infinite;
 
-	std::vector<std::pair<Tileset, uint32_t>> m_Tilesets;
+	std::map<uint32_t, Ref<Tileset>> m_Tilesets;
 
 	std::vector<Layer> m_Layers;
 	std::vector<Object> m_Objects;

@@ -4,6 +4,7 @@
 #include "TinyXml2/tinyxml2.h"
 
 #include "Utilities/StringUtils.h"
+#include "Renderer/Renderer2D.h"
 
 static std::string fileLoadErrorString = "Could not load tilemap {0}. {1}!";
 
@@ -16,6 +17,12 @@ bool Tileset::Save(const std::filesystem::path& filepath) const
 
 bool Tileset::Load(std::filesystem::path& filepath)
 {
+	if (!std::filesystem::exists(filepath))
+	{
+		CLIENT_ERROR("Could not load Tilemap: {0}, File does not exist!", filepath);
+		return false;
+	}
+
 	tinyxml2::XMLDocument doc;
 
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
@@ -34,11 +41,11 @@ bool Tileset::Load(std::filesystem::path& filepath)
 
 		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
 
-
 		const char* textureSource = pImage->Attribute("source");
 
-		std::filesystem::path texturepath = filepath.remove_filename() / textureSource;
-		m_Texture = Texture2D::Create(texturepath);
+		std::filesystem::path texturePath = filepath.remove_filename() / textureSource;
+
+		m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), m_TileWidth, m_TileHeight);
 
 		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
 
@@ -46,10 +53,26 @@ bool Tileset::Load(std::filesystem::path& filepath)
 		{
 			Tile tile;
 			tile.id = atoi(pTile->Attribute("id"));
-			tile.type = pTile->Attribute("type");
+			const char* type = pTile->Attribute("type");
+			if (type != nullptr)
+			{
+				tile.type = type;
+			}
 			const char* probability = pTile->Attribute("probability");
 			if (probability != nullptr)
 				tile.probability = atof(probability);
+
+			tinyxml2::XMLElement* pAnimation = pTile->FirstChildElement("animation");
+			if (pAnimation)
+			{
+				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
+
+				while (pFrame)
+				{
+					// TODO: load in the animation
+					pFrame = pFrame->NextSiblingElement("frame");
+				}
+			}
 
 			m_Tiles.push_back(tile);
 			pTile = pTile->NextSiblingElement("tile");
@@ -163,10 +186,9 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
 
-			Tileset tileset;
-			tileset.Load(tilesetPath);
-
-			m_Tilesets.push_back(std::make_pair(tileset, atoi(pTileSet->Attribute("firstgid"))));
+			Ref<Tileset> tileset = CreateRef<Tileset>();
+			if (tileset->Load(tilesetPath))
+				m_Tilesets.insert(std::make_pair(atoi(pTileSet->Attribute("firstgid")), tileset));
 
 			pTileSet = pTileSet->NextSiblingElement("tileset");
 		}
@@ -197,7 +219,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 			if (!strcmp(encoding, "csv"))
 			{
-				if (layer.ParseCsv(pData->GetText()))
+				if (!layer.ParseCsv(pData->GetText()))
 				{
 					ENGINE_ERROR("Could not parse tilemap layer {0}", name);
 					return false;
@@ -215,7 +237,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 			}
 
 			m_Layers.push_back(layer);
-			pLayer = pRoot->NextSiblingElement("layer");
+			pLayer = pLayer->NextSiblingElement("layer");
 		}
 
 		// object groups ------------------------------------------------------------------------------------------------------
@@ -223,7 +245,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 		while (pObjectGroup)
 		{
-
+			//TODO: load objects
 
 			pObjectGroup = pRoot->NextSiblingElement("objectgroup");
 		}
@@ -284,26 +306,29 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 	pRoot->SetAttribute("height", m_Height);
 	pRoot->SetAttribute("tilewidth", m_TileWidth);
 	pRoot->SetAttribute("tileheight", m_TileHeight);
-	pRoot->SetAttribute("infinite", m_Infinite);
+	pRoot->SetAttribute("infinite", (int)m_Infinite);
 
-	switch (m_StaggerAxis)
+	if (m_IsStaggered)
 	{
-	case Tilemap::StaggerAxis::X:
-	pRoot->SetAttribute("staggeraxis", "x");
-		break;
-	case Tilemap::StaggerAxis::Y:
-	pRoot->SetAttribute("staggeraxis", "y");
-		break;
-	}
+		switch (m_StaggerAxis)
+		{
+		case Tilemap::StaggerAxis::X:
+			pRoot->SetAttribute("staggeraxis", "x");
+			break;
+		case Tilemap::StaggerAxis::Y:
+			pRoot->SetAttribute("staggeraxis", "y");
+			break;
+		}
 
-	switch (m_StaggerIndex)
-	{
-	case Tilemap::StaggerIndex::even:
-	pRoot->SetAttribute("staggerindex", "even");
-		break;
-	case Tilemap::StaggerIndex::odd:
-	pRoot->SetAttribute("staggerindex", "odd");
-		break;
+		switch (m_StaggerIndex)
+		{
+		case Tilemap::StaggerIndex::even:
+			pRoot->SetAttribute("staggerindex", "even");
+			break;
+		case Tilemap::StaggerIndex::odd:
+			pRoot->SetAttribute("staggerindex", "odd");
+			break;
+		}
 	}
 
 	pRoot->SetAttribute("backgroundcolor", m_BackgroundColour.HexCode().c_str());
@@ -312,6 +337,16 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 
 	pRoot->SetAttribute("nextobjectid", m_Objects.size() + 1);
 
+	std::filesystem::path fileDirectory = filepath;
+	fileDirectory.remove_filename();
+
+	for (auto& [id, tileset] : m_Tilesets)
+	{
+		tinyxml2::XMLElement* pTileset = pRoot->InsertNewChildElement("tileset");
+		pTileset->SetAttribute("firstgid", id);
+		pTileset->SetAttribute("source", FileUtils::RelativePath(tileset->Source(), fileDirectory).string().c_str());
+	}
+
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
@@ -319,6 +354,52 @@ bool Tilemap::Save(const std::filesystem::path& filepath) const
 bool Tilemap::Save() const
 {
 	return Save(m_Filepath);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Tilemap::Render(const Matrix4x4& transform, int entityId)
+{
+	for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
+	//for (auto& layer : m_Layers)
+	{
+		for (size_t i = 0; i < (*it).GetWidth(); i++)
+		{
+			for (size_t j = 0; j < (*it).GetHeight(); j++)
+			{
+				if ((*it).GetTile(i, j) == 0)
+					continue;
+
+				Ref<Tileset> tileset;
+				// find tileset to use
+				uint32_t gid = 1;
+				for (auto& [id, tileset] : m_Tilesets)
+				{
+					if ((*it).GetTile(i, j) >= id - 1 && id - 1 >= gid)
+					{
+						gid = id;
+					}
+					if (id - 1 > (*it).GetTile(i, j))
+					{
+						break;
+					}
+				}
+				tileset = m_Tilesets.at(gid);
+
+				uint32_t currentCell = (*it).GetTile(i, j) - gid;
+				tileset->SetCurrentTile(currentCell);
+				Vector3f position;
+				if (m_RenderingOrder == RenderingOrder::rightDown)
+				{
+					position.x = ((*it).GetOffset().x + (float)(i * tileset->GetTileWidth())) / (float)tileset->GetTileWidth();
+					position.y = (-(*it).GetOffset().y - (float)(j * tileset->GetTileHeight())) / (float)tileset->GetTileHeight();
+				}
+
+				Matrix4x4 finaltransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.01f, 1.01f, 1.0f));
+				Renderer2D::DrawQuad(finaltransform, tileset->GetTexture(), Colours::WHITE, entityId);
+			}
+		}
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -349,10 +430,10 @@ bool Tilemap::Layer::ParseCsv(const std::string& data)
 		for (size_t j = 0; j < m_Width; j++)
 		{
 			uint32_t index = (uint32_t)atoi(SeperatedData[(i * (static_cast<size_t>(m_Width))) + j].c_str());
-			if (index == 0)
-				return false;
-			m_Tiles[j][i] = index - 1;
+			m_Tiles[i][j] = index;
 		}
 	}
 	return true;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
