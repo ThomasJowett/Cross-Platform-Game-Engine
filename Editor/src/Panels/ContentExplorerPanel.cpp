@@ -424,7 +424,8 @@ void ContentExplorerPanel::RightClickMenu()
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
 			L"Any File\0*.*\0"
 			"Film Box (.fbx)\0*.fbx\0"
-			"Wavefront OBJ (.obj)\0*.obj");
+			"Wavefront OBJ (.obj)\0*.obj\0"
+			"Tiled (.tmx)\0*.tmx");
 
 		if (assetPaths)
 		{

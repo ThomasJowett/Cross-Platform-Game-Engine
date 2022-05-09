@@ -2,6 +2,7 @@
 
 #include "FbxImporter.h"
 #include "OBJImporter.h"
+#include "TiledImporter.h"
 
 #include <algorithm>
 
@@ -20,6 +21,10 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	else if (extString == ".obj")
 	{
 		OBJImporter::ImportAssets(asset, destination);
+	}
+	else if ( extString == ".tmx")
+	{
+		TiledImporter::ImportAssets(asset, destination);
 	}
 }
 

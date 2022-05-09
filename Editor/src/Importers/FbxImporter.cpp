@@ -8,7 +8,6 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 {
 	PROFILE_FUNCTION();
 
-
 	long file_size;
 	ofbx::u8* content;
 

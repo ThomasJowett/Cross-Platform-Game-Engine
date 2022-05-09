@@ -1,11 +1,11 @@
 #pragma once
 
-#include <filesystem>
+#include "Interfaces/IImporter.h"
 
 class Vector3f;
 class Vector2f;
 
-class OBJImporter
+class OBJImporter : public IImporter
 {
 public:
 	static void ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination);
