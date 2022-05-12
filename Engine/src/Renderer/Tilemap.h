@@ -12,7 +12,7 @@
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
 
-class Tileset
+class TiledTileset
 {
 	struct Tile
 	{
@@ -22,7 +22,7 @@ class Tileset
 
 	};
 public:
-	Tileset() = default;
+	TiledTileset() = default;
 
 	bool Load(std::filesystem::path& filepath);
 	bool Save(const std::filesystem::path& filepath) const;
@@ -99,6 +99,7 @@ public:
 
 	public:
 		Layer(uint32_t id, const std::string& name, uint32_t width, uint32_t height, Vector2f offset);
+		~Layer();
 
 		bool ParseCsv(const std::string& data);
 
@@ -193,7 +194,7 @@ private:
 
 	bool m_Infinite;
 
-	std::map<uint32_t, Ref<Tileset>> m_Tilesets;
+	std::map<uint32_t, Ref<TiledTileset>> m_Tilesets;
 
 	std::vector<Layer> m_Layers;
 	std::vector<Object> m_Objects;

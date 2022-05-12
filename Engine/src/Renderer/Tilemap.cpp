@@ -8,14 +8,14 @@
 
 static std::string fileLoadErrorString = "Could not load tilemap {0}. {1}!";
 
-bool Tileset::Save(const std::filesystem::path& filepath) const
+bool TiledTileset::Save(const std::filesystem::path& filepath) const
 {
 	return false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool Tileset::Load(std::filesystem::path& filepath)
+bool TiledTileset::Load(std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
 	{
@@ -186,7 +186,7 @@ bool Tilemap::Load(std::filesystem::path filepath)
 
 			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
 
-			Ref<Tileset> tileset = CreateRef<Tileset>();
+			Ref<TiledTileset> tileset = CreateRef<TiledTileset>();
 			if (tileset->Load(tilesetPath))
 				m_Tilesets.insert(std::make_pair(atoi(pTileSet->Attribute("firstgid")), tileset));
 
@@ -361,7 +361,6 @@ bool Tilemap::Save() const
 void Tilemap::Render(const Matrix4x4& transform, int entityId)
 {
 	for (auto it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
-	//for (auto& layer : m_Layers)
 	{
 		for (size_t i = 0; i < (*it).GetWidth(); i++)
 		{
@@ -370,12 +369,12 @@ void Tilemap::Render(const Matrix4x4& transform, int entityId)
 				if ((*it).GetTile(i, j) == 0)
 					continue;
 
-				Ref<Tileset> tileset;
+				Ref<TiledTileset> tileset;
 				// find tileset to use
 				uint32_t gid = 1;
 				for (auto& [id, tileset] : m_Tilesets)
 				{
-					if ((*it).GetTile(i, j) >= id - 1 && id - 1 >= gid)
+					if ((*it).GetTile(i, j) > (id - 1) && (id - 1) >= gid)
 					{
 						gid = id;
 					}
@@ -391,8 +390,10 @@ void Tilemap::Render(const Matrix4x4& transform, int entityId)
 				Vector3f position;
 				if (m_RenderingOrder == RenderingOrder::rightDown)
 				{
-					position.x = ((*it).GetOffset().x + (float)(i * tileset->GetTileWidth())) / (float)tileset->GetTileWidth();
-					position.y = (-(*it).GetOffset().y - (float)(j * tileset->GetTileHeight())) / (float)tileset->GetTileHeight();
+					position.x = (float)i;
+					position.y = (float)j;
+					//position.x = ((*it).GetOffset().x + (float)(i * tileset->GetTileWidth())) / (float)tileset->GetTileWidth();
+					//position.y = (-(*it).GetOffset().y - (float)(j * tileset->GetTileHeight())) / (float)tileset->GetTileHeight();
 				}
 
 				Matrix4x4 finaltransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.01f, 1.01f, 1.0f));
@@ -419,17 +420,27 @@ Tilemap::Layer::Layer(uint32_t id, const std::string& name, uint32_t width, uint
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+Tilemap::Layer::~Layer()
+{
+	for (uint32_t i = 0; i < m_Height; i++)
+	{
+		delete[] m_Tiles[i];
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Tilemap::Layer::ParseCsv(const std::string& data)
 {
-	std::vector<std::string> SeperatedData = SplitString(data, ',');
+	std::vector<std::string> seperatedData = SplitString(data, ',');
 
-	ASSERT((uint32_t)SeperatedData.size() == m_Width * m_Height, "Data not the correct length");
+	ASSERT((uint32_t)seperatedData.size() == m_Width * m_Height, "Data not the correct length");
 
 	for (size_t i = 0; i < m_Height; i++)
 	{
 		for (size_t j = 0; j < m_Width; j++)
 		{
-			uint32_t index = (uint32_t)atoi(SeperatedData[(i * (static_cast<size_t>(m_Width))) + j].c_str());
+			uint32_t index = (uint32_t)atoi(seperatedData[(i * (static_cast<size_t>(m_Width))) + j].c_str());
 			m_Tiles[i][j] = index;
 		}
 	}

@@ -633,6 +633,24 @@ void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& s
 	}
 }
 
+void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilemapComp, int entityId)
+{
+	for (size_t i = 0; i < tilemapComp.tilesHigh; i++)
+	{
+		for (size_t j = 0; j < tilemapComp.tilesWide; j++)
+		{
+			if (tilemapComp.tiles[i][j] == 0)
+				continue;
+
+			//tilemapComp.tileset.SetCurrentTile(tilemapComp.tiles[i][j]);
+			//Vector3f(((float)(i * tilemapComp.tileset.GetTileWidth())) / (float)tileset->GetTileWidth();
+			//position.y = ((float)(j * tileset->GetTileHeight())) / (float)tileset->GetTileHeight();
+			//Matrix4x4 finalTransform = transform * 
+			//DrawQuad()
+		}
+	}
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness, float fade, int entityId)

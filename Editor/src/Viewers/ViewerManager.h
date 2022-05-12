@@ -16,7 +16,8 @@ enum class FileType
 	SCENE,
 	SCRIPT,
 	AUDIO,
-	MATERIAL
+	MATERIAL,
+	TILESET
 };
 
 class ViewerManager

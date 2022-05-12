@@ -102,6 +102,10 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		CLIENT_WARN("No audio viewer implemented");
 	}
+	case FileType::TILESET:
+	{
+		//TODO: implement tileset viewer
+	}
 	default:
 		return;
 	}
@@ -162,6 +166,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		}
 	}
 
+	if (strcmp(ext, ".tsx") == 0)
+	{
+		return FileType::TILESET;
+	}
+
 	return FileType::UNKNOWN;
 }
 
@@ -200,8 +209,10 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		break;
 	}
 	case FileType::SCRIPT:
+	{
 		extensions.push_back(".lua");
 		break;
+	}
 	case FileType::AUDIO:
 	{
 		for (const char* ext : AudioExtensions)
@@ -211,8 +222,15 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		break;
 	}
 	case FileType::MATERIAL:
+	{
 		extensions.push_back(".material");
 		break;
+	}
+	case FileType::TILESET:
+	{
+		extensions.push_back(".tsx");
+		break;
+	}
 	}
 	return extensions;
 }

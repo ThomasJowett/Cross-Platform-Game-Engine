@@ -719,7 +719,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	DrawComponent<TilemapComponent>(ICON_MDI_GRID" Tilemap", entity, [](auto& tilemap)
 		{
 			const char* orientationStrings[] = { "Orthogonal", "Isometric", "Isometric (staggered)", "Hexagonal (staggered)"};
-			const char* currentorientationString = orientationStrings[(int)tilemap.tilemap.GetOrientation()];
+			const char* currentorientationString = orientationStrings[(int)tilemap.orientation];
 			if (ImGui::BeginCombo("Orientation", currentorientationString))
 			{
 				for (size_t i = 0; i < 4; i++)
@@ -729,7 +729,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(orientationStrings[i], isSelected))
 					{
 						currentorientationString = orientationStrings[i];
-						tilemap.tilemap.SetOrientation((Tilemap::Orientation)i);
+						tilemap.orientation = ((TilemapComponent::Orientation)i);
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 
@@ -740,10 +740,64 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::EndCombo();
 			}
 
-			//ImGui::DragInt("Width", );
-			//ImGui::DragInt("Height", );
-			//ImGui::DragInt("Tile Width", );
-			//ImGui::DragInt("Tile Height", );
+			int tilesWide = tilemap.tilesWide;
+			if (ImGui::DragInt("Width", &tilesWide, 1.0f, 0, 1000))
+			{
+				//TODO: tilemap editor needs to resize the tilemap
+				tilemap.tilesWide = tilesWide;
+
+				//For now the data is just cleared and reset
+				//-------------
+				tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
+
+				for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
+				{
+					tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
+					for (uint32_t j = 0; j < tilemap.tilesWide; j++)
+					{
+						tilemap.tiles[i][j] = 0;
+					}
+				}
+				//-----------
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			
+			int tilesHigh = tilemap.tilesHigh;
+			if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
+			{
+				//TODO: tilemap editor needs to resize the tilemap
+				tilemap.tilesHigh = tilesHigh;
+
+				//For now the data is just cleared and reset
+				//-------------
+				tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
+
+				for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
+				{
+					tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
+					for (uint32_t j = 0; j < tilemap.tilesWide; j++)
+					{
+						tilemap.tiles[i][j] = 0;
+					}
+				}
+				//-----------
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			
+			if (ImGui::BeginCombo("Tileset", tilemap.tileset.GetFilepath().string().c_str()))
+			{
+				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
+				{
+					const bool is_selected = false;
+					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
+					{
+						tilemap.tileset.Load(file);
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+				}
+				ImGui::EndCombo();
+			}
+			// TODO: display the tileset pallette
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------

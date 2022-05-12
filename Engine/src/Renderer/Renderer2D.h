@@ -8,6 +8,7 @@
 
 #include "Scene/Components/SpriteComponent.h"
 #include "Scene/Components/CircleRendererComponent.h"
+#include "Scene/Components/TilemapComponent.h"
 
 class Renderer2D
 {
@@ -49,6 +50,9 @@ public:
 
 	// Sprite
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);
+
+	// Tilemap
+	static void DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilemapComp, int entityId);
 
 	// Circle
 	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f, int entityId = -1);

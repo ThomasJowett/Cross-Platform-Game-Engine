@@ -276,9 +276,48 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		SerializationUtils::Encode(pTilemapElement, component.tilemap.GetFilepath());
+		SerializationUtils::Encode(pTilemapElement, component.tileset.GetFilepath());
 
-		component.tilemap.Save();
+		pTilemapElement->SetAttribute("TilesWide", component.tilesWide);
+		pTilemapElement->SetAttribute("TilesHigh", component.tilesHigh);
+		switch (component.orientation)
+		{
+		case TilemapComponent::Orientation::orthogonal:
+			pTilemapElement->SetAttribute("Orientation", "Orthogonal");
+			break;
+		case TilemapComponent::Orientation::isometric:
+			pTilemapElement->SetAttribute("Orientation", "Isometric");
+			break;
+		case TilemapComponent::Orientation::staggered:
+			pTilemapElement->SetAttribute("Orientation", "Staggered");
+			break;
+		case TilemapComponent::Orientation::hexagonal:
+			pTilemapElement->SetAttribute("Orientation", "Hexagonal");
+			break;
+		default:
+			break;
+		}
+
+		std::stringstream csv;
+
+		csv << std::endl;
+
+		for (size_t y = 0; y < component.tilesHigh; y++)
+		{
+			for (size_t x = 0; x < component.tilesWide; x++)
+			{
+				csv << component.tiles[y][x] << ',';
+			}
+
+			if (y == component.tilesHigh - 1)
+			{
+				csv.seekp(-1, csv.cur);
+				csv << "\0";
+			}
+			csv << std::endl;
+		}
+
+		pTilemapElement->SetText(csv.str().c_str());
 	}
 
 	if (entity.HasComponent<RigidBody2DComponent>())
@@ -598,18 +637,55 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 	if (pTilemapElement)
 	{
-		Tilemap tilemap;
-		const char* tilemapChar = pTilemapElement->Attribute("Filepath");
+		TilemapComponent& component = entity.AddComponent<TilemapComponent>();
+		const char* tilesetChar = pTilemapElement->Attribute("Filepath");
 
-		if (tilemapChar)
+		if (tilesetChar)
 		{
-			std::filesystem::path tilemapfilepath = SerializationUtils::AbsolutePath(tilemapChar);
-			if (!tilemapfilepath.empty())
+			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
+			if (!tilesetfilepath.empty())
 			{
-				tilemap.Load(tilemapfilepath);
+				component.tileset.Load(tilesetfilepath);
 			}
 		}
-		entity.AddComponent<TilemapComponent>(tilemap);
+
+		const char* orientationchar = pTilemapElement->Attribute("Orientation");
+
+		if (orientationchar != nullptr)
+		{
+			std::string orientation(orientationchar);
+
+			if (orientation == "Orthogonal")
+				component.orientation = TilemapComponent::Orientation::orthogonal;
+			else if (orientation == "Isometric")
+				component.orientation = TilemapComponent::Orientation::isometric;
+			else if (orientation == "Staggered")
+				component.orientation = TilemapComponent::Orientation::staggered;
+			else if (orientation == "Hexagonal")
+				component.orientation = TilemapComponent::Orientation::hexagonal;
+		}
+
+		pTilemapElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
+		pTilemapElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
+
+		const char* text = pTilemapElement->GetText();
+
+		if (text)
+		{
+			std::vector<std::string> seperatedData = SplitString(text, ',');
+
+			ASSERT((uint32_t)seperatedData.size() == component.tilesWide * component.tilesHigh, "Data not the correct length");
+			component.tiles = new uint32_t * [component.tilesHigh];
+
+			for (uint32_t i = 0; i < component.tilesHigh; i++)
+			{
+				component.tiles[i] = new uint32_t[component.tilesWide];
+				for (uint32_t j = 0; j < component.tilesWide; j++)
+				{
+					component.tiles[i][j] = (uint32_t)atoi(seperatedData[(i * (static_cast<size_t>(component.tilesWide))) + j].c_str());
+				}
+			}
+		}
 	}
 
 	// RigidBody2D -----------------------------------------------------------------------------------------------

@@ -278,7 +278,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : tilemapGroup)
 	{
 		auto [transformComp, tilemapComp] = tilemapGroup.get(entity);
-		tilemapComp.tilemap.Render(transformComp.GetWorldMatrix(), (int)entity);
+		Renderer2D::DrawTilemap(transformComp.GetWorldMatrix(), tilemapComp, (int)entity);
 	}
 
 	if (m_Box2DDraw && m_Box2DWorld)

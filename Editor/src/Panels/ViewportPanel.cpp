@@ -10,6 +10,7 @@
 #include "Engine.h"
 #include "FileSystem/FileDialog.h"
 #include "Viewers/ViewerManager.h"
+#include "Importers/ImportManager.h"
 
 #include "HierarchyPanel.h"
 #include "Scene/Components/Components.h"
@@ -302,7 +303,7 @@ void ViewportPanel::OnImGuiRender()
 				ImGui::PopStyleColor();
 
 			ImGui::Separator();
-			
+
 			if (ImGui::BeginMenu("Show"))
 			{
 				ImGui::MenuItem("Collision", "", &m_ShowCollision);
@@ -389,15 +390,7 @@ void ViewportPanel::OnImGuiRender()
 					}
 					else if (file->extension() == ".tmx")
 					{
-						Tilemap tilemap;
-						tilemap.Load(*file);
-
-						//tilemap.Save(file->replace_filename("Test Copy.tmx"));
-						std::string entityName = file->filename().string();
-						entityName = entityName.substr(0, entityName.find_last_of('.'));
-
-						Entity tilemapEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
-						tilemapEntity.AddComponent<TilemapComponent>(tilemap);
+						ImportManager::ImportAsset(*file, file->stem());
 					}
 					else if (file->extension() == ".scene")
 					{
