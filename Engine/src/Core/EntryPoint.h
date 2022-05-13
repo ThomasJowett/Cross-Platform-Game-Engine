@@ -57,21 +57,19 @@ int main(int argc, char* argv[])
 
 	std::string file;
 	bool hasFile = input.File(file);
-	if(hasFile)
+	if (hasFile)
 		Application::SetOpenDocument(file);
 
 	if (!input.HasFoundAllArguments() && !hasFile)
 	{
-		{
-			ENGINE_ERROR("Not a valid input parameter");
-			return EXIT_FAILURE;
-		}
+		ENGINE_ERROR("Not a valid input parameter");
+		return EXIT_FAILURE;
 	}
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
 	Application* app = CreateApplication();
-	
+
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
 	ENGINE_INFO("Engine Initialised");
 	PROFILE_END_SESSION("Startup");

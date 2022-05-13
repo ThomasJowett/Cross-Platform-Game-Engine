@@ -16,7 +16,7 @@ void ErrorListPanel::OnAttach()
 void ErrorListPanel::OnUpdate(float deltaTime)
 {
 	m_CurrentTime += deltaTime;
-	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit)
+	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit && SceneManager::IsSceneLoaded())
 	{
 		m_ErrorList.clear();
 		auto view = SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>();

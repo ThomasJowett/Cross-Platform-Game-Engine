@@ -49,14 +49,17 @@ public:
 		if (m_Tokens.empty())
 			return false;
 
-		std::ifstream file;
-		file.open(m_Tokens[0]);
-
-		if (file.good())
+		if (std::filesystem::exists(m_Tokens[0]))
 		{
-			filename = m_Tokens[0];
+			std::ifstream file;
+			file.open(m_Tokens[0]);
 
-			return true;
+			if (file.good())
+			{
+				filename = m_Tokens[0];
+
+				return true;
+			}
 		}
 
 		return false;

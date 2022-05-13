@@ -124,11 +124,6 @@ namespace Lua
 
 	//--------------------------------------------------------------------------------------------------------------
 
-	void PhysicsApplyImpulse2D(Vector2f impulse)
-	{
-
-	}
-
 	void BindEntity(sol::state& state)
 	{
 		PROFILE_FUNCTION();
@@ -188,6 +183,11 @@ namespace Lua
 		rigidBody2D_type["GravityScale"] = &RigidBody2DComponent::gravityScale;
 		rigidBody2D_type["AngularDamping"] = &RigidBody2DComponent::angularDamping;
 		rigidBody2D_type["LinearDamping"] = &RigidBody2DComponent::linearDamping;
+		rigidBody2D_type.set_function("ApplyImpulse", &RigidBody2DComponent::ApplyImpulse);
+		rigidBody2D_type.set_function("ApplyImpulseAtPoint", &RigidBody2DComponent::ApplyImpulseAtPoint);
+		rigidBody2D_type.set_function("ApplyForce", &RigidBody2DComponent::ApplyForce);
+		rigidBody2D_type.set_function("ApplyForceAtPoint", &RigidBody2DComponent::ApplyForceAtPoint);
+		rigidBody2D_type.set_function("ApplyTorque", &RigidBody2DComponent::ApplyTorque);
 		
 		auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::Offset;
