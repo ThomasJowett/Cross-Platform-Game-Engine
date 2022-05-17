@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 static TilemapComponent::Orientation s_Orientation;
+static std::map<uint32_t, Ref<Tileset>> s_Tilesets;
 
 bool ParseCsv(const std::string& data, TilemapComponent& tilemapComp)
 {
@@ -77,8 +78,9 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 	uint32_t height = atoi(pLayer->Attribute("height"));
 
 	Entity entity = SceneManager::CurrentScene()->CreateEntity(name);
-	entity.AddComponent<TilemapComponent>(s_Orientation, width, height);
+	TilemapComponent& tilemapComp = entity.AddComponent<TilemapComponent>(s_Orientation, width, height);
 	entity.GetTransform().position += offset;
+
 
 	tinyxml2::XMLElement* pData = pLayer->FirstChildElement("data");
 
@@ -98,6 +100,31 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 	else
 	{
 		ENGINE_ERROR("Could not load tilemap. {0} encoding not recognised", encoding);
+	}
+
+	for (size_t i = 0; i < height; i++)
+	{
+		for (size_t j = 0; j < width; j++)
+		{
+			if (tilemapComp.tiles[i][j] == 0)
+				continue;
+
+			Ref<Tileset> tileset;
+			// find tileset to use
+			uint32_t gid = 1;
+			for (auto& [id, tileset] : s_Tilesets)
+			{
+				if (tilemapComp.tiles[i][j] > (id - 1) && (id - 1) >= gid)
+				{
+					gid = id;
+				}
+				if (id - 1 > tilemapComp.tiles[i][j])
+				{
+					break;
+				}
+			}
+			tileset = s_Tilesets.at(gid);
+		}
 	}
 
 	return entity;
@@ -176,6 +203,24 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 
 		pRoot->QueryUnsignedAttribute("width", &width);
 		pRoot->QueryUnsignedAttribute("height", &height);
+
+		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("tileset");
+
+		std::filesystem::path fileDirectory = filepath;
+		fileDirectory.remove_filename();
+
+		while (pTileSet)
+		{
+			const char* tsxPath = pTileSet->Attribute("source");
+
+			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
+
+			Ref<Tileset> tileset = CreateRef<Tileset>();
+			if (tileset->Load(tilesetPath))
+				s_Tilesets.insert(std::make_pair(atoi(pTileSet->Attribute("firstgid")), tileset));
+
+			pTileSet = pTileSet->NextSiblingElement("tileset");
+		}
 
 		// Layers ------------------------------------------------------------------------------------------------------
 		tinyxml2::XMLElement* pLayer = pRoot->FirstChildElement("layer");

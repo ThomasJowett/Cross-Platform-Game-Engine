@@ -784,16 +784,23 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			
-			if (ImGui::BeginCombo("Tileset", tilemap.tileset.GetFilepath().string().c_str()))
+			std::string tilesetName;
+			if (tilemap.tileset)
+				tilesetName = tilemap.tileset->GetFilepath().filename().string();
+
+			if (ImGui::BeginCombo("Tileset", tilesetName.c_str()))
 			{
 				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
 				{
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						tilemap.tileset.Load(file);
+						if (!tilemap.tileset)
+							tilemap.tileset = CreateRef<Tileset>();
+						tilemap.tileset->Load(file);
 						SceneManager::CurrentScene()->MakeDirty();
 					}
+					ImGui::Tooltip(file.string().c_str());
 				}
 				ImGui::EndCombo();
 			}
@@ -814,6 +821,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						SceneManager::CurrentScene()->MakeDirty();
 						break;
 					}
+					ImGui::Tooltip(file.string().c_str());
 				}
 				ImGui::EndCombo();
 			}

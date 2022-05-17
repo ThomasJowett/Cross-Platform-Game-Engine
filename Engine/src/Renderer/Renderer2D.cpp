@@ -642,11 +642,13 @@ void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilem
 			if (tilemapComp.tiles[i][j] == 0)
 				continue;
 
-			//tilemapComp.tileset.SetCurrentTile(tilemapComp.tiles[i][j]);
-			//Vector3f(((float)(i * tilemapComp.tileset.GetTileWidth())) / (float)tileset->GetTileWidth();
-			//position.y = ((float)(j * tileset->GetTileHeight())) / (float)tileset->GetTileHeight();
-			//Matrix4x4 finalTransform = transform * 
-			//DrawQuad()
+			if (tilemapComp.tileset)
+			{
+				tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);
+				Vector3f position((float)j, -(float)i, 0.0f);
+				Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.01f, 1.01f, 1.0f));
+				DrawQuad(finalTransform, tilemapComp.tileset->GetTexture(), tilemapComp.tint, entityId);
+			}
 		}
 	}
 }

@@ -403,8 +403,6 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-
-
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
 			ImGuizmo::SetOrthographic(m_Is2DMode);

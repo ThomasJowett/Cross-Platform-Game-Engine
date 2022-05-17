@@ -276,10 +276,14 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		SerializationUtils::Encode(pTilemapElement, component.tileset.GetFilepath());
+		if(component.tileset)
+			SerializationUtils::Encode(pTilemapElement, component.tileset->GetFilepath());
 
 		pTilemapElement->SetAttribute("TilesWide", component.tilesWide);
 		pTilemapElement->SetAttribute("TilesHigh", component.tilesHigh);
+
+		SerializationUtils::Encode(pTilemapElement->InsertNewChildElement("Tint"), component.tint);
+
 		switch (component.orientation)
 		{
 		case TilemapComponent::Orientation::orthogonal:
@@ -645,7 +649,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
 			if (!tilesetfilepath.empty())
 			{
-				component.tileset.Load(tilesetfilepath);
+				component.tileset = CreateRef<Tileset>();
+				component.tileset->Load(tilesetfilepath);
 			}
 		}
 
@@ -667,6 +672,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		pTilemapElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
 		pTilemapElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
+
+		SerializationUtils::Decode(pTilemapElement->FirstChildElement("Tint"), component.tint);
 
 		const char* text = pTilemapElement->GetText();
 
