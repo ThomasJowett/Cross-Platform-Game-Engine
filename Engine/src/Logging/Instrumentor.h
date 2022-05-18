@@ -9,6 +9,7 @@
 #include <thread>
 
 #include "Logger.h"
+#include "Core/Application.h"
 
 using FloatingPointMicroSeconds = std::chrono::duration<double, std::micro>;
 
@@ -53,7 +54,7 @@ public:
 			InternalEndSession(m_CurrentSession->name);
 		}
 
-		m_OutputStream.open(filepath);
+		m_OutputStream.open(Application::GetWorkingDirectory() / filepath);
 
 		if (m_OutputStream.is_open())
 		{

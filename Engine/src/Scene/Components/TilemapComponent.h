@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Renderer/Tilemap.h"
 #include "Renderer/Tileset.h"
 
 struct TilemapComponent
@@ -49,7 +48,7 @@ private:
 			arr.push_back(std::vector<uint32_t>());
 			arr[i].assign(tiles[i], tiles[i] + tilesWide);
 		}
-		archive(arr);
+		archive(cereal::make_nvp("Tiles", arr));
 
 		std::string relativePath;
 		if (tileset && !tileset->GetFilepath().empty())
@@ -64,11 +63,12 @@ private:
 		archive(cereal::make_nvp("Tiles Wide", tilesWide));
 		archive(cereal::make_nvp("Tiles High", tilesHigh));
 		std::vector<std::vector<uint32_t>> arr;
-		archive(arr);
+		archive(cereal::make_nvp("Tiles", arr));
 		tiles = new uint32_t * [tilesHigh];
 		for (size_t i = 0; i < tilesHigh; i++)
 		{
-			tiles[i] = arr[i].data();
+			tiles[i] = new uint32_t[tilesWide];
+			std::memcpy(tiles[i], arr[i].data(), tilesWide * sizeof(uint32_t));
 		}
 
 		std::string relativePath;

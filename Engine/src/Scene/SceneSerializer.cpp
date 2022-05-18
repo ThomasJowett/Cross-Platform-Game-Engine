@@ -19,6 +19,8 @@ SceneSerializer::SceneSerializer(Scene* scene)
 
 bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 {
+	PROFILE_FUNCTION();
+
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pRoot = doc.NewElement("Scene");
 
@@ -54,6 +56,8 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 {
+	PROFILE_FUNCTION();
+
 	tinyxml2::XMLDocument doc;
 
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
@@ -102,6 +106,8 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity, tinyxml2::XMLElement* pParentNode)
 {
+	PROFILE_FUNCTION();
+
 	pElement->SetAttribute("Name", entity.GetName().c_str());
 	pElement->SetAttribute("ID", entity.GetID());
 
@@ -413,6 +419,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement)
 {
+	PROFILE_FUNCTION();
+
 	Entity entity;
 	if (!pEntityElement)
 		return entity;

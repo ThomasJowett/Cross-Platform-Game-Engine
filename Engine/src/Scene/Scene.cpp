@@ -128,6 +128,7 @@ void Scene::DuplicateEntity(Entity entity)
 void Scene::OnRuntimeStart()
 {
 	PROFILE_FUNCTION();
+
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
@@ -219,6 +220,7 @@ void Scene::OnRuntimePause()
 void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
+
 	if (m_Snapshot.rdbuf()->in_avail() != 0)
 	{
 		ENGINE_DEBUG("Runtime End");
@@ -240,6 +242,7 @@ void Scene::OnRuntimeStop()
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
+
 	SceneGraph::Traverse(m_Registry);
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
@@ -294,6 +297,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 void Scene::Render(Ref<FrameBuffer> renderTarget)
 {
+	PROFILE_FUNCTION();
+
 	SceneGraph::Traverse(m_Registry);
 	Matrix4x4 view;
 	Matrix4x4 projection;
@@ -314,6 +319,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 
 void Scene::OnUpdate(float deltaTime)
 {
+	PROFILE_FUNCTION();
+
 	m_IsUpdating = true;
 	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
 	{
@@ -385,6 +392,8 @@ void Scene::OnUpdate(float deltaTime)
 
 void Scene::OnFixedUpdate()
 {
+	PROFILE_FUNCTION();
+
 	m_IsUpdating = true;
 
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
@@ -520,6 +529,8 @@ void Scene::Save(bool binary)
 
 bool Scene::Load(bool binary)
 {
+	PROFILE_FUNCTION();
+
 	std::filesystem::path filepath = m_Filepath;
 
 	if (!std::filesystem::exists(filepath))
