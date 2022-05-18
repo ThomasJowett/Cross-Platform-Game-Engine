@@ -181,6 +181,32 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
 			}
+
+			if (selectedEntity.HasComponent<TilemapComponent>())
+			{
+				TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
+
+				for (size_t i = 0; i < tilemapComp.tilesHigh + 1; i++)
+				{
+					Vector3f start(0.0f, -(float)i, 0.001f);
+					Vector3f end((float)(tilemapComp.tilesWide), -(float)i, 0.001f);
+
+					start = transformComp.GetWorldMatrix() * start;
+					end = transformComp.GetWorldMatrix() * end;
+
+					Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+				}
+				for (size_t i = 0; i < tilemapComp.tilesWide + 1; i++)
+				{
+					Vector3f start((float)i, 0.0f, 0.001f);
+					Vector3f end((float)i, -(float)(tilemapComp.tilesHigh), 0.001f);
+
+					start = transformComp.GetWorldMatrix() * start;
+					end = transformComp.GetWorldMatrix() * end;
+
+					Renderer2D::DrawHairLine(start, end, Colour(0.5f,0.5f,0.5f,0.5f), selectedEntity);
+				}
+			}
 		}
 		Renderer2D::EndScene();
 		m_Framebuffer->UnBind();

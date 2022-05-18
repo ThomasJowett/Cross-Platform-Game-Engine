@@ -716,7 +716,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
-	DrawComponent<TilemapComponent>(ICON_MDI_GRID" Tilemap", entity, [](auto& tilemap)
+	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [](auto& tilemap)
 		{
 			const char* orientationStrings[] = { "Orthogonal", "Isometric", "Isometric (staggered)", "Hexagonal (staggered)"};
 			const char* currentorientationString = orientationStrings[(int)tilemap.orientation];
