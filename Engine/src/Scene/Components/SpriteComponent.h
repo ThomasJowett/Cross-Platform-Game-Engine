@@ -24,7 +24,11 @@ private:
 	{
 		std::string relativePath;
 		if (texture && !texture->GetFilepath().empty())
+		{
 			relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+			archive(cereal::make_nvp("FilterMethod", (int)texture->GetFilterMethod()));
+			archive(cereal::make_nvp("WrapMethod", (int)texture->GetWrapMethod()));
+		}
 		archive(cereal::make_nvp("Filepath", relativePath));
 		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
@@ -38,6 +42,14 @@ private:
 		if (!relativePath.empty())
 		{
 			texture = Texture2D::Create(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			int filterMethod, wrapMethod;
+			archive(cereal::make_nvp("FilterMethod", filterMethod));
+			archive(cereal::make_nvp("WrapMethod", wrapMethod));
+			if (texture)
+			{
+				texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
+				texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
+			}
 		}
 		else
 		{

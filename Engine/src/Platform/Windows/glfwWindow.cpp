@@ -111,7 +111,7 @@ void glfwWindow::SetCursor(Cursors cursorType)
 	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
 }
 
-void glfwWindow::SetTitle(const char* title) 
+void glfwWindow::SetTitle(const char* title)
 {
 	glfwSetWindowTitle(m_Window, title);
 }
@@ -153,7 +153,7 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 		}
 		monitor = glfwGetPrimaryMonitor();
 	}
-	else if(mode != WindowMode::WINDOWED)
+	else if (mode != WindowMode::WINDOWED)
 	{
 		ENGINE_ERROR("Invalid window mode, reverting to default");
 		if (width == 0 || height == 0)
@@ -265,169 +265,184 @@ void glfwWindow::Init(const WindowProps& props)
 	SetVSync(Settings::GetBool("Display", "V-Sync"));
 	SetWindowMode((WindowMode)Settings::GetInt("Display", "Window_Mode"));
 
-	glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.width = width;
-			data.height = height;
-
-			WindowResizeEvent event(width, height);
-			data.eventCallback(event);
-		});
-
-	glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.maximized = maximized;
-
-			WindowMaximizedEvent event(maximized);
-			data.eventCallback(event);
-		});
-
-	glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int posX, int posY)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			data.posX = posX;
-			data.posY = posY;
-
-			WindowMoveEvent event(posX, posY);
-			data.eventCallback(event);
-		});
-
-	glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-			WindowCloseEvent event;
-			data.eventCallback(event);
-		});
-
-	glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			if (focused == GLFW_TRUE)
-			{
-				WindowFocusEvent event;
-				data.eventCallback(event);
-			}
-			else
-			{
-				WindowFocusLostEvent event;
-				data.eventCallback(event);
-			}
-		});
-
-	glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				KeyPressedEvent event(key, 0);
-				data.eventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				KeyReleasedEvent event(key);
-				data.eventCallback(event);
-				break;
-			}
-			case GLFW_REPEAT:
-			{
-				KeyPressedEvent event(key, 1);
-				data.eventCallback(event);
-				break;
-			}
-			}
-		});
-
-	glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			KeyTypedEvent event(keycode);
-			data.eventCallback(event);
-		});
-
-	glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			switch (action)
-			{
-			case GLFW_PRESS:
-			{
-				MouseButtonPressedEvent event(button);
-				data.eventCallback(event);
-				break;
-			}
-			case GLFW_RELEASE:
-			{
-				MouseButtonReleasedEvent event(button);
-				data.eventCallback(event);
-				break;
-			}
-			}
-		});
-
-	glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			MouseWheelEvent event((float)xOffset, (float)yOffset);
-			data.eventCallback(event);
-		});
-
-	glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
-		{
-			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
-
-			MouseMotionEvent event((float)xPos, (float)yPos);
-			data.eventCallback(event);
-		});
-
-	for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
 	{
-		if (glfwJoystickPresent(jid))
+		PROFILE_SCOPE("Window callbacks");
+
+		glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.width = width;
+				data.height = height;
+
+				WindowResizeEvent event(width, height);
+				data.eventCallback(event);
+			});
+
+		glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.maximized = maximized;
+
+				WindowMaximizedEvent event(maximized);
+				data.eventCallback(event);
+			});
+
+		glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int posX, int posY)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				data.posX = posX;
+				data.posY = posY;
+
+				WindowMoveEvent event(posX, posY);
+				data.eventCallback(event);
+			});
+
+		glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+				WindowCloseEvent event;
+				data.eventCallback(event);
+			});
+
+		glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				if (focused == GLFW_TRUE)
+				{
+					WindowFocusEvent event;
+					data.eventCallback(event);
+				}
+				else
+				{
+					WindowFocusLostEvent event;
+					data.eventCallback(event);
+				}
+			});
+	}
+	{
+		PROFILE_SCOPE("Keyboard Callbacks");
+
+		glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				switch (action)
+				{
+				case GLFW_PRESS:
+				{
+					KeyPressedEvent event(key, 0);
+					data.eventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					KeyReleasedEvent event(key);
+					data.eventCallback(event);
+					break;
+				}
+				case GLFW_REPEAT:
+				{
+					KeyPressedEvent event(key, 1);
+					data.eventCallback(event);
+					break;
+				}
+				}
+			});
+
+		glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int keycode)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				KeyTypedEvent event(keycode);
+				data.eventCallback(event);
+			});
+	}
+	{
+		PROFILE_SCOPE("Mouse Callbacks");
+
+		glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				switch (action)
+				{
+				case GLFW_PRESS:
+				{
+					MouseButtonPressedEvent event(button);
+					data.eventCallback(event);
+					break;
+				}
+				case GLFW_RELEASE:
+				{
+					MouseButtonReleasedEvent event(button);
+					data.eventCallback(event);
+					break;
+				}
+				}
+			});
+
+		glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				MouseWheelEvent event((float)xOffset, (float)yOffset);
+				data.eventCallback(event);
+			});
+
+		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				MouseMotionEvent event((float)xPos, (float)yPos);
+				data.eventCallback(event);
+			});
+	}
+	{
+		PROFILE_SCOPE("Joysticks")
+			for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
+			{
+				PROFILE_SCOPE("Joystick");
+				if (glfwJoystickPresent(jid))
+				{
+					GLFWgamepadstate state;
+					Joysticks::Joystick joystick;
+					joystick.id = jid;
+					joystick.name = glfwGetJoystickName(joystick.id);
+					joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
+					glfwGetJoystickAxes(joystick.id, &joystick.axes);
+					glfwGetJoystickButtons(joystick.id, &joystick.buttons);
+					glfwGetJoystickHats(joystick.id, &joystick.hats);
+					Joysticks::AddJoystick(joystick);
+				}
+			}
 		{
-			GLFWgamepadstate state;
-			Joysticks::Joystick joystick;
-			joystick.id = jid;
-			joystick.name = glfwGetJoystickName(joystick.id);
-			joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
-			glfwGetJoystickAxes(joystick.id, &joystick.axes);
-			glfwGetJoystickButtons(joystick.id, &joystick.buttons);
-			glfwGetJoystickHats(joystick.id, &joystick.hats);
-			Joysticks::AddJoystick(joystick);
+			PROFILE_SCOPE("Joystick Callback");
+			glfwSetJoystickCallback([](int jid, int e)
+				{
+					if (e == GLFW_CONNECTED)
+					{
+						GLFWgamepadstate state;
+						Joysticks::Joystick joystick;
+						joystick.id = jid;
+						joystick.name = glfwGetJoystickName(joystick.id);
+						joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
+						glfwGetJoystickAxes(joystick.id, &joystick.axes);
+						glfwGetJoystickButtons(joystick.id, &joystick.buttons);
+						glfwGetJoystickHats(joystick.id, &joystick.hats);
+						Joysticks::AddJoystick(joystick);
+						JoystickConnected event(jid);
+						Application::CallEvent(event);
+					}
+					else if (e == GLFW_DISCONNECTED)
+					{
+						Joysticks::RemoveJoystick(jid);
+						JoystickDisconnected event(jid);
+						Application::CallEvent(event);
+					}
+				});
 		}
 	}
-
-	glfwSetJoystickCallback([](int jid, int e)
-		{
-			if (e == GLFW_CONNECTED)
-			{
-				GLFWgamepadstate state;
-				Joysticks::Joystick joystick;
-				joystick.id = jid;
-				joystick.name = glfwGetJoystickName(joystick.id);
-				joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
-				glfwGetJoystickAxes(joystick.id, &joystick.axes);
-				glfwGetJoystickButtons(joystick.id, &joystick.buttons);
-				glfwGetJoystickHats(joystick.id, &joystick.hats);
-				Joysticks::AddJoystick(joystick);
-				JoystickConnected event(jid);
-				Application::CallEvent(event);
-			}
-			else if (e == GLFW_DISCONNECTED)
-			{
-				Joysticks::RemoveJoystick(jid);
-				JoystickDisconnected event(jid);
-				Application::CallEvent(event);
-			}
-		});
 }
 
 void glfwWindow::Shutdown()

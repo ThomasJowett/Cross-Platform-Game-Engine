@@ -146,7 +146,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
 		if (component.texture)
-			pSpriteElement->SetAttribute("Texture", SerializationUtils::RelativePath(component.texture->GetFilepath()).c_str());
+		{
+			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texture);
+		}
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
@@ -158,11 +160,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
 		tinyxml2::XMLElement* pAnimatorElement = pAnimatedSpriteElement->InsertNewChildElement("Animator");
 
-		if (component.animator.GetSpriteSheet()->GetTexture())
-			pAnimatorElement->SetAttribute("Texture",
-				SerializationUtils::RelativePath(component.animator.GetSpriteSheet()->GetTexture()->GetFilepath()).c_str());
+		if (component.tileset)
+			SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tileset"), component.tileset->GetFilepath());
 
-		pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
+		/*pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
 		pAnimatorElement->SetAttribute("SpriteHeight", component.animator.GetSpriteSheet()->GetSpriteHeight());
 
 		for (Animation& animation : component.animator.GetAnimations())
@@ -172,7 +173,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			pAnimationElement->SetAttribute("StartFrame", animation.GetStartFrame());
 			pAnimationElement->SetAttribute("FrameCount", animation.GetFrameCount());
 			pAnimationElement->SetAttribute("FrameTime", animation.GetFrameTime());
-		}
+		}*/
 
 		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
@@ -417,7 +418,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	}
 }
 
-Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement)
+Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement, bool resetUuid)
 {
 	PROFILE_FUNCTION();
 
@@ -427,10 +428,14 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	const char* entityName = pEntityElement->Attribute("Name");
 	const char* uuidChar = pEntityElement->Attribute("ID");
 
-	if (uuidChar && entityName)
+	if (uuidChar && entityName && !resetUuid)
 	{
 		Uuid uuid(std::stoull(uuidChar));
 		entity = scene->CreateEntity(uuid, entityName);
+	}
+	else if (entityName && resetUuid)
+	{
+		entity = scene->CreateEntity(Uuid(), entityName);
 	}
 	else if (entityName)
 	{
@@ -496,9 +501,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Tint"), component.tint);
 		pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
 
-		const char* textureRelativePath = pSpriteElement->Attribute("Texture");
-		if (textureRelativePath != nullptr)
-			component.texture = Texture2D::Create(SerializationUtils::AbsolutePath(textureRelativePath));
+		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Texture"), component.texture);
 	}
 
 	// Static Mesh -------------------------------------------------------------------------------------------------------
@@ -780,7 +783,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		while (pChildElement)
 		{
-			Entity childEntity = DeserializeEntity(scene, pChildElement);
+			Entity childEntity = DeserializeEntity(scene, pChildElement, resetUuid);
 			HierarchyComponent& childHierarchyComp = childEntity.GetOrAddComponent<HierarchyComponent>();
 			childHierarchyComp.parent = entity.GetHandle();
 

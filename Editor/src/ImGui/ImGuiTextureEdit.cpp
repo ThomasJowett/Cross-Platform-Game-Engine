@@ -73,6 +73,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 	if (texture)
 		textureName = texture->GetName();
 
+	ImGui::BeginGroup();
 	if (ImGui::BeginCombo("##textureEdit", textureName.c_str()))
 	{
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::IMAGE)))
@@ -87,6 +88,57 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		}
 		ImGui::EndCombo();
 	}
+
+	const char* filterMethodStrings[] = { "Linear", "Nearest" };
+	const char* currentFilterMethodString = texture ? filterMethodStrings[(int)texture->GetFilterMethod()] : "";
+
+	if (ImGui::BeginCombo("##Filter Method", currentFilterMethodString))
+	{
+		for (size_t i = 0; i < 2; i++)
+		{
+			bool isSelected = currentFilterMethodString == filterMethodStrings[i];
+
+			if (ImGui::Selectable(filterMethodStrings[i], isSelected))
+			{
+				currentFilterMethodString = filterMethodStrings[i];
+				edited = true;
+				if(texture)
+					texture->SetFilterMethod((Texture::FilterMethod)i);
+			}
+
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndCombo();
+	}
+	ImGui::Tooltip("Filter Method");
+
+	const char* wrapMethodStrings[] = { "Clamp", "Mirror", "Repeat" };
+	const char* currentWrapMethodString = texture ? wrapMethodStrings[(int)texture->GetWrapMethod()] : "";
+
+	if (ImGui::BeginCombo("##Wrap Method", currentWrapMethodString))
+	{
+		for (size_t i = 0; i < 3; i++)
+		{
+			bool isSelected = currentWrapMethodString == wrapMethodStrings[i];
+
+			if (ImGui::Selectable(wrapMethodStrings[i], isSelected))
+			{
+				currentWrapMethodString = wrapMethodStrings[i];
+				edited = true;
+				if (texture)
+					texture->SetWrapMethod((Texture::WrapMethod)i);
+			}
+
+			if (isSelected)
+				ImGui::SetItemDefaultFocus();
+		}
+
+		ImGui::EndCombo();
+	}
+	ImGui::Tooltip("Wrapping Method");
+	ImGui::EndGroup();
 
 	return edited;
 }

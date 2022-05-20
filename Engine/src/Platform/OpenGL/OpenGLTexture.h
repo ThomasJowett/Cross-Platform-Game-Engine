@@ -26,6 +26,9 @@ public:
 	virtual void Reload() override;
 
 	virtual bool operator==(const Texture& other) const override;
+
+	virtual void SetFilterMethod(FilterMethod filterMethod) override;
+	virtual void SetWrapMethod(WrapMethod wrapMethod) override;
 private:
 	// sets the texture to be the null texture
 	void NullTexture();

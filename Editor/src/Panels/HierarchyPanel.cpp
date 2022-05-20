@@ -386,7 +386,6 @@ void HierarchyPanel::Copy()
 	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
 	doc.InsertFirstChild(pEntityElement);
 	SceneSerializer::SerializeEntity(pEntityElement, m_SelectedEntity);
-	pEntityElement->SetAttribute("ID", Uuid());
 	tinyxml2::XMLPrinter printer;
 	doc.Accept(&printer);
 	ImGui::SetClipboardText(printer.CStr());
@@ -408,7 +407,8 @@ void HierarchyPanel::Paste()
 		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
 		if (pEntityElement)
 		{
-			SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), pEntityElement);
+			SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), pEntityElement, true);
+
 			SceneManager::CurrentScene()->MakeDirty();
 		}
 	}
@@ -417,7 +417,7 @@ void HierarchyPanel::Paste()
 void HierarchyPanel::Duplicate()
 {
 	CLIENT_DEBUG("Duplicated");
-	SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity);
+	SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity, Entity());
 }
 
 void HierarchyPanel::Delete()

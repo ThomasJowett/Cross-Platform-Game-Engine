@@ -96,8 +96,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::files
 {
 	if (!filepath.empty())
 	{
-		std::string relativePath = RelativePath(filepath);
-		pElement->SetAttribute("Filepath", relativePath.c_str());
+		pElement->SetAttribute("Filepath", RelativePath(filepath).c_str());
 	}
 }
 
@@ -109,6 +108,34 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, std::filesystem:
 		if (relativePath)
 		{
 			filepath = AbsolutePath(relativePath);
+		}
+	}
+}
+
+void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture)
+{
+	if (pElement)
+	{
+		Encode(pElement, texture->GetFilepath());
+		pElement->SetAttribute("FilterMethod", (int)texture->GetFilterMethod());
+		pElement->SetAttribute("WrapMethod", (int)texture->GetWrapMethod());
+	}
+}
+
+void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Ref<Texture2D>& texture)
+{
+	if (pElement)
+	{
+		std::filesystem::path filepath;
+		Decode(pElement, filepath);
+		texture = Texture2D::Create(filepath);
+		if (texture)
+		{
+			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Linear);
+			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
+
+			int wrapMethod = pElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);
+			texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
 		}
 	}
 }

@@ -189,17 +189,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 
 			// Sprite Sheet
-			if (ImGui::Texture2DEdit("Sprite Sheet", sprite.animator.GetSpriteSheet()->GetTexture()))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-				sprite.animator.GetSpriteSheet()->RecalculateCellsDimensions();
-			}
+			//if (ImGui::Texture2DEdit("Sprite Sheet", sprite.tileset->GetSubTexture()->GetTexture()))
+			//{
+			//	SceneManager::CurrentScene()->MakeDirty();
+			//	sprite.tileset->GetSubTexture()->RecalculateCellsDimensions();
+			//}
 
 			// Sprite Size
-			int spriteSize[2] = { (int)sprite.animator.GetSpriteSheet()->GetSpriteWidth(), (int)sprite.animator.GetSpriteSheet()->GetSpriteHeight() };
+			/*int spriteSize[2] = {(int)sprite.tileset->GetSubTexture()->GetSpriteWidth(), (int)sprite.tileset->GetSubTexture()->GetSpriteHeight()};
 			if (ImGui::InputInt2("Sprite Size", spriteSize))
 			{
-				sprite.animator.GetSpriteSheet()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
+				sprite.tileset->GetSubTexture()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
 			}
 
 			if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
@@ -269,7 +269,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					index++;
 				}
 				ImGui::EndTable();
-			}
+			}*/
 		});
 
 	//Static Mesh------------------------------------------------------------------------------------------------------------

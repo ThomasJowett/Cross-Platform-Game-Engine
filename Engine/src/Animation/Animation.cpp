@@ -2,7 +2,7 @@
 #include "Animation.h"
 
 Animation::Animation(Ref<SubTexture2D> texture, int startFrame, int frameCount, float holdTime)
-	:m_SpriteSheet(texture), m_StartFrame(startFrame), m_FrameCount(frameCount),
+	:m_Texture(texture), m_StartFrame(startFrame), m_FrameCount(frameCount),
 	m_HoldTime(holdTime), m_CurrentFrame(startFrame)
 {
 
@@ -44,5 +44,5 @@ void Animation::Advance()
 
 	}
 
-	m_SpriteSheet->SetCurrentCell(m_CurrentFrame);
+	m_Texture->SetCurrentCell(m_CurrentFrame);
 }

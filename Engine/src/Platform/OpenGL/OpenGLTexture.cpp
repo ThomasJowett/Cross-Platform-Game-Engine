@@ -131,6 +131,18 @@ bool OpenGLTexture2D::operator==(const Texture& other) const
 	return m_RendererID == ((OpenGLTexture2D&)other).GetRendererID();
 }
 
+void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
+{
+	m_FilterMethod = filterMethod;
+	SetFilteringAndWrappingMethod();
+}
+
+void OpenGLTexture2D::SetWrapMethod(WrapMethod wrapMethod)
+{ 
+	m_WrapMethod = wrapMethod; 
+	SetFilteringAndWrappingMethod();
+}
+
 void OpenGLTexture2D::NullTexture()
 {
 	m_Path = "NULL";

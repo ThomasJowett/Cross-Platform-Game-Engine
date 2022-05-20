@@ -115,12 +115,35 @@ bool Scene::RemoveEntity(Entity& entity)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DuplicateEntity(Entity entity)
+void Scene::DuplicateEntity(Entity entity, Entity parent)
 {
 	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
 
 	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
+	if (newEntity.HasComponent<HierarchyComponent>())
+	{
+		HierarchyComponent& heirarchyComp = newEntity.GetComponent<HierarchyComponent>();
+
+		if (!parent && heirarchyComp.parent != entt::null)
+			parent = Entity(heirarchyComp.parent, this);
+
+		heirarchyComp.firstChild = entt::null;
+		heirarchyComp.parent = entt::null;
+		heirarchyComp.nextSibling = entt::null;
+		heirarchyComp.previousSibling = entt::null;
+	}
+
+	std::vector<Entity> children = SceneGraph::GetChildren(entity, m_Registry);
+
+	for (auto& child : children)
+	{
+		DuplicateEntity(child, newEntity);
+	}
+	if (parent)
+	{
+		SceneGraph::Reparent(newEntity, parent, m_Registry);
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -143,70 +166,70 @@ void Scene::OnRuntimeStart()
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
 		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
-	{
-		b2BodyDef bodyDef;
-		bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
-		bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
-		bodyDef.angle = (float32)transformComp.rotation.z;
-
-		if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
 		{
-			bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
-			bodyDef.angularDamping = rigidBody2DComp.angularDamping;
-			bodyDef.linearDamping = rigidBody2DComp.linearDamping;
-			bodyDef.gravityScale = rigidBody2DComp.gravityScale;
-		}
+			b2BodyDef bodyDef;
+			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
+			bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
+			bodyDef.angle = (float32)transformComp.rotation.z;
 
-		b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
+			if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
+			{
+				bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
+				bodyDef.angularDamping = rigidBody2DComp.angularDamping;
+				bodyDef.linearDamping = rigidBody2DComp.linearDamping;
+				bodyDef.gravityScale = rigidBody2DComp.gravityScale;
+			}
 
-		rigidBody2DComp.RuntimeBody = body;
+			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
 
-		Entity entity = { physicsEntity, this };
-		if (entity.HasComponent<BoxCollider2DComponent>())
-		{
-			auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
+			rigidBody2DComp.RuntimeBody = body;
 
-			b2PolygonShape boxShape;
-			boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
-				b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
-				0.0f);
+			Entity entity = { physicsEntity, this };
+			if (entity.HasComponent<BoxCollider2DComponent>())
+			{
+				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
 
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &boxShape;
-			fixtureDef.density = boxColliderComp.Density;
-			fixtureDef.friction = boxColliderComp.Friction;
-			fixtureDef.restitution = boxColliderComp.Restitution;
+				b2PolygonShape boxShape;
+				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
+					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
+					0.0f);
 
-			body->CreateFixture(&fixtureDef);
-		}
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &boxShape;
+				fixtureDef.density = boxColliderComp.Density;
+				fixtureDef.friction = boxColliderComp.Friction;
+				fixtureDef.restitution = boxColliderComp.Restitution;
 
-		if (entity.HasComponent<CircleCollider2DComponent>())
-		{
-			auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
+				body->CreateFixture(&fixtureDef);
+			}
 
-			b2CircleShape circleShape;
-			circleShape.m_radius = circleColliderComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
-			circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
+			if (entity.HasComponent<CircleCollider2DComponent>())
+			{
+				auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
 
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &circleShape;
-			fixtureDef.density = circleColliderComp.Density;
-			fixtureDef.friction = circleColliderComp.Friction;
-			fixtureDef.restitution = circleColliderComp.Restitution;
+				b2CircleShape circleShape;
+				circleShape.m_radius = circleColliderComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
+				circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
 
-			body->CreateFixture(&fixtureDef);
-		}
-	});
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &circleShape;
+				fixtureDef.density = circleColliderComp.Density;
+				fixtureDef.friction = circleColliderComp.Friction;
+				fixtureDef.restitution = circleColliderComp.Restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
+		});
 
 	m_Registry.view<LuaScriptComponent>().each(
 		[=](const auto entity, auto& scriptComponent)
-	{
-		std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
-		if (result.has_value())
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
-		}
-	});
+			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
+			if (result.has_value())
+			{
+				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
+			}
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -260,7 +283,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : animatedSpriteGroup)
 	{
 		auto [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
-		Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
+		if(spriteComp.tileset)
+			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.tileset->GetSubTexture(), spriteComp.tint, (int)entity);
 	}
 
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
@@ -323,67 +347,68 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_IsUpdating = true;
 	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
-	{
-		animatedSpriteComp.animator.Animate(deltaTime);
-	});
+		{
+			if (animatedSpriteComp.tileset)
+				animatedSpriteComp.tileset->Animate(deltaTime);
+		});
 
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-	{
-		if (nsc.InstantiateScript != nullptr)
 		{
-			if (!nsc.Instance)
+			if (nsc.InstantiateScript != nullptr)
 			{
-				nsc.Instance = nsc.InstantiateScript(nsc.Name);
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			}
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript(nsc.Name);
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
 
-			nsc.Instance->OnUpdate(deltaTime);
-		}
-		else
-			ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-	});
+				nsc.Instance->OnUpdate(deltaTime);
+			}
+			else
+				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
+		});
 
 	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
-	{
-		if (!luaScriptComp.created)
 		{
-			luaScriptComp.OnCreate();
-			luaScriptComp.created = true;
-		}
-		luaScriptComp.OnUpdate(deltaTime);
-	});
+			if (!luaScriptComp.created)
+			{
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
+			}
+			luaScriptComp.OnUpdate(deltaTime);
+		});
 
 	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
-	{
-		if (primitiveComponent.needsUpdating)
 		{
-			switch (primitiveComponent.type)
+			if (primitiveComponent.needsUpdating)
 			{
-			case PrimitiveComponent::Shape::Cube:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
-				break;
-			case PrimitiveComponent::Shape::Sphere:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
-				break;
-			case PrimitiveComponent::Shape::Plane:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
-				break;
-			case PrimitiveComponent::Shape::Cylinder:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
-				break;
-			case PrimitiveComponent::Shape::Cone:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
-				break;
-			case PrimitiveComponent::Shape::Torus:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
-				break;
-			default:
-				break;
+				switch (primitiveComponent.type)
+				{
+				case PrimitiveComponent::Shape::Cube:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
+					break;
+				case PrimitiveComponent::Shape::Sphere:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
+					break;
+				case PrimitiveComponent::Shape::Plane:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
+					break;
+				case PrimitiveComponent::Shape::Cylinder:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
+					break;
+				case PrimitiveComponent::Shape::Cone:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
+					break;
+				case PrimitiveComponent::Shape::Torus:
+					staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
+					break;
+				default:
+					break;
+				}
+				primitiveComponent.needsUpdating = false;
 			}
-			primitiveComponent.needsUpdating = false;
-		}
-	});
+		});
 
 	m_IsUpdating = false;
 }
@@ -397,31 +422,31 @@ void Scene::OnFixedUpdate()
 	m_IsUpdating = true;
 
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-	{
-		if (nsc.InstantiateScript != nullptr)
 		{
-			if (!nsc.Instance)
+			if (nsc.InstantiateScript != nullptr)
 			{
-				nsc.Instance = nsc.InstantiateScript(nsc.Name);
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			}
+				if (!nsc.Instance)
+				{
+					nsc.Instance = nsc.InstantiateScript(nsc.Name);
+					nsc.Instance->m_Entity = Entity{ entity, this };
+					nsc.Instance->OnCreate();
+				}
 
-			nsc.Instance->OnFixedUpdate();
-		}
-		else
-			ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-	});
+				nsc.Instance->OnFixedUpdate();
+			}
+			else
+				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
+		});
 
 	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
-	{
-		if (!luaScriptComp.created)
 		{
-			luaScriptComp.OnCreate();
-			luaScriptComp.created = true;
-		}
-		luaScriptComp.OnFixedUpdate();
-	});
+			if (!luaScriptComp.created)
+			{
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
+			}
+			luaScriptComp.OnFixedUpdate();
+		});
 
 	// Physics
 	const int32_t velocityIterations = 6;
@@ -431,13 +456,13 @@ void Scene::OnFixedUpdate()
 		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), 6, 2);
 
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
-		{
-			b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
-			const b2Vec2& position = body->GetPosition();
-			transformComp.position.x = position.x;
-			transformComp.position.y = position.y;
-			transformComp.rotation.z = (float)body->GetAngle();
-		});
+			{
+				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
+				const b2Vec2& position = body->GetPosition();
+				transformComp.position.x = position.x;
+				transformComp.position.y = position.y;
+				transformComp.rotation.z = (float)body->GetAngle();
+			});
 	}
 
 	m_IsUpdating = false;
@@ -453,12 +478,12 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	// Resize non fixed aspect ratio cameras
 	m_Registry.view<CameraComponent>().each(
 		[=]([[maybe_unused]] const auto cameraEntity, auto& cameraComp)
-	{
-		if (!cameraComp.FixedAspectRatio)
 		{
-			cameraComp.Camera.SetAspectRatio((float)width / (float)height);
-		}
-	});
+			if (!cameraComp.FixedAspectRatio)
+			{
+				cameraComp.Camera.SetAspectRatio((float)width / (float)height);
+			}
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

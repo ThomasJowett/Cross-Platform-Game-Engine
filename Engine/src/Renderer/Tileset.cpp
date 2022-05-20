@@ -3,6 +3,11 @@
 
 #include "TinyXml2/tinyxml2.h"
 
+Tileset::Tileset(std::filesystem::path& filepath)
+{
+	Load(filepath);
+}
+
 bool Tileset::Load(std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
@@ -78,4 +83,39 @@ bool Tileset::Save(const std::filesystem::path& filepath) const
 {
 	//TODO: save tileset back to .tsx format
 	return false;
+}
+
+void Tileset::SetCurrentTile(uint32_t tile)
+{
+	m_Texture->SetCurrentCell(tile - 1);
+	if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
+	{
+		m_Animations[m_CurrentAnimation].Start();
+	}
+}
+
+void Tileset::AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime)
+{
+	m_Animations.insert({ name, Animation(m_Texture, startFrame, frameCount, holdTime) });
+}
+
+void Tileset::Animate(float deltaTime)
+{
+	if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
+	{
+		m_Animations[m_CurrentAnimation].Update(deltaTime);
+	}
+}
+
+void Tileset::SelectAnimation(const std::string& animationName)
+{
+	for (auto& [name, animation] : m_Animations)
+	{
+		if (name == animationName)
+		{
+			m_Texture->SetCurrentCell(animation.GetStartFrame());
+			m_CurrentAnimation = animationName;
+			break;
+		}
+	}
 }

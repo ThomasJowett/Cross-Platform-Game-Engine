@@ -5,6 +5,7 @@
 #include "ScriptView.h"
 #include "StaticMeshView.h"
 #include "MaterialView.h"
+#include "TilesetView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
@@ -101,10 +102,15 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::AUDIO:
 	{
 		CLIENT_WARN("No audio viewer implemented");
+		return;
 	}
 	case FileType::TILESET:
 	{
-		//TODO: implement tileset viewer
+		bool* show = new bool(true);
+		Layer* layer = new TilesetView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
 	}
 	default:
 		return;

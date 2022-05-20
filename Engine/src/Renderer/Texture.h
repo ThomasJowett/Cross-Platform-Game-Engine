@@ -39,11 +39,11 @@ public:
 
 	virtual void Reload() = 0;
 
-	FilterMethod GetFilterMethod() { return m_FilterMethod; }
-	void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }	
+	FilterMethod GetFilterMethod() const { return m_FilterMethod; }
+	virtual void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }	
 	
-	WrapMethod GetWrapMethod() { return m_WrapMethod; }
-	void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
+	WrapMethod GetWrapMethod() const { return m_WrapMethod; }
+	virtual void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
 
 	virtual bool operator==(const Texture& other) const = 0;
 

@@ -132,7 +132,7 @@ void SceneGraph::Remove(Entity entity, entt::registry& registry)
 		entt::entity child = hierarchyComp->firstChild;
 		while (child != entt::null)
 		{
-			Entity childEntity = {child, entity.GetScene() };
+			Entity childEntity = { child, entity.GetScene() };
 			Remove(childEntity, registry);
 			child = hierarchyComp->firstChild;
 		}
@@ -141,6 +141,24 @@ void SceneGraph::Remove(Entity entity, entt::registry& registry)
 
 	ENGINE_DEBUG("Removed {0}", entity.GetName());
 	registry.destroy(entity);
+}
+
+std::vector<Entity> SceneGraph::GetChildren(Entity entity, entt::registry& registry)
+{
+	std::vector<Entity> children;
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+	if (hierarchyComp != nullptr)
+	{
+		entt::entity child = hierarchyComp->firstChild;
+		while (child != entt::null && registry.valid(child))
+		{
+			children.emplace_back(Entity(child, entity.GetScene()));
+			hierarchyComp = registry.try_get<HierarchyComponent>(child);
+			if (hierarchyComp)
+				child = hierarchyComp->nextSibling;
+		}
+	}
+	return children;
 }
 
 void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyComponent* hierarchyComp, entt::registry& registry)
