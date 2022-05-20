@@ -645,7 +645,7 @@ void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilem
 			if (tilemapComp.tileset)
 			{
 				tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);
-				Vector3f position((float)j - 0.5f, -(float)i - 0.5f, 0.0f);
+				Vector3f position((float)j + 0.5f, -(float)i - 0.5f, 0.0f);
 				Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.001f, 1.001f, 1.0f));
 				DrawQuad(finalTransform, tilemapComp.tileset->GetSubTexture(), tilemapComp.tint, entityId);
 			}
