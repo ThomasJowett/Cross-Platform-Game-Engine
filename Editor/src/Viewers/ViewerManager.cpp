@@ -117,6 +117,12 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	}
 }
 
+void ViewerManager::CloseViewer(const std::filesystem::path& assetPath)
+{
+	Application::Get().RemoveOverlay(s_AssetViewers.at(assetPath).first);
+	s_AssetViewers.erase(assetPath);
+}
+
 FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 {
 	std::string extString = assetPath.extension().string();

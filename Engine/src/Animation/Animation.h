@@ -38,7 +38,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(m_Name, m_StartFrame, m_FrameCount, m_HoldTime);
+		archive(m_StartFrame, m_FrameCount, m_HoldTime);
 	}
-
 };

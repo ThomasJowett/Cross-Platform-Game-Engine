@@ -1,7 +1,8 @@
 #pragma once
-#include "Interfaces/IImporter.h"
 
-class TiledImporter : public IImporter
+#include <filesystem>
+
+class TiledImporter
 {
 public:
 	// Inherited via IImporter

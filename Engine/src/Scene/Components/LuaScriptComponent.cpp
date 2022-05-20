@@ -20,6 +20,11 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 		return std::make_pair(0, "No file loaded");
 	}
 
+	if (!std::filesystem::exists(absoluteFilepath))
+	{
+		return std::make_pair(0, "File does not exist");
+	}
+
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
 	sol::protected_function_result result = LuaManager::GetState().script_file(absoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);

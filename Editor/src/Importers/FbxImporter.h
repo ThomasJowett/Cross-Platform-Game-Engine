@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Interfaces/IImporter.h"
+#include <filesystem>
 
-class FbxImporter : public IImporter
+class FbxImporter
 {
 public:
 	static void ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination);

@@ -6,6 +6,7 @@
 #include "Scripting/Lua/LuaManager.h"
 #include "FileSystem/FileDialog.h"
 #include "Core/Settings.h"
+#include "ViewerManager.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -14,6 +15,12 @@ ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 
 void ScriptView::OnAttach()
 {
+	if (!std::filesystem::exists(m_FilePath))
+	{
+		ViewerManager::CloseViewer(m_FilePath);
+		return;
+	}
+
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();

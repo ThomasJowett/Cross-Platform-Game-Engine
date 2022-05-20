@@ -14,9 +14,9 @@ class Tileset
 
 public:
 	Tileset() = default;
-	Tileset(std::filesystem::path& filepath);
-	bool Load(std::filesystem::path& filepath);
-	bool Save(const std::filesystem::path& filepath) const;
+	Tileset(const std::filesystem::path& filepath);
+	bool Load(const std::filesystem::path& filepath);
+	//bool Save(const std::filesystem::path& filepath) const;
 
 	void SetCurrentTile(uint32_t tile);
 	const uint32_t GetTileWidth() const { return m_TileWidth; }

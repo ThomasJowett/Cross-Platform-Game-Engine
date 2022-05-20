@@ -434,15 +434,15 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 	}
 	ImGui::Separator();
-	if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
 		Cut();
-	if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 		Copy();
-	if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
+	if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
 		Paste();
-	if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 		Duplicate();
-	if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_NumberSelected > 0))
 		Delete();
 
 	ImGui::PopStyleColor();
@@ -511,15 +511,15 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 
 		ImGui::Separator();
 
-		if (ImGui::MenuItem("Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
 			Cut();
-		if (ImGui::MenuItem("Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 			Copy();
-		if (ImGui::MenuItem("Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
+		if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
 			Paste();
-		if (ImGui::MenuItem("Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 			Duplicate();
-		if (ImGui::MenuItem("Delete", "Del", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_NumberSelected > 0))
 			Delete();
 
 		ImGui::EndPopup();

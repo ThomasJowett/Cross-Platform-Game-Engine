@@ -3,12 +3,12 @@
 
 #include "TinyXml2/tinyxml2.h"
 
-Tileset::Tileset(std::filesystem::path& filepath)
+Tileset::Tileset(const std::filesystem::path& filepath)
 {
 	Load(filepath);
 }
 
-bool Tileset::Load(std::filesystem::path& filepath)
+bool Tileset::Load(const std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
 	{
@@ -36,7 +36,9 @@ bool Tileset::Load(std::filesystem::path& filepath)
 
 		const char* textureSource = pImage->Attribute("source");
 
-		std::filesystem::path texturePath = filepath.remove_filename() / textureSource;
+		std::filesystem::path texturePath = filepath;
+		texturePath.remove_filename();
+		texturePath = texturePath / textureSource;
 
 		m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), m_TileWidth, m_TileHeight);
 
@@ -79,11 +81,11 @@ bool Tileset::Load(std::filesystem::path& filepath)
 	return true;
 }
 
-bool Tileset::Save(const std::filesystem::path& filepath) const
-{
-	//TODO: save tileset back to .tsx format
-	return false;
-}
+//bool Tileset::Save(const std::filesystem::path& filepath) const
+//{
+//	//TODO: save tileset back to .tsx format
+//	return false;
+//}
 
 void Tileset::SetCurrentTile(uint32_t tile)
 {
