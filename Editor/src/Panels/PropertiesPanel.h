@@ -40,7 +40,7 @@ private:
 				{
 					if (ImGui::BeginPopupContextItem())
 					{
-						if (ImGui::MenuItem("Delete"))
+						if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete"))
 						{
 							deleteComponent = true;
 						}

@@ -212,11 +212,27 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				ImGui::SameLine();
 
-				if (ImGui::Button(ICON_FA_TH_LARGE))
+				if (ImGui::Button(ICON_FA_TH))
 				{
 					ViewerManager::OpenViewer(sprite.tileset->GetFilepath());
 				}
 				ImGui::Tooltip("Edit Tileset");
+			}
+
+			if (sprite.tileset)
+			{
+				if (ImGui::BeginCombo("Animation", sprite.tileset->GetCurrentAnimation().c_str()))
+				{
+					for (auto& [name, animation] : sprite.tileset->GetAnimations())
+					{
+						if (ImGui::Selectable(name.c_str()))
+						{
+							sprite.tileset->SelectAnimation(name);
+							SceneManager::CurrentScene()->MakeDirty();
+						}
+					}
+					ImGui::EndCombo();
+				}
 			}
 		});
 
@@ -243,30 +259,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::Checkbox("Primary", &cameraComp.Primary);
 			ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio);
 
-			const char* projectionTypeStrings[] = { "Perspective", "Orthographic" };
-
-			const char* currentProjectionTypeString = projectionTypeStrings[(int)camera.GetProjectionType()];
-
-			if (ImGui::BeginCombo("Projection", currentProjectionTypeString))
+			SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
+			if (ImGui::Combo("Projection", (int*)&projectionType,
+				"Perspective\0"
+				"Orthographic"))
 			{
-				for (int i = 0; i < 2; i++)
-				{
-					bool isSelected = currentProjectionTypeString == projectionTypeStrings[i];
-
-					if (ImGui::Selectable(projectionTypeStrings[i], isSelected))
-					{
-						currentProjectionTypeString = projectionTypeStrings[i];
-						camera.SetProjection((SceneCamera::ProjectionType)i);
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-
-				ImGui::EndCombo();
+				camera.SetProjection(projectionType);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
-
 
 			switch (camera.GetProjectionType())
 			{
@@ -328,30 +328,18 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Primitive--------------------------------------------------------------------------------------------------------------
 	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [=](auto& primitive)
 		{
-			const char* shapeTypeStrings[] = { "Cube", "Sphere", "Plane", "Cylinder", "Cone", "Torus" };
-
-			const char* currentShapeTypeString = shapeTypeStrings[(int)primitive.type];
-
-			if (ImGui::BeginCombo("Shape", currentShapeTypeString))
+			if (ImGui::Combo("Shape", (int*)&primitive.type,
+				"Cube\0"
+				"Sphere\0"
+				"Plane\0"
+				"Cylinder\0"
+				"Cone\0"
+				"Torus\0"))
 			{
-				for (int i = 0; i < 6; i++)
-				{
-					bool isSelected = currentShapeTypeString == shapeTypeStrings[i];
-
-					if (ImGui::Selectable(shapeTypeStrings[i], isSelected))
-					{
-						currentShapeTypeString = shapeTypeStrings[i];
-						primitive.type = (PrimitiveComponent::Shape)i;
-						primitive.needsUpdating = true;
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-
-				ImGui::EndCombo();
+				primitive.needsUpdating = true;
+				SceneManager::CurrentScene()->MakeDirty();
 			}
+
 			switch (primitive.type)
 			{
 				int tempInt;
@@ -510,28 +498,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Rigid Body 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
 		{
-			const char* bodyTypeStrings[] = { "Static", "Kinematic", "Dynamic" };
-
-			const char* currentBodyTypeString = bodyTypeStrings[(int)rigidBody2D.type];
-
-			if (ImGui::BeginCombo("Body Type", currentBodyTypeString))
+			if (ImGui::Combo("Body Type", (int*)&rigidBody2D.type,
+				"Static\0"
+				"Kinematic\0"
+				"Dynamic\0"))
 			{
-				for (int i = 0; i < 3; i++)
-				{
-					bool isSelected = currentBodyTypeString == bodyTypeStrings[i];
-
-					if (ImGui::Selectable(bodyTypeStrings[i], isSelected))
-					{
-						currentBodyTypeString = bodyTypeStrings[i];
-						rigidBody2D.type = (RigidBody2DComponent::BodyType)i;
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-
-				ImGui::EndCombo();
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 
 			if (rigidBody2D.type == RigidBody2DComponent::BodyType::DYNAMIC)
@@ -666,26 +638,13 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
 	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [](auto& tilemap)
 		{
-			const char* orientationStrings[] = { "Orthogonal", "Isometric", "Isometric (staggered)", "Hexagonal (staggered)"};
-			const char* currentorientationString = orientationStrings[(int)tilemap.orientation];
-			if (ImGui::BeginCombo("Orientation", currentorientationString))
+			if (ImGui::Combo("Orientation", (int*)&tilemap.orientation,
+				"Orthogonal\0"
+				"Isometric\0"
+				"Isometric (staggered)\0"
+				"Hexagonal (staggered)"))
 			{
-				for (size_t i = 0; i < 4; i++)
-				{
-					bool isSelected = currentorientationString == orientationStrings[i];
-
-					if (ImGui::Selectable(orientationStrings[i], isSelected))
-					{
-						currentorientationString = orientationStrings[i];
-						tilemap.orientation = ((TilemapComponent::Orientation)i);
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					if (isSelected)
-						ImGui::SetItemDefaultFocus();
-				}
-
-				ImGui::EndCombo();
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 
 			int tilesWide = tilemap.tilesWide;
@@ -709,7 +668,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				//-----------
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			
+
 			int tilesHigh = tilemap.tilesHigh;
 			if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
 			{
@@ -731,7 +690,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				//-----------
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			
+
 			std::string tilesetName;
 			if (tilemap.tileset)
 				tilesetName = tilemap.tileset->GetFilepath().filename().string();
@@ -751,6 +710,20 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					ImGui::Tooltip(file.string().c_str());
 				}
 				ImGui::EndCombo();
+			}
+			ImGui::Button(ICON_FA_PEN);
+			ImGui::SameLine();
+			ImGui::Button(ICON_FA_DICE);
+			ImGui::SameLine();
+			ImGui::Button(ICON_FA_FILL_DRIP);
+
+			float availableX = ImGui::GetContentRegionAvail().x;
+
+			float ratio = (float)tilemap.tileset->GetSubTexture()->GetTexture()->GetWidth() / availableX;
+
+			if (tilemap.tileset)
+			{
+				//ImGui::Image(tilemap.tileset->GetSubTexture()->GetTexture(), )
 			}
 			// TODO: display the tileset pallette
 		});

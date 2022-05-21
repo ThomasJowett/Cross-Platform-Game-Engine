@@ -795,7 +795,6 @@ void ContentExplorerPanel::OnImGuiRender()
 		}
 		//----------------------------------------------------------------------------------------------------
 		// Manual Location text entry
-		const std::filesystem::path* fi = m_History.GetCurrentFolder();
 
 		// Edit Location CheckButton
 		bool editlocationInputTextReturnPressed = false;

@@ -38,6 +38,7 @@ public:
 	void SetName(std::string name) { m_Name = name; }
 
 	std::map<std::string, Animation>& GetAnimations() { return m_Animations; }
+	const std::string GetCurrentAnimation() const { return m_CurrentAnimation; }
 private:
 	std::string m_Name;
 	std::filesystem::path m_Filepath;
