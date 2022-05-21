@@ -2,6 +2,8 @@
 #include "Tileset.h"
 
 #include "TinyXml2/tinyxml2.h"
+#include "Core/Colour.h"
+#include "Utilities/SerializationUtils.h"
 
 Tileset::Tileset(const std::filesystem::path& filepath)
 {
@@ -36,11 +38,17 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 
 		const char* textureSource = pImage->Attribute("source");
 
-		std::filesystem::path texturePath = filepath;
-		texturePath.remove_filename();
-		texturePath = texturePath / textureSource;
-
-		m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), m_TileWidth, m_TileHeight);
+		if (textureSource)
+		{
+			std::filesystem::path texturePath = filepath;
+			texturePath.remove_filename();
+			texturePath = texturePath / textureSource;
+			m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), m_TileWidth, m_TileHeight);
+		}
+		else
+		{
+			m_Texture = CreateRef<SubTexture2D>(nullptr, m_TileWidth, m_TileHeight);
+		}
 
 		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
 
@@ -81,11 +89,49 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 	return true;
 }
 
-//bool Tileset::Save(const std::filesystem::path& filepath) const
-//{
-//	//TODO: save tileset back to .tsx format
-//	return false;
-//}
+bool Tileset::Save() const
+{
+	return Save(m_Filepath);
+}
+
+bool Tileset::Save(const std::filesystem::path& filepath) const
+{
+	//TODO: save tileset back to .tsx format
+
+	PROFILE_FUNCTION();
+
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pRoot = doc.NewElement("tileset");
+
+	pRoot->SetAttribute("name", m_Name.c_str());
+	pRoot->SetAttribute("tilewidth", m_TileWidth);
+	pRoot->SetAttribute("tileheight", m_TileHeight);
+	pRoot->SetAttribute("tilecount", m_TileCount);
+	pRoot->SetAttribute("columns", m_Columns);
+	pRoot->SetAttribute("backgroundcolor", Colour().HexCode().c_str());
+
+	doc.InsertFirstChild(pRoot);
+
+	tinyxml2::XMLElement* pImage = pRoot->InsertNewChildElement("image");
+
+	if (m_Texture)
+	{
+		pImage->SetAttribute("source", SerializationUtils::RelativePath(m_Texture->GetTexture()->GetFilepath()).c_str());
+		pImage->SetAttribute("width", m_Texture->GetTexture()->GetWidth());
+		pImage->SetAttribute("height", m_Texture->GetTexture()->GetHeight());
+	}
+
+	for (const Tile& tile : m_Tiles)
+	{
+		tinyxml2::XMLElement* pTile = pRoot->InsertNewChildElement("tile");
+
+		pTile->SetAttribute("id", tile.id);
+		pTile->SetAttribute("probability", tile.probability);
+	}
+
+	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+	return error == tinyxml2::XML_SUCCESS;
+}
 
 void Tileset::SetCurrentTile(uint32_t tile)
 {
@@ -98,7 +144,34 @@ void Tileset::SetCurrentTile(uint32_t tile)
 
 void Tileset::AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime)
 {
+	if (m_Animations.find(name) != m_Animations.end())
+	{
+		uint32_t index = 1;
+		while (m_Animations.find(name + " (" + std::to_string(index) + ")") != m_Animations.end())
+		{
+			index++;
+		}
+		name = name + " (" + std::to_string(index) + ")";
+	}
 	m_Animations.insert({ name, Animation(m_Texture, startFrame, frameCount, holdTime) });
+}
+
+void Tileset::RemoveAnimation(std::string name)
+{
+	m_Animations.erase(name);
+}
+
+void Tileset::RenameAnimation(const std::string& oldName, const std::string& newName)
+{
+	if (m_Animations.find(newName) == m_Animations.end())
+	{
+		auto node = m_Animations.extract(oldName);
+		if (!node.empty())
+		{
+			node.key() = newName;
+			m_Animations.insert(std::move(node));
+		}
+	}
 }
 
 void Tileset::Animate(float deltaTime)

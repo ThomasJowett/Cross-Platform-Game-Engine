@@ -278,6 +278,17 @@ void ContentExplorerPanel::CreateNewLuaScript()
 	m_CurrentSelectedPath = newLuaScriptFilepath;
 }
 
+void ContentExplorerPanel::CreateNewTileset()
+{
+	std::filesystem::path newTilesetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Tileset", ".tsx");
+
+	Tileset tileset;
+
+	tileset.Save(newTilesetPath);
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newTilesetPath;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
@@ -370,7 +381,7 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
 	if (ImGui::BeginMenu("New"))
 	{
-		if (ImGui::SmallButton("Folder"))
+		if (ImGui::Selectable("Folder"))
 		{
 			std::string newFolderName = (m_CurrentPath / "New folder").string();
 			int suffix = 1;
@@ -393,22 +404,28 @@ void ContentExplorerPanel::RightClickMenu()
 
 			m_CurrentSelectedPath = newFolderName;
 		}
-		if (ImGui::SmallButton("Scene"))
+		if (ImGui::Selectable("Scene"))
 		{
 			CreateNewScene();
 			ImGui::OpenPopup("Rename");
 		}
-		if (ImGui::SmallButton("Material"))
+		if (ImGui::Selectable("Material"))
 		{
 			CreateNewMaterial();
 			ImGui::OpenPopup("Rename");
 		}
-		if (ImGui::SmallButton("Prefab"))
+		if (ImGui::Selectable("Prefab"))
 			CLIENT_DEBUG("new prefab");
 
-		if (ImGui::SmallButton("Lua Script"))
+		if (ImGui::Selectable("Lua Script"))
 		{
 			CreateNewLuaScript();
+			ImGui::OpenPopup("Rename");
+		}
+
+		if (ImGui::Selectable("Tileset"))
+		{
+			CreateNewTileset();
 			ImGui::OpenPopup("Rename");
 		}
 

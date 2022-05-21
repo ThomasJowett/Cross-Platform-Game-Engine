@@ -101,9 +101,9 @@ void ScriptView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl-S", nullptr, !readOnly))
+				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S", nullptr, !readOnly))
 					Save();
-				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl-Shift-S"))
+				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl + Shift + S"))
 					SaveAs();
 				ImGui::EndMenu();
 			}

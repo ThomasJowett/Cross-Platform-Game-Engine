@@ -15,8 +15,11 @@ public:
 
 	void SetCurrentCell(const uint32_t cell);
 
-	uint32_t GetSpriteWidth() { return m_SpriteWidth; }
-	uint32_t GetSpriteHeight() { return m_SpriteHeight; }
+	uint32_t GetSpriteWidth() const { return m_SpriteWidth; }
+	uint32_t GetSpriteHeight() const { return m_SpriteHeight; }
+
+	uint32_t GetCellsWide() const { return m_CellsWide; }
+	uint32_t GetCellsTall() const { return m_CellsTall; }
 
 	void SetSpriteDimensions(uint32_t spriteWidth, uint32_t spriteHeight);
 
@@ -29,5 +32,5 @@ private:
 	uint32_t m_CurrentCell;
 
 	uint32_t m_SpriteHeight, m_SpriteWidth;
-	uint32_t m_CellsWide, m_CellsTall;
+	uint32_t m_CellsWide = 0, m_CellsTall = 0;
 };

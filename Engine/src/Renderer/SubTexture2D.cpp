@@ -9,8 +9,11 @@ SubTexture2D::SubTexture2D()
 SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, uint32_t spriteHeight, uint32_t currentCell)
 	: m_Texture(texture), m_SpriteWidth(spriteWidth), m_SpriteHeight(spriteHeight)
 {
-	m_CellsWide = texture->GetWidth() / spriteWidth;
-	m_CellsTall = texture->GetHeight() / spriteHeight;
+	if (m_Texture)
+	{
+		m_CellsWide = m_Texture->GetWidth() / spriteWidth;
+		m_CellsTall = m_Texture->GetHeight() / spriteHeight;
+	}
 
 	SetCurrentCell(currentCell);
 }

@@ -114,6 +114,7 @@ public:
 	void CreateNewScene();
 	void CreateNewMaterial();
 	void CreateNewLuaScript();
+	void CreateNewTileset();
 
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);

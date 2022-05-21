@@ -26,4 +26,5 @@ private:
 	Ref<Tileset> m_Tileset;
 
 	float m_Zoom = 1.0f;
+	bool m_Dirty = false;
 };
