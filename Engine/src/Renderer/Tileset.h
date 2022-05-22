@@ -21,8 +21,6 @@ public:
 	bool Save(const std::filesystem::path& filepath) const;
 
 	void SetCurrentTile(uint32_t tile);
-	const uint32_t GetTileWidth() const { return m_TileWidth; }
-	const uint32_t GetTileHeight() const { return m_TileHeight; }
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
@@ -43,8 +41,6 @@ private:
 	std::string m_Name;
 	std::filesystem::path m_Filepath;
 	Ref<SubTexture2D> m_Texture;
-	uint32_t m_TileWidth = 16;
-	uint32_t m_TileHeight = 16;
 	uint32_t m_TileCount = 4;
 	uint32_t m_Columns = 2;
 

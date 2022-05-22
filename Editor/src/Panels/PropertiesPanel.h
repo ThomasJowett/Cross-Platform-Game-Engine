@@ -1,14 +1,17 @@
 #pragma once
 
 #include "HierarchyPanel.h"
+#include "ImGui/ImGuiTilemapEditor.h"
 
 #include "Engine.h"
+
+#include "IconsFontAwesome5.h"
 
 class PropertiesPanel :
 	public Layer
 {
 public:
-	explicit PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel);
+	explicit PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
@@ -65,4 +68,5 @@ private:
 	bool* m_Show;
 
 	HierarchyPanel* m_HierarchyPanel;
+	Ref<TilemapEditor> m_TilemapEditor;
 };

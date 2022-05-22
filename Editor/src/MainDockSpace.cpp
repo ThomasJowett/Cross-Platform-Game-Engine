@@ -112,6 +112,8 @@ void MainDockSpace::OnAttach()
 
 	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
+	m_TilemapEditor = CreateRef<TilemapEditor>();
+
 	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
 	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
 	Application::Get().AddOverlay(m_ContentExplorer);
@@ -119,8 +121,8 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
 	HierarchyPanel* hierarchyPanel = new HierarchyPanel(&m_ShowHierarchy);
 	Application::Get().AddOverlay(hierarchyPanel);
-	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel));
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel));
+	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel, m_TilemapEditor));
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel, m_TilemapEditor));
 	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
 
 	if (!Application::GetOpenDocument().empty())

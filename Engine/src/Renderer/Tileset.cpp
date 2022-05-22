@@ -29,8 +29,10 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		const char* name = pRoot->Attribute("name");
 		m_Name = name;
 
-		pRoot->QueryUnsignedAttribute("tilewidth", &m_TileWidth);
-		pRoot->QueryUnsignedAttribute("tileheight", &m_TileHeight);
+		uint32_t tileWidth, tileHeight;
+
+		pRoot->QueryUnsignedAttribute("tilewidth", &tileWidth);
+		pRoot->QueryUnsignedAttribute("tileheight", &tileHeight);
 		pRoot->QueryUnsignedAttribute("columns", &m_Columns);
 		pRoot->QueryUnsignedAttribute("tilecount", &m_TileCount);
 
@@ -43,11 +45,11 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 			std::filesystem::path texturePath = filepath;
 			texturePath.remove_filename();
 			texturePath = texturePath / textureSource;
-			m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), m_TileWidth, m_TileHeight);
+			m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), tileWidth, tileHeight);
 		}
 		else
 		{
-			m_Texture = CreateRef<SubTexture2D>(nullptr, m_TileWidth, m_TileHeight);
+			m_Texture = CreateRef<SubTexture2D>(nullptr, tileWidth, tileHeight);
 		}
 
 		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
@@ -70,11 +72,22 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 			{
 				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
 
+				uint32_t startFrame = MAXINT32;
+				uint32_t endFrame = 0;
+
+				float duration;
+
 				while (pFrame)
 				{
-					// TODO: load in the animation
+					const char* tileid = pFrame->Attribute("tileid");
+					if (atoi(tileid) < startFrame)
+						startFrame = atoi(tileid);
+					if (atoi(tileid) > endFrame)
+						endFrame = atoi(tileid);
+					pFrame->QueryFloatAttribute("duration", &duration);
 					pFrame = pFrame->NextSiblingElement("frame");
 				}
+				AddAnimation("Unnamed Animation", startFrame, endFrame - startFrame, duration);
 			}
 
 			m_Tiles.push_back(tile);
@@ -104,8 +117,8 @@ bool Tileset::Save(const std::filesystem::path& filepath) const
 	tinyxml2::XMLElement* pRoot = doc.NewElement("tileset");
 
 	pRoot->SetAttribute("name", m_Name.c_str());
-	pRoot->SetAttribute("tilewidth", m_TileWidth);
-	pRoot->SetAttribute("tileheight", m_TileHeight);
+	pRoot->SetAttribute("tilewidth", m_Texture ? m_Texture->GetSpriteWidth() : 16);
+	pRoot->SetAttribute("tileheight", m_Texture ? m_Texture->GetSpriteHeight() : 16);
 	pRoot->SetAttribute("tilecount", m_TileCount);
 	pRoot->SetAttribute("columns", m_Columns);
 	pRoot->SetAttribute("backgroundcolor", Colour().HexCode().c_str());

@@ -5,6 +5,7 @@
 
 #include "Toolbars/PlayPauseToolbar.h"
 #include "Toolbars/SaveOpenToolbar.h"
+#include "ImGui/ImGuiTilemapEditor.h"
 
 class ContentExplorerPanel;
 
@@ -66,4 +67,6 @@ private:
 
 	PlayPauseToolbar m_PlayPauseToolbar;
 	SaveOpenToolbar m_SaveOpenToolbar;
+
+	Ref<TilemapEditor> m_TilemapEditor;
 };

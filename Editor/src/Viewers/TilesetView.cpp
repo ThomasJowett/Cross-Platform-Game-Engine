@@ -220,13 +220,13 @@ void TilesetView::OnImGuiRender()
 
 				const ImU32 colour = ImColor(ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 				//Horizontal Lines
-				for (int i = 0; i <= m_Tileset->GetSubTexture()->GetCellsTall(); i++ )
+				for (uint32_t i = 0; i <= m_Tileset->GetSubTexture()->GetCellsTall(); i++ )
 				{
 					float y = (float)(m_Tileset->GetSubTexture()->GetSpriteHeight()* i) * m_Zoom ;
 					draw_list->AddLine(ImVec2(p.x, p.y + y), ImVec2(p.x + displaySize.x, p.y + y), colour);
 				}
-				//Vertiacal Lines
-				for (float i = 0; i <= m_Tileset->GetSubTexture()->GetCellsWide(); i++)
+				//Vertical Lines
+				for (uint32_t i = 0; i <= m_Tileset->GetSubTexture()->GetCellsWide(); i++)
 				{
 					float x = (float)(m_Tileset->GetSubTexture()->GetSpriteWidth() * i)* m_Zoom;
 					draw_list->AddLine(ImVec2(p.x + x, p.y), ImVec2(p.x + x, p.y + displaySize.y), colour);

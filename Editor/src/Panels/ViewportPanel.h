@@ -11,6 +11,7 @@
 #include "Renderer/Shader.h"
 
 #include "HierarchyPanel.h"
+#include "ImGui/ImGuiTilemapEditor.h"
 
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
@@ -31,7 +32,7 @@ class ViewportPanel
 	};
 
 public:
-	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel);
+	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
@@ -89,4 +90,6 @@ private:
 	Entity m_HoveredEntity;
 
 	int m_PixelData;
+
+	Ref<TilemapEditor> m_TilemapEditor;
 };

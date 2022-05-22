@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer/Tileset.h"
+#include "Core/Colour.h"
 
 struct TilemapComponent
 {

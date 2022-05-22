@@ -17,8 +17,8 @@
 
 #include "ImGui/ImGuizmo.h"
 
-ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel)
-	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel),
+ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
+	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor),
 	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
 {
 	FrameBufferSpecification frameBufferSpecificationEditorCamera = { 1920, 1080 };

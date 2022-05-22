@@ -14,8 +14,8 @@
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
 
-PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel)
-	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel)
+PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
+	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor)
 {
 }
 
@@ -636,96 +636,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
-	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [](auto& tilemap)
+	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [=](auto& tilemap)
 		{
-			if (ImGui::Combo("Orientation", (int*)&tilemap.orientation,
-				"Orthogonal\0"
-				"Isometric\0"
-				"Isometric (staggered)\0"
-				"Hexagonal (staggered)"))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			int tilesWide = tilemap.tilesWide;
-			if (ImGui::DragInt("Width", &tilesWide, 1.0f, 0, 1000))
-			{
-				//TODO: tilemap editor needs to resize the tilemap
-				tilemap.tilesWide = tilesWide;
-
-				//For now the data is just cleared and reset
-				//-------------
-				tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
-
-				for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
-				{
-					tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
-					for (uint32_t j = 0; j < tilemap.tilesWide; j++)
-					{
-						tilemap.tiles[i][j] = 0;
-					}
-				}
-				//-----------
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			int tilesHigh = tilemap.tilesHigh;
-			if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
-			{
-				//TODO: tilemap editor needs to resize the tilemap
-				tilemap.tilesHigh = tilesHigh;
-
-				//For now the data is just cleared and reset
-				//-------------
-				tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
-
-				for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
-				{
-					tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
-					for (uint32_t j = 0; j < tilemap.tilesWide; j++)
-					{
-						tilemap.tiles[i][j] = 0;
-					}
-				}
-				//-----------
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			std::string tilesetName;
-			if (tilemap.tileset)
-				tilesetName = tilemap.tileset->GetFilepath().filename().string();
-
-			if (ImGui::BeginCombo("Tileset", tilesetName.c_str()))
-			{
-				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
-				{
-					const bool is_selected = false;
-					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
-					{
-						if (!tilemap.tileset)
-							tilemap.tileset = CreateRef<Tileset>();
-						tilemap.tileset->Load(file);
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-					ImGui::Tooltip(file.string().c_str());
-				}
-				ImGui::EndCombo();
-			}
-			ImGui::Button(ICON_FA_PEN);
-			ImGui::SameLine();
-			ImGui::Button(ICON_FA_DICE);
-			ImGui::SameLine();
-			ImGui::Button(ICON_FA_FILL_DRIP);
-
-			float availableX = ImGui::GetContentRegionAvail().x;
-
-			float ratio = (float)tilemap.tileset->GetSubTexture()->GetTexture()->GetWidth() / availableX;
-
-			if (tilemap.tileset)
-			{
-				//ImGui::Image(tilemap.tileset->GetSubTexture()->GetTexture(), )
-			}
-			// TODO: display the tileset pallette
+			m_TilemapEditor->OnImGuiRender(tilemap);
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
