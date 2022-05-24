@@ -158,12 +158,12 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
 
-				float scale = circleComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
+				float scale = circleComp.radius * std::max(transformComp.scale.x, transformComp.scale.y);
 
 				Matrix4x4 transform = transformComp.GetParentMatrix()
 					* Matrix4x4::Translate(transformComp.position)
 					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
-					* Matrix4x4::Translate(Vector3f(circleComp.Offset.x, circleComp.Offset.y, 0.001f))
+					* Matrix4x4::Translate(Vector3f(circleComp.offset.x, circleComp.offset.y, 0.001f))
 					* Matrix4x4::Scale(Vector3f(scale, scale, 1.0f));
 
 				Renderer2D::DrawHairLineCircle(transform, 60, Colours::LIME_GREEN, selectedEntity);
@@ -176,10 +176,30 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				Matrix4x4 transform = transformComp.GetParentMatrix()
 					* Matrix4x4::Translate(transformComp.position)
 					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
-					* Matrix4x4::Translate(Vector3f(boxComp.Offset.x, boxComp.Offset.y, 0.001f))
+					* Matrix4x4::Translate(Vector3f(boxComp.offset.x, boxComp.offset.y, 0.001f))
 					* Matrix4x4::Scale(Vector3f(boxComp.Size.x * transformComp.scale.x * 2, boxComp.Size.y * transformComp.scale.y * 2, 1.0f));
 
 				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
+			}
+
+			if (selectedEntity.HasComponent<PolygonCollider2DComponent>())
+			{
+				PolygonCollider2DComponent& polygonComp = selectedEntity.GetComponent<PolygonCollider2DComponent>();
+
+				std::vector<Vector3f> vertices;
+				vertices.reserve(polygonComp.vertices.size());
+
+				for (Vector2f& vertex : polygonComp.vertices)
+				{
+					Matrix4x4 transform = transformComp.GetParentMatrix()
+						* Matrix4x4::Translate(transformComp.position)
+						* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+						* Matrix4x4::Translate(Vector3f(polygonComp.offset.x + vertex.x * transformComp.scale.x,
+							polygonComp.offset.y + vertex.y * transformComp.scale.y, 0.001f));
+					vertices.push_back(transform * Vector3f());
+				}
+
+				Renderer2D::DrawHairLinePolygon(vertices, Colours::LIME_GREEN, selectedEntity);
 			}
 
 			if (selectedEntity.HasComponent<TilemapComponent>())
@@ -204,7 +224,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					start = transformComp.GetWorldMatrix() * start;
 					end = transformComp.GetWorldMatrix() * end;
 
-					Renderer2D::DrawHairLine(start, end, Colour(0.5f,0.5f,0.5f,0.5f), selectedEntity);
+					Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
 				}
 			}
 		}
@@ -561,18 +581,27 @@ void ViewportPanel::OnImGuiRender()
 
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
-					Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
-					if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE)
+					RigidBody2DComponent* rigidBody2DComp = selectedEntity.TryGetComponent<RigidBody2DComponent>();
+
+					if (SceneManager::GetSceneState() != SceneState::Edit && rigidBody2DComp)
 					{
-						transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
+						rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotation[2]);
 					}
-					if (gizmoOperation == ImGuizmo::OPERATION::ROTATE)
+					else
 					{
-						transformComp.rotation += deltaRotation;
-					}
-					if (gizmoOperation == ImGuizmo::OPERATION::SCALE)
-					{
-						transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
+						Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
+						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE)
+						{
+							transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
+						}
+						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE)
+						{
+							transformComp.rotation += deltaRotation;
+						}
+						if (gizmoOperation == ImGuizmo::OPERATION::SCALE)
+						{
+							transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
+						}
 					}
 				}
 			}

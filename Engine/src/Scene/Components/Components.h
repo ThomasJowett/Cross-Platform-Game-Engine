@@ -13,6 +13,7 @@
 #include "RigidBody2DComponent.h"
 #include "BoxCollider2DComponent.h"
 #include "CircleCollider2DComponent.h"
+#include "PolygonCollider2DComponent.h"
 #include "CircleRendererComponent.h"
 #include "HierarchyComponent.h"
 #include "LuaScriptComponent.h"
@@ -32,6 +33,7 @@ TilemapComponent,			\
 RigidBody2DComponent,		\
 BoxCollider2DComponent,		\
 CircleCollider2DComponent,	\
+PolygonCollider2DComponent,	\
 CircleRendererComponent,	\
 HierarchyComponent,			\
 LuaScriptComponent			\

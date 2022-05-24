@@ -6,13 +6,13 @@
 
 struct BoxCollider2DComponent
 {
-	Vector2f Offset = { 0.0f, 0.0f };
+	Vector2f offset = { 0.0f, 0.0f };
 	Vector2f Size = { 0.5f, 0.5f };
 
 	//TODO: create physics material
-	float Density = 1.0f;
-	float Friction = 0.5f;
-	float Restitution = 0.0f;
+	float density = 1.0f;
+	float friction = 0.5f;
+	float restitution = 0.0f;
 
 	void* RuntimeFixture = nullptr;
 
@@ -23,10 +23,10 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Offset", Offset));
+		archive(cereal::make_nvp("Offset", offset));
 		archive(cereal::make_nvp("Size", Size));
-		archive(cereal::make_nvp("Density", Density));
-		archive(cereal::make_nvp("Friction", Friction));
-		archive(cereal::make_nvp("Restitution", Restitution));
+		archive(cereal::make_nvp("Density", density));
+		archive(cereal::make_nvp("Friction", friction));
+		archive(cereal::make_nvp("Restitution", restitution));
 	}
 };

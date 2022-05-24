@@ -3,6 +3,8 @@
 #include "cereal/cereal.hpp"
 
 class b2Body;
+class b2World;
+class Entity;
 
 struct RigidBody2DComponent
 {
@@ -19,7 +21,7 @@ struct RigidBody2DComponent
 	float angularDamping = 0.0f;
 	float linearDamping = 0.0f;
 
-	b2Body* RuntimeBody = nullptr;
+	b2Body* runtimeBody = nullptr;
 
 	RigidBody2DComponent() = default;
 	RigidBody2DComponent(const RigidBody2DComponent&) = default;
@@ -27,6 +29,8 @@ struct RigidBody2DComponent
 		:type(type), fixedRotation(fixedRotation) {}
 
 	~RigidBody2DComponent();
+
+	void Init(Entity& entity, b2World* b2World);
 
 	void ApplyImpulse(Vector2f impulse);
 	void ApplyImpulseAtPoint(Vector2f impulse, Vector2f center);
@@ -36,6 +40,8 @@ struct RigidBody2DComponent
 
 	void SetLinearVelocity(Vector2f velocity);
 	Vector2f GetLinearVelocity();
+
+	void SetTransform(const Vector2f& position, const float& angle);
 
 private:
 	friend cereal::access;

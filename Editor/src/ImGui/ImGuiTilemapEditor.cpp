@@ -156,6 +156,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		const ImU32 lineColour = ImColor(ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 		const ImU32 selectionColour = ImColor(ImVec4(0.1f, 0.1f, 0.5f, 0.5f));
+		const ImU32 selectionColourOutline = ImColor(ImVec4(0.2f, 0.2f, 0.7f, 0.7f));
 		//Horizontal Lines
 		for (uint32_t i = 0; i <= tilemap.tileset->GetSubTexture()->GetCellsTall(); i++)
 		{
@@ -201,6 +202,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 					ImVec2 topLeft(j * spriteSize.x + p.x, i * spriteSize.y + p.y);
 					ImVec2 bottomRight(j * spriteSize.x + p.x + spriteSize.x, i * spriteSize.y + p.y + spriteSize.y);
 					draw_list->AddRectFilled(topLeft, bottomRight, selectionColour);
+					draw_list->AddRect(topLeft, bottomRight, selectionColourOutline);
 				}
 			}
 		}

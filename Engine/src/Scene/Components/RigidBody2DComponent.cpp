@@ -3,45 +3,156 @@
 
 #include "Scene/SceneManager.h"
 #include "Box2D/Box2D.h"
+#include "Scene/Entity.h"
+#include "Scene/SceneGraph.h"
+
+#include "HierarchyComponent.h"
+#include "TransformComponent.h"
+
+b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
+{
+	switch (type)
+	{
+	case RigidBody2DComponent::BodyType::STATIC:
+		return b2BodyType::b2_staticBody;
+	case RigidBody2DComponent::BodyType::KINEMATIC:
+		return b2BodyType::b2_kinematicBody;
+	case RigidBody2DComponent::BodyType::DYNAMIC:
+		return b2BodyType::b2_dynamicBody;
+	}
+	return b2BodyType::b2_staticBody;
+}
 
 RigidBody2DComponent::~RigidBody2DComponent()
 {
-	if (RuntimeBody)
-		SceneManager::CurrentScene()->DestroyBody(RuntimeBody);
+	if (runtimeBody)
+		SceneManager::CurrentScene()->DestroyBody(runtimeBody);
+}
+
+void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
+{
+	TransformComponent& transformComp = entity.GetTransform();
+
+	b2BodyDef bodyDef;
+	bodyDef.type = GetRigidBodyBox2DType(type);
+	bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
+	bodyDef.angle = (float32)transformComp.rotation.z;
+
+	if (type == RigidBody2DComponent::BodyType::DYNAMIC)
+	{
+		bodyDef.fixedRotation = fixedRotation;
+		bodyDef.angularDamping = angularDamping;
+		bodyDef.linearDamping = linearDamping;
+		bodyDef.gravityScale = gravityScale;
+	}
+
+	b2Body* body = b2World->CreateBody(&bodyDef);
+
+	runtimeBody = body;
+
+	if (entity.HasComponent<BoxCollider2DComponent>())
+	{
+		auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
+
+		b2PolygonShape boxShape;
+		boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
+			b2Vec2(boxColliderComp.offset.x, boxColliderComp.offset.y),
+			0.0f);
+
+		b2FixtureDef fixtureDef;
+		fixtureDef.shape = &boxShape;
+		fixtureDef.density = boxColliderComp.density;
+		fixtureDef.friction = boxColliderComp.friction;
+		fixtureDef.restitution = boxColliderComp.restitution;
+
+		body->CreateFixture(&fixtureDef);
+	}
+
+	if (entity.HasComponent<CircleCollider2DComponent>())
+	{
+		auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
+
+		b2CircleShape circleShape;
+		circleShape.m_radius = circleColliderComp.radius * std::max(transformComp.scale.x, transformComp.scale.y);
+		circleShape.m_p.Set(circleColliderComp.offset.x, circleColliderComp.offset.y);
+
+		b2FixtureDef fixtureDef;
+		fixtureDef.shape = &circleShape;
+		fixtureDef.density = circleColliderComp.density;
+		fixtureDef.friction = circleColliderComp.friction;
+		fixtureDef.restitution = circleColliderComp.restitution;
+
+		body->CreateFixture(&fixtureDef);
+	}
+
+	if (entity.HasComponent<PolygonCollider2DComponent>())
+	{
+		auto& polygonColliderComp = entity.GetComponent<PolygonCollider2DComponent>();
+
+		b2PolygonShape polygonShape;
+
+		b2Vec2* vertices = new b2Vec2[polygonColliderComp.vertices.size()];
+
+		for (size_t i = 0; i < polygonColliderComp.vertices.size(); i++)
+		{
+			vertices[i] = b2Vec2(polygonColliderComp.vertices[i].x * transformComp.scale.x + polygonColliderComp.offset.x,
+				polygonColliderComp.vertices[i].y * transformComp.scale.y + polygonColliderComp.offset.y);
+		}
+
+		polygonShape.Set(vertices, (int32)polygonColliderComp.vertices.size());
+
+		b2FixtureDef fixtureDef;
+		fixtureDef.shape = &polygonShape;
+		fixtureDef.density = polygonColliderComp.density;
+		fixtureDef.friction = polygonColliderComp.friction;
+		fixtureDef.restitution = polygonColliderComp.restitution;
+
+		body->CreateFixture(&fixtureDef);
+	}
 }
 
 void RigidBody2DComponent::ApplyImpulse(Vector2f impulse)
 {
-	RuntimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), RuntimeBody->GetWorldCenter(), true);
+	runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), runtimeBody->GetWorldCenter(), true);
 }
 
 void RigidBody2DComponent::ApplyImpulseAtPoint(Vector2f impulse, Vector2f center)
 {
-	RuntimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(center.x, center.y), true);
+	runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(center.x, center.y), true);
 }
 
 void RigidBody2DComponent::ApplyForce(Vector2f force)
 {
-	RuntimeBody->ApplyForce(b2Vec2(force.x, force.y), RuntimeBody->GetWorldCenter(), true);
+	runtimeBody->ApplyForce(b2Vec2(force.x, force.y), runtimeBody->GetWorldCenter(), true);
 }
 
 void RigidBody2DComponent::ApplyForceAtPoint(Vector2f force, Vector2f center)
 {
-	RuntimeBody->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(center.x, center.y), true);
+	runtimeBody->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(center.x, center.y), true);
 }
 
 void RigidBody2DComponent::ApplyTorque(float torque)
 {
-	RuntimeBody->ApplyTorque(torque, true);
+	runtimeBody->ApplyTorque(torque, true);
 }
 
 void RigidBody2DComponent::SetLinearVelocity(Vector2f velocity)
 {
-	RuntimeBody->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+	runtimeBody->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 }
 
 Vector2f RigidBody2DComponent::GetLinearVelocity()
 {
-	const b2Vec2& vel = RuntimeBody->GetLinearVelocity();
+	const b2Vec2& vel = runtimeBody->GetLinearVelocity();
 	return Vector2f(vel.x, vel.y);
+}
+
+void RigidBody2DComponent::SetTransform(const Vector2f& position, const float& angle)
+{
+	if (runtimeBody)
+	{
+		runtimeBody->SetAwake(true);
+		runtimeBody->SetTransform(b2Vec2(position.x, position.y), angle);
+		runtimeBody->SetLinearVelocity(b2Vec2_zero);
+	}
 }

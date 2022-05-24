@@ -197,5 +197,5 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 		SceneManager::CurrentScene()->MakeDirty();
 	}
 
-	return bool();
+	return edited;
 }

@@ -190,24 +190,24 @@ namespace Lua
 		rigidBody2D_type.set_function("ApplyTorque", &RigidBody2DComponent::ApplyTorque);
 		
 		auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
-		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::Offset;
+		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;
 		boxCollider2D_type["Size"] = &BoxCollider2DComponent::Size;
-		boxCollider2D_type["Desity"] = &BoxCollider2DComponent::Density;
-		boxCollider2D_type["Friction"] = &BoxCollider2DComponent::Friction;
-		boxCollider2D_type["Restitution"] = &BoxCollider2DComponent::Restitution;
+		boxCollider2D_type["Desity"] = &BoxCollider2DComponent::density;
+		boxCollider2D_type["Friction"] = &BoxCollider2DComponent::friction;
+		boxCollider2D_type["Restitution"] = &BoxCollider2DComponent::restitution;
 		
 		auto circleCollider2D_type = state["CircleCollider2DComponent"].get_or_create<sol::usertype<CircleCollider2DComponent>>();
-		circleCollider2D_type["Offset"] = &CircleCollider2DComponent::Offset;
-		circleCollider2D_type["Radius"] = &CircleCollider2DComponent::Radius;
-		circleCollider2D_type["Desity"] = &CircleCollider2DComponent::Density;
-		circleCollider2D_type["Friction"] = &CircleCollider2DComponent::Friction;
-		circleCollider2D_type["Restitution"] = &CircleCollider2DComponent::Restitution;
+		circleCollider2D_type["Offset"] = &CircleCollider2DComponent::offset;
+		circleCollider2D_type["Radius"] = &CircleCollider2DComponent::radius;
+		circleCollider2D_type["Desity"] = &CircleCollider2DComponent::density;
+		circleCollider2D_type["Friction"] = &CircleCollider2DComponent::friction;
+		circleCollider2D_type["Restitution"] = &CircleCollider2DComponent::restitution;
 		
 		auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
 		circleRenderer_type["Colour"] = &CircleRendererComponent::colour;
-		circleRenderer_type["Radius"] = &CircleRendererComponent::Radius;
-		circleRenderer_type["Thickness"] = &CircleRendererComponent::Thickness;
-		circleRenderer_type["Fade"] = &CircleRendererComponent::Fade;
+		circleRenderer_type["Radius"] = &CircleRendererComponent::radius;
+		circleRenderer_type["Thickness"] = &CircleRendererComponent::thickness;
+		circleRenderer_type["Fade"] = &CircleRendererComponent::fade;
 	}
 
 	//--------------------------------------------------------------------------------------------------------------

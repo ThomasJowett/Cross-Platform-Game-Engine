@@ -23,20 +23,6 @@
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
 
-b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
-{
-	switch (type)
-	{
-	case RigidBody2DComponent::BodyType::STATIC:
-		return b2BodyType::b2_staticBody;
-	case RigidBody2DComponent::BodyType::KINEMATIC:
-		return b2BodyType::b2_kinematicBody;
-	case RigidBody2DComponent::BodyType::DYNAMIC:
-		return b2BodyType::b2_dynamicBody;
-	}
-	return b2BodyType::b2_staticBody;
-}
-
 template<typename Component>
 static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
 {
@@ -165,60 +151,24 @@ void Scene::OnRuntimeStart()
 		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
-		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
+		[&]([[maybe_unused]] const auto physicsEntity, auto& transformComp, auto& rigidBody2DComp)
 		{
-			b2BodyDef bodyDef;
-			bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
-			bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
-			bodyDef.angle = (float32)transformComp.rotation.z;
-
-			if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
-			{
-				bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
-				bodyDef.angularDamping = rigidBody2DComp.angularDamping;
-				bodyDef.linearDamping = rigidBody2DComp.linearDamping;
-				bodyDef.gravityScale = rigidBody2DComp.gravityScale;
-			}
-
-			b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
-
-			rigidBody2DComp.RuntimeBody = body;
-
 			Entity entity = { physicsEntity, this };
-			if (entity.HasComponent<BoxCollider2DComponent>())
+
+			// if an entity has physics it must not have a parent for the physics position to work correctly
+			if (entity.HasComponent<HierarchyComponent>())
 			{
-				auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
-
-				b2PolygonShape boxShape;
-				boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
-					b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
-					0.0f);
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &boxShape;
-				fixtureDef.density = boxColliderComp.Density;
-				fixtureDef.friction = boxColliderComp.Friction;
-				fixtureDef.restitution = boxColliderComp.Restitution;
-
-				body->CreateFixture(&fixtureDef);
+				Vector3f position;
+				Vector3f rotation;
+				Vector3f scale;
+				transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
+				SceneGraph::Unparent(entity, m_Registry);
+				//transformComp.position = position;
+				//transformComp.rotation = rotation;
+				//transformComp.scale = scale;
 			}
 
-			if (entity.HasComponent<CircleCollider2DComponent>())
-			{
-				auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
-
-				b2CircleShape circleShape;
-				circleShape.m_radius = circleColliderComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
-				circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
-
-				b2FixtureDef fixtureDef;
-				fixtureDef.shape = &circleShape;
-				fixtureDef.density = circleColliderComp.Density;
-				fixtureDef.friction = circleColliderComp.Friction;
-				fixtureDef.restitution = circleColliderComp.Restitution;
-
-				body->CreateFixture(&fixtureDef);
-			}
+			rigidBody2DComp.Init(entity, m_Box2DWorld);
 		});
 
 	m_Registry.view<LuaScriptComponent>().each(
@@ -283,7 +233,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : animatedSpriteGroup)
 	{
 		auto [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
-		if(spriteComp.tileset)
+		if (spriteComp.tileset)
 			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.tileset->GetSubTexture(), spriteComp.tint, (int)entity);
 	}
 
@@ -453,11 +403,11 @@ void Scene::OnFixedUpdate()
 	const int32_t positionIterations = 2;
 	if (m_Box2DWorld != nullptr)
 	{
-		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), 6, 2);
+		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
 
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
-				b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
+				b2Body* body = (b2Body*)rigidBodyComp.runtimeBody;
 				const b2Vec2& position = body->GetPosition();
 				transformComp.position.x = position.x;
 				transformComp.position.y = position.y;

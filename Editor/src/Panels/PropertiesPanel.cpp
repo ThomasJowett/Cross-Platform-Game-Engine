@@ -151,9 +151,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	}
 
 	//Transform------------------------------------------------------------------------------------------------------------
-	DrawComponent<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity, [](auto& transform)
+	DrawComponent<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity, [&](auto& transform)
 		{
-			ImGui::Transform(transform.position, transform.rotation, transform.scale);
+			if (ImGui::Transform(transform.position, transform.rotation, transform.scale))
+			{
+				if (entity.HasComponent<RigidBody2DComponent>())
+				{
+					entity.GetComponent<RigidBody2DComponent>().SetTransform(transform.position, transform.rotation.z);
+				}
+			}
 		}, false);
 
 	//Sprite--------------------------------------------------------------------------------------------------------------
@@ -518,7 +524,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
 		{
-			Vector2f& offset = boxCollider2D.Offset;
+			Vector2f& offset = boxCollider2D.offset;
 			ImGui::Text("Offset");
 			ImGui::TextColored({ 245,0,0,255 }, "X");
 			ImGui::SameLine();
@@ -572,20 +578,20 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::DragFloat("Density", &boxCollider2D.Density, 0.01f, 0.0f, 10.0f))
+			if (ImGui::DragFloat("Density", &boxCollider2D.density, 0.01f, 0.0f, 10.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Friction", &boxCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+			if (ImGui::DragFloat("Friction", &boxCollider2D.friction, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Restitution", &boxCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+			if (ImGui::DragFloat("Restitution", &boxCollider2D.restitution, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 		});
 
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 		{
-			Vector2f& offset = circleCollider2D.Offset;
+			Vector2f& offset = circleCollider2D.offset;
 			ImGui::Text("Offset");
 			ImGui::TextColored({ 245,0,0,255 }, "X");
 			ImGui::SameLine();
@@ -613,17 +619,116 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::DragFloat("Radius", &circleCollider2D.Radius, 0.01f, 0.0f, 10.0f))
+			if (ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Density", &circleCollider2D.Density, 0.01f, 0.0f, 10.0f))
+			if (ImGui::DragFloat("Density", &circleCollider2D.density, 0.01f, 0.0f, 10.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Friction", &circleCollider2D.Friction, 0.001f, 0.0f, 1.0f))
+			if (ImGui::DragFloat("Friction", &circleCollider2D.friction, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Restitution", &circleCollider2D.Restitution, 0.001f, 0.0f, 1.0f))
+			if (ImGui::DragFloat("Restitution", &circleCollider2D.restitution, 0.001f, 0.0f, 1.0f))
 				SceneManager::CurrentScene()->MakeDirty();
+		});
+
+	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
+	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [](auto& polygonCollider2D)
+		{
+			Vector2f& offset = polygonCollider2D.offset;
+			ImGui::Text("Offset");
+			ImGui::TextColored({ 245,0,0,255 }, "X");
+			ImGui::SameLine();
+
+			float width = ImGui::GetContentRegionAvail().x;
+
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.x = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			ImGui::SameLine();
+			ImGui::TextColored({ 0,245,0,255 }, "Y");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(width / 2 - 20);
+			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
+				SceneManager::CurrentScene()->MakeDirty();
+			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			{
+				offset.y = 0.0f;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if (ImGui::TreeNode("Vertices"))
+			{
+				if (ImGui::Button(ICON_FA_PLUS"##AddVertex"))
+				{
+					polygonCollider2D.vertices.push_back(Vector2f());
+					SceneManager::CurrentScene()->MakeDirty();
+				}
+				size_t i = 0;
+				while (i < polygonCollider2D.vertices.size())
+				{
+					std::string deleteStr = ICON_FA_TRASH_ALT "##" + std::to_string(i);
+					if (ImGui::Button(deleteStr.c_str()))
+					{
+						polygonCollider2D.vertices.erase(polygonCollider2D.vertices.begin() + i);
+						continue;
+					}
+
+					ImGui::SameLine();
+
+					ImGui::TextColored({ 245,0,0,255 }, "X");
+					ImGui::SameLine();
+
+					float width = ImGui::GetContentRegionAvail().x;
+
+					ImGui::SetNextItemWidth(width / 2 - 20);
+					std::string xStr = "##X" + std::to_string(i);
+					if (ImGui::DragFloat(xStr.c_str(), &polygonCollider2D.vertices[i].x, 0.1f))
+						SceneManager::CurrentScene()->MakeDirty();
+					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						polygonCollider2D.vertices[i].x = 0.0f;
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+
+					ImGui::SameLine();
+					ImGui::TextColored({ 0,245,0,255 }, "Y");
+					ImGui::SameLine();
+					ImGui::SetNextItemWidth(width / 2 - 20);
+					std::string yStr = "##Y" + std::to_string(i);
+					if (ImGui::DragFloat(yStr.c_str(), &polygonCollider2D.vertices[i].y, 0.1f))
+						SceneManager::CurrentScene()->MakeDirty();
+					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					{
+						polygonCollider2D.vertices[i].y = 0.0f;
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+
+					i++;
+				}
+				ImGui::TreePop();
+			}
+
+			if (ImGui::DragFloat("Density", &polygonCollider2D.density, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Friction", &polygonCollider2D.friction, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Restitution", &polygonCollider2D.restitution, 0.001f, 0.0f, 1.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (polygonCollider2D.vertices.size() < 3)
+			{
+				Colour textColour(Colours::YELLOW);
+				ImGui::TextColored(ImVec4(textColour.r, textColour.g, textColour.b, textColour.a), "No Polygon Collider Created!");
+			}
 		});
 
 	// Circle Renderer------------------------------------------------------------------------------------------------------------------
@@ -631,8 +736,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
 			ImGui::ColorEdit4("Colour", colour[0]);
-			ImGui::DragFloat("Thickness", &circleRenderer.Thickness, 0.025f, 0.0f, 1.0f);
-			ImGui::DragFloat("Fade", &circleRenderer.Fade, 0.00025f, 0.0f, 1.0f);
+			ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f);
+			ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f);
 		});
 
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
@@ -688,6 +793,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", entity);
+		AddComponentMenuItem<PolygonCollider2DComponent>("Polygon Collider 2D", entity);
 		AddComponentMenuItem<CircleRendererComponent>("Circle Renderer", entity);
 		AddComponentMenuItem<TilemapComponent>("Tilemap", entity);
 

@@ -111,7 +111,7 @@ void TilesetView::OnImGuiRender()
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
 			{
-				m_Tileset->AddAnimation("New Animation", 0, 3, 0.1);
+				m_Tileset->AddAnimation("New Animation", 0, 3, 0.1f);
 				m_Dirty = true;
 			}
 			ImGui::Tooltip("Add animation");

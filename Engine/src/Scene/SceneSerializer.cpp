@@ -350,11 +350,11 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pBoxColliderElement = pElement->InsertNewChildElement("BoxCollider2D");
 
-		pBoxColliderElement->SetAttribute("Density", component.Density);
-		pBoxColliderElement->SetAttribute("Friction", component.Friction);
-		pBoxColliderElement->SetAttribute("Restitution", component.Restitution);
+		pBoxColliderElement->SetAttribute("Density", component.density);
+		pBoxColliderElement->SetAttribute("Friction", component.friction);
+		pBoxColliderElement->SetAttribute("Restitution", component.restitution);
 
-		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.Offset);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.Size);
 	}
 
@@ -364,12 +364,30 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pCircleColliderElement = pElement->InsertNewChildElement("CircleCollider2D");
 
-		pCircleColliderElement->SetAttribute("Density", component.Density);
-		pCircleColliderElement->SetAttribute("Friction", component.Friction);
-		pCircleColliderElement->SetAttribute("Restitution", component.Restitution);
+		pCircleColliderElement->SetAttribute("Density", component.density);
+		pCircleColliderElement->SetAttribute("Friction", component.friction);
+		pCircleColliderElement->SetAttribute("Restitution", component.restitution);
 
-		pCircleColliderElement->SetAttribute("Radius", component.Radius);
-		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
+		pCircleColliderElement->SetAttribute("Radius", component.radius);
+		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
+	}
+
+	if (entity.HasComponent<PolygonCollider2DComponent>())
+	{
+		PolygonCollider2DComponent& component = entity.GetComponent<PolygonCollider2DComponent>();
+
+		tinyxml2::XMLElement* pPolygonColliderElement = pElement->InsertNewChildElement("PolygonCollider2D");
+
+		pPolygonColliderElement->SetAttribute("Density", component.density);
+		pPolygonColliderElement->SetAttribute("Friction", component.friction);
+		pPolygonColliderElement->SetAttribute("Restitution", component.restitution);
+
+		SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Offset"), component.offset);
+
+		for (Vector2f& vertex : component.vertices)
+		{
+			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Vertex"), vertex);
+		}
 	}
 
 	if (entity.HasComponent<CircleRendererComponent>())
@@ -378,9 +396,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pCircleRendererElement = pElement->InsertNewChildElement("CircleRenderer");
 
-		pCircleRendererElement->SetAttribute("Radius", component.Radius);
-		pCircleRendererElement->SetAttribute("Thickness", component.Thickness);
-		pCircleRendererElement->SetAttribute("Fade", component.Fade);
+		pCircleRendererElement->SetAttribute("Radius", component.radius);
+		pCircleRendererElement->SetAttribute("Thickness", component.thickness);
+		pCircleRendererElement->SetAttribute("Fade", component.fade);
 
 		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.colour);
 	}
@@ -727,11 +745,11 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		BoxCollider2DComponent& component = entity.AddComponent<BoxCollider2DComponent>();
 
-		pBoxCollider2DElement->QueryFloatAttribute("Density", &component.Density);
-		pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
-		pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+		pBoxCollider2DElement->QueryFloatAttribute("Density", &component.density);
+		pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.friction);
+		pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.restitution);
 
-		SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.Offset);
+		SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.offset);
 		SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Size"), component.Size);
 	}
 
@@ -742,11 +760,35 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		CircleCollider2DComponent& component = entity.AddComponent<CircleCollider2DComponent>();
 
-		pCircleCollider2DElement->QueryFloatAttribute("Density", &component.Density);
-		pCircleCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
-		pCircleCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+		pCircleCollider2DElement->QueryFloatAttribute("Density", &component.density);
+		pCircleCollider2DElement->QueryFloatAttribute("Friction", &component.friction);
+		pCircleCollider2DElement->QueryFloatAttribute("Restitution", &component.restitution);
 
-		SerializationUtils::Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
+		SerializationUtils::Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.offset);
+	}
+
+	// PolygonCollider2D --------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pPolygonCollider2DElement = pEntityElement->FirstChildElement("PolygonCollider2D");
+
+	if (pPolygonCollider2DElement)
+	{
+		PolygonCollider2DComponent& component = entity.AddComponent<PolygonCollider2DComponent>();
+
+		pPolygonCollider2DElement->QueryFloatAttribute("Density", &component.density);
+		pPolygonCollider2DElement->QueryFloatAttribute("Friction", &component.friction);
+		pPolygonCollider2DElement->QueryFloatAttribute("Restitution", &component.restitution);
+		SerializationUtils::Decode(pPolygonCollider2DElement->FirstChildElement("Offset"), component.offset);
+
+		tinyxml2::XMLElement* pVertexElement = pPolygonCollider2DElement->FirstChildElement("Vertex");
+
+		component.vertices.clear();
+		while (pVertexElement)
+		{
+			Vector2f vertex;
+			SerializationUtils::Decode(pVertexElement, vertex);
+			component.vertices.push_back(vertex);
+			pVertexElement = pVertexElement->NextSiblingElement("Vertex");
+		}
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------
@@ -756,9 +798,9 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		CircleRendererComponent& component = entity.AddComponent<CircleRendererComponent>();
 
-		pCircleRendererElement->QueryFloatAttribute("Radius", &component.Radius);
-		pCircleRendererElement->QueryFloatAttribute("Thickness", &component.Thickness);
-		pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
+		pCircleRendererElement->QueryFloatAttribute("Radius", &component.radius);
+		pCircleRendererElement->QueryFloatAttribute("Thickness", &component.thickness);
+		pCircleRendererElement->QueryFloatAttribute("Fade", &component.fade);
 
 		SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.colour);
 	}

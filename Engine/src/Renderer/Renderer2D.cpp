@@ -682,7 +682,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 
 void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp, int entityId)
 {
-	DrawCircle(transform, circleComp.colour, circleComp.Thickness, circleComp.Fade, entityId);
+	DrawCircle(transform, circleComp.colour, circleComp.thickness, circleComp.fade, entityId);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

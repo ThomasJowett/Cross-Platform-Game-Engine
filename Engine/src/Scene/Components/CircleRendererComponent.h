@@ -5,9 +5,9 @@
 struct CircleRendererComponent
 {
 	Colour colour{ 1.0f, 1.0f, 1.0f, 1.0f };
-	float Radius = 0.5f;
-	float Thickness = 1.0f;
-	float Fade = 0.005f;
+	float radius = 0.5f;
+	float thickness = 1.0f;
+	float fade = 0.005f;
 
 	CircleRendererComponent() = default;
 	CircleRendererComponent(const CircleRendererComponent&) = default;
@@ -16,7 +16,7 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(colour, Radius, Thickness, Fade);
+		archive(colour, radius, thickness, fade);
 	}
 
 };
