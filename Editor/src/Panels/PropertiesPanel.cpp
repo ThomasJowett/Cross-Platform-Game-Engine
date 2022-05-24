@@ -251,12 +251,6 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 		});
 
-	//Native Script------------------------------------------------------------------------------------------------------------
-	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
-		{
-			ImGui::Text("%s", script.Name.c_str());
-		});
-
 	//Camera------------------------------------------------------------------------------------------------------------
 	DrawComponent<CameraComponent>(ICON_FA_VIDEO" Camera", entity, [](auto& cameraComp)
 		{
@@ -746,6 +740,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			m_TilemapEditor->OnImGuiRender(tilemap);
 		});
 
+	//Native Script------------------------------------------------------------------------------------------------------------
+	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
+		{
+			ImGui::Text("%s", script.Name.c_str());
+		});
+
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [](auto& luaScript)
 		{
@@ -785,19 +785,19 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 
 	if (ImGui::BeginPopup("Components"))
 	{
-		AddComponentMenuItem<CameraComponent>("Camera", entity);
-		AddComponentMenuItem<SpriteComponent>("Sprite", entity);
-		AddComponentMenuItem<AnimatedSpriteComponent>("Animated Sprite", entity);
-		AddComponentMenuItem<StaticMeshComponent>("Static Mesh", entity);
-		AddComponentMenuItem<PrimitiveComponent>("Primitive", entity);
-		AddComponentMenuItem<RigidBody2DComponent>("Rigid Body 2D", entity);
-		AddComponentMenuItem<BoxCollider2DComponent>("Box Collider 2D", entity);
-		AddComponentMenuItem<CircleCollider2DComponent>("Circle Collider 2D", entity);
-		AddComponentMenuItem<PolygonCollider2DComponent>("Polygon Collider 2D", entity);
-		AddComponentMenuItem<CircleRendererComponent>("Circle Renderer", entity);
-		AddComponentMenuItem<TilemapComponent>("Tilemap", entity);
+		AddComponentMenuItem<CameraComponent>(ICON_FA_VIDEO" Camera", entity);
+		AddComponentMenuItem<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity);
+		AddComponentMenuItem<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity);
+		AddComponentMenuItem<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity);
+		AddComponentMenuItem<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity);
+		AddComponentMenuItem<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity);
+		AddComponentMenuItem<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity);
+		AddComponentMenuItem<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity);
+		AddComponentMenuItem<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity);
+		AddComponentMenuItem<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity);
+		AddComponentMenuItem<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity);
 
-		if (ImGui::BeginMenu("Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
+		if (ImGui::BeginMenu(ICON_FA_FILE_CODE" Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{
 			for (auto&& [key, value] : *Factory<ScriptableEntity>::GetMap())
 			{
@@ -811,7 +811,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 
 		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));
 
-		if (ImGui::BeginMenu("Lua Script", !entity.HasComponent<LuaScriptComponent>() && scripts.size() > 0))
+		if (ImGui::BeginMenu(ICON_FA_FILE_CODE" Lua Script", !entity.HasComponent<LuaScriptComponent>() && scripts.size() > 0))
 		{
 			for (std::filesystem::path& file : scripts)
 			{

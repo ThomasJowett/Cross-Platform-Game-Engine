@@ -162,7 +162,7 @@ void Scene::OnRuntimeStart()
 				Vector3f rotation;
 				Vector3f scale;
 				transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
-				SceneGraph::Unparent(entity, m_Registry);
+				//SceneGraph::Unparent(entity, m_Registry);
 				//transformComp.position = position;
 				//transformComp.rotation = rotation;
 				//transformComp.scale = scale;
@@ -371,6 +371,23 @@ void Scene::OnFixedUpdate()
 
 	m_IsUpdating = true;
 
+	// Physics
+	const int32_t velocityIterations = 6;
+	const int32_t positionIterations = 2;
+	if (m_Box2DWorld != nullptr)
+	{
+		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
+
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+			{
+				b2Body* body = (b2Body*)rigidBodyComp.runtimeBody;
+				const b2Vec2& position = body->GetPosition();
+				transformComp.position.x = position.x;
+				transformComp.position.y = position.y;
+				transformComp.rotation.z = (float)body->GetAngle();
+			});
+	}
+
 	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
 		{
 			if (nsc.InstantiateScript != nullptr)
@@ -398,20 +415,12 @@ void Scene::OnFixedUpdate()
 			luaScriptComp.OnFixedUpdate();
 		});
 
-	// Physics
-	const int32_t velocityIterations = 6;
-	const int32_t positionIterations = 2;
 	if (m_Box2DWorld != nullptr)
 	{
-		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
-
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
 				b2Body* body = (b2Body*)rigidBodyComp.runtimeBody;
-				const b2Vec2& position = body->GetPosition();
-				transformComp.position.x = position.x;
-				transformComp.position.y = position.y;
-				transformComp.rotation.z = (float)body->GetAngle();
+				body->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
 

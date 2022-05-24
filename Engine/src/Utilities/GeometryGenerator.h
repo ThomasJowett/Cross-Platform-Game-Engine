@@ -35,7 +35,7 @@ namespace GeometryGenerator
 	 * @param tileV tiling of texture on grid
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateGrid(float width, float length, unsigned int widthLines, unsigned int lengthLines, float tileU, float tileV);
+	Ref<VertexArray> CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV);
 
 	/**
 	 * Create a Full Screen Quad used for post processing
