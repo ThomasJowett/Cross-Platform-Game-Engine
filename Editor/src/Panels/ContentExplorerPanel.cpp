@@ -284,7 +284,7 @@ void ContentExplorerPanel::CreateNewTileset()
 
 	Tileset tileset;
 
-	tileset.Save(newTilesetPath);
+	tileset.SaveAs(newTilesetPath);
 	m_ForceRescan = true;
 	m_CurrentSelectedPath = newTilesetPath;
 }

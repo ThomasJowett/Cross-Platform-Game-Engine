@@ -2,6 +2,8 @@
 
 #include "Renderer/Tileset.h"
 #include "Core/Colour.h"
+#include "Utilities/FileUtils.h"
+#include "Core/Application.h"
 
 struct TilemapComponent
 {

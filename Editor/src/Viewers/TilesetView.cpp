@@ -67,7 +67,7 @@ void TilesetView::OnImGuiRender()
 						std::filesystem::path filepath = dialogPath.value();
 						if (!filepath.has_extension())
 							filepath.replace_extension(ext);
-						m_Tileset->Save(filepath);
+						m_Tileset->SaveAs(filepath);
 						m_Dirty = false;
 					}
 				}

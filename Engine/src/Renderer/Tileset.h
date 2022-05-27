@@ -3,6 +3,7 @@
 #include "Renderer/SubTexture2D.h"
 #include "Animation/Animation.h"
 #include <map>
+#include <filesystem>
 
 class Tileset
 {
@@ -19,7 +20,7 @@ public:
 	bool Load();
 	bool Load(const std::filesystem::path& filepath);
 	bool Save() const;
-	bool Save(const std::filesystem::path& filepath) const;
+	bool SaveAs(const std::filesystem::path& filepath) const;
 
 	void SetCurrentTile(uint32_t tile);
 

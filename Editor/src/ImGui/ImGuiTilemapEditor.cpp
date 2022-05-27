@@ -1,6 +1,6 @@
 #include "ImGuiTilemapEditor.h"
 
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 #include "Scene/SceneManager.h"
 
 #include "IconsFontAwesome5.h"

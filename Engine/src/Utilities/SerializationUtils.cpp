@@ -142,7 +142,9 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Ref<Texture2D>& 
 
 std::string SerializationUtils::RelativePath(const std::filesystem::path& path)
 {
-	return FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).string();
+	std::string relativePath = FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).make_preferred().string();
+	std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
+	return relativePath;
 }
 
 std::filesystem::path SerializationUtils::AbsolutePath(const char* path)

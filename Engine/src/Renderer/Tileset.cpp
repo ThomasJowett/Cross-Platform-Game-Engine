@@ -3,6 +3,7 @@
 
 #include "TinyXml2/tinyxml2.h"
 #include "Core/Colour.h"
+#include "Logging/Instrumentor.h"
 #include "Utilities/SerializationUtils.h"
 
 #include <limits>
@@ -111,10 +112,10 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 
 bool Tileset::Save() const
 {
-	return Save(m_Filepath);
+	return SaveAs(m_Filepath);
 }
 
-bool Tileset::Save(const std::filesystem::path& filepath) const
+bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 {
 	//TODO: save tileset back to .tsx format
 
@@ -136,7 +137,9 @@ bool Tileset::Save(const std::filesystem::path& filepath) const
 
 	if (m_Texture)
 	{
-		pImage->SetAttribute("source", FileUtils::RelativePath(m_Texture->GetTexture()->GetFilepath(), m_Filepath).string().c_str());
+		std::string texturePath = FileUtils::RelativePath(m_Texture->GetTexture()->GetFilepath(), m_Filepath).string();
+		std::replace(texturePath.begin(), texturePath.end(), '\\', '/');
+		pImage->SetAttribute("source", texturePath.c_str());
 		pImage->SetAttribute("width", m_Texture->GetTexture()->GetWidth());
 		pImage->SetAttribute("height", m_Texture->GetTexture()->GetHeight());
 	}
