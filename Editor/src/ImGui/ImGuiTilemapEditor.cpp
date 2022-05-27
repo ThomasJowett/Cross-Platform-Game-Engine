@@ -170,7 +170,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			false, window_flags_image);
 		const ImVec2 p = ImGui::GetCursorScreenPos();
 
-		
+
 		ImGui::Image(tilemap.tileset->GetSubTexture()->GetTexture(), displaySize);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -192,20 +192,53 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 
 		ImVec2 spriteSize((float)tilemap.tileset->GetSubTexture()->GetSpriteWidth(), (float)tilemap.tileset->GetSubTexture()->GetSpriteHeight());
 
-		static bool drawrect = false;
 		if (ImGui::IsItemHovered())
 		{
+			static float beginClickPosX;
+			static float beginClickPosY;
+			static bool beginClick = false;
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
 			{
-				float clickPosX = ImGui::GetMousePos().x - p.x;
-				float clickPosY = ImGui::GetMousePos().y - p.y;
-				size_t cellX = (size_t)std::floor(clickPosX / tilemap.tileset->GetSubTexture()->GetSpriteWidth());
-				size_t cellY = (size_t)std::floor(clickPosY / tilemap.tileset->GetSubTexture()->GetSpriteHeight());
+				beginClickPosX = ImGui::GetMousePos().x - p.x;
+				beginClickPosY = ImGui::GetMousePos().y - p.y;
+				size_t cellX = (size_t)std::floor(beginClickPosX / tilemap.tileset->GetSubTexture()->GetSpriteWidth());
+				size_t cellY = (size_t)std::floor(beginClickPosY / tilemap.tileset->GetSubTexture()->GetSpriteHeight());
 				if (!ImGui::GetIO().KeyCtrl)
 				{
 					std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
 				}
 				m_SelectedTiles[cellY][cellX] = !m_SelectedTiles[cellY][cellX];
+				beginClick = true;
+			}
+
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				beginClick = false;
+			}
+
+			if (ImGui::IsMouseDragging(ImGuiMouseButton_Left))
+			{
+				float currentClickPosX = ImGui::GetMousePos().x - p.x;
+				float currentClickPosY = ImGui::GetMousePos().y - p.y;
+
+				size_t cellXMin = (size_t)std::floor(std::min(beginClickPosX, currentClickPosX) / tilemap.tileset->GetSubTexture()->GetSpriteWidth());
+				size_t cellYMin = (size_t)std::floor(std::min(beginClickPosY, currentClickPosY) / tilemap.tileset->GetSubTexture()->GetSpriteHeight());
+
+				size_t cellXMax = (size_t)std::ceil(std::max(beginClickPosX, currentClickPosX) / tilemap.tileset->GetSubTexture()->GetSpriteWidth());
+				size_t cellYMax = (size_t)std::ceil(std::max(beginClickPosY, currentClickPosY) / tilemap.tileset->GetSubTexture()->GetSpriteHeight());
+
+				if (!ImGui::GetIO().KeyCtrl)
+				{
+					std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
+				}
+
+				for (size_t i = cellYMin; i < cellYMax; i++)
+				{
+					for (size_t j = cellXMin; j < cellXMax; j++)
+					{
+						m_SelectedTiles[i][j] = true;
+					}
+				}
 			}
 		}
 		for (size_t i = 0; i < m_SelectedTiles.size(); i++)
@@ -224,5 +257,4 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 
 		ImGui::EndChild();
 	}
-	// TODO: display the tileset pallette
 }
