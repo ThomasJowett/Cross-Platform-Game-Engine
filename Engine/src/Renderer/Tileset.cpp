@@ -5,6 +5,8 @@
 #include "Core/Colour.h"
 #include "Utilities/SerializationUtils.h"
 
+#include <limits>
+
 Tileset::Tileset(const std::filesystem::path& filepath)
 {
 	Load(filepath);
@@ -77,7 +79,7 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 			{
 				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
 
-				uint32_t startFrame = MAXINT32;
+				uint32_t startFrame = std::numeric_limits<uint32_t>::max();
 				uint32_t endFrame = 0;
 
 				float duration = 0.0f;
