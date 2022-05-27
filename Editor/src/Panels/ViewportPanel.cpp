@@ -586,6 +586,17 @@ void ViewportPanel::OnImGuiRender()
 					if (SceneManager::GetSceneState() != SceneState::Edit && rigidBody2DComp)
 					{
 						rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotation[2]);
+
+						if (SceneManager::GetSceneState() == SceneState::SimulatePause)
+						{
+							Vector2f position;
+							float angle;
+
+							rigidBody2DComp->GetTransform(position, angle);
+							transformComp.position.x = position.x;
+							transformComp.position.y = position.y;
+							transformComp.rotation.z = angle;
+						}
 					}
 					else
 					{

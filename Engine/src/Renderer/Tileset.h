@@ -16,6 +16,7 @@ class Tileset
 public:
 	Tileset() = default;
 	Tileset(const std::filesystem::path& filepath);
+	bool Load();
 	bool Load(const std::filesystem::path& filepath);
 	bool Save() const;
 	bool Save(const std::filesystem::path& filepath) const;

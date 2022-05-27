@@ -56,7 +56,7 @@ class MouseButtonEvent : public Event
 public:
 	inline int GetMouseButton() const { return m_button; }
 
-	virtual std::string to_string() const = 0;
+	virtual std::string to_string() const override = 0;
 
 	EVENT_CLASS_CATEGORY(EventCategory::MOUSE | EventCategory::INPUT)
 protected:

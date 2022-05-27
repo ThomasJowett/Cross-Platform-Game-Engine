@@ -16,7 +16,7 @@ struct TilemapComponent
 	Ref<Tileset> tileset;
 	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
 
-	uint32_t** tiles = nullptr;
+	std::vector<std::vector<uint32_t>> tiles;
 	uint32_t tilesWide = 0;
 	uint32_t tilesHigh = 0;
 
@@ -25,13 +25,12 @@ struct TilemapComponent
 	TilemapComponent() = default;
 	TilemapComponent(const TilemapComponent&) = default;
 	TilemapComponent(Orientation orientation, uint32_t tilesWide, uint32_t tilesHigh)
-		:orientation(orientation), tilesWide(tilesWide), tilesHigh(tilesHigh) 
+		:orientation(orientation), tilesWide(tilesWide), tilesHigh(tilesHigh),
+		tiles(tilesHigh)
 	{
-		tiles = new uint32_t * [tilesHigh];
-
-		for (uint32_t i = 0; i < tilesHigh; i++)
+		for (auto& row : tiles)
 		{
-			tiles[i] = new uint32_t[tilesWide];
+			row.resize(tilesWide);
 		}
 	}
 
@@ -43,13 +42,7 @@ private:
 		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Tiles Wide", tilesWide));
 		archive(cereal::make_nvp("Tiles High", tilesHigh));
-		std::vector<std::vector<uint32_t>> arr;
-		for (size_t i = 0; i < tilesHigh; i++)
-		{
-			arr.push_back(std::vector<uint32_t>());
-			arr[i].assign(tiles[i], tiles[i] + tilesWide);
-		}
-		archive(cereal::make_nvp("Tiles", arr));
+		archive(cereal::make_nvp("Tiles", tiles));
 
 		std::string relativePath;
 		if (tileset && !tileset->GetFilepath().empty())
@@ -63,15 +56,7 @@ private:
 		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Tiles Wide", tilesWide));
 		archive(cereal::make_nvp("Tiles High", tilesHigh));
-		std::vector<std::vector<uint32_t>> arr;
-		archive(cereal::make_nvp("Tiles", arr));
-		tiles = new uint32_t * [tilesHigh];
-		for (size_t i = 0; i < tilesHigh; i++)
-		{
-			tiles[i] = new uint32_t[tilesWide];
-			std::memcpy(tiles[i], arr[i].data(), tilesWide * sizeof(uint32_t));
-		}
-
+		archive(cereal::make_nvp("Tiles", tiles));
 		std::string relativePath;
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())

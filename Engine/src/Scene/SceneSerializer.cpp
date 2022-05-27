@@ -158,24 +158,13 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		AnimatedSpriteComponent& component = entity.GetComponent<AnimatedSpriteComponent>();
 
 		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
-		tinyxml2::XMLElement* pAnimatorElement = pAnimatedSpriteElement->InsertNewChildElement("Animator");
 
 		if (component.tileset)
 			SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tileset"), component.tileset->GetFilepath());
 
-		/*pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
-		pAnimatorElement->SetAttribute("SpriteHeight", component.animator.GetSpriteSheet()->GetSpriteHeight());
-
-		for (Animation& animation : component.animator.GetAnimations())
-		{
-			tinyxml2::XMLElement* pAnimationElement = pAnimatorElement->InsertNewChildElement("Animation");
-			pAnimationElement->SetAttribute("Name", animation.GetName().c_str());
-			pAnimationElement->SetAttribute("StartFrame", animation.GetStartFrame());
-			pAnimationElement->SetAttribute("FrameCount", animation.GetFrameCount());
-			pAnimationElement->SetAttribute("FrameTime", animation.GetFrameTime());
-		}*/
-
 		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
+
+		pAnimatedSpriteElement->SetAttribute("CurrentAnimation", component.GetCurrentAnimationName().c_str());
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -522,6 +511,37 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Texture"), component.texture);
 	}
 
+	// Animated Sprite ---------------------------------------------------------------------------------------------------
+	tinyxml2::XMLElement* pAnimatedSpriteElement = pEntityElement->FirstChildElement("AnimatedSprite");
+
+	if (pAnimatedSpriteElement)
+	{
+		AnimatedSpriteComponent& component = entity.AddComponent<AnimatedSpriteComponent>();
+
+		SerializationUtils::Decode(pAnimatedSpriteElement->FirstChildElement("Tint"), component.tint);
+
+		tinyxml2::XMLElement* pTilesetElement = pAnimatedSpriteElement->FirstChildElement("Tileset");
+
+		if (pTilesetElement)
+		{
+			const char* tilesetChar = pTilesetElement->Attribute("Filepath");
+
+			if (tilesetChar)
+			{
+				std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
+				if (!tilesetfilepath.empty())
+				{
+					component.tileset = CreateRef<Tileset>();
+					component.tileset->Load(tilesetfilepath);
+				}
+			}
+		}
+
+		const char* currentAnimation = pAnimatedSpriteElement->Attribute("CurrentAnimation");
+		if (currentAnimation)
+			component.SelectAnimation(currentAnimation);
+	}
+
 	// Static Mesh -------------------------------------------------------------------------------------------------------
 	tinyxml2::XMLElement* pStaticMeshElement = pEntityElement->FirstChildElement("StaticMesh");
 
@@ -711,11 +731,11 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			std::vector<std::string> seperatedData = SplitString(text, ',');
 
 			ASSERT((uint32_t)seperatedData.size() == component.tilesWide * component.tilesHigh, "Data not the correct length");
-			component.tiles = new uint32_t * [component.tilesHigh];
+			component.tiles.resize(component.tilesHigh);
 
 			for (uint32_t i = 0; i < component.tilesHigh; i++)
 			{
-				component.tiles[i] = new uint32_t[component.tilesWide];
+				component.tiles[i].resize(component.tilesWide);
 				for (uint32_t j = 0; j < component.tilesWide; j++)
 				{
 					component.tiles[i][j] = (uint32_t)atoi(seperatedData[(i * (static_cast<size_t>(component.tilesWide))) + j].c_str());

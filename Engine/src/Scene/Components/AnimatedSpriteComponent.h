@@ -12,7 +12,17 @@ struct AnimatedSpriteComponent
 	Ref<Tileset> tileset;
 
 	AnimatedSpriteComponent() = default;
+
+	void SelectAnimation(const std::string& animationName)
+	{
+		if (tileset)
+			tileset->SelectAnimation(animationName);
+		m_CurrentAnimation = animationName;
+	}
+
+	const std::string GetCurrentAnimationName() const { return m_CurrentAnimation; }
 private:
+	std::string m_CurrentAnimation;
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
@@ -22,11 +32,13 @@ private:
 		if (tileset && !tileset->GetFilepath().empty())
 			relativePath = FileUtils::RelativePath(tileset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
+		archive(tint);
 		std::string relativePath;
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())
@@ -37,5 +49,8 @@ private:
 		{
 			tileset = nullptr;
 		}
+		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
+		if (tileset)
+			tileset->SelectAnimation(m_CurrentAnimation);
 	}
 };

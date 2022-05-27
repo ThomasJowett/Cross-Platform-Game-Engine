@@ -40,9 +40,8 @@ static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& regis
 }
 
 Scene::Scene(std::filesystem::path filepath)
-	:m_Filepath(filepath)
+	:m_Filepath(filepath), m_SceneName(filepath.filename().string())
 {
-	m_SceneName = filepath.filename().string();
 	m_SceneName = m_SceneName.substr(0, m_SceneName.find_last_of('.'));
 }
 
@@ -378,13 +377,12 @@ void Scene::OnFixedUpdate()
 	{
 		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
 
-		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, const auto& rigidBodyComp)
 			{
-				b2Body* body = (b2Body*)rigidBodyComp.runtimeBody;
-				const b2Vec2& position = body->GetPosition();
+				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
 				transformComp.position.y = position.y;
-				transformComp.rotation.z = (float)body->GetAngle();
+				transformComp.rotation.z = (float)rigidBodyComp.runtimeBody->GetAngle();
 			});
 	}
 
@@ -419,8 +417,7 @@ void Scene::OnFixedUpdate()
 	{
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
-				b2Body* body = (b2Body*)rigidBodyComp.runtimeBody;
-				body->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
 

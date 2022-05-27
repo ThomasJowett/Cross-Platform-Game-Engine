@@ -50,17 +50,17 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 		std::vector<float> verticesList;
 
-		for (uint32_t i = 0; i < vertexCount; i++)
+		for (uint32_t j = 0; j < vertexCount; j++)
 		{
-			verticesList.push_back((float)vertices[i].x);
-			verticesList.push_back((float)vertices[i].y);
-			verticesList.push_back((float)vertices[i].z);
+			verticesList.push_back((float)vertices[j].x);
+			verticesList.push_back((float)vertices[j].y);
+			verticesList.push_back((float)vertices[j].z);
 
 			if (normals)
 			{
-				verticesList.push_back((float)normals[i].x);
-				verticesList.push_back((float)normals[i].y);
-				verticesList.push_back((float)normals[i].z);
+				verticesList.push_back((float)normals[j].x);
+				verticesList.push_back((float)normals[j].y);
+				verticesList.push_back((float)normals[j].z);
 			}
 			else
 			{
@@ -71,9 +71,9 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 			if (tangents)
 			{
-				verticesList.push_back((float)tangents[i].x);
-				verticesList.push_back((float)tangents[i].y);
-				verticesList.push_back((float)tangents[i].z);
+				verticesList.push_back((float)tangents[j].x);
+				verticesList.push_back((float)tangents[j].y);
+				verticesList.push_back((float)tangents[j].z);
 			}
 			else
 			{
@@ -84,8 +84,8 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 			if (texcoords)
 			{
-				verticesList.push_back((float)texcoords[i].x);
-				verticesList.push_back((float)texcoords[i].y);
+				verticesList.push_back((float)texcoords[j].x);
+				verticesList.push_back((float)texcoords[j].y);
 			}
 			else
 			{
@@ -98,9 +98,9 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 		// get the indices
 		uint32_t indexCount = (uint32_t)geom.getIndexCount();
-		for (uint32_t i = 0; i < indexCount; i++)
+		for (uint32_t j = 0; j < indexCount; j++)
 		{
-			uint32_t index = i * 3;
+			uint32_t index = j * 3;
 			indicesList.push_back(index);
 			indicesList.push_back(index + 1);
 			indicesList.push_back(index + 2);

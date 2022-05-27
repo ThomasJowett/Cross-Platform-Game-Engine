@@ -59,7 +59,7 @@ void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry
 	{
 		entt::entity previousSibling = parentHierarchyComp.firstChild;
 		HierarchyComponent* currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
-		while (currentHierachyComp != nullptr && currentHierachyComp->nextSibling != entt::null)
+		while (currentHierachyComp && currentHierachyComp->nextSibling != entt::null)
 		{
 			previousSibling = currentHierachyComp->nextSibling;
 			currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);

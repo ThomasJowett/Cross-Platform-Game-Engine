@@ -12,8 +12,6 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 
 	std::transform(extString.begin(), extString.end(), extString.begin(), ::tolower);
 
-	const char* ext = extString.c_str();
-
 	if (extString == ".fbx")
 	{
 		FbxImporter::ImportAssets(asset, destination);

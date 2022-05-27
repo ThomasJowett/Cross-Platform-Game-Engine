@@ -10,6 +10,11 @@ Tileset::Tileset(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+bool Tileset::Load()
+{
+	return Load(m_Filepath);
+}
+
 bool Tileset::Load(const std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
@@ -75,7 +80,7 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 				uint32_t startFrame = MAXINT32;
 				uint32_t endFrame = 0;
 
-				float duration;
+				float duration = 0.0f;
 
 				while (pFrame)
 				{
@@ -129,17 +134,23 @@ bool Tileset::Save(const std::filesystem::path& filepath) const
 
 	if (m_Texture)
 	{
-		pImage->SetAttribute("source", SerializationUtils::RelativePath(m_Texture->GetTexture()->GetFilepath()).c_str());
+		pImage->SetAttribute("source", FileUtils::RelativePath(m_Texture->GetTexture()->GetFilepath(), m_Filepath).string().c_str());
 		pImage->SetAttribute("width", m_Texture->GetTexture()->GetWidth());
 		pImage->SetAttribute("height", m_Texture->GetTexture()->GetHeight());
 	}
 
-	for (const Tile& tile : m_Tiles)
+	for (auto& [name, animation] : m_Animations)
 	{
 		tinyxml2::XMLElement* pTile = pRoot->InsertNewChildElement("tile");
 
-		pTile->SetAttribute("id", tile.id);
-		pTile->SetAttribute("probability", tile.probability);
+		pTile->SetAttribute("id", animation.GetStartFrame());
+		tinyxml2::XMLElement* pAnimation = pTile->InsertNewChildElement("animation");
+		for (size_t i = 0; i < animation.GetFrameCount(); i++)
+		{
+			tinyxml2::XMLElement* pFrame = pAnimation->InsertNewChildElement("frame");
+			pFrame->SetAttribute("tileid", animation.GetStartFrame() + i);
+			pFrame->SetAttribute("duration", animation.GetFrameTime());
+		}
 	}
 
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
@@ -197,13 +208,9 @@ void Tileset::Animate(float deltaTime)
 
 void Tileset::SelectAnimation(const std::string& animationName)
 {
-	for (auto& [name, animation] : m_Animations)
+	if (m_Animations.find(animationName) != m_Animations.end())
 	{
-		if (name == animationName)
-		{
-			m_Texture->SetCurrentCell(animation.GetStartFrame());
-			m_CurrentAnimation = animationName;
-			break;
-		}
+		m_Texture->SetCurrentCell(m_Animations.at(animationName).GetStartFrame());
+		m_CurrentAnimation = animationName;
 	}
 }

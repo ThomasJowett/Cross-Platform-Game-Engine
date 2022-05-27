@@ -13,13 +13,13 @@ public:
 
 	float GetAnimationLength();
 
-	uint32_t GetStartFrame() { return m_StartFrame; }
+	uint32_t GetStartFrame() const { return m_StartFrame; }
 	void SetStartFrame(uint32_t startFrame);
 
-	uint32_t GetFrameCount() { return m_FrameCount; }
+	uint32_t GetFrameCount() const { return m_FrameCount; }
 	void SetFrameCount(uint32_t frameCount) { m_FrameCount = frameCount; }
 
-	float GetFrameTime() { return m_HoldTime; }
+	float GetFrameTime() const { return m_HoldTime; }
 	void SetFrameTime(float frameTime) { m_HoldTime = frameTime; }
 
 	void SetTexture(Ref<SubTexture2D> texture) { m_Texture = texture; }

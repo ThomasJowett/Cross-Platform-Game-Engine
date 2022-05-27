@@ -16,4 +16,9 @@ private:
 	DrawMode m_DrawMode = DrawMode::Stamp;
 
 	std::vector<std::vector<bool>> m_SelectedTiles;
+
+	uint32_t m_Rows = 0;
+	uint32_t m_Columns = 0;
+
+	std::filesystem::file_time_type m_CurrentFileTime;
 };

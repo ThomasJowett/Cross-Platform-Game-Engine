@@ -635,13 +635,14 @@ void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& s
 
 void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilemapComp, int entityId)
 {
+	PROFILE_FUNCTION();
 	for (size_t i = 0; i < tilemapComp.tilesHigh; i++)
 	{
 		for (size_t j = 0; j < tilemapComp.tilesWide; j++)
 		{
 			if (tilemapComp.tiles[i][j] == 0)
 				continue;
-
+	
 			if (tilemapComp.tileset)
 			{
 				tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);

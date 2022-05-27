@@ -16,8 +16,11 @@ static size_t ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 
 void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
 {
-	ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
-	ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
+	if (texture)
+	{
+		ImTextureID my_tex_id = (void*)(uint64_t)texture->GetRendererID();
+		ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

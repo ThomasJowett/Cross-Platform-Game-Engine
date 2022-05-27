@@ -12,16 +12,36 @@
 
 void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 {
-	if ((size_t)(tilemap.tileset->GetSubTexture()->GetCellsTall()) != m_SelectedTiles.size()
-		|| (size_t)(tilemap.tileset->GetSubTexture()->GetCellsWide()) != m_SelectedTiles[0].size())
+	if (tilemap.tileset)
 	{
-		m_SelectedTiles.clear();
-		m_SelectedTiles.resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsTall()));
-		for (size_t i = 0; i < tilemap.tileset->GetSubTexture()->GetCellsTall(); i++)
+		bool updateSelectedTiles = false;
+		if (m_Rows != tilemap.tileset->GetSubTexture()->GetCellsTall())
+			updateSelectedTiles = true;
+		else if (m_Columns != tilemap.tileset->GetSubTexture()->GetCellsWide())
+			updateSelectedTiles = true;
+
+		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
+
+		if (lastWrittenTime > m_CurrentFileTime)
 		{
-			m_SelectedTiles[i].resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsWide()));
+			tilemap.tileset->Load();
+			updateSelectedTiles = true;
+			m_CurrentFileTime = lastWrittenTime;
+		}
+
+		if (updateSelectedTiles)
+		{
+			m_SelectedTiles.clear();
+			m_SelectedTiles.resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsTall()));
+			for (size_t i = 0; i < tilemap.tileset->GetSubTexture()->GetCellsTall(); i++)
+			{
+				m_SelectedTiles[i].resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsWide()));
+			}
+			m_Rows = tilemap.tileset->GetSubTexture()->GetCellsTall();
+			m_Columns = tilemap.tileset->GetSubTexture()->GetCellsWide();
 		}
 	}
+
 	if (ImGui::Combo("Orientation", (int*)&tilemap.orientation,
 		"Orthogonal\0"
 		"Isometric\0"
@@ -34,44 +54,30 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	int tilesWide = tilemap.tilesWide;
 	if (ImGui::DragInt("Width", &tilesWide, 1.0f, 0, 1000))
 	{
-		//TODO: tilemap editor needs to resize the tilemap
 		tilemap.tilesWide = tilesWide;
 
-		//For now the data is just cleared and reset
-		//-------------
-		tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
-
-		for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
+		for (auto& row : tilemap.tiles)
 		{
-			tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
-			for (uint32_t j = 0; j < tilemap.tilesWide; j++)
-			{
-				tilemap.tiles[i][j] = 0;
-			}
+			row.resize(tilesWide);
 		}
-		//-----------
+
 		SceneManager::CurrentScene()->MakeDirty();
 	}
 
 	int tilesHigh = tilemap.tilesHigh;
 	if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
 	{
-		//TODO: tilemap editor needs to resize the tilemap
-		tilemap.tilesHigh = tilesHigh;
 
-		//For now the data is just cleared and reset
-		//-------------
-		tilemap.tiles = new uint32_t * [tilemap.tilesHigh];
-
-		for (uint32_t i = 0; i < tilemap.tilesHigh; i++)
+		tilemap.tiles.resize(tilesHigh);
+		if (tilemap.tilesHigh < tilesHigh)
 		{
-			tilemap.tiles[i] = new uint32_t[tilemap.tilesWide];
-			for (uint32_t j = 0; j < tilemap.tilesWide; j++)
+			for (size_t i = tilemap.tilesHigh; i < tilesHigh; i++)
 			{
-				tilemap.tiles[i][j] = 0;
+				tilemap.tiles[i].resize(tilemap.tilesWide);
 			}
 		}
-		//-----------
+		tilemap.tilesHigh = tilesHigh;
+
 		SceneManager::CurrentScene()->MakeDirty();
 	}
 
@@ -94,6 +100,14 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			ImGui::Tooltip(file.string().c_str());
 		}
 		ImGui::EndCombo();
+	}
+	if (tilemap.tileset)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_PEN_SQUARE))
+		{
+			ViewerManager::OpenViewer(tilemap.tileset->GetFilepath());
+		}
 	}
 
 	bool selected = false;
@@ -138,19 +152,25 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	if (!selected)
 		ImGui::PopStyleColor();
 
-	float availableX = ImGui::GetContentRegionAvail().x;
-
-	//float ratio = (float)tilemap.tileset->GetSubTexture()->GetTexture()->GetWidth() / availableX;
-
 	if (tilemap.tileset)
 	{
-		ImVec2 displaySize = ImVec2((float)tilemap.tileset->GetSubTexture()->GetTexture()->GetWidth(),
-			(float)tilemap.tileset->GetSubTexture()->GetTexture()->GetHeight());
+		ImVec2 displaySize;
+		if (tilemap.tileset->GetSubTexture()->GetTexture())
+		{
+			displaySize = ImVec2((float)tilemap.tileset->GetSubTexture()->GetTexture()->GetWidth(),
+				(float)tilemap.tileset->GetSubTexture()->GetTexture()->GetHeight());
+		}
+		else
+		{
+			displaySize = ImVec2(100, 100);
+		}
 		ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_HorizontalScrollbar;
 		ImGui::BeginChild("Tileset Texture",
 			ImVec2(ImGui::GetContentRegionAvail().x, displaySize.y + 5.0f),
 			false, window_flags_image);
 		const ImVec2 p = ImGui::GetCursorScreenPos();
+
+		
 		ImGui::Image(tilemap.tileset->GetSubTexture()->GetTexture(), displaySize);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -158,13 +178,13 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		const ImU32 selectionColour = ImColor(ImVec4(0.1f, 0.1f, 0.5f, 0.5f));
 		const ImU32 selectionColourOutline = ImColor(ImVec4(0.2f, 0.2f, 0.7f, 0.7f));
 		//Horizontal Lines
-		for (uint32_t i = 0; i <= tilemap.tileset->GetSubTexture()->GetCellsTall(); i++)
+		for (uint32_t i = 0; i <= m_Rows; i++)
 		{
 			float y = (float)(tilemap.tileset->GetSubTexture()->GetSpriteHeight() * i);
 			draw_list->AddLine(ImVec2(p.x, p.y + y), ImVec2(p.x + displaySize.x, p.y + y), lineColour);
 		}
 		//Vertical Lines
-		for (uint32_t i = 0; i <= tilemap.tileset->GetSubTexture()->GetCellsWide(); i++)
+		for (uint32_t i = 0; i <= m_Columns; i++)
 		{
 			float x = (float)(tilemap.tileset->GetSubTexture()->GetSpriteWidth() * i);
 			draw_list->AddLine(ImVec2(p.x + x, p.y), ImVec2(p.x + x, p.y + displaySize.y), lineColour);
@@ -183,12 +203,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 				size_t cellY = (size_t)std::floor(clickPosY / tilemap.tileset->GetSubTexture()->GetSpriteHeight());
 				if (!ImGui::GetIO().KeyCtrl)
 				{
-					m_SelectedTiles.clear();
-					m_SelectedTiles.resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsTall()));
-					for (size_t i = 0; i < m_SelectedTiles.size(); i++)
-					{
-						m_SelectedTiles[i].resize((size_t)(tilemap.tileset->GetSubTexture()->GetCellsWide()));
-					}
+					std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
 				}
 				m_SelectedTiles[cellY][cellX] = !m_SelectedTiles[cellY][cellX];
 			}

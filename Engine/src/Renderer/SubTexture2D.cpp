@@ -11,8 +11,8 @@ SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, 
 {
 	if (m_Texture)
 	{
-		m_CellsWide = m_Texture->GetWidth() / spriteWidth;
-		m_CellsTall = m_Texture->GetHeight() / spriteHeight;
+		m_CellsWide = std::ceil(m_Texture->GetWidth() / spriteWidth);
+		m_CellsTall = std::ceil(m_Texture->GetHeight() / spriteHeight);
 	}
 
 	SetCurrentCell(currentCell);
@@ -51,8 +51,8 @@ void SubTexture2D::RecalculateCellsDimensions()
 {
 	if (m_Texture)
 	{
-		m_CellsWide = m_Texture->GetWidth() / m_SpriteWidth;
-		m_CellsTall = m_Texture->GetHeight() / m_SpriteHeight;
+		m_CellsWide = std::ceil(m_Texture->GetWidth() / m_SpriteWidth);
+		m_CellsTall = std::ceil(m_Texture->GetHeight() / m_SpriteHeight);
 	}
 	CalculateTextureCoordinates();
 }
@@ -61,7 +61,7 @@ void SubTexture2D::RecalculateCellsDimensions()
 
 void SubTexture2D::CalculateTextureCoordinates()
 {
-	if (m_Texture)
+	if (m_Texture && m_CellsWide > 0)
 	{
 		div_t div = std::div((int)m_CurrentCell, (int)m_CellsWide);
 		uint32_t cellCoordX = div.rem;

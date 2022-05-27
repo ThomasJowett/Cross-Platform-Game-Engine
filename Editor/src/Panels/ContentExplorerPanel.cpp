@@ -1108,6 +1108,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableNextColumn();
 						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 						ImGui::BeginGroup();
+						
 						ImGui::PushFont(Fonts::Icons);
 						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
 						{
@@ -1131,6 +1132,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 						ImGui::PopFont();
 						ImGui::TextWrapped("%s", dirName.c_str());
+						
 						ImGui::EndGroup();
 						ItemContextMenu(i, true, dirName);
 
@@ -1151,7 +1153,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						std::string filename = m_Files[i].filename().string();
 
 						ImGui::BeginGroup();
-
+						ImGui::PushID(i);
 						ImGui::PushFont(Fonts::Icons);
 
 						// try to get the image to display the thumbnail
@@ -1189,7 +1191,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						CreateDragDropSource(i);
 						ImGui::TextWrapped("%s", filename.c_str());
 						ImGui::EndGroup();
-
+						ImGui::PopID();
 						if (ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
 							OpenAllSelectedItems();

@@ -7,11 +7,11 @@ static std::map<uint32_t, Ref<Tileset>> s_Tilesets;
 
 bool ParseCsv(const std::string& data, TilemapComponent& tilemapComp)
 {
-	tilemapComp.tiles = new uint32_t * [tilemapComp.tilesHigh];
+	tilemapComp.tiles.reserve(tilemapComp.tilesHigh);
 
 	for (uint32_t i = 0; i < tilemapComp.tilesHigh; i++)
 	{
-		tilemapComp.tiles[i] = new uint32_t[tilemapComp.tilesWide];
+		tilemapComp.tiles[i].reserve(tilemapComp.tilesWide);
 	}
 
 	std::vector<std::string> seperatedData = SplitString(data, ',');
@@ -109,7 +109,6 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 			if (tilemapComp.tiles[i][j] == 0)
 				continue;
 
-			Ref<Tileset> tileset;
 			// find tileset to use
 			uint32_t gid = 1;
 			for (auto& [id, tileset] : s_Tilesets)
@@ -123,7 +122,7 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 					break;
 				}
 			}
-			tileset = s_Tilesets.at(gid);
+			tilemapComp.tileset = s_Tilesets.at(gid);
 		}
 	}
 

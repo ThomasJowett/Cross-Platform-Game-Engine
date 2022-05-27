@@ -156,3 +156,12 @@ void RigidBody2DComponent::SetTransform(const Vector2f& position, const float& a
 		runtimeBody->SetLinearVelocity(b2Vec2_zero);
 	}
 }
+
+void RigidBody2DComponent::GetTransform(Vector2f& position, float& rotation)
+{
+	if (runtimeBody)
+	{
+		position = { (float)runtimeBody->GetPosition().x, (float)runtimeBody->GetPosition().y };
+		rotation = (float)runtimeBody->GetAngle();
+	}
+}

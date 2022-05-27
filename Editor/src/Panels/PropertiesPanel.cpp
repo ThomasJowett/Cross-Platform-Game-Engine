@@ -163,7 +163,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}, false);
 
 	//Sprite--------------------------------------------------------------------------------------------------------------
-	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [](auto& sprite)
+	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [&](auto& sprite)
 		{
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
 			float* tilingFactor = &sprite.tilingFactor;
@@ -172,6 +172,16 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
+
+			if (ImGui::Button("Pixel Perfect"))
+			{
+				if (sprite.texture)
+				{
+					entity.GetTransform().scale.x = sprite.texture->GetWidth();
+					entity.GetTransform().scale.y = sprite.texture->GetHeight();
+				}
+			}
+			ImGui::Tooltip("Set Scale to pixel perfect scaling");
 
 			if (ImGui::Texture2DEdit("Texture", sprite.texture))
 			{
@@ -185,7 +195,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	//Animated Sprite--------------------------------------------------------------------------------------------------------------
-	DrawComponent<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity, [](auto& sprite)
+	DrawComponent<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity, [&](auto& sprite)
 		{
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
 
@@ -194,6 +204,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
+			if (ImGui::Button("Pixel Perfect"))
+			{
+				if (sprite.tileset)
+				{
+					entity.GetTransform().scale.x = sprite.tileset->GetSubTexture()->GetSpriteWidth();
+					entity.GetTransform().scale.y = sprite.tileset->GetSubTexture()->GetSpriteHeight();
+				}
+			}
+			ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			std::string tilesetName;
 			if (sprite.tileset)
 				tilesetName = sprite.tileset->GetFilepath().filename().string();
@@ -218,7 +237,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				ImGui::SameLine();
 
-				if (ImGui::Button(ICON_FA_TH))
+				if (ImGui::Button(ICON_FA_PEN_SQUARE"##AnimatedSprite"))
 				{
 					ViewerManager::OpenViewer(sprite.tileset->GetFilepath());
 				}
@@ -233,7 +252,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					{
 						if (ImGui::Selectable(name.c_str()))
 						{
-							sprite.tileset->SelectAnimation(name);
+							sprite.SelectAnimation(name);
 							SceneManager::CurrentScene()->MakeDirty();
 						}
 					}
@@ -765,7 +784,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::EndCombo();
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_FILE_CODE))
+			if (ImGui::Button(ICON_FA_PEN_SQUARE"##LuaScript"))
 			{
 				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
 			}

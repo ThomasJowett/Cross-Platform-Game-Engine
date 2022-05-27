@@ -42,6 +42,7 @@ struct RigidBody2DComponent
 	Vector2f GetLinearVelocity();
 
 	void SetTransform(const Vector2f& position, const float& angle);
+	void GetTransform(Vector2f& position, float& rotation);
 
 private:
 	friend cereal::access;
