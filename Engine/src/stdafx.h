@@ -33,6 +33,7 @@
 #include "math/Quaternion.h"
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
+#include "math/Vector4f.h"
 
 // Debug
 #include "Logging/Instrumentor.h"

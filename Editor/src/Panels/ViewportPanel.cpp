@@ -16,6 +16,7 @@
 #include "Scene/Components/Components.h"
 
 #include "ImGui/ImGuizmo.h"
+#include "Utilities/MathUtils.h"
 
 ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor),
@@ -143,7 +144,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
-			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();			
 
 			if (selectedEntity.HasComponent<CameraComponent>())
 			{
@@ -206,25 +207,56 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
 
-				for (size_t i = 0; i < tilemapComp.tilesHigh + 1; i++)
+				switch (tilemapComp.orientation)
 				{
-					Vector3f start(0.0f, -(float)i, 0.001f);
-					Vector3f end((float)(tilemapComp.tilesWide), -(float)i, 0.001f);
+				case TilemapComponent::Orientation::orthogonal:
 
-					start = transformComp.GetWorldMatrix() * start;
-					end = transformComp.GetWorldMatrix() * end;
+					for (size_t i = 0; i < tilemapComp.tilesHigh + 1; i++)
+					{
+						Vector3f start(0.0f, -(float)i, 0.001f);
+						Vector3f end((float)(tilemapComp.tilesWide), -(float)i, 0.001f);
 
-					Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+						start = transformComp.GetWorldMatrix() * start;
+						end = transformComp.GetWorldMatrix() * end;
+
+						Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+					}
+					for (size_t i = 0; i < tilemapComp.tilesWide + 1; i++)
+					{
+						Vector3f start((float)i, 0.0f, 0.001f);
+						Vector3f end((float)i, -(float)(tilemapComp.tilesHigh), 0.001f);
+
+						start = transformComp.GetWorldMatrix() * start;
+						end = transformComp.GetWorldMatrix() * end;
+
+						Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+					}
+					break;
+				case TilemapComponent::Orientation::isometric:
+					break;
+				case TilemapComponent::Orientation::hexagonal:
+					break;
+				case TilemapComponent::Orientation::staggered:
+					break;
+				default:
+					break;
 				}
-				for (size_t i = 0; i < tilemapComp.tilesWide + 1; i++)
+
+				if (m_TilemapEditor->HasSelection())
 				{
-					Vector3f start((float)i, 0.0f, 0.001f);
-					Vector3f end((float)i, -(float)(tilemapComp.tilesHigh), 0.001f);
+					// Calculate which tilemap cell is hovererd
+					if (tilemapComp.orientation == TilemapComponent::Orientation::orthogonal)
+					{
+						Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+						Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
+						Line3D ray = MathUtils::ComputeCameraRay(cameraViewMat, cameraProjectionMat, m_RelativeMousePosition, Vector2f(m_ViewportSize.x, m_ViewportSize.y));
 
-					start = transformComp.GetWorldMatrix() * start;
-					end = transformComp.GetWorldMatrix() * end;
-
-					Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+						// DEBUG draw indigo quad
+						Renderer2D::DrawQuad(ray.p, Vector2f(1.0f, 1.0f), Colours::INDIGO);
+						//ImGuizmo::
+						//m_RelativeMousePosition
+					}
+					//m_TilemapEditor->OnRender()
 				}
 			}
 		}
@@ -634,6 +666,7 @@ void ViewportPanel::OnImGuiRender()
 			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);
 			ImGui::Text("Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
 		}
+
 		Renderer2D::ResetStats();
 	}
 	ImGui::End();

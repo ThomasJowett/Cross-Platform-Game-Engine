@@ -12,6 +12,9 @@ class TilemapEditor
 	};
 public:
 	void OnImGuiRender(TilemapComponent& tilemap);
+	void OnRender();
+
+	bool HasSelection();
 private:
 	DrawMode m_DrawMode = DrawMode::Stamp;
 

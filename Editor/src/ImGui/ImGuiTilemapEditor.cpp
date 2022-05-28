@@ -258,3 +258,16 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		ImGui::EndChild();
 	}
 }
+
+bool TilemapEditor::HasSelection()
+{
+	for (size_t i = 0; i < m_SelectedTiles.size(); i++)
+	{
+		for (size_t j = 0; j < m_SelectedTiles[i].size(); j++)
+		{
+			if (m_SelectedTiles[i][j])
+				return true;
+		}
+	}
+	return false;
+}
