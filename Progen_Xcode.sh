@@ -1,2 +1,1 @@
-call vendor\bin\premake\premake5.exe xcode4
-PAUSE
+./vendor/bin/premake/premake5 xcode4
