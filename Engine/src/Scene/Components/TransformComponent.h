@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/Vector3f.h"
+#include "math/Matrix.h"
 
 #include "cereal/cereal.hpp"
 
@@ -32,7 +33,7 @@ struct TransformComponent
 		return m_ParentMatrix.ExtractRotation().EulerAngles() + rotation;
 	}
 
-	Matrix4x4 GetLocalMatrix()
+	Matrix4x4 GetLocalMatrix() const
 	{
 		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);
 	}
