@@ -5,6 +5,7 @@
 #include "Box2D/Box2D.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneGraph.h"
+#include "Utilities/Triangulation.h"
 
 #include "HierarchyComponent.h"
 #include "TransformComponent.h"
@@ -89,25 +90,31 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 	{
 		auto& polygonColliderComp = entity.GetComponent<PolygonCollider2DComponent>();
 
-		b2PolygonShape polygonShape;
-
-		b2Vec2* vertices = new b2Vec2[polygonColliderComp.vertices.size()];
-
-		for (size_t i = 0; i < polygonColliderComp.vertices.size(); i++)
+		std::vector<uint32_t> polygonIndices;
+		if (Triangulation::Triangulate(polygonColliderComp.vertices, polygonIndices))
 		{
-			vertices[i] = b2Vec2(polygonColliderComp.vertices[i].x * transformComp.scale.x + polygonColliderComp.offset.x,
-				polygonColliderComp.vertices[i].y * transformComp.scale.y + polygonColliderComp.offset.y);
+
+			for (size_t i = 0; i < polygonIndices.size(); i += 3)
+			{
+				b2PolygonShape polygonShape;
+				b2Vec2* vertices = new b2Vec2[3];
+
+				for (size_t j = 0; j < 3; j++)
+				{
+					vertices[j] = b2Vec2(polygonColliderComp.vertices[polygonIndices[i + j]].x * transformComp.scale.x + polygonColliderComp.offset.x,
+						polygonColliderComp.vertices[polygonIndices[i + j]].y * transformComp.scale.y + polygonColliderComp.offset.y);
+				}
+				polygonShape.Set(vertices, 3);
+
+				b2FixtureDef fixtureDef;
+				fixtureDef.shape = &polygonShape;
+				fixtureDef.density = polygonColliderComp.density;
+				fixtureDef.friction = polygonColliderComp.friction;
+				fixtureDef.restitution = polygonColliderComp.restitution;
+
+				body->CreateFixture(&fixtureDef);
+			}
 		}
-
-		polygonShape.Set(vertices, (int32)polygonColliderComp.vertices.size());
-
-		b2FixtureDef fixtureDef;
-		fixtureDef.shape = &polygonShape;
-		fixtureDef.density = polygonColliderComp.density;
-		fixtureDef.friction = polygonColliderComp.friction;
-		fixtureDef.restitution = polygonColliderComp.restitution;
-
-		body->CreateFixture(&fixtureDef);
 	}
 }
 

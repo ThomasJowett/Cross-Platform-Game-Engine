@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene/Components/TilemapComponent.h"
+#include "Scene/Components/TransformComponent.h"
 
 class TilemapEditor
 {
@@ -12,10 +13,12 @@ class TilemapEditor
 	};
 public:
 	void OnImGuiRender(TilemapComponent& tilemap);
-	void OnRender();
+	void OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp);
 
 	bool HasSelection();
 private:
+
+	Matrix4x4 CalculateTransform(const TransformComponent& transformComp, uint32_t x, uint32_t y);
 	DrawMode m_DrawMode = DrawMode::Stamp;
 
 	std::vector<std::vector<bool>> m_SelectedTiles;

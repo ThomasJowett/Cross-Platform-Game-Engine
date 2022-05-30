@@ -259,6 +259,26 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	}
 }
 
+void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp)
+{
+	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetParentMatrix());
+
+	uint32_t cellX = std::floor(localPosition.x);
+	uint32_t cellY = std::floor(-localPosition.y);
+
+	Matrix4x4 tileTransform = transformComp.GetParentMatrix()
+		* Matrix4x4::Translate(transformComp.position)
+		* Matrix4x4::Translate(localPosition)
+		* Matrix4x4::Rotate(transformComp.rotation)
+		* Matrix4x4::Scale(transformComp.scale);
+	
+	Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
+	if (cellX >= 0 && cellX < tilemapComp.tilesWide && cellY >= 0 && cellY < tilemapComp.tilesHigh)
+	{
+		Renderer2D::DrawQuad(Vector2f((float)cellX + 0.5f, -(float)cellY - 0.5f), Vector2f(1.0f, 1.0f), Colours::ORANGE);
+	}
+}
+
 bool TilemapEditor::HasSelection()
 {
 	for (size_t i = 0; i < m_SelectedTiles.size(); i++)
@@ -270,4 +290,11 @@ bool TilemapEditor::HasSelection()
 		}
 	}
 	return false;
+}
+
+Matrix4x4 TilemapEditor::CalculateTransform(const TransformComponent& transformComp, uint32_t x, uint32_t y)
+{
+	// Calculate the 3D position of the cell
+
+	return Matrix4x4();
 }

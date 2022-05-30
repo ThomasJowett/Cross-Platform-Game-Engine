@@ -144,7 +144,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
-			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();			
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
 
 			if (selectedEntity.HasComponent<CameraComponent>())
 			{
@@ -251,12 +251,17 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 						Line3D ray = MathUtils::ComputeCameraRay(cameraViewMat, cameraProjectionMat, m_RelativeMousePosition, Vector2f(m_ViewportSize.x, m_ViewportSize.y));
 
-						// DEBUG draw indigo quad
-						Renderer2D::DrawQuad(ray.p, Vector2f(1.0f, 1.0f), Colours::INDIGO);
-						//ImGuizmo::
-						//m_RelativeMousePosition
+						Quaternion quat(transformComp.rotation);
+						Vector3f normal(0.0f, 0.0f, 1.0f);
+						quat.RotateVectorByQuaternion(normal);
+						Plane tilemapPlane(transformComp.GetWorldPosition(), normal);
+
+						Vector3f position;
+						if (Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
+						{
+							m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
+						}
 					}
-					//m_TilemapEditor->OnRender()
 				}
 			}
 		}
