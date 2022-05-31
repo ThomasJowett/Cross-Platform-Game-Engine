@@ -22,7 +22,7 @@ HierarchyPanel::~HierarchyPanel()
 
 void HierarchyPanel::OnAttach()
 {
-	
+
 }
 
 void HierarchyPanel::OnDetach()
@@ -217,6 +217,9 @@ void HierarchyPanel::OnImGuiRender()
 
 		if (SceneManager::IsSceneLoaded())
 		{
+			if (m_SelectedEntity && !m_SelectedEntity.IsValid())
+				m_SelectedEntity = Entity();
+
 			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
 				| ImGuiTreeNodeFlags_SpanAvailWidth
 				| ImGuiTreeNodeFlags_Bullet
@@ -225,25 +228,25 @@ void HierarchyPanel::OnImGuiRender()
 				DragDropTarget(Entity());
 
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
-				{
-					if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
 					{
-						Entity entity{ entityID, SceneManager::CurrentScene() };
+						if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
+						{
+							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-						// Only draw a node for root entites, children are drawn recursively
-						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
-						if (!hierarchyComp || hierarchyComp->parent == entt::null 
-							|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
-							DrawNode(entity);
-					}
-				});
+							// Only draw a node for root entites, children are drawn recursively
+							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+							if (!hierarchyComp || hierarchyComp->parent == entt::null
+								|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
+								DrawNode(entity);
+						}
+					});
 				ImGui::TreePop();
 			}
 
 			ImVec2 available = ImGui::GetContentRegionAvail();
 			ImGui::Dummy(available);
 			DragDropTarget(Entity());
-			
+
 		}
 	}
 	ImGui::End();
@@ -255,25 +258,31 @@ void HierarchyPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
-	{
-		// Clear the selected entity when project changes
-		m_SelectedEntity = Entity();
-		return false;
-	});
+		{
+			// Clear the selected entity when project changes
+			m_SelectedEntity = Entity();
+			return false;
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+Entity HierarchyPanel::GetSelectedEntity()
+{
+	return m_SelectedEntity;
+}
+
 void HierarchyPanel::SetSelectedEntity(Entity entity)
 {
-	m_SelectedEntity = entity;
+	if (entity && entity.IsValid())
+		m_SelectedEntity = entity;
 }
 
 void HierarchyPanel::DrawNode(Entity entity)
 {
 	std::string& name = entity.GetName();
 
-	if(m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
+	if (m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
 		return;
 
 	bool hasChildren = false;
@@ -325,7 +334,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 	if (opened)
 	{
-		if (hasChildren  && !m_TextFilter->IsActive() )
+		if (hasChildren && !m_TextFilter->IsActive())
 		{
 			entt::entity child = entity.TryGetComponent<HierarchyComponent>()->firstChild;
 			while (child != entt::null)

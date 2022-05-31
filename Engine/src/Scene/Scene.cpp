@@ -92,9 +92,10 @@ bool Scene::RemoveEntity(Entity& entity)
 		{
 			ENGINE_DEBUG("Removed {0}", entity.GetName());
 			m_Registry.destroy(entity);
+			m_Dirty = true;
+			return true;
 		}
 	}
-	m_Dirty = true;
 	return false;
 }
 
@@ -193,6 +194,11 @@ void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
 
+	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
+	m_Box2DWorld = nullptr;
+
+	LuaManager::CleanUp();
+
 	if (m_Snapshot.rdbuf()->in_avail() != 0)
 	{
 		ENGINE_DEBUG("Runtime End");
@@ -202,11 +208,6 @@ void Scene::OnRuntimeStop()
 	}
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
-
-	LuaManager::CleanUp();
-
-	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
-	m_Box2DWorld = nullptr;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -377,8 +378,12 @@ void Scene::OnFixedUpdate()
 	{
 		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
 
-		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, const auto& rigidBodyComp)
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
+				if (rigidBodyComp.runtimeBody == nullptr)
+				{
+					rigidBodyComp.Init(Entity(entity, this), m_Box2DWorld);
+				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
 				transformComp.position.y = position.y;

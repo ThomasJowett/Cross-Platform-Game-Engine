@@ -18,7 +18,7 @@ public:
     void OnImGuiRender() override;
     virtual void OnEvent(Event& event) override;
 
-    Entity GetSelectedEntity() { return m_SelectedEntity; }
+    Entity GetSelectedEntity();
     void SetSelectedEntity(Entity entity);
 
     // Inherited via ICopyable

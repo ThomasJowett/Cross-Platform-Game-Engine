@@ -141,7 +141,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		// Debug render pass
 		m_Framebuffer->Bind();
 		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
-		if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+		if (m_HierarchyPanel->GetSelectedEntity() && m_HierarchyPanel->GetSelectedEntity().IsValid())
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
@@ -522,7 +522,7 @@ void ViewportPanel::OnImGuiRender()
 				ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
 			}
 
-			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null)
+			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null && m_HierarchyPanel->GetSelectedEntity().IsValid())
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();
@@ -534,7 +534,7 @@ void ViewportPanel::OnImGuiRender()
 				}
 
 				// Draw a camera preview if the selected entity has a camera
-				if (m_HierarchyPanel->GetSelectedEntity().HasComponent<CameraComponent>())
+				if (selectedEntity.HasComponent<CameraComponent>())
 				{
 					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
 						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
@@ -552,7 +552,7 @@ void ViewportPanel::OnImGuiRender()
 					uint64_t cameraTex = (uint64_t)m_CameraPreview->GetColourAttachment();
 					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
-					ImGui::Text(" %s", m_HierarchyPanel->GetSelectedEntity().GetName().c_str());
+					ImGui::Text(" %s", selectedEntity.GetName().c_str());
 					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
 					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 				}

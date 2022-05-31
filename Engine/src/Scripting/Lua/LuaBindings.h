@@ -9,4 +9,5 @@ namespace Lua
 	void BindEntity(sol::state& state);
 	void BindInput(sol::state& state);
 	void BindMath(sol::state& state);
+	void BindCommonTypes(sol::state& state);
 }

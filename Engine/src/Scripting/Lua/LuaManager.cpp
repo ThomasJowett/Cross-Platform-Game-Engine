@@ -19,6 +19,7 @@ void LuaManager::Init()
 	Lua::BindEntity(*s_State);
 	Lua::BindInput(*s_State);
 	Lua::BindMath(*s_State);
+	Lua::BindCommonTypes(*s_State);
 }
 
 void LuaManager::Shutdown()

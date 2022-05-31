@@ -26,7 +26,7 @@ void PropertiesPanel::OnAttach()
 void PropertiesPanel::OnUpdate(float deltaTime)
 {
 	Entity entity = m_HierarchyPanel->GetSelectedEntity();
-	if (entity && entity.HasComponent<PrimitiveComponent>())
+	if (entity && entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
 	{
 		StaticMeshComponent& staticMeshComp = m_HierarchyPanel->GetSelectedEntity().GetOrAddComponent<StaticMeshComponent>();
 		PrimitiveComponent& primitiveComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<PrimitiveComponent>();

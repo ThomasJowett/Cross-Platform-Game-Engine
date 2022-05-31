@@ -42,34 +42,34 @@ namespace Lua
 		sol::table log = state.create_table("Log");
 
 		log.set_function("Trace", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_TRACE(message);
-		});
+			{
+				CLIENT_TRACE(message);
+			});
 
 		log.set_function("Info", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_INFO(message);
-		});
+			{
+				CLIENT_INFO(message);
+			});
 
 		log.set_function("Debug", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_DEBUG(message);
-		});
+			{
+				CLIENT_DEBUG(message);
+			});
 
 		log.set_function("Warn", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_WARN(message);
-		});
+			{
+				CLIENT_WARN(message);
+			});
 
 		log.set_function("Error", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_ERROR(message);
-		});
+			{
+				CLIENT_ERROR(message);
+			});
 
 		log.set_function("Critical", [&](sol::this_state s, std::string_view message)
-		{
-			CLIENT_CRITICAL(message);
-		});
+			{
+				CLIENT_CRITICAL(message);
+			});
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
@@ -84,9 +84,9 @@ namespace Lua
 		application.set_function("ToggleImGui", &Application::ToggleImGui);
 
 		application.set_function("GetFixedUpdateInterval", [&](sol::this_state s) -> float
-		{
-			return Application::Get().GetFixedUpdateInterval();
-		});
+			{
+				return Application::Get().GetFixedUpdateInterval();
+			});
 	}
 
 	//--------------------------------------------------------------------------------------------------------------
@@ -117,6 +117,7 @@ namespace Lua
 
 		sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 		scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
+		scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
 		scene_type.set_function("GetName", &Scene::GetSceneName);
 		scene_type.set_function("SetName", &Scene::SetSceneName);
 		scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
@@ -169,6 +170,11 @@ namespace Lua
 		sprite_type["Texture"] = &SpriteComponent::texture;
 		sprite_type["TilingFactor"] = &SpriteComponent::tilingFactor;
 
+		auto animated_sprite_type = state["AnimatedSpriteComponent"].get_or_create<sol::usertype<AnimatedSpriteComponent>>();
+		animated_sprite_type["Tint"] = &AnimatedSpriteComponent::tint;
+		animated_sprite_type["Tileset"] = &AnimatedSpriteComponent::tileset;
+		animated_sprite_type.set_function("SelectAnimation", &AnimatedSpriteComponent::SelectAnimation);
+
 		std::initializer_list<std::pair<sol::string_view, int>> rigidBodyTypesItems =
 		{
 			{ "Static", (int)RigidBody2DComponent::BodyType::STATIC },
@@ -188,21 +194,21 @@ namespace Lua
 		rigidBody2D_type.set_function("ApplyForce", &RigidBody2DComponent::ApplyForce);
 		rigidBody2D_type.set_function("ApplyForceAtPoint", &RigidBody2DComponent::ApplyForceAtPoint);
 		rigidBody2D_type.set_function("ApplyTorque", &RigidBody2DComponent::ApplyTorque);
-		
+
 		auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;
 		boxCollider2D_type["Size"] = &BoxCollider2DComponent::Size;
 		boxCollider2D_type["Desity"] = &BoxCollider2DComponent::density;
 		boxCollider2D_type["Friction"] = &BoxCollider2DComponent::friction;
 		boxCollider2D_type["Restitution"] = &BoxCollider2DComponent::restitution;
-		
+
 		auto circleCollider2D_type = state["CircleCollider2DComponent"].get_or_create<sol::usertype<CircleCollider2DComponent>>();
 		circleCollider2D_type["Offset"] = &CircleCollider2DComponent::offset;
 		circleCollider2D_type["Radius"] = &CircleCollider2DComponent::radius;
 		circleCollider2D_type["Desity"] = &CircleCollider2DComponent::density;
 		circleCollider2D_type["Friction"] = &CircleCollider2DComponent::friction;
 		circleCollider2D_type["Restitution"] = &CircleCollider2DComponent::restitution;
-		
+
 		auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
 		circleRenderer_type["Colour"] = &CircleRendererComponent::colour;
 		circleRenderer_type["Radius"] = &CircleRendererComponent::radius;
@@ -219,9 +225,9 @@ namespace Lua
 		sol::table input = state.create_table("Input");
 
 		input.set_function("IsKeyPressed", [&](char c) -> bool
-		{
-			return Input::IsKeyPressed((int)c);
-		});
+			{
+				return Input::IsKeyPressed((int)c);
+			});
 		input.set_function("IsMouseButtonPressed", &Input::IsMouseButtonPressed);
 		input.set_function("GetMousePos", &Input::GetMousePos);
 
@@ -305,5 +311,74 @@ namespace Lua
 		vector3_type.set_function("Length", &Vector3f::Magnitude);
 		vector3_type.set_function("SqrLength", &Vector3f::SqrMagnitude);
 		vector3_type.set_function("Normalize", &Vector3f::Normalize);
+
+		sol::usertype<Quaternion> quaternion_type = state.new_usertype<Quaternion>(
+			"Quaternion",
+			sol::constructors<Quaternion(float, float, float)>(),
+			"w", &Quaternion::w,
+			"x", &Quaternion::x,
+			"y", &Quaternion::y,
+			"z", &Quaternion::z,
+			sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a + b; },
+			sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a - b; }
+		);
+
+		quaternion_type.set_function("EulerAngles", &Quaternion::EulerAngles);
+		quaternion_type.set_function("Length", &Quaternion::GetMagnitude);
+		quaternion_type.set_function("SqrLength", &Quaternion::GetSqrMagnitude);
+		quaternion_type.set_function("Normalize", &Quaternion::Normalize);
+		quaternion_type.set_function("GetNormalized", &Quaternion::GetNormalized);
+		quaternion_type.set_function("Conjugate", &Quaternion::Conjugate);
+		quaternion_type.set_function("Inverse", &Quaternion::Inverse);
+
+	}
+
+	void BindCommonTypes(sol::state& state)
+	{
+		sol::usertype<Colour> colour_type = state.new_usertype<Colour>(
+			"Colour",
+			sol::constructors<Colour(float, float, float, float)>(),
+			"r", &Colour::r,
+			"g", &Colour::g,
+			"b", &Colour::b,
+			"a", &Colour::a
+			);
+		colour_type.set_function("SetHexCode", static_cast<void(Colour::*)(const std::string&)>(&Colour::SetColour));
+		colour_type.set_function("SetHexValue", static_cast<void(Colour::*)(const uint32_t&)>(&Colour::SetColour));
+		colour_type.set_function("HexCode", &Colour::HexCode);
+		colour_type.set_function("HexValue", &Colour::HexValue);
+
+		std::initializer_list<std::pair<sol::string_view, int>> coloursItems = {
+			{"Beige", (int)Colours::BEIGE},
+			{"Black", (int)Colours::BLACK},
+			{"Blue", (int)Colours::BLUE},
+			{"Brown", (int)Colours::BROWN},
+			{"Cyan", (int)Colours::CYAN},
+			{"ForestGreen", (int)Colours::FOREST_GREEN},
+			{"Green", (int)Colours::GREEN},
+			{"Grey", (int)Colours::GREY},
+			{"Indigo", (int)Colours::INDIGO},
+			{"Khaki", (int)Colours::KHAKI},
+			{"LimeGreen", (int)Colours::LIME_GREEN},
+			{"Magenta", (int)Colours::MAGENTA},
+			{"Maroon", (int)Colours::MAROON},
+			{"Mustard", (int)Colours::MUSTARD},
+			{"Navy", (int)Colours::NAVY},
+			{"Olive", (int)Colours::OLIVE},
+			{"Orange", (int)Colours::ORANGE},
+			{"Pink", (int)Colours::PINK},
+			{"Purple", (int)Colours::PURPLE},
+			{"Red", (int)Colours::RED},
+			{"Silver", (int)Colours::SILVER},
+			{"Teal", (int)Colours::TEAL},
+			{"Turquoise", (int)Colours::TURQUOISE},
+			{"Violet", (int)Colours::VIOLET},
+			{"White", (int)Colours::WHITE},
+			{"Yellow", (int)Colours::YELLOW},
+			{"Random", (int)Colours::RANDOM}
+		};
+		state.new_enum("Colours", coloursItems);
+
+		colour_type.set_function("SetColour", static_cast<void(Colour::*)(Colours)>(&Colour::SetColour));
 	}
 }
