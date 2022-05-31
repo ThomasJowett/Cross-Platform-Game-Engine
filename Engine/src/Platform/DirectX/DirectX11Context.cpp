@@ -28,6 +28,9 @@ DirectX11Context::~DirectX11Context()
 	if (m_SwapChain) m_SwapChain->Release();
 	if (g_D3dDevice) g_D3dDevice->Release();
 	if (g_ImmediateContext) g_ImmediateContext->Release();
+
+	if (m_RenderTargetView) m_RenderTargetView->Release();
+	if (m_DepthStencilView) m_DepthStencilView->Release();
 }
 
 void DirectX11Context::Init()

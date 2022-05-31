@@ -93,7 +93,6 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		std::vector<uint32_t> polygonIndices;
 		if (Triangulation::Triangulate(polygonColliderComp.vertices, polygonIndices))
 		{
-
 			for (size_t i = 0; i < polygonIndices.size(); i += 3)
 			{
 				b2PolygonShape polygonShape;

@@ -56,10 +56,10 @@ public:
 	 * @param indexCount 
 	 * @param drawMode 
 	 */
-	inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0, DrawMode drawMode = DrawMode::FILL)
+	inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL)
 	{
 		vertexArray->Bind();
-		s_RendererAPI->DrawIndexed(vertexArray, indexCount, drawMode);
+		s_RendererAPI->DrawIndexed(vertexArray, indexCount, backFaceCull, drawMode);
 	}
 
 	inline static void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount = 0)

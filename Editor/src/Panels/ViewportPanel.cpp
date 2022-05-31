@@ -287,6 +287,7 @@ void ViewportPanel::OnImGuiRender()
 		return;
 	}
 
+	ImGuizmo::SetOrthographic(m_Is2DMode);
 	ImGuizmo::BeginFrame();
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
@@ -356,6 +357,18 @@ void ViewportPanel::OnImGuiRender()
 			if (!selected)
 				ImGui::PopStyleColor();
 			ImGui::Tooltip("Scale (R)");
+
+			// Universal -------------------------------------------------------------------------------
+			selected = m_Operation == OperationMode::Universal;
+			if (!selected)
+				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+			if (ImGui::Button(ICON_MDI_CROP_ROTATE))
+				m_Operation = OperationMode::Universal;
+
+			if (!selected)
+				ImGui::PopStyleColor();
+			ImGui::Tooltip("Universal (T)");
 
 			ImGui::Separator();
 			if (m_Translation == TranslationMode::Local)
@@ -488,25 +501,24 @@ void ViewportPanel::OnImGuiRender()
 
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
-			ImGuizmo::SetOrthographic(m_Is2DMode);
+			ImGuizmo::SetID(0);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 			cameraViewMat.Transpose();
-			cameraProjectionMat.Transpose();
 
 			if (m_ShowGrid)
 			{
 				Matrix4x4 gridTransform;
 				// TODO: draw a better grid instead of an imgui overlay
-				//gridTransform = Matrix4x4::RotateY((float)DegToRad(angle));
+				//gridTransform = Matrix4x4::RotateY((float)DegToRad());
 				/*if (m_GridAxis == 'x')
-					gridTransform = Matrix4x4::RotateZ((float)DegToRad(angle));
+					gridTransform = Matrix4x4::RotateZ((float)DegToRad(90));
 				if (m_GridAxis == 'z')
-					gridTransform = Matrix4x4::RotateX((float)DegToRad(angle));
-				gridTransform.Transpose();*/
+					gridTransform = Matrix4x4::RotateX((float)DegToRad(90));*/
+					//gridTransform.Transpose();
 				ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
 			}
 
@@ -580,9 +592,9 @@ void ViewportPanel::OnImGuiRender()
 				case ViewportPanel::OperationMode::Scale:
 					gizmoOperation = ImGuizmo::OPERATION::SCALE;
 					break;
-					//case ViewportPanel::OperationMode::Universal:
-					//	gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
-					//	break;
+				case ViewportPanel::OperationMode::Universal:
+					gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
+					break;
 				default:
 					break;
 				}
@@ -616,13 +628,18 @@ void ViewportPanel::OnImGuiRender()
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
+					Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
+
 					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
 
 					RigidBody2DComponent* rigidBody2DComp = selectedEntity.TryGetComponent<RigidBody2DComponent>();
 
 					if (SceneManager::GetSceneState() != SceneState::Edit && rigidBody2DComp)
 					{
-						rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotation[2]);
+						rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotationRad.z);
+						transformComp.position.z = translation[2];
+						transformComp.rotation.x = rotationRad.x;
+						transformComp.rotation.y = rotationRad.y;
 
 						if (SceneManager::GetSceneState() == SceneState::SimulatePause)
 						{
@@ -637,16 +654,16 @@ void ViewportPanel::OnImGuiRender()
 					}
 					else
 					{
-						Vector3f deltaRotation = Vector3f(rotation[0], rotation[1], rotation[2]) - transformComp.rotation;
-						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE)
+						Vector3f deltaRotation = rotationRad - transformComp.rotation;
+						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
 						{
 							transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 						}
-						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE)
+						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
 						{
 							transformComp.rotation += deltaRotation;
 						}
-						if (gizmoOperation == ImGuizmo::OPERATION::SCALE)
+						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
 						{
 							transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 						}
@@ -770,8 +787,8 @@ void ViewportPanel::HandleKeyboardInputs()
 			m_Operation = OperationMode::Rotate;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
 			m_Operation = OperationMode::Scale;
-		//else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
-		//	m_Operation = OperationMode::Universal;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
+			m_Operation = OperationMode::Universal;
 	}
 
 	if (m_WindowFocussed)

@@ -52,8 +52,10 @@ void OpenGLRendererAPI::Clear()
 	glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode)
+void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, bool backFaceCull, DrawMode drawMode)
 {
+	if (!backFaceCull)
+		glDisable(GL_CULL_FACE);
 	vertexArray->Bind();
 	GLuint mode;
 	switch (drawMode)
@@ -67,6 +69,8 @@ void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_
 	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
 
 	glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
+	if (!backFaceCull)
+		glEnable(GL_CULL_FACE);
 }
 
 void OpenGLRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount)

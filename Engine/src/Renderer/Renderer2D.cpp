@@ -311,7 +311,7 @@ void Renderer2D::FlushQuads()
 	}
 	s_Data.quadVertexBuffer->Bind();
 	s_Data.quadShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount);
+	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount, false);
 	s_Data.statistics.drawCalls++;
 }
 
@@ -324,7 +324,7 @@ void Renderer2D::FlushCircles()
 
 	s_Data.circleVertexBuffer->Bind();
 	s_Data.circleShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount);
+	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount, false);
 	s_Data.statistics.drawCalls++;
 }
 
@@ -337,7 +337,7 @@ void Renderer2D::FlushLines()
 
 	s_Data.lineVertexBuffer->Bind();
 	s_Data.lineShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount);
+	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount, false);
 	s_Data.statistics.drawCalls++;
 }
 
