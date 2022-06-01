@@ -26,6 +26,11 @@ void Entity::AddChild(Entity child)
 	SceneGraph::Reparent(child, *this, m_Scene->GetRegistry());
 }
 
+void Entity::Destroy()
+{
+	m_Scene->RemoveEntity(*this);
+}
+
 TransformComponent& Entity::GetTransform()
 {
 	return GetComponent<TransformComponent>();

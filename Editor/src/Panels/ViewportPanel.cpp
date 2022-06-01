@@ -125,12 +125,12 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 			{
 				m_Framebuffer->Bind();
 				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
 				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver())
+				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 				m_Framebuffer->UnBind();
 			}
@@ -457,6 +457,23 @@ void ViewportPanel::OnImGuiRender()
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 		ImVec2 window_pos = ImGui::GetItemRectMin();
+		ImGui::PopStyleVar();
+		m_RightClickMenuOpen = false;
+		if (ImGui::BeginPopupContextItem("Viewport Right Click"))
+		{
+			m_RightClickMenuOpen = true;
+			if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+				Cut();
+			if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
+				Copy();
+			if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, ImGui::GetClipboardText() != nullptr))
+				Paste();
+			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
+				Duplicate();
+			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
+				Delete();
+			ImGui::EndPopup();
+		}
 
 		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
@@ -692,7 +709,7 @@ void ViewportPanel::OnImGuiRender()
 		Renderer2D::ResetStats();
 	}
 	ImGui::End();
-	ImGui::PopStyleVar();
+	//ImGui::PopStyleVar();
 }
 
 void ViewportPanel::Copy()

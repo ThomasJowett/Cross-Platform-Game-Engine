@@ -74,6 +74,8 @@ public:
 
 	void AddChild(Entity child);
 
+	void Destroy();
+
 	/**
 	 * Get a reference to a Component of this Entity
 	 *

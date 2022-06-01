@@ -92,4 +92,5 @@ private:
 	int m_PixelData;
 
 	Ref<TilemapEditor> m_TilemapEditor;
+	bool m_RightClickMenuOpen = false;
 };

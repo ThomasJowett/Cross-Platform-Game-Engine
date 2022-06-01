@@ -274,7 +274,6 @@ Entity HierarchyPanel::GetSelectedEntity()
 
 void HierarchyPanel::SetSelectedEntity(Entity entity)
 {
-	if (entity && entity.IsValid())
 		m_SelectedEntity = entity;
 }
 
@@ -431,7 +430,7 @@ void HierarchyPanel::Duplicate()
 
 void HierarchyPanel::Delete()
 {
-	SceneManager::CurrentScene()->RemoveEntity(m_SelectedEntity);
+	m_SelectedEntity.Destroy();
 	m_SelectedEntity = {};
 }
 
