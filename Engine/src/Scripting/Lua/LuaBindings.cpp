@@ -134,6 +134,7 @@ namespace Lua
 		entity_type.set_function("GetName", &Entity::GetName);
 		entity_type.set_function("SetName", &Entity::SetName);
 		entity_type.set_function("AddChild", &Entity::AddChild);
+		entity_type.set_function("Destroy", &Entity::Destroy);
 
 		RegisterAllComponents<COMPONENTS>(state);
 

@@ -4,8 +4,8 @@
 #include <sstream>
 
 #include "EnTT/entt.hpp"
-#include "math/Matrix.h"
 #include "Core/UUID.h"
+#include "math/Vector2f.h"
 
 class Entity;
 class FrameBuffer;
@@ -13,6 +13,7 @@ class Camera;
 class b2World;
 class b2Body;
 class b2Draw;
+class Matrix4x4;
 
 class Scene
 {
@@ -68,6 +69,8 @@ public:
 	void DestroyBody(b2Body* body);
 	void SetShowDebug(bool show);
 
+	Vector2f& GetGravity() { return m_Gravity; }
+
 private:
 	entt::registry m_Registry;
 
@@ -85,6 +88,8 @@ protected:
 
 	b2World* m_Box2DWorld = nullptr;
 	b2Draw* m_Box2DDraw = nullptr;
+
+	Vector2f m_Gravity = { 0.0f, -9.81f };
 
 	std::stringstream m_Snapshot;
 

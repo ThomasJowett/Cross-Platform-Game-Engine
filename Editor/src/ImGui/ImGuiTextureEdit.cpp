@@ -89,55 +89,33 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		ImGui::EndCombo();
 	}
 
-	const char* filterMethodStrings[] = { "Linear", "Nearest" };
-	const char* currentFilterMethodString = texture ? filterMethodStrings[(int)texture->GetFilterMethod()] : "";
-
-	if (ImGui::BeginCombo("##Filter Method", currentFilterMethodString))
+	if (texture)
 	{
-		for (size_t i = 0; i < 2; i++)
+		ImGui::SetNextItemWidth(150);
+		Texture::FilterMethod filter = texture->GetFilterMethod();
+		if (ImGui::Combo("Filter Method", (int*)&filter,
+			"Linear\0"
+			"Nearest\0"))
 		{
-			bool isSelected = currentFilterMethodString == filterMethodStrings[i];
-
-			if (ImGui::Selectable(filterMethodStrings[i], isSelected))
-			{
-				currentFilterMethodString = filterMethodStrings[i];
-				edited = true;
-				if(texture)
-					texture->SetFilterMethod((Texture::FilterMethod)i);
-			}
-
-			if (isSelected)
-				ImGui::SetItemDefaultFocus();
+			texture->SetFilterMethod(filter);
+			edited = true;
 		}
 
-		ImGui::EndCombo();
-	}
-	ImGui::Tooltip("Filter Method");
+		ImGui::Tooltip("Filter Method");
 
-	const char* wrapMethodStrings[] = { "Clamp", "Mirror", "Repeat" };
-	const char* currentWrapMethodString = texture ? wrapMethodStrings[(int)texture->GetWrapMethod()] : "";
-
-	if (ImGui::BeginCombo("##Wrap Method", currentWrapMethodString))
-	{
-		for (size_t i = 0; i < 3; i++)
+		ImGui::SetNextItemWidth(150);
+		Texture::WrapMethod wrap = texture->GetWrapMethod();
+		if (ImGui::Combo("Wrap Method", (int*)&wrap,
+			"Clamp\0"
+			"Mirror\0"
+			"Repeat\0"))
 		{
-			bool isSelected = currentWrapMethodString == wrapMethodStrings[i];
-
-			if (ImGui::Selectable(wrapMethodStrings[i], isSelected))
-			{
-				currentWrapMethodString = wrapMethodStrings[i];
-				edited = true;
-				if (texture)
-					texture->SetWrapMethod((Texture::WrapMethod)i);
-			}
-
-			if (isSelected)
-				ImGui::SetItemDefaultFocus();
+			texture->SetWrapMethod(wrap);
+			edited = true;
 		}
 
-		ImGui::EndCombo();
+		ImGui::Tooltip("Wrapping Method");
 	}
-	ImGui::Tooltip("Wrapping Method");
 	ImGui::EndGroup();
 
 	return edited;

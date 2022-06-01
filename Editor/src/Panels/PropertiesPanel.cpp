@@ -10,6 +10,7 @@
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
 #include "ImGui/ImGuiMaterialEdit.h"
+#include "ImGui/ImGuiVectorEdit.h"
 
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
@@ -126,6 +127,11 @@ void PropertiesPanel::OnImGuiRender()
 			if (ImGui::InputText("Scene Name", buffer, sizeof(buffer)))
 			{
 				SceneManager::CurrentScene()->SetSceneName(buffer);
+			}
+
+			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 		}
 	}
@@ -537,57 +543,13 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
 		{
-			Vector2f& offset = boxCollider2D.offset;
-			ImGui::Text("Offset");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
-
-			float width = ImGui::GetContentRegionAvail().x;
-
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::Vector("Offset", boxCollider2D.offset, ImGui::GetContentRegionAvail().x))
 			{
-				offset.x = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::Vector("Size", boxCollider2D.Size, ImGui::GetContentRegionAvail().x))
 			{
-				offset.y = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			Vector2f& size = boxCollider2D.Size;
-			ImGui::Text("Size");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
-
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##sizeX", &size.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				size.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##sizeY", &size.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				size.y = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
@@ -604,31 +566,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 		{
-			Vector2f& offset = circleCollider2D.offset;
-			ImGui::Text("Offset");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
-
-			float width = ImGui::GetContentRegionAvail().x;
-
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::Vector("Offset", circleCollider2D.offset, ImGui::GetContentRegionAvail().x))
 			{
-				offset.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.y = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
@@ -648,31 +587,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
 	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [](auto& polygonCollider2D)
 		{
-			Vector2f& offset = polygonCollider2D.offset;
-			ImGui::Text("Offset");
-			ImGui::TextColored({ 245,0,0,255 }, "X");
-			ImGui::SameLine();
-
-			float width = ImGui::GetContentRegionAvail().x;
-
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetX", &offset.x, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::Vector("Offset", polygonCollider2D.offset, ImGui::GetContentRegionAvail().x))
 			{
-				offset.x = 0.0f;
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			ImGui::SameLine();
-			ImGui::TextColored({ 0,245,0,255 }, "Y");
-			ImGui::SameLine();
-			ImGui::SetNextItemWidth(width / 2 - 20);
-			if (ImGui::DragFloat("##offsetY", &offset.y, 0.1f))
-				SceneManager::CurrentScene()->MakeDirty();
-			if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-			{
-				offset.y = 0.0f;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
@@ -694,32 +610,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					}
 
 					ImGui::SameLine();
-
-					ImGui::TextColored({ 245,0,0,255 }, "X");
-					ImGui::SameLine();
-
-					float width = ImGui::GetContentRegionAvail().x;
-
-					ImGui::SetNextItemWidth(width / 2 - 20);
-					std::string xStr = "##X" + std::to_string(i);
-					if (ImGui::DragFloat(xStr.c_str(), &polygonCollider2D.vertices[i].x, 0.1f))
-						SceneManager::CurrentScene()->MakeDirty();
-					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+					std::string labelStr = std::to_string(i);
+					if (ImGui::Vector(labelStr.c_str(), polygonCollider2D.vertices[i], ImGui::GetContentRegionAvail().x))
 					{
-						polygonCollider2D.vertices[i].x = 0.0f;
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-
-					ImGui::SameLine();
-					ImGui::TextColored({ 0,245,0,255 }, "Y");
-					ImGui::SameLine();
-					ImGui::SetNextItemWidth(width / 2 - 20);
-					std::string yStr = "##Y" + std::to_string(i);
-					if (ImGui::DragFloat(yStr.c_str(), &polygonCollider2D.vertices[i].y, 0.1f))
-						SceneManager::CurrentScene()->MakeDirty();
-					if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
-					{
-						polygonCollider2D.vertices[i].y = 0.0f;
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 

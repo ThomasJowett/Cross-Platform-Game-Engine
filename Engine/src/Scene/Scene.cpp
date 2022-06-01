@@ -146,7 +146,7 @@ void Scene::OnRuntimeStart()
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
+	m_Box2DWorld = new b2World({ m_Gravity.x, m_Gravity.y });
 	if (m_Box2DDraw)
 		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 
