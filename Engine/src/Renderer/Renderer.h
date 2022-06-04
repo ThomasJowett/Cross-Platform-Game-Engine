@@ -18,7 +18,7 @@ public:
 	static void EndScene();
 
 	static void Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform = Matrix4x4(), Colour colour = Colours::WHITE, float tilingFactor = 1.0f, int entity = -1);
-	static void Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);
+	static void Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);
 
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 };

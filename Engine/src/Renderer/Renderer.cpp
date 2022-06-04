@@ -101,24 +101,27 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Material& material, const Mesh& mesh, const Matrix4x4& transform, int entityId)
+void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, const Matrix4x4& transform, int entityId)
 {
-	Ref<Shader> shader = s_ShaderLibary.Load(material.GetShader());
+	if (!material || !mesh)
+		return;
+
+	Ref<Shader> shader = s_ShaderLibary.Load(material->GetShader());
 
 	if (!shader)
 		return;
 
 	shader->Bind();
 	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_Data.modelBuffer.colour = material.GetTint();
+	s_Data.modelBuffer.colour = material->GetTint();
 	//TODO: each texture should have it's own tiling factor
 	s_Data.modelBuffer.tilingFactor = 1.0f;
 	s_Data.modelBuffer.entityId = entityId;
 	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
 
-	material.BindTextures();
+	material->BindTextures();
 
-	Ref<VertexArray> vertexArray = mesh.GetVertexArray();
+	Ref<VertexArray> vertexArray = mesh->GetVertexArray();
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 

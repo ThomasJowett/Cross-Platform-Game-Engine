@@ -172,14 +172,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		StaticMeshComponent& component = entity.GetComponent<StaticMeshComponent>();
 
 		tinyxml2::XMLElement* pStaticMeshElement = pElement->InsertNewChildElement("StaticMesh");
-		std::filesystem::path relativepath;
-		if (!component.mesh.GetFilepath().empty())
-		{
-			relativepath = FileUtils::RelativePath(component.mesh.GetFilepath(), Application::GetOpenDocumentDirectory());
-		}
-		pStaticMeshElement->InsertNewChildElement("Mesh")->SetAttribute("Filepath", relativepath.string().c_str());
 
-		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material);
+		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Mesh"), component.mesh->GetFilepath());
+
+		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 	}
 
 	if (entity.HasComponent<NativeScriptComponent>())
@@ -272,7 +268,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		if(component.tileset)
+		if (component.tileset)
 			SerializationUtils::Encode(pTilemapElement, component.tileset->GetFilepath());
 
 		pTilemapElement->SetAttribute("TilesWide", component.tilesWide);
@@ -528,11 +524,10 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (tilesetChar)
 			{
-				std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
-				if (!tilesetfilepath.empty())
+				std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
+				if (!tilesetFilepath.empty())
 				{
-					component.tileset = CreateRef<Tileset>();
-					component.tileset->Load(tilesetfilepath);
+					component.tileset = CreateRef<Tileset>(tilesetFilepath);
 				}
 			}
 		}
@@ -547,9 +542,9 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 	if (pStaticMeshElement)
 	{
+		StaticMeshComponent& component = entity.AddComponent<StaticMeshComponent>();
+
 		tinyxml2::XMLElement* pMeshElement = pStaticMeshElement->FirstChildElement("Mesh");
-		Mesh mesh;
-		Material material;
 
 		if (pMeshElement)
 		{
@@ -557,17 +552,31 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (meshFilepathChar)
 			{
-				std::filesystem::path meshfilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
-				if (!meshfilepath.empty())
+				std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+				if (!meshFilepath.empty())
 				{
-					mesh.LoadModel(meshfilepath);
+					component.mesh = CreateRef<Mesh>(meshFilepath);
 				}
 			}
 		}
 
-		SerializationUtils::Decode(pStaticMeshElement->FirstChildElement("Material"), material);
+		tinyxml2::XMLElement* pMaterialElement = pStaticMeshElement->FirstChildElement("Material");
 
-		entity.AddComponent<StaticMeshComponent>(mesh, material);
+		if (pMaterialElement)
+		{
+			const char* materialFilepathChar = pMaterialElement->Attribute("Filepath");
+
+			if (materialFilepathChar)
+			{
+				std::string materialFilepathStr(materialFilepathChar);
+
+				if (!materialFilepathStr.empty())
+				{
+					std::filesystem::path materialFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
+					component.material = CreateRef<Material>(materialFilepath);
+				}
+			}
+		}
 	}
 
 	// Native Script -----------------------------------------------------------------------------------------------------

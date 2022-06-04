@@ -40,7 +40,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 
 		if (ImGui::IsItemHovered())
 		{
-			const uint32_t maxSize = 256;
+			const uint32_t maxSize = size.x * 4;
 			ImVec2 tooltipSize;
 			if (textureHeight == textureWidth && textureWidth > maxSize)
 			{
@@ -66,7 +66,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		}
 	}
 	else
-		ImGui::Button("##nulltexture", ImVec2(64.0f, 64.0f));
+		ImGui::Button("##nullTexture", size);
 	ImGui::SameLine();
 
 	std::string textureName;

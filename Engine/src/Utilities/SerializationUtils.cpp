@@ -60,38 +60,6 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Colour& colour)
 		ENGINE_WARN("Could not find Colour element");
 }
 
-void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Material& material)
-{
-	if (std::filesystem::exists(material.GetFilepath()))
-	{
-		std::string relativePath = FileUtils::RelativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		pElement->SetAttribute("Filepath", relativePath.c_str());
-		pElement->SetAttribute("Shader", material.GetShader().c_str());
-		material.SaveMaterial();
-	}
-}
-
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Material& material)
-{
-	if (pElement)
-	{
-		const char* materialFilepathChar = pElement->Attribute("Filepath");
-
-		if (materialFilepathChar)
-		{
-			std::string materialFilepathStr(materialFilepathChar);
-
-			if (!materialFilepathStr.empty())
-			{
-				std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-				material.LoadMaterial(materailfilepath);
-			}
-		}
-	}
-	else
-		ENGINE_WARN("Could not find Material node");
-}
-
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath)
 {
 	if (!filepath.empty())

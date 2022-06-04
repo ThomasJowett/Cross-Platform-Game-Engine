@@ -76,9 +76,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
-					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
@@ -87,9 +87,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
-					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
@@ -98,9 +98,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
-					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
@@ -109,9 +109,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
-					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
@@ -120,9 +120,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
-					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
@@ -131,9 +131,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
-					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
+					Ref<Material> material = CreateRef<Material>("Standard", Colours::RANDOM);
+					material->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
@@ -441,7 +441,7 @@ bool HierarchyPanel::HasSelection() const
 
 void HierarchyPanel::SelectAll()
 {
-	CLIENT_ERROR("Multi select entites not implemented yet!");
+	CLIENT_ERROR("Multi select entities not implemented yet!");
 }
 
 bool HierarchyPanel::IsReadOnly() const

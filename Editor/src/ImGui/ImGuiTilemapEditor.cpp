@@ -69,7 +69,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	{
 
 		tilemap.tiles.resize(tilesHigh);
-		if (tilemap.tilesHigh < tilesHigh)
+		if (tilemap.tilesHigh < (uint32_t)tilesHigh)
 		{
 			for (size_t i = tilemap.tilesHigh; i < tilesHigh; i++)
 			{
@@ -263,8 +263,8 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformCompo
 {
 	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetParentMatrix());
 
-	uint32_t cellX = std::floor(localPosition.x);
-	uint32_t cellY = std::floor(-localPosition.y);
+	uint32_t cellX((uint32_t)std::floor(localPosition.x));
+	uint32_t cellY((uint32_t)std::floor(-localPosition.y));
 
 	Matrix4x4 tileTransform = transformComp.GetParentMatrix()
 		* Matrix4x4::Translate(transformComp.position)

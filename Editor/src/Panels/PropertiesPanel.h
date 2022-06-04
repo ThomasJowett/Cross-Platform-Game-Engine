@@ -69,4 +69,6 @@ private:
 
 	HierarchyPanel* m_HierarchyPanel;
 	Ref<TilemapEditor> m_TilemapEditor;
+
+	Ref<Material> m_DefaultMaterial;
 };

@@ -70,7 +70,6 @@ private:
 	Ref<FrameBuffer> m_CameraPreview;
 	Vector2f m_RelativeMousePosition;
 
-	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
 
 	OperationMode m_Operation;

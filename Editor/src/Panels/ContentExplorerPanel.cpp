@@ -1153,7 +1153,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						std::string filename = m_Files[i].filename().string();
 
 						ImGui::BeginGroup();
-						ImGui::PushID(i);
+						ImGui::PushID((int)i);
 						ImGui::PushFont(Fonts::Icons);
 
 						// try to get the image to display the thumbnail

@@ -1,6 +1,7 @@
 #include "ImGuiFileEdit.h"
 #include "IconsFontAwesome5.h"
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
 
 bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const wchar_t* filter)
@@ -50,6 +51,37 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 			}
 		}
 		ImGui::EndDragDropTarget();
+	}
+	return edited;
+}
+
+IMGUI_API bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileType filetype)
+{
+	std::string filename = filepath.filename().string();
+
+	bool edited = false;
+
+	if(ImGui::BeginCombo(label, filename.c_str()))
+	{
+		for(std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(filetype)))
+		{
+			if(ImGui::Selectable(file.filename().string().c_str()))
+			{
+				filepath = file;
+				edited = true;
+			}
+			ImGui::Tooltip(file.string().c_str());
+		}
+		ImGui::EndCombo();
+	}
+	if(std::filesystem::exists(filepath))
+	{
+		ImGui::SameLine();
+
+		if(ImGui::Button(ICON_FA_PEN_SQUARE"##editfile"))
+		{
+			ViewerManager::OpenViewer(filepath);
+		}
 	}
 	return edited;
 }

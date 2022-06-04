@@ -1,31 +1,56 @@
 #include "ImGuiMaterialEdit.h"
 
+#include "ImGui/ImGuiUtilites.h"
+
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
+#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
+#include "ImGuiFileEdit.h"
 
-IMGUI_API bool ImGui::MaterialEdit(const char* label, Material& material)
+
+IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material)
 {
 	bool edited = false;
 	ImGui::Text(label);
 
 	std::string materialName;
+	if (material)
+		materialName = material->GetFilepath().filename().string();
+
+	if (materialName.empty())
+		materialName = "Default";
+
 	if (ImGui::BeginCombo("##materialEdit", materialName.c_str()))
 	{
-		const bool is_selected = false;
-		if (ImGui::Selectable("Standard"))
-		{
-			material.SetShader("Standard");
-		}
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::MATERIAL)))
 		{
-			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
+			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				material.LoadMaterial(file);
+				material = CreateRef<Material>(file);
 				edited = true;
 				break;
 			}
 		}
 		ImGui::EndCombo();
 	}
+
+	if (materialName != "Default")
+	{
+		ImGui::SameLine();
+
+		if (ImGui::Button(ICON_FA_PEN_SQUARE"##LuaScript"))
+		{
+			ViewerManager::OpenViewer(material->GetFilepath());
+		}
+		ImGui::Tooltip("Edit material");
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK))
+		{
+			material = CreateRef<Material>("Standard", Colours::WHITE);
+		}
+	}
+
 	return edited;
 }

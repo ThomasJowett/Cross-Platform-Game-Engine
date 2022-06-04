@@ -67,6 +67,9 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 	PROFILE_FUNCTION();
 	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
+	if (filepath.empty())
+		return shaderSources;
+
 	std::filesystem::path shaderPath = filepath;
 
 	shaderPath.replace_extension(".vert");

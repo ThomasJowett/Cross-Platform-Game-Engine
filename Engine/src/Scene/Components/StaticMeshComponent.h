@@ -6,19 +6,61 @@
 
 struct StaticMeshComponent
 {
-	Mesh mesh;
-	Material material;
+	Ref<Mesh> mesh;
+	Ref<Material> material;
 
 	StaticMeshComponent() = default;
 	StaticMeshComponent(const StaticMeshComponent&) = default;
-	StaticMeshComponent(const Mesh& mesh, const Material& material)
-		:mesh(mesh),material(material) {}
+	StaticMeshComponent(Ref<Mesh> mesh, Ref<Material> material)
+		:mesh(mesh), material(material) {}
+
 private:
 	friend cereal::access;
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const 
 	{
-		archive(cereal::make_nvp("Mesh", mesh));
-		archive(cereal::make_nvp("Material", material));
+		std::string relativeMeshPath;
+		std::string relativeMaterialPath;
+		if (mesh)
+		{
+			if (!mesh->GetFilepath().empty())
+				relativeMeshPath = FileUtils::RelativePath(mesh->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+
+		if (material)
+		{
+			if (!material->GetFilepath().empty())
+				relativeMaterialPath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+
+		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("Material", relativeMaterialPath));
+	}
+
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		std::string relativeMeshPath;
+		std::string relativeMaterialPath;
+		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("Material", relativeMaterialPath));
+
+		if (!relativeMeshPath.empty())
+		{
+			mesh = CreateRef<Mesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+		}
+		else
+		{
+			mesh = nullptr;
+		}
+
+		if (!relativeMaterialPath.empty())
+		{
+			material = CreateRef<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterialPath));
+		}
+		else
+		{
+			material = nullptr;
+		}
 	}
 };

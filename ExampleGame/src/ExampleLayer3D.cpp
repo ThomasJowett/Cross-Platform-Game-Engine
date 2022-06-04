@@ -45,37 +45,35 @@ void ExampleLayer3D::OnAttach()
 
 	m_CameraController.SetPosition({ 0.0,0.0,10.0 });
 
-	Mesh mesh;
-	mesh.LoadModel(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-	Material material("Standard", Colours::WHITE);
-	material.AddTexture(m_Texture, 0);
+	Ref<Material> material = CreateRef<Material>("Standard", Colours::WHITE);
+	material->AddTexture(m_Texture, 0);
 	
 	Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] + 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(-0.0011f, 0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, -0.0014f, 0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Torus");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] };
 	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, -0.002f));
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Plane");
-	entity.AddComponent<StaticMeshComponent>(mesh, material);
+	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1], m_Position[2] - 0.5f };
 	entity.GetComponent<TransformComponent>().rotation = { (float)PI / 2.0f, 0.0f, 0.0f };

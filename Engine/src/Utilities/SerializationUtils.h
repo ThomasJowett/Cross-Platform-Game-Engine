@@ -24,10 +24,6 @@ namespace SerializationUtils
 
 	void Decode(tinyxml2::XMLElement* pElement, Colour& colour);
 
-	void Encode(tinyxml2::XMLElement* pElement, const Material& material);
-
-	void Decode(tinyxml2::XMLElement* pElement, Material& material);
-
 	void Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath);
 
 	void Decode(tinyxml2::XMLElement* pElement, std::filesystem::path& filepath);

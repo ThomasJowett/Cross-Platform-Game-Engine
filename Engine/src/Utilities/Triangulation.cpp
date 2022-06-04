@@ -48,7 +48,7 @@ bool Triangulation::Triangulate(const std::vector<Vector2f>& vertices, std::vect
 		std::reverse(indexList.begin(), indexList.end());
 	}
 
-	uint32_t totalTriangleCount = vertices.size() - 2;
+	uint32_t totalTriangleCount = (uint32_t)vertices.size() - 2;
 	uint32_t totalTriangleIndexCount = totalTriangleCount * 3;
 
 	triangles.resize(totalTriangleIndexCount);

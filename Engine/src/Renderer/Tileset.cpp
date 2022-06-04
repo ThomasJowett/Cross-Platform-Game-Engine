@@ -88,9 +88,9 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 				while (pFrame)
 				{
 					const char* tileid = pFrame->Attribute("tileid");
-					if (atoi(tileid) < startFrame)
+					if ((uint32_t)atoi(tileid) < startFrame)
 						startFrame = atoi(tileid);
-					if (atoi(tileid) > endFrame)
+					if ((uint32_t)atoi(tileid) > endFrame)
 						endFrame = atoi(tileid);
 					pFrame->QueryFloatAttribute("duration", &duration);
 					pFrame = pFrame->NextSiblingElement("frame");

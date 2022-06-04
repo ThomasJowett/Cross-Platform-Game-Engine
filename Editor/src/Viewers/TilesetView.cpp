@@ -25,6 +25,7 @@ void TilesetView::OnImGuiRender()
 	if (!*m_Show)
 		return;
 
+	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 
 	ImVec2 displaySize;
 	if (m_Tileset->GetSubTexture()->GetTexture())

@@ -1,9 +1,10 @@
 #pragma once
 
 #include "Engine.h"
+#include "Interfaces/ISaveable.h"
 
 class MaterialView :
-	public Layer
+	public Layer, public ISaveable
 {
 public:
 	MaterialView(bool* show, std::filesystem::path filepath);
@@ -24,4 +25,11 @@ private:
 
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
+
+	bool m_Dirty = false;
+
+	// Inherited via ISaveable
+	virtual void Save() override;
+
+	virtual void SaveAs() override;
 };

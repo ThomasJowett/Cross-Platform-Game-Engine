@@ -459,20 +459,24 @@ void ViewportPanel::OnImGuiRender()
 		ImVec2 window_pos = ImGui::GetItemRectMin();
 		ImGui::PopStyleVar();
 		m_RightClickMenuOpen = false;
-		if (ImGui::BeginPopupContextItem("Viewport Right Click"))
+		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right) && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y <= FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x <= FLT_EPSILON
+			&& ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y >= -FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x >= -FLT_EPSILON)
 		{
-			m_RightClickMenuOpen = true;
-			if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
-				Cut();
-			if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
-				Copy();
-			if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, ImGui::GetClipboardText() != nullptr))
-				Paste();
-			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
-				Duplicate();
-			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
-				Delete();
-			ImGui::EndPopup();
+			if (ImGui::BeginPopupContextItem("Viewport Right Click"))
+			{
+				m_RightClickMenuOpen = true;
+				if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+					Cut();
+				if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
+					Copy();
+				if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, ImGui::GetClipboardText() != nullptr))
+					Paste();
+				if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
+					Duplicate();
+				if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
+					Delete();
+				ImGui::EndPopup();
+			}
 		}
 
 		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
@@ -492,14 +496,11 @@ void ViewportPanel::OnImGuiRender()
 						entityName = entityName.substr(0, entityName.find_last_of('.'));
 						Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
 
-						Mesh mesh(*file);
+						StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
-						m_ShaderLibrary.Load("Standard");
-						Material material("Standard", Colours::WHITE);
-
-						material.AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
-
-						staticMeshEntity.AddComponent<StaticMeshComponent>(mesh, material);
+						staticMeshComp.mesh = CreateRef<Mesh>(*file);
+						staticMeshComp.material = CreateRef<Material>("Standard", Colours::WHITE);
+						staticMeshComp.material->AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 					}
 					else if (file->extension() == ".tmx")
 					{

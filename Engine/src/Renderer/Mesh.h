@@ -25,27 +25,4 @@ private:
 	Ref<VertexArray> m_VertexArray;
 	std::string m_Name;
 	std::filesystem::path m_Filepath;
-
-	friend cereal::access;
-	template<typename Archive>
-	void save(Archive& archive) const
-	{
-		std::filesystem::path relativepath;
-		if (!m_Filepath.empty())
-			relativepath = FileUtils::RelativePath(m_Filepath, Application::GetOpenDocumentDirectory());
-		archive(cereal::make_nvp("Filepath", relativepath.string()));
-	}
-
-	template<typename Archive>
-	void load(Archive& archive)
-	{
-		std::string relativePath;
-		archive(cereal::make_nvp("Filepath", relativePath));
-
-		if (!relativePath.empty())
-		{
-			m_Filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
-		}
-		LoadModel();
-	}
 };
