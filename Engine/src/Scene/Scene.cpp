@@ -382,7 +382,8 @@ void Scene::OnFixedUpdate()
 			{
 				if (rigidBodyComp.runtimeBody == nullptr)
 				{
-					rigidBodyComp.Init(Entity(entity, this), m_Box2DWorld);
+					Entity e(entity, this);
+					rigidBodyComp.Init(e, m_Box2DWorld);
 				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;

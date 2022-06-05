@@ -5,7 +5,7 @@
 #include <numeric>
 
 template<typename T>
-typename T GetItemLooped(const std::vector<T>& vector, int index)
+T GetItemLooped(const std::vector<T>& vector, int index)
 {
 	if (index >= (int)vector.size())
 	{
