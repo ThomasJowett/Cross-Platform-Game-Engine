@@ -9,7 +9,7 @@
 #include "ImGuiFileEdit.h"
 
 
-IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material)
+IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, Ref<Material>& defaultMaterial)
 {
 	bool edited = false;
 	ImGui::Text(label);
@@ -48,7 +48,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material)
 		ImGui::SameLine();
 		if (ImGui::Button(ICON_FA_XMARK))
 		{
-			material = CreateRef<Material>("Standard", Colours::WHITE);
+			material = defaultMaterial;
 		}
 	}
 

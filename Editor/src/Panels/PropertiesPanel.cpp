@@ -34,27 +34,30 @@ void PropertiesPanel::OnUpdate(float deltaTime)
 		StaticMeshComponent& staticMeshComp = m_HierarchyPanel->GetSelectedEntity().GetOrAddComponent<StaticMeshComponent>();
 		PrimitiveComponent& primitiveComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<PrimitiveComponent>();
 
+		if (!staticMeshComp.material)
+			staticMeshComp.material = m_DefaultMaterial;
+
 		if (primitiveComp.needsUpdating)
 		{
 			switch (primitiveComp.type)
 			{
 			case PrimitiveComponent::Shape::Cube:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
 				break;
 			case PrimitiveComponent::Shape::Sphere:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
 				break;
 			case PrimitiveComponent::Shape::Plane:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
 				break;
 			case PrimitiveComponent::Shape::Cylinder:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
 				break;
 			case PrimitiveComponent::Shape::Cone:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
 				break;
 			case PrimitiveComponent::Shape::Torus:
-				staticMeshComp.mesh->LoadModel(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
+				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
 				break;
 			default:
 				break;
@@ -101,9 +104,7 @@ void PropertiesPanel::OnImGuiRender()
 
 					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
 					{
-						StaticMeshComponent& staticMeshComp = entity.AddComponent<StaticMeshComponent>();
-						staticMeshComp.mesh = CreateRef<Mesh>(*file);
-						staticMeshComp.material = m_DefaultMaterial;
+						StaticMeshComponent& staticMeshComp = entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(*file), m_DefaultMaterial);
 					}
 					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
 					{
@@ -267,21 +268,23 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [=](auto& staticMesh)
 		{
-			std::filesystem::path meshFilepath;
-			if (staticMesh.mesh)
-				meshFilepath = staticMesh.mesh->GetFilepath();
-
-			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
+			if (!entity.HasComponent<PrimitiveComponent>())
 			{
-				staticMesh.mesh = CreateRef<Mesh>(meshFilepath);
-				if (!staticMesh.material)
-				{
-					staticMesh.material = m_DefaultMaterial;
-				}
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+				std::filesystem::path meshFilepath;
+				if (staticMesh.mesh)
+					meshFilepath = staticMesh.mesh->GetFilepath();
 
-			if (ImGui::MaterialEdit("Material", staticMesh.material))
+				if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
+				{
+					staticMesh.mesh = CreateRef<Mesh>(meshFilepath);
+					if (!staticMesh.material)
+					{
+						staticMesh.material = m_DefaultMaterial;
+					}
+					SceneManager::CurrentScene()->MakeDirty();
+				}
+			}
+			if (ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial))
 				SceneManager::CurrentScene()->MakeDirty();
 		});
 

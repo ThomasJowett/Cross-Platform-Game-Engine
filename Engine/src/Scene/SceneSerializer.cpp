@@ -173,9 +173,11 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pStaticMeshElement = pElement->InsertNewChildElement("StaticMesh");
 
-		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Mesh"), component.mesh->GetFilepath());
+		if(component.mesh)
+			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Mesh"), component.mesh->GetFilepath());
 
-		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material->GetFilepath());
+		if(component.material)
+			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 	}
 
 	if (entity.HasComponent<NativeScriptComponent>())
