@@ -153,6 +153,16 @@ Vector2f RigidBody2DComponent::GetLinearVelocity()
 	return Vector2f(vel.x, vel.y);
 }
 
+void RigidBody2DComponent::SetAngularVelocity(float velocity)
+{
+	runtimeBody->SetAngularVelocity(velocity);
+}
+
+float RigidBody2DComponent::GetAngularVelocity()
+{
+	return runtimeBody->GetAngularVelocity();
+}
+
 void RigidBody2DComponent::SetTransform(const Vector2f& position, const float& angle)
 {
 	if (runtimeBody)

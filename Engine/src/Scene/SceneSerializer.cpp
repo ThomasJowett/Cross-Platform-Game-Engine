@@ -28,6 +28,8 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	pRoot->SetAttribute("EngineVersion", VERSION);
 
+	SerializationUtils::Encode(pRoot->InsertNewChildElement("Gravity"), m_Scene->GetGravity());
+
 	doc.InsertFirstChild(pRoot);
 
 	m_Scene->m_Registry.each([&](auto entityID)
@@ -76,6 +78,10 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 		if (sceneName)
 			m_Scene->SetSceneName(sceneName);
+
+		Vector2f gravity = m_Scene->GetGravity();
+		SerializationUtils::Decode(pRoot->FirstChildElement("Gravity"), gravity);
+		m_Scene->SetGravity(gravity);
 
 		// Version
 		const char* version = pRoot->Attribute("EngineVersion");

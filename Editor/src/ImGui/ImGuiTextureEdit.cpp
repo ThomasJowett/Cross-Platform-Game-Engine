@@ -23,18 +23,18 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		else if (textureHeight < textureWidth)
 		{
 			float aspectRatio = (float)textureHeight / (float)textureWidth;
-			ImGui::Dummy({ 0,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
+			ImGui::Dummy({ 0.0f,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
 			ImGui::Image(texture, ImVec2(size.x, aspectRatio * size.y));
-			ImGui::Dummy({ 0,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
+			ImGui::Dummy({ 0.0f,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
 		}
 		else
 		{
 			float aspectRatio = (float)textureWidth / (float)textureHeight;
-			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0 });
+			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
 			SameLine();
 			ImGui::Image(texture, ImVec2(aspectRatio * size.x, size.y));
 			SameLine();
-			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0 });
+			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
 		}
 		ImGui::EndGroup();
 

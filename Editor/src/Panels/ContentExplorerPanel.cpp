@@ -571,6 +571,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		return ICON_FA_FILE_ALT;
 	case FileType::AUDIO:
 		return ICON_FA_FILE_AUDIO;
+	case FileType::TILESET:
+		return ICON_FA_TH;
 	}
 	return ICON_FA_FILE;
 }
@@ -579,7 +581,7 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 
 void ContentExplorerPanel::CreateDragDropSource(size_t index)
 {
-	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
+	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
 	{
 		ImGui::SetDragDropPayload("Asset", &m_Files[index], sizeof(std::filesystem::path));
 		ImGui::Text("%s", m_Files[index].filename().string().c_str());
@@ -849,7 +851,7 @@ void ContentExplorerPanel::OnImGuiRender()
 					{
 						m_ForceRescan = false;
 					}
-					if(!editLocationButtonDown)
+					if (!editLocationButtonDown)
 						m_EditLocationCheckButtonPressed = false;
 				}
 				catch (const std::exception& e)
@@ -1108,7 +1110,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableNextColumn();
 						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 						ImGui::BeginGroup();
-						
+
 						ImGui::PushFont(Fonts::Icons);
 						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
 						{
@@ -1132,7 +1134,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 						ImGui::PopFont();
 						ImGui::TextWrapped("%s", dirName.c_str());
-						
+
 						ImGui::EndGroup();
 						ItemContextMenu(i, true, dirName);
 
@@ -1159,7 +1161,38 @@ void ContentExplorerPanel::OnImGuiRender()
 						// try to get the image to display the thumbnail
 						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
 						{
-							ImGui::ImageButton(m_TextureLibrary.Load(m_Files[i]), { thumbnailSize, thumbnailSize });
+							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i]);
+							uint32_t textureHeight = icon->GetHeight();
+							uint32_t textureWidth = icon->GetWidth();
+
+							if (textureHeight == textureWidth)
+							{
+								ImGui::ImageButton(icon, { thumbnailSize, thumbnailSize });
+							}
+							else if (textureHeight < textureWidth)
+							{
+								ImGui::BeginGroup();
+								ImGui::PushID((int)i);
+								float aspectRatio = (float)textureHeight / (float)textureWidth;
+								ImGui::Dummy({ 0.0f, ((1.0f - aspectRatio) * thumbnailSize / 2.0f) - 0.5f * (textureWidth / thumbnailSize) });
+								ImGui::ImageButton(icon, ImVec2(thumbnailSize, aspectRatio * thumbnailSize));
+								ImGui::Dummy({ 0.0f, ((1.0f - aspectRatio) * thumbnailSize / 2.0f) - 0.5f * (textureWidth / thumbnailSize) });
+								ImGui::EndGroup();
+								ImGui::PopID();
+							}
+							else
+							{
+								ImGui::BeginGroup();
+								ImGui::PushID((int)i);
+								float aspectRatio = (float)textureWidth / (float)textureHeight;
+								ImGui::Dummy({ ((1.0f - aspectRatio) * thumbnailSize / 2.0f) - 0.5f * ((float)textureHeight / thumbnailSize), 0.0f });
+								ImGui::SameLine();
+								ImGui::ImageButton(icon, ImVec2(aspectRatio * thumbnailSize, thumbnailSize));
+								ImGui::SameLine();
+								ImGui::Dummy({ ((1.0f - aspectRatio) * thumbnailSize / 2.0f) - 0.5f * ((float)textureHeight / thumbnailSize), 0.0f });
+								ImGui::EndGroup();
+								ImGui::PopID();
+							}
 						}
 						else
 							ImGui::Button(GetFileIconForFileType(m_Files[i]).c_str(), { thumbnailSize, thumbnailSize });

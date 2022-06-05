@@ -70,6 +70,7 @@ public:
 	void SetShowDebug(bool show);
 
 	Vector2f& GetGravity() { return m_Gravity; }
+	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; }
 
 private:
 	entt::registry m_Registry;

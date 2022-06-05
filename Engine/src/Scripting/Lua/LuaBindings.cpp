@@ -195,6 +195,10 @@ namespace Lua
 		rigidBody2D_type.set_function("ApplyForce", &RigidBody2DComponent::ApplyForce);
 		rigidBody2D_type.set_function("ApplyForceAtPoint", &RigidBody2DComponent::ApplyForceAtPoint);
 		rigidBody2D_type.set_function("ApplyTorque", &RigidBody2DComponent::ApplyTorque);
+		rigidBody2D_type.set_function("GetLinearVelocity", &RigidBody2DComponent::GetLinearVelocity);
+		rigidBody2D_type.set_function("SetLinearVelocity", &RigidBody2DComponent::SetLinearVelocity);
+		rigidBody2D_type.set_function("GetAngularVelocity", &RigidBody2DComponent::GetAngularVelocity);
+		rigidBody2D_type.set_function("SetAngularVelocity", &RigidBody2DComponent::SetAngularVelocity);
 
 		auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 		boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;
@@ -290,7 +294,8 @@ namespace Lua
 			"x", &Vector2f::x,
 			"y", &Vector2f::y,
 			sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
-			sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; }
+			sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; },
+			sol::meta_function::unary_minus, [](Vector2f& a) {return -a; }
 		);
 
 		vector2_type.set_function("Length", &Vector2f::Magnitude);
@@ -306,7 +311,8 @@ namespace Lua
 			"y", &Vector3f::y,
 			"z", &Vector3f::z,
 			sol::meta_function::addition, [](const Vector3f& a, const Vector3f& b) { return a + b; },
-			sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; }
+			sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; },
+			sol::meta_function::unary_minus, [](Vector3f& a) {return -a; }
 		);
 
 		vector3_type.set_function("Length", &Vector3f::Magnitude);

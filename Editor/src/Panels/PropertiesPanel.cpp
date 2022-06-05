@@ -555,12 +555,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
 		{
-			if (ImGui::Vector("Offset", boxCollider2D.offset, ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Offset", boxCollider2D.offset))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::Vector("Size", boxCollider2D.Size, ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Size", boxCollider2D.Size))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
@@ -578,7 +578,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 		{
-			if (ImGui::Vector("Offset", circleCollider2D.offset, ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Offset", circleCollider2D.offset))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
@@ -599,7 +599,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
 	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [](auto& polygonCollider2D)
 		{
-			if (ImGui::Vector("Offset", polygonCollider2D.offset, ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Offset", polygonCollider2D.offset))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
@@ -623,7 +623,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 					ImGui::SameLine();
 					std::string labelStr = std::to_string(i);
-					if (ImGui::Vector(labelStr.c_str(), polygonCollider2D.vertices[i], ImGui::GetContentRegionAvail().x))
+					if (ImGui::Vector(labelStr.c_str(), polygonCollider2D.vertices[i]))
 					{
 						SceneManager::CurrentScene()->MakeDirty();
 					}
