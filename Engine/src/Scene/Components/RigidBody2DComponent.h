@@ -41,6 +41,9 @@ struct RigidBody2DComponent
 	void SetLinearVelocity(Vector2f velocity);
 	Vector2f GetLinearVelocity();
 
+	void SetAngularVelocity(float velocity);
+	float GetAngularVelocity();
+
 	void SetTransform(const Vector2f& position, const float& angle);
 	void GetTransform(Vector2f& position, float& rotation);
 

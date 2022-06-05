@@ -159,7 +159,7 @@ namespace Lua
 		sceneCamera_type.set_function("SetPerspectiveNear", &SceneCamera::SetPerspectiveNear);
 		sceneCamera_type.set_function("GetPerspectiveFar", &SceneCamera::GetPerspectiveFar);
 		sceneCamera_type.set_function("SetFov", &SceneCamera::SetVerticalFov);
-		sceneCamera_type.set_function("SetFov", &SceneCamera::SetVerticalFov);
+		sceneCamera_type.set_function("GetFov", &SceneCamera::GetVerticalFov);
 
 		auto camera_type = state["CameraComponent"].get_or_create<sol::usertype<CameraComponent>>();
 		camera_type["Camera"] = &CameraComponent::Camera;
