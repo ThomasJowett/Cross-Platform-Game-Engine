@@ -7,11 +7,11 @@
 
 Material::Material(const std::filesystem::path& filepath)
 {
-	LoadMaterial(filepath);
+	Load(filepath);
 }
 
 Material::Material(const std::string& shader, Colour tint)
-	:m_Shader(shader), m_Tint(tint)
+	:m_Shader(shader), m_Tint(tint), Asset()
 {
 }
 
@@ -36,17 +36,18 @@ Ref<Texture2D> Material::GetTexture(uint32_t slot)
 
 void Material::AddTexture(Ref<Texture2D> texture, uint32_t slot)
 {
-	m_Textures[slot] = texture;
+	if (texture)
+		m_Textures[slot] = texture;
+	else
+		m_Textures.erase(slot);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Material::LoadMaterial(const std::filesystem::path& filepath)
+bool Material::Load(const std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
-		return;
-
-	m_Filepath = filepath;
+		return false;
 
 	tinyxml2::XMLDocument doc;
 
@@ -55,7 +56,13 @@ void Material::LoadMaterial(const std::filesystem::path& filepath)
 		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Material");
 
 		if (!pRoot)
+		{
 			ENGINE_ERROR("Could not read material file, no material node {0}", filepath);
+			return false;
+		}
+
+		m_Filepath = filepath;
+		m_Textures.clear();
 
 		SerializationUtils::Decode(pRoot->FirstChildElement("Tint"), m_Tint);
 
@@ -85,13 +92,8 @@ void Material::LoadMaterial(const std::filesystem::path& filepath)
 			pTextureElement = pTextureElement->NextSiblingElement("Texture");
 		}
 	}
-}
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Material::LoadMaterial()
-{
-	LoadMaterial(m_Filepath);
+	return true;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

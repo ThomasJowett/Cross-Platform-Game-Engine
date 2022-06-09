@@ -17,7 +17,7 @@ void TilesetView::OnAttach()
 {
 	m_WindowName = ICON_FA_TH + std::string(" " + m_Filepath.filename().string());
 
-	m_Tileset = CreateRef<Tileset>(m_Filepath);
+	m_Tileset = AssetManager::GetTileset(m_Filepath);
 }
 
 void TilesetView::OnImGuiRender()

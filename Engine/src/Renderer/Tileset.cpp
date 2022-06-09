@@ -13,11 +13,6 @@ Tileset::Tileset(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
-bool Tileset::Load()
-{
-	return Load(m_Filepath);
-}
-
 bool Tileset::Load(const std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
@@ -30,6 +25,9 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
 		m_Filepath = filepath;
+
+		m_Animations.clear();
+		m_Tiles.clear();
 		tinyxml2::XMLElement* pRoot;
 
 		pRoot = doc.FirstChildElement("tileset");

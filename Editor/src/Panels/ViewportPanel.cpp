@@ -498,7 +498,7 @@ void ViewportPanel::OnImGuiRender()
 
 						StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
-						staticMeshComp.mesh = CreateRef<Mesh>(*file);
+						staticMeshComp.mesh = AssetManager::GetMesh(*file);
 						staticMeshComp.material = CreateRef<Material>("Standard", Colours::WHITE);
 						staticMeshComp.material->AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
 					}

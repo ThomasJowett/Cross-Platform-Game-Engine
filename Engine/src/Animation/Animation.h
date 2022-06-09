@@ -2,6 +2,8 @@
 
 #include "Renderer/SubTexture2D.h"
 
+#include "cereal/access.hpp"
+
 class Animation
 {
 public:

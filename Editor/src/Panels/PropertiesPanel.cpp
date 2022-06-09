@@ -104,7 +104,7 @@ void PropertiesPanel::OnImGuiRender()
 
 					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
 					{
-						StaticMeshComponent& staticMeshComp = entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(*file), m_DefaultMaterial);
+						StaticMeshComponent& staticMeshComp = entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
 					}
 					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
 					{
@@ -177,24 +177,35 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::Button("Pixel Perfect"))
+			if (sprite.texture)
 			{
-				if (sprite.texture)
+				if (ImGui::Button("Pixel Perfect"))
 				{
-					entity.GetTransform().scale.x = (float)sprite.texture->GetWidth();
-					entity.GetTransform().scale.y = (float)sprite.texture->GetHeight();
+					if (sprite.texture)
+					{
+						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth();
+						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight();
+					}
 				}
+				ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			}
-			ImGui::Tooltip("Set Scale to pixel perfect scaling");
 
 			if (ImGui::Texture2DEdit("Texture", sprite.texture))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
+			if (sprite.texture)
 			{
-				SceneManager::CurrentScene()->MakeDirty();
+				if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
+				{
+					SceneManager::CurrentScene()->MakeDirty();
+				}
+				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					*tilingFactor = 1.0f;
+					SceneManager::CurrentScene()->MakeDirty();
+				}
 			}
 		});
 
@@ -208,18 +219,30 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::Button("Pixel Perfect"))
-			{
-				if (sprite.tileset)
-				{
-					entity.GetTransform().scale.x = (uint32_t)sprite.tileset->GetSubTexture()->GetSpriteWidth();
-					entity.GetTransform().scale.y = (uint32_t)sprite.tileset->GetSubTexture()->GetSpriteHeight();
-				}
-			}
-			ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			std::string tilesetName;
 			if (sprite.tileset)
+			{
+				if (ImGui::Button("Pixel Perfect"))
+				{
+					if (sprite.tileset)
+					{
+						entity.GetTransform().scale.x = (float)sprite.tileset->GetSubTexture()->GetSpriteWidth();
+						entity.GetTransform().scale.y = (float)sprite.tileset->GetSubTexture()->GetSpriteHeight();
+					}
+				}
+				ImGui::Tooltip("Set Scale to pixel perfect scaling");
 				tilesetName = sprite.tileset->GetFilepath().filename().string();
+
+				static std::filesystem::file_time_type currentFileTime;
+
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(sprite.tileset->GetFilepath());
+
+				if (lastWrittenTime != currentFileTime)
+				{
+					sprite.tileset->Reload();
+					currentFileTime = lastWrittenTime;
+				}
+			}
 
 			if (ImGui::BeginCombo("Tileset", tilesetName.c_str()))
 			{
@@ -228,9 +251,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						if (!sprite.tileset)
-							sprite.tileset = CreateRef<Tileset>();
-						sprite.tileset->Load(file);
+						sprite.tileset = AssetManager::GetTileset(file);
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 					ImGui::Tooltip(file.string().c_str());
@@ -276,7 +297,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 				{
-					staticMesh.mesh = CreateRef<Mesh>(meshFilepath);
+					staticMesh.mesh = AssetManager::GetMesh(meshFilepath);
 					if (!staticMesh.material)
 					{
 						staticMesh.material = m_DefaultMaterial;
@@ -286,6 +307,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			if (ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial))
 				SceneManager::CurrentScene()->MakeDirty();
+
+			if (staticMesh.mesh)
+			{
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(staticMesh.mesh->GetFilepath());
+
+				if (lastWrittenTime != m_StaticMeshFileTime)
+				{
+					staticMesh.mesh->LoadModel();
+					m_StaticMeshFileTime = lastWrittenTime;
+				}
+			}
 		});
 
 	//Camera------------------------------------------------------------------------------------------------------------
@@ -315,6 +347,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					camera.SetVerticalFov((float)DegToRad(fov));
 					SceneManager::CurrentScene()->MakeDirty();
 				}
+				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					camera.SetVerticalFov((float)PI * 0.5f);
+					SceneManager::CurrentScene()->MakeDirty();
+				}
 
 				float nearClip = camera.GetPerspectiveNear();
 				if (ImGui::DragFloat("Near Clip##Perspective", &nearClip, 1.0f, 0.001f, 10000.0f))
@@ -322,11 +359,21 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					camera.SetPerspectiveNear(nearClip);
 					SceneManager::CurrentScene()->MakeDirty();
 				}
+				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					camera.SetPerspectiveNear(1.0f);
+					SceneManager::CurrentScene()->MakeDirty();
+				}
 
 				float farClip = camera.GetPerspectiveFar();
 				if (ImGui::DragFloat("Far Clip##Perspective", &farClip, 1.0f, 0.001f, 10000.0f))
 				{
 					camera.SetPerspectiveFar(farClip);
+					SceneManager::CurrentScene()->MakeDirty();
+				}
+				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					camera.SetPerspectiveFar(1000.0f);
 					SceneManager::CurrentScene()->MakeDirty();
 				}
 

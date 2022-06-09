@@ -7,6 +7,7 @@
 #include "Core/Application.h"
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
+#include "AssetManager.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -535,7 +536,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
 				if (!tilesetFilepath.empty())
 				{
-					component.tileset = CreateRef<Tileset>(tilesetFilepath);
+					component.tileset = AssetManager::GetTileset(tilesetFilepath);
 				}
 			}
 		}
@@ -563,7 +564,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
 				if (!meshFilepath.empty())
 				{
-					component.mesh = CreateRef<Mesh>(meshFilepath);
+					component.mesh = AssetManager::GetMesh(meshFilepath);
 				}
 			}
 		}
@@ -581,7 +582,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				if (!materialFilepathStr.empty())
 				{
 					std::filesystem::path materialFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-					component.material = CreateRef<Material>(materialFilepath);
+					component.material = AssetManager::GetMaterial(materialFilepath);
 				}
 			}
 		}
@@ -715,8 +716,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
 			if (!tilesetfilepath.empty())
 			{
-				component.tileset = CreateRef<Tileset>();
-				component.tileset->Load(tilesetfilepath);
+				component.tileset = AssetManager::GetTileset(tilesetfilepath);
 			}
 		}
 

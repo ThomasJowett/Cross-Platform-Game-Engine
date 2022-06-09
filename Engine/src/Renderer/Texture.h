@@ -5,9 +5,6 @@
 
 #include "Core/core.h"
 
-#include "cereal/cereal.hpp"
-#include "cereal/access.hpp"
-
 class Texture
 {
 public:

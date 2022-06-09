@@ -24,10 +24,14 @@ public:
 	void SetSpriteDimensions(uint32_t spriteWidth, uint32_t spriteHeight);
 
 	void RecalculateCellsDimensions();
+
+	Vector2f GetMargin() { return m_Margin; }
+	void SetMargin(const Vector2f& margin) { m_Margin = margin; }
 private:
 	void CalculateTextureCoordinates();
 	Ref<Texture2D> m_Texture;
 	Vector2f m_TexCoords[4];
+	Vector2f m_Margin = { 0.0001f, 0.0001f };
 
 	uint32_t m_CurrentCell;
 

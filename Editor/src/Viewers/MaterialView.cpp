@@ -12,7 +12,7 @@ MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 
 void MaterialView::OnAttach()
 {
-	m_Material = CreateRef<Material>(m_FilePath);
+	m_Material = AssetManager::GetMaterial(m_FilePath);
 
 	m_WindowName = ICON_FA_BACON + std::string(" " + m_FilePath.filename().string());
 }
@@ -68,14 +68,14 @@ void MaterialView::OnImGuiRender()
 	Ref<Texture2D> normalMap = m_Material->GetTexture(1);
 	if (ImGui::Texture2DEdit("Normal Map", normalMap, ImVec2(128, 128)))
 	{
-		m_Material->AddTexture(normalMap, 0);
+		m_Material->AddTexture(normalMap, 1);
 		m_Dirty = true;
 	}
 
 	Ref<Texture2D> mixMap = m_Material->GetTexture(2);
 	if (ImGui::Texture2DEdit("Mix Map", mixMap, ImVec2(128, 128)))
 	{
-		m_Material->AddTexture(mixMap, 0);
+		m_Material->AddTexture(mixMap, 2);
 		m_Dirty = true;
 	}
 	ImGui::End();

@@ -3,6 +3,7 @@
 #include "Core/core.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Material.h"
+#include "Scene/AssetManager.h"
 
 struct StaticMeshComponent
 {
@@ -47,7 +48,7 @@ private:
 
 		if (!relativeMeshPath.empty())
 		{
-			mesh = CreateRef<Mesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+			mesh = AssetManager::GetMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
 		}
 		else
 		{
@@ -56,7 +57,7 @@ private:
 
 		if (!relativeMaterialPath.empty())
 		{
-			material = CreateRef<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterialPath));
+			material = AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterialPath));
 		}
 		else
 		{

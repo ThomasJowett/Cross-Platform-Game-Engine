@@ -1,6 +1,7 @@
 #include "ImGuiMaterialEdit.h"
 
 #include "ImGui/ImGuiUtilites.h"
+#include "Scene/AssetManager.h"
 
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
@@ -8,6 +9,7 @@
 #include "IconsFontAwesome6.h"
 #include "ImGuiFileEdit.h"
 
+static std::filesystem::file_time_type s_MaterialFileTime;
 
 IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, Ref<Material>& defaultMaterial)
 {
@@ -16,7 +18,17 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 
 	std::string materialName;
 	if (material)
+	{
 		materialName = material->GetFilepath().filename().string();
+
+		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(material->GetFilepath());
+
+		if (lastWrittenTime != s_MaterialFileTime)
+		{
+			material->Reload();
+			s_MaterialFileTime = lastWrittenTime;
+		}
+	}
 
 	if (materialName.empty())
 		materialName = "Default";
@@ -27,7 +39,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				material = CreateRef<Material>(file);
+				material = AssetManager::GetMaterial(file);
 				edited = true;
 				break;
 			}

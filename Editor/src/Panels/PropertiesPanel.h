@@ -71,4 +71,6 @@ private:
 	Ref<TilemapEditor> m_TilemapEditor;
 
 	Ref<Material> m_DefaultMaterial;
+
+	std::filesystem::file_time_type m_StaticMeshFileTime;
 };

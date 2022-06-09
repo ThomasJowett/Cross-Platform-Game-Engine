@@ -18,7 +18,7 @@ public:
 	void LoadModel(const std::filesystem::path& filepath);
 	void LoadModel();
 
-	std::filesystem::path& GetFilepath() { return m_Filepath; }
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 
 	const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:

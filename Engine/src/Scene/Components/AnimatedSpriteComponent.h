@@ -43,7 +43,7 @@ private:
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())
 		{
-			tileset = CreateRef<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			tileset = AssetManager::GetTileset(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
 		else
 		{

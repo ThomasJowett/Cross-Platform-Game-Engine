@@ -214,8 +214,8 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 
 			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
 
-			Ref<Tileset> tileset = CreateRef<Tileset>();
-			if (tileset->Load(tilesetPath))
+			Ref<Tileset> tileset = AssetManager::GetTileset(tilesetPath);
+			if (tileset)
 				s_Tilesets.insert(std::make_pair(atoi(pTileSet->Attribute("firstgid")), tileset));
 
 			pTileSet = pTileSet->NextSiblingElement("tileset");

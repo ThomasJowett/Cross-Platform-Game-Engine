@@ -2,10 +2,12 @@
 
 #include "Renderer/SubTexture2D.h"
 #include "Animation/Animation.h"
+#include "Asset.h"
+
 #include <map>
 #include <filesystem>
 
-class Tileset
+class Tileset : public Asset
 {
 	struct Tile
 	{
@@ -17,8 +19,7 @@ class Tileset
 public:
 	Tileset() = default;
 	Tileset(const std::filesystem::path& filepath);
-	bool Load();
-	bool Load(const std::filesystem::path& filepath);
+	virtual bool Load(const std::filesystem::path& filepath) override;
 	bool Save() const;
 	bool SaveAs(const std::filesystem::path& filepath) const;
 
@@ -41,7 +42,6 @@ public:
 	const std::string GetCurrentAnimation() const { return m_CurrentAnimation; }
 private:
 	std::string m_Name;
-	std::filesystem::path m_Filepath;
 	Ref<SubTexture2D> m_Texture;
 	uint32_t m_TileCount = 4;
 	uint32_t m_Columns = 2;

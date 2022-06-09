@@ -6,6 +6,7 @@
 
 #include "RenderCommand.h"
 #include "UniformBuffer.h"
+#include "Asset.h"
 
 struct QuadVertex
 {
@@ -636,20 +637,23 @@ void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& s
 void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilemapComp, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (!tilemapComp.tileset)
+	{
+		return;
+	}
+
 	for (size_t i = 0; i < tilemapComp.tilesHigh; i++)
 	{
 		for (size_t j = 0; j < tilemapComp.tilesWide; j++)
 		{
 			if (tilemapComp.tiles[i][j] == 0)
 				continue;
-	
-			if (tilemapComp.tileset)
-			{
-				tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);
-				Vector3f position((float)j + 0.5f, -(float)i - 0.5f, 0.0f);
-				Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.001f, 1.001f, 1.0f));
-				DrawQuad(finalTransform, tilemapComp.tileset->GetSubTexture(), tilemapComp.tint, entityId);
-			}
+
+			tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);
+			Vector3f position((float)j + 0.5f, -(float)i - 0.5f, 0.0f);
+			Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.001f, 1.001f, 1.0f));
+			DrawQuad(finalTransform, tilemapComp.tileset->GetSubTexture(), tilemapComp.tint, entityId);
+
 		}
 	}
 }
@@ -820,7 +824,7 @@ void Renderer2D::DrawHairLineCircle(const Vector3f& position, float radius, uint
 
 void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments, const Colour& colour, int entityId)
 {
-	Vector3f previousPoint ( 1.0f, 0.0f, 0.0f);
+	Vector3f previousPoint(1.0f, 0.0f, 0.0f);
 	Vector3f currentPoint;
 
 	previousPoint = transform * previousPoint;

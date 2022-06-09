@@ -2,6 +2,7 @@
 
 #include "Shader.h"
 #include "Texture.h"
+#include "Asset.h"
 
 #include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
@@ -9,7 +10,7 @@
 
 #include "Utilities/FileUtils.h"
 
-class Material
+class Material : public Asset
 {
 public:
 	Material() = default;
@@ -26,14 +27,12 @@ public:
 	void SetTint(const Colour& tint) { m_Tint = tint; }
 	Colour GetTint() const { return m_Tint; }
 
-	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
-	std::filesystem::path& GetFilepath() { return m_Filepath; }
-
-	void LoadMaterial(const std::filesystem::path& filepath);
-	void LoadMaterial();
+	virtual bool Load(const std::filesystem::path& filepath) override;
 
 	bool SaveMaterial(const std::filesystem::path& filepath) const;
 	bool SaveMaterial() const;
+
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 private:
 	std::string m_Shader;
 

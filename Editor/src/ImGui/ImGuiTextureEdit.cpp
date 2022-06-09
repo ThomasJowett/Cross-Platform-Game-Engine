@@ -4,6 +4,7 @@
 #include "Core/Application.h"
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
+#include "IconsFontAwesome6.h"
 
 #include <filesystem>
 
@@ -44,7 +45,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 			ImVec2 tooltipSize;
 			if (textureHeight == textureWidth && textureWidth > maxSize)
 			{
-				tooltipSize = ImVec2(128, 128);
+				tooltipSize = ImVec2(maxSize, maxSize);
 			}
 			else if (textureHeight > textureWidth && textureHeight > maxSize)
 			{
@@ -74,7 +75,8 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		textureName = texture->GetName();
 
 	ImGui::BeginGroup();
-	if (ImGui::BeginCombo("##textureEdit", textureName.c_str()))
+	std::string comboLabel = "##textureEdit" + std::string(label);
+	if (ImGui::BeginCombo(comboLabel.c_str(), textureName.c_str()))
 	{
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::IMAGE)))
 		{
@@ -87,6 +89,17 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 			}
 		}
 		ImGui::EndCombo();
+	}
+
+	if (texture)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button(std::string(std::string(ICON_FA_ARROW_ROTATE_LEFT"##reset") + std::string(label)).c_str()))
+		{
+			texture = nullptr;
+			edited = true;
+		}
+		ImGui::Tooltip("Reset texture");
 	}
 
 	if (texture)

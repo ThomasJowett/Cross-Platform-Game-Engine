@@ -22,9 +22,9 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 
 		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
 
-		if (lastWrittenTime > m_CurrentFileTime)
+		if (lastWrittenTime != m_CurrentFileTime)
 		{
-			tilemap.tileset->Load();
+			tilemap.tileset->Reload();
 			updateSelectedTiles = true;
 			m_CurrentFileTime = lastWrittenTime;
 		}
@@ -93,8 +93,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 			{
 				if (!tilemap.tileset)
-					tilemap.tileset = CreateRef<Tileset>();
-				tilemap.tileset->Load(file);
+					tilemap.tileset = AssetManager::GetTileset(file);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::Tooltip(file.string().c_str());
