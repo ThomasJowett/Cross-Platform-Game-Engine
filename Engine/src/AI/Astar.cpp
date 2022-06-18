@@ -4,7 +4,7 @@
 
 namespace Astar
 {
-	static Generator* instance = 0;
+	static Generator* instance = nullptr;
 
 	GridCoord Heuristic::GetDelta(GridCoord source, GridCoord goal)
 	{

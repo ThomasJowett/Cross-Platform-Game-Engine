@@ -10,9 +10,7 @@ class SceneSerializer
 public:
 	SceneSerializer(Scene* scene);
 
-	~SceneSerializer()
-	{
-	}
+	~SceneSerializer() = default;
 
 	bool Serialize(const std::filesystem::path& filepath) const;
 	bool Deserialize(const std::filesystem::path& filepath);

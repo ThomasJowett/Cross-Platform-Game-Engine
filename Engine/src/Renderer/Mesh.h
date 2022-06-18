@@ -6,8 +6,9 @@
 #include "cereal/access.hpp"
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
+#include "Renderer/Asset.h"
 
-class Mesh
+class Mesh : public Asset
 {
 public:
 	Mesh() = default;
@@ -15,8 +16,7 @@ public:
 	Mesh(Ref<VertexArray> vertexArray, std::string name);
 	~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray, std::string name);
-	void LoadModel(const std::filesystem::path& filepath);
-	void LoadModel();
+	virtual bool Load(const std::filesystem::path& filepath) override;
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 

@@ -17,6 +17,8 @@
 #include "CircleRendererComponent.h"
 #include "HierarchyComponent.h"
 #include "LuaScriptComponent.h"
+#include "BehaviourTreeComponent.h"
+#include "StateMachineComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -36,5 +38,7 @@ CircleCollider2DComponent,	\
 PolygonCollider2DComponent,	\
 CircleRendererComponent,	\
 HierarchyComponent,			\
-LuaScriptComponent			\
+LuaScriptComponent,			\
+BehaviourTreeComponent,		\
+StateMachineComponent		\
 

@@ -11,9 +11,8 @@ static BufferLayout staticMeshLayout = {
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 Mesh::Mesh(const std::filesystem::path& filepath)
-	:m_Filepath(filepath)
 {
-	LoadModel(filepath);
+	Load(filepath);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -34,11 +33,10 @@ void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Mesh::LoadModel(const std::filesystem::path& filepath)
+bool Mesh::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
 
-	m_Filepath = filepath;
 
 	uint32_t numVertices;
 	uint32_t numIndices;
@@ -47,7 +45,9 @@ void Mesh::LoadModel(const std::filesystem::path& filepath)
 	file.open(filepath, std::ios::in | std::ios::binary);
 
 	if (!file.good())
-		return;
+		return false;
+
+	m_Filepath = filepath;
 
 	m_Name = filepath.filename().string();
 	m_Name = m_Name.substr(0, m_Name.find_last_of('.'));
@@ -80,12 +80,8 @@ void Mesh::LoadModel(const std::filesystem::path& filepath)
 	delete[] indices;
 	delete[] vertices;
 
+	return true;
 	//TODO: load in information to do with the default materials of the mesh and the material Ids
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
-void Mesh::LoadModel()
-{
-	LoadModel(m_Filepath);
-}

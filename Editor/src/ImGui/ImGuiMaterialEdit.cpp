@@ -17,7 +17,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 	ImGui::Text(label);
 
 	std::string materialName;
-	if (material)
+	if (material && !material->GetFilepath().empty())
 	{
 		materialName = material->GetFilepath().filename().string();
 

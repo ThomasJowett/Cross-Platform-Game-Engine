@@ -20,6 +20,8 @@ void TextureView::OnImGuiRender()
 
 	ImVec2 displaySize = ImVec2((float)m_Texture->GetWidth() * m_Zoom, (float)m_Texture->GetHeight() * m_Zoom);
 
+	ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y + 200), ImGuiCond_FirstUseEver);
+
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
 		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());

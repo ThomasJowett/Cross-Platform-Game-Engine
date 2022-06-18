@@ -1,6 +1,7 @@
 #include "PropertiesPanel.h"
 
-#include "IconsFontAwesome5.h"
+//#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsMaterialDesign.h"
 #include "Fonts/IconsMaterialDesignIcons.h"
 #include "Fonts/Fonts.h"
@@ -138,7 +139,7 @@ void PropertiesPanel::OnImGuiRender()
 
 void PropertiesPanel::DrawComponents(Entity entity)
 {
-	//Name------------------------------------------------------------------------------------------------------------------
+	// Name------------------------------------------------------------------------------------------------------------------
 	if (entity.HasComponent<NameComponent>())
 	{
 		auto& name = entity.GetComponent<NameComponent>().name;
@@ -154,7 +155,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		}
 	}
 
-	//Transform------------------------------------------------------------------------------------------------------------
+	// Transform------------------------------------------------------------------------------------------------------------
 	DrawComponent<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity, [&](auto& transform)
 		{
 			if (ImGui::Transform(transform.position, transform.rotation, transform.scale))
@@ -166,7 +167,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		}, false);
 
-	//Sprite--------------------------------------------------------------------------------------------------------------
+	// Sprite--------------------------------------------------------------------------------------------------------------
 	DrawComponent<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity, [&](auto& sprite)
 		{
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
@@ -209,7 +210,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Animated Sprite--------------------------------------------------------------------------------------------------------------
+	// Animated Sprite--------------------------------------------------------------------------------------------------------------
 	DrawComponent<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity, [&](auto& sprite)
 		{
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
@@ -286,7 +287,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Static Mesh------------------------------------------------------------------------------------------------------------
+	// Circle Renderer------------------------------------------------------------------------------------------------------------------
+	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
+		{
+			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
+			ImGui::ColorEdit4("Colour", colour[0]);
+			ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f);
+			ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f);
+		});
+
+	// Tilemap ------------------------------------------------------------------------------------------------------------------------
+	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [=](auto& tilemap)
+		{
+			m_TilemapEditor->OnImGuiRender(tilemap);
+		});
+
+	// Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [=](auto& staticMesh)
 		{
 			if (!entity.HasComponent<PrimitiveComponent>())
@@ -307,20 +323,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			if (ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial))
 				SceneManager::CurrentScene()->MakeDirty();
-
-			if (staticMesh.mesh)
-			{
-				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(staticMesh.mesh->GetFilepath());
-
-				if (lastWrittenTime != m_StaticMeshFileTime)
-				{
-					staticMesh.mesh->LoadModel();
-					m_StaticMeshFileTime = lastWrittenTime;
-				}
-			}
 		});
 
-	//Camera------------------------------------------------------------------------------------------------------------
+	// Camera------------------------------------------------------------------------------------------------------------
 	DrawComponent<CameraComponent>(ICON_FA_VIDEO" Camera", entity, [](auto& cameraComp)
 		{
 			auto& camera = cameraComp.Camera;
@@ -409,7 +414,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Primitive--------------------------------------------------------------------------------------------------------------
+	// Primitive--------------------------------------------------------------------------------------------------------------
 	DrawComponent<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity, [=](auto& primitive)
 		{
 			if (ImGui::Combo("Shape", (int*)&primitive.type,
@@ -579,7 +584,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Rigid Body 2D--------------------------------------------------------------------------------------------------------------
+	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
 		{
 			if (ImGui::Combo("Body Type", (int*)&rigidBody2D.type,
@@ -599,7 +604,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	//Box Collider 2D--------------------------------------------------------------------------------------------------------------
+	// Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
 		{
 			if (ImGui::Vector("Offset", boxCollider2D.offset))
@@ -622,7 +627,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 		});
 
-	//Circle Collider 2D--------------------------------------------------------------------------------------------------------------
+	// Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
 		{
 			if (ImGui::Vector("Offset", circleCollider2D.offset))
@@ -696,22 +701,19 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 		});
 
-	// Circle Renderer------------------------------------------------------------------------------------------------------------------
-	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
+	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
+	DrawComponent<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity, [](auto& behaviourTree)
 		{
-			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
-			ImGui::ColorEdit4("Colour", colour[0]);
-			ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f);
-			ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f);
+			//ImGui::FileSelect("Behaviour Tree", ai.)
 		});
 
-	// Tilemap ------------------------------------------------------------------------------------------------------------------------
-	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [=](auto& tilemap)
+	// State Machine ------------------------------------------------------------------------------------------------------------------
+	DrawComponent<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity, [](auto& stateMachine)
 		{
-			m_TilemapEditor->OnImGuiRender(tilemap);
+			//ImGui::FileSelect("State Machine", );
 		});
 
-	//Native Script------------------------------------------------------------------------------------------------------------
+	// Native Script-------------------------------------------------------------------------------------------------------------------
 	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
 		{
 			ImGui::Text("%s", script.Name.c_str());
@@ -756,17 +758,19 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 
 	if (ImGui::BeginPopup("Components"))
 	{
-		AddComponentMenuItem<CameraComponent>(ICON_FA_VIDEO" Camera", entity);
 		AddComponentMenuItem<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity);
 		AddComponentMenuItem<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity);
+		AddComponentMenuItem<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity);
+		AddComponentMenuItem<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity);
 		AddComponentMenuItem<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity);
+		AddComponentMenuItem<CameraComponent>(ICON_FA_VIDEO" Camera", entity);
 		AddComponentMenuItem<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity);
 		AddComponentMenuItem<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity);
 		AddComponentMenuItem<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity);
-		AddComponentMenuItem<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity);
-		AddComponentMenuItem<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity);
+		AddComponentMenuItem<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity);
+		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machince", entity);
 
 		if (ImGui::BeginMenu(ICON_FA_FILE_CODE" Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
 		{

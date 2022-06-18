@@ -336,22 +336,22 @@ void Scene::OnUpdate(float deltaTime)
 				switch (primitiveComponent.type)
 				{
 				case PrimitiveComponent::Shape::Cube:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
 					break;
 				case PrimitiveComponent::Shape::Sphere:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
 					break;
 				case PrimitiveComponent::Shape::Plane:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
 					break;
 				case PrimitiveComponent::Shape::Cylinder:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
 					break;
 				case PrimitiveComponent::Shape::Cone:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
 					break;
 				case PrimitiveComponent::Shape::Torus:
-					staticMeshComponent.mesh->LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
+					staticMeshComponent.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
 					break;
 				default:
 					break;
