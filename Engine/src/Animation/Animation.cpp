@@ -2,10 +2,9 @@
 #include "Animation.h"
 
 Animation::Animation(Ref<SubTexture2D> texture, int startFrame, int frameCount, float holdTime)
-	:m_Texture(texture), m_StartFrame(startFrame), m_FrameCount(frameCount),
-	m_HoldTime(holdTime), m_CurrentFrame(startFrame)
+	:m_StartFrame(startFrame), m_FrameCount(frameCount), m_HoldTime(holdTime),
+	m_CurrentFrame(startFrame), m_Texture(texture)
 {
-
 }
 
 void Animation::Start()
@@ -24,9 +23,9 @@ void Animation::Update(float deltaTime)
 	}
 }
 
-float Animation::GetAnimationLength()
+float Animation::GetAnimationLength() const
 {
-	return m_HoldTime * m_FrameCount;
+	return m_HoldTime * (float)m_FrameCount;
 }
 
 void Animation::SetStartFrame(uint32_t startFrame)
@@ -41,7 +40,6 @@ void Animation::Advance()
 	if (++m_CurrentFrame >= m_StartFrame + m_FrameCount)
 	{
 		m_CurrentFrame = m_StartFrame;
-
 	}
 
 	m_Texture->SetCurrentCell(m_CurrentFrame);

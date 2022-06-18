@@ -105,7 +105,7 @@ void PropertiesPanel::OnImGuiRender()
 
 					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
 					{
-						StaticMeshComponent& staticMeshComp = entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
+						entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
 					}
 					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
 					{
@@ -119,15 +119,6 @@ void PropertiesPanel::OnImGuiRender()
 		}
 		else if (SceneManager::IsSceneLoaded())
 		{
-			char buffer[256];
-			memset(buffer, 0, sizeof(buffer));
-			std::strncpy(buffer, SceneManager::CurrentScene()->GetSceneName().c_str(), sizeof(buffer));
-
-			if (ImGui::InputText("Scene Name", buffer, sizeof(buffer)))
-			{
-				SceneManager::CurrentScene()->SetSceneName(buffer);
-			}
-
 			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
 			{
 				SceneManager::CurrentScene()->MakeDirty();

@@ -18,8 +18,7 @@ class Matrix4x4;
 class Scene
 {
 public:
-	Scene(std::filesystem::path filepath);
-	Scene(std::string name);
+	explicit Scene(const std::filesystem::path& filepath);
 	~Scene();
 
 	Entity CreateEntity(const std::string& name = "");
@@ -48,20 +47,18 @@ public:
 	void OnViewportResize(uint32_t width, uint32_t height);
 
 	entt::registry& GetRegistry() { return m_Registry; }
-	const std::string& GetSceneName() const { return m_SceneName; }
-	void SetSceneName(std::string name) { m_SceneName = name; MakeDirty(); }
 
-	virtual void Save(bool binary = false);
-	virtual void Save(std::filesystem::path filepath, bool binary = false);
-	virtual bool Load(bool binary = false);
+	void Save(bool binary = false);
+	void Save(std::filesystem::path filepath, bool binary = false);
+	bool Load(bool binary = false);
 
 	void MakeDirty() { m_Dirty = true; }
-	bool IsDirty() { return m_Dirty; }
+	bool IsDirty() const { return m_Dirty; }
 
-	bool IsSaving() { return m_IsSaving; }
-	bool IsUpdating() { return m_IsUpdating; }
+	bool IsSaving() const { return m_IsSaving; }
+	bool IsUpdating() const { return m_IsUpdating; }
 
-	const std::filesystem::path GetFilepath() const { return m_Filepath; }
+	std::filesystem::path GetFilepath() const { return m_Filepath; }
 	void SetFilepath(std::filesystem::path filepath);
 
 	Entity GetPrimaryCameraEntity();
@@ -75,8 +72,6 @@ public:
 private:
 	entt::registry m_Registry;
 
-protected:
-	std::string m_SceneName;
 	std::filesystem::path m_Filepath;
 
 	uint32_t m_ViewportWidth = 0;
@@ -87,8 +82,8 @@ protected:
 	bool m_IsUpdating = false;
 	bool m_IsSaving = false;
 
-	b2World* m_Box2DWorld = nullptr;
-	b2Draw* m_Box2DDraw = nullptr;
+	Scope<b2World> m_Box2DWorld = nullptr;
+	Scope<b2Draw> m_Box2DDraw = nullptr;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 

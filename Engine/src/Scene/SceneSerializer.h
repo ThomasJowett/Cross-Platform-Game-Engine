@@ -8,7 +8,7 @@
 class SceneSerializer
 {
 public:
-	SceneSerializer(Scene* scene);
+	explicit SceneSerializer(Scene* scene);
 
 	~SceneSerializer() = default;
 

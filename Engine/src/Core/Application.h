@@ -134,11 +134,11 @@ private:
 
 	void SetDefaultSettings(const WindowProps& props);
 
-	double GetTime();
+	double GetTime() const;
 
 private:
 	Scope<Window> m_Window;
-	ImGuiManager* m_ImGuiManager;
+	Scope<ImGuiManager> m_ImGuiManager;
 	bool m_Running = false;
 	bool m_Minimized = false;
 	float m_FixedUpdateInterval = 0.01f;

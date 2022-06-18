@@ -9,7 +9,7 @@
 #include "Events/ApplicationEvent.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
-	:m_Show(show), Layer("Hierarchy")
+	:Layer("Hierarchy"), m_Show(show)
 {
 	m_TextFilter = new ImGuiTextFilter();
 }
@@ -22,7 +22,6 @@ HierarchyPanel::~HierarchyPanel()
 
 void HierarchyPanel::OnAttach()
 {
-
 }
 
 void HierarchyPanel::OnDetach()
@@ -220,7 +219,7 @@ void HierarchyPanel::OnImGuiRender()
 			if (m_SelectedEntity && !m_SelectedEntity.IsValid())
 				m_SelectedEntity = Entity();
 
-			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
+			if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen
 				| ImGuiTreeNodeFlags_SpanAvailWidth
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
@@ -246,7 +245,6 @@ void HierarchyPanel::OnImGuiRender()
 			ImVec2 available = ImGui::GetContentRegionAvail();
 			ImGui::Dummy(available);
 			DragDropTarget(Entity());
-
 		}
 	}
 	ImGui::End();
@@ -274,7 +272,7 @@ Entity HierarchyPanel::GetSelectedEntity()
 
 void HierarchyPanel::SetSelectedEntity(Entity entity)
 {
-		m_SelectedEntity = entity;
+	m_SelectedEntity = entity;
 }
 
 void HierarchyPanel::DrawNode(Entity entity)

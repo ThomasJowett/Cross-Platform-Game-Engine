@@ -13,7 +13,7 @@ public:
 	void Start();
 	void Update(float deltaTime);
 
-	float GetAnimationLength();
+	float GetAnimationLength() const;
 
 	uint32_t GetStartFrame() const { return m_StartFrame; }
 	void SetStartFrame(uint32_t startFrame);
@@ -29,7 +29,8 @@ public:
 private:
 	void Advance();
 
-	uint32_t m_StartFrame = 0, m_FrameCount = 1;
+	uint32_t m_StartFrame = 0;
+	uint32_t m_FrameCount = 1;
 	float m_HoldTime = 0.01f;
 	uint32_t m_CurrentFrame = 0;
 	float m_CurrentFrameTime = 0.0f;

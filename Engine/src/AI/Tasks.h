@@ -6,15 +6,14 @@
 class Wait : public BehaviourTree::Leaf
 {
 public:
-	Wait(float waitTime)
-		:mWaitTime(waitTime)
+	explicit Wait(float waitTime)
+		:m_WaitTime(waitTime), m_CurrentTime(0.0f)
 	{
-		m_CurrentTime = 0.0f;
 	}
 
-	void initialize()
+	void initialize() final
 	{
-		m_CurrentTime = mWaitTime;
+		m_CurrentTime = m_WaitTime;
 	}
 
 	Status update(float deltaTime) override
@@ -33,6 +32,6 @@ public:
 	}
 
 private:
-	float mWaitTime;
+	float m_WaitTime;
 	float m_CurrentTime;
 };

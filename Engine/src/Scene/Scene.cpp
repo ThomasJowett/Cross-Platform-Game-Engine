@@ -39,16 +39,8 @@ static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& regis
 	(CopyComponentIfExists<Component>(dst, src, registry), ...);
 }
 
-Scene::Scene(std::filesystem::path filepath)
-	:m_Filepath(filepath), m_SceneName(filepath.filename().string())
-{
-	m_SceneName = m_SceneName.substr(0, m_SceneName.find_last_of('.'));
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-Scene::Scene(std::string name)
-	:m_SceneName(name)
+Scene::Scene(const std::filesystem::path& filepath)
+	:m_Filepath(filepath)
 {
 }
 
@@ -146,12 +138,12 @@ void Scene::OnRuntimeStart()
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_Box2DWorld = new b2World({ m_Gravity.x, m_Gravity.y });
+	m_Box2DWorld = CreateScope<b2World>(b2Vec2(m_Gravity.x, m_Gravity.y));
 	if (m_Box2DDraw)
-		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
+		m_Box2DWorld->SetDebugDraw(m_Box2DDraw.get());
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
-		[&]([[maybe_unused]] const auto physicsEntity, auto& transformComp, auto& rigidBody2DComp)
+		[this]([[maybe_unused]] const auto physicsEntity, auto& transformComp, auto& rigidBody2DComp)
 		{
 			Entity entity = { physicsEntity, this };
 
@@ -168,11 +160,11 @@ void Scene::OnRuntimeStart()
 				//transformComp.scale = scale;
 			}
 
-			rigidBody2DComp.Init(entity, m_Box2DWorld);
+			rigidBody2DComp.Init(entity, m_Box2DWorld.get());
 		});
 
 	m_Registry.view<LuaScriptComponent>().each(
-		[=](const auto entity, auto& scriptComponent)
+		[this](const auto entity, auto& scriptComponent)
 		{
 			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
 			if (result.has_value())
@@ -194,7 +186,6 @@ void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
 
-	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
 
 	LuaManager::CleanUp();
@@ -296,13 +287,13 @@ void Scene::OnUpdate(float deltaTime)
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
-	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
+	m_Registry.view<AnimatedSpriteComponent>().each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
 			if (animatedSpriteComp.tileset)
 				animatedSpriteComp.tileset->Animate(deltaTime);
 		});
 
-	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
+	m_Registry.view<NativeScriptComponent>().each([this, deltaTime](auto entity, auto& nsc)
 		{
 			if (nsc.InstantiateScript != nullptr)
 			{
@@ -319,7 +310,7 @@ void Scene::OnUpdate(float deltaTime)
 				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
 		});
 
-	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
+	m_Registry.view<LuaScriptComponent>().each([deltaTime](auto entity, auto& luaScriptComp)
 		{
 			if (!luaScriptComp.created)
 			{
@@ -329,7 +320,7 @@ void Scene::OnUpdate(float deltaTime)
 			luaScriptComp.OnUpdate(deltaTime);
 		});
 
-	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
+	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
 		{
 			if (primitiveComponent.needsUpdating)
 			{
@@ -383,7 +374,7 @@ void Scene::OnFixedUpdate()
 				if (rigidBodyComp.runtimeBody == nullptr)
 				{
 					Entity e(entity, this);
-					rigidBodyComp.Init(e, m_Box2DWorld);
+					rigidBodyComp.Init(e, m_Box2DWorld.get());
 				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
@@ -462,7 +453,7 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	std::filesystem::path finalPath = filepath;
 	finalPath.replace_extension(".scene");
 
-	ENGINE_INFO("Saving Scene {0} to {1}", m_SceneName, finalPath.string());
+	ENGINE_INFO("Saving Scene to {0}", finalPath.string());
 
 	if (!std::filesystem::exists(finalPath))
 	{
@@ -573,7 +564,7 @@ Entity Scene::GetPrimaryCameraEntity()
 	auto view = m_Registry.view<CameraComponent>();
 	for (auto entity : view)
 	{
-		auto& cameraComp = view.get<CameraComponent>(entity);
+		CameraComponent const& cameraComp = view.get<CameraComponent>(entity);
 		if (cameraComp.Primary)
 			return Entity{ entity, this };
 	}
@@ -592,14 +583,13 @@ void Scene::SetShowDebug(bool show)
 {
 	if (show && !m_Box2DDraw)
 	{
-		m_Box2DDraw = new Box2DDebugDraw();
+		m_Box2DDraw = CreateScope<Box2DDebugDraw>();
 		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
 		if (m_Box2DWorld)
-			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
+			m_Box2DWorld->SetDebugDraw(m_Box2DDraw.get());
 	}
 	else if (!show)
 	{
-		delete m_Box2DDraw;
 		m_Box2DDraw = nullptr;
 	}
 }

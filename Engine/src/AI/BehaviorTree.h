@@ -17,7 +17,6 @@
 
 namespace BehaviourTree
 {
-
 class Node
 {
 public:
@@ -68,7 +67,7 @@ class Composite : public Node
 public:
 	Composite() = default;
 	~Composite() override = default;
-	
+
 	void addChild(Ref<Node> child) { m_Children.push_back(child); }
 	bool hasChildren() const { return !m_Children.empty(); }
 
@@ -78,10 +77,10 @@ public:
 	std::vector<Ref<Node>>::reverse_iterator rend() { return m_Children.rend(); }
 
 	std::vector<Ref<Node>>::const_iterator begin() const { return m_Children.begin(); }
-	std::vector<Ref<Node>>::const_iterator end() const  { return m_Children.end(); }
+	std::vector<Ref<Node>>::const_iterator end() const { return m_Children.end(); }
 	std::vector<Ref<Node>>::const_reverse_iterator rbegin() const { return m_Children.rbegin(); }
 	std::vector<Ref<Node>>::const_reverse_iterator rend() const { return m_Children.rend(); }
-	
+
 protected:
 	std::vector<Ref<Node>> m_Children;
 };
@@ -103,7 +102,7 @@ public:
 	bool hasBool(std::string const& key) const { return m_Bools.find(key) != m_Bools.end(); }
 
 	//INT
-	void setInt(std::string const& key, int value)  { m_Ints[key] = value; }
+	void setInt(std::string const& key, int value) { m_Ints[key] = value; }
 	int getInt(std::string const& key)
 	{
 		if (m_Ints.find(key) == m_Ints.end()) {
@@ -111,10 +110,10 @@ public:
 		}
 		return m_Ints[key];
 	}
-	bool hasInt(std::string const& key) const  { return m_Ints.find(key) != m_Ints.end(); }
+	bool hasInt(std::string const& key) const { return m_Ints.find(key) != m_Ints.end(); }
 
 	//FLOAT
-	void setFloat(std::string const& key, float value)  { m_Floats[key] = value; }
+	void setFloat(std::string const& key, float value) { m_Floats[key] = value; }
 	float getFloat(std::string const& key)
 	{
 		if (m_Floats.find(key) == m_Floats.end()) {
@@ -122,10 +121,10 @@ public:
 		}
 		return m_Floats[key];
 	}
-	bool hasFloat(std::string const& key) const  { return m_Floats.find(key) != m_Floats.end(); }
+	bool hasFloat(std::string const& key) const { return m_Floats.find(key) != m_Floats.end(); }
 
 	//DOUBLE
-	void setDouble(std::string const& key, double value)  { m_Doubles[key] = value; }
+	void setDouble(std::string const& key, double value) { m_Doubles[key] = value; }
 	double getDouble(std::string const& key)
 	{
 		if (m_Doubles.find(key) == m_Doubles.end()) {
@@ -133,10 +132,10 @@ public:
 		}
 		return m_Doubles[key];
 	}
-	bool hasDouble(std::string const& key) const  { return m_Doubles.find(key) != m_Doubles.end(); }
+	bool hasDouble(std::string const& key) const { return m_Doubles.find(key) != m_Doubles.end(); }
 
 	//STRING
-	void setString(std::string const& key, std::string_view value)  { m_Strings[key] = value; }
+	void setString(std::string const& key, std::string_view value) { m_Strings[key] = value; }
 	std::string getString(std::string const& key)
 	{
 		if (m_Strings.find(key) == m_Strings.end()) {
@@ -144,7 +143,7 @@ public:
 		}
 		return m_Strings[key];
 	}
-	bool hasString(std::string const& key) const  { return m_Strings.find(key) != m_Strings.end(); }
+	bool hasString(std::string const& key) const { return m_Strings.find(key) != m_Strings.end(); }
 
 	//VECTOR2D
 	void setVector2D(std::string const& key, Vector2f value) { m_Vector2s[key] = value; }
@@ -203,7 +202,7 @@ public:
 	Leaf() = default;
 	~Leaf() override = default;
 	explicit Leaf(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
-	
+
 	Status update(float deltaTime) override = 0;
 
 protected:
@@ -216,8 +215,8 @@ class BehaviourTree : public Node
 {
 public:
 	BehaviourTree() : m_Blackboard(CreateRef<Blackboard>()) {}
-	explicit BehaviourTree(const Ref<Node> &rootNode) : BehaviourTree() { m_Root = rootNode; }
-	
+	explicit BehaviourTree(const Ref<Node>& rootNode) : BehaviourTree() { m_Root = rootNode; }
+
 	Status update(float deltaTime) override
 	{
 		Status status = m_Root->tick(deltaTime);
@@ -231,16 +230,16 @@ public:
 		}
 		return status;
 	}
-	
+
 	Ref<Blackboard> getBlackboard() const { return m_Blackboard; }
 
-	void setRoot(const Ref<Node> &node) { m_Root = node; }
+	void setRoot(const Ref<Node>& node) { m_Root = node; }
 
 private:
 	Ref<Node> m_Root = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
 
-	bool m_NodeRunning  = false;
+	bool m_NodeRunning = false;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -284,7 +283,7 @@ public:
 	}
 
 private:
-	Parent * m_Parent;
+	Parent* m_Parent;
 	Composite* m_Node;
 };
 
@@ -326,7 +325,7 @@ public:
 	}
 
 private:
-	Parent * m_Parent;
+	Parent* m_Parent;
 	Decorator* m_Node;
 };
 
@@ -495,8 +494,8 @@ public:
 	{
 		ASSERT(hasChildren(), "Composite has no children");
 
-		int minimumSuccess = m_MinSuccess;
-		int minimumFail = m_MinFail;
+		size_t minimumSuccess = m_MinSuccess;
+		size_t minimumFail = m_MinFail;
 
 		if (m_UseSuccessFailPolicy) {
 			if (m_SuccessOnAll) {
@@ -517,7 +516,7 @@ public:
 		int total_success = 0;
 		int total_fail = 0;
 
-		for (auto &child : m_Children) {
+		for (auto& child : m_Children) {
 			auto status = child->tick(deltaTime);
 			if (status == Status::Success) {
 				total_success++;
@@ -541,8 +540,7 @@ private:
 	bool m_UseSuccessFailPolicy = false;
 	bool m_SuccessOnAll = true;
 	bool m_FailOnAll = true;
-	int m_MinSuccess = 0;
-	int m_MinFail = 0;
+	size_t m_MinSuccess = 0;
+	size_t m_MinFail = 0;
 };
-
 } // namespace BehaviourTree

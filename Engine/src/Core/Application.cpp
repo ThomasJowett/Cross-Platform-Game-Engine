@@ -48,7 +48,7 @@ Application::Application(const WindowProps& props)
 
 	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
 
-	m_ImGuiManager = new ImGuiManager();
+	m_ImGuiManager = CreateScope<ImGuiManager>();
 	m_ImGuiManager->Init();
 
 	if (Settings::GetBool("Display", "Maximized"))
@@ -102,8 +102,6 @@ void Application::RemoveOverlay(Layer* layer)
 void Application::Run()
 {
 	PROFILE_FUNCTION();
-
-	const double deltaTime = 0.01f; // fixed update delta time of 10ms seconds (100 times a second)
 
 	double currentTime = GetTime();
 	double accumulator = 0.0f;
@@ -348,7 +346,7 @@ void Application::SetDefaultSettings(const WindowProps& props)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-double Application::GetTime()
+double Application::GetTime() const
 {
 #ifdef __WINDOWS__
 	static LARGE_INTEGER s_frequency;
@@ -364,7 +362,7 @@ double Application::GetTime()
 	else
 	{
 		//same value but only updates 64 times a second
-		return (double)GetTickCount();
+		return (double)GetTickCount64();
 	}
 #endif // __WINDOWS__
 

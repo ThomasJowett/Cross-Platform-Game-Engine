@@ -9,29 +9,28 @@
 
 #include "TinyXml2/tinyxml2.h"
 
-
 namespace SerializationUtils
 {
-	void Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2);
+void Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2);
 
-	void Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2);
+void Decode(tinyxml2::XMLElement const* pElement, Vector2f& vec2);
 
-	void Encode(tinyxml2::XMLElement* pElement, const Vector3f& vec3);
+void Encode(tinyxml2::XMLElement* pElement, const Vector3f& vec3);
 
-	void Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3);
+void Decode(tinyxml2::XMLElement const* pElement, Vector3f& vec3);
 
-	void Encode(tinyxml2::XMLElement* pElement, const Colour& colour);
+void Encode(tinyxml2::XMLElement* pElement, const Colour& colour);
 
-	void Decode(tinyxml2::XMLElement* pElement, Colour& colour);
+void Decode(tinyxml2::XMLElement const* pElement, Colour& colour);
 
-	void Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath);
+void Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath);
 
-	void Decode(tinyxml2::XMLElement* pElement, std::filesystem::path& filepath);
+void Decode(tinyxml2::XMLElement const* pElement, std::filesystem::path& filepath);
 
-	void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture);
+void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture);
 
-	void Decode(tinyxml2::XMLElement* pElement, Ref<Texture2D>& texture);
+void Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture);
 
-	std::string RelativePath(const std::filesystem::path& path);
-	std::filesystem::path AbsolutePath(const char* path);
+std::string RelativePath(const std::filesystem::path& path);
+std::filesystem::path AbsolutePath(const char* path);
 }

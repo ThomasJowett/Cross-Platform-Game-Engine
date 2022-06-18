@@ -16,7 +16,7 @@ void Animator::SelectAnimation(uint32_t animation)
 
 void Animator::AddAnimation()
 {
-	m_Animations.push_back(Animation(m_SpriteSheet, 0, 3, 0.1f));
+	m_Animations.emplace_back(m_SpriteSheet, 0, 3, 0.1f);
 }
 
 void Animator::Animate(float deltaTime)

@@ -8,7 +8,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector2f& 
 	pElement->SetAttribute("Y", vec2.y);
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Vector2f& vec2)
 {
 	if (pElement)
 	{
@@ -26,7 +26,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector3f& 
 	pElement->SetAttribute("Z", vec3.z);
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Vector3f& vec3)
 {
 	if (pElement)
 	{
@@ -44,10 +44,9 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Colour& co
 	pElement->SetAttribute("G", colour.g);
 	pElement->SetAttribute("B", colour.b);
 	pElement->SetAttribute("A", colour.a);
-
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Colour& colour)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Colour& colour)
 {
 	if (pElement)
 	{
@@ -68,7 +67,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::files
 	}
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, std::filesystem::path& filepath)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, std::filesystem::path& filepath)
 {
 	if (pElement)
 	{
@@ -90,7 +89,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Textur
 	}
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Ref<Texture2D>& texture)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture)
 {
 	if (pElement)
 	{
