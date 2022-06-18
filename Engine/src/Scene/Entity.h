@@ -123,13 +123,13 @@ public:
 
 	// Get the name
 	std::string& GetName();
-	void SetName(const std::string& name);
+	void SetName(const std::string_view name);
 
 	// Get the ID component
 	Uuid GetID();
 
 	// Get the entt handle
-	entt::entity GetHandle();
+	entt::entity GetHandle() const;
 
 	// Get the scene this entity belongs to
 	Scene* GetScene() { return m_Scene; }

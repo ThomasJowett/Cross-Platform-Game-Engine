@@ -86,33 +86,37 @@ namespace Astar
 		uint32_t G;
 		uint32_t H;
 		GridCoord coordinates;
-		Node* parent;
+		Ref<Node> parent;
 
-		Node(GridCoord coordinates, Node* parent = nullptr);
+		Node(GridCoord coordinates, Ref<Node> parent = nullptr);
 
-		uint32_t GetScore();
+		uint32_t GetScore() const;
 	};
 
-	using NodeSet = std::set<Node*>;
+	using NodeSet = std::set<Ref<Node>>;
 
 	class Generator
 	{
 		Generator();
-		Node* FindNodeOnList(const NodeSet& nodes, GridCoord coordinates);
-		void ReleaseNodes(NodeSet& nodes);
+		Ref<Node> FindNodeOnList(const NodeSet& nodes, GridCoord coordinates) const;
+		void ReleaseNodes(NodeSet& nodes) const;
 
 	public:
 		static Generator* GetInstance();
 
 		void SetDiagonalMovement(bool enable);
 		void SetHeuristic(HeuristicFunction function);
-		std::vector<Vector2f> FindPath(Vector2f source, Vector2f goal, AstarGrid* grid);
+		std::vector<Vector2f> FindPath(Vector2f source, Vector2f goal, const AstarGrid* grid) const;
 
 	private:
 		HeuristicFunction m_Heuristic;
-		std::vector<GridCoord> m_Direction;
+		std::vector<GridCoord> m_Direction = {
+			{ 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
+			{ -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
+		};
 		std::vector<GridCoord> m_Collisions;
 		uint32_t m_Directions;
+		static Generator* s_Instance;
 	};
 
 	class Heuristic

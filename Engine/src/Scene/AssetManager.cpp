@@ -6,19 +6,19 @@ std::mutex AssetManager::s_Mutex = std::mutex();
 
 Ref<Tileset> AssetManager::GetTileset(const std::filesystem::path& filepath)
 {
-	std::lock_guard<std::mutex> lock(s_Mutex);
+	std::lock_guard lock(s_Mutex);
 	return Get().GetTilesetImpl(filepath);
 }
 
 Ref<Material> AssetManager::GetMaterial(const std::filesystem::path& filepath)
 {
-	std::lock_guard<std::mutex> lock(s_Mutex);
+	std::lock_guard lock(s_Mutex);
 	return Get().GetMaterialImpl(filepath);
 }
 
 Ref<Mesh> AssetManager::GetMesh(const std::filesystem::path& filepath)
 {
-	std::lock_guard<std::mutex> lock(s_Mutex);
+	std::lock_guard lock(s_Mutex);
 	return Get().GetMeshImpl(filepath);
 }
 

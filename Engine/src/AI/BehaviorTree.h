@@ -57,7 +57,7 @@ public:
 
 	void reset() { status = Status::Invalid; }
 
-protected:
+private:
 	Status status = Status::Invalid;
 };
 
@@ -66,8 +66,8 @@ protected:
 class Composite : public Node
 {
 public:
-	Composite() {}
-	virtual ~Composite() {}
+	Composite() = default;
+	~Composite() override = default;
 	
 	void addChild(Ref<Node> child) { m_Children.push_back(child); }
 	bool hasChildren() const { return !m_Children.empty(); }
@@ -92,83 +92,83 @@ class Blackboard
 {
 public:
 	//BOOL
-	void setBool(std::string key, bool value) { m_Bools[key] = value; }
-	bool getBool(std::string key)
+	void setBool(std::string const& key, bool value) { m_Bools[key] = value; }
+	bool getBool(std::string const& key)
 	{
 		if (m_Bools.find(key) == m_Bools.end()) {
 			m_Bools[key] = false;
 		}
 		return m_Bools[key];
 	}
-	bool hasBool(std::string key) const { return m_Bools.find(key) != m_Bools.end(); }
+	bool hasBool(std::string const& key) const { return m_Bools.find(key) != m_Bools.end(); }
 
 	//INT
-	void setInt(std::string key, int value)  { m_Ints[key] = value; }
-	int getInt(std::string key)
+	void setInt(std::string const& key, int value)  { m_Ints[key] = value; }
+	int getInt(std::string const& key)
 	{
 		if (m_Ints.find(key) == m_Ints.end()) {
 			m_Ints[key] = 0;
 		}
 		return m_Ints[key];
 	}
-	bool hasInt(std::string key) const  { return m_Ints.find(key) != m_Ints.end(); }
+	bool hasInt(std::string const& key) const  { return m_Ints.find(key) != m_Ints.end(); }
 
 	//FLOAT
-	void setFloat(std::string key, float value)  { m_Floats[key] = value; }
-	float getFloat(std::string key)
+	void setFloat(std::string const& key, float value)  { m_Floats[key] = value; }
+	float getFloat(std::string const& key)
 	{
 		if (m_Floats.find(key) == m_Floats.end()) {
 			m_Floats[key] = 0.0f;
 		}
 		return m_Floats[key];
 	}
-	bool hasFloat(std::string key) const  { return m_Floats.find(key) != m_Floats.end(); }
+	bool hasFloat(std::string const& key) const  { return m_Floats.find(key) != m_Floats.end(); }
 
 	//DOUBLE
-	void setDouble(std::string key, double value)  { m_Doubles[key] = value; }
-	double getDouble(std::string key)
+	void setDouble(std::string const& key, double value)  { m_Doubles[key] = value; }
+	double getDouble(std::string const& key)
 	{
 		if (m_Doubles.find(key) == m_Doubles.end()) {
 			m_Doubles[key] = 0.0f;
 		}
 		return m_Doubles[key];
 	}
-	bool hasDouble(std::string key) const  { return m_Doubles.find(key) != m_Doubles.end(); }
+	bool hasDouble(std::string const& key) const  { return m_Doubles.find(key) != m_Doubles.end(); }
 
 	//STRING
-	void setString(std::string key, std::string value)  { m_Strings[key] = value; }
-	std::string getString(std::string key)
+	void setString(std::string const& key, std::string_view value)  { m_Strings[key] = value; }
+	std::string getString(std::string const& key)
 	{
 		if (m_Strings.find(key) == m_Strings.end()) {
 			m_Strings[key] = "";
 		}
 		return m_Strings[key];
 	}
-	bool hasString(std::string key) const  { return m_Strings.find(key) != m_Strings.end(); }
+	bool hasString(std::string const& key) const  { return m_Strings.find(key) != m_Strings.end(); }
 
 	//VECTOR2D
-	void setVector2D(std::string key, Vector2f value) { m_Vector2s[key] = value; }
-	Vector2f getVector2D(std::string key)
+	void setVector2D(std::string const& key, Vector2f value) { m_Vector2s[key] = value; }
+	Vector2f getVector2D(std::string const& key)
 	{
 		if (m_Vector2s.find(key) == m_Vector2s.end()) {
 			m_Vector2s[key] = Vector2f();
 		}
 		return m_Vector2s[key];
 	}
-	bool hasVector2D(std::string key) const { return m_Vector2s.find(key) != m_Vector2s.end(); }
+	bool hasVector2D(std::string const& key) const { return m_Vector2s.find(key) != m_Vector2s.end(); }
 
 	//VECTOR3D
-	void setVector3(std::string key, Vector3f value) { m_Vector3fs[key] = value; }
-	Vector3f getVector3(std::string key)
+	void setVector3(std::string const& key, Vector3f value) { m_Vector3fs[key] = value; }
+	Vector3f getVector3(std::string const& key)
 	{
 		if (m_Vector3fs.find(key) == m_Vector3fs.end()) {
 			m_Vector3fs[key] = Vector3f();
 		}
 		return m_Vector3fs[key];
 	}
-	bool hasVector3(std::string key) const { return m_Vector3fs.find(key) != m_Vector3fs.end(); }
+	bool hasVector3(std::string const& key) const { return m_Vector3fs.find(key) != m_Vector3fs.end(); }
 
-protected:
+private:
 	std::unordered_map<std::string, bool> m_Bools;
 	std::unordered_map<std::string, int> m_Ints;
 	std::unordered_map<std::string, float> m_Floats;
@@ -183,9 +183,9 @@ protected:
 class Decorator : public Node
 {
 public:
-	Decorator(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
-	Decorator() {}
-	virtual ~Decorator() {}
+	explicit Decorator(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
+	Decorator() = default;
+	~Decorator() override = default;
 
 	void setChild(Ref<Node> node) { m_Child = node; }
 	bool hasChild() const { return m_Child != nullptr; }
@@ -200,11 +200,11 @@ protected:
 class Leaf : public Node
 {
 public:
-	Leaf() {}
-	virtual ~Leaf() {}
-	Leaf(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
+	Leaf() = default;
+	~Leaf() override = default;
+	explicit Leaf(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
 	
-	virtual Status update(float deltaTime) = 0;
+	Status update(float deltaTime) override = 0;
 
 protected:
 	Ref<Blackboard> m_Blackboard;
@@ -215,8 +215,8 @@ protected:
 class BehaviourTree : public Node
 {
 public:
-	BehaviourTree() : m_Blackboard(CreateRef<Blackboard>()), m_NodeRunning(false) {}
-	BehaviourTree(const Ref<Node> &rootNode) : BehaviourTree() { m_Root = rootNode; }
+	BehaviourTree() : m_Blackboard(CreateRef<Blackboard>()) {}
+	explicit BehaviourTree(const Ref<Node> &rootNode) : BehaviourTree() { m_Root = rootNode; }
 	
 	Status update(float deltaTime) override
 	{
@@ -240,7 +240,7 @@ private:
 	Ref<Node> m_Root = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
 
-	bool m_NodeRunning;
+	bool m_NodeRunning  = false;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -356,7 +356,7 @@ public:
 		return DecoratorBuilder<Builder>(this, (DecoratorType*)m_Root.get());
 	}
 
-	Ref<Node> build()
+	Ref<Node> build() const
 	{
 		ASSERT(m_Root != nullptr, "The Behaviour Tree is empty!");
 		auto tree = std::make_shared<BehaviourTree>();

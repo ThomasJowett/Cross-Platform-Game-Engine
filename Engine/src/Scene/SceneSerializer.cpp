@@ -32,20 +32,18 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	doc.InsertFirstChild(pRoot);
 
-	m_Scene->m_Registry.each([&](auto entityID)
+	m_Scene->m_Registry.each([this, &pRoot](auto entityID)
 		{
 			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
 				return;
 
-			HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
 
-			if (hierarchyComp != nullptr)
-			{
-				if (hierarchyComp->parent != entt::null)
+			if (HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>(); 
+				hierarchyComp != nullptr && hierarchyComp->parent != entt::null)
 					return;
-			}
+
 			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity, pRoot);
 			return;
 		});
@@ -883,8 +881,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	}
 
 	// Hierarachy ---------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity");
-	if (pChildElement)
+	if (tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity"))
 	{
 		entity.AddComponent<HierarchyComponent>();
 

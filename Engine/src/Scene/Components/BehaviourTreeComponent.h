@@ -6,6 +6,8 @@
 
 struct BehaviourTreeComponent
 {
+	BehaviourTreeComponent() = default;
+	BehaviourTreeComponent(const BehaviourTreeComponent&) = default;
 	BehaviourTree::BehaviourTree behaviourTree;
 
 	std::filesystem::path filepath;

@@ -8,13 +8,13 @@ Entity::Entity(entt::entity handle, Scene* scene, const std::string& name)
 	, m_DebugName(name)
 #endif // DEBUG
 {
-	ASSERT(IsValid(), "This entity is not valid!");
+	ASSERT(IsValid(), "This entity is not valid!")
 }
 
 Entity::Entity(entt::entity handle, Scene* scene)
 	:m_EntityHandle(handle), m_Scene(scene)
 {
-	ASSERT(IsValid(), "This entity is not valid!");
+	ASSERT(IsValid(), "This entity is not valid!")
 
 #ifdef DEBUG
 	m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
@@ -41,7 +41,7 @@ std::string& Entity::GetName()
 	return GetComponent<NameComponent>().name;
 }
 
-void Entity::SetName(const std::string& name)
+void Entity::SetName(const std::string_view name)
 {
 	GetComponent<NameComponent>().name = name;
 }
@@ -51,7 +51,7 @@ Uuid Entity::GetID()
 	return GetComponent<IDComponent>().ID;
 }
 
-entt::entity Entity::GetHandle()
+entt::entity Entity::GetHandle() const
 {
 	return m_EntityHandle;
 }

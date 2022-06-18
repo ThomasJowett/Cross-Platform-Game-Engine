@@ -28,7 +28,7 @@ static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::regi
 {
 	if (registry.any_of<Component>(src))
 	{
-		auto& srcComponent = registry.get<Component>(src);
+		Component& srcComponent = registry.get<Component>(src);
 		registry.emplace_or_replace<Component>(dst, srcComponent);
 	}
 }

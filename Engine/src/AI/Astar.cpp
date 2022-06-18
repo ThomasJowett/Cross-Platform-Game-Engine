@@ -1,10 +1,9 @@
 #include "stdafx.h"
 #include "Astar.h"
 
-
 namespace Astar
 {
-	static Generator* instance = nullptr;
+	Generator* Generator::s_Instance = nullptr;
 
 	GridCoord Heuristic::GetDelta(GridCoord source, GridCoord goal)
 	{
@@ -13,19 +12,19 @@ namespace Astar
 
 	uint32_t Heuristic::Manhattan(GridCoord source, GridCoord goal)
 	{
-		auto delta = std::move(GetDelta(source, goal));
+		GridCoord delta = GetDelta(source, goal);
 		return static_cast<uint32_t>(10 * (delta.x + delta.y));
 	}
 
 	uint32_t Heuristic::Euclidean(GridCoord source, GridCoord goal)
 	{
-		auto delta = std::move(GetDelta(source, goal));
+		GridCoord delta = GetDelta(source, goal);
 		return static_cast<uint32_t>(10 * sqrt(pow(delta.x, 2) + pow(delta.y, 2)));
 	}
 
 	uint32_t Heuristic::Octagonal(GridCoord source, GridCoord goal)
 	{
-		auto delta = std::move(GetDelta(source, goal));
+		GridCoord delta = GetDelta(source, goal);
 		return static_cast <uint32_t>(10 * (delta.x + delta.y) + (-6) * ((delta.x < delta.y) ? delta.x : delta.y));
 	}
 
@@ -33,16 +32,11 @@ namespace Astar
 	{
 		SetDiagonalMovement(true);
 		SetHeuristic(&Heuristic::Octagonal);
-
-		m_Direction = {
-			{ 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
-			{ -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
-		};
 	}
 
-	Node* Generator::FindNodeOnList(const NodeSet& nodes, GridCoord coordinates)
+	Ref<Node> Generator::FindNodeOnList(const NodeSet& nodes, GridCoord coordinates) const
 	{
-		for (Node* node : nodes)
+		for (Ref<Node> node : nodes)
 		{
 			if (node->coordinates == coordinates)
 			{
@@ -52,23 +46,21 @@ namespace Astar
 		return nullptr;
 	}
 
-	void Generator::ReleaseNodes(NodeSet& nodes)
+	void Generator::ReleaseNodes(NodeSet& nodes) const
 	{
 		for (auto it = nodes.begin(); it != nodes.end();)
 		{
-			delete* it;
 			it = nodes.erase(it);
-
 		}
 	}
 
 	Generator* Generator::GetInstance()
 	{
-		if (instance == 0)
+		if (s_Instance == nullptr)
 		{
-			instance = new Generator();
+			s_Instance = new Generator();
 		}
-		return instance;
+		return s_Instance;
 	}
 
 	void Generator::SetDiagonalMovement(bool enable)
@@ -81,11 +73,12 @@ namespace Astar
 		m_Heuristic = std::bind(function, std::placeholders::_1, std::placeholders::_2);
 	}
 
-	std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal, AstarGrid* grid)
+	std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal, const AstarGrid* grid) const
 	{
 		std::vector<Vector2f> path;
 
-		GridCoord sourceCoords, goalCoords;
+		GridCoord sourceCoords;
+		GridCoord goalCoords;
 
 		if (!grid->PositionToGridCoord(source, sourceCoords))
 			return path;
@@ -93,15 +86,16 @@ namespace Astar
 		if (!grid->PositionToGridCoord(goal, goalCoords))
 			return path;
 
-		Node* current = nullptr;
-		NodeSet openSet, closedSet;
+		Ref<Node> current = nullptr;
+		NodeSet openSet;
+		NodeSet closedSet;
 
-		openSet.insert(new Node(sourceCoords));
+		openSet.insert(CreateRef<Node>(sourceCoords));
 
 		while (!openSet.empty())
 		{
 			current = *openSet.begin();
-			for (Node* node : openSet)
+			for (Ref<Node> node : openSet)
 			{
 				if (node->GetScore() <= current->GetScore())
 				{
@@ -126,11 +120,11 @@ namespace Astar
 
 				uint32_t totalcost = current->G + ((i < 4) ? 10 : 14);
 
-				Node* successor = FindNodeOnList(openSet, newCoords);
+				Ref<Node> successor = FindNodeOnList(openSet, newCoords);
 
 				if (successor == nullptr)
 				{
-					successor = new Node(newCoords, current);
+					successor = CreateRef<Node>(newCoords, current);
 					successor->G = totalcost;
 					successor->H = m_Heuristic(successor->coordinates, goalCoords);
 					openSet.insert(successor);
@@ -157,13 +151,13 @@ namespace Astar
 		return std::vector<Vector2f>();
 	}
 
-	Node::Node(GridCoord coordinates, Node* parent)
-		:parent(parent), coordinates(coordinates)
+	Node::Node(GridCoord coordinates, Ref<Node> parent)
+		:coordinates(coordinates), parent(parent)
 	{
 		G = H = 0;
 	}
 
-	uint32_t Node::GetScore()
+	uint32_t Node::GetScore() const
 	{
 		return G + H;
 	}

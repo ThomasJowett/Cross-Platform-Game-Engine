@@ -3,18 +3,16 @@
 
 namespace BehaviourTree
 {
-
 	// The Blackboard Bool decorator returns the value of a blackboard bool
 	class BlackboardBool : public Decorator
 	{
 	public:
-		BlackboardBool(Ref<Blackboard> blackboard, std::string blackboardkey, bool isSet)
-			:mBlackboardKey(blackboardkey), mIsSet(isSet),
-			Decorator(blackboard) {}
+		BlackboardBool(Ref<Blackboard> blackboard, std::string const& blackboardkey, bool isSet)
+			:Decorator(blackboard), mBlackboardKey(blackboardkey), mIsSet(isSet) {}
 
 		Status update(float deltaTime) override
 		{
-			if (!(m_Blackboard->getBool(mBlackboardKey) ^ mIsSet))
+			if (!(m_Blackboard->getBool(mBlackboardKey) != mIsSet))
 				return m_Child->tick(deltaTime);
 
 			return Status::Failure;
@@ -30,13 +28,12 @@ namespace BehaviourTree
 	class BlackboardCompare : public Decorator
 	{
 	public:
-		BlackboardCompare(Ref<Blackboard> blackboard, std::string blackboardkey_1, std::string blackboardkey_2, bool isEqual)
-			:mBBKey_1(blackboardkey_1), mBBKey_2(blackboardkey_2), mIsEqual(isEqual),
-			Decorator(blackboard) {}
+		BlackboardCompare(Ref<Blackboard> blackboard, std::string const& blackboardkey_1, std::string const& blackboardkey_2, bool isEqual)
+			:Decorator(blackboard), mBBKey_1(blackboardkey_1), mBBKey_2(blackboardkey_2), mIsEqual(isEqual) {}
 
 		Status update(float deltaTime) override
 		{
-			if (!((m_Blackboard->getBool(mBBKey_1) == m_Blackboard->getBool(mBBKey_1)) ^ mIsEqual))
+			if (!((m_Blackboard->getBool(mBBKey_1) == m_Blackboard->getBool(mBBKey_2)) != mIsEqual))
 				return m_Child->tick(deltaTime);
 
 			return Status::Failure;
@@ -80,7 +77,7 @@ namespace BehaviourTree
 	public:
 		Status update(float deltaTime) override
 		{
-			auto s = m_Child->tick(deltaTime);
+			Status s = m_Child->tick(deltaTime);
 
 			if (s == Status::Success) {
 				return Status::Failure;
@@ -99,7 +96,7 @@ namespace BehaviourTree
 	class Repeater : public Decorator
 	{
 	public:
-		Repeater(int limit = 0) : limit(limit) {}
+		explicit Repeater(int limit = 0) : limit(limit) {}
 
 		void initialize() override
 		{
@@ -117,7 +114,7 @@ namespace BehaviourTree
 			return Status::Running;
 		}
 
-	protected:
+	private:
 		int limit;
 		int counter = 0;
 	};
@@ -131,7 +128,7 @@ namespace BehaviourTree
 		Status update(float deltaTime) override
 		{
 			while (true) {
-				auto status = m_Child->tick(deltaTime);
+				Status status = m_Child->tick(deltaTime);
 
 				if (status == Status::Success) {
 					return Status::Success;
@@ -149,7 +146,7 @@ namespace BehaviourTree
 		Status update(float deltaTime) override
 		{
 			while (true) {
-				auto status = m_Child->tick(deltaTime);
+				Status status = m_Child->tick(deltaTime);
 
 				if (status == Status::Failure) {
 					return Status::Success;
@@ -157,5 +154,4 @@ namespace BehaviourTree
 			}
 		}
 	};
-
 }

@@ -17,8 +17,8 @@ public:
 	static Ref<Mesh> GetMesh(const std::filesystem::path& filepath);
 
 private:
-	explicit AssetManager() {};
-	~AssetManager() {}
+	explicit AssetManager() = default;;
+	~AssetManager() = default;
 	static AssetManager& Get();
 
 	Ref<Tileset> GetTilesetImpl(const std::filesystem::path& filepath);

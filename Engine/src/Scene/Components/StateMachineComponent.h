@@ -2,8 +2,14 @@
 
 #include "cereal/access.hpp"
 
+#include "AI/StateMachine.h"
+
 struct StateMachineComponent
 {
+	StateMachineComponent() = default;
+	StateMachineComponent(const StateMachineComponent&) = default;
+
+	StateMachine stateMachine;
 private:
 	friend cereal::access;
 	template<typename Archive>

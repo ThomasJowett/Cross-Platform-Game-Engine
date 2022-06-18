@@ -5,6 +5,7 @@
 #include "Renderer/Tileset.h"
 #include "Core/Colour.h"
 #include "Animation/Animator.h"
+#include "Scene/AssetManager.h"
 
 struct AnimatedSpriteComponent
 {
@@ -20,7 +21,7 @@ struct AnimatedSpriteComponent
 		m_CurrentAnimation = animationName;
 	}
 
-	const std::string GetCurrentAnimationName() const { return m_CurrentAnimation; }
+	std::string GetCurrentAnimationName() const { return m_CurrentAnimation; }
 private:
 	std::string m_CurrentAnimation;
 	friend cereal::access;

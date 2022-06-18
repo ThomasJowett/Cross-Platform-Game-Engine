@@ -12,17 +12,16 @@ class Mesh : public Asset
 {
 public:
 	Mesh() = default;
-	Mesh(const std::filesystem::path& filepath);
+	explicit Mesh(const std::filesystem::path& filepath);
 	Mesh(Ref<VertexArray> vertexArray, std::string name);
-	~Mesh() = default;
+	virtual ~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray, std::string name);
-	virtual bool Load(const std::filesystem::path& filepath) override;
+	bool Load(const std::filesystem::path& filepath) override;
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 
-	const Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
+	Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:
 	Ref<VertexArray> m_VertexArray;
 	std::string m_Name;
-	std::filesystem::path m_Filepath;
 };

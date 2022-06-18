@@ -1,6 +1,6 @@
 #pragma once
 
-#include "behaviorTree.h"
+#include "BehaviorTree.h"
 
 //Wait for the specified time when executed
 class Wait : public BehaviourTree::Leaf
