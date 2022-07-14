@@ -293,23 +293,6 @@ void Scene::OnUpdate(float deltaTime)
 				animatedSpriteComp.tileset->Animate(deltaTime);
 		});
 
-	m_Registry.view<NativeScriptComponent>().each([this, deltaTime](auto entity, auto& nsc)
-		{
-			if (nsc.InstantiateScript != nullptr)
-			{
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript(nsc.Name);
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-
-				nsc.Instance->OnUpdate(deltaTime);
-			}
-			else
-				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-		});
-
 	m_Registry.view<LuaScriptComponent>().each([deltaTime](auto entity, auto& luaScriptComp)
 		{
 			if (!luaScriptComp.created)
@@ -382,23 +365,6 @@ void Scene::OnFixedUpdate()
 				transformComp.rotation.z = (float)rigidBodyComp.runtimeBody->GetAngle();
 			});
 	}
-
-	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-		{
-			if (nsc.InstantiateScript != nullptr)
-			{
-				if (!nsc.Instance)
-				{
-					nsc.Instance = nsc.InstantiateScript(nsc.Name);
-					nsc.Instance->m_Entity = Entity{ entity, this };
-					nsc.Instance->OnCreate();
-				}
-
-				nsc.Instance->OnFixedUpdate();
-			}
-			else
-				ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-		});
 
 	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
 		{

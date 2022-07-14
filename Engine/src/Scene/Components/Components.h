@@ -7,7 +7,6 @@
 #include "SpriteComponent.h"
 #include "AnimatedSpriteComponent.h"
 #include "StaticMeshComponent.h"
-#include "NativeScriptComponent.h"
 #include "PrimitiveComponent.h"
 #include "TilemapComponent.h"
 #include "RigidBody2DComponent.h"
@@ -29,7 +28,6 @@ CameraComponent,			\
 SpriteComponent,			\
 AnimatedSpriteComponent,	\
 StaticMeshComponent,		\
-NativeScriptComponent,		\
 PrimitiveComponent,			\
 TilemapComponent,			\
 RigidBody2DComponent,		\
@@ -41,4 +39,3 @@ HierarchyComponent,			\
 LuaScriptComponent,			\
 BehaviourTreeComponent,		\
 StateMachineComponent		\
-

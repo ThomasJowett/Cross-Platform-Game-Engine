@@ -10,11 +10,17 @@ ExampleGame::ExampleGame(const WindowProps& props)
 	// Sets the clear colour of the screen, by default is black
 	RenderCommand::SetClearColour(Colours::GREY);
 
+	std::filesystem::path sceneFilepath = Application::GetWorkingDirectory() / "ExampleScene.scene";
+	Scene* scene = new Scene(Application::GetWorkingDirectory() / "ExampleScene.scene");
+
+	scene->Save();
+
+	SceneManager::ChangeScene(sceneFilepath, false);
+
 	//PushLayer(new GridLayer());
 	PushLayer(new ExampleLayer3D());
 	//PushLayer(new ExampleLayer2D());
 	//PushLayer(new MonteCarloLayer());
-	
 
 	//Application::GetWindow().SetIcon("resources/Circle.png");
 

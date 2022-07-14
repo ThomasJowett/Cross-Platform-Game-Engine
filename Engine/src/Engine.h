@@ -48,9 +48,10 @@
 // Scene
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
-#include "Scene/ScriptableEntity.h"
 #include "Scene/Components/Components.h"
 #include "Scene/SceneManager.h"
+#include "Scene/SceneSerializer.h"
+#include "Scene/AssetManager.h"
 
 // Third Party
 #include "EnTT/entt.hpp"

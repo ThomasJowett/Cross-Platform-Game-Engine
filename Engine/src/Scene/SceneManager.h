@@ -18,7 +18,6 @@ class SceneManager
 public:
 	static Scene* CurrentScene();
 	static bool ChangeScene(std::filesystem::path filepath, bool binary = false);
-	static bool ChangeScene(std::string name);
 	static bool IsSceneLoaded();
 	static bool Update(float deltaTime);
 	static bool FixedUpdate();
@@ -31,7 +30,6 @@ private:
 	static bool FinalChangeScene();
 	static Scope<Scene> s_CurrentScene;
 	static std::filesystem::path s_NextFilepath;
-	static std::string s_NextSceneName;
 	static SceneState s_SceneState;
 	static std::filesystem::path s_EditingScene;
 	static bool s_BinaryScene;

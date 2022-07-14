@@ -5,7 +5,6 @@
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
-std::string SceneManager::s_NextSceneName;
 SceneState SceneManager::s_SceneState = SceneState::Play;
 std::filesystem::path SceneManager::s_EditingScene;
 bool SceneManager::s_BinaryScene;
@@ -61,29 +60,6 @@ bool SceneManager::ChangeScene(std::filesystem::path filepath, bool binary)
 	//return IsSceneLoaded();
 }
 
-bool SceneManager::ChangeScene(std::string name)
-{
-	if (IsSceneLoaded())
-	{
-		if (!s_CurrentScene->GetFilepath().empty())
-		{
-			if (s_CurrentScene->IsUpdating())
-			{
-				s_NextSceneName = name;
-			}
-			else
-			{
-				return FinalChangeScene();
-			}
-		}
-	}
-	s_NextSceneName = name;
-	return FinalChangeScene();
-	//s_CurrentScene = CreateScope<Scene>(name);
-	//
-	//return IsSceneLoaded();
-}
-
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 bool SceneManager::IsSceneLoaded()
@@ -101,7 +77,7 @@ bool SceneManager::Update(float deltaTime)
 		s_CurrentScene->OnUpdate(deltaTime);
 	}
 
-	if (!s_NextFilepath.empty() || !s_NextSceneName.empty())
+	if (!s_NextFilepath.empty())
 	{
 		FinalChangeScene();
 	}
@@ -144,8 +120,6 @@ bool SceneManager::FinalChangeScene()
 
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
-	else if (!s_NextSceneName.empty())
-		s_CurrentScene = CreateScope<Scene>(s_NextSceneName);
 
 	if (!s_CurrentScene->Load(s_BinaryScene))
 		s_CurrentScene = nullptr;
@@ -154,7 +128,6 @@ bool SceneManager::FinalChangeScene()
 	Application::CallEvent(event);
 
 	s_NextFilepath.clear();
-	s_NextSceneName.clear();
 
 	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate && IsSceneLoaded())
 		s_CurrentScene->OnRuntimeStart();
@@ -233,6 +206,5 @@ void SceneManager::Shutdown()
 
 	s_CurrentScene.reset();
 	s_NextFilepath.clear();
-	s_NextSceneName.clear();
 	s_EditingScene.clear();
 }

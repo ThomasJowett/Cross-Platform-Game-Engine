@@ -38,33 +38,33 @@ void PropertiesPanel::OnUpdate(float deltaTime)
 		if (!staticMeshComp.material)
 			staticMeshComp.material = m_DefaultMaterial;
 
-		if (primitiveComp.needsUpdating)
-		{
-			switch (primitiveComp.type)
-			{
-			case PrimitiveComponent::Shape::Cube:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
-				break;
-			case PrimitiveComponent::Shape::Sphere:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
-				break;
-			case PrimitiveComponent::Shape::Plane:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
-				break;
-			case PrimitiveComponent::Shape::Cylinder:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
-				break;
-			case PrimitiveComponent::Shape::Cone:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
-				break;
-			case PrimitiveComponent::Shape::Torus:
-				staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
-				break;
-			default:
-				break;
-			}
-			primitiveComp.needsUpdating = false;
-		}
+		//if (primitiveComp.needsUpdating)
+		//{
+		//	switch (primitiveComp.type)
+		//	{
+		//	case PrimitiveComponent::Shape::Cube:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
+		//		break;
+		//	case PrimitiveComponent::Shape::Sphere:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
+		//		break;
+		//	case PrimitiveComponent::Shape::Plane:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
+		//		break;
+		//	case PrimitiveComponent::Shape::Cylinder:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
+		//		break;
+		//	case PrimitiveComponent::Shape::Cone:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
+		//		break;
+		//	case PrimitiveComponent::Shape::Torus:
+		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
+		//		break;
+		//	default:
+		//		break;
+		//	}
+		//	primitiveComp.needsUpdating = false;
+		//}
 	}
 }
 
@@ -704,12 +704,6 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			//ImGui::FileSelect("State Machine", );
 		});
 
-	// Native Script-------------------------------------------------------------------------------------------------------------------
-	DrawComponent<NativeScriptComponent>(ICON_FA_FILE_CODE" Native Script", entity, [](auto& script)
-		{
-			ImGui::Text("%s", script.Name.c_str());
-		});
-
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [](auto& luaScript)
 		{
@@ -762,18 +756,6 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity);
 		AddComponentMenuItem<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity);
 		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machince", entity);
-
-		if (ImGui::BeginMenu(ICON_FA_FILE_CODE" Native Script", !entity.HasComponent<NativeScriptComponent>() && Factory<ScriptableEntity>::GetMap()->size() > 0))
-		{
-			for (auto&& [key, value] : *Factory<ScriptableEntity>::GetMap())
-			{
-				if (ImGui::MenuItem(key.c_str()))
-				{
-					entity.AddComponent<NativeScriptComponent>().Bind(key);
-				}
-			}
-			ImGui::EndMenu();
-		}
 
 		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));
 

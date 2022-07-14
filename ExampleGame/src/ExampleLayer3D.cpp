@@ -1,30 +1,6 @@
 #include "ExampleLayer3D.h"
 #include "imgui/imgui.h"
 
-class Rotator : public ScriptableEntity
-{
-public:
-	Rotator() : m_Rotation() {}
-	Rotator(Vector3f rotation) : m_Rotation(rotation) {}
-	void OnFixedUpdate() override
-	{
-		GetComponent<TransformComponent>().rotation += m_Rotation;
-	}
-	void OnUpdate(float deltaTime)override
-	{
-		GetComponent<TransformComponent>().rotation += m_Rotation * deltaTime;
-	}
-
-	void SetRotation(Vector3f rotation) { m_Rotation = rotation; }
-private:
-	Vector3f m_Rotation;
-	static ScriptRegister<Rotator> reg;
-};
-
-ScriptRegister<Rotator> Rotator::reg("Rotator Script");
-
-
-
 ExampleLayer3D::ExampleLayer3D()
 	:Layer("Example 3D")
 {
@@ -33,8 +9,6 @@ ExampleLayer3D::ExampleLayer3D()
 
 void ExampleLayer3D::OnAttach()
 {
-	SceneManager::ChangeScene(std::string("Example 3D"));
-
 	m_CubeVertexArray = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
 	m_SphereVertexArray = GeometryGenerator::CreateSphere(0.5f, 50, 50);
 	m_GridVertexArray = GeometryGenerator::CreateGrid(100.0f, 100.0f, 5, 5, 2.0f, 2.0f);
@@ -47,30 +21,30 @@ void ExampleLayer3D::OnAttach()
 
 	Ref<Material> material = CreateRef<Material>("Standard", Colours::WHITE);
 	material->AddTexture(m_Texture, 0);
-	
+
 	Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
 	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] - 1.0f, m_Position[2] };
-	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, 0.002f));
+	entity.AddComponent<LuaScriptComponent>("Scripts/Rotator.lua");
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0], m_Position[1] + 1.0f, m_Position[2] };
-	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(-0.0011f, 0.0014f, 0.002f));
+	entity.AddComponent<LuaScriptComponent>("Scripts/Rotator.lua");
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] + 1.0f, m_Position[2] };
-	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, -0.0014f, 0.002f));
+	entity.AddComponent<LuaScriptComponent>("Scripts/Rotator.lua");
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Torus");
 	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
 	entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 	entity.GetComponent<TransformComponent>().position = { m_Position[0] - 2.0f, m_Position[1] - 1.0f, m_Position[2] };
-	entity.AddComponent<NativeScriptComponent>().Bind<Rotator>(Vector3f(0.0011f, 0.0014f, -0.002f));
+	entity.AddComponent<LuaScriptComponent>("Scripts/Rotator.lua");
 
 	entity = SceneManager::CurrentScene()->CreateEntity("Plane");
 	entity.AddComponent<StaticMeshComponent>(CreateRef<Mesh>(), material);
@@ -92,6 +66,8 @@ void ExampleLayer3D::OnDetach()
 void ExampleLayer3D::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
+
+	SceneManager::CurrentScene()->OnUpdate(deltaTime);
 
 	SceneManager::CurrentScene()->Render(nullptr);
 

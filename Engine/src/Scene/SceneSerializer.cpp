@@ -174,15 +174,6 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 	}
 
-	if (entity.HasComponent<NativeScriptComponent>())
-	{
-		NativeScriptComponent const& component = entity.GetComponent<NativeScriptComponent>();
-
-		tinyxml2::XMLElement* pNativeScriptElement = pElement->InsertNewChildElement("NativeScript");
-
-		pNativeScriptElement->SetAttribute("Name", component.Name.c_str());
-	}
-
 	if (entity.HasComponent<PrimitiveComponent>())
 	{
 		PrimitiveComponent const& component = entity.GetComponent<PrimitiveComponent>();
@@ -564,14 +555,6 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				}
 			}
 		}
-	}
-
-	// Native Script -----------------------------------------------------------------------------------------------------
-	if (tinyxml2::XMLElement const* pNativeScriptComponentElement = pEntityElement->FirstChildElement("NativeScript"))
-	{
-		const char* nativeScriptName = pNativeScriptComponentElement->Attribute("Name");
-		if (nativeScriptName)
-			entity.AddComponent<NativeScriptComponent>(nativeScriptName);
 	}
 
 	// Primitive -------------------------------------------------------------------------------------------------------
