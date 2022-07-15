@@ -29,43 +29,6 @@ void PropertiesPanel::OnAttach()
 
 void PropertiesPanel::OnUpdate(float deltaTime)
 {
-	Entity entity = m_HierarchyPanel->GetSelectedEntity();
-	if (entity && entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
-	{
-		StaticMeshComponent& staticMeshComp = m_HierarchyPanel->GetSelectedEntity().GetOrAddComponent<StaticMeshComponent>();
-		PrimitiveComponent& primitiveComp = m_HierarchyPanel->GetSelectedEntity().GetComponent<PrimitiveComponent>();
-
-		if (!staticMeshComp.material)
-			staticMeshComp.material = m_DefaultMaterial;
-
-		//if (primitiveComp.needsUpdating)
-		//{
-		//	switch (primitiveComp.type)
-		//	{
-		//	case PrimitiveComponent::Shape::Cube:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
-		//		break;
-		//	case PrimitiveComponent::Shape::Sphere:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
-		//		break;
-		//	case PrimitiveComponent::Shape::Plane:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
-		//		break;
-		//	case PrimitiveComponent::Shape::Cylinder:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
-		//		break;
-		//	case PrimitiveComponent::Shape::Cone:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
-		//		break;
-		//	case PrimitiveComponent::Shape::Torus:
-		//		staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
-		//		break;
-		//	default:
-		//		break;
-		//	}
-		//	primitiveComp.needsUpdating = false;
-		//}
-	}
 }
 
 void PropertiesPanel::OnImGuiRender()

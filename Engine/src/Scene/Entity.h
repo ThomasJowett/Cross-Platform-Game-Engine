@@ -103,7 +103,8 @@ public:
 	template<typename T, typename... Args>
 	T& GetOrAddComponent(Args&&... args)
 	{
-		m_Scene->MakeDirty();
+		if (!HasComponent<T>())
+			m_Scene->MakeDirty();
 		return m_Scene->GetRegistry().get_or_emplace<T>(m_EntityHandle, std::forward<args>(args)...);
 	}
 
