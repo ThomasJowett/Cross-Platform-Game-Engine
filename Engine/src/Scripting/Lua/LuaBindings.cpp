@@ -12,6 +12,7 @@
 #include "Scene/SceneManager.h"
 #include "Scene/Components/Components.h"
 #include "Utilities/StringUtils.h"
+#include "Renderer/Renderer2D.h"
 
 template<typename Component>
 void RegisterComponent(sol::state& state)
@@ -41,35 +42,12 @@ void BindLogging(sol::state& state)
 
 	sol::table log = state.create_table("Log");
 
-	log.set_function("Trace", [](std::string_view message)
-		{
-			CLIENT_TRACE(message);
-		});
-
-	log.set_function("Info", [](std::string_view message)
-		{
-			CLIENT_INFO(message);
-		});
-
-	log.set_function("Debug", [](std::string_view message)
-		{
-			CLIENT_DEBUG(message);
-		});
-
-	log.set_function("Warn", [](std::string_view message)
-		{
-			CLIENT_WARN(message);
-		});
-
-	log.set_function("Error", [](std::string_view message)
-		{
-			CLIENT_ERROR(message);
-		});
-
-	log.set_function("Critical", [](std::string_view message)
-		{
-			CLIENT_CRITICAL(message);
-		});
+	log.set_function("Trace", [](std::string_view message) { CLIENT_TRACE(message); });
+	log.set_function("Info", [](std::string_view message) { CLIENT_INFO(message); });
+	log.set_function("Debug", [](std::string_view message) { CLIENT_DEBUG(message); });
+	log.set_function("Warn", [](std::string_view message) { CLIENT_WARN(message); });
+	log.set_function("Error", [](std::string_view message) { CLIENT_ERROR(message); });
+	log.set_function("Critical", [](std::string_view message) { CLIENT_CRITICAL(message); });
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -217,6 +195,39 @@ void BindEntity(sol::state& state)
 	circleRenderer_type["Radius"] = &CircleRendererComponent::radius;
 	circleRenderer_type["Thickness"] = &CircleRendererComponent::thickness;
 	circleRenderer_type["Fade"] = &CircleRendererComponent::fade;
+
+	auto primitive_type = state["PrimitiveComponent"].get_or_create<sol::usertype<PrimitiveComponent>>();
+	primitive_type["Type"] = &PrimitiveComponent::type;
+	primitive_type["CubeWidth"] = &PrimitiveComponent::cubeWidth;
+	primitive_type["CubeHeight"] = &PrimitiveComponent::cubeHeight;
+	primitive_type["CubeDepth"] = &PrimitiveComponent::cubeDepth;
+	primitive_type["ShpereRadius"] = &PrimitiveComponent::sphereRadius;
+	primitive_type["SphereLongitudeLines"] = &PrimitiveComponent::sphereLongitudeLines;
+	primitive_type["SphereLatitudeLines"] = &PrimitiveComponent::sphereLatitudeLines;
+	primitive_type["PlaneWidth"] = &PrimitiveComponent::planeWidth;
+	primitive_type["PlaneLength"] = &PrimitiveComponent::planeLength;
+	primitive_type["PlaneWidthLines"] = &PrimitiveComponent::planeWidthLines;
+	primitive_type["PlaneLengthLines"] = &PrimitiveComponent::planeLengthLines;
+	primitive_type["PlaneTileU"] = &PrimitiveComponent::planeTileU;
+	primitive_type["PlaneTileV"] = &PrimitiveComponent::planeTileV;
+	primitive_type["ConeBottomRadius"] = &PrimitiveComponent::coneBottomRadius;
+	primitive_type["ConeHeight"] = &PrimitiveComponent::coneHeight;
+	primitive_type["ConeSliceCount"] = &PrimitiveComponent::coneSliceCount;
+	primitive_type["ConeStackCount"] = &PrimitiveComponent::coneStackCount;
+	primitive_type["CylinderBottomRadius"] = &PrimitiveComponent::cylinderBottomRadius;
+	primitive_type["CylinderTopRadius"] = &PrimitiveComponent::cylinderTopRadius;
+	primitive_type["CylinderHeight"] = &PrimitiveComponent::cylinderHeight;
+	primitive_type["CylinderSliceCount"] = &PrimitiveComponent::cylinderSliceCount;
+	primitive_type["CylinderStackCount"] = &PrimitiveComponent::cylinderStackCount;
+	primitive_type["TorusOuterRadius"] = &PrimitiveComponent::torusOuterRadius;
+	primitive_type["TorusInnerRadius"] = &PrimitiveComponent::torusInnerRadius;
+	primitive_type["TorusSliceCount"] = &PrimitiveComponent::torusSliceCount;
+	primitive_type.set_function("SetCube", &PrimitiveComponent::SetCube);
+	primitive_type.set_function("SetSphere", &PrimitiveComponent::SetSphere);
+	primitive_type.set_function("SetPlane", &PrimitiveComponent::SetPlane);
+	primitive_type.set_function("SetCylinder", &PrimitiveComponent::SetCylinder);
+	primitive_type.set_function("SetCone", &PrimitiveComponent::SetCone);
+	primitive_type.set_function("SetTorus", &PrimitiveComponent::SetTorus);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -288,7 +299,7 @@ void BindMath(sol::state& state)
 
 	sol::usertype<Vector2f> vector2_type = state.new_usertype<Vector2f>(
 		"Vec2",
-		sol::constructors<Vector2f(float, float)>(),
+		sol::constructors<Vector2f(float, float), Vector2f()>(),
 		"x", &Vector2f::x,
 		"y", &Vector2f::y,
 		sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
@@ -304,7 +315,7 @@ void BindMath(sol::state& state)
 
 	sol::usertype<Vector3f> vector3_type = state.new_usertype<Vector3f>(
 		"Vec3",
-		sol::constructors<Vector3f(float, float, float)>(),
+		sol::constructors<Vector3f(float, float, float), Vector3f()>(),
 		"x", &Vector3f::x,
 		"y", &Vector3f::y,
 		"z", &Vector3f::z,
@@ -319,7 +330,7 @@ void BindMath(sol::state& state)
 
 	sol::usertype<Quaternion> quaternion_type = state.new_usertype<Quaternion>(
 		"Quaternion",
-		sol::constructors<Quaternion(float, float, float)>(),
+		sol::constructors<Quaternion(float, float, float), Quaternion()>(),
 		"w", &Quaternion::w,
 		"x", &Quaternion::x,
 		"y", &Quaternion::y,
@@ -341,7 +352,7 @@ void BindCommonTypes(sol::state& state)
 {
 	sol::usertype<Colour> colour_type = state.new_usertype<Colour>(
 		"Colour",
-		sol::constructors<Colour(float, float, float, float)>(),
+		sol::constructors<Colour(float, float, float, float), Colour(), Colour(Colours)>(),
 		"r", &Colour::r,
 		"g", &Colour::g,
 		"b", &Colour::b,
@@ -384,5 +395,19 @@ void BindCommonTypes(sol::state& state)
 	state.new_enum("Colours", coloursItems);
 
 	colour_type.set_function("SetColour", static_cast<void(Colour::*)(Colours)>(&Colour::SetColour));
+}
+
+void BindDebug(sol::state& state)
+{
+	PROFILE_FUNCTION();
+
+	sol::table debug = state.create_table("Debug");
+
+	debug.set_function("DrawLine", [](const Vector3f& start, const Vector3f& end, const Colour& colour)
+		{ Renderer2D::DrawHairLine(start, end, colour); });
+	debug.set_function("DrawCircle", [](const Vector3f& position, float radius, uint32_t segments, const Colour& colour)
+		{ Renderer2D::DrawHairLineCircle(position, radius, segments, colour); });
+	debug.set_function("DrawRect", [](const Vector3f& position, const Vector2f& size, const Colour& colour)
+		{ Renderer2D::DrawHairLineRect(position, size, colour); });
 }
 }

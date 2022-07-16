@@ -106,6 +106,66 @@ struct PrimitiveComponent
 
 	PrimitiveComponent(const PrimitiveComponent&) = default;
 
+	void SetCube(float width, float depth, float height)
+	{
+		cubeWidth = width;
+		cubeDepth = depth;
+		cubeHeight = height;
+		type = Shape::Cube;
+		needsUpdating = true;
+	}
+
+	void SetSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
+	{
+		sphereRadius = radius;
+		sphereLongitudeLines = longitudeLines;
+		sphereLatitudeLines = latitudeLines;
+		type = Shape::Sphere;
+		needsUpdating = true;
+	}
+
+	void SetPlane(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
+	{
+		planeWidth = width;
+		planeLength = length;
+		planeWidthLines = widthLines;
+		planeLengthLines = lengthLines;
+		planeTileU = tileU;
+		planeTileV = tileV;
+		type = Shape::Plane;
+		needsUpdating = true;
+	}
+
+	void SetCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+	{
+		cylinderBottomRadius = bottomRadius;
+		cylinderTopRadius = topRadius;
+		cylinderHeight = height;
+		cylinderSliceCount = sliceCount;
+		cylinderStackCount = stackCount;
+		type = Shape::Cylinder;
+		needsUpdating = true;
+	}
+
+	void SetCone(float bottomRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+	{
+		coneBottomRadius = bottomRadius;
+		coneHeight = height;
+		coneSliceCount = sliceCount;
+		coneStackCount = stackCount;
+		type = Shape::Cone;
+		needsUpdating = true;
+	}
+
+	void SetTorus(float outerRadius, float innerRadius, uint32_t sliceCount)
+	{
+		torusOuterRadius = outerRadius;
+		torusInnerRadius = innerRadius;
+		torusSliceCount = sliceCount;
+		type = Shape::Torus;
+		needsUpdating = true;
+	}
+
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
 private:

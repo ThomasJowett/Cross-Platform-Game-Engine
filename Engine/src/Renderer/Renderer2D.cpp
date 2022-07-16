@@ -653,7 +653,6 @@ void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilem
 			Vector3f position((float)j + 0.5f, -(float)i - 0.5f, 0.0f);
 			Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.001f, 1.001f, 1.0f));
 			DrawQuad(finalTransform, tilemapComp.tileset->GetSubTexture(), tilemapComp.tint, entityId);
-
 		}
 	}
 }
@@ -791,7 +790,7 @@ void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const 
 	s_Data.statistics.hairLineCount++;
 }
 
-void Renderer2D::DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour, int entityId)
+void Renderer2D::DrawHairLineRect(const Vector3f& position, const Vector2f& size, const Colour& colour, int entityId)
 {
 	Vector3f p0 = Vector3f(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 	Vector3f p1 = Vector3f(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -824,10 +823,13 @@ void Renderer2D::DrawHairLineCircle(const Vector3f& position, float radius, uint
 
 void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments, const Colour& colour, int entityId)
 {
+	if (segments < 3)
+		return;
 	Vector3f previousPoint(1.0f, 0.0f, 0.0f);
 	Vector3f currentPoint;
 
 	previousPoint = transform * previousPoint;
+	Vector3f firstPoint = previousPoint;
 
 	float step = (float)(2 * PI) / segments;
 
@@ -841,6 +843,7 @@ void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segment
 		DrawHairLine(previousPoint, currentPoint, colour, entityId);
 		previousPoint = currentPoint;
 	}
+	DrawHairLine(currentPoint, firstPoint, colour, entityId);
 }
 
 void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour, int entityId)

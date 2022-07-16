@@ -64,6 +64,10 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 	if (!m_OnFixedUpdateFunc->valid())
 		m_OnFixedUpdateFunc.reset();
 
+	m_OnDebugRenderFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnDebugRender"]);
+	if (!m_OnDebugRenderFunc->valid())
+		m_OnDebugRenderFunc.reset();
+
 	LuaManager::GetState().collect_garbage();
 	return std::nullopt;
 }
@@ -116,6 +120,19 @@ void LuaScriptComponent::OnFixedUpdate()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnFixedUpdate': {0}", error.what());
+		}
+	}
+}
+
+void LuaScriptComponent::OnDebugRender()
+{
+	if (m_OnDebugRenderFunc)
+	{
+		sol::protected_function_result result = m_OnDebugRenderFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnDebugRender': {0}", error.what());
 		}
 	}
 }

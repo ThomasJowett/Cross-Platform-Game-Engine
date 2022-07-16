@@ -20,6 +20,7 @@ void LuaManager::Init()
 	Lua::BindInput(*s_State);
 	Lua::BindMath(*s_State);
 	Lua::BindCommonTypes(*s_State);
+	Lua::BindDebug(*s_State);
 }
 
 void LuaManager::Shutdown()
@@ -30,7 +31,7 @@ void LuaManager::Shutdown()
 
 void LuaManager::CleanUp()
 {
-	if(s_State)
+	if (s_State)
 	{
 		s_State->stack_clear();
 		s_State->collect_garbage();

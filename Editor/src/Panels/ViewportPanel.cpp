@@ -108,9 +108,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	switch (SceneManager::GetSceneState())
 	{
+		[[fallthrough]];
 	case SceneState::Play:
-		SceneManager::CurrentScene()->Render(m_Framebuffer);
-		break;
 	case SceneState::Pause:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
 		break;
@@ -265,12 +264,46 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				}
 			}
 		}
+
 		Renderer2D::EndScene();
 		m_Framebuffer->UnBind();
 		break;
 	}
 	default:
 		break;
+	}
+
+	if (SceneManager::GetSceneState() == SceneState::Simulate)
+	{
+		m_Framebuffer->Bind();
+		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
+			{
+				luaScriptComp.OnDebugRender();
+			});
+		Renderer2D::EndScene();
+		m_Framebuffer->UnBind();
+	}
+	else if (SceneManager::GetSceneState() == SceneState::Play)
+	{
+		m_Framebuffer->Bind();
+		Matrix4x4 view;
+		Matrix4x4 projection;
+		Entity cameraEntity = SceneManager::CurrentScene()->GetPrimaryCameraEntity();
+		if (cameraEntity)
+		{
+			auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+			view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+			projection = cameraComp.Camera.GetProjectionMatrix();
+		}
+
+		Renderer2D::BeginScene(view, projection);
+		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
+			{
+				luaScriptComp.OnDebugRender();
+			});
+		Renderer2D::EndScene();
+		m_Framebuffer->UnBind();
 	}
 }
 
@@ -833,5 +866,4 @@ void ViewportPanel::HandleKeyboardInputs()
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 			Save();
 	}
-
 }

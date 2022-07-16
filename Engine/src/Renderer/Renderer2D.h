@@ -66,7 +66,7 @@ public:
 
 	// Hair Lines
 	static void DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour = Colours::WHITE, int entityId = -1);
-	static void DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineRect(const Vector3f& position, const Vector2f& size, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineRect(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineCircle(const Vector3f& position, float radius, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);

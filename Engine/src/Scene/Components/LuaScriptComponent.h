@@ -27,6 +27,7 @@ struct LuaScriptComponent
 	void OnDestroy();
 	void OnUpdate(float deltaTime);
 	void OnFixedUpdate();
+	void OnDebugRender();
 
 private:
 	friend cereal::access;
@@ -54,4 +55,5 @@ private:
 	Ref<sol::protected_function> m_OnDestroyFunc;
 	Ref<sol::protected_function> m_OnUpdateFunc;
 	Ref<sol::protected_function> m_OnFixedUpdateFunc;
+	Ref<sol::protected_function> m_OnDebugRenderFunc;
 };

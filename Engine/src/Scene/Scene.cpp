@@ -250,7 +250,9 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	}
 
 	if (m_Box2DDraw && m_Box2DWorld)
+	{
 		m_Box2DWorld->DrawDebugData();
+	}
 
 	Renderer::EndScene();
 
