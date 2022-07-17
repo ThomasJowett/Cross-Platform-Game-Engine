@@ -18,7 +18,8 @@ template<typename Component>
 void RegisterComponent(sol::state& state)
 {
 	std::string name = type_name<Component>().data();
-	name.pop_back();
+
+	name = SplitString(name, '\n')[0];
 	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
 	entity_Type.set_function("Add" + name, static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));

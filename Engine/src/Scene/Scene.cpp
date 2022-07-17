@@ -266,7 +266,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 {
 	PROFILE_FUNCTION();
 
-	SceneGraph::Traverse(m_Registry);
 	Matrix4x4 view;
 	Matrix4x4 projection;
 
