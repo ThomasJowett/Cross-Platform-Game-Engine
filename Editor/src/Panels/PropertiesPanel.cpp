@@ -414,7 +414,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					SceneManager::CurrentScene()->MakeDirty();
 				}
 				tempInt = primitive.sphereLatitudeLines;
-				if (ImGui::DragInt("Latitude Lines##Sphere", &tempInt, 1.0f, 2, 600))
+				if (ImGui::DragInt("Latitude Lines##Sphere", &tempInt, 1.0f, 3, 600))
 				{
 					primitive.sphereLatitudeLines = tempInt;
 					primitive.needsUpdating = true;

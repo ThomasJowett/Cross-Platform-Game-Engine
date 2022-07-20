@@ -101,16 +101,16 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 
 	if (longitudeLines < 3)
 		longitudeLines = 3;
-	if (latitudeLines < 2)
-		latitudeLines = 2;
+	if (latitudeLines < 3)
+		latitudeLines = 3;
 
 	std::vector<float> verticesList;
 
-	float phiStep = (float)PI / latitudeLines;
+	float phiStep = (float)PI / (latitudeLines - 1);
 	float thetaStep = 2.0f * (float)PI / longitudeLines;
 
 	// Compute vertices for each latitude ring
-	for (uint32_t i = 0; i <= latitudeLines; ++i)
+	for (uint32_t i = 0; i <= latitudeLines - 1; ++i)
 	{
 		float phi = i * phiStep;
 
@@ -143,6 +143,8 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 			tangent.y = 0.0f;
 			tangent.z = radius * sinf(phi) * cosf(theta);
 
+			tangent.Normalize();
+
 			verticesList.push_back(tangent.x);
 			verticesList.push_back(tangent.y);
 			verticesList.push_back(tangent.z);
@@ -153,20 +155,19 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 		}
 	}
 
-
 	std::vector<uint32_t> indicesList;
 
-	for (uint32_t i = 0; i <= latitudeLines; i++)
+	for (uint32_t i = 0; i <= latitudeLines - 2; i++)
 	{
 		for (uint32_t j = 0; j < longitudeLines; j++)
 		{
-			indicesList.push_back(i * longitudeLines + j);
 			indicesList.push_back(i * longitudeLines + j + 1);
-			indicesList.push_back((i + 1) * longitudeLines + j + 1);
+			indicesList.push_back(i * longitudeLines + j + 2);
+			indicesList.push_back((i + 1) * longitudeLines + j + 2);
 
-			indicesList.push_back(i * longitudeLines + j);
+			indicesList.push_back(i * longitudeLines + j + 1);
+			indicesList.push_back((i + 1) * longitudeLines + j + 2);
 			indicesList.push_back((i + 1) * longitudeLines + j + 1);
-			indicesList.push_back((i + 1) * longitudeLines + j);
 		}
 	}
 
@@ -434,7 +435,6 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 		//TexCoords
 		verticesList.push_back((x / height + 0.5f));
 		verticesList.push_back(1.0f - (z / height + 0.5f));
-
 	}
 
 	//Position
