@@ -12,10 +12,6 @@
 #include "Core/Colour.h"
 #include "Core/Settings.h"
 
-// Misc
-#include "OrthoGrpahicCameraController.h"
-#include "PerspectiveCameraController.h"
-
 // Logging
 #include "Logging/Logger.h"
 #include "Logging/Timer.h"
