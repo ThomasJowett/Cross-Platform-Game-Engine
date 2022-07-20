@@ -250,9 +250,9 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	uint32_t* indices = new uint32_t[facecount * 3];
 
 	k = 0;
-	for (uint32_t i = 0; i < lengthLines - 1; ++i)
+	for (uint32_t i = 0; i < widthLines - 1; ++i)
 	{
-		for (uint32_t j = 0; j < widthLines - 1; ++j)
+		for (uint32_t j = 0; j < lengthLines - 1; ++j)
 		{
 			indices[k] = i * lengthLines + j;
 			indices[k + 1] = i * lengthLines + j + 1;
