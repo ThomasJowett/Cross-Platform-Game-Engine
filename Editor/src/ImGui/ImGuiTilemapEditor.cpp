@@ -67,7 +67,6 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	int tilesHigh = tilemap.tilesHigh;
 	if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
 	{
-
 		tilemap.tiles.resize(tilesHigh);
 		if (tilemap.tilesHigh < (uint32_t)tilesHigh)
 		{
@@ -169,7 +168,6 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			false, window_flags_image);
 		const ImVec2 p = ImGui::GetCursorScreenPos();
 
-
 		ImGui::Image(tilemap.tileset->GetSubTexture()->GetTexture(), displaySize);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -255,27 +253,28 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		}
 
 		ImGui::EndChild();
+
+		ImGui::DragInt2("Coords", m_HoveredCoords);
 	}
 }
 
 void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp)
 {
-	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetParentMatrix());
+	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetWorldMatrix());
 
 	uint32_t cellX((uint32_t)std::floor(localPosition.x));
 	uint32_t cellY((uint32_t)std::floor(-localPosition.y));
 
-	Matrix4x4 tileTransform = transformComp.GetParentMatrix()
-		* Matrix4x4::Translate(transformComp.position)
-		* Matrix4x4::Translate(localPosition)
-		* Matrix4x4::Rotate(transformComp.rotation)
-		* Matrix4x4::Scale(transformComp.scale);
-	
-	Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
+	Matrix4x4 tileTransform = transformComp.GetWorldMatrix()
+		* Matrix4x4::Translate(Vector3f((float)cellX + 0.5f, -(float)cellY - 0.5f, 0.01f));
+
 	if (cellX >= 0 && cellX < tilemapComp.tilesWide && cellY >= 0 && cellY < tilemapComp.tilesHigh)
 	{
-		Renderer2D::DrawQuad(Vector2f((float)cellX + 0.5f, -(float)cellY - 0.5f), Vector2f(1.0f, 1.0f), Colours::ORANGE);
+		Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
 	}
+
+	m_HoveredCoords[0] = cellX;
+	m_HoveredCoords[1] = cellY;
 }
 
 bool TilemapEditor::HasSelection()

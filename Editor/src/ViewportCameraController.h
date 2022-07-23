@@ -48,10 +48,10 @@ private:
 	Camera* m_CurrentCamera;
 	bool m_Is3DCamera;
 
-	float m_AspectRatio = 16.0f/9.0f;
+	float m_AspectRatio = 16.0f / 9.0f;
 	float m_TranslationSpeed = 1.0f;
 
-	float m_FovY = (float)PI / 2;
+	float m_FovY = (float)PI / 4;
 	float m_PerspectiveNearDepth = 1.0f;
 	float m_PerspectiveFarDepth = 1000.0f;
 

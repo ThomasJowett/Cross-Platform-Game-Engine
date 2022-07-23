@@ -250,13 +250,21 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 						Line3D ray = MathUtils::ComputeCameraRay(cameraViewMat, cameraProjectionMat, m_RelativeMousePosition, Vector2f(m_ViewportSize.x, m_ViewportSize.y));
 
-						Quaternion quat(transformComp.rotation);
 						Vector3f normal(0.0f, 0.0f, 1.0f);
+						Matrix4x4 transformMat = transformComp.GetWorldMatrix();
+
+						transformMat.Transpose();
+
+						float translation[3], rotation[3], scale[3];
+						ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
+
+						Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
+
+						Quaternion quat(rotationRad);
 						quat.RotateVectorByQuaternion(normal);
 						Plane tilemapPlane(transformComp.GetWorldPosition(), normal);
 
-						Vector3f position;
-						if (Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
+						if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, Vector3f()/*transformComp.GetWorldPosition()*/, position))
 						{
 							m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
 						}

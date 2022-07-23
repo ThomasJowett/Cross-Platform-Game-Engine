@@ -27,4 +27,6 @@ private:
 	uint32_t m_Columns = 0;
 
 	std::filesystem::file_time_type m_CurrentFileTime;
+
+	int m_HoveredCoords[2];
 };
