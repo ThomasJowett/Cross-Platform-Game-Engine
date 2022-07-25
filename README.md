@@ -35,6 +35,8 @@ Then run the shell script to generate the make files
 ./Progen_gmake.sh
 ```
 The engine can now be built by running `make`.
+## Example Projects
+If you would like to check out some example projects they can be downloaded from [here](https://github.com/ThomasJowett/ExampleGameProjects)
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 * [Entt](https://github.com/skypjack/entt) : Fast and reliable entity-component system (ECS) 
