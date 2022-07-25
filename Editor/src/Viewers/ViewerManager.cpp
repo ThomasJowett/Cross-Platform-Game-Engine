@@ -191,6 +191,8 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 	std::vector<std::string> extensions;
 	switch (fileType)
 	{
+	case FileType::UNKNOWN:
+		return extensions;
 	case FileType::TEXT:
 	{
 		for (const char* ext : TextExtensions)

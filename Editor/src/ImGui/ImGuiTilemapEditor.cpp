@@ -88,11 +88,9 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	{
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
 		{
-			const bool is_selected = false;
-			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
+			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				if (!tilemap.tileset)
-					tilemap.tileset = AssetManager::GetTileset(file);
+				tilemap.tileset = AssetManager::GetTileset(file);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::Tooltip(file.string().c_str());
@@ -270,7 +268,20 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformCompo
 
 	if (cellX >= 0 && cellX < tilemapComp.tilesWide && cellY >= 0 && cellY < tilemapComp.tilesHigh)
 	{
-		Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
+		//Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
+		for (size_t y = 0; y < m_SelectedTiles.size(); y++)
+		{
+			for (size_t x = 0; x < m_SelectedTiles[y].size(); x++)
+			{
+				if (m_SelectedTiles[y][x])
+				{
+					if (tilemapComp.tileset)
+						tilemapComp.tileset->SetCurrentTile((y * m_SelectedTiles[y].size() + x) + 1);
+					break;
+				}
+			}
+		}
+		Renderer2D::DrawQuad(tileTransform, tilemapComp.tileset->GetSubTexture());
 	}
 
 	m_HoveredCoords[0] = cellX;

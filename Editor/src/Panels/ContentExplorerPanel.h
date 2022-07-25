@@ -7,6 +7,8 @@
 #include "FileSystem/Directory.h"
 #include "Interfaces/ICopyable.h"
 
+#include "Viewers/ViewerManager.h"
+
 struct History
 {
 protected:
@@ -96,6 +98,7 @@ public:
 	~ContentExplorerPanel() = default;
 
 	void OnAttach() override;
+	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 
@@ -160,4 +163,7 @@ private:
 
 	std::vector<std::filesystem::path> m_CopiedPaths;
 	bool m_Cut;
+
+	ImGuiTextFilter* m_TextFilter;
+	FileType m_TypeFilter = FileType::UNKNOWN;
 };

@@ -264,7 +264,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						quat.RotateVectorByQuaternion(normal);
 						Plane tilemapPlane(transformComp.GetWorldPosition(), normal);
 
-						if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, Vector3f()/*transformComp.GetWorldPosition()*/, position))
+						if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
 						{
 							m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
 						}
@@ -331,8 +331,6 @@ void ViewportPanel::OnImGuiRender()
 	ImGuizmo::SetOrthographic(m_Is2DMode);
 	ImGuizmo::BeginFrame();
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-
 	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
 
@@ -346,6 +344,7 @@ void ViewportPanel::OnImGuiRender()
 	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (viewShown)
 	{
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		if (ImGui::BeginMenuBar())
 		{
 			ImGui::PopStyleVar();

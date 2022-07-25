@@ -8,11 +8,10 @@
 
 #include "Engine.h"
 
-#include "Viewers/ViewerManager.h"
-
 #include "MainDockSpace.h"
 
 #include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
 
@@ -609,6 +608,12 @@ void ContentExplorerPanel::OnAttach()
 	Settings::SetDefaultInt("ContentExplorer", "SortingMode", 0);
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
+	m_TextFilter = new ImGuiTextFilter();
+}
+
+void ContentExplorerPanel::OnDetach()
+{
+	m_TextFilter->Clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -628,6 +633,16 @@ void ContentExplorerPanel::OnImGuiRender()
 
 	static char inputBuffer[1024] = "";
 
+	static std::string filter(m_TextFilter->InputBuf);
+	static FileType typeFilter = m_TypeFilter;
+
+	if (filter != m_TextFilter->InputBuf || typeFilter != m_TypeFilter)
+	{
+		m_ForceRescan = true;
+		filter = m_TextFilter->InputBuf;
+		typeFilter = m_TypeFilter;
+	}
+
 	if (m_ForceRescan)
 	{
 		m_ForceRescan = false;
@@ -645,8 +660,23 @@ void ContentExplorerPanel::OnImGuiRender()
 			inputBuffer[i] = m_CurrentPath.string()[i];
 		}
 
-		m_Dirs = Directory::GetDirectories(m_CurrentPath, m_SortingMode);
-		m_Files = Directory::GetFiles(m_CurrentPath, m_SortingMode);
+		if (m_TextFilter->IsActive() || m_TypeFilter != FileType::UNKNOWN)
+		{
+			std::vector<std::string> wantedExtensions;
+			if (m_TypeFilter != FileType::UNKNOWN)
+				wantedExtensions = ViewerManager::GetExtensions(m_TypeFilter);
+			m_Files = Directory::GetFilesRecursive(m_CurrentPath, wantedExtensions, std::vector<std::string>(), m_SortingMode);
+			m_Dirs.clear();
+
+			m_Files.erase(
+				std::remove_if(m_Files.begin(), m_Files.end(), [&](std::filesystem::path& file) {return !m_TextFilter->PassFilter(file.filename().string().c_str()); }),
+				m_Files.end());
+		}
+		else
+		{
+			m_Dirs = Directory::GetDirectories(m_CurrentPath, m_SortingMode);
+			m_Files = Directory::GetFiles(m_CurrentPath, m_SortingMode);
+		}
 
 		ClearSelected();
 
@@ -689,7 +719,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		ImGui::PushID("historyDirectoriesID");
 		{
-
 			const bool historyCanGoBack = m_History.CanGoBack();
 			const bool historyCanGoForward = m_History.CanGoForward();
 			const bool historyCanGoUp = m_History.CanGoUp();
@@ -949,6 +978,27 @@ void ContentExplorerPanel::OnImGuiRender()
 		}
 
 		ImGui::Separator();
+		// Search bar ---------------------------------------------------------------------------------------
+		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
+		if (ImGui::Combo("##Type Filter", (int*)&m_TypeFilter,
+			ICON_FA_FILTER "\tNone\0"
+			ICON_FA_FILE_ALT "\tText\0"
+			ICON_FA_FILE_IMAGE "\tImage\0"
+			ICON_FA_SHAPES "\tMesh\0"
+			ICON_FA_IMAGE "\tScene\0"
+			ICON_FA_FILE_CODE "\tScript\0"
+			ICON_FA_FILE_AUDIO "\tAudio\0"
+			ICON_FA_BACON "\tAudio\0"
+			ICON_FA_TH "\tTileset\0"))
+		{
+		}
+
+		ImGui::SameLine();
+		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::SameLine();
+		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
+		ImGui::Tooltip("Filter (\"incl,-excl\")");
+		ImGui::Separator();
 		//----------------------------------------------------------------------------------------------------
 		// MAIN BROWSING WINDOW
 		//----------------------------------------------------------------------------------------------------
@@ -1067,7 +1117,6 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::NextColumn();
 					}
 					ImGui::PopID();
-
 				}
 				break;
 			}
@@ -1130,7 +1179,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 								m_NumberSelected += m_SelectedDirs[i];
 							}
-
 						}
 						ImGui::PopFont();
 						ImGui::TextWrapped("%s", dirName.c_str());
@@ -1145,7 +1193,6 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_CurrentPath = *m_History.GetCurrentFolder();
 							m_ForceRescan = true;
 						}
-
 					}
 
 					//Files -------------------------------------------------------------------------------
@@ -1239,7 +1286,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 					ImGui::EndTable();
 				}
-
 			}
 			break;
 			case ContentExplorerPanel::ZoomLevel::DETAILS:
@@ -1248,7 +1294,6 @@ void ContentExplorerPanel::OnImGuiRender()
 					ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable
 					| ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti
 					| ImGuiTableFlags_ScrollY | ImGuiTableFlags_NoHostExtendY;
-
 
 				if (ImGui::BeginTable("Details Table", 3, table_flags))
 				{
@@ -1397,7 +1442,6 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 
 						ImGui::EndGroup();
-
 					}
 
 					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
@@ -1415,7 +1459,6 @@ void ContentExplorerPanel::OnImGuiRender()
 			}
 
 			ImGui::PopID();
-
 		}
 	}
 	ImGui::End();
