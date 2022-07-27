@@ -341,10 +341,9 @@ void ViewportPanel::OnImGuiRender()
 	if (SceneManager::CurrentScene()->IsDirty())
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
-	bool viewShown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
-	if (viewShown)
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	if (ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags))
 	{
-		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		if (ImGui::BeginMenuBar())
 		{
 			ImGui::PopStyleVar();
@@ -452,9 +451,11 @@ void ViewportPanel::OnImGuiRender()
 
 				ImGui::EndMenu();
 			}
-			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 			ImGui::EndMenuBar();
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		}
+
+		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		ImVec2 topLeft = ImGui::GetCursorPos();
 		m_WindowHovered = ImGui::IsWindowHovered();
 		m_WindowFocussed = ImGui::IsWindowFocused();
@@ -630,8 +631,37 @@ void ViewportPanel::OnImGuiRender()
 				if (m_Operation == OperationMode::Rotate)
 					snapValue = 10.0f;
 
-				//TODO: add a get bounds function method from sprite, camera and mesh
-				float bounds[6] = { -0.5f, -0.5f, -0.0f, 0.5f, 0.5f, 0.0f };
+				float bounds[6];
+
+				if (selectedEntity.HasComponent<SpriteComponent>())
+				{
+					bounds[0] = -0.5f;
+					bounds[1] = -0.5f;
+					bounds[2] = 0.0f;
+					bounds[3] = 0.5f;
+					bounds[4] = 0.5f;
+					bounds[5] = 0.0f;
+				}
+				else if (selectedEntity.HasComponent<StaticMeshComponent>())
+				{
+					//TODO: add a get bounds function method from mesh
+					bounds[0] = -0.5f;
+					bounds[1] = -0.5f;
+					bounds[2] = -0.5f;
+					bounds[3] = 0.5f;
+					bounds[4] = 0.5f;
+					bounds[5] = 0.5f;
+				}
+				else if (selectedEntity.HasComponent<TilemapComponent>())
+				{
+					TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
+					bounds[0] = 0.0f;
+					bounds[1] = -(float)tilemapComp.tilesHigh;
+					bounds[2] = 0.0f;
+					bounds[3] = (float)tilemapComp.tilesWide;
+					bounds[4] = 0.0f;
+					bounds[5] = 0.0f;
+				}
 
 				float snapValues[3] = { snapValue, snapValue, snapValue };
 
@@ -713,7 +743,7 @@ void ViewportPanel::OnImGuiRender()
 					else
 					{
 						Vector3f deltaRotation = rotationRad - transformComp.rotation;
-						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
+						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
 							transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
 						}
@@ -721,7 +751,7 @@ void ViewportPanel::OnImGuiRender()
 						{
 							transformComp.rotation += deltaRotation;
 						}
-						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
+						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
 							transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
 						}
@@ -749,6 +779,7 @@ void ViewportPanel::OnImGuiRender()
 
 		Renderer2D::ResetStats();
 	}
+	ImGui::PopStyleVar();
 	ImGui::End();
 	//ImGui::PopStyleVar();
 }

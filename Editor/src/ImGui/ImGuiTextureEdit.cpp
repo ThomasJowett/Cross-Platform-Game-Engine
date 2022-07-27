@@ -41,7 +41,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 
 		if (ImGui::IsItemHovered())
 		{
-			const uint32_t maxSize = size.x * 4;
+			const float maxSize = size.x * 4.0f;
 			ImVec2 tooltipSize;
 			if (textureHeight == textureWidth && textureWidth > maxSize)
 			{

@@ -23,14 +23,13 @@ void Fonts::LoadFonts(float fontSize)
 	ImGuiIO& io = ImGui::GetIO();
 	DroidSans = io.Fonts->AddFontFromMemoryCompressedTTF(DroidSans_compressed_data, DroidSans_compressed_size, fontSize);
 
-	static const ImWchar fa_icons_ranges[] = { (ImWchar)ICON_MIN_FA, (ImWchar)ICON_MAX_FA, 0 };
-	static const ImWchar md_icons_ranges[] = { (ImWchar)ICON_MIN_MD, (ImWchar)ICON_MAX_MD, 0 };
+	static const ImWchar fa_icons_ranges[] = { (ImWchar)ICON_MIN_FA, (ImWchar)ICON_MAX_16_FA, 0 };
+	static const ImWchar md_icons_ranges[] = { (ImWchar)ICON_MIN_MD, (ImWchar)ICON_MAX_16_MD, 0 };
 	static const ImWchar mdi_icons_ranges[] = { (ImWchar)ICON_MIN_MDI, (ImWchar)ICON_MAX_MDI, 0 };
 	ImFontConfig icons_config;
 	icons_config.MergeMode = true;
 	icons_config.PixelSnapH = true;
 	icons_config.OversampleH = icons_config.OversampleV = 1;
-
 
 	icons_config.GlyphOffset.y = 1.0f;
 	icons_config.SizePixels = fontSize;

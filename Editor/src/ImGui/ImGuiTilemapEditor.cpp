@@ -276,7 +276,7 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformCompo
 				if (m_SelectedTiles[y][x])
 				{
 					if (tilemapComp.tileset)
-						tilemapComp.tileset->SetCurrentTile((y * m_SelectedTiles[y].size() + x) + 1);
+						tilemapComp.tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x) + 1);
 					break;
 				}
 			}

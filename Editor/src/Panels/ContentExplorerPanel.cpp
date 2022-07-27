@@ -414,8 +414,9 @@ void ContentExplorerPanel::RightClickMenu()
 			ImGui::OpenPopup("Rename");
 		}
 		if (ImGui::Selectable("Prefab"))
+		{
 			CLIENT_DEBUG("new prefab");
-
+		}
 		if (ImGui::Selectable("Lua Script"))
 		{
 			CreateNewLuaScript();
