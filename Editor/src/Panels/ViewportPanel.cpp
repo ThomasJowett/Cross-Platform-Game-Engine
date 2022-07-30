@@ -177,7 +177,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					* Matrix4x4::Translate(transformComp.position)
 					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
 					* Matrix4x4::Translate(Vector3f(boxComp.offset.x, boxComp.offset.y, 0.001f))
-					* Matrix4x4::Scale(Vector3f(boxComp.Size.x * transformComp.scale.x * 2, boxComp.Size.y * transformComp.scale.y * 2, 1.0f));
+					* Matrix4x4::Scale(Vector3f(boxComp.size.x * transformComp.scale.x * 2, boxComp.size.y * transformComp.scale.y * 2, 1.0f));
 
 				Renderer2D::DrawHairLineRect(transform, Colours::LIME_GREEN, selectedEntity);
 			}
@@ -633,7 +633,7 @@ void ViewportPanel::OnImGuiRender()
 
 				float bounds[6];
 
-				if (selectedEntity.HasComponent<SpriteComponent>())
+				if (selectedEntity.HasComponent<SpriteComponent>() || selectedEntity.HasComponent<AnimatedSpriteComponent>())
 				{
 					bounds[0] = -0.5f;
 					bounds[1] = -0.5f;
@@ -660,6 +660,18 @@ void ViewportPanel::OnImGuiRender()
 					bounds[2] = 0.0f;
 					bounds[3] = (float)tilemapComp.tilesWide;
 					bounds[4] = 0.0f;
+					bounds[5] = 0.0f;
+				}
+				else if (selectedEntity.HasComponent<BoxCollider2DComponent>())
+				{
+					BoxCollider2DComponent& boxColliderComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
+					TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+
+					bounds[0] = -boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
+					bounds[1] = -boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
+					bounds[2] = 0.0f;
+					bounds[3] = boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
+					bounds[4] = boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
 					bounds[5] = 0.0f;
 				}
 

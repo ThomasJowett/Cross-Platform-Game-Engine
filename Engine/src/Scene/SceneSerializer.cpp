@@ -327,7 +327,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pBoxColliderElement->SetAttribute("Restitution", component.restitution);
 
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
-		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.Size);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.size);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
@@ -721,7 +721,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pBoxColliderComponentElement->QueryFloatAttribute("Restitution", &component.restitution);
 
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Offset"), component.offset);
-		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.Size);
+		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.size);
 	}
 
 	// CircleCollider2D -----------------------------------------------------------------------------------------------

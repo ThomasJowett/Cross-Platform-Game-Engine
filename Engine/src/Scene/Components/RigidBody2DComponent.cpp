@@ -56,7 +56,7 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
 
 		b2PolygonShape boxShape;
-		boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
+		boxShape.SetAsBox(boxColliderComp.size.x * transformComp.scale.x, boxColliderComp.size.y * transformComp.scale.y,
 			b2Vec2(boxColliderComp.offset.x, boxColliderComp.offset.y),
 			0.0f);
 

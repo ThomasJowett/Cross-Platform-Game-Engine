@@ -566,7 +566,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::Vector("Size", boxCollider2D.Size))
+			if (ImGui::Vector("Size", boxCollider2D.size))
 			{
 				SceneManager::CurrentScene()->MakeDirty();
 			}
