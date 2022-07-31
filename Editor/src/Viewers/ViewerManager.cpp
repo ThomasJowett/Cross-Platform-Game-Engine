@@ -178,7 +178,7 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		}
 	}
 
-	if (strcmp(ext, ".tsx") == 0)
+	if (strcmp(ext, ".tileset") == 0)
 	{
 		return FileType::TILESET;
 	}
@@ -242,7 +242,7 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 	}
 	case FileType::TILESET:
 	{
-		extensions.push_back(".tsx");
+		extensions.push_back(".tileset");
 		break;
 	}
 	}

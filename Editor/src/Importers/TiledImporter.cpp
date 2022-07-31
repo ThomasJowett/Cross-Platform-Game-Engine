@@ -1,9 +1,13 @@
 #include "TiledImporter.h"
 #include "TinyXml2/tinyxml2.h"
 #include "Engine.h"
+#include "Utilities/SerializationUtils.h"
 
 static TilemapComponent::Orientation s_Orientation;
 static std::map<uint32_t, Ref<Tileset>> s_Tilesets;
+static std::filesystem::path s_Filepath;
+
+static uint32_t s_TileWidth, s_TileHeight;
 
 bool ParseCsv(const std::string& data, TilemapComponent& tilemapComp)
 {
@@ -27,7 +31,46 @@ bool ParseCsv(const std::string& data, TilemapComponent& tilemapComp)
 		}
 	}
 
-	return false;
+	return true;
+}
+
+Entity LoadImageLayer(tinyxml2::XMLElement* pImageLayer)
+{
+	const char* layerName = pImageLayer->Attribute("name");
+
+	const char* horizontalOffsetChar = pImageLayer->Attribute("offsetx");
+	const char* verticalOffsetChar = pImageLayer->Attribute("offsety");
+	const char* tintColour = pImageLayer->Attribute("tintcolor");
+
+	Vector3f offset(
+		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) / s_TileWidth : 0.0f,
+		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) / s_TileHeight : 0.0f,
+		0.0f
+	);
+
+	tinyxml2::XMLElement* pImage = pImageLayer->FirstChildElement("image");
+
+	Entity imageLayerEntity = SceneManager::CurrentScene()->CreateEntity(layerName ? layerName : "Image");
+	imageLayerEntity.GetTransform().position = offset;
+	imageLayerEntity.GetTransform().scale = Vector3f((float)s_TileWidth, (float)s_TileHeight, 1.0f);
+
+	SpriteComponent& spriteComp = imageLayerEntity.AddComponent<SpriteComponent>();
+
+	const char* textureSource = pImage->Attribute("source");
+	if (textureSource)
+	{
+		std::filesystem::path texturePath = s_Filepath;
+		texturePath.remove_filename();
+		texturePath = texturePath / textureSource;
+		spriteComp.texture = Texture2D::Create(texturePath);
+	}
+
+	if (tintColour)
+	{
+		spriteComp.tint.SetColour(tintColour);
+	}
+
+	return imageLayerEntity;
 }
 
 Entity LoadObjectGroup(tinyxml2::XMLElement* pObjectGroup)
@@ -36,23 +79,23 @@ Entity LoadObjectGroup(tinyxml2::XMLElement* pObjectGroup)
 
 	std::string groupName = pObjectGroup->Attribute("name");
 
-	const char* verticalOffsetChar = pObjectGroup->Attribute("offsetx");
-	const char* horizontalOffsetChar = pObjectGroup->Attribute("offsety");
+	const char* horizontalOffsetChar = pObjectGroup->Attribute("offsetx");
+	const char* verticalOffsetChar = pObjectGroup->Attribute("offsety");
 
 	Vector3f offset(
-		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) : 0.0f,
-		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) : 0.0f,
+		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) / s_TileWidth : 0.0f,
+		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) / s_TileHeight : 0.0f,
 		0.0f
 	);
 	Entity groupEntity = SceneManager::CurrentScene()->CreateEntity(groupName);
-	groupEntity.GetTransform().position += offset;
+	groupEntity.GetTransform().position = offset;
 
 	tinyxml2::XMLElement* pObject = pObjectGroup->FirstChildElement("object");
 
 	while (pObject)
 	{
-		std::string objectName = pObject->Attribute("name");
-		Entity entity = SceneManager::CurrentScene()->CreateEntity(objectName);
+		const char* objectName = pObject->Attribute("name");
+		Entity entity = SceneManager::CurrentScene()->CreateEntity(objectName ? objectName : "Tiled Object");
 		groupEntity.AddChild(entity);
 
 		pObject = pObject->NextSiblingElement("object");
@@ -65,12 +108,12 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 {
 	std::string name = pLayer->Attribute("name");
 
-	const char* verticalOffsetChar = pLayer->Attribute("offsetx");
-	const char* horizontalOffsetChar = pLayer->Attribute("offsety");
+	const char* horizontalOffsetChar = pLayer->Attribute("offsetx");
+	const char* verticalOffsetChar = pLayer->Attribute("offsety");
 
 	Vector3f offset(
-		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) : 0.0f,
-		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) : 0.0f,
+		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) / s_TileWidth : 0.0f,
+		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) / s_TileHeight : 0.0f,
 		0.0f
 	);
 
@@ -79,8 +122,7 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 
 	Entity entity = SceneManager::CurrentScene()->CreateEntity(name);
 	TilemapComponent& tilemapComp = entity.AddComponent<TilemapComponent>(s_Orientation, width, height);
-	entity.GetTransform().position += offset;
-
+	entity.GetTransform().position = offset;
 
 	tinyxml2::XMLElement* pData = pLayer->FirstChildElement("data");
 
@@ -134,15 +176,15 @@ Entity LoadGroup(tinyxml2::XMLElement* pGroup)
 	std::string groupName = pGroup->Attribute("name");
 	Entity groupEntity = SceneManager::CurrentScene()->CreateEntity(groupName);
 
-	const char* verticalOffsetChar = pGroup->Attribute("offsetx");
-	const char* horizontalOffsetChar = pGroup->Attribute("offsety");
+	const char* horizontalOffsetChar = pGroup->Attribute("offsetx");
+	const char* verticalOffsetChar = pGroup->Attribute("offsety");
 
 	Vector3f offset(
-		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) : 0.0f,
-		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) : 0.0f,
+		horizontalOffsetChar != nullptr ? atoi(horizontalOffsetChar) / s_TileWidth : 0.0f,
+		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) / s_TileHeight : 0.0f,
 		0.0f
 	);
-	groupEntity.GetTransform().position += offset;
+	groupEntity.GetTransform().position = offset;
 
 	tinyxml2::XMLElement* pLayer = pGroup->FirstChildElement("layer");
 
@@ -159,7 +201,16 @@ Entity LoadGroup(tinyxml2::XMLElement* pGroup)
 	{
 		groupEntity.AddChild(LoadObjectGroup(pObjectGroup));
 
-		pObjectGroup = pObjectGroup->NextSiblingElement("layer");
+		pObjectGroup = pObjectGroup->NextSiblingElement("objectgroup");
+	}
+
+	tinyxml2::XMLElement* pImageGroup = pGroup->FirstChildElement("imagelayer");
+
+	while (pImageGroup)
+	{
+		groupEntity.AddChild(LoadImageLayer(pImageGroup));
+
+		pImageGroup = pImageGroup->NextSiblingElement("imagelayer");
 	}
 
 	tinyxml2::XMLElement* pChildGroup = pGroup->FirstChildElement("group");
@@ -174,9 +225,89 @@ Entity LoadGroup(tinyxml2::XMLElement* pGroup)
 	return groupEntity;
 }
 
-void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination)
+void LoadTileset(const std::filesystem::path& filepath, const std::filesystem::path& destination)
 {
 	tinyxml2::XMLDocument doc;
+
+	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	{
+		Ref<Tileset> tileset = CreateRef<Tileset>();
+		tinyxml2::XMLElement* pRoot;
+
+		pRoot = doc.FirstChildElement("tileset");
+
+		uint32_t tileWidth, tileHeight;
+
+		pRoot->QueryUnsignedAttribute("tilewidth", &tileWidth);
+		pRoot->QueryUnsignedAttribute("tileheight", &tileHeight);
+
+		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
+
+		const char* textureSource = pImage->Attribute("source");
+
+		if (textureSource)
+		{
+			std::filesystem::path texturePath = filepath;
+			texturePath.remove_filename();
+			texturePath = texturePath / textureSource;
+			tileset->SetSubTexture(CreateRef<SubTexture2D>(Texture2D::Create(texturePath), tileWidth, tileHeight));
+		}
+
+		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
+
+		while (pTile)
+		{
+			int tileId = atoi(pTile->Attribute("id"));
+			const char* probability = pTile->Attribute("probability");
+			if (probability != nullptr)
+			{
+				tileset->SetTileProbability(tileId, atof(probability));
+			}
+
+			tinyxml2::XMLElement* pAnimation = pTile->FirstChildElement("animation");
+			if (pAnimation)
+			{
+				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
+
+				uint32_t startFrame = std::numeric_limits<uint32_t>::max();
+				uint32_t endFrame = 0;
+
+				float duration = 0.0f;
+
+				while (pFrame)
+				{
+					const char* tileid = pFrame->Attribute("tileid");
+					if ((uint32_t)atoi(tileid) < startFrame)
+						startFrame = atoi(tileid);
+					if ((uint32_t)atoi(tileid) > endFrame)
+						endFrame = atoi(tileid);
+					pFrame->QueryFloatAttribute("duration", &duration);
+					pFrame = pFrame->NextSiblingElement("frame");
+				}
+				tileset->AddAnimation("Unnamed Animation", startFrame, endFrame - startFrame + 1, duration);
+			}
+			pTile = pTile->NextSiblingElement("tile");
+		}
+		std::filesystem::path newFilePath = filepath;
+		newFilePath.replace_extension(".tileset");
+		tileset->SaveAs(destination / newFilePath.filename());
+	}
+	else
+	{
+		CLIENT_ERROR("Could not load tileset {0}. {1} on line {2}. File format must be xml!", filepath, doc.ErrorName(), doc.ErrorLineNum());
+	}
+}
+
+void TiledImporter::ImportTileset(const std::filesystem::path& filepath, const std::filesystem::path& destination)
+{
+	LoadTileset(filepath, destination);
+}
+
+void TiledImporter::ImportTilemap(const std::filesystem::path& filepath, const std::filesystem::path& destination)
+{
+	tinyxml2::XMLDocument doc;
+
+	s_Filepath = filepath;
 
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
@@ -203,6 +334,9 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 		pRoot->QueryUnsignedAttribute("width", &width);
 		pRoot->QueryUnsignedAttribute("height", &height);
 
+		pRoot->QueryUnsignedAttribute("tilewidth", &s_TileWidth);
+		pRoot->QueryUnsignedAttribute("tileheight", &s_TileHeight);
+
 		tinyxml2::XMLElement* pTileSet = pRoot->FirstChildElement("tileset");
 
 		std::filesystem::path fileDirectory = filepath;
@@ -213,6 +347,10 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 			const char* tsxPath = pTileSet->Attribute("source");
 
 			std::filesystem::path tilesetPath(fileDirectory / tsxPath);
+
+			LoadTileset(tilesetPath, destination);
+
+			tilesetPath.replace_extension(".tileset");
 
 			Ref<Tileset> tileset = AssetManager::GetTileset(tilesetPath);
 			if (tileset)
@@ -241,6 +379,15 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 			pObjectGroup = pObjectGroup->NextSiblingElement("objectgroup");
 		}
 
+		tinyxml2::XMLElement* pImageLayer = pRoot->FirstChildElement("imagelayer");
+
+		while (pImageLayer)
+		{
+			LoadImageLayer(pImageLayer);
+
+			pImageLayer = pImageLayer->NextSiblingElement("imagelayer");
+		}
+
 		// Groups --------------------------------------------------------------------------------------------------------
 		tinyxml2::XMLElement* pGroup = pRoot->FirstChildElement("group");
 
@@ -253,6 +400,8 @@ void TiledImporter::ImportAssets(const std::filesystem::path& filepath, const st
 	}
 	else
 	{
-		CLIENT_ERROR("Could not load tilemap {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		CLIENT_ERROR("Could not load Tiled tilemap {0}. {1} on line {2}. File format must be xml!", filepath, doc.ErrorName(), doc.ErrorLineNum());
 	}
+
+	s_Tilesets.clear();
 }

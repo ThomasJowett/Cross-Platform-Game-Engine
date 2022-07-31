@@ -9,15 +9,8 @@
 
 class Tileset : public Asset
 {
-	struct Tile
-	{
-		int id = -1;
-		std::string type;
-		double probability = 1.0f;
-	};
-
 public:
-	Tileset() = default;
+	Tileset();
 	Tileset(const std::filesystem::path& filepath);
 	virtual bool Load(const std::filesystem::path& filepath) override;
 	bool Save() const;
@@ -27,6 +20,7 @@ public:
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
+	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
 	void AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime);
 	void RemoveAnimation(std::string name);
@@ -35,18 +29,14 @@ public:
 
 	void SelectAnimation(const std::string& animationName);
 
-	const std::string& GetName() const { return m_Name; }
-	void SetName(std::string name) { m_Name = name; }
-
 	std::map<std::string, Animation>& GetAnimations() { return m_Animations; }
 	const std::string GetCurrentAnimation() const { return m_CurrentAnimation; }
-private:
-	std::string m_Name;
-	Ref<SubTexture2D> m_Texture;
-	uint32_t m_TileCount = 4;
-	uint32_t m_Columns = 2;
 
-	std::vector<Tile> m_Tiles;
+	void SetTileProbability(size_t tile, double probability);
+private:
+	Ref<SubTexture2D> m_Texture;
+
+	std::vector<double> m_TileProbabilities;
 	std::map<std::string, Animation> m_Animations;
 	std::string m_CurrentAnimation;
 };

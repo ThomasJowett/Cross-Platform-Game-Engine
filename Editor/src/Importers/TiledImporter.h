@@ -5,6 +5,6 @@
 class TiledImporter
 {
 public:
-	// Inherited via IImporter
-	static void ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination);
+	static void ImportTilemap(const std::filesystem::path& filepath, const std::filesystem::path& destination);
+	static void ImportTileset(const std::filesystem::path& filepath, const std::filesystem::path& destination);
 };

@@ -20,8 +20,10 @@ public:
 
 	uint32_t GetCellsWide() const { return m_CellsWide; }
 	uint32_t GetCellsTall() const { return m_CellsTall; }
+	uint32_t GetNumberOfCells() const { return m_CellsWide * m_CellsTall; }
 
 	void SetSpriteDimensions(uint32_t spriteWidth, uint32_t spriteHeight);
+	void SetCellDimensions(uint32_t cellsWide, uint32_t cellsTall);
 
 	void RecalculateCellsDimensions();
 

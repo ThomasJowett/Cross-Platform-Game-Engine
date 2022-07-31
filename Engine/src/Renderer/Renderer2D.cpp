@@ -575,6 +575,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 {
 	PROFILE_FUNCTION();
 
+	if (!subtexture)
+		return;
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 	{
 		NextQuadsBatch();

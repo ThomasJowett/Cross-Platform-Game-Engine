@@ -5,8 +5,14 @@
 #include "Core/Colour.h"
 #include "Logging/Instrumentor.h"
 #include "Utilities/SerializationUtils.h"
+#include "Core/Version.h"
 
 #include <limits>
+
+Tileset::Tileset()
+{
+	m_Texture = CreateRef<SubTexture2D>();
+}
 
 Tileset::Tileset(const std::filesystem::path& filepath)
 {
@@ -27,77 +33,61 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		m_Filepath = filepath;
 
 		m_Animations.clear();
-		m_Tiles.clear();
 		tinyxml2::XMLElement* pRoot;
 
-		pRoot = doc.FirstChildElement("tileset");
+		pRoot = doc.FirstChildElement("Tileset");
 
-		const char* name = pRoot->Attribute("name");
-		m_Name = name;
-
-		uint32_t tileWidth, tileHeight;
-
-		pRoot->QueryUnsignedAttribute("tilewidth", &tileWidth);
-		pRoot->QueryUnsignedAttribute("tileheight", &tileHeight);
-		pRoot->QueryUnsignedAttribute("columns", &m_Columns);
-		pRoot->QueryUnsignedAttribute("tilecount", &m_TileCount);
-
-		tinyxml2::XMLElement* pImage = pRoot->FirstChildElement("image");
-
-		const char* textureSource = pImage->Attribute("source");
-
-		if (textureSource)
+		if (!pRoot)
 		{
-			std::filesystem::path texturePath = filepath;
-			texturePath.remove_filename();
-			texturePath = texturePath / textureSource;
-			m_Texture = CreateRef<SubTexture2D>(Texture2D::Create(texturePath), tileWidth, tileHeight);
+			CLIENT_ERROR("Tileset does not have a Tileset node");
+			return false;
+		}
+
+		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
+			ENGINE_WARN("Tileset created with a different version of the engine");
+		}
+
+		Ref<Texture2D> texture;
+
+		SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
+
+		m_TileProbabilities.clear();
+		if (texture)
+		{
+			uint32_t tileWidth, tileHeight;
+			pRoot->QueryUnsignedAttribute("TileWidth", &tileWidth);
+			pRoot->QueryUnsignedAttribute("TileHeight", &tileHeight);
+
+			m_Texture = CreateRef<SubTexture2D>(texture, tileWidth, tileHeight);
+			m_TileProbabilities.resize(m_Texture->GetNumberOfCells());
 		}
 		else
-		{
-			m_Texture = CreateRef<SubTexture2D>(nullptr, tileWidth, tileHeight);
-		}
+			m_Texture = CreateRef<SubTexture2D>();
 
-		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
+		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("Tile");
 
 		while (pTile)
 		{
-			Tile tile;
-			tile.id = atoi(pTile->Attribute("id"));
-			const char* type = pTile->Attribute("type");
-			if (type != nullptr)
-			{
-				tile.type = type;
-			}
-			const char* probability = pTile->Attribute("probability");
+			int tileId = atoi(pTile->Attribute("Id"));
+			const char* probability = pTile->Attribute("Probability");
 			if (probability != nullptr)
-				tile.probability = atof(probability);
+				m_TileProbabilities[tileId] = atof(probability);
+			pTile = pTile->NextSiblingElement("Tile");
+		}
 
-			tinyxml2::XMLElement* pAnimation = pTile->FirstChildElement("animation");
-			if (pAnimation)
-			{
-				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
+		tinyxml2::XMLElement* pAnimation = pRoot->FirstChildElement("Animation");
+		if (pAnimation)
+		{
+			const char* name = pAnimation->Attribute("Name");
 
-				uint32_t startFrame = std::numeric_limits<uint32_t>::max();
-				uint32_t endFrame = 0;
+			double holdTime = 0.0f;
+			uint32_t startFrame, frameCount;
 
-				float duration = 0.0f;
+			pAnimation->QueryDoubleAttribute("HoldTime", &holdTime);
+			pAnimation->QueryUnsignedAttribute("StartFrame", &startFrame);
+			pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
 
-				while (pFrame)
-				{
-					const char* tileid = pFrame->Attribute("tileid");
-					if ((uint32_t)atoi(tileid) < startFrame)
-						startFrame = atoi(tileid);
-					if ((uint32_t)atoi(tileid) > endFrame)
-						endFrame = atoi(tileid);
-					pFrame->QueryFloatAttribute("duration", &duration);
-					pFrame = pFrame->NextSiblingElement("frame");
-				}
-				AddAnimation("Unnamed Animation", startFrame, endFrame - startFrame, duration);
-			}
-
-			m_Tiles.push_back(tile);
-			pTile = pTile->NextSiblingElement("tile");
+			AddAnimation(name, startFrame, frameCount, holdTime);
 		}
 	}
 	else
@@ -115,44 +105,43 @@ bool Tileset::Save() const
 
 bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 {
-	//TODO: save tileset back to .tsx format
-
 	PROFILE_FUNCTION();
 
 	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement* pRoot = doc.NewElement("tileset");
+	tinyxml2::XMLElement* pRoot = doc.NewElement("Tileset");
 
-	pRoot->SetAttribute("name", m_Name.c_str());
-	pRoot->SetAttribute("tilewidth", m_Texture ? m_Texture->GetSpriteWidth() : 16);
-	pRoot->SetAttribute("tileheight", m_Texture ? m_Texture->GetSpriteHeight() : 16);
-	pRoot->SetAttribute("tilecount", m_TileCount);
-	pRoot->SetAttribute("columns", m_Columns);
-	pRoot->SetAttribute("backgroundcolor", Colour().HexCode().c_str());
-
-	doc.InsertFirstChild(pRoot);
-
-	tinyxml2::XMLElement* pImage = pRoot->InsertNewChildElement("image");
+	pRoot->SetAttribute("EngineVersion", VERSION);
 
 	if (m_Texture)
 	{
-		std::string texturePath = FileUtils::RelativePath(m_Texture->GetTexture()->GetFilepath(), m_Filepath).string();
-		std::replace(texturePath.begin(), texturePath.end(), '\\', '/');
-		pImage->SetAttribute("source", texturePath.c_str());
-		pImage->SetAttribute("width", m_Texture->GetTexture()->GetWidth());
-		pImage->SetAttribute("height", m_Texture->GetTexture()->GetHeight());
+		pRoot->SetAttribute("TileWidth", m_Texture->GetSpriteWidth());
+		pRoot->SetAttribute("TileHeight", m_Texture->GetSpriteHeight());
+	}
+
+	doc.InsertFirstChild(pRoot);
+
+	if (m_Texture && m_Texture->GetTexture())
+	{
+		SerializationUtils::Encode(pRoot->InsertNewChildElement("Texture"), m_Texture->GetTexture());
 	}
 
 	for (auto& [name, animation] : m_Animations)
 	{
-		tinyxml2::XMLElement* pTile = pRoot->InsertNewChildElement("tile");
+		tinyxml2::XMLElement* pAnimation = pRoot->InsertNewChildElement("Animation");
 
-		pTile->SetAttribute("id", animation.GetStartFrame());
-		tinyxml2::XMLElement* pAnimation = pTile->InsertNewChildElement("animation");
-		for (size_t i = 0; i < animation.GetFrameCount(); i++)
+		pAnimation->SetAttribute("Name", name.c_str());
+		pAnimation->SetAttribute("StartFrame", animation.GetStartFrame());
+		pAnimation->SetAttribute("FrameCount", animation.GetFrameCount());
+		pAnimation->SetAttribute("HoldTime", animation.GetHoldTime());
+	}
+
+	for (size_t i = 0; i < m_TileProbabilities.size(); i++)
+	{
+		if (m_TileProbabilities[i] > 0.0)
 		{
-			tinyxml2::XMLElement* pFrame = pAnimation->InsertNewChildElement("frame");
-			pFrame->SetAttribute("tileid", animation.GetStartFrame() + i);
-			pFrame->SetAttribute("duration", animation.GetFrameTime());
+			tinyxml2::XMLElement* pTile = pRoot->InsertNewChildElement("Tile");
+			pTile->SetAttribute("Id", i);
+			pTile->SetAttribute("Probability", m_TileProbabilities[i]);
 		}
 	}
 
@@ -162,10 +151,13 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 
 void Tileset::SetCurrentTile(uint32_t tile)
 {
-	m_Texture->SetCurrentCell(tile - 1);
-	if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
+	if (m_Texture)
 	{
-		m_Animations[m_CurrentAnimation].Start();
+		m_Texture->SetCurrentCell(tile - 1);
+		if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
+		{
+			m_Animations[m_CurrentAnimation].Start();
+		}
 	}
 }
 
@@ -215,5 +207,21 @@ void Tileset::SelectAnimation(const std::string& animationName)
 	{
 		m_Texture->SetCurrentCell(m_Animations.at(animationName).GetStartFrame());
 		m_CurrentAnimation = animationName;
+	}
+}
+
+void Tileset::SetTileProbability(size_t tile, double probability)
+{
+	if (m_TileProbabilities.size() > tile)
+		m_TileProbabilities[tile] = probability;
+}
+
+void Tileset::SetSubTexture(Ref<SubTexture2D> subTexture)
+{
+	m_Texture = subTexture;
+	if (m_Texture)
+	{
+		if (m_TileProbabilities.size() != m_Texture->GetNumberOfCells())
+			m_TileProbabilities.resize(m_Texture->GetNumberOfCells());
 	}
 }

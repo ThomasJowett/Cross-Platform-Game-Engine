@@ -21,8 +21,8 @@ public:
 	uint32_t GetFrameCount() const { return m_FrameCount; }
 	void SetFrameCount(uint32_t frameCount) { m_FrameCount = frameCount; }
 
-	float GetFrameTime() const { return m_HoldTime; }
-	void SetFrameTime(float frameTime) { m_HoldTime = frameTime; }
+	float GetHoldTime() const { return m_HoldTime; }
+	void SetHoldTime(float holdTime) { m_HoldTime = holdTime; }
 
 	void SetTexture(Ref<SubTexture2D> texture) { m_Texture = texture; }
 

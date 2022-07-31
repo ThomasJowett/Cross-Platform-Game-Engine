@@ -20,9 +20,13 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	{
 		OBJImporter::ImportAssets(asset, destination);
 	}
-	else if ( extString == ".tmx")
+	else if (extString == ".tmx")
 	{
-		TiledImporter::ImportAssets(asset, destination);
+		TiledImporter::ImportTilemap(asset, destination);
+	}
+	else if (extString == ".tsx")
+	{
+		TiledImporter::ImportTileset(asset, destination);
 	}
 }
 

@@ -279,7 +279,7 @@ void ContentExplorerPanel::CreateNewLuaScript()
 
 void ContentExplorerPanel::CreateNewTileset()
 {
-	std::filesystem::path newTilesetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Tileset", ".tsx");
+	std::filesystem::path newTilesetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Tileset", ".tileset");
 
 	Tileset tileset;
 
@@ -442,7 +442,8 @@ void ContentExplorerPanel::RightClickMenu()
 			L"Any File\0*.*\0"
 			"Film Box (.fbx)\0*.fbx\0"
 			"Wavefront OBJ (.obj)\0*.obj\0"
-			"Tiled (.tmx)\0*.tmx");
+			"Tiled Tilemap(.tmx)\0*.tmx\0"
+			"Tiled Tileset(.tsx)\0*.tsx");
 
 		if (assetPaths)
 		{

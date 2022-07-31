@@ -47,6 +47,19 @@ void SubTexture2D::SetSpriteDimensions(uint32_t spriteWidth, uint32_t spriteHeig
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void SubTexture2D::SetCellDimensions(uint32_t cellsWide, uint32_t cellsTall)
+{
+	m_CellsWide = std::max(cellsWide, (uint32_t)1);
+	m_CellsTall = std::max(cellsTall, (uint32_t)1);
+
+	m_SpriteWidth = (uint32_t)std::ceil(m_Texture->GetWidth() / m_CellsWide);
+	m_SpriteHeight = (uint32_t)std::ceil(m_Texture->GetHeight() / m_CellsTall);
+
+	CalculateTextureCoordinates();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void SubTexture2D::RecalculateCellsDimensions()
 {
 	if (m_Texture)

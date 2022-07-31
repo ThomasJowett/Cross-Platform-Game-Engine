@@ -83,15 +83,6 @@ void TilesetView::OnImGuiRender()
 		{
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
-			char nameBuffer[256];
-			memset(nameBuffer, 0, sizeof(nameBuffer));
-			std::strncpy(nameBuffer, m_Tileset->GetName().c_str(), sizeof(nameBuffer));
-
-			if (ImGui::InputText("Name", nameBuffer, sizeof(nameBuffer)))
-			{
-				m_Tileset->SetName(nameBuffer);
-				m_Dirty = true;
-			}
 
 			if (ImGui::Texture2DEdit("Texture", m_Tileset->GetSubTexture()->GetTexture()))
 			{
@@ -103,6 +94,20 @@ void TilesetView::OnImGuiRender()
 			if (ImGui::InputInt2("Sprite Size", spriteSize))
 			{
 				m_Tileset->GetSubTexture()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
+				m_Dirty = true;
+			}
+
+			int cellsWide = m_Tileset->GetSubTexture()->GetCellsWide();
+			int cellsTall = m_Tileset->GetSubTexture()->GetCellsTall();
+
+			if (ImGui::InputInt("Cells Wide", &cellsWide))
+			{
+				m_Tileset->GetSubTexture()->SetCellDimensions(cellsWide, cellsTall);
+				m_Dirty = true;
+			}
+			if (ImGui::InputInt("Cells Tall", &cellsTall))
+			{
+				m_Tileset->GetSubTexture()->SetCellDimensions(cellsWide, cellsTall);
 				m_Dirty = true;
 			}
 
@@ -145,7 +150,7 @@ void TilesetView::OnImGuiRender()
 					ImGui::TableSetColumnIndex(0);
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string nameStr = "##name" + std::to_string(index);
-					ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer), 
+					ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer),
 						ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
 
 					if (ImGui::IsItemActive())
@@ -162,7 +167,7 @@ void TilesetView::OnImGuiRender()
 
 					int frameStart = (int)animation.GetStartFrame();
 					int frameCount = (int)animation.GetFrameCount();
-					float frameTime = animation.GetFrameTime();
+					float frameTime = animation.GetHoldTime();
 
 					ImGui::TableSetColumnIndex(1);
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -191,13 +196,13 @@ void TilesetView::OnImGuiRender()
 					std::string frameTimeStr = "##frameTime" + std::to_string(index);
 					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
 					{
-						animation.SetFrameTime(frameTime);
+						animation.SetHoldTime(frameTime);
 						m_Dirty = true;
 					}
 
 					ImGui::TableSetColumnIndex(4);
 					std::string deleteStr = ICON_FA_TRASH_ALT"##" + name + std::to_string(index);
-					if(ImGui::Button(deleteStr.c_str()))
+					if (ImGui::Button(deleteStr.c_str()))
 						deletedAnimation = name;
 					ImGui::Tooltip("Delete Animation");
 
@@ -221,16 +226,27 @@ void TilesetView::OnImGuiRender()
 
 				const ImU32 colour = ImColor(ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
 				//Horizontal Lines
-				for (uint32_t i = 0; i <= m_Tileset->GetSubTexture()->GetCellsTall(); i++ )
+				for (uint32_t i = 0; i <= m_Tileset->GetSubTexture()->GetCellsTall(); i++)
 				{
-					float y = (float)(m_Tileset->GetSubTexture()->GetSpriteHeight()* i) * m_Zoom ;
+					float y = (float)(m_Tileset->GetSubTexture()->GetSpriteHeight() * i) * m_Zoom;
 					draw_list->AddLine(ImVec2(p.x, p.y + y), ImVec2(p.x + displaySize.x, p.y + y), colour);
 				}
 				//Vertical Lines
 				for (uint32_t i = 0; i <= m_Tileset->GetSubTexture()->GetCellsWide(); i++)
 				{
-					float x = (float)(m_Tileset->GetSubTexture()->GetSpriteWidth() * i)* m_Zoom;
+					float x = (float)(m_Tileset->GetSubTexture()->GetSpriteWidth() * i) * m_Zoom;
 					draw_list->AddLine(ImVec2(p.x + x, p.y), ImVec2(p.x + x, p.y + displaySize.y), colour);
+
+					if (i != m_Tileset->GetSubTexture()->GetCellsWide()
+						&& m_Tileset->GetSubTexture()->GetSpriteWidth() * m_Zoom > 20)
+					{
+						for (uint32_t j = 0; j < m_Tileset->GetSubTexture()->GetCellsTall(); j++)
+						{
+							float y = (float)(m_Tileset->GetSubTexture()->GetSpriteHeight() * j) * m_Zoom;
+							std::string number = std::to_string(i + (j * m_Tileset->GetSubTexture()->GetCellsWide()));
+							draw_list->AddText(ImVec2(p.x + x + 2, p.y + y + 2), colour, number.c_str());
+						}
+					}
 				}
 			}
 			else
