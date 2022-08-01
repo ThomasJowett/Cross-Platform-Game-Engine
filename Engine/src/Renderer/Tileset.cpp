@@ -16,6 +16,7 @@ Tileset::Tileset()
 
 Tileset::Tileset(const std::filesystem::path& filepath)
 {
+	m_Texture = CreateRef<SubTexture2D>();
 	Load(filepath);
 }
 
