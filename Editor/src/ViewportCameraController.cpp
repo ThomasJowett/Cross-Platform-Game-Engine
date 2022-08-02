@@ -62,7 +62,6 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 		Pitch(-m_MouseRelativeVelocity.y * m_Sensitivity);
 		Yaw(-m_MouseRelativeVelocity.x * m_Sensitivity);
 
-
 		//make sure right and forward are orthogonal to each other
 		Vector3f up = Vector3f::Cross(m_Right, m_Forward).GetNormalized();
 		m_Right = Vector3f::Cross(m_Forward, up).GetNormalized();
@@ -73,7 +72,6 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 	{
 		//TODO: 2D camera controller
 	}
-
 }
 
 Vector3f ViewportCameraController::GetPosition() const
@@ -141,7 +139,7 @@ void ViewportCameraController::OnMouseWheel(float mouseWheel)
 	}
 	else
 	{
-		m_ZoomLevel -= mouseWheel / 4.0f;
+		m_ZoomLevel -= mouseWheel / 10.0f * m_ZoomLevel;
 		m_ZoomLevel = std::clamp(m_ZoomLevel, 0.25f, 1000.0f);
 		m_2DCamera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 
@@ -165,7 +163,7 @@ void ViewportCameraController::SwitchCamera(bool is3D)
 
 void ViewportCameraController::LookAt(Vector3f focalPoint, float distance)
 {
-	if(m_Is3DCamera)
+	if (m_Is3DCamera)
 		m_3DCameraPosition = focalPoint - (distance * m_Forward);
 	else
 	{

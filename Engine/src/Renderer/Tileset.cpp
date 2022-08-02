@@ -77,7 +77,7 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		}
 
 		tinyxml2::XMLElement* pAnimation = pRoot->FirstChildElement("Animation");
-		if (pAnimation)
+		while (pAnimation)
 		{
 			const char* name = pAnimation->Attribute("Name");
 
@@ -89,6 +89,8 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 			pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
 
 			AddAnimation(name, startFrame, frameCount, holdTime);
+
+			pAnimation = pAnimation->NextSiblingElement("Animation");
 		}
 	}
 	else

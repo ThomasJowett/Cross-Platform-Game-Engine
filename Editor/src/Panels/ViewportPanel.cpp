@@ -342,7 +342,8 @@ void ViewportPanel::OnImGuiRender()
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	if (ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags))
+	bool shown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
+	if (shown)
 	{
 		if (ImGui::BeginMenuBar())
 		{
@@ -498,7 +499,7 @@ void ViewportPanel::OnImGuiRender()
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 		ImVec2 window_pos = ImGui::GetItemRectMin();
-		ImGui::PopStyleVar();
+		ImGui::PopStyleVar(2);
 		m_RightClickMenuOpen = false;
 		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right) && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y <= FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x <= FLT_EPSILON
 			&& ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y >= -FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x >= -FLT_EPSILON)
@@ -791,7 +792,8 @@ void ViewportPanel::OnImGuiRender()
 
 		Renderer2D::ResetStats();
 	}
-	ImGui::PopStyleVar();
+	if (!shown)
+		ImGui::PopStyleVar();
 	ImGui::End();
 	//ImGui::PopStyleVar();
 }

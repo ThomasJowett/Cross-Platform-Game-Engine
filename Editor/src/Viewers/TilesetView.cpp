@@ -194,7 +194,7 @@ void TilesetView::OnImGuiRender()
 					ImGui::TableSetColumnIndex(3);
 					ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 					std::string frameTimeStr = "##frameTime" + std::to_string(index);
-					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.0f, 10.0f, "% .3f"))
+					if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.001f, 10.0f, "% .3f"))
 					{
 						animation.SetHoldTime(frameTime);
 						m_Dirty = true;
