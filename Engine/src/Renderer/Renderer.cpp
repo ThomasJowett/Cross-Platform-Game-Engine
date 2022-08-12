@@ -5,8 +5,16 @@
 
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
+#include "Texture.h"
 
 #include "Core/core.h"
+
+struct RendererData
+{
+	Ref<Texture> whiteTexture;
+	Ref<Texture> normalTexture;
+	Ref<Texture> mixMapTexture;
+};
 
 struct SceneData
 {
@@ -33,13 +41,26 @@ struct SceneData
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-SceneData s_Data;
+RendererData s_RendererData;
+SceneData s_SceneData;
 ShaderLibrary s_ShaderLibary;
 
 bool Renderer::Init()
 {
-	s_Data.constantUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ConstantBuffer), 0);
-	s_Data.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
+	s_SceneData.constantUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ConstantBuffer), 0);
+	s_SceneData.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
+
+	s_RendererData.whiteTexture = Texture2D::Create(1, 1);
+	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
+	s_RendererData.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
+	s_RendererData.normalTexture = Texture2D::Create(1, 1);
+	uint32_t normalTextureData = Colour(0.5f, 0.5f, 1.0f, 1.0f).HexValue();
+	s_RendererData.normalTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+
+	s_RendererData.mixMapTexture = Texture2D::Create(1, 1);
+	uint32_t mixMapTextureData = Colour(0.5f, 0.0f, 0.5f, 1.0f).HexValue();
+	s_RendererData.mixMapTexture->SetData(&whiteTextureData, sizeof(uint32_t));
 	
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
@@ -64,9 +85,9 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
-	s_Data.constantBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
+	s_SceneData.constantBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
 
-	s_Data.constantUniformBuffer->SetData(&s_Data.constantBuffer, sizeof(SceneData::ConstantBuffer));
+	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
 	Renderer2D::BeginScene(transform, projection);
 }
 
@@ -87,12 +108,12 @@ void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexA
 	//TODO: submit the vertex array to a render queue
 	shader->Bind();
 
-	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_Data.modelBuffer.colour = colour;
+	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
+	s_SceneData.modelBuffer.colour = colour;
 	//TODO: each texture should have it's own tiling factor
-	s_Data.modelBuffer.tilingFactor = tilingFactor;
-	s_Data.modelBuffer.entityId = entityId;
-	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
+	s_SceneData.modelBuffer.tilingFactor = tilingFactor;
+	s_SceneData.modelBuffer.entityId = entityId;
+	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
@@ -112,12 +133,16 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, cons
 		return;
 
 	shader->Bind();
-	s_Data.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_Data.modelBuffer.colour = material->GetTint();
+	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
+	s_SceneData.modelBuffer.colour = material->GetTint();
 	//TODO: each texture should have it's own tiling factor
-	s_Data.modelBuffer.tilingFactor = 1.0f;
-	s_Data.modelBuffer.entityId = entityId;
-	s_Data.modelUniformBuffer->SetData(&s_Data.modelBuffer, sizeof(SceneData::ModelBuffer));
+	s_SceneData.modelBuffer.tilingFactor = 1.0f;
+	s_SceneData.modelBuffer.entityId = entityId;
+	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
+
+	s_RendererData.whiteTexture->Bind(0);
+	s_RendererData.normalTexture->Bind(1);
+	s_RendererData.mixMapTexture->Bind(2);
 
 	material->BindTextures();
 
