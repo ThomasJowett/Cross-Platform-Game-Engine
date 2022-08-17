@@ -43,6 +43,18 @@ void ScriptView::OnAttach()
 	{
 		ParseLuaScript();
 	}
+
+	std::filesystem::path configFilepath = m_FilePath;
+	configFilepath.replace_extension(".json");
+
+	NodeEditor::Config config;
+	config.SettingsFile = configFilepath.string().c_str();
+	m_NodeEditorContext = NodeEditor::CreateEditor(&config);
+}
+
+void ScriptView::OnDetach()
+{
+	NodeEditor::DestroyEditor(m_NodeEditorContext);
 }
 
 void ScriptView::OnImGuiRender()
@@ -153,8 +165,27 @@ void ScriptView::OnImGuiRender()
 		ImGui::EndMenuBar();
 
 		ImGui::PushFont(Fonts::Consolas);
-		m_TextEditor.Render("TextEditor");
+		//m_TextEditor.Render("TextEditor");
 		ImGui::PopFont();
+
+		NodeEditor::SetCurrentEditor(m_NodeEditorContext);
+
+		NodeEditor::Begin("Node graph", ImVec2(0.0, 0.0f));
+		int uniqueId = 1;
+
+		// Start drawing nodes
+		NodeEditor::BeginNode(uniqueId++);
+		ImGui::Text("Node A");
+		NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Input);
+		ImGui::Text("-> In");
+		NodeEditor::EndPin();
+		ImGui::SameLine();
+		NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Output);
+		ImGui::Text("Out ->");
+		NodeEditor::EndPin();
+		NodeEditor::EndNode();
+		NodeEditor::End();
+		NodeEditor::SetCurrentEditor(nullptr);
 	}
 
 	ImGui::End();
