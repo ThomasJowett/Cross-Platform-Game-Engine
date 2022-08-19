@@ -6,6 +6,7 @@
 #include "StaticMeshView.h"
 #include "MaterialView.h"
 #include "TilesetView.h"
+#include "VisualScriptView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
@@ -112,6 +113,14 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		Application::Get().AddOverlay(layer);
 		return;
 	}
+	case FileType::VISUALSCRIPT:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new VisualSriptView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
 	default:
 		return;
 	}
@@ -163,6 +172,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 	if (strcmp(ext, ".lua") == 0)
 	{
 		return FileType::SCRIPT;
+	}
+
+	if (strcmp(ext, ".visualscript") == 0)
+	{
+		return FileType::VISUALSCRIPT;
 	}
 
 	if (strcmp(ext, ".material") == 0)
@@ -226,6 +240,10 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 	{
 		extensions.push_back(".lua");
 		break;
+	}
+	case FileType::VISUALSCRIPT:
+	{
+		extensions.push_back(".visualscript");
 	}
 	case FileType::AUDIO:
 	{

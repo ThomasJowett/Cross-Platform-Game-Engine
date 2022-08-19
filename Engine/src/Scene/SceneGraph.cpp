@@ -2,18 +2,24 @@
 #include "SceneGraph.h"
 #include "Components/Components.h"
 
-void SceneGraph::Traverse(entt::registry& registry)
+void SceneGraph::Traverse(entt::registry& registry, const Matrix4x4& view, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
 
-	auto nonHierarchyView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent>);
+	auto nonHierarchyView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent, BillboardComponent>);
 
 	for (auto entity : nonHierarchyView)
 	{
 		registry.get<TransformComponent>(entity).SetWorldMatrix(Matrix4x4());
 	}
 
-	registry.view<TransformComponent, HierarchyComponent>().each(
+	auto billboardView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent>);
+	for (auto entity : billboardView)
+	{
+		registry.get<TransformComponent>(entity).SetWorldMatrix((Matrix4x4::Inverse(view)));
+	}
+
+	registry.view<TransformComponent, HierarchyComponent>(entt::exclude<BillboardComponent>).each(
 		[&]([[maybe_unused]] const auto Entity, auto& transformComp, auto& hierarchyComp)
 		{
 			// if the entity is active and a root node
@@ -111,7 +117,6 @@ void SceneGraph::Unparent(Entity entity, entt::registry& registry)
 			HierarchyComponent* previousSiblingHierarchyComp = registry.try_get<HierarchyComponent>(hierachyComp->previousSibling);
 			previousSiblingHierarchyComp->nextSibling = entt::null;
 		}
-
 
 		hierachyComp->parent = entt::null;
 		hierachyComp->nextSibling = entt::null;

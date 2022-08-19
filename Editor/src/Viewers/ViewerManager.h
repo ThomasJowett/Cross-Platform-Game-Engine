@@ -15,6 +15,7 @@ enum class FileType
 	MESH,
 	SCENE,
 	SCRIPT,
+	VISUALSCRIPT,
 	AUDIO,
 	MATERIAL,
 	TILESET
@@ -23,7 +24,7 @@ enum class FileType
 class ViewerManager
 {
 public:
-	
+
 	static void OpenViewer(const std::filesystem::path& assetPath);
 	static void CloseViewer(const std::filesystem::path& assetPath);
 

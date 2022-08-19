@@ -18,6 +18,9 @@
 #include "LuaScriptComponent.h"
 #include "BehaviourTreeComponent.h"
 #include "StateMachineComponent.h"
+#include "BillboardComponent.h"
+#include "CanvasComponent.h"
+#include "TextComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -38,4 +41,7 @@ CircleRendererComponent,	\
 HierarchyComponent,			\
 LuaScriptComponent,			\
 BehaviourTreeComponent,		\
-StateMachineComponent		\
+StateMachineComponent,		\
+BillboardComponent,			\
+CanvasComponent,			\
+TextComponent				\

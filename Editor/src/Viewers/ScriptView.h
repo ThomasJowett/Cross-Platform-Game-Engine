@@ -2,7 +2,6 @@
 #include "Engine.h"
 
 #include "ImGui/ImGuiTextEditor.h"
-#include "ImGui/Node Editor/imgui_node_editor.h"
 
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
@@ -48,6 +47,4 @@ private:
 	std::string m_WindowName;
 
 	TextEditor m_TextEditor;
-
-	NodeEditor::EditorContext* m_NodeEditorContext;
 };

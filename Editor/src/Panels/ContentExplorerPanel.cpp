@@ -574,6 +574,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		return ICON_FA_FILE_AUDIO;
 	case FileType::TILESET:
 		return ICON_FA_TH;
+	case FileType::VISUALSCRIPT:
+		return ICON_FA_DIAGRAM_PROJECT;
 	}
 	return ICON_FA_FILE;
 }

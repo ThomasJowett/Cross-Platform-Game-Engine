@@ -122,11 +122,42 @@ public:
 		{}
 	};
 
+	LuaNodeEditor();
+
+	void SetFilepath(std::string_view filepath);
+	void Destroy();
+
 	void Render();
+
+	// Inherited via IUndoable
+	virtual void Undo(int asteps = 1) override;
+	virtual void Redo(int asteps = 1) override;
+	virtual bool CanUndo() const override;
+	virtual bool CanRedo() const override;
+
+	// Inherited via ICopyable
+	virtual void Copy() override;
+	virtual void Cut() override;
+	virtual void Paste() override;
+	virtual void Duplicate() override;
+	virtual void Delete() override;
+	virtual bool HasSelection() const override;
+	virtual void SelectAll() override;
+	virtual bool IsReadOnly() const override;
+
+	bool NeedsSaving() { return m_Dirty; }
+
 private:
+	bool IsPinLinked(NodeEditor::PinId id);
+	bool CanCreateLink(Pin* a, Pin* b);
+private:
+
+	NodeEditor::EditorContext* m_NodeEditorContext = nullptr;
 	std::vector<Node> m_Nodes;
 	std::vector<Link> m_Links;
 
 	Pin* m_NewLinkPin = nullptr;
 	Pin* m_NewNodeLinkPin = nullptr;
+
+	bool m_Dirty = false;
 };

@@ -43,18 +43,10 @@ void ScriptView::OnAttach()
 	{
 		ParseLuaScript();
 	}
-
-	std::filesystem::path configFilepath = m_FilePath;
-	configFilepath.replace_extension(".json");
-
-	NodeEditor::Config config;
-	config.SettingsFile = configFilepath.string().c_str();
-	m_NodeEditorContext = NodeEditor::CreateEditor(&config);
 }
 
 void ScriptView::OnDetach()
 {
-	NodeEditor::DestroyEditor(m_NodeEditorContext);
 }
 
 void ScriptView::OnImGuiRender()
@@ -107,7 +99,6 @@ void ScriptView::OnImGuiRender()
 		}
 
 		bool readOnly = m_TextEditor.IsReadOnly();
-
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -165,27 +156,8 @@ void ScriptView::OnImGuiRender()
 		ImGui::EndMenuBar();
 
 		ImGui::PushFont(Fonts::Consolas);
-		//m_TextEditor.Render("TextEditor");
+		m_TextEditor.Render("TextEditor");
 		ImGui::PopFont();
-
-		NodeEditor::SetCurrentEditor(m_NodeEditorContext);
-
-		NodeEditor::Begin("Node graph", ImVec2(0.0, 0.0f));
-		int uniqueId = 1;
-
-		// Start drawing nodes
-		NodeEditor::BeginNode(uniqueId++);
-		ImGui::Text("Node A");
-		NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Input);
-		ImGui::Text("-> In");
-		NodeEditor::EndPin();
-		ImGui::SameLine();
-		NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Output);
-		ImGui::Text("Out ->");
-		NodeEditor::EndPin();
-		NodeEditor::EndNode();
-		NodeEditor::End();
-		NodeEditor::SetCurrentEditor(nullptr);
 	}
 
 	ImGui::End();
@@ -206,9 +178,9 @@ void ScriptView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
 	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
-	if(dialogPath)
+	if (dialogPath)
 	{
-		m_FilePath =  dialogPath.value();
+		m_FilePath = dialogPath.value();
 		if (!m_FilePath.has_extension())
 			m_FilePath.replace_extension(ext);
 		Save();

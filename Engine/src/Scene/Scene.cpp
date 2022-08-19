@@ -207,7 +207,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 {
 	PROFILE_FUNCTION();
 
-	SceneGraph::Traverse(m_Registry);
+	SceneGraph::Traverse(m_Registry, cameraTransform, projection);
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
