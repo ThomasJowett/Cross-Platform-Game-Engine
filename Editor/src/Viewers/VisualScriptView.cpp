@@ -79,7 +79,106 @@ void VisualSriptView::OnImGuiRender()
 		}
 		ImGui::EndMenuBar();
 
-		m_LuaNodeEditor.Render();
+		ImGuiTableFlags table_flags =
+			ImGuiTableFlags_Resizable;
+
+		if (ImGui::BeginTable("##TopLevel", 2, table_flags))
+		{
+			ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 300.0f);
+			ImGui::TableNextRow();
+			ImGui::TableSetColumnIndex(0);
+
+			if (ImGui::TreeNodeEx("Variables", ImGuiTreeNodeFlags_DefaultOpen))
+			{
+				ImGui::SameLine();
+				if (ImGui::Button(ICON_FA_PLUS"##Add variable"))
+				{
+					std::string name = "NewVar";
+					uint32_t index = 1;
+					while (m_Variables.find(name + "_" + std::to_string(index)) != m_Variables.end())
+					{
+						index++;
+					}
+					name = name + "_" + std::to_string(index);
+					m_Variables[name] = Variable();
+				}
+
+				if (ImGui::BeginTable("##Variables", 3, table_flags))
+				{
+					ImGui::TableSetupColumn("Name");
+					ImGui::TableSetupColumn("Type");
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 24.0f);
+					ImGui::TableSetupScrollFreeze(0, 1);
+					ImGui::TableHeadersRow();
+
+					static char inputBuffer[1024] = "";
+
+					std::map<std::string, Variable>::iterator it = m_Variables.begin();
+					while (it != m_Variables.end())
+					{
+						memset(inputBuffer, 0, sizeof(inputBuffer));
+						for (int i = 0; i < it->first.length(); i++)
+						{
+							inputBuffer[i] = it->first[i];
+						}
+						ImGui::TableNextRow();
+						ImGui::TableSetColumnIndex(0);
+						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+						if (ImGui::InputText(std::string("##" + it->first).c_str(), inputBuffer, sizeof(inputBuffer),
+							ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue
+							| ImGuiInputTextFlags_CharsNoBlank))
+						{
+							if (m_Variables.find(inputBuffer) == m_Variables.end())
+							{
+								auto node = m_Variables.extract(it->first);
+								std::string newName = inputBuffer;
+								if (!node.empty())
+								{
+									if (isdigit(inputBuffer[0]))
+									{
+										newName.insert(0, "_");
+										node.key() = newName;
+									}
+									else
+										node.key() = newName;
+
+									m_Variables.insert(std::move(node));
+								}
+								it = m_Variables.find(newName);
+							}
+						}
+
+						ImGui::TableSetColumnIndex(1);
+						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
+						std::string comboId = "##variableType" + it->first;
+						ImGui::Combo(comboId.c_str(), (int*)&it->second.type,
+							"Bool\0"
+							"Integer\0"
+							"Float\0"
+							"String\0"
+							"Vector 2\0"
+							"Vector 3\0"
+							"Quaternion\0"
+							"Colour\0"
+							"Object\0");
+						ImGui::TableSetColumnIndex(2);
+						std::string deletebuttonId = ICON_FA_TRASH_ALT"##" + it->first;
+						if (ImGui::Button(deletebuttonId.c_str()))
+						{
+							it = m_Variables.erase(it);
+						}
+						else
+							++it;
+					}
+					ImGui::EndTable();
+				}
+				ImGui::TreePop();
+			}
+
+			ImGui::TableSetColumnIndex(1);
+			m_LuaNodeEditor.Render();
+			ImGui::EndTable();
+		}
 	}
 
 	ImGui::End();

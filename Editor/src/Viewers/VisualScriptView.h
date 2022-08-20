@@ -10,6 +10,24 @@
 class VisualSriptView
 	:public Layer, public ICopyable, public IUndoable, public ISaveable
 {
+	struct Variable
+	{
+		enum class Type
+		{
+			Bool,
+			Int,
+			Float,
+			String,
+			Vec2,
+			Vec3,
+			Quaternion,
+			Colour,
+			Object,
+			Enum
+		} type;
+
+		std::string defaultValue = "false";
+	};
 public:
 	VisualSriptView(bool* show, const std::filesystem::path& filepath);
 	~VisualSriptView() = default;
@@ -46,4 +64,6 @@ private:
 	std::string m_WindowName;
 
 	LuaNodeEditor m_LuaNodeEditor;
+
+	std::map<std::string, Variable> m_Variables;
 };

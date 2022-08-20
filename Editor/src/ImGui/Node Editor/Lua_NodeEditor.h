@@ -78,6 +78,16 @@ public:
 		Input
 	};
 
+	enum class IconType : ImU32
+	{
+		Arrow,
+		Circle,
+		Square,
+		Grid,
+		RoundSquare,
+		Diamond
+	};
+
 	struct Node;
 	struct Pin
 	{
@@ -150,6 +160,20 @@ public:
 private:
 	bool IsPinLinked(NodeEditor::PinId id);
 	bool CanCreateLink(Pin* a, Pin* b);
+
+	Node* FindNode(NodeEditor::NodeId id);
+	Pin* FindPin(NodeEditor::PinId id);
+	Link* FindLink(NodeEditor::LinkId id);
+
+	int GetNextId();
+	void BuildNode(Node* node);
+	void BuildNodes();
+
+	Node* SpawnNode();
+
+	ImColor GetPinColour(PinType type);
+	void DrawPin(const Pin& pin, bool connected, int alpha);
+
 private:
 
 	NodeEditor::EditorContext* m_NodeEditorContext = nullptr;
@@ -159,5 +183,14 @@ private:
 	Pin* m_NewLinkPin = nullptr;
 	Pin* m_NewNodeLinkPin = nullptr;
 
+	NodeEditor::NodeId m_ContextNodeId = 0;
+	NodeEditor::LinkId m_ContextLinkId = 0;
+	NodeEditor::PinId  m_ContextPinId = 0;
+
+	bool m_CreateNewNode = false;
+	int m_NextId = 1;
+
 	bool m_Dirty = false;
+
+	const int m_PinSize = 24;
 };
