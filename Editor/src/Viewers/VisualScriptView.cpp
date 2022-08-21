@@ -16,6 +16,7 @@ void VisualSriptView::OnAttach()
 
 void VisualSriptView::OnDetach()
 {
+	m_LuaNodeEditor.Destroy();
 }
 
 void VisualSriptView::OnImGuiRender()
@@ -148,6 +149,7 @@ void VisualSriptView::OnImGuiRender()
 							}
 						}
 
+						ImGui::TableSetColumnIndex(1);
 						ImGui::TableSetColumnIndex(1);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 						std::string comboId = "##variableType" + it->first;

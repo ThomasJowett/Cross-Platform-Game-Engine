@@ -39,9 +39,6 @@ private:
 
 	bool SetStage(Stage stage);
 
-	void Pin(NodeEditor::PinId id, NodeEditor::PinKind kind);
-	void EndPin();
-
 	NodeEditor::NodeId m_CurrentNodeId = 0;
 	Stage m_CurrentStage = Stage::Invalid;
 	ImU32 m_HeaderColor;

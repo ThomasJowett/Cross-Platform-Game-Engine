@@ -1,6 +1,7 @@
 #include "Lua_NodeEditor.h"
 #include "IconsFontAwesome5.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui_internal.h>
 
 void LuaNodeBuilder::Begin(NodeEditor::NodeId id)
@@ -52,12 +53,12 @@ void LuaNodeBuilder::Input(NodeEditor::PinId id)
 	//if (applyPadding)
 	//  ImGui::Spring(0);
 
-	Pin(id, NodeEditor::PinKind::Input);
+	NodeEditor::BeginPin(id, NodeEditor::PinKind::Input);
 }
 
 void LuaNodeBuilder::EndInput()
 {
-	EndPin();
+	NodeEditor::EndPin();
 }
 
 void LuaNodeBuilder::Middle()
@@ -70,10 +71,19 @@ void LuaNodeBuilder::Middle()
 
 void LuaNodeBuilder::Output(NodeEditor::PinId id)
 {
+	if (m_CurrentStage == Stage::Begin)
+		SetStage(Stage::Content);
+
+	const auto applyPadding = (m_CurrentStage == Stage::Output);
+
+	SetStage(Stage::Output);
+
+	NodeEditor::BeginPin(id, NodeEditor::PinKind::Output);
 }
 
 void LuaNodeBuilder::EndOutput()
 {
+	NodeEditor::EndPin();
 }
 
 bool LuaNodeBuilder::SetStage(Stage stage)
@@ -111,14 +121,6 @@ bool LuaNodeBuilder::SetStage(Stage stage)
 	return false;
 }
 
-void LuaNodeBuilder::Pin(NodeEditor::PinId id, NodeEditor::PinKind kind)
-{
-}
-
-void LuaNodeBuilder::EndPin()
-{
-}
-
 LuaNodeEditor::LuaNodeEditor()
 {
 }
@@ -127,12 +129,26 @@ void LuaNodeEditor::SetFilepath(std::string_view filepath)
 {
 	NodeEditor::Config config;
 	config.SettingsFile = filepath;
+
+	//config.LoadNodeSettings = [](NodeEditor::NodeId nodeId, char* data, void* userPointer) -> size_t
+	//{
+	//	auto node = FindNode(nodeId);
+
+	//	if (!node)
+	//		return 0;
+
+	//	if (data != nullptr)
+	//		memcpy(data, node->state.data(), node->state.size());
+	//	return node->state.size();
+	//};
+
 	m_NodeEditorContext = NodeEditor::CreateEditor(&config);
 }
 
 void LuaNodeEditor::Destroy()
 {
 	NodeEditor::DestroyEditor(m_NodeEditorContext);
+	m_NodeEditorContext = nullptr;
 }
 
 void LuaNodeEditor::Render()
@@ -140,20 +156,6 @@ void LuaNodeEditor::Render()
 	NodeEditor::SetCurrentEditor(m_NodeEditorContext);
 
 	NodeEditor::Begin("Node Editor");
-
-	/* temp code start */
-	int uniqueId = 1;
-	NodeEditor::BeginNode(uniqueId++);
-	ImGui::Text("Node A");
-	NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Input);
-	ImGui::Text("-> In");
-	NodeEditor::EndPin();
-	ImGui::SameLine();
-	NodeEditor::BeginPin(uniqueId++, NodeEditor::PinKind::Output);
-	ImGui::Text("Out ->");
-	NodeEditor::EndPin();
-	NodeEditor::EndNode();
-	/* temp code end*/
 
 	LuaNodeBuilder builder;
 
@@ -173,7 +175,12 @@ void LuaNodeEditor::Render()
 
 		for (auto& output : node.outputs)
 		{
+			float alpha = ImGui::GetStyle().Alpha;
+			if (m_NewLinkPin && !CanCreateLink(m_NewLinkPin, &output) && &output != m_NewLinkPin)
+				alpha = alpha * (48.0f / 255.0f);
+
 			builder.Output(output.id);
+			DrawPin(output, IsPinLinked(output.id), (int)(alpha * 255));
 			builder.EndOutput();
 		}
 		builder.End();
@@ -387,7 +394,7 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 	colour.Value.w = alpha / 255.0f;
 	switch (pin.type)
 	{
-	case PinType::Execution:	iconType = IconType::Arrow; break;
+	case PinType::Execution:	iconType = IconType::Arrow;	 break;
 	case PinType::Bool:			iconType = IconType::Circle; break;
 	case PinType::Int:			iconType = IconType::Circle; break;
 	case PinType::Float:		iconType = IconType::Circle; break;
@@ -398,18 +405,79 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 	case PinType::Quaternion:	iconType = IconType::Circle; break;
 	case PinType::Colour:		iconType = IconType::Circle; break;
 	case PinType::Enum:			iconType = IconType::Circle; break;
-	default:
-		break;
+	default:					return;
 	}
 
-	if (ImGui::IsRectVisible(ImVec2(m_PinSize, m_PinSize)))
+	ImVec2 pinSize(m_PinSize, m_PinSize);
+
+	if (ImGui::IsRectVisible(pinSize))
 	{
 		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-		if (iconType == IconType::Arrow)
-		{
-		}
+		ImRect rect = ImRect(cursorPos, cursorPos + pinSize);
+		float rect_w = rect.Min.x - rect.Max.x;
+		float
+			if (iconType == IconType::Arrow)
+			{
+				const auto origin_scale = rect_w / 24.0f;
+
+				const auto offset_x = 1.0f * origin_scale;
+				const auto offset_y = 0.0f * origin_scale;
+				const auto margin = (connected ? 2.0f : 2.0f) * origin_scale;
+				const auto rounding = 0.1f * origin_scale;
+				const auto tip_round = 0.7f; // percentage of triangle edge (for tip)
+				//const auto edge_round = 0.7f; // percentage of triangle edge (for corner)
+				const auto canvas = ImRect(
+					rect.Min.x + margin + offset_x,
+					rect.Min.y + margin + offset_y,
+					rect.Max.x - margin + offset_x,
+					rect.Max.y - margin + offset_y);
+				const auto canvas_x = canvas.Min.x;
+				const auto canvas_y = canvas.Min.y;
+				const auto canvas_w = canvas.Max.x - canvas.Min.x;
+				const auto canvas_h = canvas.Max.y - canvas.Min.y;
+
+				const auto left = canvas_x + canvas_w * 0.5f * 0.3f;
+				const auto right = canvas_x + canvas_w - canvas_w * 0.5f * 0.3f;
+				const auto top = canvas_y + canvas_h * 0.5f * 0.2f;
+				const auto bottom = canvas_y + canvas_h - canvas_h * 0.5f * 0.2f;
+				const auto center_y = (top + bottom) * 0.5f;
+				//const auto angle = AX_PI * 0.5f * 0.5f * 0.5f;
+
+				const auto tip_top = ImVec2(canvas_x + canvas_w * 0.5f, top);
+				const auto tip_right = ImVec2(right, center_y);
+				const auto tip_bottom = ImVec2(canvas_x + canvas_w * 0.5f, bottom);
+
+				drawList->PathLineTo(ImVec2(left, top) + ImVec2(0, rounding));
+				drawList->PathBezierCurveTo(
+					ImVec2(left, top),
+					ImVec2(left, top),
+					ImVec2(left, top) + ImVec2(rounding, 0));
+				drawList->PathLineTo(tip_top);
+				drawList->PathLineTo(tip_top + (tip_right - tip_top) * tip_round);
+				drawList->PathBezierCurveTo(
+					tip_right,
+					tip_right,
+					tip_bottom + (tip_right - tip_bottom) * tip_round);
+				drawList->PathLineTo(tip_bottom);
+				drawList->PathLineTo(ImVec2(left, bottom) + ImVec2(rounding, 0));
+				drawList->PathBezierCurveTo(
+					ImVec2(left, bottom),
+					ImVec2(left, bottom),
+					ImVec2(left, bottom) - ImVec2(0, rounding));
+
+				if (!connected)
+				{
+					ImColor innerColour(ImColor(32, 32, 32, alpha));
+					if (innerColour & 0xFF000000)
+						drawList->AddConvexPolyFilled(drawList->_Path.Data, drawList->_Path.Size, innerColour);
+
+					drawList->PathStroke(colour, true, 2.0f * outline_scale);
+				}
+				else
+					drawList->PathFillConvex(colour);
+			}
 	}
 
 	ImGui::Dummy(ImVec2(m_PinSize, m_PinSize));

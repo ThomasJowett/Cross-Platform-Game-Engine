@@ -6,20 +6,20 @@ void SceneGraph::Traverse(entt::registry& registry, const Matrix4x4& view, const
 {
 	PROFILE_FUNCTION();
 
-	auto nonHierarchyView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent, BillboardComponent>);
+	auto nonHierarchyView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent/*, BillboardComponent*/>);
 
 	for (auto entity : nonHierarchyView)
 	{
 		registry.get<TransformComponent>(entity).SetWorldMatrix(Matrix4x4());
 	}
 
-	auto billboardView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent>);
+	/*auto billboardView = registry.view<TransformComponent>(entt::exclude<HierarchyComponent>);
 	for (auto entity : billboardView)
 	{
 		registry.get<TransformComponent>(entity).SetWorldMatrix((Matrix4x4::Inverse(view)));
-	}
+	}*/
 
-	registry.view<TransformComponent, HierarchyComponent>(entt::exclude<BillboardComponent>).each(
+	registry.view<TransformComponent, HierarchyComponent>(/*entt::exclude<BillboardComponent>*/).each(
 		[&]([[maybe_unused]] const auto Entity, auto& transformComp, auto& hierarchyComp)
 		{
 			// if the entity is active and a root node

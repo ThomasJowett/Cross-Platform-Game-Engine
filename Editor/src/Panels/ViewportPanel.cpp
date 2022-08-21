@@ -634,7 +634,9 @@ void ViewportPanel::OnImGuiRender()
 
 				float bounds[6];
 
-				if (selectedEntity.HasComponent<SpriteComponent>() || selectedEntity.HasComponent<AnimatedSpriteComponent>())
+				if (selectedEntity.HasComponent<SpriteComponent>()
+					|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
+					|| selectedEntity.HasComponent<CircleRendererComponent>())
 				{
 					bounds[0] = -0.5f;
 					bounds[1] = -0.5f;
@@ -674,6 +676,10 @@ void ViewportPanel::OnImGuiRender()
 					bounds[3] = boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
 					bounds[4] = boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
 					bounds[5] = 0.0f;
+				}
+				else
+				{
+					memset(bounds, 0, sizeof(bounds));
 				}
 
 				float snapValues[3] = { snapValue, snapValue, snapValue };

@@ -317,7 +317,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 	if (hierarchyComp != nullptr && hierarchyComp->firstChild != entt::null)
 		hasChildren = true;
 
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
