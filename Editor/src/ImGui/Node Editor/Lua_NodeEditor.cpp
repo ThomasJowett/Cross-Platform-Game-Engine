@@ -153,8 +153,6 @@ void LuaNodeEditor::Destroy()
 
 void LuaNodeEditor::Render()
 {
-	NodeEditor::SetCurrentEditor(m_NodeEditorContext);
-
 	NodeEditor::Begin("Node Editor");
 
 	LuaNodeBuilder builder;
@@ -417,88 +415,95 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 
 		ImRect rect = ImRect(cursorPos, cursorPos + pinSize);
 		float rect_w = rect.Min.x - rect.Max.x;
-		float
-			if (iconType == IconType::Arrow)
+		float outline_scale = rect_w / 24.0f;
+		if (iconType == IconType::Arrow)
+		{
+			const auto origin_scale = rect_w / 24.0f;
+
+			const auto offset_x = 1.0f * origin_scale;
+			const auto offset_y = 0.0f * origin_scale;
+			const auto margin = (connected ? 2.0f : 2.0f) * origin_scale;
+			const auto rounding = 0.1f * origin_scale;
+			const auto tip_round = 0.7f; // percentage of triangle edge (for tip)
+			//const auto edge_round = 0.7f; // percentage of triangle edge (for corner)
+			const auto canvas = ImRect(
+				rect.Min.x + margin + offset_x,
+				rect.Min.y + margin + offset_y,
+				rect.Max.x - margin + offset_x,
+				rect.Max.y - margin + offset_y);
+			const auto canvas_x = canvas.Min.x;
+			const auto canvas_y = canvas.Min.y;
+			const auto canvas_w = canvas.Max.x - canvas.Min.x;
+			const auto canvas_h = canvas.Max.y - canvas.Min.y;
+
+			const auto left = canvas_x + canvas_w * 0.5f * 0.3f;
+			const auto right = canvas_x + canvas_w - canvas_w * 0.5f * 0.3f;
+			const auto top = canvas_y + canvas_h * 0.5f * 0.2f;
+			const auto bottom = canvas_y + canvas_h - canvas_h * 0.5f * 0.2f;
+			const auto center_y = (top + bottom) * 0.5f;
+			//const auto angle = AX_PI * 0.5f * 0.5f * 0.5f;
+
+			const auto tip_top = ImVec2(canvas_x + canvas_w * 0.5f, top);
+			const auto tip_right = ImVec2(right, center_y);
+			const auto tip_bottom = ImVec2(canvas_x + canvas_w * 0.5f, bottom);
+
+			drawList->PathLineTo(ImVec2(left, top) + ImVec2(0, rounding));
+			drawList->PathBezierCurveTo(
+				ImVec2(left, top),
+				ImVec2(left, top),
+				ImVec2(left, top) + ImVec2(rounding, 0));
+			drawList->PathLineTo(tip_top);
+			drawList->PathLineTo(tip_top + (tip_right - tip_top) * tip_round);
+			drawList->PathBezierCurveTo(
+				tip_right,
+				tip_right,
+				tip_bottom + (tip_right - tip_bottom) * tip_round);
+			drawList->PathLineTo(tip_bottom);
+			drawList->PathLineTo(ImVec2(left, bottom) + ImVec2(rounding, 0));
+			drawList->PathBezierCurveTo(
+				ImVec2(left, bottom),
+				ImVec2(left, bottom),
+				ImVec2(left, bottom) - ImVec2(0, rounding));
+
+			if (!connected)
 			{
-				const auto origin_scale = rect_w / 24.0f;
+				ImColor innerColour(ImColor(32, 32, 32, alpha));
+				if (innerColour & 0xFF000000)
+					drawList->AddConvexPolyFilled(drawList->_Path.Data, drawList->_Path.Size, innerColour);
 
-				const auto offset_x = 1.0f * origin_scale;
-				const auto offset_y = 0.0f * origin_scale;
-				const auto margin = (connected ? 2.0f : 2.0f) * origin_scale;
-				const auto rounding = 0.1f * origin_scale;
-				const auto tip_round = 0.7f; // percentage of triangle edge (for tip)
-				//const auto edge_round = 0.7f; // percentage of triangle edge (for corner)
-				const auto canvas = ImRect(
-					rect.Min.x + margin + offset_x,
-					rect.Min.y + margin + offset_y,
-					rect.Max.x - margin + offset_x,
-					rect.Max.y - margin + offset_y);
-				const auto canvas_x = canvas.Min.x;
-				const auto canvas_y = canvas.Min.y;
-				const auto canvas_w = canvas.Max.x - canvas.Min.x;
-				const auto canvas_h = canvas.Max.y - canvas.Min.y;
-
-				const auto left = canvas_x + canvas_w * 0.5f * 0.3f;
-				const auto right = canvas_x + canvas_w - canvas_w * 0.5f * 0.3f;
-				const auto top = canvas_y + canvas_h * 0.5f * 0.2f;
-				const auto bottom = canvas_y + canvas_h - canvas_h * 0.5f * 0.2f;
-				const auto center_y = (top + bottom) * 0.5f;
-				//const auto angle = AX_PI * 0.5f * 0.5f * 0.5f;
-
-				const auto tip_top = ImVec2(canvas_x + canvas_w * 0.5f, top);
-				const auto tip_right = ImVec2(right, center_y);
-				const auto tip_bottom = ImVec2(canvas_x + canvas_w * 0.5f, bottom);
-
-				drawList->PathLineTo(ImVec2(left, top) + ImVec2(0, rounding));
-				drawList->PathBezierCurveTo(
-					ImVec2(left, top),
-					ImVec2(left, top),
-					ImVec2(left, top) + ImVec2(rounding, 0));
-				drawList->PathLineTo(tip_top);
-				drawList->PathLineTo(tip_top + (tip_right - tip_top) * tip_round);
-				drawList->PathBezierCurveTo(
-					tip_right,
-					tip_right,
-					tip_bottom + (tip_right - tip_bottom) * tip_round);
-				drawList->PathLineTo(tip_bottom);
-				drawList->PathLineTo(ImVec2(left, bottom) + ImVec2(rounding, 0));
-				drawList->PathBezierCurveTo(
-					ImVec2(left, bottom),
-					ImVec2(left, bottom),
-					ImVec2(left, bottom) - ImVec2(0, rounding));
-
-				if (!connected)
-				{
-					ImColor innerColour(ImColor(32, 32, 32, alpha));
-					if (innerColour & 0xFF000000)
-						drawList->AddConvexPolyFilled(drawList->_Path.Data, drawList->_Path.Size, innerColour);
-
-					drawList->PathStroke(colour, true, 2.0f * outline_scale);
-				}
-				else
-					drawList->PathFillConvex(colour);
+				drawList->PathStroke(colour, true, 2.0f * outline_scale);
 			}
+			else
+				drawList->PathFillConvex(colour);
+		}
 	}
 
 	ImGui::Dummy(ImVec2(m_PinSize, m_PinSize));
 }
 
-void LuaNodeEditor::Undo(int asteps)
+void LuaNodeEditor::Undo(int steps)
 {
+	while (CanUndo() && steps-- > 0)
+		m_UndoBuffer[--m_UndoIndex].Undo(this);
+
+	if (!CanUndo())
+		m_Dirty = false;
 }
 
-void LuaNodeEditor::Redo(int asteps)
+void LuaNodeEditor::Redo(int steps)
 {
+	while (CanRedo() && steps-- > 0)
+		m_UndoBuffer[m_UndoIndex++].Redo(this);
 }
 
 bool LuaNodeEditor::CanUndo() const
 {
-	return false;
+	return m_UndoIndex > 0;
 }
 
 bool LuaNodeEditor::CanRedo() const
 {
-	return false;
+	return m_UndoIndex < (int)m_UndoBuffer.size();
 }
 
 void LuaNodeEditor::Copy()
@@ -519,6 +524,11 @@ void LuaNodeEditor::Duplicate()
 
 void LuaNodeEditor::Delete()
 {
+	//int size = NodeEditor::GetSelectedObjectCount();
+	//NodeEditor::NodeId* ids = nullptr;
+	//int test = NodeEditor::GetSelectedNodes(ids, size);
+	//for (int i = 0; i < NodeEditor::GetSelectedObjectCount(); ++i)
+	//	NodeEditor::DeleteNode(ids[i]);
 }
 
 bool LuaNodeEditor::HasSelection() const
@@ -538,4 +548,12 @@ void LuaNodeEditor::SelectAll()
 bool LuaNodeEditor::IsReadOnly() const
 {
 	return false;
+}
+
+void LuaNodeEditor::UndoRecord::Undo(LuaNodeEditor* editor)
+{
+}
+
+void LuaNodeEditor::UndoRecord::Redo(LuaNodeEditor* editor)
+{
 }

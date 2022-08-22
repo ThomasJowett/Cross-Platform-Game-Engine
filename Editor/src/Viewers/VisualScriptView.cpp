@@ -26,9 +26,11 @@ void VisualSriptView::OnImGuiRender()
 		return;
 	}
 
+	m_LuaNodeEditor.SetContext();
+
 	ImGui::SetNextWindowSize(ImVec2(900, 900), ImGuiCond_FirstUseEver);
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollWithMouse;
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
@@ -182,7 +184,7 @@ void VisualSriptView::OnImGuiRender()
 			ImGui::EndTable();
 		}
 	}
-
+	m_LuaNodeEditor.ClearContext();
 	ImGui::End();
 }
 

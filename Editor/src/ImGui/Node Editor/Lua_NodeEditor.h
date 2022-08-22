@@ -129,16 +129,45 @@ public:
 		{}
 	};
 
+	struct EditorState
+	{
+	};
+
+	class UndoRecord
+	{
+	public:
+		UndoRecord() {}
+		~UndoRecord() {}
+
+		void Undo(LuaNodeEditor* editor);
+		void Redo(LuaNodeEditor* editor);
+
+		std::vector<Node*> m_AddedNodes;
+		std::vector<Link*> m_AddedLinks;
+
+		std::vector<Node*> m_RemovedNodes;
+		std::vector<Link*> m_RemovedLinks;
+
+		std::vector<Node*> m_MovedNodes;
+
+		EditorState m_Before;
+		EditorState m_After;
+	};
+
+	typedef std::vector<UndoRecord> UndoBuffer;
+
 	LuaNodeEditor();
 
 	void SetFilepath(std::string_view filepath);
 	void Destroy();
 
+	void SetContext() { NodeEditor::SetCurrentEditor(m_NodeEditorContext); }
 	void Render();
+	void ClearContext() { NodeEditor::SetCurrentEditor(nullptr); }
 
 	// Inherited via IUndoable
-	virtual void Undo(int asteps = 1) override;
-	virtual void Redo(int asteps = 1) override;
+	virtual void Undo(int steps = 1) override;
+	virtual void Redo(int steps = 1) override;
 	virtual bool CanUndo() const override;
 	virtual bool CanRedo() const override;
 
@@ -190,4 +219,8 @@ private:
 	bool m_Dirty = false;
 
 	const int m_PinSize = 24;
+
+	EditorState m_State;
+	UndoBuffer m_UndoBuffer;
+	int m_UndoIndex;
 };

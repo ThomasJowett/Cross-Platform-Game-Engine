@@ -10,9 +10,9 @@
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui.h" // for imGui::GetCurrentWindow()
 
-TextEditor::Palette TextEditor::sPaletteBase({ 
+TextEditor::Palette TextEditor::sPaletteBase({
 	0xff7f7f7f,	// Default
-	0xffd69c56,	// Keyword	
+	0xffd69c56,	// Keyword
 	0xff00ff00,	// Number
 	0xff7070e0,	// String
 	0xff70a0e0, // Char literal
@@ -1143,7 +1143,6 @@ void TextEditor::Render()
 		}
 	}
 
-
 	ImGui::Dummy(ImVec2((longest + 2), mLines.size() * mCharAdvance.y));
 
 	if (mScrollToCursor)
@@ -1259,7 +1258,6 @@ void TextEditor::EnterCharacter(ImWchar aChar, bool aShift)
 	{
 		if (aChar == '\t' && mState.mSelectionStart.mLine != mState.mSelectionEnd.mLine)
 		{
-
 			auto start = mState.mSelectionStart;
 			auto end = mState.mSelectionEnd;
 			auto originalEnd = end;
@@ -2051,7 +2049,7 @@ void TextEditor::Duplicate()
 
 		u.mAddedEnd = Coordinates(mState.mCursorPosition.mLine + 2, 0);
 
-		Coordinates insertloc = Coordinates(mState.mCursorPosition.mLine + 1, 0 );
+		Coordinates insertloc = Coordinates(mState.mCursorPosition.mLine + 1, 0);
 
 		InsertTextAt(insertloc, duplicatedText.c_str());
 		u.mAddedStart = Coordinates(mState.mCursorPosition.mLine + 1, 0);
@@ -2119,7 +2117,7 @@ const TextEditor::Palette& TextEditor::GetDarkPalette()
 {
 	const static Palette p = { {
 			0xff7f7f7f,	// Default
-			0xffd69c56,	// Keyword	
+			0xffd69c56,	// Keyword
 			0xff00ff00,	// Number
 			0xff7070e0,	// String
 			0xff70a0e0, // Char literal
@@ -2147,7 +2145,7 @@ const TextEditor::Palette& TextEditor::GetLightPalette()
 {
 	const static Palette p = { {
 			0xff7f7f7f,	// None
-			0xffff0c06,	// Keyword	
+			0xffff0c06,	// Keyword
 			0xff008000,	// Number
 			0xff2020a0,	// String
 			0xff304070, // Char literal
@@ -2175,7 +2173,7 @@ const TextEditor::Palette& TextEditor::GetRetroBluePalette()
 {
 	const static Palette p = { {
 			0xff00ffff,	// None
-			0xffffff00,	// Keyword	
+			0xffffff00,	// Keyword
 			0xff00ff00,	// Number
 			0xff808000,	// String
 			0xff808000, // Char literal
@@ -2198,7 +2196,6 @@ const TextEditor::Palette& TextEditor::GetRetroBluePalette()
 		} };
 	return p;
 }
-
 
 std::string TextEditor::GetText() const
 {
@@ -2608,7 +2605,6 @@ void TextEditor::UndoRecord::Undo(TextEditor* aEditor)
 
 	aEditor->mState = mBefore;
 	aEditor->EnsureCursorVisible();
-
 }
 
 void TextEditor::UndoRecord::Redo(TextEditor* aEditor)
@@ -2997,11 +2993,11 @@ const TextEditor::LanguageDefinition& TextEditor::LanguageDefinition::GLSL()
 		static const char* const keywords[] = {
 			"auto", "break", "case", "char", "const", "continue", "default", "do", "double", "else", "enum", "extern", "float", "for", "goto", "if", "inline", "int", "long", "register", "restrict", "return", "short",
 			"signed", "sizeof", "static", "struct", "switch", "typedef", "union", "unsigned", "void", "volatile", "while", "_Alignas", "_Alignof", "_Atomic", "_Bool", "_Complex", "_Generic", "_Imaginary",
-			"_Noreturn", "_Static_assert", "_Thread_local" ,"attribute", "uniform", "varying", "layout", "centroid", "flat", "smooth", "noperspective", 
+			"_Noreturn", "_Static_assert", "_Thread_local" ,"attribute", "uniform", "varying", "layout", "centroid", "flat", "smooth", "noperspective",
 			"in", "out", "inout", "bool", "true", "false", "invariant", "discard", "mat2", "mat3", "mat4", "mat2x2", "mat2x3", "mat2x4", "mat3x2", "mat3x3", "mat3x4",
-			"mat4x2", "mat4x3", "mat4x4", "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "bvec2", "bvec3", "bvec4", "uint", "uvec2", "uvec3", "uvec4", "lowp", "mediump", "highp", "precision", 
-			"sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler1DShadow", "sampler2DShadow", "samplerCubeShadow", "sampler1DArray", "sampler2DArray", "sampler1DArrayShadow", "sampler2DArrayShadow", 
-			"isampler1D", "isampler2D", "isampler3D", "isamplerCube", "isampler1DArray", "isampler2DArray", "usampler1D", "usampler2D", "usampler3D", "usamplerCube", "usampler1DArray", "usampler2DArray", 
+			"mat4x2", "mat4x3", "mat4x4", "vec2", "vec3", "vec4", "ivec2", "ivec3", "ivec4", "bvec2", "bvec3", "bvec4", "uint", "uvec2", "uvec3", "uvec4", "lowp", "mediump", "highp", "precision",
+			"sampler1D", "sampler2D", "sampler3D", "samplerCube", "sampler1DShadow", "sampler2DShadow", "samplerCubeShadow", "sampler1DArray", "sampler2DArray", "sampler1DArrayShadow", "sampler2DArrayShadow",
+			"isampler1D", "isampler2D", "isampler3D", "isamplerCube", "isampler1DArray", "isampler2DArray", "usampler1D", "usampler2D", "usampler3D", "usamplerCube", "usampler1DArray", "usampler2DArray",
 			"sampler2DRect", "sampler2DRectShadow", "isampler2DRect", "usampler2DRect", "samplerBuffer", "isamplerBuffer", "usamplerBuffer", "struct"
 		};
 		for (auto& k : keywords)
