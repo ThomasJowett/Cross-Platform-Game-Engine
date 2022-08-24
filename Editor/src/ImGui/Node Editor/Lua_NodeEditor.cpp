@@ -184,6 +184,55 @@ void LuaNodeEditor::Render()
 		builder.End();
 	}
 
+	for (auto& link : m_Links)
+	{
+		NodeEditor::Link(link.id, link.startPinId, link.endPinId, link.colour, 2.0f);
+	}
+
+	if (!m_CreateNewNode)
+	{
+		if (NodeEditor::BeginCreate(ImColor(255, 255, 255), 2.0f))
+		{
+			auto showlabel = [](const char* label, ImColor colour)
+			{
+				ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+				ImVec2 size = ImGui::CalcTextSize(label);
+
+				ImGuiStyle& style = ImGui::GetStyle();
+
+				ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(style.ItemSpacing.x, -style.ItemSpacing.y));
+
+				ImVec2 rectMin = ImGui::GetCursorScreenPos() - style.FramePadding;
+				ImVec2 rectMax = ImGui::GetCursorScreenPos() + size + style.FramePadding;
+
+				ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax, colour, size.y * 0.15f);
+				ImGui::TextUnformatted(label);
+			};
+
+			NodeEditor::PinId startPinId = 0, endPinId = 0;
+			if (NodeEditor::QueryNewLink(&startPinId, &endPinId))
+			{
+				Pin* startPin = FindPin(startPinId);
+				Pin* endPin = FindPin(endPinId);
+
+				m_NewLinkPin = startPin ? startPin : endPin;
+
+				if (startPin->kind == PinKind::Input)
+				{
+					std::swap(startPin, endPin);
+					std::swap(startPinId, endPinId);
+
+					if (startPin && endPin)
+					{
+
+					}
+				}
+			}
+		}
+
+		NodeEditor::EndCreate();
+	}
+
 	ImVec2 openPopupPosition = ImGui::GetMousePos();
 
 	NodeEditor::Suspend();
