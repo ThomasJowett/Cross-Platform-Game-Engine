@@ -78,11 +78,7 @@ public:
 	enum class IconType : ImU32
 	{
 		Arrow,
-		Circle,
-		Square,
-		Grid,
-		RoundSquare,
-		Diamond
+		Circle
 	};
 
 	struct Node;

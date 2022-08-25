@@ -168,6 +168,11 @@ void LuaNodeEditor::Render()
 
 			builder.Input(input.id);
 			DrawPin(input, IsPinLinked(input.id), (int)(alpha * 255));
+			if (!input.name.empty())
+			{
+				ImGui::SameLine();
+				ImGui::TextUnformatted(input.name.c_str());
+			}
 			builder.EndInput();
 		}
 
@@ -178,6 +183,11 @@ void LuaNodeEditor::Render()
 				alpha = alpha * (48.0f / 255.0f);
 
 			builder.Output(output.id);
+			if (!output.name.empty())
+			{
+				ImGui::TextUnformatted(output.name.c_str());
+				ImGui::SameLine();
+			}
 			DrawPin(output, IsPinLinked(output.id), (int)(alpha * 255));
 			builder.EndOutput();
 		}
@@ -221,14 +231,56 @@ void LuaNodeEditor::Render()
 				{
 					std::swap(startPin, endPin);
 					std::swap(startPinId, endPinId);
+				}
 
-					if (startPin && endPin)
+				if (startPin && endPin)
+				{
+					if (endPin == startPin)
 					{
-
+						NodeEditor::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+					}
+					else if (endPin->kind == startPin->kind)
+					{
+						showlabel("x Incompatible Pin Kind", ImColor(45, 32, 32, 180));
+						NodeEditor::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+					}
+					else if (endPin->type != startPin->type)
+					{
+						showlabel("x Imcompatible Pin Type", ImColor(45, 32, 32, 180));
+						NodeEditor::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+					}
+					else
+					{
+						showlabel("+ Create Link", ImColor(32, 45, 32, 180));
+						if (NodeEditor::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
+						{
+							m_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
+							m_Links.back().colour = GetPinColour(startPin->type);
+						}
 					}
 				}
 			}
+
+			NodeEditor::PinId pinId = 0;
+			if (NodeEditor::QueryNewNode(&pinId))
+			{
+				m_NewLinkPin = FindPin(pinId);
+				if (m_NewLinkPin)
+					showlabel("+ Create Node", ImColor(32, 45, 32, 180));
+
+				if (NodeEditor::AcceptNewItem())
+				{
+					m_CreateNewNode = true;
+					m_NewNodeLinkPin = FindPin(pinId);
+					m_NewLinkPin = nullptr;
+					NodeEditor::Suspend();
+					ImGui::OpenPopup("Create New Node");
+					NodeEditor::Resume();
+				}
+			}
 		}
+		else
+			m_NewLinkPin = nullptr;
 
 		NodeEditor::EndCreate();
 	}
@@ -318,6 +370,8 @@ void LuaNodeEditor::Render()
 		}
 		ImGui::EndPopup();
 	}
+	else
+		m_CreateNewNode = false;
 	NodeEditor::Resume();
 
 	NodeEditor::End();
@@ -408,7 +462,30 @@ void LuaNodeEditor::BuildNodes()
 LuaNodeEditor::Node* LuaNodeEditor::SpawnNode()
 {
 	m_Nodes.emplace_back(GetNextId(), "Input Action", ImColor(255, 128, 128));
-	m_Nodes.back().outputs.emplace_back(GetNextId(), "", PinType::Execution);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "Input", PinType::Execution);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "Output", PinType::Execution);
+
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test", PinType::Bool);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test2", PinType::Float);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test3", PinType::Int);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test4", PinType::String);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test5", PinType::Vec2);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test6", PinType::Vec3);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test7", PinType::Quaternion);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test8", PinType::Colour);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test9", PinType::Object);
+	m_Nodes.back().inputs.emplace_back(GetNextId(), "test10", PinType::Enum);
+
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output", PinType::Bool);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output2", PinType::Float);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output3", PinType::Int);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output4", PinType::String);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output5", PinType::Vec2);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output6", PinType::Vec3);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output7", PinType::Quaternion);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output8", PinType::Colour);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output9", PinType::Object);
+	m_Nodes.back().outputs.emplace_back(GetNextId(), "output10", PinType::Enum);
 
 	BuildNode(&m_Nodes.back());
 	return &m_Nodes.back();
@@ -462,8 +539,10 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 		ImVec2 cursorPos = ImGui::GetCursorScreenPos();
 		ImDrawList* drawList = ImGui::GetWindowDrawList();
 
+		ImColor innerColour(ImColor(32, 32, 32, alpha));
+
 		ImRect rect = ImRect(cursorPos, cursorPos + pinSize);
-		float rect_w = rect.Min.x - rect.Max.x;
+		float rect_w = rect.Max.x - rect.Min.x;
 		float outline_scale = rect_w / 24.0f;
 		if (iconType == IconType::Arrow)
 		{
@@ -516,7 +595,6 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 
 			if (!connected)
 			{
-				ImColor innerColour(ImColor(32, 32, 32, alpha));
 				if (innerColour & 0xFF000000)
 					drawList->AddConvexPolyFilled(drawList->_Path.Data, drawList->_Path.Size, innerColour);
 
@@ -524,6 +602,43 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
 			}
 			else
 				drawList->PathFillConvex(colour);
+		}
+		else
+		{
+			auto rect_center_x = (rect.Min.x + rect.Max.x) * 0.5f;
+			auto rect_center_y = (rect.Min.y + rect.Max.y) * 0.5f;
+			auto rect_center = ImVec2(rect_center_x, rect_center_y);
+			auto triangleStart = rect_center_x + 0.32f * rect_w;
+
+			auto rect_offset = -static_cast<int>(rect_w * 0.25f * 0.25f);
+
+			rect.Min.x += rect_offset;
+			rect.Max.x += rect_offset;
+			rect_center.x += rect_offset * 0.5f;
+
+			const auto c = rect_center;
+
+			const auto extra_segments = static_cast<int>(2 * outline_scale);
+
+			if (!connected)
+			{
+				const auto r = 0.5f * rect_w / 2.0f - 0.5f;
+				if (innerColour & 0xFF000000)
+					drawList->AddCircleFilled(c, r, innerColour, 12 + extra_segments);
+				drawList->AddCircle(c, r, colour, 12 + extra_segments, 2.0f * outline_scale);
+			}
+			else
+				drawList->AddCircleFilled(c, 0.5f * rect_w / 2.0f, colour, 12 + extra_segments);
+
+			const auto triangleTip = triangleStart + rect_w * (0.45f - 0.32f);
+
+			float rect_h = rect.Max.y - rect.Min.y;
+
+			drawList->AddTriangleFilled(
+				ImVec2(ceilf(triangleTip), rect.Min.y + rect_h * 0.5f),
+				ImVec2(triangleStart, rect_center_y + 0.15f * rect_h),
+				ImVec2(triangleStart, rect_center_y - 0.15f * rect_h),
+				colour);
 		}
 	}
 
