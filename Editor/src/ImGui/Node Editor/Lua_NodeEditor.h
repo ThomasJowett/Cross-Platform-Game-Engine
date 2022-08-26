@@ -2,6 +2,8 @@
 #include <vector>
 #include <string>
 
+#include "Events/Event.h"
+
 #include "ImGui/Node Editor/imgui_node_editor.h"
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ICopyable.h"
@@ -180,6 +182,10 @@ public:
 	bool NeedsSaving() { return m_Dirty; }
 
 private:
+	friend NodeEditor::Config;
+
+	char* GetSettingsData();
+
 	bool IsPinLinked(NodeEditor::PinId id);
 	bool CanCreateLink(Pin* a, Pin* b);
 
@@ -197,6 +203,8 @@ private:
 	void DrawPin(const Pin& pin, bool connected, int alpha);
 
 private:
+
+	char* m_Data;
 
 	NodeEditor::EditorContext* m_NodeEditorContext = nullptr;
 	std::vector<Node> m_Nodes;
