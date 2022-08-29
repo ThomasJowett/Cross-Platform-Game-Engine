@@ -8,7 +8,7 @@ StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -21,7 +21,12 @@ void StaticMeshView::OnAttach()
 	m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
 	m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 
-	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
+	m_GridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	m_GridMaterial->SetTwoSided(true);
+	m_GridMaterial->SetTilingFactor(100.0f);
+	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f));
+
+	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 	m_CameraController.SwitchCamera(true);
 	//future code
 	// m_CameraController.SetPosition({0.0,0.0, m_Mesh->GetBounds().radius})
@@ -63,8 +68,6 @@ void StaticMeshView::OnImGuiRender()
 		if (m_WindowHovered && io.MouseWheel != 0.0f)
 			m_CameraController.OnMouseWheel(io.MouseWheel);
 
-		//ImGui::Columns(2);
-
 		ImVec2 panelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
 		{
@@ -77,9 +80,6 @@ void StaticMeshView::OnImGuiRender()
 		m_RelativeMousePosition = { mouse_pos.x - ImGui::GetWindowPos().x - 1.0f, mouse_pos.y - ImGui::GetWindowPos().y - 8.0f - ImGui::GetFontSize() };
 
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
-
-		//if (m_CursorDisabled)
-		//	ImGui:
 
 		if (ImGui::BeginMenuBar())
 		{
@@ -103,10 +103,6 @@ void StaticMeshView::OnImGuiRender()
 		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
-
-		//ImGui::NextColumn();
-		//
-		//ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
 	}
 	ImGui::End();
 
@@ -117,11 +113,16 @@ void StaticMeshView::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
+	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
+	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
+	{
+		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
+	}
+
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 
-	//m_CursorDisabled = false;
-	//TODO: fix the cursor position stuff
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
 	if (m_CursorDisabled)
@@ -133,7 +134,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 		m_CursorDisabled = true;
 	}
 
-	if (m_WindowHovered && !rightMouseDown)
+	if (m_CursorDisabled && !rightMouseDown)
 	{
 		m_CursorDisabled = false;
 		Application::GetWindow().EnableCursor();
@@ -143,16 +144,12 @@ void StaticMeshView::OnUpdate(float deltaTime)
 
 	Renderer::Submit(m_StandardMaterial, m_Mesh);
 
+	Renderer::Submit(m_GridMaterial, m_GridMesh);
+
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();
 }
 
 void StaticMeshView::OnFixedUpdate()
 {
-	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
-	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
-	{
-		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_CameraController.SetAspectRatio(m_ViewportSize.x / m_ViewportSize.y);
-	}
 }

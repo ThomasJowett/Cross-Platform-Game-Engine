@@ -13,8 +13,6 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;
 	virtual void OnUpdate(float deltaTime) override;
-	virtual void OnFixedUpdate() override;
-
 private:
 	bool* m_Show;
 

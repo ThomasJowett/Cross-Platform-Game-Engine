@@ -10,7 +10,7 @@ MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	m_Mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(1.0f, 50, 50));
 
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 , FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -136,19 +136,6 @@ void MaterialView::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	m_Framebuffer->Bind();
-	RenderCommand::Clear();
-
-	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
-
-	Renderer::Submit(m_Material, m_Mesh);
-
-	Renderer::EndScene();
-	m_Framebuffer->UnBind();
-}
-
-void MaterialView::OnFixedUpdate()
-{
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();
 	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
@@ -159,6 +146,16 @@ void MaterialView::OnFixedUpdate()
 		else
 			m_Camera.SetProjection(-1.0f, 1.0f, -1.0f / aspectRatio, 1.0f / aspectRatio);
 	}
+
+	m_Framebuffer->Bind();
+	RenderCommand::Clear();
+
+	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
+
+	Renderer::Submit(m_Material, m_Mesh);
+
+	Renderer::EndScene();
+	m_Framebuffer->UnBind();
 }
 
 void MaterialView::Save()

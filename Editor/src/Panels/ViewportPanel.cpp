@@ -27,7 +27,7 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<Til
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
 	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
-	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Framebuffer->ClearAttachment(1, -1);
