@@ -14,6 +14,7 @@ public:
 	virtual void OnImGuiRender() override;
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnFixedUpdate() override;
+
 private:
 	bool* m_Show;
 
@@ -21,12 +22,17 @@ private:
 
 	std::string m_WindowName;
 
-	Ref<Material> m_Material;
-
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
 
 	bool m_Dirty = false;
+
+	Ref<FrameBuffer> m_Framebuffer;
+	OrthographicCamera m_Camera;
+	Ref<Material> m_Material;
+	Ref<Mesh> m_Mesh;
+
+	ImVec2 m_ViewportSize;
 
 	// Inherited via ISaveable
 	virtual void Save() override;

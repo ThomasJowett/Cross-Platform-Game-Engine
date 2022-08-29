@@ -24,8 +24,6 @@ private:
 
 	Ref<Mesh> m_Mesh;
 
-	Ref<Texture2D> m_Texture;
-
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
 	bool m_CursorDisabled;
@@ -33,7 +31,7 @@ private:
 	Ref<FrameBuffer> m_Framebuffer;
 	Vector2f m_RelativeMousePosition;
 
-	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
-};
 
+	Ref<Material> m_StandardMaterial; // TODO: load the default material from the mesh file (requires changing mesh file format!)
+};

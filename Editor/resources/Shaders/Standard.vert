@@ -8,6 +8,7 @@ layout(location = 3) in vec2 a_TexCoord;
 layout(std140, binding = 0) uniform ConstantBuffer
 {
 	uniform mat4 u_ViewProjection;
+	uniform vec3 u_EyePosition;
 };
 
 layout(std140, binding = 1) uniform ModelBuffer

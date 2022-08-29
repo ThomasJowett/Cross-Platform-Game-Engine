@@ -2,12 +2,13 @@
 
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
+#include "Renderer/Asset.h"
 
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8};
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -17,8 +18,8 @@ void StaticMeshView::OnAttach()
 
 	m_Mesh = AssetManager::GetMesh(m_FilePath);
 
-	m_ShaderLibrary.Load("Standard");
-	m_Texture = Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png");
+	m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
+	m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 2.0 });
 	m_CameraController.SwitchCamera(true);
@@ -119,13 +120,6 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	m_Framebuffer->Bind();
 	RenderCommand::Clear();
 
-	Ref<Shader> shader = m_ShaderLibrary.Get("Standard");
-	shader->Bind();
-
-	//shader->SetInt("u_texture", 0);
-	//shader->SetFloat4("u_colour", Colours::WHITE);
-	//shader->SetFloat("u_tilingFactor", 1.0f);
-
 	//m_CursorDisabled = false;
 	//TODO: fix the cursor position stuff
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
@@ -146,10 +140,8 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	}
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
-	m_Texture->Bind();
 
-	Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
-	//Renderer::Submit(shader, m_Mesh->GetVertexArray(), Matrix4x4());
+	Renderer::Submit(m_StandardMaterial, m_Mesh);
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

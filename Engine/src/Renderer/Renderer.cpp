@@ -19,9 +19,9 @@ struct RendererData
 struct SceneData
 {
 	ALIGNED_TYPE(struct, 16)
-	//typedef struct ALIGNED_(16) tagSTRUCTALIGNED16
 	{
-	    Matrix4x4 viewProjectionMatrix;
+		Matrix4x4 viewProjectionMatrix;
+		Vector3f eyePosition;
 	}ConstantBuffer;
 
 	typedef struct ALIGNED_(16) tagSTRUCTALIGNED16
@@ -34,7 +34,7 @@ struct SceneData
 
 	ConstantBuffer constantBuffer;
 	ModelBuffer modelBuffer;
-	
+
 	Ref<UniformBuffer> constantUniformBuffer;
 	Ref<UniformBuffer> modelUniformBuffer;
 };
@@ -61,7 +61,7 @@ bool Renderer::Init()
 	s_RendererData.mixMapTexture = Texture2D::Create(1, 1);
 	uint32_t mixMapTextureData = Colour(0.5f, 0.0f, 0.5f, 1.0f).HexValue();
 	s_RendererData.mixMapTexture->SetData(&whiteTextureData, sizeof(uint32_t));
-	
+
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
 	return false;
@@ -86,6 +86,7 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	s_SceneData.constantBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
+	s_SceneData.constantBuffer.eyePosition = transform.ExtractTranslation();
 
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
 	Renderer2D::BeginScene(transform, projection);
@@ -99,25 +100,6 @@ void Renderer::EndScene()
 	//TODO: frustum culling
 	//TODO: sort the opaque objects front to back
 	//TODO: sort the transparent objects back to front
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Renderer::Submit(const Ref<Shader>& shader, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, Colour colour, float tilingFactor, int entityId)
-{
-	//TODO: submit the vertex array to a render queue
-	shader->Bind();
-
-	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_SceneData.modelBuffer.colour = colour;
-	//TODO: each texture should have it's own tiling factor
-	s_SceneData.modelBuffer.tilingFactor = tilingFactor;
-	s_SceneData.modelBuffer.entityId = entityId;
-	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
-
-	CORE_ASSERT(vertexArray, "No data in vertex array");
-
-	RenderCommand::DrawIndexed(vertexArray);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -136,7 +118,7 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, cons
 	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
 	s_SceneData.modelBuffer.colour = material->GetTint();
 	//TODO: each texture should have it's own tiling factor
-	s_SceneData.modelBuffer.tilingFactor = 1.0f;
+	s_SceneData.modelBuffer.tilingFactor = material->GetTilingFactor();
 	s_SceneData.modelBuffer.entityId = entityId;
 	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
 
@@ -150,5 +132,5 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, cons
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
-	RenderCommand::DrawIndexed(vertexArray);
+	RenderCommand::DrawIndexed(vertexArray, 0, !material->IsTwoSided());
 }

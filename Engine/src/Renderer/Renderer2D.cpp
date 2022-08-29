@@ -110,13 +110,6 @@ struct Renderer2DData
 	uint32_t screenWidth = 1920, screenHeight = 1080;
 
 	Renderer2D::Stats statistics;
-
-	ALIGNED_TYPE(struct, 16)
-	{
-		Matrix4x4 viewProjectionMatrix;
-	}CameraData;
-	CameraData cameraBuffer;
-	Ref<UniformBuffer> cameraUniformBuffer;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -254,7 +247,6 @@ bool Renderer2D::Init()
 	s_Data.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
-	s_Data.cameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
 	return s_Data.quadShader == nullptr;
 }
 
@@ -275,9 +267,6 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
-	s_Data.cameraBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
-
-	s_Data.cameraUniformBuffer->SetData(&s_Data.cameraBuffer, sizeof(Renderer2DData::CameraData));
 
 	StartQuadsBatch();
 	StartCirclesBatch();
@@ -699,9 +688,9 @@ void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const floa
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
 		NextLinesBatch();
 
-	//world to clip
-	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
-	Vector3f clipJ = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
+	////world to clip
+	Vector3f clipI;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
+	Vector3f clipJ;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
 
 	//clip to pixel
 	Vector2f pixelStart, pixelEnd;

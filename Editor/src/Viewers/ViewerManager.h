@@ -1,6 +1,6 @@
 #pragma once
 
-#define MAX_ASSET_VIEWERS 2
+#define MAX_ASSET_VIEWERS 0
 
 #include <map>
 #include <filesystem>

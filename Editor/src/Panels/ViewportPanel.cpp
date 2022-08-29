@@ -31,6 +31,12 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<Til
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
 	m_Framebuffer->ClearAttachment(1, -1);
+
+	m_GridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	m_GridMaterial->SetTwoSided(true);
+	m_GridMaterial->SetTilingFactor(100.0f);
+
+	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f));
 }
 
 void ViewportPanel::OnAttach()
@@ -139,7 +145,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		// Debug render pass
 		m_Framebuffer->Bind();
-		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+		Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+
 		if (m_HierarchyPanel->GetSelectedEntity() && m_HierarchyPanel->GetSelectedEntity().IsValid())
 		{
 			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
@@ -218,7 +225,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						start = transformComp.GetWorldMatrix() * start;
 						end = transformComp.GetWorldMatrix() * end;
 
-						Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+						Renderer2D::DrawHairLine(start, end, Colour(0.2f, 0.2f, 0.2f, 0.5f), selectedEntity);
 					}
 					for (size_t i = 0; i < tilemapComp.tilesWide + 1; i++)
 					{
@@ -228,7 +235,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						start = transformComp.GetWorldMatrix() * start;
 						end = transformComp.GetWorldMatrix() * end;
 
-						Renderer2D::DrawHairLine(start, end, Colour(0.5f, 0.5f, 0.5f, 0.5f), selectedEntity);
+						Renderer2D::DrawHairLine(start, end, Colour(0.2f, 0.2f, 0.2f, 0.5f), selectedEntity);
 					}
 					break;
 				case TilemapComponent::Orientation::isometric:
@@ -273,7 +280,23 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			}
 		}
 
-		Renderer2D::EndScene();
+		Renderer2D::FlushHairLines();
+
+		if (m_ShowGrid)
+		{
+			if (m_Is2DMode)
+			{
+				Matrix4x4 gridTransform = Matrix4x4::Translate(Vector3f(m_CameraController.GetPosition().x, m_CameraController.GetPosition().y, 0.001f))
+					* Matrix4x4::RotateX((float)PIDIV2);
+				Renderer::Submit(m_GridMaterial, m_GridMesh, gridTransform);
+			}
+			else
+			{
+				Renderer::Submit(m_GridMaterial, m_GridMesh, Matrix4x4::Translate(Vector3f(m_CameraController.GetPosition().x, 0.0f, m_CameraController.GetPosition().z)));
+			}
+		}
+
+		Renderer::EndScene();
 		m_Framebuffer->UnBind();
 		break;
 	}
@@ -568,19 +591,6 @@ void ViewportPanel::OnImGuiRender()
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 			cameraViewMat.Transpose();
-
-			if (m_ShowGrid)
-			{
-				Matrix4x4 gridTransform;
-				// TODO: draw a better grid instead of an imgui overlay
-				//gridTransform = Matrix4x4::RotateY((float)DegToRad());
-				/*if (m_GridAxis == 'x')
-					gridTransform = Matrix4x4::RotateZ((float)DegToRad(90));
-				if (m_GridAxis == 'z')
-					gridTransform = Matrix4x4::RotateX((float)DegToRad(90));*/
-					//gridTransform.Transpose();
-				ImGuizmo::DrawGrid(cameraViewMat.m16, cameraProjectionMat.m16, gridTransform.m16, 100.0f);
-			}
 
 			if ((entt::entity)m_HierarchyPanel->GetSelectedEntity() != entt::null && m_HierarchyPanel->GetSelectedEntity().IsValid())
 			{

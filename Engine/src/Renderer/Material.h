@@ -33,6 +33,18 @@ public:
 	bool SaveMaterial() const;
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
+
+	bool IsTwoSided() { return m_TwoSided; }
+	void SetTwoSided(bool twoSided) { m_TwoSided = twoSided; }
+
+	bool IsTransparent() { return m_Transparent; }
+	void SetTransparency(bool transparent) { m_Transparent = transparent; }
+
+	bool CastsShadows() { return m_CastShadows; }
+	void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
+
+	float GetTilingFactor() { return m_TilingFactor; }
+	void SetTilingFactor(float tilingFactor) { m_TilingFactor = tilingFactor; }
 private:
 	std::string m_Shader;
 
@@ -41,4 +53,10 @@ private:
 	Colour m_Tint;
 
 	std::filesystem::path m_Filepath;
+
+	bool m_TwoSided = false;
+	bool m_Transparent = false;
+	bool m_CastShadows = true;
+
+	float m_TilingFactor = 1.0f;
 };

@@ -19,13 +19,15 @@ layout(std140, binding = 1) uniform ModelBuffer
 	uniform int u_EntityId;
 };
 
-layout (binding = 0) uniform sampler2D u_texture;
+layout (binding = 0) uniform sampler2D u_Albedo;
+layout (binding = 1) uniform sampler2D u_Normal;
+layout (binding = 2) uniform sampler2D u_MixMap;
 
 layout (location = 0) in VertexOutput Input;
 
 
 void main()
 {
-	frag_colour = texture(u_texture, Input.TexCoord * u_TilingFactor) * u_Colour;
+	frag_colour = texture(u_Albedo, Input.TexCoord * u_TilingFactor) * u_Colour;
 	entityId = u_EntityId;
 }

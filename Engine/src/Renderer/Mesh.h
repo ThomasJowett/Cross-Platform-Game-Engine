@@ -13,9 +13,9 @@ class Mesh : public Asset
 public:
 	Mesh() = default;
 	explicit Mesh(const std::filesystem::path& filepath);
-	Mesh(Ref<VertexArray> vertexArray, std::string name);
+	Mesh(Ref<VertexArray> vertexArray);
 	virtual ~Mesh() = default;
-	void LoadModel(Ref<VertexArray> vertexArray, std::string name);
+	void LoadModel(Ref<VertexArray> vertexArray);
 	bool Load(const std::filesystem::path& filepath) override;
 
 	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
@@ -23,5 +23,4 @@ public:
 	Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:
 	Ref<VertexArray> m_VertexArray;
-	std::string m_Name;
 };

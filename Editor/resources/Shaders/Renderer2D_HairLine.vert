@@ -7,6 +7,7 @@ layout(location = 2) in int a_EntityId;
 layout(std140, binding = 0) uniform Camera
 {
 	mat4 u_ViewProjection;
+	vec3 u_EyePosition;
 };
 
 layout (location = 0) out vec4 v_Colour;

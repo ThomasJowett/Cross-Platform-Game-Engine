@@ -17,16 +17,15 @@ Mesh::Mesh(const std::filesystem::path& filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Mesh::Mesh(Ref<VertexArray> vertexArray, std::string name)
+Mesh::Mesh(Ref<VertexArray> vertexArray)
 {
-	LoadModel(vertexArray, name);
+	LoadModel(vertexArray);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
+void Mesh::LoadModel(Ref<VertexArray> vertexArray)
 {
-	m_Name = name;
 	m_VertexArray = vertexArray;
 	m_Filepath.clear();
 }
@@ -36,7 +35,6 @@ void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
 bool Mesh::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
-
 
 	uint32_t numVertices;
 	uint32_t numIndices;
@@ -48,9 +46,6 @@ bool Mesh::Load(const std::filesystem::path& filepath)
 		return false;
 
 	m_Filepath = filepath;
-
-	m_Name = filepath.filename().string();
-	m_Name = m_Name.substr(0, m_Name.find_last_of('.'));
 
 	m_VertexArray = VertexArray::Create();
 

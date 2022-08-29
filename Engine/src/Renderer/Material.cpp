@@ -66,6 +66,10 @@ bool Material::Load(const std::filesystem::path& filepath)
 
 		SerializationUtils::Decode(pRoot->FirstChildElement("Tint"), m_Tint);
 
+		m_TwoSided = pRoot->BoolAttribute("IsTwoSided", false);
+		m_Transparent = pRoot->BoolAttribute("Transparent", false);
+		m_CastShadows = pRoot->BoolAttribute("CastShadows", true);
+
 		const char* shaderChar = pRoot->Attribute("Shader", "Standard");
 
 		m_Shader = shaderChar;
@@ -106,6 +110,10 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 	doc.InsertFirstChild(pRoot);
 
 	SerializationUtils::Encode(pRoot->InsertNewChildElement("Tint"), m_Tint);
+
+	pRoot->SetAttribute("IsTwoSided", m_TwoSided);
+	pRoot->SetAttribute("Transparent", m_Transparent);
+	pRoot->SetAttribute("CastShadows", m_CastShadows);
 
 	pRoot->SetAttribute("Shader", m_Shader.c_str());
 

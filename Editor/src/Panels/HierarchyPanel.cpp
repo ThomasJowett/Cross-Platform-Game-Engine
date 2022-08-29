@@ -77,7 +77,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f));
 					cubeEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
@@ -86,7 +86,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(0.5f, 16, 32));
 					sphereEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
@@ -95,7 +95,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1));
 					planeEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
@@ -104,7 +104,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5));
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
@@ -113,7 +113,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5));
 					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
@@ -122,7 +122,7 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
+					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32));
 					torusEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
@@ -237,22 +237,22 @@ void HierarchyPanel::OnImGuiRender()
 									switch (primitiveComp.type)
 									{
 									case PrimitiveComponent::Shape::Cube:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth), "Cube");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth));
 										break;
 									case PrimitiveComponent::Shape::Sphere:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines), "Sphere");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines));
 										break;
 									case PrimitiveComponent::Shape::Plane:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV), "Plane");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV));
 										break;
 									case PrimitiveComponent::Shape::Cylinder:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount), "Cylinder");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount));
 										break;
 									case PrimitiveComponent::Shape::Cone:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount), "Cone");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount));
 										break;
 									case PrimitiveComponent::Shape::Torus:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount), "Torus");
+										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount));
 										break;
 									default:
 										break;
