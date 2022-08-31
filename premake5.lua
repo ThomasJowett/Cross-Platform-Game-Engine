@@ -58,7 +58,9 @@ project "Engine"
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
 		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D",
-		"%{prj.name}/vendor/lua"
+		"%{prj.name}/vendor/lua",
+		"%{prj.name}/vendor/json",
+		"%{prj.name}/vendor/tinygltf"
 	}
 	
 	links
