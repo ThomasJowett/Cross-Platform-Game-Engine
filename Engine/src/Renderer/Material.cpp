@@ -78,12 +78,10 @@ bool Material::Load(const std::filesystem::path& filepath)
 
 		while (pTextureElement)
 		{
-			const char* texturePath = pTextureElement->Attribute("Filepath");
-
 			Ref<Texture2D> texture;
-			if (texturePath)
-				texture = Texture2D::Create(std::filesystem::absolute(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / texturePath)));
-			else
+			SerializationUtils::Decode(pTextureElement, texture);
+
+			if (!texture)
 			{
 				texture = Texture2D::Create("");
 			}
@@ -123,9 +121,7 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 
 		pTextureElement->SetAttribute("Slot", slot);
 
-		std::filesystem::path textureFilepath = SerializationUtils::RelativePath(texture->GetFilepath());
-
-		pTextureElement->SetAttribute("Filepath", textureFilepath.string().c_str());
+		SerializationUtils::Encode(pTextureElement, texture);
 	}
 
 	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());

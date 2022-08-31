@@ -106,7 +106,8 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 	{
 		ImGui::SetNextItemWidth(150);
 		Texture::FilterMethod filter = texture->GetFilterMethod();
-		if (ImGui::Combo("Filter Method", (int*)&filter,
+		std::string filterlabel = "Filter Method##" + std::string(label);
+		if (ImGui::Combo(filterlabel.c_str(), (int*)&filter,
 			"Linear\0"
 			"Nearest\0"))
 		{
@@ -118,7 +119,8 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 
 		ImGui::SetNextItemWidth(150);
 		Texture::WrapMethod wrap = texture->GetWrapMethod();
-		if (ImGui::Combo("Wrap Method", (int*)&wrap,
+		std::string wraplabel = "Wrap Method##" + std::string(label);
+		if (ImGui::Combo(wraplabel.c_str(), (int*)&wrap,
 			"Clamp\0"
 			"Mirror\0"
 			"Repeat\0"))
