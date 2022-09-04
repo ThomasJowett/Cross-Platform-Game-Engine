@@ -18,10 +18,57 @@
 
 #include "Events/SceneEvent.h"
 
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
+
+class ContactListener : public b2ContactListener
+{
+	struct Contact
+	{
+		b2Fixture* fixtureA;
+		b2Fixture* fixtureB;
+
+		bool triggered = false;
+		bool old = false;
+
+		Contact(b2Fixture* A, b2Fixture* B)
+			:fixtureA(A), fixtureB(B)
+		{}
+
+		bool operator==(const Contact& other) const
+		{
+			return (fixtureA == other.fixtureA) && (fixtureB == other.fixtureB);
+		}
+
+		
+	};
+public:
+	ContactListener() = default;
+	~ContactListener() = default;
+
+	std::vector<Contact> m_Contacts;
+
+	virtual void BeginContact(b2Contact* contact) override
+	{
+		m_Contacts.push_back(Contact(contact->GetFixtureA(), contact->GetFixtureB()));
+	}
+	virtual void EndContact(b2Contact* contact) override
+	{
+		Contact oldContact(contact->GetFixtureA(), contact->GetFixtureB());
+
+		auto currentContact = std::find(m_Contacts.begin(), m_Contacts.end(), oldContact);
+		if (currentContact != m_Contacts.end())
+			currentContact->old = true;
+	}
+
+	void RemoveOld()
+	{
+		if(m_Contacts.size() > 0)
+			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](Contact c) {return c.old; }), m_Contacts.end());
+	}
+};
 
 template<typename Component>
 static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
@@ -49,6 +96,8 @@ Scene::Scene(const std::filesystem::path& filepath)
 Scene::~Scene()
 {
 	LuaManager::CleanUp();
+	if (m_Box2DWorld) delete m_Box2DWorld;
+	if (m_Box2DDraw) delete m_Box2DDraw;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -138,9 +187,22 @@ void Scene::OnRuntimeStart()
 	cereal::JSONOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_Box2DWorld = CreateScope<b2World>(b2Vec2(m_Gravity.x, m_Gravity.y));
+	m_Box2DWorld = new b2World(b2Vec2(m_Gravity.x, m_Gravity.y));
 	if (m_Box2DDraw)
-		m_Box2DWorld->SetDebugDraw(m_Box2DDraw.get());
+		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
+
+	m_ContactListener = CreateScope<ContactListener>();
+	m_Box2DWorld->SetContactListener(m_ContactListener.get());
+
+	m_Registry.view<LuaScriptComponent>().each(
+		[this](const auto entity, auto& scriptComponent)
+		{
+			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
+			if (result.has_value())
+			{
+				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
+			}
+		});
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
 		[this]([[maybe_unused]] const auto physicsEntity, auto& transformComp, auto& rigidBody2DComp)
@@ -160,17 +222,7 @@ void Scene::OnRuntimeStart()
 				//transformComp.scale = scale;
 			}
 
-			rigidBody2DComp.Init(entity, m_Box2DWorld.get());
-		});
-
-	m_Registry.view<LuaScriptComponent>().each(
-		[this](const auto entity, auto& scriptComponent)
-		{
-			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
-			if (result.has_value())
-			{
-				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
-			}
+			rigidBody2DComp.Init(entity, m_Box2DWorld);
 		});
 }
 
@@ -186,7 +238,9 @@ void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
 
+	if (m_Box2DWorld) delete m_Box2DWorld;
 	m_Box2DWorld = nullptr;
+	m_ContactListener = nullptr;
 
 	LuaManager::CleanUp();
 
@@ -251,7 +305,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 	if (m_Box2DDraw && m_Box2DWorld)
 	{
-		m_Box2DWorld->DrawDebugData();
+		m_Box2DWorld->DebugDraw();
 	}
 
 	Renderer::EndScene();
@@ -358,7 +412,7 @@ void Scene::OnFixedUpdate()
 				if (rigidBodyComp.runtimeBody == nullptr)
 				{
 					Entity e(entity, this);
-					rigidBodyComp.Init(e, m_Box2DWorld.get());
+					rigidBodyComp.Init(e, m_Box2DWorld);
 				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
@@ -375,7 +429,30 @@ void Scene::OnFixedUpdate()
 				luaScriptComp.created = true;
 			}
 			luaScriptComp.OnFixedUpdate();
+			if (luaScriptComp.IsContactListener() && m_ContactListener->m_Contacts.size() > 0)
+			{
+				for (auto fixture : luaScriptComp.GetFixtures())
+				{
+					for (auto& contact : m_ContactListener->m_Contacts)
+					{
+						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
+						{
+							if (!contact.triggered)
+							{
+								luaScriptComp.OnBeginContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
+								contact.triggered = true;
+							}
+							if (contact.old)
+							{
+								luaScriptComp.OnEndContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
+							}
+						}
+					}
+				}
+			}
 		});
+
+	m_ContactListener->RemoveOld();
 
 	if (m_Box2DWorld != nullptr)
 	{
@@ -550,13 +627,14 @@ void Scene::SetShowDebug(bool show)
 {
 	if (show && !m_Box2DDraw)
 	{
-		m_Box2DDraw = CreateScope<Box2DDebugDraw>();
+		m_Box2DDraw = new Box2DDebugDraw();
 		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
 		if (m_Box2DWorld)
-			m_Box2DWorld->SetDebugDraw(m_Box2DDraw.get());
+			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 	}
 	else if (!show)
 	{
+		if (m_Box2DDraw) delete m_Box2DDraw;
 		m_Box2DDraw = nullptr;
 	}
 }

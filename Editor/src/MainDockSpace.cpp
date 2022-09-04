@@ -401,7 +401,6 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::Text("SPIR-V Cross version: %i", SPV_VERSION);
 		ImGui::Text("lua version: %s.%s.%s", LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE);
 		ImGui::Text("Box2D version: %i.%i.%i", b2_version.major, b2_version.minor, b2_version.revision);
-		ImGui::Text("liquidfun version: %i.%i.%i", b2_liquidFunVersion.major, b2_liquidFunVersion.minor, b2_liquidFunVersion.revision);
 		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 		ImGui::EndPopup();
 	}

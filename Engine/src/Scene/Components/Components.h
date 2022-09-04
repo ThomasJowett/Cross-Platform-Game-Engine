@@ -45,3 +45,4 @@ StateMachineComponent,		\
 BillboardComponent,			\
 CanvasComponent,			\
 TextComponent				\
+

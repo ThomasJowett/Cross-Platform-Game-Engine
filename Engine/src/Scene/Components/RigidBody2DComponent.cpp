@@ -2,7 +2,7 @@
 #include "RigidBody2DComponent.h"
 
 #include "Scene/SceneManager.h"
-#include "Box2D/Box2D.h"
+#include "box2d/box2d.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneGraph.h"
 #include "Utilities/Triangulation.h"
@@ -37,7 +37,7 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 	b2BodyDef bodyDef;
 	bodyDef.type = GetRigidBodyBox2DType(type);
 	bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
-	bodyDef.angle = (float32)transformComp.rotation.z;
+	bodyDef.angle = (float)transformComp.rotation.z;
 
 	if (type == RigidBody2DComponent::BodyType::DYNAMIC)
 	{
@@ -50,6 +50,11 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 	b2Body* body = b2World->CreateBody(&bodyDef);
 
 	runtimeBody = body;
+
+	LuaScriptComponent* luaScriptComponent = entity.TryGetComponent<LuaScriptComponent>();
+
+	if (luaScriptComponent && !luaScriptComponent->IsContactListener())
+		luaScriptComponent = nullptr;
 
 	if (entity.HasComponent<BoxCollider2DComponent>())
 	{
@@ -65,8 +70,12 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		fixtureDef.density = boxColliderComp.density;
 		fixtureDef.friction = boxColliderComp.friction;
 		fixtureDef.restitution = boxColliderComp.restitution;
+		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
-		body->CreateFixture(&fixtureDef);
+		b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+
+		if (luaScriptComponent)
+			luaScriptComponent->m_Fixtures.push_back(fixture);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
@@ -82,8 +91,11 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		fixtureDef.density = circleColliderComp.density;
 		fixtureDef.friction = circleColliderComp.friction;
 		fixtureDef.restitution = circleColliderComp.restitution;
+		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
-		body->CreateFixture(&fixtureDef);
+		b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+		if (luaScriptComponent)
+			luaScriptComponent->m_Fixtures.push_back(fixture);
 	}
 
 	if (entity.HasComponent<PolygonCollider2DComponent>())
@@ -110,8 +122,11 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				fixtureDef.density = polygonColliderComp.density;
 				fixtureDef.friction = polygonColliderComp.friction;
 				fixtureDef.restitution = polygonColliderComp.restitution;
+				fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
-				body->CreateFixture(&fixtureDef);
+				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+				if (luaScriptComponent)
+					luaScriptComponent->m_Fixtures.push_back(fixture);
 			}
 		}
 	}

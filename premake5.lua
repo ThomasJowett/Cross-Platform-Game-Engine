@@ -57,7 +57,7 @@ project "Engine"
 		"%{prj.name}/vendor/simpleini",
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
-		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D",
+		"%{prj.name}/vendor/box2d/include",
 		"%{prj.name}/vendor/lua",
 		"%{prj.name}/vendor/json",
 		"%{prj.name}/vendor/tinygltf"
@@ -69,7 +69,7 @@ project "Engine"
 		"GLAD",
 		"ImGui",
 		"TinyXml2",
-		"LiquidFun",
+		"Box2D",
 		"SPIRV-Cross",
 		"lua"
 	}
@@ -200,6 +200,7 @@ project "Editor"
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
 		"Engine/vendor/lua"
 	}
 	
@@ -242,7 +243,7 @@ project "Editor"
 			"GLAD",
 			"ImGui",
 			"TinyXml2",
-			"LiquidFun",
+			"Box2D",
 			"Xrandr",
 			"Xi",
 			"GL",
@@ -301,6 +302,7 @@ project "Runtime"
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
 		"Engine/vendor/lua"
 	}
 
@@ -331,7 +333,7 @@ project "Runtime"
 			"GLAD",
 			"ImGui",
 			"TinyXml2",
-			"LiquidFun",
+			"Box2D",
 			"Xrandr",
 			"Xi",
 			"GL",

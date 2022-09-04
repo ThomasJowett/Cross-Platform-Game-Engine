@@ -7,6 +7,7 @@
 #include "Core/UUID.h"
 #include "math/Vector2f.h"
 
+class ContactListener;
 class Entity;
 class FrameBuffer;
 class Camera;
@@ -82,8 +83,10 @@ private:
 	bool m_IsUpdating = false;
 	bool m_IsSaving = false;
 
-	Scope<b2World> m_Box2DWorld = nullptr;
-	Scope<b2Draw> m_Box2DDraw = nullptr;
+	b2World* m_Box2DWorld = nullptr;
+	b2Draw* m_Box2DDraw = nullptr;
+
+	Scope<ContactListener> m_ContactListener;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 

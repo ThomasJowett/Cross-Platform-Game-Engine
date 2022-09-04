@@ -212,7 +212,7 @@ project "TinyXml2"
 		runtime "Release"
 		optimize "On"
 
-project "LiquidFun"
+project "Box2D"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
@@ -222,13 +222,13 @@ project "LiquidFun"
 
 	files
 	{
-		"LiquidFun/liquidfun/Box2D/Box2D/**.h",
-		"LiquidFun/liquidfun/Box2D/Box2D/**.cpp"
+		"box2d/include/box2d/**.h",
+		"box2d/src/**.cpp"
 	}
 
 	includedirs
 	{
-		"LiquidFun/liquidfun/Box2D"
+		"box2d/include/"
 	}
 
 	filter "system:windows"

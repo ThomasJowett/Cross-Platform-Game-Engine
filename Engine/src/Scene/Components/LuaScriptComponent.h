@@ -9,6 +9,8 @@
 #include "Utilities/FileUtils.h"
 
 class Entity;
+struct RigidBody2DComponent;
+class b2Fixture;
 
 struct LuaScriptComponent
 {
@@ -28,6 +30,12 @@ struct LuaScriptComponent
 	void OnUpdate(float deltaTime);
 	void OnFixedUpdate();
 	void OnDebugRender();
+	void OnBeginContact(b2Fixture* fixture);
+	void OnEndContact(b2Fixture* fixture);
+	bool IsContactListener();
+
+	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }
+	//const std::vector<b2Fixture*>& GetContacts() const { return m_Contacts; }
 
 private:
 	friend cereal::access;
@@ -50,10 +58,16 @@ private:
 			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 	}
 
+	friend RigidBody2DComponent;
+
+	std::vector<b2Fixture*> m_Fixtures;
+
 	Ref<sol::environment> m_SolEnvironment;
 	Ref<sol::protected_function> m_OnCreateFunc;
 	Ref<sol::protected_function> m_OnDestroyFunc;
 	Ref<sol::protected_function> m_OnUpdateFunc;
 	Ref<sol::protected_function> m_OnFixedUpdateFunc;
 	Ref<sol::protected_function> m_OnDebugRenderFunc;
+	Ref<sol::protected_function> m_OnBeginContactFunc;
+	Ref<sol::protected_function> m_OnEndContactFunc;
 };

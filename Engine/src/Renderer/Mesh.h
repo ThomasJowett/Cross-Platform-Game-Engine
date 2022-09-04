@@ -13,7 +13,7 @@ class Mesh : public Asset
 public:
 	Mesh() = default;
 	explicit Mesh(const std::filesystem::path& filepath);
-	Mesh(Ref<VertexArray> vertexArray);
+	explicit Mesh(Ref<VertexArray> vertexArray);
 	virtual ~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray);
 	bool Load(const std::filesystem::path& filepath) override;
