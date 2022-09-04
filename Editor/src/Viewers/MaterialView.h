@@ -1,6 +1,15 @@
 #pragma once
 
-#include "Engine.h"
+#include <filesystem>
+
+#include "imgui/imgui.h"
+
+#include "Core/Layer.h"
+#include "Renderer/FrameBuffer.h"
+#include "Renderer/Mesh.h"
+#include "Renderer/Material.h"
+#include "Renderer/Camera.h"
+
 #include "Interfaces/ISaveable.h"
 
 class MaterialView :

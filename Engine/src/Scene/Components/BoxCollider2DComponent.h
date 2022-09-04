@@ -3,16 +3,14 @@
 #include "cereal/cereal.hpp"
 
 #include "math/Vector2f.h"
+#include "Physics/PhysicsMaterial.h"
 
 struct BoxCollider2DComponent
 {
 	Vector2f offset = { 0.0f, 0.0f };
 	Vector2f size = { 0.5f, 0.5f };
 
-	//TODO: create physics material
-	float density = 1.0f;
-	float friction = 0.5f;
-	float restitution = 0.0f;
+	Ref<PhysicsMaterial> physicsMaterial;
 
 	void* RuntimeFixture = nullptr;
 
@@ -21,12 +19,27 @@ struct BoxCollider2DComponent
 private:
 	friend cereal::access;
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Offset", offset));
-		archive(cereal::make_nvp("Size", size));
-		archive(cereal::make_nvp("Density", density));
-		archive(cereal::make_nvp("Friction", friction));
-		archive(cereal::make_nvp("Restitution", restitution));
+		archive(offset, size);
+		
+		std::string relativePath;
+		if (physicsMaterial)
+		{
+			relativePath = FileUtils::RelativePath(physicsMaterial->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(relativePath);
+	}
+
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(offset, size);
+		std::string relativePath;
+		archive(relativePath);
+		if (!relativePath.empty())
+			physicsMaterial = AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		else
+			physicsMaterial = nullptr;
 	}
 };

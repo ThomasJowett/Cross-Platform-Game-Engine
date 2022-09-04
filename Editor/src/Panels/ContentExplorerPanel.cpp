@@ -288,6 +288,17 @@ void ContentExplorerPanel::CreateNewTileset()
 	m_CurrentSelectedPath = newTilesetPath;
 }
 
+void ContentExplorerPanel::CreateNewPhysicsMaterial()
+{
+	std::filesystem::path newPhysicsMaterial = Directory::GetNextNewFileName(m_CurrentPath, "New Physics Material", ".physicsmaterial");
+
+	PhysicsMaterial physMat;
+
+	physMat.SaveAs(newPhysicsMaterial);
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newPhysicsMaterial;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
@@ -426,6 +437,12 @@ void ContentExplorerPanel::RightClickMenu()
 		if (ImGui::Selectable("Tileset"))
 		{
 			CreateNewTileset();
+			ImGui::OpenPopup("Rename");
+		}
+
+		if (ImGui::Selectable("Physics Material"))
+		{
+			CreateNewPhysicsMaterial();
 			ImGui::OpenPopup("Rename");
 		}
 

@@ -2,7 +2,7 @@
 
 #include "Shader.h"
 #include "Texture.h"
-#include "Asset.h"
+#include "Core/Asset.h"
 
 #include "cereal/cereal.hpp"
 #include "cereal/access.hpp"

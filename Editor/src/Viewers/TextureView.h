@@ -1,6 +1,8 @@
 #pragma once
-#include "Engine.h"
 #include <filesystem>
+
+#include "Core/Layer.h"
+#include "Renderer/Texture.h"
 
 class TextureView :
 	public Layer

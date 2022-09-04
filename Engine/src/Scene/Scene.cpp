@@ -30,7 +30,8 @@ class ContactListener : public b2ContactListener
 		b2Fixture* fixtureA;
 		b2Fixture* fixtureB;
 
-		bool triggered = false;
+		bool triggeredA = false;
+		bool triggeredB = false;
 		bool old = false;
 
 		Contact(b2Fixture* A, b2Fixture* B)
@@ -42,7 +43,7 @@ class ContactListener : public b2ContactListener
 			return (fixtureA == other.fixtureA) && (fixtureB == other.fixtureB);
 		}
 
-		
+
 	};
 public:
 	ContactListener() = default;
@@ -65,7 +66,7 @@ public:
 
 	void RemoveOld()
 	{
-		if(m_Contacts.size() > 0)
+		if (m_Contacts.size() > 0)
 			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](Contact c) {return c.old; }), m_Contacts.end());
 	}
 };
@@ -437,12 +438,15 @@ void Scene::OnFixedUpdate()
 					{
 						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
 						{
-							if (!contact.triggered)
+							if (!contact.triggeredA || !contact.triggeredB)
 							{
 								luaScriptComp.OnBeginContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
-								contact.triggered = true;
+								if (contact.fixtureA == fixture)
+									contact.triggeredA = true;
+								else
+									contact.triggeredB = true;
 							}
-							if (contact.old)
+							else if (contact.old)
 							{
 								luaScriptComp.OnEndContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
 							}

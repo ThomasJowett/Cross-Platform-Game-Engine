@@ -2,6 +2,7 @@
 
 #include "MainDockSpace.h"
 #include "ProjectsStartScreen.h"
+#include "Renderer/RenderCommand.h"
 
 Editor::Editor(const WindowProps& props)
 	:Application(props)

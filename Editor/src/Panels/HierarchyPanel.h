@@ -1,9 +1,14 @@
 #pragma once
 
-#include "Engine.h"
 #include "Interfaces/ICopyable.h"
 
 #include "TinyXml2/tinyxml2.h"
+#include "Core/Layer.h"
+#include "Scene/Entity.h"
+#include "Renderer/Mesh.h"
+#include "Renderer/Material.h"
+
+class ImGuiTextFilter;
 
 class HierarchyPanel :
     public Layer, public ICopyable

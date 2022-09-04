@@ -11,6 +11,8 @@
 #include "Core/MouseButtonCodes.h"
 #include "Core/Colour.h"
 #include "Core/Settings.h"
+#include "Core/Asset.h"
+#include "Core/Version.h"
 
 // Logging
 #include "Logging/Logger.h"
@@ -48,6 +50,7 @@
 #include "Scene/SceneManager.h"
 #include "Scene/SceneSerializer.h"
 #include "Scene/AssetManager.h"
+#include "Scene/SceneGraph.h"
 
 // Third Party
 #include "EnTT/entt.hpp"

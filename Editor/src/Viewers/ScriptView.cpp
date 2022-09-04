@@ -3,7 +3,6 @@
 #include "MainDockSpace.h"
 #include "IconsFontAwesome5.h"
 
-#include "Scripting/Lua/LuaManager.h"
 #include "FileSystem/FileDialog.h"
 #include "Core/Settings.h"
 #include "ViewerManager.h"
@@ -211,27 +210,17 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 
 void ScriptView::ParseLuaScript()
 {
-	Ref<sol::environment> m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
-	sol::protected_function_result result = LuaManager::GetState().script_file(m_FilePath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+	Scene testScene("");
+
+	Entity entity = testScene.CreateEntity("lua script");
+
+	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
+	auto results = luaComp.ParseScript(entity);
 
 	TextEditor::ErrorMarkers errorMarkers;
-	if (!result.valid())
+	if (results.has_value())
 	{
-		sol::error error = result;
-		std::string errorStr = error.what();
-		int line = 1;
-		auto linepos = errorStr.find(".lua:");
-		std::string errorLine = errorStr.substr(linepos + 5); //+4 .lua: + 1
-		auto lineposEnd = errorLine.find(":");
-		errorLine = errorLine.substr(0, lineposEnd);
-		line = std::stoi(errorLine);
-		errorStr = errorStr.substr(linepos + errorLine.size() + lineposEnd + 4); //+4 .lua:
-
-		errorMarkers.insert({ line, errorStr });
-		m_TextEditor.SetErrorMarkers(errorMarkers);
+		errorMarkers.insert({ results.value().first, results.value().second });
 	}
-	else
-	{
-		m_TextEditor.SetErrorMarkers(errorMarkers);
-	}
+	m_TextEditor.SetErrorMarkers(errorMarkers);
 }

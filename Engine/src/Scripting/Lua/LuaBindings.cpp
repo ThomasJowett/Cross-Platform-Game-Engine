@@ -180,9 +180,7 @@ void BindEntity(sol::state& state)
 	auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 	boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;
 	boxCollider2D_type["Size"] = &BoxCollider2DComponent::size;
-	boxCollider2D_type["Desity"] = &BoxCollider2DComponent::density;
-	boxCollider2D_type["Friction"] = &BoxCollider2DComponent::friction;
-	boxCollider2D_type["Restitution"] = &BoxCollider2DComponent::restitution;
+	boxCollider2D_type["PhysicsMaterial"] = &BoxCollider2DComponent::physicsMaterial;
 
 	auto circleCollider2D_type = state["CircleCollider2DComponent"].get_or_create<sol::usertype<CircleCollider2DComponent>>();
 	circleCollider2D_type["Offset"] = &CircleCollider2DComponent::offset;

@@ -1,12 +1,11 @@
 #include "HierarchyPanel.h"
 
+#include "imgui/imgui.h"
 #include "IconsFontAwesome5.h"
-#include "MainDockSpace.h"
 
-#include "Utilities/GeometryGenerator.h"
-#include "Scene/SceneSerializer.h"
-#include "Scene/SceneGraph.h"
-#include "Events/ApplicationEvent.h"
+#include "Engine.h"
+
+#include "MainDockSpace.h"
 
 HierarchyPanel::HierarchyPanel(bool* show)
 	:Layer("Hierarchy"), m_Show(show)

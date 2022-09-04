@@ -1,8 +1,14 @@
 #include "ErrorListPanel.h"
 #include "IconsFontAwesome5.h"
+#include "ImGui/imgui.h"
+
+#include "Scripting/Lua/LuaManager.h"
+#include "Scene/SceneManager.h"
+#include "Scene/Components/Components.h"
+#include "Logging/Instrumentor.h"
+
 #include "MainDockSpace.h"
 #include "Viewers/ViewerManager.h"
-#include "Scripting/Lua/LuaManager.h"
 
 ErrorListPanel::ErrorListPanel(bool* show)
 	: m_Show(show), Layer("ErrorList")

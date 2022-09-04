@@ -197,6 +197,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 		return FileType::TILESET;
 	}
 
+	if (strcmp(ext, ".physicsmaterial") == 0)
+	{
+		return FileType::PHYSICSMATERIAL;
+	}
+
 	return FileType::UNKNOWN;
 }
 
@@ -263,6 +268,9 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		extensions.push_back(".tileset");
 		break;
 	}
+	case FileType::PHYSICSMATERIAL:
+		extensions.push_back(".physicsmaterial");
+		break;
 	}
 	return extensions;
 }

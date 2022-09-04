@@ -22,6 +22,12 @@ Ref<Mesh> AssetManager::GetMesh(const std::filesystem::path& filepath)
 	return Get().GetMeshImpl(filepath);
 }
 
+Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterial(const std::filesystem::path& filepath)
+{
+	std::lock_guard lock(s_Mutex);
+	return Get().GetPhysicsMaterialImpl(filepath);
+}
+
 AssetManager& AssetManager::Get()
 {
 	if (!s_Instance)
@@ -44,4 +50,9 @@ Ref<Material> AssetManager::GetMaterialImpl(const std::filesystem::path& filepat
 Ref<Mesh> AssetManager::GetMeshImpl(const std::filesystem::path& filepath)
 {
 	return m_Meshes.Load(filepath);
+}
+
+Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterialImpl(const std::filesystem::path& filepath)
+{
+	return m_PhysicsMaterials.Load(filepath);
 }

@@ -1,5 +1,7 @@
 #include "ViewportCameraController.h"
 
+#include "Engine.h"
+
 ViewportCameraController::ViewportCameraController()
 	:m_2DCamera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel),
 	m_3DCamera(m_FovY, m_AspectRatio, m_PerspectiveNearDepth, m_PerspectiveFarDepth)

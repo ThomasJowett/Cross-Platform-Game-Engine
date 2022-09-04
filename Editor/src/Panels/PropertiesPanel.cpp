@@ -7,10 +7,13 @@
 #include "Fonts/Fonts.h"
 #include "MainDockSpace.h"
 
+#include "Engine.h"
+
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
 #include "ImGui/ImGuiMaterialEdit.h"
+#include "ImGui/ImGuiPhysicsMaterialEdit.h"
 #include "ImGui/ImGuiVectorEdit.h"
 
 #include "Viewers/ViewerManager.h"
@@ -25,6 +28,8 @@ void PropertiesPanel::OnAttach()
 {
 	m_DefaultMaterial = CreateRef<Material>("Standard", Colours::WHITE);
 	m_DefaultMaterial->AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
+
+	m_DefaultPhysMaterial = CreateRef<PhysicsMaterial>();
 }
 
 void PropertiesPanel::OnUpdate(float deltaTime)
@@ -559,7 +564,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Box Collider 2D--------------------------------------------------------------------------------------------------------------
-	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [](auto& boxCollider2D)
+	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [=](auto& boxCollider2D)
 		{
 			if (ImGui::Vector("Offset", boxCollider2D.offset))
 			{
@@ -571,14 +576,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			if (ImGui::DragFloat("Density", &boxCollider2D.density, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Friction", &boxCollider2D.friction, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Restitution", &boxCollider2D.restitution, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
+			ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial);
 		});
 
 	// Circle Collider 2D--------------------------------------------------------------------------------------------------------------

@@ -322,9 +322,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pBoxColliderElement = pElement->InsertNewChildElement("BoxCollider2D");
 
-		pBoxColliderElement->SetAttribute("Density", component.density);
-		pBoxColliderElement->SetAttribute("Friction", component.friction);
-		pBoxColliderElement->SetAttribute("Restitution", component.restitution);
+		if(component.physicsMaterial)
+			SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
 
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.size);
@@ -716,9 +715,15 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		BoxCollider2DComponent& component = entity.AddComponent<BoxCollider2DComponent>();
 
-		pBoxColliderComponentElement->QueryFloatAttribute("Density", &component.density);
-		pBoxColliderComponentElement->QueryFloatAttribute("Friction", &component.friction);
-		pBoxColliderComponentElement->QueryFloatAttribute("Restitution", &component.restitution);
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
+
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
 
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Offset"), component.offset);
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.size);

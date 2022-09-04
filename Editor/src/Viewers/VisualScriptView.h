@@ -1,5 +1,9 @@
 #pragma once
-#include "Engine.h"
+
+#include <map>
+#include <filesystem>
+
+#include "Core/Layer.h"
 
 #include "ImGui/Node Editor/Lua_NodeEditor.h"
 

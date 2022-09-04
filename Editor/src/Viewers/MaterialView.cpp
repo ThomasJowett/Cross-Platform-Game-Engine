@@ -4,6 +4,8 @@
 #include "FileSystem/FileDialog.h"
 #include "ImGui/ImGuiTextureEdit.h"
 
+#include "Engine.h"
+
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	:Layer("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
 {

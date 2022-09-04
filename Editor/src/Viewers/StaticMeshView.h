@@ -1,6 +1,13 @@
 #pragma once
 
-#include "Engine.h"
+#include <filesystem>
+
+#include "Core/Layer.h"
+#include "Renderer/Mesh.h"
+#include "Renderer/Material.h"
+
+#include "Renderer/FrameBuffer.h"
+#include "imgui/imgui.h"
 
 #include "ViewportCameraController.h"
 

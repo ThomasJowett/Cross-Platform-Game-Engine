@@ -6,7 +6,7 @@
 #include "cereal/access.hpp"
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
-#include "Renderer/Asset.h"
+#include "Core/Asset.h"
 
 class Mesh : public Asset
 {

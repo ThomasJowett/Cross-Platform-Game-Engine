@@ -1,5 +1,7 @@
 #include "TextureView.h"
 
+#include "Engine.h"
+
 #include "IconsFontAwesome5.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)

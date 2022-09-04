@@ -3,8 +3,6 @@
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
 
-#include "Engine.h"
-
 #include "IconsFontAwesome5.h"
 
 class PropertiesPanel :
@@ -71,6 +69,7 @@ private:
 	Ref<TilemapEditor> m_TilemapEditor;
 
 	Ref<Material> m_DefaultMaterial;
+	Ref<PhysicsMaterial> m_DefaultPhysMaterial;
 
 	std::filesystem::file_time_type m_StaticMeshFileTime;
 };

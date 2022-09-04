@@ -2,7 +2,7 @@
 
 #include "IconsFontAwesome5.h"
 #include "MainDockSpace.h"
-#include "Renderer/Asset.h"
+#include "Engine.h"
 
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)

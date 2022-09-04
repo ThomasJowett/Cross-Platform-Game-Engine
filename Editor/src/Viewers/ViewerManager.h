@@ -18,7 +18,8 @@ enum class FileType
 	VISUALSCRIPT,
 	AUDIO,
 	MATERIAL,
-	TILESET
+	TILESET,
+	PHYSICSMATERIAL
 };
 
 class ViewerManager

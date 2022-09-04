@@ -67,9 +67,18 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &boxShape;
-		fixtureDef.density = boxColliderComp.density;
-		fixtureDef.friction = boxColliderComp.friction;
-		fixtureDef.restitution = boxColliderComp.restitution;
+		if (boxColliderComp.physicsMaterial)
+		{
+			fixtureDef.density = boxColliderComp.physicsMaterial->GetDensity();
+			fixtureDef.friction = boxColliderComp.physicsMaterial->GetFriction();
+			fixtureDef.restitution = boxColliderComp.physicsMaterial->GetRestitution();
+		}
+		else
+		{
+			fixtureDef.density = 1.0f;
+			fixtureDef.friction = 0.5f;
+			fixtureDef.restitution = 0.0f;
+		}
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 		b2Fixture* fixture = body->CreateFixture(&fixtureDef);

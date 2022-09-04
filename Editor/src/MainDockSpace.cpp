@@ -4,8 +4,6 @@
 #include <shellapi.h>
 #endif // __WINDOWS__
 
-#include "imgui/imgui.h"
-#include "Core/Version.h"
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome5.h"
 #include "IconsFontAwesome5Brands.h"
@@ -30,13 +28,13 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-#include "Scene/SceneManager.h"
-
 #include "ProjectData.h"
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
 #include "RuntimeExporter.h"
+
+#include "Engine.h"
 
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 

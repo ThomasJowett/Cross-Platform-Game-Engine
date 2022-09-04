@@ -2,12 +2,14 @@
 
 #include <filesystem>
 
-#include "Engine.h"
+#include "Utilities/StringUtils.h"
 
 #include "FileSystem/Directory.h"
 #include "Interfaces/ICopyable.h"
-
+#include "Renderer/Texture.h"
 #include "Viewers/ViewerManager.h"
+
+#include "imgui/imgui.h"
 
 struct History
 {
@@ -118,6 +120,7 @@ public:
 	void CreateNewMaterial();
 	void CreateNewLuaScript();
 	void CreateNewTileset();
+	void CreateNewPhysicsMaterial();
 
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
