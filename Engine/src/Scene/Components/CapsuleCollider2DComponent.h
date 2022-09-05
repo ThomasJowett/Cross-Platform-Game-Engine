@@ -4,6 +4,8 @@
 
 #include "math/Vector2f.h"
 
+#include "Physics/PhysicsMaterial.h"
+
 struct CapsuleCollider2DComponent
 {
 	enum class Direction
@@ -17,6 +19,8 @@ struct CapsuleCollider2DComponent
 	float radius = 1.0f;
 	float height = 1.0f;
 
+	Ref<PhysicsMaterial> physicsMaterial;
+
 	void* RuntimeFixture = nullptr;
 
 	CapsuleCollider2DComponent() = default;
@@ -24,8 +28,27 @@ struct CapsuleCollider2DComponent
 private:
 	friend cereal::access;
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(direction, offset, radius, height);
+		archive(offset, radius, height, direction);
+
+		std::string relativePath;
+		if (physicsMaterial)
+		{
+			relativePath = FileUtils::RelativePath(physicsMaterial->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(relativePath);
+	}
+
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(offset, radius, height, direction);
+		std::string relativePath;
+		archive(relativePath);
+		if (!relativePath.empty())
+			physicsMaterial = AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		else
+			physicsMaterial = nullptr;
 	}
 };

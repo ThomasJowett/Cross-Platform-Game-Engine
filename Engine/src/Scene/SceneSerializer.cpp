@@ -335,9 +335,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pCircleColliderElement = pElement->InsertNewChildElement("CircleCollider2D");
 
-		pCircleColliderElement->SetAttribute("Density", component.density);
-		pCircleColliderElement->SetAttribute("Friction", component.friction);
-		pCircleColliderElement->SetAttribute("Restitution", component.restitution);
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
+
 
 		pCircleColliderElement->SetAttribute("Radius", component.radius);
 		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
@@ -349,9 +349,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pPolygonColliderElement = pElement->InsertNewChildElement("PolygonCollider2D");
 
-		pPolygonColliderElement->SetAttribute("Density", component.density);
-		pPolygonColliderElement->SetAttribute("Friction", component.friction);
-		pPolygonColliderElement->SetAttribute("Restitution", component.restitution);
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
 
 		SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Offset"), component.offset);
 
@@ -359,6 +358,22 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		{
 			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Vertex"), vertex);
 		}
+	}
+
+	if (entity.HasComponent<CapsuleCollider2DComponent>())
+	{
+		CapsuleCollider2DComponent const& component = entity.GetComponent<CapsuleCollider2DComponent>();
+
+		tinyxml2::XMLElement* pCapsuleColliderElement = pElement->InsertNewChildElement("CapsuleCollider2D");
+
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
+
+		pCapsuleColliderElement->SetAttribute("Direction", (int)component.direction);
+		pCapsuleColliderElement->SetAttribute("Radius", component.radius);
+		pCapsuleColliderElement->SetAttribute("Height", component.height);
+
+		SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("Offset"), component.offset);
 	}
 
 	if (entity.HasComponent<CircleRendererComponent>())
@@ -733,11 +748,17 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pCircleCollider2DComponentElement = pEntityElement->FirstChildElement("CircleCollider2D"))
 	{
 		CircleCollider2DComponent& component = entity.AddComponent<CircleCollider2DComponent>();
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
 
-		pCircleCollider2DComponentElement->QueryFloatAttribute("Density", &component.density);
-		pCircleCollider2DComponentElement->QueryFloatAttribute("Friction", &component.friction);
-		pCircleCollider2DComponentElement->QueryFloatAttribute("Restitution", &component.restitution);
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
 
+		pCircleCollider2DComponentElement->QueryFloatAttribute("Radius", &component.radius);
 		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
 	}
 
@@ -746,9 +767,15 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		PolygonCollider2DComponent& component = entity.AddComponent<PolygonCollider2DComponent>();
 
-		pPolygonCollider2DComponentElement->QueryFloatAttribute("Density", &component.density);
-		pPolygonCollider2DComponentElement->QueryFloatAttribute("Friction", &component.friction);
-		pPolygonCollider2DComponentElement->QueryFloatAttribute("Restitution", &component.restitution);
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pPolygonCollider2DComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
+
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
 		SerializationUtils::Decode(pPolygonCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
 
 		tinyxml2::XMLElement* pVertexElement = pPolygonCollider2DComponentElement->FirstChildElement("Vertex");
@@ -761,6 +788,26 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			component.vertices.push_back(vertex);
 			pVertexElement = pVertexElement->NextSiblingElement("Vertex");
 		}
+	}
+
+	if (tinyxml2::XMLElement* pCapsuleColliderComponentElement = pEntityElement->FirstChildElement("CapsuleCollider2D"))
+	{
+		CapsuleCollider2DComponent& component = entity.AddComponent<CapsuleCollider2DComponent>();
+
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pCapsuleColliderComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
+
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
+		SerializationUtils::Decode(pCapsuleColliderComponentElement->FirstChildElement("Offset"), component.offset);
+		pCapsuleColliderComponentElement->QueryFloatAttribute("Radius", &component.radius);
+		pCapsuleColliderComponentElement->QueryFloatAttribute("Height", &component.height);
+
+		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------

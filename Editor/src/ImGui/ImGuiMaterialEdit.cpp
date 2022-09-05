@@ -20,7 +20,11 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 	if (material && !material->GetFilepath().empty())
 	{
 		materialName = material->GetFilepath().filename().string();
-
+		if (!std::filesystem::exists(material->GetFilepath()))
+		{
+			material = defaultMaterial;
+			return true;
+		}
 		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(material->GetFilepath());
 
 		if (lastWrittenTime != s_MaterialFileTime)

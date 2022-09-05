@@ -10,6 +10,8 @@
 #include "HierarchyComponent.h"
 #include "TransformComponent.h"
 
+static PhysicsMaterial s_DefaultPhysicsMaterial;
+
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
 	switch (type)
@@ -75,9 +77,9 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		}
 		else
 		{
-			fixtureDef.density = 1.0f;
-			fixtureDef.friction = 0.5f;
-			fixtureDef.restitution = 0.0f;
+			fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
+			fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
+			fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
 		}
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
@@ -97,9 +99,18 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &circleShape;
-		fixtureDef.density = circleColliderComp.density;
-		fixtureDef.friction = circleColliderComp.friction;
-		fixtureDef.restitution = circleColliderComp.restitution;
+		if (circleColliderComp.physicsMaterial)
+		{
+			fixtureDef.density = circleColliderComp.physicsMaterial->GetDensity();
+			fixtureDef.friction = circleColliderComp.physicsMaterial->GetFriction();
+			fixtureDef.restitution = circleColliderComp.physicsMaterial->GetRestitution();
+		}
+		else
+		{
+			fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
+			fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
+			fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
+		}
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 		b2Fixture* fixture = body->CreateFixture(&fixtureDef);
@@ -128,9 +139,12 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &polygonShape;
-				fixtureDef.density = polygonColliderComp.density;
-				fixtureDef.friction = polygonColliderComp.friction;
-				fixtureDef.restitution = polygonColliderComp.restitution;
+				if (polygonColliderComp.physicsMaterial)
+				{
+					fixtureDef.density = polygonColliderComp.physicsMaterial->GetDensity();
+					fixtureDef.friction = polygonColliderComp.physicsMaterial->GetFriction();
+					fixtureDef.restitution = polygonColliderComp.physicsMaterial->GetRestitution();
+				}
 				fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
@@ -138,6 +152,22 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 					luaScriptComponent->m_Fixtures.push_back(fixture);
 			}
 		}
+	}
+
+	if (entity.HasComponent<CapsuleCollider2DComponent>())
+	{
+		auto& capsuleColliderComp = entity.GetComponent<CapsuleCollider2DComponent>();
+		// TODO add capsule shape
+		/*b2CircleShape topShape;
+		topShape.m_radius;
+		b2FixtureDef topCirclefixtureDef;
+		topCirclefixtureDef.shape = &
+		b2FixtureDef bottomCircleFixtureDef;
+		b2FixtureDef rectFixtureDef;
+		body->CreateFixture(&topCirclefixtureDef);
+		body->CreateFixture(&bottomCirclefixtureDef);
+		body->CreateFixture(&rectfixtureDef);*/
+
 	}
 }
 

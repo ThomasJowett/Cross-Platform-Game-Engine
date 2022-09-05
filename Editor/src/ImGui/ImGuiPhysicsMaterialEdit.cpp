@@ -16,6 +16,11 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 	if (physMaterial && !physMaterial->GetFilepath().empty())
 	{
 		physMaterialName = physMaterial->GetFilepath().filename().string();
+		if (!std::filesystem::exists(physMaterialName))
+		{
+			physMaterial = defaultPyhsMaterial;
+			return true;
+		}
 
 		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(physMaterial->GetFilepath());
 

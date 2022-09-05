@@ -556,10 +556,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			if (rigidBody2D.type == RigidBody2DComponent::BodyType::DYNAMIC)
 			{
-				ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation);
-				ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f);
-				ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f);
-				ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f);
+				if(ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation))
+					SceneManager::CurrentScene()->MakeDirty();
+				if(ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f))
+					SceneManager::CurrentScene()->MakeDirty();
+				if(ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f))
+					SceneManager::CurrentScene()->MakeDirty();
+				if(ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f))
+					SceneManager::CurrentScene()->MakeDirty();
 			}
 		});
 
@@ -576,11 +580,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 
-			ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial);
+			if(ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial))
+				SceneManager::CurrentScene()->MakeDirty();
 		});
 
 	// Circle Collider 2D--------------------------------------------------------------------------------------------------------------
-	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [](auto& circleCollider2D)
+	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [=](auto& circleCollider2D)
 		{
 			if (ImGui::Vector("Offset", circleCollider2D.offset))
 			{
@@ -590,18 +595,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			if (ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f))
 				SceneManager::CurrentScene()->MakeDirty();
 
-			if (ImGui::DragFloat("Density", &circleCollider2D.density, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Friction", &circleCollider2D.friction, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Restitution", &circleCollider2D.restitution, 0.001f, 0.0f, 1.0f))
+			if(ImGui::PhysMaterialEdit("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial))
 				SceneManager::CurrentScene()->MakeDirty();
 		});
 
 	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
-	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [](auto& polygonCollider2D)
+	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [=](auto& polygonCollider2D)
 		{
 			if (ImGui::Vector("Offset", polygonCollider2D.offset))
 			{
@@ -637,13 +636,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::TreePop();
 			}
 
-			if (ImGui::DragFloat("Density", &polygonCollider2D.density, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Friction", &polygonCollider2D.friction, 0.001f, 0.0f, 1.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if (ImGui::DragFloat("Restitution", &polygonCollider2D.restitution, 0.001f, 0.0f, 1.0f))
+			if(ImGui::PhysMaterialEdit("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial))
 				SceneManager::CurrentScene()->MakeDirty();
 
 			if (polygonCollider2D.vertices.size() < 3)
@@ -651,6 +644,31 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				Colour textColour(Colours::YELLOW);
 				ImGui::TextColored(ImVec4(textColour.r, textColour.g, textColour.b, textColour.a), "No Polygon Collider Created!");
 			}
+		});
+
+	// Capsule Collider ---------------------------------------------------------------------------------------------------------------
+	DrawComponent<CapsuleCollider2DComponent>(ICON_FA_CAPSULES" Capsule Collider 2D", entity, [=](auto& capsuleCollider2D)
+		{
+			if (ImGui::Vector("Offset", capsuleCollider2D.offset))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if (ImGui::DragFloat("Radius", &capsuleCollider2D.radius, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::DragFloat("Height", &capsuleCollider2D.height, 0.01f, 0.0f, 10.0f))
+				SceneManager::CurrentScene()->MakeDirty();
+
+			if (ImGui::Combo("Direction", (int*)&capsuleCollider2D.direction,
+				"Vertical\0"
+				"Horizontal\0"))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if(ImGui::PhysMaterialEdit("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial))
+				SceneManager::CurrentScene()->MakeDirty();
 		});
 
 	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
@@ -720,8 +738,9 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity);
 		AddComponentMenuItem<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity);
+		AddComponentMenuItem<CapsuleCollider2DComponent>(ICON_FA_CAPSULES" Capsule Collider 2D", entity);
 		AddComponentMenuItem<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity);
-		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machince", entity);
+		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity);
 		AddComponentMenuItem<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity);
 
 		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));

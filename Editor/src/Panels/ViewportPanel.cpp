@@ -209,6 +209,12 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				Renderer2D::DrawHairLinePolygon(vertices, Colours::LIME_GREEN, selectedEntity);
 			}
 
+			if (selectedEntity.HasComponent<CapsuleCollider2DComponent>())
+			{
+				CapsuleCollider2DComponent& capsuleComp = selectedEntity.GetComponent<CapsuleCollider2DComponent>();
+				// TODO debug draw capsule collider
+			}
+
 			if (selectedEntity.HasComponent<TilemapComponent>())
 			{
 				TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
