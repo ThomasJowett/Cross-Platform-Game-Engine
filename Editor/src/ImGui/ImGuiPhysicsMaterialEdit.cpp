@@ -16,7 +16,7 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 	if (physMaterial && !physMaterial->GetFilepath().empty())
 	{
 		physMaterialName = physMaterial->GetFilepath().filename().string();
-		if (!std::filesystem::exists(physMaterialName))
+		if (!std::filesystem::exists(physMaterial->GetFilepath()))
 		{
 			physMaterial = defaultPyhsMaterial;
 			return true;
