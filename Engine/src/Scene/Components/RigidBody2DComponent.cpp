@@ -12,6 +12,22 @@
 
 static PhysicsMaterial s_DefaultPhysicsMaterial;
 
+void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMaterial)
+{
+	if (physicsMaterial)
+	{
+		fixtureDef.density = physicsMaterial->GetDensity();
+		fixtureDef.friction = physicsMaterial->GetFriction();
+		fixtureDef.restitution = physicsMaterial->GetRestitution();
+	}
+	else
+	{
+		fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
+		fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
+		fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
+	}
+}
+
 b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
 	switch (type)
@@ -69,18 +85,7 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &boxShape;
-		if (boxColliderComp.physicsMaterial)
-		{
-			fixtureDef.density = boxColliderComp.physicsMaterial->GetDensity();
-			fixtureDef.friction = boxColliderComp.physicsMaterial->GetFriction();
-			fixtureDef.restitution = boxColliderComp.physicsMaterial->GetRestitution();
-		}
-		else
-		{
-			fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
-			fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
-			fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
-		}
+		SetPhysicsMaterial(fixtureDef, boxColliderComp.physicsMaterial);
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 		b2Fixture* fixture = body->CreateFixture(&fixtureDef);
@@ -99,18 +104,7 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &circleShape;
-		if (circleColliderComp.physicsMaterial)
-		{
-			fixtureDef.density = circleColliderComp.physicsMaterial->GetDensity();
-			fixtureDef.friction = circleColliderComp.physicsMaterial->GetFriction();
-			fixtureDef.restitution = circleColliderComp.physicsMaterial->GetRestitution();
-		}
-		else
-		{
-			fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
-			fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
-			fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
-		}
+		SetPhysicsMaterial(fixtureDef, circleColliderComp.physicsMaterial);
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 		b2Fixture* fixture = body->CreateFixture(&fixtureDef);
@@ -139,12 +133,8 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &polygonShape;
-				if (polygonColliderComp.physicsMaterial)
-				{
-					fixtureDef.density = polygonColliderComp.physicsMaterial->GetDensity();
-					fixtureDef.friction = polygonColliderComp.physicsMaterial->GetFriction();
-					fixtureDef.restitution = polygonColliderComp.physicsMaterial->GetRestitution();
-				}
+				SetPhysicsMaterial(fixtureDef, polygonColliderComp.physicsMaterial);
+
 				fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 				b2Fixture* fixture = body->CreateFixture(&fixtureDef);
@@ -157,9 +147,38 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 	if (entity.HasComponent<CapsuleCollider2DComponent>())
 	{
 		auto& capsuleColliderComp = entity.GetComponent<CapsuleCollider2DComponent>();
+		if (capsuleColliderComp.direction == CapsuleCollider2DComponent::Direction::Vertical)
+		{
+			float scaledHeight = capsuleColliderComp.height * transformComp.scale.y;
+			float scaledRadius = capsuleColliderComp.radius * transformComp.scale.x;
+			float halfHeight = scaledHeight / 2.0f;
+			float diameter = (2.0f * scaledRadius);
+			b2CircleShape topShape;
+			topShape.m_radius = scaledRadius;
+			topShape.m_p.Set(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y + halfHeight - scaledRadius);
+
+			b2FixtureDef topCirclefixtureDef;
+			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+
+			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
+			body->CreateFixture(&topCirclefixtureDef);
+
+			if (scaledHeight - diameter > 0)
+			{
+				b2CircleShape bottomShape;
+				bottomShape.m_radius = scaledRadius;
+				bottomShape.m_p.Set(capsuleColliderComp.offset.x + capsuleColliderComp.offset.y - halfHeight);
+				b2FixtureDef bottomCircleFixtureDef;
+				b2FixtureDef rectFixtureDef;
+			}
+		}
+		else
+		{
+
+		}
+
 		// TODO add capsule shape
 		/*b2CircleShape topShape;
-		topShape.m_radius;
 		b2FixtureDef topCirclefixtureDef;
 		topCirclefixtureDef.shape = &
 		b2FixtureDef bottomCircleFixtureDef;
