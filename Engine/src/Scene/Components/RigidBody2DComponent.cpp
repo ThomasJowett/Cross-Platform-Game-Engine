@@ -153,11 +153,56 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 			float scaledRadius = capsuleColliderComp.radius * transformComp.scale.x;
 			float halfHeight = scaledHeight / 2.0f;
 			float diameter = (2.0f * scaledRadius);
+			if (scaledHeight < diameter)
+				halfHeight = scaledRadius;
 			b2CircleShape topShape;
 			topShape.m_radius = scaledRadius;
 			topShape.m_p.Set(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y + halfHeight - scaledRadius);
 
 			b2FixtureDef topCirclefixtureDef;
+			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+			topCirclefixtureDef.shape = &topShape;
+
+			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
+			body->CreateFixture(&topCirclefixtureDef);
+
+			if (scaledHeight > diameter)
+			{
+				b2CircleShape bottomShape;
+				bottomShape.m_radius = scaledRadius;
+				bottomShape.m_p.Set(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y - halfHeight + scaledRadius);
+
+				b2FixtureDef bottomCircleFixtureDef;
+				bottomCircleFixtureDef.shape = &bottomShape;
+				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
+				body->CreateFixture(&bottomCircleFixtureDef);
+
+				b2PolygonShape rectShape;
+				rectShape.SetAsBox(scaledRadius, halfHeight - scaledRadius,
+					b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
+
+				b2FixtureDef rectFixtureDef;
+				rectFixtureDef.shape = &rectShape;
+				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
+				body->CreateFixture(&rectFixtureDef);
+			}
+		}
+		else
+		{
+			float scaledHeight = capsuleColliderComp.height * transformComp.scale.x;
+			float scaledRadius = capsuleColliderComp.radius * transformComp.scale.y;
+			float halfHeight = scaledHeight / 2.0f;
+			float diameter = (2.0f * scaledRadius);
+			if (scaledHeight < diameter)
+				halfHeight = scaledRadius;
+			b2CircleShape topShape;
+			topShape.m_radius = scaledRadius;
+			topShape.m_p.Set(capsuleColliderComp.offset.x + halfHeight - scaledRadius, capsuleColliderComp.offset.y);
+
+			b2FixtureDef topCirclefixtureDef;
+			topCirclefixtureDef.shape = &topShape;
 			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
@@ -167,14 +212,24 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 			{
 				b2CircleShape bottomShape;
 				bottomShape.m_radius = scaledRadius;
-				bottomShape.m_p.Set(capsuleColliderComp.offset.x + capsuleColliderComp.offset.y - halfHeight);
-				b2FixtureDef bottomCircleFixtureDef;
-				b2FixtureDef rectFixtureDef;
-			}
-		}
-		else
-		{
+				bottomShape.m_p.Set(capsuleColliderComp.offset.x - halfHeight + scaledRadius, capsuleColliderComp.offset.y);
 
+				b2FixtureDef bottomCircleFixtureDef;
+				bottomCircleFixtureDef.shape = &bottomShape;
+				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
+				body->CreateFixture(&bottomCircleFixtureDef);
+
+				b2PolygonShape rectShape;
+				rectShape.SetAsBox(halfHeight - scaledRadius, scaledRadius,
+					b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
+
+				b2FixtureDef rectFixtureDef;
+				rectFixtureDef.shape = &rectShape;
+				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
+				body->CreateFixture(&rectFixtureDef);
+			}
 		}
 
 		// TODO add capsule shape

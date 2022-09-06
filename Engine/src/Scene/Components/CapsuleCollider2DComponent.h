@@ -16,8 +16,8 @@ struct CapsuleCollider2DComponent
 
 	Vector2f offset = { 0.0f , 0.0f };
 
-	float radius = 1.0f;
-	float height = 1.0f;
+	float radius = 0.5f;
+	float height = 2.0f;
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
