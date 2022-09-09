@@ -26,7 +26,7 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<Til
 	frameBufferSpecificationEditorCamera.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecificationEditorCamera);
 
-	FrameBufferSpecification frameBufferSpecificationPreview = { 256, 144 };
+	FrameBufferSpecification frameBufferSpecificationPreview = { 240, 135 };
 	frameBufferSpecificationPreview.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_CameraPreview = FrameBuffer::Create(frameBufferSpecificationPreview);
 
@@ -104,6 +104,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		m_CameraPreview->Resize((uint32_t)m_ViewportSize.x / 8.0f, (uint32_t)m_ViewportSize.y / 8.0f);
 		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 
@@ -143,24 +144,34 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 
+		Entity selectedEntity;
+
+		if (m_HierarchyPanel->GetSelectedEntity() && m_HierarchyPanel->GetSelectedEntity().IsValid())
+		{
+			selectedEntity = m_HierarchyPanel->GetSelectedEntity();
+		}
+
+		// Preview Camera window
+		if (selectedEntity && selectedEntity.HasComponent<CameraComponent>())
+		{
+			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+		
+			CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
+			Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
+			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+			m_CameraPreview->Bind();
+			RenderCommand::Clear();
+			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+		}
+
 		// Debug render pass
 		m_Framebuffer->Bind();
 		Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_HierarchyPanel->GetSelectedEntity() && m_HierarchyPanel->GetSelectedEntity().IsValid())
+		if (selectedEntity)
 		{
-			Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
 
-			if (selectedEntity.HasComponent<CameraComponent>())
-			{
-				CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
-				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
-				Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
-				m_CameraPreview->Bind();
-				RenderCommand::Clear();
-				SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
-			}
 			if (selectedEntity.HasComponent<CircleCollider2DComponent>())
 			{
 				CircleCollider2DComponent& circleComp = selectedEntity.GetComponent<CircleCollider2DComponent>();
@@ -213,6 +224,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				CapsuleCollider2DComponent& capsuleComp = selectedEntity.GetComponent<CapsuleCollider2DComponent>();
 				// TODO debug draw capsule collider
+				if (capsuleComp.direction == CapsuleCollider2DComponent::Direction::Vertical)
+				{
+					Vector3f worldPosition = transformComp.GetWorldPosition();
+					//Renderer2D::DrawHairLine()
+				}
 			}
 
 			if (selectedEntity.HasComponent<TilemapComponent>())
@@ -285,6 +301,37 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				}
 			}
 		}
+
+		SceneManager::CurrentScene()->GetRegistry().view<TransformComponent, CameraComponent>().each(
+			[](const auto entity, auto& transformComp, auto& cameraComp)
+			{
+				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
+				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.Camera.GetProjectionMatrix());
+				Vector3f frontTopLeft = Vector3f(-1.0f, 1.0f, -1.0f) * projection*view;
+				Vector3f frontTopRight = Vector3f(1.0f, 1.0f, -1.0f) * projection* view;
+				Vector3f frontBottomLeft = Vector3f(-1.0f, -1.0f, -1.0f) * projection* view;
+				Vector3f frontBottomRight = Vector3f(1.0f, -1.0f, -1.0f) * projection * view;
+
+				Vector3f backTopLeft = Vector3f(-1.0f, 1.0f, 1.0f) * projection * view;
+				Vector3f backTopRight = Vector3f(1.0f, 1.0f, 1.0f) * projection * view;
+				Vector3f backBottomLeft = Vector3f(-1.0f, -1.0f, 1.0f) * projection * view;
+				Vector3f backBottomRight = Vector3f(1.0f, -1.0f, 1.0f) * projection * view;
+
+				Renderer2D::DrawHairLine(frontTopLeft, frontTopRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontTopRight, frontBottomRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontBottomRight, frontBottomLeft, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontBottomLeft, frontTopLeft, Colours::SILVER, (int)entity);
+
+				Renderer2D::DrawHairLine(backTopLeft, backTopRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(backTopRight, backBottomRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(backBottomRight, backBottomLeft, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(backBottomLeft, backTopLeft, Colours::SILVER, (int)entity);
+
+				Renderer2D::DrawHairLine(frontTopLeft, backTopLeft, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontTopRight, backTopRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontBottomRight, backBottomRight, Colours::SILVER, (int)entity);
+				Renderer2D::DrawHairLine(frontBottomLeft, backBottomLeft, Colours::SILVER, (int)entity);
+			});
 
 		Renderer2D::FlushHairLines();
 

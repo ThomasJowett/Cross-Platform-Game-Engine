@@ -231,17 +231,6 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				body->CreateFixture(&rectFixtureDef);
 			}
 		}
-
-		// TODO add capsule shape
-		/*b2CircleShape topShape;
-		b2FixtureDef topCirclefixtureDef;
-		topCirclefixtureDef.shape = &
-		b2FixtureDef bottomCircleFixtureDef;
-		b2FixtureDef rectFixtureDef;
-		body->CreateFixture(&topCirclefixtureDef);
-		body->CreateFixture(&bottomCirclefixtureDef);
-		body->CreateFixture(&rectfixtureDef);*/
-
 	}
 }
 
