@@ -112,7 +112,7 @@ bool SceneManager::FinalChangeScene()
 			s_EditingScene = s_CurrentScene->GetFilepath();
 		}
 
-		if (s_SceneState != SceneState::Edit || s_SceneState != SceneState::Pause)
+		if (s_SceneState != SceneState::Edit && s_SceneState != SceneState::Pause)
 		{
 			s_CurrentScene->OnRuntimeStop();
 		}
@@ -122,7 +122,7 @@ bool SceneManager::FinalChangeScene()
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
 
 	if (!s_CurrentScene->Load(s_BinaryScene))
-		s_CurrentScene = nullptr;
+		s_CurrentScene.reset();
 
 	SceneChanged event(s_NextFilepath);
 	Application::CallEvent(event);

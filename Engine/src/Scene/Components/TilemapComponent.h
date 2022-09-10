@@ -25,6 +25,9 @@ struct TilemapComponent
 
 	Orientation orientation = Orientation::orthogonal;
 
+	Ref<VertexArray> vertexArray;
+	Ref<Material> material;
+
 	TilemapComponent() = default;
 	TilemapComponent(const TilemapComponent&) = default;
 	TilemapComponent(Orientation orientation, uint32_t tilesWide, uint32_t tilesHigh)
@@ -36,6 +39,8 @@ struct TilemapComponent
 			row.resize(tilesWide);
 		}
 	}
+
+	void Rebuild();
 
 private:
 	friend cereal::access;
@@ -68,7 +73,9 @@ private:
 		}
 		else
 		{
-			tileset = nullptr;
+			tileset.reset();
 		}
+
+		Rebuild();
 	}
 };

@@ -711,6 +711,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				}
 			}
 		}
+
+		component.Rebuild();
 	}
 
 	// RigidBody2D ------------------------------------------------------------------------------------------------

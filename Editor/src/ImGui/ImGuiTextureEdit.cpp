@@ -96,7 +96,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		ImGui::SameLine();
 		if (ImGui::Button(std::string(std::string(ICON_FA_ARROW_ROTATE_LEFT"##reset") + std::string(label)).c_str()))
 		{
-			texture = nullptr;
+			texture.reset();
 			edited = true;
 		}
 		ImGui::Tooltip("Reset texture");

@@ -53,7 +53,7 @@ private:
 		}
 		else
 		{
-			texture = nullptr;
+			texture.reset();
 		}
 		archive(cereal::make_nvp("Tint", tint));
 		archive(cereal::make_nvp("Tiling Factor", tilingFactor));

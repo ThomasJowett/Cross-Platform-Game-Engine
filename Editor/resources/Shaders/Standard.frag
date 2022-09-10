@@ -29,5 +29,7 @@ layout (location = 0) in VertexOutput Input;
 void main()
 {
 	frag_colour = texture(u_Albedo, Input.TexCoord * u_TilingFactor) * u_Colour;
+	if(frag_colour.a <= 0.0001)
+		discard;
 	entityId = u_EntityId;
 }

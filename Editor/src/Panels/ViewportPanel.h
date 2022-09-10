@@ -94,5 +94,5 @@ private:
 	bool m_RightClickMenuOpen = false;
 
 	Ref<Material> m_GridMaterial;
-	Ref<Mesh> m_GridMesh;
+	Ref<VertexArray> m_GridMesh;
 };

@@ -294,14 +294,18 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : staticMeshGroup)
 	{
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
-		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
+		if(staticMeshComp.mesh)
+			Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
 	for (auto entity : tilemapGroup)
 	{
 		auto [transformComp, tilemapComp] = tilemapGroup.get(entity);
-		Renderer2D::DrawTilemap(transformComp.GetWorldMatrix(), tilemapComp, (int)entity);
+		if (tilemapComp.tileset && tilemapComp.vertexArray)
+		{
+			Renderer::Submit(tilemapComp.material, tilemapComp.vertexArray, transformComp.GetWorldMatrix(), (int)entity);
+		}
 	}
 
 	if (m_Box2DDraw && m_Box2DWorld)

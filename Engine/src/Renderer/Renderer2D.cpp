@@ -243,8 +243,8 @@ bool Renderer2D::Init()
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
 
 	s_Data.quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f };
-	s_Data.quadVertexPositions[1] = { 0.5f, -0.5f, 0.0f };
-	s_Data.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
+	s_Data.quadVertexPositions[1] = {  0.5f, -0.5f, 0.0f };
+	s_Data.quadVertexPositions[2] = {  0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
 	return s_Data.quadShader == nullptr;
@@ -623,29 +623,6 @@ void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& s
 	else
 	{
 		DrawQuad(transform, spriteComp.tint, entityId);
-	}
-}
-
-void Renderer2D::DrawTilemap(const Matrix4x4& transform, TilemapComponent& tilemapComp, int entityId)
-{
-	PROFILE_FUNCTION();
-	if (!tilemapComp.tileset)
-	{
-		return;
-	}
-
-	for (size_t i = 0; i < tilemapComp.tilesHigh; i++)
-	{
-		for (size_t j = 0; j < tilemapComp.tilesWide; j++)
-		{
-			if (tilemapComp.tiles[i][j] == 0)
-				continue;
-
-			tilemapComp.tileset->SetCurrentTile(tilemapComp.tiles[i][j]);
-			Vector3f position((float)j + 0.5f, -(float)i - 0.5f, 0.0f);
-			Matrix4x4 finalTransform = transform * Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(1.001f, 1.001f, 1.0f));
-			DrawQuad(finalTransform, tilemapComp.tileset->GetSubTexture(), tilemapComp.tint, entityId);
-		}
 	}
 }
 

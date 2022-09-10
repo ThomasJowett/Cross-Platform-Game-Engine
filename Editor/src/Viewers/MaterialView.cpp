@@ -154,7 +154,7 @@ void MaterialView::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
 
-	Renderer::Submit(m_Material, m_Mesh);
+	Renderer::Submit(m_Material, m_Mesh->GetVertexArray());
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

@@ -52,7 +52,7 @@ private:
 		}
 		else
 		{
-			mesh = nullptr;
+			mesh.reset();
 		}
 
 		if (!relativeMaterialPath.empty())
@@ -61,7 +61,7 @@ private:
 		}
 		else
 		{
-			material = nullptr;
+			material.reset();
 		}
 	}
 };

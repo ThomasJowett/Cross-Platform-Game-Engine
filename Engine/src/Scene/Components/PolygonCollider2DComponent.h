@@ -50,6 +50,6 @@ private:
 		if (!relativePath.empty())
 			physicsMaterial = AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		else
-			physicsMaterial = nullptr;
+			physicsMaterial.reset();
 	}
 };

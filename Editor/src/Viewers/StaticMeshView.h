@@ -43,5 +43,5 @@ private:
 	Ref<Material> m_StandardMaterial; // TODO: load the default material from the mesh file (requires changing mesh file format!)
 
 	Ref<Material> m_GridMaterial;
-	Ref<Mesh> m_GridMesh;
+	Ref<VertexArray> m_GridMesh;
 };

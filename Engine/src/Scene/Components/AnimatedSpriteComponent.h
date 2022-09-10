@@ -48,7 +48,7 @@ private:
 		}
 		else
 		{
-			tileset = nullptr;
+			tileset.reset();
 		}
 		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
 		if (tileset)

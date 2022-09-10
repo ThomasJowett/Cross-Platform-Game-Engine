@@ -104,9 +104,9 @@ void Renderer::EndScene()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, const Matrix4x4& transform, int entityId)
+void Renderer::Submit(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, int entityId)
 {
-	if (!material || !mesh)
+	if (!material || !vertexArray)
 		return;
 
 	Ref<Shader> shader = s_ShaderLibary.Load(material->GetShader());
@@ -127,8 +127,6 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<Mesh>& mesh, cons
 	s_RendererData.mixMapTexture->Bind(2);
 
 	material->BindTextures();
-
-	Ref<VertexArray> vertexArray = mesh->GetVertexArray();
 
 	CORE_ASSERT(vertexArray, "No data in vertex array");
 
