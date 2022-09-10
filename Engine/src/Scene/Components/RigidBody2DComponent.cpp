@@ -28,7 +28,7 @@ void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMa
 	}
 }
 
-b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
+uint32_t RigidBody2DComponent::GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
 	switch (type)
 	{
@@ -52,8 +52,10 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 {
 	TransformComponent& transformComp = entity.GetTransform();
 
+	runtimeBody->type
+
 	b2BodyDef bodyDef;
-	bodyDef.type = GetRigidBodyBox2DType(type);
+	bodyDef.type = (b2BodyType)GetRigidBodyBox2DType(type);
 	bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
 	bodyDef.angle = (float)transformComp.rotation.z;
 

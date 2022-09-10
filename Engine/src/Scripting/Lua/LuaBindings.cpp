@@ -26,7 +26,7 @@ void RegisterComponent(sol::state& state)
 	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
 	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
 	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
-	entity_Type.set_function("Get" + name, &Entity::GetComponent<Component>);
+	entity_Type.set_function("Get" + name, &Entity::TryGetComponent<Component>);
 }
 
 template<typename... Component>
@@ -106,12 +106,16 @@ void BindEntity(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
-	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity");
+	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
+		sol::constructors<sol::types<entt::entity, Scene*>>());
 	entity_type.set_function("IsValid", &Entity::IsValid);
 	entity_type.set_function("GetName", &Entity::GetName);
 	entity_type.set_function("SetName", &Entity::SetName);
 	entity_type.set_function("AddChild", &Entity::AddChild);
 	entity_type.set_function("Destroy", &Entity::Destroy);
+	entity_type.set_function("GetParent", &Entity::GetParent);
+	entity_type.set_function("GetSibling", &Entity::GetSibling);
+	entity_type.set_function("GetChild", &Entity::GetChild);
 
 	RegisterAllComponents<COMPONENTS>(state);
 
@@ -176,6 +180,9 @@ void BindEntity(sol::state& state)
 	rigidBody2D_type.set_function("SetLinearVelocity", &RigidBody2DComponent::SetLinearVelocity);
 	rigidBody2D_type.set_function("GetAngularVelocity", &RigidBody2DComponent::GetAngularVelocity);
 	rigidBody2D_type.set_function("SetAngularVelocity", &RigidBody2DComponent::SetAngularVelocity);
+
+	auto physicsMaterial_type = state.new_usertype<PhysicsMaterial>("PhysicsMaterial");
+	physicsMaterial_type["Density"] = &PhysicsMaterial::GetDensity;
 
 	auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 	boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;

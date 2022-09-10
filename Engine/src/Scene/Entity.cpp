@@ -17,7 +17,7 @@ Entity::Entity(entt::entity handle, Scene* scene)
 	ASSERT(IsValid(), "This entity is not valid!")
 
 #ifdef DEBUG
-	m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
+		m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
 #endif // DEBUG
 }
 
@@ -54,4 +54,31 @@ Uuid Entity::GetID()
 entt::entity Entity::GetHandle() const
 {
 	return m_EntityHandle;
+}
+
+Entity Entity::GetParent()
+{
+	PROFILE_FUNCTION();
+	HierarchyComponent* hierarchyComp = TryGetComponent<HierarchyComponent>();
+	if (hierarchyComp && hierarchyComp->parent != entt::null)
+		return Entity(hierarchyComp->parent, m_Scene);
+	return Entity();
+}
+
+Entity Entity::GetSibling()
+{
+	PROFILE_FUNCTION();
+	HierarchyComponent* hierarchyComp = TryGetComponent<HierarchyComponent>();
+	if (hierarchyComp && hierarchyComp->nextSibling != entt::null)
+		return Entity(hierarchyComp->nextSibling, m_Scene);
+	return Entity();
+}
+
+Entity Entity::GetChild()
+{
+	PROFILE_FUNCTION();
+	HierarchyComponent* hierarchyComp = TryGetComponent<HierarchyComponent>();
+	if (hierarchyComp && hierarchyComp->firstChild != entt::null)
+		return Entity(hierarchyComp->firstChild, m_Scene);
+	return Entity();
 }

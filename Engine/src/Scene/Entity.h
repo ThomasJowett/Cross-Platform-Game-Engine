@@ -135,6 +135,10 @@ public:
 	// Get the scene this entity belongs to
 	Scene* GetScene() { return m_Scene; }
 
+	Entity GetParent();
+	Entity GetSibling();
+	Entity GetChild();
+
 	/**
 	 * Find if this Entity has a Component of certain type
 	 *
@@ -175,7 +179,7 @@ public:
 
 	bool IsValid() const
 	{
-		return m_Scene->m_Registry.valid(m_EntityHandle);
+		return this && m_Scene && m_Scene->m_Registry.valid(m_EntityHandle);
 	}
 
 	operator bool() const { return m_EntityHandle != entt::null; }

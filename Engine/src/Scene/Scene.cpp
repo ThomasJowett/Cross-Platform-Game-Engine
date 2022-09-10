@@ -419,6 +419,18 @@ void Scene::OnFixedUpdate()
 					Entity e(entity, this);
 					rigidBodyComp.Init(e, m_Box2DWorld);
 				}
+				else
+				{
+					if(rigidBodyComp.runtimeBody->GetType() != RigidBody2DComponent::GetRigidBodyBox2DType(rigidBodyComp.type))
+						rigidBodyComp.Init(e, m_Box2DWorld);
+					else if (rigidBodyComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
+					{
+						rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
+						rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
+						rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
+						rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
+					}
+				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
 				transformComp.position.y = position.y;
