@@ -5,6 +5,8 @@
 
 #include "IconsFontAwesome5.h"
 
+#include "imgui/imgui.h"
+
 class PropertiesPanel :
 	public Layer
 {

@@ -448,7 +448,7 @@ void LuaNodeEditor::Render()
 
   if (ImGui::BeginPopup("Create New Node"))
   {
-    ImGui::Text("Create Node");
+    ImGui::TextUnformatted("Create Node");
 
     Node* node = nullptr;
     if (ImGui::MenuItem("Input Action"))
@@ -626,6 +626,7 @@ ImColor LuaNodeEditor::GetPinColour(PinType type)
   default:
     break;
   }
+  return ImColor(255, 255, 255);
 }
 
 void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)

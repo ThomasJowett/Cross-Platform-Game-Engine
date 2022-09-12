@@ -14,7 +14,7 @@ static std::filesystem::file_time_type s_MaterialFileTime;
 IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, Ref<Material>& defaultMaterial)
 {
 	bool edited = false;
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 
 	std::string materialName;
 	if (material && !material->GetFilepath().empty())

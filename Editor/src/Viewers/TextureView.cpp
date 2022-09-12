@@ -27,8 +27,8 @@ void TextureView::OnImGuiRender()
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
 		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());
-		ImGui::Text(size.c_str());
-		ImGui::Text(m_Texture->GetFilepath().string().c_str());
+		ImGui::TextUnformatted(size.c_str());
+		ImGui::TextUnformatted(m_Texture->GetFilepath().string().c_str());
 
 		const bool is_selected = false;
 		bool edited = false;

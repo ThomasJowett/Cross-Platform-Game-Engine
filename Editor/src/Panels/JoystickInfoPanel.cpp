@@ -30,7 +30,7 @@ void JoystickInfoPanel::OnImGuiRender()
 
 		if (Joysticks::GetJoystickCount() == 0)
 		{
-			ImGui::Text("No Joysticks Connected");
+			ImGui::TextUnformatted("No Joysticks Connected");
 			ImGui::End();
 			return;
 		}

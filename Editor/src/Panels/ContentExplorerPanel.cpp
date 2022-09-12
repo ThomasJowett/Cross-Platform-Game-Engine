@@ -1015,7 +1015,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		}
 
 		ImGui::SameLine();
-		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::TextUnformatted(ICON_FA_SEARCH);
 		ImGui::SameLine();
 		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
 		ImGui::Tooltip("Filter (\"incl,-excl\")");
@@ -1459,7 +1459,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableSetColumnIndex(2);
 						if (!m_ForceRescan)
 						{
-							ImGui::Text("%s", (std::to_string((int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f)) + "KB").c_str());
+							ImGui::Text("%iKB", (int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f));
 						}
 
 						ImGui::EndGroup();

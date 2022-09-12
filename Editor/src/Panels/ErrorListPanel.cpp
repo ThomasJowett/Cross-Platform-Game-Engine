@@ -116,9 +116,9 @@ void ErrorListPanel::OnImGuiRender()
 				}
 
 				ImGui::TableSetColumnIndex(1);
-				ImGui::Text("%s", error.filepath.filename().string().c_str());
+				ImGui::TextUnformatted(error.filepath.filename().string().c_str());
 				ImGui::TableSetColumnIndex(2);
-				ImGui::Text("%i",error.lineNumber);
+				ImGui::Text("%i", error.lineNumber);
 			}
 			ImGui::EndTable();
 		}

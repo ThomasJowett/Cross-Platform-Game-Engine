@@ -59,7 +59,7 @@ void ScriptView::OnImGuiRender()
 
 		if (ImGui::BeginPopupModal("Save Prompt"))
 		{
-			ImGui::Text("Save unsaved changes?");
+			ImGui::TextUnformatted("Save unsaved changes?");
 			if (ImGui::Button("Save"))
 			{
 				m_TextEditor.SaveTextToFile(m_FilePath);

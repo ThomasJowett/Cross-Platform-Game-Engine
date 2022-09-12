@@ -48,7 +48,7 @@ void ProjectsStartScreen::OnImGuiRender()
 		if (!m_CreateProject)
 		{
 			ImGui::Columns(2);
-			ImGui::Text("Recent Projects...");
+			ImGui::TextUnformatted("Recent Projects...");
 
 			for (const std::filesystem::path& project : m_RecentProjects)
 			{
@@ -70,7 +70,7 @@ void ProjectsStartScreen::OnImGuiRender()
 		}
 		else
 		{
-			ImGui::Text("Select Template...");
+			ImGui::TextUnformatted("Select Template...");
 			if (m_CanGoBack)
 			{
 				ImGui::SameLine(0.0f, (float)(popupSizeX - 185));

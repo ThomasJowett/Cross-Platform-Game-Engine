@@ -18,7 +18,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	}
 
 	ImGui::BeginGroup();
-	ImGui::Text("%s", label);
+	ImGui::TextUnformatted(label);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 32);
 	if (ImGui::InputText(("##Filepath" + std::string(label)).c_str(), inputBuffer, sizeof(inputBuffer),

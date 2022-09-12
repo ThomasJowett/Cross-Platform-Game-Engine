@@ -126,7 +126,7 @@ void ConsolePanel::ImGuiRenderSettings()
 	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x + ImGui::CalcTextSize(" ").x;
 
 	// checkbox for scrolling lock
-	ImGui::Text("Scroll to bottom");
+	ImGui::TextUnformatted("Scroll to bottom");
 	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Scroll to bottom").x);
 	ImGui::Checkbox("##ScrollToBottom", &m_AllowScrollingToBottom);
 
@@ -138,7 +138,7 @@ void ConsolePanel::ImGuiRenderSettings()
 		Clear();
 
 	// Slider for font scale
-	ImGui::Text("Display scale");
+	ImGui::TextUnformatted("Display scale");
 	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Display Scale").x);
 	ImGui::PushItemWidth(maxWidth * 1.25f / 1.1f);
 	ImGui::SliderFloat("##DisplayScale", &m_DisplayScale, 0.5f, 4.0f, "%.1f");

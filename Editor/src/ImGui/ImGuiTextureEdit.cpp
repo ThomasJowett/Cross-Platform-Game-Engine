@@ -11,7 +11,7 @@
 IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, ImVec2 size)
 {
 	bool edited = false;
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 	if (texture)
 	{
 		ImGui::BeginGroup();

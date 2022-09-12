@@ -10,7 +10,7 @@ static std::filesystem::file_time_type s_PhysMaterialFileTime;
 IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& physMaterial, Ref<PhysicsMaterial>& defaultPyhsMaterial)
 {
 	bool edited = false;
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
 
 	std::string physMaterialName;
 	if (physMaterial && !physMaterial->GetFilepath().empty())

@@ -198,7 +198,7 @@ void HierarchyPanel::OnImGuiRender()
 			ImGui::EndPopup();
 		}
 
-		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::TextUnformatted(ICON_FA_SEARCH);
 		ImGui::SameLine();
 		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
 		ImGui::Tooltip("Filter (\"incl,-excl\")");
@@ -320,12 +320,12 @@ void HierarchyPanel::DrawNode(Entity entity)
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
-	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name.c_str());
 
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 	{
 		ImGui::SetDragDropPayload("Entity", &entity, sizeof(Entity));
-		ImGui::Text(name.c_str());
+		ImGui::TextUnformatted(name.c_str());
 		ImGui::EndDragDropSource();
 	}
 	DragDropTarget(entity);
