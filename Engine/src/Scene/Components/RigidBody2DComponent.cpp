@@ -52,8 +52,6 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 {
 	TransformComponent& transformComp = entity.GetTransform();
 
-	runtimeBody->type
-
 	b2BodyDef bodyDef;
 	bodyDef.type = (b2BodyType)GetRigidBodyBox2DType(type);
 	bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);

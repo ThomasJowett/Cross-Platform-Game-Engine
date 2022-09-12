@@ -19,6 +19,8 @@ int main(int argc, char* argv[])
 
 	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 
+	std::filesystem::current_path(Application::s_WorkingDirectory);
+
 	Logger::Init();
 
 	if (AnotherInstance())
