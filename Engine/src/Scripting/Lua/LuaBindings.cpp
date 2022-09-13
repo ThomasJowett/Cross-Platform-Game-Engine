@@ -197,11 +197,13 @@ void BindEntity(sol::state& state)
 	auto polygonCollider2D_type = state["PolygonCollider2DComponent"].get_or_create<sol::usertype<PolygonCollider2DComponent>>();
 	polygonCollider2D_type["Offset"] = &PolygonCollider2DComponent::offset;
 	polygonCollider2D_type["Vertices"] = &PolygonCollider2DComponent::vertices;
+	polygonCollider2D_type["PhysicsMaterial"] = &PolygonCollider2DComponent::physicsMaterial;
 
 	auto capsuleCollider2D_type = state["CapsuleCollider2DComponent"].get_or_create<sol::usertype<CapsuleCollider2DComponent>>();
 	capsuleCollider2D_type["Offset"] = &CapsuleCollider2DComponent::offset;
 	capsuleCollider2D_type["Radius"] = &CapsuleCollider2DComponent::radius;
 	capsuleCollider2D_type["Height"] = &CapsuleCollider2DComponent::height;
+	capsuleCollider2D_type["PhysicsMaterial"] = &CapsuleCollider2DComponent::physicsMaterial;
 
 	auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
 	circleRenderer_type["Colour"] = &CircleRendererComponent::colour;

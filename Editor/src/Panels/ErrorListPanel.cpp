@@ -1,6 +1,6 @@
 #include "ErrorListPanel.h"
 #include "IconsFontAwesome5.h"
-#include "ImGui/imgui.h"
+#include "imgui/imgui.h"
 
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"

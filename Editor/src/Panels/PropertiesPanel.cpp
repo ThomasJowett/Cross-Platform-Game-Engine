@@ -143,8 +143,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (sprite.texture)
 					{
-						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth();
-						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight();
+						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth() / 16.0f;
+						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight() / 16.0f;
 					}
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
@@ -186,8 +186,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (sprite.tileset)
 					{
-						entity.GetTransform().scale.x = (float)sprite.tileset->GetSubTexture()->GetSpriteWidth();
-						entity.GetTransform().scale.y = (float)sprite.tileset->GetSubTexture()->GetSpriteHeight();
+						entity.GetTransform().scale.x = (float)sprite.tileset->GetSubTexture()->GetSpriteWidth() / 16.0f;
+						entity.GetTransform().scale.y = (float)sprite.tileset->GetSubTexture()->GetSpriteHeight() / 16.0f;
 					}
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
