@@ -53,9 +53,32 @@ void BindLogging(sol::state& state)
 
 //--------------------------------------------------------------------------------------------------------------
 
+void MaximizeWindow()
+{
+	Application::GetWindow().MaximizeWindow();
+}
+
+void RestoreWindow()
+{
+	Application::GetWindow().RestoreWindow();
+}
+
+void SetWindowMode(WindowMode windowMode)
+{
+	Application::GetWindow().SetWindowMode(windowMode);
+}
+
 void BindApp(sol::state& state)
 {
 	PROFILE_FUNCTION();
+
+	std::initializer_list<std::pair<sol::string_view, int>> windowModes =
+	{
+		{ "Windowed", (int)WindowMode::WINDOWED },
+		{ "Full_Screen", (int)WindowMode::FULL_SCREEN },
+		{ "Borderless", (int)WindowMode::BORDERLESS }
+	};
+	state.new_enum("WindowMode", windowModes);
 
 	sol::table application = state.create_table("App");
 
@@ -66,6 +89,10 @@ void BindApp(sol::state& state)
 		{
 			return Application::Get().GetFixedUpdateInterval();
 		});
+
+	application.set_function("MaximizeWindow", &MaximizeWindow);
+	application.set_function("RestoreWindow", &RestoreWindow);
+	application.set_function("SetWindowMode", &SetWindowMode);
 }
 
 //--------------------------------------------------------------------------------------------------------------
