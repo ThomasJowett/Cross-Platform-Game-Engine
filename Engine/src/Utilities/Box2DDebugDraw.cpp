@@ -39,3 +39,12 @@ void Box2DDebugDraw::DrawPoint(const b2Vec2& p, float size, const b2Color& color
 	Matrix4x4 transform = Matrix4x4::Translate(Vector3f(p.x, p.y, 1.0f)) * Matrix4x4::Scale(Vector3f(size, size, 1.0f));
 	Renderer2D::DrawQuad(transform, Colour(color.r, color.g, color.b, 1.0f));
 }
+
+void Box2DDebugDraw::DrawParticles(const b2Vec2* centers, float radius, const b2ParticleColor* colors, int32 count)
+{
+	for (size_t i = 0; i < count; i++)
+	{
+		Matrix4x4 transform = Matrix4x4::Translate(Vector3f(centers[i].x, centers[i].y, 1.0f));
+		Renderer2D::DrawCircle(transform, Colour(colors[i].r, colors[i].g, colors[i].b, 1.0f));
+	}
+}

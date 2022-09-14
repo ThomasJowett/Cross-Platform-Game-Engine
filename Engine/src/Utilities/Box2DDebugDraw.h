@@ -12,6 +12,6 @@ public:
     virtual void DrawSegment(const b2Vec2& p1, const b2Vec2& p2, const b2Color& color) override {}
     virtual void DrawTransform(const b2Transform& xf) override {}
     virtual void DrawPoint(const b2Vec2& p, float size, const b2Color& color) override;
-    //void DrawParticles(const b2Vec2* centers, float radius, const b2ParticleColor* colors, int32 count) override {}
+    virtual void DrawParticles(const b2Vec2* centers, float radius, const b2ParticleColor* colors, int32 count) override;
 };
 
