@@ -104,7 +104,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	if (((uint32_t)m_ViewportSize.x != spec.width || (uint32_t)m_ViewportSize.y != spec.height) && (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f))
 	{
 		m_Framebuffer->Resize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
-		m_CameraPreview->Resize((uint32_t)m_ViewportSize.x / 8.0f, (uint32_t)m_ViewportSize.y / 8.0f);
+		m_CameraPreview->Resize((uint32_t)(m_ViewportSize.x / 8.0f), (uint32_t)(m_ViewportSize.y / 8.0f));
 		SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 	}
 

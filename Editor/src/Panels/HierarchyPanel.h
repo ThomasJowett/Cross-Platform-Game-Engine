@@ -8,7 +8,7 @@
 #include "Renderer/Mesh.h"
 #include "Renderer/Material.h"
 
-class ImGuiTextFilter;
+struct ImGuiTextFilter;
 
 class HierarchyPanel :
     public Layer, public ICopyable
