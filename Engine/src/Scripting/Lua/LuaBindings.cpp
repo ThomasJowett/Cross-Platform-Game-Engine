@@ -53,21 +53,6 @@ void BindLogging(sol::state& state)
 
 //--------------------------------------------------------------------------------------------------------------
 
-void MaximizeWindow()
-{
-	Application::GetWindow().MaximizeWindow();
-}
-
-void RestoreWindow()
-{
-	Application::GetWindow().RestoreWindow();
-}
-
-void SetWindowMode(WindowMode windowMode)
-{
-	Application::GetWindow().SetWindowMode(windowMode);
-}
-
 void BindApp(sol::state& state)
 {
 	PROFILE_FUNCTION();
@@ -86,13 +71,14 @@ void BindApp(sol::state& state)
 	application.set_function("ToggleImGui", &Application::ToggleImGui);
 
 	application.set_function("GetFixedUpdateInterval", [](sol::this_state s)
-		{
-			return Application::Get().GetFixedUpdateInterval();
-		});
+		{ return Application::Get().GetFixedUpdateInterval(); });
 
-	application.set_function("MaximizeWindow", &MaximizeWindow);
-	application.set_function("RestoreWindow", &RestoreWindow);
-	application.set_function("SetWindowMode", &SetWindowMode);
+	application.set_function("MaximizeWindow", [](sol::this_state s)
+		{ return Application::GetWindow().MaximizeWindow(); });
+	application.set_function("RestoreWindow", [](sol::this_state s)
+		{ return Application::GetWindow().RestoreWindow(); });
+	application.set_function("SetWindowMode", [](sol::this_state s, WindowMode windowMode)
+		{ return Application::GetWindow().SetWindowMode(windowMode); });
 }
 
 //--------------------------------------------------------------------------------------------------------------

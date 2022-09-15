@@ -223,6 +223,7 @@ project "Box2D"
 	files
 	{
 		"box2d/include/box2d/**.h",
+		"box2d/src/**.h",
 		"box2d/src/**.cpp"
 	}
 
