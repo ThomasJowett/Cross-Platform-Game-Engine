@@ -350,3 +350,52 @@ project "lua"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
+group "Tests"
+project "Box2D_Testbed"
+	kind "ConsoleApp"
+	cppdialect "C++17"
+
+	language "C++"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	includedirs
+	{
+		"box2d/include",
+		"box2d/testbed",
+		"box2d/extern",
+		"box2d/extern/glad/include",
+		"box2d/extern/glfw/include"
+	}
+
+	files
+	{
+		"box2d/testbed/**.h",
+		"box2d/testbed/**.cpp"
+	}
+
+	links
+	{
+		"GLFW",
+		"GLAD",
+		"ImGui",
+		"Box2D"
+	}
+	
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "On"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "On"
+
+	filter "configurations:Distribution"
+		defines "DIST"
+		runtime "Release"
+		optimize "On"
