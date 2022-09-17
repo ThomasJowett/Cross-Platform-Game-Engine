@@ -389,7 +389,7 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
-	if (ImGui::BeginMenu("New"))
+	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" New"))
 	{
 		if (ImGui::Selectable("Folder"))
 		{
@@ -453,7 +453,7 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 		ImGui::EndMenu();
 	}
-	if (ImGui::MenuItem("Import Assets"))
+	if (ImGui::MenuItem(ICON_FA_FILE_IMPORT" Import Assets"))
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
 			L"Any File\0*.*\0"
@@ -717,7 +717,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		HandleKeyboardInputs();
 		//HandleMouseInputs();
 
-		if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+		if (ImGui::BeginPopupContextWindow("Right click menu"))
 		{
 			RightClickMenu();
 			ImGui::EndPopup();
@@ -1299,7 +1299,8 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
-					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					if (ImGui::BeginPopupContextWindow("Right click menu", 
+						ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_MouseButtonRight))
 					{
 						RightClickMenu();
 						ImGui::EndPopup();
@@ -1465,7 +1466,8 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::EndGroup();
 					}
 
-					if (ImGui::BeginPopupContextWindow("Right click menu", 1, false))
+					if (ImGui::BeginPopupContextWindow("Right click menu", 
+						ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_MouseButtonRight))
 					{
 						RightClickMenu();
 						ImGui::EndPopup();

@@ -64,7 +64,7 @@ void HierarchyPanel::OnImGuiRender()
 		}
 
 		// right click on a blank space
-		if (ImGui::BeginPopupContextWindow(0, 1, false))
+		if (ImGui::BeginPopupContextWindow())
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{

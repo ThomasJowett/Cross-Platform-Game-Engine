@@ -69,6 +69,7 @@ private:
 	Ref<FrameBuffer> m_Framebuffer;
 	Ref<FrameBuffer> m_CameraPreview;
 	Vector2f m_RelativeMousePosition;
+	Vector2f m_MousePositionBeginClick;
 
 	ViewportCameraController m_CameraController;
 

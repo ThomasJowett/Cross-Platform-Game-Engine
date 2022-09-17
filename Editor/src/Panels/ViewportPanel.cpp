@@ -131,12 +131,13 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
 			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
 		{
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
 				m_Framebuffer->Bind();
 				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
 				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen)
+				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen 
+					&& m_RelativeMousePosition == m_MousePositionBeginClick)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 				m_Framebuffer->UnBind();
 			}
@@ -598,6 +599,11 @@ void ViewportPanel::OnImGuiRender()
 		}
 
 		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
+		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		{
+			m_MousePositionBeginClick = m_RelativeMousePosition;
+		}
+
 		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
@@ -848,6 +854,16 @@ void ViewportPanel::OnImGuiRender()
 		{
 			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 50, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 			ImGui::Text("%.1f", io.Framerate);
+		}
+
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f)
+		{
+			ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].x * 255.0f)) |
+				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].y * 255.0f) << 8) |
+				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].z * 255.0f) << 16) |
+				100 << 24;
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + m_MousePositionBeginClick.x, pos.y + m_MousePositionBeginClick.y),
+				ImVec2(pos.x + m_RelativeMousePosition.x, pos.y + m_RelativeMousePosition.y), color);
 		}
 
 		if (m_ShowStats)
