@@ -45,6 +45,10 @@ bin-int/
 *.sln
 *.filters
 *.aps
+*.pdb
+
+# ninja files
+*.ninja
 
 # configuration files
 *.ini
@@ -54,16 +58,10 @@ Makefile
 *.make
 
 # profile jsons
-/ExampleGame/Profile-Runtime.json
-/ExampleGame/Profile-Shutdown.json
-/ExampleGame/Profile-Startup.json
 /Editor/Profile-Startup.json
 /Editor/Profile-Shutdown.json
 /Editor/Profile-Runtime.json
 
 # log
-/ExampleGame/Log.txt
 /Editor/Log.txt
 /Editor/styles/Editor.style
-/Editor/*.pdb
-/Editor/*.dll
