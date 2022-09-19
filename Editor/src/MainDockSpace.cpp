@@ -5,7 +5,7 @@
 #endif // __WINDOWS__
 
 #include "Fonts/Fonts.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
 #include "FileSystem/Webpage.h"
@@ -255,7 +255,7 @@ void MainDockSpace::OnImGuiRender()
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
+			if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
 			{
 				SceneManager::CurrentScene()->Save(false);
 			}
@@ -270,7 +270,7 @@ void MainDockSpace::OnImGuiRender()
 					exporter.ExportGame();
 				}
 			}
-			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
+			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 
@@ -292,12 +292,12 @@ void MainDockSpace::OnImGuiRender()
 				redoable = iUndo->CanRedo();
 			}
 
-			if (ImGui::MenuItem(ICON_FA_UNDO" Undo", "Ctrl + Z", nullptr, undoable))
+			if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT" Undo", "Ctrl + Z", nullptr, undoable))
 				iUndo->Undo();
-			if (ImGui::MenuItem(ICON_FA_REDO" Redo", "Ctrl + Y", nullptr, redoable))
+			if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT" Redo", "Ctrl + Y", nullptr, redoable))
 				iUndo->Redo();
 			ImGui::Separator();//-----------------------------------------------
-			if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, copyable && iCopy->HasSelection()))
+			if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Cut();
 			if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Copy();
@@ -305,26 +305,26 @@ void MainDockSpace::OnImGuiRender()
 				iCopy->Paste();
 			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Duplicate();
-			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
+			if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Delete();
 			ImGui::Separator();//-----------------------------------------------
-			if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER" Select All", "Ctrl + A", nullptr, copyable))
+			if (ImGui::MenuItem(ICON_FA_ARROW_POINTER" Select All", "Ctrl + A", nullptr, copyable))
 				iCopy->SelectAll();
 			ImGui::Separator();//-----------------------------------------------
-			ImGui::MenuItem(ICON_FA_COG" Preferences", "", &m_ShowEditorPreferences);
-			ImGui::MenuItem(ICON_FA_COGS" Project Settings", "", &m_ShowProjectSettings);
+			ImGui::MenuItem(ICON_FA_GEAR" Preferences", "", &m_ShowEditorPreferences);
+			ImGui::MenuItem(ICON_FA_GEARS" Project Settings", "", &m_ShowProjectSettings);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Window"))
 		{
-			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);
+			ImGui::MenuItem(ICON_FA_SCREWDRIVER_WRENCH" Properties", "", &m_ShowProperties);
 			ImGui::MenuItem(ICON_FA_SITEMAP" Hierarchy", "", &m_ShowHierarchy);
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
-			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList);
-			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
+			ImGui::MenuItem(ICON_FA_CIRCLE_XMARK" Error List", "", &m_ShowErrorList);
+			ImGui::MenuItem(ICON_FA_CLIPBOARD_LIST" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
 #ifdef DEBUG
 			ImGui::MenuItem("ImGui Demo", "", &m_ShowImGuiDemo);
@@ -341,14 +341,14 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_MOUNTAIN" Landscape", "", &m_ShowLandscapeToolbar, false); //TODO: create landscape tool
 			ImGui::MenuItem(ICON_FA_SEEDLING" Foliage", "", &m_ShowFoliageToolbar, false); //TODO: create a foliage tool
 			ImGui::MenuItem(ICON_FA_NETWORK_WIRED" Multiplayer", "", &m_ShowMultiplayerToolbar, false); //TODO: Create multiplayer tool
-			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", &m_ShowSaveOpenToolbar); //TODO: Create Save/openTool
+			ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save/Open", "", &m_ShowSaveOpenToolbar); //TODO: Create Save/openTool
 			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);
+			ImGui::MenuItem(ICON_FA_CIRCLE_INFO" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
 				Webpage::OpenWebpage(L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");

@@ -9,7 +9,7 @@
 #include "Fonts/md-regular.cpp"
 #include "Fonts/md-webfont.cpp"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsMaterialDesign.h"
 #include "IconsMaterialDesignIcons.h"
 

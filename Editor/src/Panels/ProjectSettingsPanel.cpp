@@ -1,6 +1,6 @@
 #include "ProjectSettingsPanel.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "Engine.h"
 
 #include "cereal/archives/json.hpp"
@@ -18,11 +18,11 @@ void ProjectSettingsPanel::OnImGuiRender()
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(ICON_FA_COGS" Project Settings", m_Show))
+	if (ImGui::Begin(ICON_FA_GEARS" Project Settings", m_Show))
 	{
 		ImGui::InputText("Default Scene", m_DefaultSceneBuffer, sizeof(m_DefaultSceneBuffer));
 		ImGui::InputTextMultiline("Description", m_DescriptionBuffer, sizeof(m_DescriptionBuffer));
-		if (ImGui::Button(ICON_FA_SAVE" Save"))
+		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))
 		{
 			SaveProjectFile();
 		}

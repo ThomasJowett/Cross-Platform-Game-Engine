@@ -1,6 +1,6 @@
 #include "TilesetView.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "Engine.h"
 
@@ -15,7 +15,7 @@ TilesetView::TilesetView(bool* show, std::filesystem::path filepath)
 
 void TilesetView::OnAttach()
 {
-	m_WindowName = ICON_FA_TH + std::string(" " + m_Filepath.filename().string());
+	m_WindowName = ICON_FA_GRIP + std::string(" " + m_Filepath.filename().string());
 
 	m_Tileset = AssetManager::GetTileset(m_Filepath);
 }
@@ -54,7 +54,7 @@ void TilesetView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S"))
+				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save", "Ctrl + S"))
 				{
 					m_Tileset->Save();
 					m_Dirty = false;
@@ -202,7 +202,7 @@ void TilesetView::OnImGuiRender()
 						}
 
 						ImGui::TableSetColumnIndex(4);
-						std::string deleteStr = ICON_FA_TRASH_ALT"##" + name + std::to_string(index);
+						std::string deleteStr = ICON_FA_TRASH_CAN"##" + name + std::to_string(index);
 						if (ImGui::Button(deleteStr.c_str()))
 							deletedAnimation = name;
 						ImGui::Tooltip("Delete Animation");

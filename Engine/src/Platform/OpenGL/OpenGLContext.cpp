@@ -3,6 +3,8 @@
 
 #include <glad/glad.h>
 
+#pragma comment(lib, "opengl32.lib")
+
 OpenGLContext::OpenGLContext(GLFWwindow * windowHandle)
 	:m_windowHandle(windowHandle)
 {

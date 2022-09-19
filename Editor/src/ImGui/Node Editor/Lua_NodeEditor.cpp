@@ -1,5 +1,5 @@
 #include "Lua_NodeEditor.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui_internal.h>
@@ -420,7 +420,7 @@ void LuaNodeEditor::Render()
     Node* node = FindNode(m_ContextNodeId);
     if (node)
     {
-      if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete"))
+      if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete"))
         NodeEditor::DeleteNode(m_ContextNodeId);
     }
     ImGui::EndPopup();
@@ -439,7 +439,7 @@ void LuaNodeEditor::Render()
 
     if (link)
     {
-      if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete"))
+      if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete"))
         NodeEditor::DeleteLink(m_ContextLinkId);
     }
 
@@ -650,7 +650,7 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
   default:					return;
   }
 
-  ImVec2 pinSize(m_PinSize, m_PinSize);
+  ImVec2 pinSize((float)m_PinSize, (float)m_PinSize);
 
   if (ImGui::IsRectVisible(pinSize))
   {
@@ -760,7 +760,7 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
     }
   }
 
-  ImGui::Dummy(ImVec2(m_PinSize, m_PinSize));
+  ImGui::Dummy(ImVec2((float)m_PinSize, (float)m_PinSize));
 }
 
 void LuaNodeEditor::Undo(int steps)

@@ -1,5 +1,5 @@
 #include "ErrorListPanel.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "imgui/imgui.h"
 
 #include "Scripting/Lua/LuaManager.h"
@@ -51,7 +51,7 @@ void ErrorListPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(600, 600), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(70, 50), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(ICON_FA_TIMES_CIRCLE" Error List", m_Show))
+	if (ImGui::Begin(ICON_FA_CIRCLE_XMARK" Error List", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{

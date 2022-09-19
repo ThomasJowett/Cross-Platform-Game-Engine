@@ -3,7 +3,7 @@
 #include "imgui/imgui.h"
 #include "Scene/SceneManager.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsMaterialDesign.h"
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
@@ -100,7 +100,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 	if (tilemap.tileset)
 	{
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_PEN_SQUARE))
+		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE))
 		{
 			ViewerManager::OpenViewer(tilemap.tileset->GetFilepath());
 		}

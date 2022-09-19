@@ -2,7 +2,7 @@
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
 #include "ImGui/ImGuiUtilites.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "Scene/AssetManager.h"
 
 static std::filesystem::file_time_type s_PhysMaterialFileTime;
@@ -52,7 +52,7 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 	if (physMaterialName != "Default")
 	{
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_PEN_SQUARE"##PhysicsMaterial"))
+		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##PhysicsMaterial"))
 		{
 			ViewerManager::OpenViewer(physMaterial->GetFilepath());
 		}

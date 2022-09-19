@@ -64,6 +64,7 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 
 void DirectX11RendererAPI::Clear()
 {
+	g_ImmediateContext->OMSetRenderTargets(1, &m_RenderTargetView, NULL);
 	g_ImmediateContext->ClearRenderTargetView(m_RenderTargetView, &m_ClearColour.r);
 	g_ImmediateContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }

@@ -1,6 +1,6 @@
 #include "PlayPauseToolbar.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "Viewers/ViewerManager.h"
 
 #include "ImGui/ImGuiUtilites.h"
@@ -66,7 +66,7 @@ void PlayPauseToolbar::PlayButton()
 
 void PlayPauseToolbar::SimulateButton()
 {
-	if (ImGui::Button(ICON_FA_PLAY_CIRCLE "##Simulate"))
+	if (ImGui::Button(ICON_FA_CIRCLE_PLAY "##Simulate"))
 	{
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 			ViewerManager::SaveAll();
@@ -101,7 +101,7 @@ void PlayPauseToolbar::StopButton()
 
 void PlayPauseToolbar::RestartButton()
 {
-	if (ImGui::Button(ICON_FA_UNDO_ALT "##Restart"))
+	if (ImGui::Button(ICON_FA_ARROWS_ROTATE "##Restart"))
 	{
 		SceneManager::Restart();
 	}

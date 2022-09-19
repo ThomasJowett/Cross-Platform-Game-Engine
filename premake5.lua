@@ -76,7 +76,8 @@ project "Engine"
 	
 	defines
 	{
-		"GLFW_INCLUDE_NONE"
+		"GLFW_INCLUDE_NONE",
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	filter "system:windows"
@@ -86,13 +87,6 @@ project "Engine"
 		defines
 		{
 			"__WINDOWS__"
-		}
-		
-		links
-		{
-			"opengl32.lib",
-			"d3d11.lib",
-			"d3dcompiler.lib"
 		}
 		
 		excludes
@@ -213,7 +207,8 @@ project "Editor"
 
 	defines
 	{
-		"ENABLE_ASSERTS"
+		"ENABLE_ASSERTS",
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	postbuildcommands

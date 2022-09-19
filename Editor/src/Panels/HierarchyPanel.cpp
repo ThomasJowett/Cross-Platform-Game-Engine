@@ -1,7 +1,7 @@
 #include "HierarchyPanel.h"
 
 #include "imgui/imgui.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "Engine.h"
 
@@ -198,7 +198,7 @@ void HierarchyPanel::OnImGuiRender()
 			ImGui::EndPopup();
 		}
 
-		ImGui::TextUnformatted(ICON_FA_SEARCH);
+		ImGui::TextUnformatted(ICON_FA_MAGNIFYING_GLASS);
 		ImGui::SameLine();
 		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
 		ImGui::Tooltip("Filter (\"incl,-excl\")");
@@ -342,7 +342,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
-		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+		if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, HasSelection()))
 			Cut();
 		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
 			Copy();
@@ -350,7 +350,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 			Paste();
 		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
 			Duplicate();
-		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
+		if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, HasSelection()))
 		{
 			entityDeleted = true;
 		}

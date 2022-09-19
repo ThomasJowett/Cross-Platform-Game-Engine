@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
 
@@ -74,7 +74,7 @@ void ProjectsStartScreen::OnImGuiRender()
 			if (m_CanGoBack)
 			{
 				ImGui::SameLine(0.0f, (float)(popupSizeX - 185));
-				if (ImGui::Button(ICON_FA_LONG_ARROW_ALT_LEFT" Back"))
+				if (ImGui::Button(ICON_FA_ARROW_LEFT_LONG" Back"))
 				{
 					m_CreateProject = false;
 				}
@@ -82,7 +82,7 @@ void ProjectsStartScreen::OnImGuiRender()
 			else
 			{
 				ImGui::SameLine(0.0f, (float)(popupSizeX - 190));
-				if (ImGui::Button(ICON_FA_WINDOW_CLOSE" Cancel"))
+				if (ImGui::Button(ICON_FA_XMARK" Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
 					Application::Get().RemoveOverlay(this);

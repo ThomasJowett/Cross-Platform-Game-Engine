@@ -1,6 +1,6 @@
 #include "StaticMeshView.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
 #include "Engine.h"
 

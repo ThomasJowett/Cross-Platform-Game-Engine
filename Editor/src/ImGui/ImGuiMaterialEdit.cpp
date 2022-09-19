@@ -5,7 +5,6 @@
 
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
-#include "IconsFontAwesome5.h"
 #include "IconsFontAwesome6.h"
 #include "ImGuiFileEdit.h"
 
@@ -55,7 +54,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 	{
 		ImGui::SameLine();
 
-		if (ImGui::Button(ICON_FA_PEN_SQUARE"##LuaScript"))
+		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
 		{
 			ViewerManager::OpenViewer(material->GetFilepath());
 		}

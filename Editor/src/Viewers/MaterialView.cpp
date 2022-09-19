@@ -1,6 +1,6 @@
 #include "MaterialView.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "FileSystem/FileDialog.h"
 #include "ImGui/ImGuiTextureEdit.h"
 
@@ -20,7 +20,7 @@ void MaterialView::OnAttach()
 {
 	m_Material = AssetManager::GetMaterial(m_FilePath);
 
-	m_WindowName = ICON_FA_BACON + std::string(" " + m_FilePath.filename().string());
+	m_WindowName = ICON_FA_BOWLING_BALL + std::string(" " + m_FilePath.filename().string());
 }
 
 void MaterialView::OnImGuiRender()
@@ -41,7 +41,7 @@ void MaterialView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem(ICON_FA_SAVE" Save"))
+				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save"))
 					Save();
 				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As"))
 					SaveAs();

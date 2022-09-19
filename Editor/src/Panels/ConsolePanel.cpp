@@ -4,7 +4,7 @@
 #include "ImGui/ImGuiUtilites.h"
 #include "imgui/imgui.h"
 #include "Fonts/Fonts.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 bool ConsolePanel::s_DarkTheme = false;
 

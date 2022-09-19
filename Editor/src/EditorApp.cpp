@@ -19,3 +19,8 @@ Editor::Editor(const WindowProps& props)
 
 	Application::GetWindow().SetIcon(GetWorkingDirectory() / "resources" / "Icons" / "Logo.png");
 }
+
+void Editor::OnUpdate()
+{
+	RenderCommand::Clear();
+}

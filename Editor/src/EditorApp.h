@@ -6,6 +6,9 @@ class Editor : public Application
 public:
 	explicit Editor(const WindowProps& props);
 	~Editor() = default;
+
+protected:
+	virtual void OnUpdate();
 };
 
 /*Entry point*/

@@ -1,6 +1,6 @@
 #include "VisualScriptView.h"
 #include "MainDockSpace.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 VisualSriptView::VisualSriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("VisualScriptView"), m_Show(show), m_Filepath(filepath)
@@ -11,7 +11,7 @@ void VisualSriptView::OnAttach()
 {
 	m_LuaNodeEditor.SetFilepath(m_Filepath.string());
 
-	m_WindowName = ICON_FA_PROJECT_DIAGRAM + std::string(" " + m_Filepath.filename().string());
+	m_WindowName = ICON_FA_DIAGRAM_PROJECT + std::string(" " + m_Filepath.filename().string());
 }
 
 void VisualSriptView::OnDetach()
@@ -43,7 +43,7 @@ void VisualSriptView::OnImGuiRender()
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl + S"))
+				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save", "Ctrl + S"))
 					Save();
 				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl + Shift + S"))
 					SaveAs();
@@ -52,13 +52,13 @@ void VisualSriptView::OnImGuiRender()
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem(ICON_FA_UNDO" Undo", "Ctrl-Z", nullptr, m_LuaNodeEditor.CanUndo()))
+				if (ImGui::MenuItem(ICON_FA_ARROW_ROTATE_LEFT" Undo", "Ctrl-Z", nullptr, m_LuaNodeEditor.CanUndo()))
 					m_LuaNodeEditor.Undo();
-				if (ImGui::MenuItem(ICON_FA_REDO" Redo", "Ctrl-Y", nullptr, m_LuaNodeEditor.CanRedo()))
+				if (ImGui::MenuItem(ICON_FA_ARROW_ROTATE_RIGHT" Redo", "Ctrl-Y", nullptr, m_LuaNodeEditor.CanRedo()))
 					m_LuaNodeEditor.Redo();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl-X", nullptr, m_LuaNodeEditor.HasSelection()))
+				if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl-X", nullptr, m_LuaNodeEditor.HasSelection()))
 					m_LuaNodeEditor.Cut();
 				if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl-C", nullptr, m_LuaNodeEditor.HasSelection()))
 					m_LuaNodeEditor.Copy();
@@ -66,11 +66,11 @@ void VisualSriptView::OnImGuiRender()
 					m_LuaNodeEditor.Paste();
 				if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl-D", nullptr, m_LuaNodeEditor.HasSelection()))
 					m_LuaNodeEditor.Duplicate();
-				if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_LuaNodeEditor.HasSelection()))
+				if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, m_LuaNodeEditor.HasSelection()))
 					m_LuaNodeEditor.Delete();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER" Select all", "Ctrl-A", nullptr))
+				if (ImGui::MenuItem(ICON_FA_ARROW_POINTER" Select all", "Ctrl-A", nullptr))
 					m_LuaNodeEditor.SelectAll();
 				ImGui::EndMenu();
 			}
@@ -166,7 +166,7 @@ void VisualSriptView::OnImGuiRender()
 							"Colour\0"
 							"Object\0");
 						ImGui::TableSetColumnIndex(2);
-						std::string deletebuttonId = ICON_FA_TRASH_ALT"##" + it->first;
+						std::string deletebuttonId = ICON_FA_TRASH_CAN"##" + it->first;
 						if (ImGui::Button(deletebuttonId.c_str()))
 						{
 							it = m_Variables.erase(it);

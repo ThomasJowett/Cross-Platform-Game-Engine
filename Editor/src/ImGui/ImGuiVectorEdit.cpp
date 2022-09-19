@@ -36,7 +36,7 @@ bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 	}
 	
 	SameLine();
-	Text(label);
+	TextUnformatted(label);
 	EndGroup();
     return edited;
 }
@@ -84,6 +84,6 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 	}
 
 	SameLine();
-	Text(label);
+	TextUnformatted(label);
 	return edited;
 }

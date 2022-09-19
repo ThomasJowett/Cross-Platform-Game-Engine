@@ -10,7 +10,7 @@
 
 #include "Panels/ConsolePanel.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
@@ -30,7 +30,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(ICON_FA_COG" Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin(ICON_FA_GEAR" Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
 	{
 		if (ImGui::BeginMenuBar())
 		{

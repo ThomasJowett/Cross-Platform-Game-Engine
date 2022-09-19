@@ -256,6 +256,11 @@ project "SPIRV-Cross"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
 	files
 	{
 		"SPIRV-Cross/spirv.h",

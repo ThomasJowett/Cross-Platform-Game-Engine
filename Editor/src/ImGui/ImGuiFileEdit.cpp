@@ -1,5 +1,5 @@
 #include "ImGuiFileEdit.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "FileSystem/FileDialog.h"
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
@@ -80,7 +80,7 @@ IMGUI_API bool ImGui::FileSelect(const char* label, std::filesystem::path& filep
 	{
 		ImGui::SameLine();
 
-		if(ImGui::Button(ICON_FA_PEN_SQUARE"##editfile"))
+		if(ImGui::Button(ICON_FA_PEN_TO_SQUARE"##editfile"))
 		{
 			ViewerManager::OpenViewer(filepath);
 		}

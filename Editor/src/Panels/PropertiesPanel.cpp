@@ -1,6 +1,5 @@
 #include "PropertiesPanel.h"
 
-//#include "IconsFontAwesome5.h"
 #include "IconsFontAwesome6.h"
 #include "IconsMaterialDesign.h"
 #include "Fonts/IconsMaterialDesignIcons.h"
@@ -48,7 +47,7 @@ void PropertiesPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(400, 600), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(40, 40), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(ICON_FA_TOOLS" Properties", m_Show))
+	if (ImGui::Begin(ICON_FA_SCREWDRIVER_WRENCH" Properties", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -222,7 +221,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				ImGui::SameLine();
 
-				if (ImGui::Button(ICON_FA_PEN_SQUARE"##AnimatedSprite"))
+				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##AnimatedSprite"))
 				{
 					ViewerManager::OpenViewer(sprite.tileset->GetFilepath());
 				}
@@ -544,7 +543,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------
-	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
+	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
 		{
 			if (ImGui::Combo("Body Type", (int*)&rigidBody2D.type,
 				"Static\0"
@@ -617,7 +616,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				size_t i = 0;
 				while (i < polygonCollider2D.vertices.size())
 				{
-					std::string deleteStr = ICON_FA_TRASH_ALT "##" + std::to_string(i);
+					std::string deleteStr = ICON_FA_TRASH_CAN "##" + std::to_string(i);
 					if (ImGui::Button(deleteStr.c_str()))
 					{
 						polygonCollider2D.vertices.erase(polygonCollider2D.vertices.begin() + i);
@@ -707,7 +706,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::EndCombo();
 			}
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_PEN_SQUARE"##LuaScript"))
+			if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
 			{
 				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
 			}
@@ -734,7 +733,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity);
 		AddComponentMenuItem<CameraComponent>(ICON_FA_VIDEO" Camera", entity);
 		AddComponentMenuItem<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity);
-		AddComponentMenuItem<RigidBody2DComponent>(ICON_FA_BASEBALL_BALL" Rigid Body 2D", entity);
+		AddComponentMenuItem<RigidBody2DComponent>(ICON_FA_BASEBALL" Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity);
 		AddComponentMenuItem<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity);

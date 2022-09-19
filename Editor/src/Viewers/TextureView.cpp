@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 	:Layer("TextureView"), m_Show(show), m_FilePath(filepath)

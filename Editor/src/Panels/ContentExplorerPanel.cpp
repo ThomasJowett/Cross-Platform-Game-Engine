@@ -10,7 +10,6 @@
 
 #include "MainDockSpace.h"
 
-#include "IconsFontAwesome5.h"
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
@@ -469,7 +468,7 @@ void ContentExplorerPanel::RightClickMenu()
 		}
 	}
 	ImGui::Separator();
-	if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
 		Cut();
 	if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 		Copy();
@@ -477,7 +476,7 @@ void ContentExplorerPanel::RightClickMenu()
 		Paste();
 	if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 		Duplicate();
-	if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_NumberSelected > 0))
+	if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, m_NumberSelected > 0))
 		Delete();
 
 	ImGui::PopStyleColor();
@@ -546,7 +545,7 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 
 		ImGui::Separator();
 
-		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, m_NumberSelected > 0))
 			Cut();
 		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 			Copy();
@@ -554,7 +553,7 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 			Paste();
 		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 			Duplicate();
-		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_NumberSelected > 0))
+		if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, m_NumberSelected > 0))
 			Delete();
 
 		ImGui::EndPopup();
@@ -577,6 +576,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 {
 	switch (ViewerManager::GetFileType(assetPath))
 	{
+	case FileType::TEXT:
+		return ICON_FA_FILE_LINES;
 	case FileType::IMAGE:
 		return ICON_FA_FILE_IMAGE;
 	case FileType::MESH:
@@ -585,14 +586,16 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		return ICON_FA_IMAGE;
 	case FileType::SCRIPT:
 		return ICON_FA_FILE_CODE;
-	case FileType::TEXT:
-		return ICON_FA_FILE_ALT;
-	case FileType::AUDIO:
-		return ICON_FA_FILE_AUDIO;
-	case FileType::TILESET:
-		return ICON_FA_TH;
 	case FileType::VISUALSCRIPT:
 		return ICON_FA_DIAGRAM_PROJECT;
+	case FileType::AUDIO:
+		return ICON_FA_FILE_AUDIO;
+	case FileType::MATERIAL:
+		return ICON_FA_BOWLING_BALL;
+	case FileType::TILESET:
+		return ICON_FA_GRIP;
+	case FileType::PHYSICSMATERIAL:
+		return ICON_FA_VOLLEYBALL;
 	}
 	return ICON_FA_FILE;
 }
@@ -822,12 +825,12 @@ void ContentExplorerPanel::OnImGuiRender()
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
 		if (ImGui::Combo("##Sorting Mode", (int*)&m_SortingMode,
-			ICON_FA_SORT_ALPHA_DOWN "\tAlphabetical\0"
-			ICON_FA_SORT_ALPHA_DOWN_ALT "\tAlphabetical Reverse\0"
-			ICON_FA_SORT_NUMERIC_DOWN_ALT "\tLast Modified\0"
-			ICON_FA_SORT_NUMERIC_DOWN "\tLast Modified Reverse\0"
-			ICON_FA_SORT_AMOUNT_DOWN_ALT "\tSize\0"
-			ICON_FA_SORT_AMOUNT_DOWN "\tSize Reverse\0"
+			ICON_FA_ARROW_DOWN_A_Z "\tAlphabetical\0"
+			ICON_FA_ARROW_DOWN_Z_A "\tAlphabetical Reverse\0"
+			ICON_FA_ARROW_DOWN_1_9 "\tLast Modified\0"
+			ICON_FA_ARROW_DOWN_9_1 "\tLast Modified Reverse\0"
+			ICON_FA_ARROW_DOWN_WIDE_SHORT "\tSize\0"
+			ICON_FA_ARROW_DOWN_SHORT_WIDE "\tSize Reverse\0"
 			ICON_FA_SORT_DOWN "\tType\0"
 			ICON_FA_SORT_UP "\tType Reverse"))
 		{
@@ -838,8 +841,8 @@ void ContentExplorerPanel::OnImGuiRender()
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		ImGui::SameLine();
 		if (ImGui::Combo("##Zoom Level", (int*)&m_ZoomLevel,
-			ICON_FA_TH_LIST "\tList\0"
-			ICON_FA_TH "\tThumbnails\0"
+			ICON_FA_BARS "\tList\0"
+			ICON_FA_GRIP "\tThumbnails\0"
 			ICON_FA_LIST "\tDetails\0"))
 		{
 			m_ForceRescan = true;
@@ -1003,19 +1006,21 @@ void ContentExplorerPanel::OnImGuiRender()
 		ImGui::SetNextItemWidth(ImGui::GetFontSize() * 3.0f);
 		if (ImGui::Combo("##Type Filter", (int*)&m_TypeFilter,
 			ICON_FA_FILTER "\tNone\0"
-			ICON_FA_FILE_ALT "\tText\0"
+			ICON_FA_FILE_LINES "\tText\0"
 			ICON_FA_FILE_IMAGE "\tImage\0"
 			ICON_FA_SHAPES "\tMesh\0"
 			ICON_FA_IMAGE "\tScene\0"
 			ICON_FA_FILE_CODE "\tScript\0"
+			ICON_FA_DIAGRAM_PROJECT "\tVisual Script\0"
 			ICON_FA_FILE_AUDIO "\tAudio\0"
-			ICON_FA_BACON "\tAudio\0"
-			ICON_FA_TH "\tTileset\0"))
+			ICON_FA_BOWLING_BALL "\tMaterial\0"
+			ICON_FA_GRIP "\tTileset\0"
+			ICON_FA_VOLLEYBALL "\tPhysics Material\0"))
 		{
 		}
 
 		ImGui::SameLine();
-		ImGui::TextUnformatted(ICON_FA_SEARCH);
+		ImGui::TextUnformatted(ICON_FA_MAGNIFYING_GLASS);
 		ImGui::SameLine();
 		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
 		ImGui::Tooltip("Filter (\"incl,-excl\")");
@@ -1388,7 +1393,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Dirs[i]));
 
 							char buff[20];
-							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
+							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
 
 							ImGui::Text("%s", buff);
 						}

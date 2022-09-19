@@ -3,7 +3,7 @@
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
 #include "imgui/imgui.h"
 
@@ -43,7 +43,7 @@ private:
 				{
 					if (ImGui::BeginPopupContextItem())
 					{
-						if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete"))
+						if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete"))
 						{
 							deleteComponent = true;
 						}

@@ -81,10 +81,10 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 		{
 			const char* name = pAnimation->Attribute("Name");
 
-			double holdTime = 0.0f;
+			float holdTime = 0.0f;
 			uint32_t startFrame, frameCount;
 
-			pAnimation->QueryDoubleAttribute("HoldTime", &holdTime);
+			pAnimation->QueryFloatAttribute("HoldTime", &holdTime);
 			pAnimation->QueryUnsignedAttribute("StartFrame", &startFrame);
 			pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
 

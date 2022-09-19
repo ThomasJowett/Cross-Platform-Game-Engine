@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cereal/cereal.hpp"
+#include "cereal/access.hpp"
 
 #include "math/Vector2f.h"
 #include "Physics/PhysicsMaterial.h"

@@ -24,7 +24,7 @@ void RenderCommand::CreateRendererAPI()
 	else if(api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
-		s_RendererAPI = CreateScope <DirectX11RendererAPI>();
+		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
 		return;
 	}
 #endif // __WINDOWS__

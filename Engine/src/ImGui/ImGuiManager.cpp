@@ -45,6 +45,8 @@ void ImGuiManager::Init()
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
+	io.ConfigWindowsMoveFromTitleBarOnly = true;
+
 	m_IniFile = std::filesystem::path(Application::GetWorkingDirectory() / "imgui.ini").string();
 
 	io.IniFilename = m_IniFile.c_str();

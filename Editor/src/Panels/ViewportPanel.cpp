@@ -2,7 +2,7 @@
 
 #include "MainDockSpace.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "Fonts/IconsMaterialDesignIcons.h"
 #include "IconsMaterialDesign.h"
 #include "Fonts/Fonts.h"
@@ -432,7 +432,7 @@ void ViewportPanel::OnImGuiRender()
 			if (!selected)
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-			if (ImGui::Button(ICON_FA_MOUSE_POINTER))
+			if (ImGui::Button(ICON_FA_ARROW_POINTER))
 				m_Operation = OperationMode::Select;
 
 			if (!selected)
@@ -444,7 +444,7 @@ void ViewportPanel::OnImGuiRender()
 			if (!selected)
 				ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-			if (ImGui::Button(ICON_FA_ARROWS_ALT))
+			if (ImGui::Button(ICON_FA_ARROWS_UP_DOWN_LEFT_RIGHT))
 				m_Operation = OperationMode::Move;
 
 			if (!selected)
@@ -495,7 +495,7 @@ void ViewportPanel::OnImGuiRender()
 			}
 			else
 			{
-				if (ImGui::Button(ICON_FA_GLOBE_EUROPE))
+				if (ImGui::Button(ICON_FA_EARTH_EUROPE))
 					m_Translation = TranslationMode::Local;
 			}
 			ImGui::Separator();
@@ -584,7 +584,7 @@ void ViewportPanel::OnImGuiRender()
 			if (ImGui::BeginPopupContextItem("Viewport Right Click"))
 			{
 				m_RightClickMenuOpen = true;
-				if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+				if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, HasSelection()))
 					Cut();
 				if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
 					Copy();
@@ -592,7 +592,7 @@ void ViewportPanel::OnImGuiRender()
 					Paste();
 				if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
 					Duplicate();
-				if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
+				if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, HasSelection()))
 					Delete();
 				ImGui::EndPopup();
 			}
