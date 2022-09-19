@@ -5,8 +5,10 @@
 
 struct PointLightComponent
 {
-	Colour colour;
+	Colour colour = Colours::WHITE;
 	bool castsShadows = true;
+	float range = 10.0f;
+	float attenuation = 1.0f;
 	PointLightComponent() = default;
 
 private:
@@ -14,6 +16,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(colour, castsShadows);
+		archive(colour, castsShadows, range, attenuation);
 	}
 };

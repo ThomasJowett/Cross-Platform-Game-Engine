@@ -18,6 +18,8 @@
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
 
+#define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
+
 PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor)
 {
@@ -86,10 +88,7 @@ void PropertiesPanel::OnImGuiRender()
 		}
 		else if (SceneManager::IsSceneLoaded())
 		{
-			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x));
 		}
 	}
 	ImGui::End();
@@ -122,6 +121,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					entity.GetComponent<RigidBody2DComponent>().SetTransform(transform.position, transform.rotation.z);
 				}
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 		}, false);
 
@@ -131,10 +131,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
 			float* tilingFactor = &sprite.tilingFactor;
 
-			if (ImGui::ColorEdit4("Tint", tint[0]))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::ColorEdit4("Tint", tint[0]));
 
 			if (sprite.texture)
 			{
@@ -145,21 +142,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth() / 16.0f;
 						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight() / 16.0f;
 					}
+					SceneManager::CurrentScene()->MakeDirty();
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			}
 
-			if (ImGui::Texture2DEdit("Texture", sprite.texture))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::Texture2DEdit("Texture", sprite.texture));
 
 			if (sprite.texture)
 			{
-				if (ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f))
-				{
-					SceneManager::CurrentScene()->MakeDirty();
-				}
+				Dirty(ImGui::DragFloat("Tiling Factor", tilingFactor, 0.1f, 0.0f, 100.0f));
+
 				if (ImGui::IsItemHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Right))
 				{
 					*tilingFactor = 1.0f;
@@ -173,10 +166,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
 
-			if (ImGui::ColorEdit4("Tint", tint[0]))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::ColorEdit4("Tint", tint[0]));
 
 			std::string tilesetName;
 			if (sprite.tileset)
@@ -187,6 +177,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					{
 						entity.GetTransform().scale.x = (float)sprite.tileset->GetSubTexture()->GetSpriteWidth() / 16.0f;
 						entity.GetTransform().scale.y = (float)sprite.tileset->GetSubTexture()->GetSpriteHeight() / 16.0f;
+						SceneManager::CurrentScene()->MakeDirty();
 					}
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
@@ -249,9 +240,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
 		{
 			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
-			ImGui::ColorEdit4("Colour", colour[0]);
-			ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f);
-			ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f);
+			Dirty(ImGui::ColorEdit4("Colour", colour[0]));
+			Dirty(ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f));
+			Dirty(ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f));
 		});
 
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
@@ -279,8 +270,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					SceneManager::CurrentScene()->MakeDirty();
 				}
 			}
-			if (ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial));
 		});
 
 	// Camera------------------------------------------------------------------------------------------------------------
@@ -288,8 +278,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			auto& camera = cameraComp.Camera;
 
-			ImGui::Checkbox("Primary", &cameraComp.Primary);
-			ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio);
+			Dirty(ImGui::Checkbox("Primary", &cameraComp.Primary));
+			Dirty(ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio));
 
 			SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
 			if (ImGui::Combo("Projection", (int*)&projectionType,
@@ -545,66 +535,40 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<RigidBody2DComponent>(ICON_FA_BASEBALL" Rigid Body 2D", entity, [](auto& rigidBody2D)
 		{
-			if (ImGui::Combo("Body Type", (int*)&rigidBody2D.type,
+			Dirty(ImGui::Combo("Body Type", (int*)&rigidBody2D.type,
 				"Static\0"
 				"Kinematic\0"
-				"Dynamic\0"))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+				"Dynamic\0"));
 
 			if (rigidBody2D.type == RigidBody2DComponent::BodyType::DYNAMIC)
 			{
-				if(ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation))
-					SceneManager::CurrentScene()->MakeDirty();
-				if(ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f))
-					SceneManager::CurrentScene()->MakeDirty();
-				if(ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f))
-					SceneManager::CurrentScene()->MakeDirty();
-				if(ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f))
-					SceneManager::CurrentScene()->MakeDirty();
+				Dirty(ImGui::Checkbox("Fixed Rotation", &rigidBody2D.fixedRotation));
+				Dirty(ImGui::DragFloat("Gravity Scale", &rigidBody2D.gravityScale, 0.01f, -1.0f, 2.0f));
+				Dirty(ImGui::DragFloat("Angular Damping", &rigidBody2D.angularDamping, 0.01f, 0.0f, 1.0f));
+				Dirty(ImGui::DragFloat("Linear Damping", &rigidBody2D.linearDamping, 0.01f, 0.0f, 1.0f));
 			}
 		});
 
 	// Box Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity, [=](auto& boxCollider2D)
 		{
-			if (ImGui::Vector("Offset", boxCollider2D.offset))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			if (ImGui::Vector("Size", boxCollider2D.size))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			if(ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::Vector("Offset", boxCollider2D.offset));
+			Dirty(ImGui::Vector("Size", boxCollider2D.size));
+			Dirty(ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial));
 		});
 
 	// Circle Collider 2D--------------------------------------------------------------------------------------------------------------
 	DrawComponent<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity, [=](auto& circleCollider2D)
 		{
-			if (ImGui::Vector("Offset", circleCollider2D.offset))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-
-			if (ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
-
-			if(ImGui::PhysMaterialEdit("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::Vector("Offset", circleCollider2D.offset));
+			Dirty(ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f));
+			Dirty(ImGui::PhysMaterialEdit("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial));
 		});
 
 	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
 	DrawComponent<PolygonCollider2DComponent>(ICON_FA_DRAW_POLYGON" Polygon Collider 2D", entity, [=](auto& polygonCollider2D)
 		{
-			if (ImGui::Vector("Offset", polygonCollider2D.offset))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::Vector("Offset", polygonCollider2D.offset));
 
 			if (ImGui::TreeNode("Vertices"))
 			{
@@ -625,18 +589,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 					ImGui::SameLine();
 					std::string labelStr = std::to_string(i);
-					if (ImGui::Vector(labelStr.c_str(), polygonCollider2D.vertices[i]))
-					{
-						SceneManager::CurrentScene()->MakeDirty();
-					}
+					Dirty(ImGui::Vector(labelStr.c_str(), polygonCollider2D.vertices[i]));
 
 					i++;
 				}
 				ImGui::TreePop();
 			}
 
-			if(ImGui::PhysMaterialEdit("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::PhysMaterialEdit("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial));
 
 			if (polygonCollider2D.vertices.size() < 3)
 			{
@@ -648,26 +608,27 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Capsule Collider ---------------------------------------------------------------------------------------------------------------
 	DrawComponent<CapsuleCollider2DComponent>(ICON_FA_CAPSULES" Capsule Collider 2D", entity, [=](auto& capsuleCollider2D)
 		{
-			if (ImGui::Vector("Offset", capsuleCollider2D.offset))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+			Dirty(ImGui::Vector("Offset", capsuleCollider2D.offset));
 
-			if (ImGui::DragFloat("Radius", &capsuleCollider2D.radius, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::DragFloat("Radius", &capsuleCollider2D.radius, 0.01f, 0.0f, 10.0f));
 
-			if (ImGui::DragFloat("Height", &capsuleCollider2D.height, 0.01f, 0.0f, 10.0f))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::DragFloat("Height", &capsuleCollider2D.height, 0.01f, 0.0f, 10.0f));
 
-			if (ImGui::Combo("Direction", (int*)&capsuleCollider2D.direction,
+			Dirty(ImGui::Combo("Direction", (int*)&capsuleCollider2D.direction,
 				"Vertical\0"
-				"Horizontal\0"))
-			{
-				SceneManager::CurrentScene()->MakeDirty();
-			}
+				"Horizontal\0"));
 
-			if(ImGui::PhysMaterialEdit("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial))
-				SceneManager::CurrentScene()->MakeDirty();
+			Dirty(ImGui::PhysMaterialEdit("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial));
+		});
+
+	// Point Light --------------------------------------------------------------------------------------------------------------------
+	DrawComponent<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity, [](auto& pointLight)
+		{
+			float* colour[4] = { &pointLight.colour.r, &pointLight.colour.g, &pointLight.colour.b, &pointLight.colour.a };
+			Dirty(ImGui::ColorEdit4("Colour", colour[0]));
+			Dirty(ImGui::Checkbox("Cast Shadows", &pointLight.castsShadows));
+			Dirty(ImGui::DragFloat("Range", &pointLight.range, 0.1f, 0.0f, 1000.0f, "%.2f"));
+			Dirty(ImGui::DragFloat("Attenuation", &pointLight.attenuation, 0.001f, 0.0f, 1.0f));
 		});
 
 	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
@@ -741,6 +702,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity);
 		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity);
 		AddComponentMenuItem<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity);
+		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
 
 		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));
 

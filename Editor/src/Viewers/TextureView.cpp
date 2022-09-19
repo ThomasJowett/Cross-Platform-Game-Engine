@@ -11,7 +11,7 @@ TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 }
 void TextureView::OnAttach()
 {
-	m_Texture = Texture2D::Create(m_FilePath.string());
+	m_Texture = AssetManager::GetTexture(m_FilePath.string());
 
 	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string(m_Texture->GetRendererID());
 }

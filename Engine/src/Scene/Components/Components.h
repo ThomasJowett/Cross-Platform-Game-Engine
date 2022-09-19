@@ -22,6 +22,7 @@
 #include "BillboardComponent.h"
 #include "CanvasComponent.h"
 #include "TextComponent.h"
+#include "PointLightComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -46,6 +47,7 @@ BehaviourTreeComponent,		\
 StateMachineComponent,		\
 BillboardComponent,			\
 CanvasComponent,			\
-TextComponent				\
+TextComponent,				\
+PointLightComponent			\
 
 

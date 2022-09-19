@@ -136,7 +136,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				m_Framebuffer->Bind();
 				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
 				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen 
+				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen
 					&& m_RelativeMousePosition == m_MousePositionBeginClick)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 				m_Framebuffer->UnBind();
@@ -156,7 +156,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		if (selectedEntity && selectedEntity.HasComponent<CameraComponent>())
 		{
 			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
-		
+
 			CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
 			Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
@@ -308,9 +308,9 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.Camera.GetProjectionMatrix());
-				Vector3f frontTopLeft = Vector3f(-1.0f, 1.0f, -1.0f) * projection*view;
-				Vector3f frontTopRight = Vector3f(1.0f, 1.0f, -1.0f) * projection* view;
-				Vector3f frontBottomLeft = Vector3f(-1.0f, -1.0f, -1.0f) * projection* view;
+				Vector3f frontTopLeft = Vector3f(-1.0f, 1.0f, -1.0f) * projection * view;
+				Vector3f frontTopRight = Vector3f(1.0f, 1.0f, -1.0f) * projection * view;
+				Vector3f frontBottomLeft = Vector3f(-1.0f, -1.0f, -1.0f) * projection * view;
 				Vector3f frontBottomRight = Vector3f(1.0f, -1.0f, -1.0f) * projection * view;
 
 				Vector3f backTopLeft = Vector3f(-1.0f, 1.0f, 1.0f) * projection * view;
@@ -332,6 +332,20 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				Renderer2D::DrawHairLine(frontTopRight, backTopRight, Colours::SILVER, (int)entity);
 				Renderer2D::DrawHairLine(frontBottomRight, backBottomRight, Colours::SILVER, (int)entity);
 				Renderer2D::DrawHairLine(frontBottomLeft, backBottomLeft, Colours::SILVER, (int)entity);
+			});
+
+		SceneManager::CurrentScene()->GetRegistry().view<TransformComponent, PointLightComponent>().each(
+			[](const auto entity, auto& transformComp, auto& pointLightComp)
+			{
+				Matrix4x4 scale = Matrix4x4::Scale(Vector3f(pointLightComp.range, pointLightComp.range, pointLightComp.range));
+				Renderer2D::DrawHairLineCircle(Matrix4x4::Translate(transformComp.GetWorldPosition())
+					* scale, 60, pointLightComp.colour, (int)entity);
+
+				Renderer2D::DrawHairLineCircle(Matrix4x4::Translate(transformComp.GetWorldPosition())
+					* Matrix4x4::RotateX((float)PIDIV2) * scale, 60, pointLightComp.colour, (int)entity);
+
+				Renderer2D::DrawHairLineCircle(Matrix4x4::Translate(transformComp.GetWorldPosition())
+					* Matrix4x4::RotateY((float)PIDIV2) * scale, 60, pointLightComp.colour, (int)entity);
 			});
 
 		Renderer2D::FlushHairLines();
@@ -856,7 +870,7 @@ void ViewportPanel::OnImGuiRender()
 			ImGui::Text("%.1f", io.Framerate);
 		}
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f)
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f)
 		{
 			ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].x * 255.0f)) |
 				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].y * 255.0f) << 8) |

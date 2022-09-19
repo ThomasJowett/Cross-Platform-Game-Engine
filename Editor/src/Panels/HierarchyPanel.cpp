@@ -22,7 +22,7 @@ HierarchyPanel::~HierarchyPanel()
 void HierarchyPanel::OnAttach()
 {
 	m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
-	m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+	m_StandardMaterial->AddTexture(AssetManager::GetTexture(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 }
 
 void HierarchyPanel::OnDetach()
@@ -170,9 +170,11 @@ void HierarchyPanel::OnImGuiRender()
 			}
 			if (ImGui::BeginMenu("Light"))
 			{
-				if (ImGui::MenuItem("Point Light", "", nullptr, false))
+				if (ImGui::MenuItem("Point Light"))
 				{
-					//TODO: Create point light
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Point Light");
+					entity.AddComponent<PointLightComponent>();
+					m_SelectedEntity = entity;
 				}
 				if (ImGui::MenuItem("Directional Light", "", nullptr, false))
 				{

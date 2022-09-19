@@ -1,11 +1,11 @@
 #pragma once
 
 #include "cereal/access.hpp"
-#include "Renderer/SubTexture2D.h"
+
 #include "Renderer/Tileset.h"
 #include "Core/Colour.h"
-#include "Animation/Animator.h"
 #include "Scene/AssetManager.h"
+#include "Core/Application.h"
 
 struct AnimatedSpriteComponent
 {

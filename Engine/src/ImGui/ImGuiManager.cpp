@@ -2,7 +2,7 @@
 #include "ImGuiManager.h"
 
 #include "Core/Application.h"
-
+#include "Renderer/Texture.h"
 #include "Renderer/RendererAPI.h"
 
 #include "imgui.h"
@@ -19,12 +19,6 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // __WINDOWS__
 
-#include "Renderer/Texture.h"
-
-//TEMPORARY
-//TODO: remove dependencies on GLAD and GLFW
-#include "glad/glad.h"
-#include "GLFW/glfw3.h"
 
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)

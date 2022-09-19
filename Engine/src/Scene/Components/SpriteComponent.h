@@ -7,6 +7,7 @@
 
 #include "Renderer/Texture.h"
 #include "Renderer/Material.h"
+#include "Scene/AssetManager.h"
 
 struct SpriteComponent
 {
@@ -41,7 +42,7 @@ private:
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())
 		{
-			texture = Texture2D::Create(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			texture = AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 			int filterMethod, wrapMethod;
 			archive(cereal::make_nvp("FilterMethod", filterMethod));
 			archive(cereal::make_nvp("WrapMethod", wrapMethod));

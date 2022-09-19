@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SerializationUtils.h"
 #include "FileUtils.h"
+#include "Scene/AssetManager.h"
 
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
 {
@@ -95,7 +96,7 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Textur
 	{
 		std::filesystem::path filepath;
 		Decode(pElement, filepath);
-		texture = Texture2D::Create(filepath);
+		texture = AssetManager::GetTexture(filepath);
 		if (texture)
 		{
 			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Linear);

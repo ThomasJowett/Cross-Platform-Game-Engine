@@ -4,6 +4,11 @@
 AssetManager* AssetManager::s_Instance = nullptr;
 std::mutex AssetManager::s_Mutex = std::mutex();
 
+Ref<Texture2D> AssetManager::GetTexture(const std::filesystem::path& filepath)
+{
+	return Get().GetTextureImpl(filepath);
+}
+
 Ref<Tileset> AssetManager::GetTileset(const std::filesystem::path& filepath)
 {
 	std::lock_guard lock(s_Mutex);
@@ -35,6 +40,11 @@ AssetManager& AssetManager::Get()
 		s_Instance = new AssetManager();
 	}
 	return *s_Instance;
+}
+
+Ref<Texture2D> AssetManager::GetTextureImpl(const std::filesystem::path& filepath)
+{
+	return m_Textures.Load(filepath);
 }
 
 Ref<Tileset> AssetManager::GetTilesetImpl(const std::filesystem::path& filepath)

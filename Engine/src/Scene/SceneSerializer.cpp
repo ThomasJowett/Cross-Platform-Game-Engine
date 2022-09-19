@@ -411,6 +411,19 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pLuaScriptElement, component.absoluteFilepath);
 	}
 
+	if (entity.HasComponent<PointLightComponent>())
+	{
+		PointLightComponent const& component = entity.GetComponent<PointLightComponent>();
+
+		tinyxml2::XMLElement* pPointLightElement = pElement->InsertNewChildElement("PointLight");
+
+		pPointLightElement->SetAttribute("Range", component.range);
+		pPointLightElement->SetAttribute("Attenuation", component.attenuation);
+		pPointLightElement->SetAttribute("CastShadows", component.castsShadows);
+
+		SerializationUtils::Encode(pPointLightElement->InsertNewChildElement("Colour"), component.colour);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
 		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
@@ -842,6 +855,18 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
 
 		SerializationUtils::Decode(pLuaScriptComponentElement, component.absoluteFilepath);
+	}
+
+	// Point Light --------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pPointLightComponentElement = pEntityElement->FirstChildElement("PointLight"))
+	{
+		PointLightComponent& component = entity.AddComponent<PointLightComponent>();
+
+		pPointLightComponentElement->QueryFloatAttribute("Range", &component.range);
+		pPointLightComponentElement->QueryFloatAttribute("Attenuation", &component.attenuation);
+		pPointLightComponentElement->QueryBoolAttribute("CastShadows", &component.castsShadows);
+
+		SerializationUtils::Decode(pPointLightComponentElement->FirstChildElement("Colour"), component.colour);
 	}
 
 	// Hierarachy ---------------------------------------------------------------------------------------------------

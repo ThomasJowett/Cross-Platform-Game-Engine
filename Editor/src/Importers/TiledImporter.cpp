@@ -62,7 +62,7 @@ Entity LoadImageLayer(tinyxml2::XMLElement* pImageLayer)
 		std::filesystem::path texturePath = s_Filepath;
 		texturePath.remove_filename();
 		texturePath = texturePath / textureSource;
-		spriteComp.texture = Texture2D::Create(texturePath);
+		spriteComp.texture = AssetManager::GetTexture(texturePath);
 	}
 
 	if (tintColour)
@@ -250,7 +250,7 @@ void LoadTileset(const std::filesystem::path& filepath, const std::filesystem::p
 			std::filesystem::path texturePath = filepath;
 			texturePath.remove_filename();
 			texturePath = texturePath / textureSource;
-			tileset->SetSubTexture(CreateRef<SubTexture2D>(Texture2D::Create(texturePath), tileWidth, tileHeight));
+			tileset->SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(texturePath), tileWidth, tileHeight));
 		}
 
 		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("tile");
