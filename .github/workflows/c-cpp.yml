@@ -49,4 +49,4 @@ jobs:
     - name: Build x64 ${{matrix.configuration}}
       shell: cmd
       run: |
-        "%MSBUILD_PATH%\MSBuild.exe" /p:Platform=x64 /p:Configuration=${{ matrix.config}} Cross Platform Game Engine.sln
+        "%MSBUILD_PATH%\MSBuild.exe" /p:Platform=x64 /p:Configuration=${{ matrix.config}} "Cross Platform Game Engine.sln"
