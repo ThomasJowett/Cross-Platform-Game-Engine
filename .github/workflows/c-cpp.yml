@@ -31,13 +31,13 @@ jobs:
         ./Progen_gmake.sh
         make config=${{ matrix.config }}
   Windows:
-    runs-on: windows-2022
+    runs-on: self-hosted
     strategy:
       matrix:
         config: [Debug, Distribution, Release]
         platform: [x64]
     env:
-      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual studio\2019\Enterprise\MSBuild\Current\Bin\
+      MSBUILD_PATH: C:\Program Files\Microsoft Visual studio\2022\Professional\MSBuild\Current\Bin\
     steps:
     - uses: actions/checkout@v3
       with:
