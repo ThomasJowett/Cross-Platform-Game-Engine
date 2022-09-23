@@ -1,0 +1,52 @@
+name: C/C++ CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  Linux:
+
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        config: [debug, distribution, release]
+        platform: [x64]
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+          fetch-depth: 1
+          submodules: recursive
+    - name: configure
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev g++ make
+        ./configure
+    - name: make
+      run: |
+        ./Progen_gmake.sh
+        make config=${{ matrix.config }}
+  Windows:
+    runs-on: windows-2022
+    strategy:
+      matrix:
+        config: [Debug, Distribution, Release]
+        platform: [x64]
+    env:
+      MSBUILD_PATH: C:\Program Files (x86)\Microsoft Visual studio\2022\Enterprise\MSBuild\Current\Bin\
+    steps:
+    - uses: actions/checkout@v3
+      with:
+          fetch-depth: 1
+          submodules: recursive
+    - name: Generate Solution
+      run: |
+        ./Progen_vs2022.bat
+    - name: Build x64 ${{matrix.configuration}}
+      shell: cmd
+      run: |
+        "%MSBUILD_PATH%\MSBuild.exe" /p:Platform=x64 /p:Configuration=${{ matrix.config}} Cross Platform Game Engine.sln
