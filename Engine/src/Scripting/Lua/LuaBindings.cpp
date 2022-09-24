@@ -13,6 +13,7 @@
 #include "Scene/Components/Components.h"
 #include "Utilities/StringUtils.h"
 #include "Renderer/Renderer2D.h"
+#include "Physics/HitResult2D.h"
 
 template<typename Component>
 void RegisterComponent(sol::state& state)
@@ -111,6 +112,15 @@ void BindScene(sol::state& state)
 	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
 	scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
 	scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
+
+	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
+	hitResult_type["Hit"] = &HitResult2D::hit;
+	hitResult_type["Entity"] = &HitResult2D::entity;
+	hitResult_type["Point"] = &HitResult2D::hitPoint;
+	hitResult_type["Normal"] = &HitResult2D::hitNormal;
+
+	scene_type.set_function("RayCast2D", &Scene::RayCast2D);
+	scene_type.set_function("MultiRayCast2D", &Scene::MultiRayCast2D);
 }
 
 //--------------------------------------------------------------------------------------------------------------

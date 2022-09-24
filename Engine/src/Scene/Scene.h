@@ -15,6 +15,7 @@ class b2World;
 class b2Body;
 class b2Draw;
 class Matrix4x4;
+struct HitResult2D;
 
 class Scene
 {
@@ -69,6 +70,10 @@ public:
 
 	Vector2f& GetGravity() { return m_Gravity; }
 	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; }
+
+	HitResult2D RayCast2D(Vector2f begin, Vector2f end);
+
+	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
 
 private:
 	entt::registry m_Registry;

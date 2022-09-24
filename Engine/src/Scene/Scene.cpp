@@ -22,6 +22,7 @@
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
+#include "Physics/HitResult2D.h"
 
 class ContactListener : public b2ContactListener
 {
@@ -653,6 +654,30 @@ void Scene::SetShowDebug(bool show)
 		if (m_Box2DDraw) delete m_Box2DDraw;
 		m_Box2DDraw = nullptr;
 	}
+}
+
+HitResult2D Scene::RayCast2D(Vector2f begin, Vector2f end)
+{
+	HitResult2D callback;
+	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
+
+	if (callback.hit)
+	{
+		Renderer2D::DrawHairLine(Vector3f(begin.x, begin.y, 0.0f), Vector3f(callback.hitPoint.x, callback.hitPoint.y, 0.0f), Colours::LIME_GREEN);
+	}
+	else
+	{
+		Renderer2D::DrawHairLine(Vector3f(begin.x, begin.y, 0.0f), Vector3f(end.x, end.y, 0.0f), Colours::RED);
+	}
+	return callback;
+}
+
+std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
+{
+	RayCastMultipleCallback callback;
+	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
+
+	return callback.GetHitResults();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
