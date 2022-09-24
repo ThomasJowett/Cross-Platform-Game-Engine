@@ -18,6 +18,9 @@
 extern LRESULT ImGui_ImplWin32_WndProcHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	if (ImGui_ImplWin32_WndProcHandler(hWnd, message, wParam, lParam))
+		return true;
+
 	WindowData* data = (WindowData*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	if (data == nullptr)
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -37,8 +40,8 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		break;
 	case WM_SIZE:
 	{
-		int width = LOWORD(lParam);
-		int height = HIWORD(lParam);
+		unsigned int width = LOWORD(lParam);
+		unsigned int height = HIWORD(lParam);
 
 		data->width = width;
 		data->height = height;
@@ -46,30 +49,31 @@ LRESULT CALLBACK Win32Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		WindowResizeEvent event(width, height);
 		data->eventCallback(event);
 
-		switch (wParam)
+		Application::GetWindow().GetContext()->ResizeBuffers(width, height);
+
+		if ((data->maximized && wParam != SIZE_MAXIMIZED) || (!data->maximized && wParam != SIZE_RESTORED))
 		{
-		case SIZE_MAXIMIZED:
-		{
-			bool maximize = true;
+			switch (wParam)
+			{
+			case SIZE_MAXIMIZED:
+			{
+				data->maximized = true;
 
-			data->maximized = maximize;
+				WindowMaximizedEvent event(data->maximized);
+				data->eventCallback(event);
+				break;
+			}
+			case SIZE_RESTORED:
+			{
+				data->maximized = false;
 
-			WindowMaximizedEvent event(maximize);
-			data->eventCallback(event);
-			break;
-		}
-		case SIZE_RESTORED:
-		{
-			bool maximize = false;
-
-			data->maximized = maximize;
-
-			WindowMaximizedEvent event(maximize);
-			data->eventCallback(event);
-			break;
-		}
-		default:
-			break;
+				WindowMaximizedEvent event(data->maximized);
+				data->eventCallback(event);
+				break;
+			}
+			default:
+				break;
+			}
 		}
 		break;
 	}
@@ -334,6 +338,7 @@ HRESULT Win32Window::Init(const WindowProps& props)
 
 void Win32Window::Shutdown()
 {
+	m_Context.reset();
 	--s_Win32WindowCount;
 }
 
@@ -343,8 +348,6 @@ void Win32Window::MessageLoop()
 
 	while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
 	{
-		ImGui_ImplWin32_WndProcHandler(msg.hwnd, msg.message, msg.wParam, msg.lParam);
-
 		if (msg.message == WM_QUIT)
 		{
 			return;

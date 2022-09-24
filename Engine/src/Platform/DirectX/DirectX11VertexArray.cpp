@@ -194,6 +194,8 @@ VS_OUTPUT vertexShader(VS_INPUT input)
 		ENGINE_ERROR("Could not create input layout");
 	}
 
+	if (pVSBlob) pVSBlob->Release();
+	if (pErrorBlob) pErrorBlob->Release();
 	m_VertexBuffers.push_back(vertexBuffer);
 }
 

@@ -11,17 +11,14 @@ extern ID3D11DeviceContext* g_ImmediateContext;
 
 DirectX11RendererAPI::~DirectX11RendererAPI()
 {
-	if(m_RSWireFrame) m_RSWireFrame->Release();
-	if(m_RSFill) m_RSFill->Release();
-	if(m_RSPoints) m_RSPoints->Release();
+	if (m_RSWireFrame) m_RSWireFrame->Release();
+	if (m_RSFill) m_RSFill->Release();
+	if (m_RSPoints) m_RSPoints->Release();
+	if (m_RSCullNone) m_RSCullNone->Release();
 }
 
 bool DirectX11RendererAPI::Init()
 {
-	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get());
-	m_RenderTargetView = context->GetRenderTargetView();
-	m_DepthStencilView = context->GetDepthStencilView();
-
 	D3D11_RASTERIZER_DESC cmdesc;
 	ZeroMemory(&cmdesc, sizeof(D3D11_RASTERIZER_DESC));
 	cmdesc.FillMode = D3D11_FILL_SOLID;
@@ -64,9 +61,15 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 
 void DirectX11RendererAPI::Clear()
 {
-	g_ImmediateContext->OMSetRenderTargets(1, &m_RenderTargetView, NULL);
-	g_ImmediateContext->ClearRenderTargetView(m_RenderTargetView, &m_ClearColour.r);
-	g_ImmediateContext->ClearDepthStencilView(m_DepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get());
+	auto renderTarget = context->GetRenderTargetView();
+
+	if (renderTarget)
+	{
+		g_ImmediateContext->OMSetRenderTargets(1, &renderTarget, NULL);
+		g_ImmediateContext->ClearRenderTargetView(context->GetRenderTargetView(), &m_ClearColour.r);
+		g_ImmediateContext->ClearDepthStencilView(context->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
 }
 
 void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, bool backFaceCull, DrawMode drawMode)

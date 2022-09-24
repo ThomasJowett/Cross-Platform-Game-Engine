@@ -24,6 +24,4 @@ private:
 	ID3D11RasterizerState* m_RSFill;
 	ID3D11RasterizerState* m_RSPoints;
 	ID3D11RasterizerState* m_RSCullNone;
-	ID3D11RenderTargetView* m_RenderTargetView;
-	ID3D11DepthStencilView* m_DepthStencilView;
 };
