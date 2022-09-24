@@ -45,8 +45,8 @@ DirectX11Context::~DirectX11Context()
 
 void DirectX11Context::Init()
 {
-	int renderWidth = Settings::GetInt("Display", "Screen_Width");
-	int renderHeight = Settings::GetInt("Display", "Screen_Height");
+	int renderWidth = Settings::GetInt("Display", "Window_Width");
+	int renderHeight = Settings::GetInt("Display", "Window_Height");
 
 	m_SyncInterval = (Settings::GetBool("Display", "V-Sync")) ? 1 : 0;
 

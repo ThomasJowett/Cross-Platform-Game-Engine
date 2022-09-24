@@ -14,6 +14,7 @@
 #include "Utilities/StringUtils.h"
 #include "Renderer/Renderer2D.h"
 #include "Physics/HitResult2D.h"
+#include "Core/Settings.h"
 
 template<typename Component>
 void RegisterComponent(sol::state& state)
@@ -80,6 +81,36 @@ void BindApp(sol::state& state)
 		{ return Application::GetWindow().RestoreWindow(); });
 	application.set_function("SetWindowMode", [](sol::this_state s, WindowMode windowMode)
 		{ return Application::GetWindow().SetWindowMode(windowMode); });
+
+	sol::table settings = state.create_table("Settings");
+
+	settings.set_function("SetValue", &Settings::SetValue);
+	settings.set_function("SetBool", &Settings::SetBool);
+	settings.set_function("SetDouble", &Settings::SetDouble);
+	settings.set_function("SetInt", &Settings::SetInt);
+	settings.set_function("SetVec2", &Settings::SetVector2f);
+	settings.set_function("SetVec3", &Settings::SetVector3f);
+	
+	settings.set_function("GetValue", &Settings::GetValue);
+	settings.set_function("GetBool", &Settings::GetBool);
+	settings.set_function("GetDouble", &Settings::GetDouble);
+	settings.set_function("GetInt", &Settings::GetInt);
+	settings.set_function("GetVec2", &Settings::GetVector2f);
+	settings.set_function("GetVec3", &Settings::GetVector3f);
+
+	settings.set_function("SetDefaultValue", &Settings::SetDefaultValue);
+	settings.set_function("SetDefaultBool", &Settings::SetDefaultBool);
+	settings.set_function("SetDefaultDouble", &Settings::SetDefaultDouble);
+	settings.set_function("SetDefaultInt", &Settings::SetDefaultInt);
+	settings.set_function("SetDefaultVec2", &Settings::SetDefaultVector2f);
+	settings.set_function("SetDefaultVec3", &Settings::SetDefaultVector3f);
+
+	settings.set_function("GetDefaultValue", &Settings::GetDefaultValue);
+	settings.set_function("GetDefaultBool", &Settings::GetDefaultBool);
+	settings.set_function("GetDefaultDouble", &Settings::GetDefaultDouble);
+	settings.set_function("GetDefaultInt", &Settings::GetDefaultInt);
+	settings.set_function("GetDefaultVec2", &Settings::GetDefaultVector2f);
+	settings.set_function("GetDefaultVec3", &Settings::GetDefaultVector3f);
 }
 
 //--------------------------------------------------------------------------------------------------------------

@@ -300,8 +300,8 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 
 	if (!Settings::GetBool("Display", "Maximized"))
 	{
-		Settings::SetInt("Display", "Screen_Width", e.GetWidth());
-		Settings::SetInt("Display", "Screen_Height", e.GetHeight());
+		Settings::SetInt("Display", "Window_Width", e.GetWidth());
+		Settings::SetInt("Display", "Window_Height", e.GetHeight());
 	}
 
 	Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
@@ -335,8 +335,8 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	const char* display = "Display";
 	const char* audio = "Audio";
 
-	Settings::SetDefaultInt(display, "Screen_Width", props.width);
-	Settings::SetDefaultInt(display, "Screen_Height", props.height);
+	Settings::SetDefaultInt(display, "Window_Width", props.width);
+	Settings::SetDefaultInt(display, "Window_Height", props.height);
 	Settings::SetDefaultInt(display, "Window_Position_X", props.posX);
 	Settings::SetDefaultInt(display, "Window_Position_Y", props.posY);
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);

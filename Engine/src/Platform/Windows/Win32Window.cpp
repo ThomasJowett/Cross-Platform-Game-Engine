@@ -278,8 +278,8 @@ HRESULT Win32Window::Init(const WindowProps& props)
 	m_Instance = GetModuleHandle(0);
 
 	m_Data.title = props.title;
-	m_Data.width = Settings::GetInt("Display", "Screen_Width");
-	m_Data.height = Settings::GetInt("Display", "Screen_Height");
+	m_Data.width = Settings::GetInt("Display", "Window_Width");
+	m_Data.height = Settings::GetInt("Display", "Window_Height");
 	m_Data.posX = Settings::GetInt("Display", "Window_Position_X");
 	m_Data.posY = Settings::GetInt("Display", "Window_Position_Y");
 	m_Data.mode = WindowMode::WINDOWED;
