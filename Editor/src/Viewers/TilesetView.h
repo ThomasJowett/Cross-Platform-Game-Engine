@@ -24,6 +24,7 @@ private:
 	std::string m_WindowName;
 
 	Ref<Tileset> m_Tileset;
+	Ref<Tileset> m_LocalTileset;
 
 	float m_Zoom = 1.0f;
 	bool m_Dirty = false;

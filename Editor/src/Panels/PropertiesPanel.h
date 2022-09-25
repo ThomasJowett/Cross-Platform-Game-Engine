@@ -72,6 +72,4 @@ private:
 
 	Ref<Material> m_DefaultMaterial;
 	Ref<PhysicsMaterial> m_DefaultPhysMaterial;
-
-	std::filesystem::file_time_type m_StaticMeshFileTime;
 };

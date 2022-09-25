@@ -39,6 +39,8 @@ private:
 	Ref<Material> m_Material;
 	Ref<Mesh> m_Mesh;
 
+	Ref<Material> m_LocalMaterial;
+
 	ImVec2 m_ViewportSize;
 
 	// Inherited via ISaveable

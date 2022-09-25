@@ -21,7 +21,7 @@ public:
 	static Ref<PhysicsMaterial> GetPhysicsMaterial(const std::filesystem::path& filepath);
 
 private:
-	explicit AssetManager() = default;;
+	explicit AssetManager() = default;
 	~AssetManager() = default;
 	static AssetManager& Get();
 

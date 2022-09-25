@@ -22,13 +22,45 @@ void MaterialView::OnAttach()
 {
 	m_Material = AssetManager::GetMaterial(m_FilePath);
 
+	m_LocalMaterial = CreateRef<Material>(*m_Material);
+
 	m_WindowName = ICON_FA_BOWLING_BALL + std::string(" " + m_FilePath.filename().string());
 }
 
 void MaterialView::OnImGuiRender()
 {
 	if (!*m_Show)
+	{
+		if (m_Dirty)
+		{
+			ImGui::OpenPopup("Save Prompt");
+		}
+
+		if (ImGui::BeginPopupModal("Save Prompt"))
+		{
+			ImGui::TextUnformatted("Save unsaved changes?");
+			if (ImGui::Button("Save"))
+			{
+				Save();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Don't Save"))
+			{
+				m_Dirty = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				*m_Show = true;
+				ImGui::CloseCurrentPopup();
+			}
+
+			ImGui::EndPopup();
+		}
 		return;
+	}
 
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
@@ -63,68 +95,68 @@ void MaterialView::OnImGuiRender()
 		ImGui::TableNextRow();
 		ImGui::TableSetColumnIndex(0);
 
-		if (ImGui::BeginCombo("Shader", m_Material->GetShader().c_str()))
+		if (ImGui::BeginCombo("Shader", m_LocalMaterial->GetShader().c_str()))
 		{
 			//TODO: have a list of shaders available
 			if (ImGui::Selectable("Standard"))
 			{
-				m_Material->SetShader("Standard");
+				m_LocalMaterial->SetShader("Standard");
 				m_Dirty = true;
 			}
 			if (ImGui::Selectable("Grid"))
 			{
-				m_Material->SetShader("Grid");
+				m_LocalMaterial->SetShader("Grid");
 				m_Dirty = true;
 			}
 			ImGui::EndCombo();
 		}
 
-		Colour tintColour = m_Material->GetTint();
+		Colour tintColour = m_LocalMaterial->GetTint();
 		if (ImGui::ColorEdit4("Tint", &tintColour[0]))
 		{
-			m_Material->SetTint(tintColour);
+			m_LocalMaterial->SetTint(tintColour);
 			m_Dirty = true;
 		}
 
-		bool twoSided = m_Material->IsTwoSided();
+		bool twoSided = m_LocalMaterial->IsTwoSided();
 		if (ImGui::Checkbox("Two Sided", &twoSided))
 		{
-			m_Material->SetTwoSided(twoSided);
+			m_LocalMaterial->SetTwoSided(twoSided);
 			m_Dirty = true;
 		}
 
-		bool transparent = m_Material->IsTransparent();
+		bool transparent = m_LocalMaterial->IsTransparent();
 		if (ImGui::Checkbox("Transparent", &transparent))
 		{
-			m_Material->SetTransparency(transparent);
+			m_LocalMaterial->SetTransparency(transparent);
 			m_Dirty = true;
 		}
 
-		bool castShadows = m_Material->CastsShadows();
+		bool castShadows = m_LocalMaterial->CastsShadows();
 		if (ImGui::Checkbox("Casts Shadows", &castShadows))
 		{
-			m_Material->SetCastShadows(castShadows);
+			m_LocalMaterial->SetCastShadows(castShadows);
 			m_Dirty = true;
 		}
 
-		Ref<Texture2D> albedo = m_Material->GetTexture(0);
+		Ref<Texture2D> albedo = m_LocalMaterial->GetTexture(0);
 		if (ImGui::Texture2DEdit("Albedo", albedo, ImVec2(128, 128)))
 		{
-			m_Material->AddTexture(albedo, 0);
+			m_LocalMaterial->AddTexture(albedo, 0);
 			m_Dirty = true;
 		}
 
-		Ref<Texture2D> normalMap = m_Material->GetTexture(1);
+		Ref<Texture2D> normalMap = m_LocalMaterial->GetTexture(1);
 		if (ImGui::Texture2DEdit("Normal Map", normalMap, ImVec2(128, 128)))
 		{
-			m_Material->AddTexture(normalMap, 1);
+			m_LocalMaterial->AddTexture(normalMap, 1);
 			m_Dirty = true;
 		}
 
-		Ref<Texture2D> mixMap = m_Material->GetTexture(2);
+		Ref<Texture2D> mixMap = m_LocalMaterial->GetTexture(2);
 		if (ImGui::Texture2DEdit("Mix Map", mixMap, ImVec2(128, 128)))
 		{
-			m_Material->AddTexture(mixMap, 2);
+			m_LocalMaterial->AddTexture(mixMap, 2);
 			m_Dirty = true;
 		}
 
@@ -161,7 +193,7 @@ void MaterialView::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
 
-	Renderer::Submit(m_Material, m_Mesh->GetVertexArray());
+	Renderer::Submit(m_LocalMaterial, m_Mesh->GetVertexArray());
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();
@@ -169,7 +201,9 @@ void MaterialView::OnUpdate(float deltaTime)
 
 void MaterialView::Save()
 {
-	m_Material->SaveMaterial();
+	m_LocalMaterial->SaveMaterial();
+	m_Material->Load(m_FilePath);
+	m_LocalMaterial = CreateRef<Material>(*m_Material);
 	m_Dirty = false;
 }
 
