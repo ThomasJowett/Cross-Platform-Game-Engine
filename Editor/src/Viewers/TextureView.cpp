@@ -3,6 +3,7 @@
 #include "Engine.h"
 
 #include "IconsFontAwesome6.h"
+#include "MainDockSpace.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 	:Layer("TextureView"), m_Show(show), m_FilePath(filepath)
@@ -26,6 +27,11 @@ void TextureView::OnImGuiRender()
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			MainDockSpace::SetFocussedWindow(this);
+		}
+
 		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());
 		ImGui::TextUnformatted(size.c_str());
 		ImGui::TextUnformatted(m_Texture->GetFilepath().string().c_str());

@@ -20,10 +20,10 @@ public:
 	void SetDensity(float density) { m_Density = density; }
 
 	float GetFriction() { return m_Friction; }
-	void SetFriction(float friction) { m_Friction = friction; }
+	void SetFriction(float friction) { m_Friction = std::clamp(friction, 0.0f, 1.0f); }
 
 	float GetRestitution() { return m_Restitution; }
-	void SetRestitution(float restitution) { m_Restitution; }
+	void SetRestitution(float restitution) { m_Restitution = std::clamp(restitution, 0.0f, 1.0f);}
 
 private:
 	std::filesystem::path m_Filepath;

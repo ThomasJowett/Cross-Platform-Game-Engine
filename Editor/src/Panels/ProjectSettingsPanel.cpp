@@ -4,6 +4,7 @@
 #include "Engine.h"
 
 #include "cereal/archives/json.hpp"
+#include "MainDockSpace.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")
@@ -20,6 +21,10 @@ void ProjectSettingsPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 	if (ImGui::Begin(ICON_FA_GEARS" Project Settings", m_Show))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			MainDockSpace::SetFocussedWindow(this);
+		}
 		ImGui::InputText("Default Scene", m_DefaultSceneBuffer, sizeof(m_DefaultSceneBuffer));
 		ImGui::InputTextMultiline("Description", m_DescriptionBuffer, sizeof(m_DescriptionBuffer));
 		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))

@@ -7,6 +7,7 @@
 #include "MaterialView.h"
 #include "TilesetView.h"
 #include "VisualScriptView.h"
+#include "PhysicsMaterialView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
@@ -117,6 +118,14 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	{
 		bool* show = new bool(true);
 		Layer* layer = new VisualSriptView(show, assetPath);
+		s_AssetViewers[assetPath] = std::make_pair(layer, show);
+		Application::Get().AddOverlay(layer);
+		return;
+	}
+	case FileType::PHYSICSMATERIAL:
+	{
+		bool* show = new bool(true);
+		Layer* layer = new PhysicsMaterialView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;

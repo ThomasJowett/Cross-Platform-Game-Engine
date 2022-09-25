@@ -14,7 +14,7 @@
 #include "ImGui/ImGuiTilemapEditor.h"
 
 class ViewportPanel
-	:public Layer, public ICopyable, public IUndoable, public ISaveable
+	:public Layer, public ICopyable, public IUndoable
 {
 	enum class OperationMode
 	{
@@ -55,8 +55,6 @@ public:
 	virtual void Undo(int astep = 1) override;
 	virtual void Redo(int astep = 1) override;
 
-	virtual void Save() override;
-	virtual void SaveAs() override;
 private:
 	void HandleKeyboardInputs();
 

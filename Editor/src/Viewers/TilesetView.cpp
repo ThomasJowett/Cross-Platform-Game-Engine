@@ -56,21 +56,11 @@ void TilesetView::OnImGuiRender()
 			{
 				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save", "Ctrl + S"))
 				{
-					m_Tileset->Save();
-					m_Dirty = false;
+					Save();
 				}
 				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl + Shift + S"))
 				{
-					auto ext = m_Tileset->GetFilepath().extension();
-					std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_Tileset->GetFilepath().extension().string()));
-					if (dialogPath)
-					{
-						std::filesystem::path filepath = dialogPath.value();
-						if (!filepath.has_extension())
-							filepath.replace_extension(ext);
-						m_Tileset->SaveAs(filepath);
-						m_Dirty = false;
-					}
+					SaveAs();
 				}
 				ImGui::EndMenu();
 			}
@@ -266,8 +256,20 @@ void TilesetView::OnImGuiRender()
 
 void TilesetView::Save()
 {
+	m_Tileset->Save();
+	m_Dirty = false;
 }
 
 void TilesetView::SaveAs()
 {
+	auto ext = m_Tileset->GetFilepath().extension();
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_Tileset->GetFilepath().extension().string()));
+	if (dialogPath)
+	{
+		std::filesystem::path filepath = dialogPath.value();
+		if (!filepath.has_extension())
+			filepath.replace_extension(ext);
+		m_Tileset->SaveAs(filepath);
+		m_Dirty = false;
+	}
 }

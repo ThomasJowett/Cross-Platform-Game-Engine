@@ -960,21 +960,6 @@ void ViewportPanel::Redo(int astep)
 	SceneManager::CurrentScene()->MakeDirty();
 }
 
-void ViewportPanel::Save()
-{
-	CLIENT_DEBUG("Saving...");
-
-	SceneManager::CurrentScene()->Save(false);
-}
-
-void ViewportPanel::SaveAs()
-{
-	CLIENT_DEBUG("Saving As...");
-	std::optional<std::wstring> scenePath = FileDialog::SaveAs(L"Save Scene As...", L"Scene (.scene)\0*.scene\0");
-	if (scenePath)
-		SceneManager::CurrentScene()->Save(scenePath.value(), false);
-}
-
 void ViewportPanel::HandleKeyboardInputs()
 {
 	ImGuiIO& io = ImGui::GetIO();
@@ -994,30 +979,5 @@ void ViewportPanel::HandleKeyboardInputs()
 			m_Operation = OperationMode::Scale;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
 			m_Operation = OperationMode::Universal;
-	}
-
-	if (m_WindowFocussed)
-	{
-		io.WantCaptureKeyboard = true;
-		io.WantCaptureMouse = true;
-
-		if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
-			Undo();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
-			Redo();
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
-			Delete();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
-			Copy();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
-			Paste();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
-			Cut();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
-			Duplicate();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
-			SelectAll();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
-			Save();
 	}
 }

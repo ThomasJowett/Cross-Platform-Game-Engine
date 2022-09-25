@@ -5,6 +5,7 @@
 #include "imgui/imgui.h"
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
+#include "MainDockSpace.h"
 
 bool ConsolePanel::s_DarkTheme = false;
 
@@ -28,6 +29,11 @@ void ConsolePanel::OnImGuiRender()
 		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 		ImGui::Begin(ICON_FA_TERMINAL" Console", m_Show);
 		{
+			if (ImGui::IsWindowFocused())
+			{
+				MainDockSpace::SetFocussedWindow(this);
+			}
+
 			ImGuiRenderHeader();
 			ImGui::Separator();
 			ImGui::PushFont(Fonts::Consolas);

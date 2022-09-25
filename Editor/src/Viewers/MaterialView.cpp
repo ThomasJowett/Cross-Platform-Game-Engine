@@ -4,6 +4,8 @@
 #include "FileSystem/FileDialog.h"
 #include "ImGui/ImGuiTextureEdit.h"
 
+#include "MainDockSpace.h"
+
 #include "Engine.h"
 
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
@@ -28,6 +30,7 @@ void MaterialView::OnImGuiRender()
 	if (!*m_Show)
 		return;
 
+
 	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
 
 	if (m_Dirty)
@@ -37,6 +40,10 @@ void MaterialView::OnImGuiRender()
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			MainDockSpace::SetFocussedWindow(this);
+		}
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
