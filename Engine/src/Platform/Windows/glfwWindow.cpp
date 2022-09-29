@@ -331,7 +331,7 @@ void glfwWindow::Init(const WindowProps& props)
 				{
 				case GLFW_PRESS:
 				{
-					KeyPressedEvent event(key, 0);
+					KeyPressedEvent event(key, false);
 					data.eventCallback(event);
 					break;
 				}
@@ -343,7 +343,7 @@ void glfwWindow::Init(const WindowProps& props)
 				}
 				case GLFW_REPEAT:
 				{
-					KeyPressedEvent event(key, 1);
+					KeyPressedEvent event(key, true);
 					data.eventCallback(event);
 					break;
 				}

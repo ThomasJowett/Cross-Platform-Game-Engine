@@ -12,7 +12,7 @@ bool glfwInput::IsKeyPressedImpl(int keycode)
 	{
 		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
 		int state = glfwGetKey(window, keycode);
-		return (state == GLFW_PRESS) || (state == GLFW_REPEAT);
+		return state == GLFW_PRESS;
 	}
 	catch (const std::bad_any_cast& e)
 	{
