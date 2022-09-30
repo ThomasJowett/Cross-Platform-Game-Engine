@@ -165,7 +165,7 @@ void ConsolePanel::ImGuiRenderMessages()
 			for (auto message = InternalConsole::s_MessageBuffer.begin(); message != messageStart; message++)
 				RenderMessage(*message);
 
-		if (m_AllowScrollingToBottom && m_LastBufferSize < InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
+		if (m_AllowScrollingToBottom && m_LastBufferSize <= InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
 		{
 			ImGui::SetScrollY(ImGui::GetScrollMaxY());
 			m_LastBufferSize = InternalConsole::s_MessageBufferSize;
