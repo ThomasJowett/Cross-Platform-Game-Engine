@@ -13,6 +13,7 @@
 #include "Core/Settings.h"
 #include "Core/Asset.h"
 #include "Core/Version.h"
+#include "Core/AABB.h"
 
 // Logging
 #include "Logging/Logger.h"

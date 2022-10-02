@@ -21,7 +21,7 @@ static const char* TextExtensions[] =
 
 static const char* ImageExtensions[] =
 {
-	".png", ".jpg", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"
+	".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"
 };
 
 static const char* MeshExtensions[] =
