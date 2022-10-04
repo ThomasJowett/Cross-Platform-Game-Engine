@@ -58,9 +58,7 @@ project "Engine"
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
 		"%{prj.name}/vendor/box2d/include",
-		"%{prj.name}/vendor/lua",
-		"%{prj.name}/vendor/json",
-		"%{prj.name}/vendor/tinygltf"
+		"%{prj.name}/vendor/lua"
 	}
 	
 	links
@@ -190,6 +188,8 @@ project "Editor"
 		"%{prj.name}/vendor",
 		"%{prj.name}/vendor/IconFont",
 		"%{prj.name}/vendor/OpenFBX/src",
+		"%{prj.name}/vendor/json",
+		"%{prj.name}/vendor/tinygltf",
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
