@@ -1,6 +1,10 @@
 #pragma once
 
+#ifdef DEBUG
 #define MAX_ASSET_VIEWERS 0
+#else
+#define MAX_ASSET_VIEWERS 10
+#endif
 
 #include <map>
 #include <filesystem>

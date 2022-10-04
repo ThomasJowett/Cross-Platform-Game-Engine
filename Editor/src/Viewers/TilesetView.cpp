@@ -7,6 +7,7 @@
 #include "ImGui/ImGuiTextureEdit.h"
 #include "FileSystem/FileDialog.h"
 #include "MainDockSpace.h"
+#include "ViewerManager.h"
 
 TilesetView::TilesetView(bool* show, std::filesystem::path filepath)
 	:Layer("TilesetView"), m_Show(show), m_Filepath(filepath)
@@ -291,6 +292,7 @@ void TilesetView::Save()
 	m_LocalTileset->Save();
 	m_Tileset->Load(m_Filepath);
 	m_Dirty = false;
+
 }
 
 void TilesetView::SaveAs()

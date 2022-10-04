@@ -440,7 +440,8 @@ void MainDockSpace::HandleKeyBoardInputs()
 	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 	{
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
-			iSave->Save();
+			if (iSave->NeedsSaving())
+				iSave->Save();
 		else
 			SceneManager::CurrentScene()->Save(false);
 	}

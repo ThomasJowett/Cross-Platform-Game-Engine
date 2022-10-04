@@ -36,6 +36,7 @@ public:
 
 	virtual void Save() override;
 	virtual void SaveAs() override;
+	virtual bool NeedsSaving() override { return m_TextEditor.NeedsSaving(); }
 private:
 	TextEditor::LanguageDefinition DetermineLanguageDefinition();
 	void ParseLuaScript();

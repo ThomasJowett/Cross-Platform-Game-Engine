@@ -1,6 +1,7 @@
 #include "VisualScriptView.h"
 #include "MainDockSpace.h"
 #include "IconsFontAwesome6.h"
+#include "ViewerManager.h"
 
 VisualSriptView::VisualSriptView(bool* show, const std::filesystem::path& filepath)
 	:Layer("VisualScriptView"), m_Show(show), m_Filepath(filepath)
@@ -23,6 +24,7 @@ void VisualSriptView::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
+		ViewerManager::CloseViewer(m_Filepath);
 		return;
 	}
 

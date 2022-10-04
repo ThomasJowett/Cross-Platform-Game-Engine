@@ -47,4 +47,6 @@ private:
 	virtual void Save() override;
 
 	virtual void SaveAs() override;
+
+	virtual bool NeedsSaving() override { return m_Dirty; }
 };

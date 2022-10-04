@@ -289,6 +289,7 @@ void ViewerManager::SaveAll()
 	for (auto&& [path, viewer] : s_AssetViewers)
 	{
 		if (ISaveable* saveableView = dynamic_cast<ISaveable*>(viewer.first))
-			saveableView->Save();
+			if(saveableView->NeedsSaving())
+				saveableView->Save();
 	}
 }
