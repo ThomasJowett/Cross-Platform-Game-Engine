@@ -90,9 +90,9 @@ class ContentExplorerPanel
 {
 	enum class ZoomLevel
 	{
-		LIST = 0,
-		THUMBNAILS = 1,
-		DETAILS = 2
+		List = 0,
+		Thumbnails = 1,
+		Details = 2
 	};
 
 public:
@@ -154,7 +154,7 @@ private:
 	std::filesystem::path m_CurrentSelectedPath;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
-	ZoomLevel m_ZoomLevel = ZoomLevel::LIST;
+	ZoomLevel m_ZoomLevel = ZoomLevel::List;
 	History m_History;
 
 	bool m_EditLocationCheckButtonPressed = false;

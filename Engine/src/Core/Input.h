@@ -21,7 +21,7 @@ public:
 	inline static double GetJoystickAxis(int joystickSlot, int axis) 
 		{ return s_Instance->GetJoystickAxisImpl(joystickSlot, axis); }
 
-	static void SetInput(RendererAPI::API api);
+	static void Init();
 
 protected:
 	virtual bool IsKeyPressedImpl(int keycode) = 0;

@@ -19,6 +19,7 @@ template<typename T>
 class AssetLibrary
 {
 public:
+	AssetLibrary<T>() {}
 	void Add(const Ref<T>& resource);
 	Ref<T> Load(const std::filesystem::path& filepath);
 	Ref<T> Get(const std::filesystem::path& name);

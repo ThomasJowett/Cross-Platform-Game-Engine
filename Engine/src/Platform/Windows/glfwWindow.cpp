@@ -1,6 +1,9 @@
 #include "stdafx.h"
 #include "glfwWindow.h"
 
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"   // for glfwGetWin32Window
+
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
@@ -11,10 +14,10 @@
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/DirectX/DirectX11Context.h"
 
 #include "stb_image.h"
 
-#include "Core/Input.h"
 #include "Core/Settings.h"
 
 static uint8_t s_GLFWWindowCount = 0;
@@ -206,7 +209,6 @@ void glfwWindow::SetCursorPosition(double xpos, double ypos)
 
 void glfwWindow::Init(const WindowProps& props)
 {
-	Input::SetInput(RendererAPI::GetAPI());
 	PROFILE_FUNCTION();
 
 	m_Data.title = props.title;
@@ -239,10 +241,14 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif // DEBUG
 
-			//Minimum version that is supported is 3.3
+			//Minimum version that is supported is 4.6
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+		}
+		else if (api == RendererAPI::API::Directx11)
+		{
+			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.width, (int)m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
@@ -252,6 +258,10 @@ void glfwWindow::Init(const WindowProps& props)
 	if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
 	{
 		m_Context = CreateRef<OpenGLContext>(m_Window);
+	}
+	else if (Renderer::GetAPI() == RendererAPI::API::Directx11)
+	{
+		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 	}
 
 	m_Context->Init();
@@ -276,6 +286,7 @@ void glfwWindow::Init(const WindowProps& props)
 
 				WindowResizeEvent event(width, height);
 				data.eventCallback(event);
+				Application::GetWindow().GetContext()->ResizeBuffers(width, height);
 			});
 
 		glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)

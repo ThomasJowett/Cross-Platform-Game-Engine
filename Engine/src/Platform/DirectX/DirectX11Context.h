@@ -5,8 +5,6 @@
 
 #include "Renderer/GraphicsContext.h"
 
-#include "GLFW/glfw3.h"
-
 class DirectX11Context : public GraphicsContext
 {
 public:

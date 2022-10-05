@@ -1036,7 +1036,7 @@ void ContentExplorerPanel::OnImGuiRender()
 
 			switch (m_ZoomLevel)
 			{
-			case ContentExplorerPanel::ZoomLevel::LIST:
+			case ContentExplorerPanel::ZoomLevel::List:
 			{
 				CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
 				ImGui::Columns(m_NumBrowsingColumns);
@@ -1146,7 +1146,7 @@ void ContentExplorerPanel::OnImGuiRender()
 				}
 				break;
 			}
-			case ContentExplorerPanel::ZoomLevel::THUMBNAILS:
+			case ContentExplorerPanel::ZoomLevel::Thumbnails:
 			{
 				float thumbnailSize = 128;
 				ImGuiTableFlags table_flags =
@@ -1315,7 +1315,7 @@ void ContentExplorerPanel::OnImGuiRender()
 				}
 			}
 			break;
-			case ContentExplorerPanel::ZoomLevel::DETAILS:
+			case ContentExplorerPanel::ZoomLevel::Details:
 			{
 				ImGuiTableFlags table_flags =
 					ImGuiTableFlags_Resizable | ImGuiTableFlags_Reorderable | ImGuiTableFlags_Hideable

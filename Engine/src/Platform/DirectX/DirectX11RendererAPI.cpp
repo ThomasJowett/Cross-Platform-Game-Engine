@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "DirectX11RendererAPI.h"
 #include "Core/Application.h"
-#include "Platform/Windows/Win32Window.h"
 #include "DirectX11Context.h"
 
 #include <d3d11.h>

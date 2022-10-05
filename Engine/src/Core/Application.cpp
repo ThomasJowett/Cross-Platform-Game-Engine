@@ -14,6 +14,7 @@
 #include "Scene/SceneManager.h"
 
 #include "Logging/Logger.h"
+#include "Core/Input.h"
 
 #include "Utilities/StringUtils.h"
 #include "Scripting/Lua/LuaManager.h"
@@ -36,6 +37,7 @@ Application::Application(const WindowProps& props)
 	Settings::Init();
 	Random::Init();
 	LuaManager::Init();
+	Input::Init();
 
 	SetDefaultSettings(props);
 
