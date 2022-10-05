@@ -22,8 +22,8 @@ public:
 	AssetLibrary<T>() {}
 	void Add(const Ref<T>& resource);
 	Ref<T> Load(const std::filesystem::path& filepath);
-	Ref<T> Get(const std::filesystem::path& name);
-	bool Exists(const std::filesystem::path& name);
+	Ref<T> Get(const std::filesystem::path& filepath);
+	bool Exists(const std::filesystem::path& filepath);
 	void Clear();
 
 private:
@@ -33,7 +33,7 @@ private:
 template<typename T>
 inline void AssetLibrary<T>::Add(const Ref<T>& resource)
 {
-	CORE_ASSERT(!Exists(resource->GetFilepath().string()), "Asset already exists!");
+	CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
 	m_Assets[resource->GetFilepath().string()] = resource;
 }
 
@@ -41,7 +41,7 @@ template<typename T>
 inline Ref<T> AssetLibrary<T>::Load(const std::filesystem::path& filepath)
 {
 	if (Exists(filepath))
-		return m_Assets[filepath].lock();
+		return m_Assets[filepath.string()].lock();
 
 	Ref<T> asset = CreateRef<T>(filepath);
 	Add(asset);
@@ -49,17 +49,17 @@ inline Ref<T> AssetLibrary<T>::Load(const std::filesystem::path& filepath)
 }
 
 template<typename T>
-inline Ref<T> AssetLibrary<T>::Get(const std::filesystem::path& name)
+inline Ref<T> AssetLibrary<T>::Get(const std::filesystem::path& filepath)
 {
-	CORE_ASSERT(Exists(name), "Asset does not Exist!");
-	return m_Assets[name].lock();
+	CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
+	return m_Assets[filepath.string()].lock();
 }
 
 template<typename T>
-inline bool AssetLibrary<T>::Exists(const std::filesystem::path& name)
+inline bool AssetLibrary<T>::Exists(const std::filesystem::path& filepath)
 {
-	if (m_Assets.find(name) != m_Assets.end())
-		return m_Assets[name].use_count() > 0;
+	if (m_Assets.find(filepath.string()) != m_Assets.end())
+		return m_Assets[filepath.string()].use_count() > 0;
 	return false;
 }
 

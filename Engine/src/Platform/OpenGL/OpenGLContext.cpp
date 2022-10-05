@@ -19,8 +19,8 @@ void OpenGLContext::Init()
 	int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
 	CORE_ASSERT(status, "Failed to initialize GLAD");
 
-	ENGINE_INFO("Graphics Card: {0} {1}", glGetString(GL_VENDOR), glGetString(GL_RENDERER));
-	ENGINE_INFO("OpenGl Version: {0}", glGetString(GL_VERSION));
+	ENGINE_INFO("Graphics Card: {0} {1}", (const char*)glGetString(GL_VENDOR), (const char*)glGetString(GL_RENDERER));
+	ENGINE_INFO("OpenGl Version: {0}", (const char*)glGetString(GL_VERSION));
 }
 
 void OpenGLContext::SwapBuffers()
