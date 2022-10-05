@@ -27,7 +27,7 @@ public:
 	void Clear();
 
 private:
-	std::unordered_map<std::filesystem::path, std::weak_ptr<T>> m_Assets;
+	std::unordered_map<std::string, std::weak_ptr<T>> m_Assets;
 };
 
 template<typename T>

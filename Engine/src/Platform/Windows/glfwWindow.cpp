@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "glfwWindow.h"
 
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include "GLFW/glfw3native.h"   // for glfwGetWin32Window
 
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
@@ -14,7 +12,11 @@
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
+#ifdef __WINDOWS__
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include "GLFW/glfw3native.h"   // for glfwGetWin32Window
 #include "Platform/DirectX/DirectX11Context.h"
+#endif
 
 #include "stb_image.h"
 
@@ -246,6 +248,7 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
+		
 		else if (api == RendererAPI::API::Directx11)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -261,7 +264,9 @@ void glfwWindow::Init(const WindowProps& props)
 	}
 	else if (Renderer::GetAPI() == RendererAPI::API::Directx11)
 	{
+#ifdef __WINDOWS__
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
+#endif
 	}
 
 	m_Context->Init();

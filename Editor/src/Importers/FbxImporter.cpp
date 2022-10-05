@@ -227,7 +227,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 			ofbx::DataView filename = tex.fbx->getRelativeFileName();
 			if (filename == "")
 				filename = tex.fbx->getFileName();
-			char path[MAX_PATH];
+			char path[260];
 			filename.toString(path);
 			tex.src = tex.path = path;
 			tex.is_valid = std::filesystem::exists(tex.src);
