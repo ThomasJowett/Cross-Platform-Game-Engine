@@ -444,7 +444,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 			if (iSave->NeedsSaving())
 				iSave->Save();
 		}
-		else
+		else if(SceneManager::IsSceneLoaded())
 			SceneManager::CurrentScene()->Save(false);
 	}
 	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))

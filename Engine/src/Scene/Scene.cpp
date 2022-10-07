@@ -300,7 +300,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : staticMeshGroup)
 	{
 		auto [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
-		if(staticMeshComp.mesh)
+		if (staticMeshComp.mesh)
 			Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
 	}
 
@@ -427,12 +427,12 @@ void Scene::OnFixedUpdate()
 					rigidBodyComp.Init(e, m_Box2DWorld);
 				}
 				else if (rigidBodyComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
-					{
-						rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
-						rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
-						rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
-						rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
-					}
+				{
+					rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
+					rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
+					rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
+					rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
+				}
 				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 				transformComp.position.x = position.x;
 				transformComp.position.y = position.y;
