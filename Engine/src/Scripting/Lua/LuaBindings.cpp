@@ -90,7 +90,7 @@ void BindApp(sol::state& state)
 	settings.set_function("SetInt", &Settings::SetInt);
 	settings.set_function("SetVec2", &Settings::SetVector2f);
 	settings.set_function("SetVec3", &Settings::SetVector3f);
-	
+
 	settings.set_function("GetValue", &Settings::GetValue);
 	settings.set_function("GetBool", &Settings::GetBool);
 	settings.set_function("GetDouble", &Settings::GetDouble);
@@ -152,6 +152,28 @@ void BindScene(sol::state& state)
 
 	scene_type.set_function("RayCast2D", &Scene::RayCast2D);
 	scene_type.set_function("MultiRayCast2D", &Scene::MultiRayCast2D);
+
+	sol::table assetManager = state.create_table("AssetManager");
+	assetManager.set_function("GetTexture", [](std::string_view path) -> Ref<Texture2D>
+		{
+			return AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+		});
+	assetManager.set_function("GetMaterial", [](std::string_view path) -> Ref<Material>
+		{
+			return AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+		});
+	assetManager.set_function("GetMesh", [](std::string_view path) -> Ref<Mesh>
+		{
+			return AssetManager::GetMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+		});
+	assetManager.set_function("GetPhysicsMaterial", [](std::string_view path) -> Ref<PhysicsMaterial>
+		{
+			return AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+		});
+	assetManager.set_function("GetTileset", [](std::string_view path) -> Ref<Tileset>
+		{
+			return AssetManager::GetTileset(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+		});
 }
 
 //--------------------------------------------------------------------------------------------------------------
