@@ -191,6 +191,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					sprite.tileset->Reload();
 					currentFileTime = lastWrittenTime;
+					sprite.tileset->SelectAnimation(sprite.tileset->GetCurrentAnimation());
 				}
 			}
 

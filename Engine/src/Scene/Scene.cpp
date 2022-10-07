@@ -204,6 +204,11 @@ void Scene::OnRuntimeStart()
 			{
 				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
 			}
+			else
+			{
+				scriptComponent.OnCreate();
+				scriptComponent.created = true;
+			}
 		});
 
 	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(

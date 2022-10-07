@@ -440,8 +440,10 @@ void MainDockSpace::HandleKeyBoardInputs()
 	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
 	{
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
+		{
 			if (iSave->NeedsSaving())
 				iSave->Save();
+		}
 		else
 			SceneManager::CurrentScene()->Save(false);
 	}
@@ -467,43 +469,51 @@ void MainDockSpace::HandleKeyBoardInputs()
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
-			iUndo->Undo();
+			if (iUndo->CanUndo())
+				iUndo->Undo();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
-			iUndo->Redo();
+			if (iUndo->CanUndo())
+				iUndo->Redo();
 	}
 	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->Delete();
+			if (iCopy->HasSelection())
+				iCopy->Delete();
 	}
 	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
 		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->Copy();
+			if (iCopy->HasSelection())
+				iCopy->Copy();
 	}
 	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
 		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->Paste();
+			if (iCopy->HasSelection())
+				iCopy->Paste();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->Cut();
+			if (iCopy->HasSelection())
+				iCopy->Cut();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->Duplicate();
+			if (iCopy->HasSelection())
+				iCopy->Duplicate();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			iCopy->SelectAll();
+			if (iCopy->HasSelection())
+				iCopy->SelectAll();
 	}
 }

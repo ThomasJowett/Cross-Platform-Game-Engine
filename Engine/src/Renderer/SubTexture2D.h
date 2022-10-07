@@ -39,4 +39,5 @@ private:
 
 	uint32_t m_SpriteHeight, m_SpriteWidth;
 	uint32_t m_CellsWide = 1, m_CellsTall = 1;
+	uint32_t m_PaddingRight = 0, m_PaddingBottom = 0;
 };
