@@ -7,6 +7,25 @@
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
 #include "Core/Asset.h"
+#include "math/Vector2f.h"
+#include "math/Vector3f.h"
+#include "Core/AABB.h"
+
+struct Vertex
+{
+	Vector3f position;
+	Vector3f normal;
+	Vector3f tangent;
+	Vector2f texcoord;
+
+	bool operator==(const Vertex& other) const
+	{
+		return position == other.position
+			&& normal == other.normal
+			&& tangent == other.tangent
+			&& texcoord == other.texcoord;
+	}
+};
 
 class Mesh : public Asset
 {
@@ -23,4 +42,5 @@ public:
 	Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 private:
 	Ref<VertexArray> m_VertexArray;
+	AABB aabb;
 };

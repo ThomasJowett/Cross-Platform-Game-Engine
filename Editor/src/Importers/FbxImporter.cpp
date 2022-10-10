@@ -4,23 +4,24 @@
 
 #include "ofbx.h"
 
-struct ImportMesh
+enum class Orientation
 {
-	const ofbx::Mesh* fbx = nullptr;
-	const ofbx::Material* fbx_mat = nullptr;
-	bool is_skinned = false;
-	int bone_idx = -1;
-	int submesh;
-	AABB aabb;
-	Matrix4x4 transform_matrix;
-	Vector3f origin;
+	Y_UP,
+	Z_UP,
+	Z_MINUS_UP,
+	X_MINUS_UP,
+	X_UP
 };
 
-struct ImportGeometry
+struct ImportMesh
 {
-	const ofbx::Geometry* fbx = nullptr;
+	const ofbx::Mesh* fbx;
+	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
-
+	AABB aabb;
+	int materialSlot;
+	std::string name;
+	bool isSkinned;
 };
 
 struct ImportAnimation
@@ -44,13 +45,12 @@ struct ImportTexture
 	const ofbx::Texture* fbx = nullptr;
 	std::filesystem::path path;
 	std::filesystem::path src;
-	bool is_valid = true;
+	bool is_valid = false;
 };
 
 struct ImportMaterial
 {
 	const ofbx::Material* fbx = nullptr;
-	bool import = true;
 	ImportTexture textures[ImportTexture::Count];
 
 	bool operator<(const ImportMaterial& other)const
@@ -64,7 +64,7 @@ struct ImportMaterial
 	}
 };
 
-int getMaterialIndex(const ofbx::Mesh& mesh, const ofbx::Material& material)
+int GetMaterialIndex(const ofbx::Mesh& mesh, const ofbx::Material& material)
 {
 	for (int i = 0; i < mesh.getMaterialCount(); ++i)
 	{
@@ -73,7 +73,7 @@ int getMaterialIndex(const ofbx::Mesh& mesh, const ofbx::Material& material)
 	return -1;
 }
 
-void insertHierarchy(std::vector<const ofbx::Object*>& bones, const ofbx::Object* node)
+void InsertHierarchy(std::vector<const ofbx::Object*>& bones, const ofbx::Object* node)
 {
 	if (!node) return;
 	bool contains = false;
@@ -88,9 +88,134 @@ void insertHierarchy(std::vector<const ofbx::Object*>& bones, const ofbx::Object
 	if (contains)
 	{
 		ofbx::Object* parent = node->getParent();
-		insertHierarchy(bones, parent);
+		InsertHierarchy(bones, parent);
 		bones.push_back(node);
 	}
+}
+
+Vector3f FixOrientation(const Vector3f& v, Orientation orientation)
+{
+	switch (orientation)
+	{
+	case Orientation::Y_UP:
+		return Vector3f(v.x, v.y, v.z);
+	case Orientation::Z_UP:
+		return Vector3f(v.x, v.z, -v.y);
+	case Orientation::Z_MINUS_UP:
+		return Vector3f(v.x, -v.z, v.y);
+	case Orientation::X_MINUS_UP:
+		return Vector3f(v.y, -v.x, v.z);
+	case Orientation::X_UP:
+		return Vector3f(-v.y, v.x, v.z);
+	default:
+		return Vector3f(v.x, v.y, v.z);
+	}
+}
+
+ofbx::Vec3 operator-(const ofbx::Vec3& a, const ofbx::Vec3& b)
+{
+	return { a.x - b.x, a.y - b.y, a.z - b.z };
+}
+
+ofbx::Vec2 operator-(const ofbx::Vec2& a, const ofbx::Vec2& b)
+{
+	return { a.x - b.x, a.y - b.y };
+}
+
+void ComputeTangents(ofbx::Vec3* out, uint32_t vertexCount, const ofbx::Vec3* vertices, const ofbx::Vec3* normals, const ofbx::Vec2* uvs)
+{
+	for (uint32_t i = 0; i < vertexCount; i += 3)
+	{
+		const ofbx::Vec3 v0 = vertices[i + 0];
+		const ofbx::Vec3 v1 = vertices[i + 1];
+		const ofbx::Vec3 v2 = vertices[i + 2];
+		const ofbx::Vec2 uv0 = uvs[i + 0];
+		const ofbx::Vec2 uv1 = uvs[i + 1];
+		const ofbx::Vec2 uv2 = uvs[i + 2];
+
+		const ofbx::Vec3 dv10 = v1 - v0;
+		const ofbx::Vec3 dv20 = v2 - v0;
+		const ofbx::Vec2 duv10 = uv1 - uv0;
+		const ofbx::Vec2 duv20 = uv2 - uv0;
+
+		const float dir = duv20.x * duv10.y - duv20.y * duv10.x < 0 ? -1.0f : 1.0f;
+		ofbx::Vec3 tangent;
+		tangent.x = (dv20.x * duv10.y - dv10.x * duv20.y) * dir;
+		tangent.y = (dv20.y * duv10.y - dv10.y * duv20.y) * dir;
+		tangent.z = (dv20.z * duv10.y - dv10.z * duv20.y) * dir;
+		const float l = 1 / sqrtf(float(tangent.x * tangent.x + tangent.y * tangent.y + tangent.z * tangent.z));
+		tangent.x *= l;
+		tangent.y *= l;
+		tangent.z *= l;
+		out[i + 0] = tangent;
+		out[i + 1] = tangent;
+		out[i + 2] = tangent;
+	}
+}
+
+ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t triangleEnd)
+{
+	const uint32_t firstVertexOffset = triangleStart * 3;
+	const uint32_t lastVertexOffset = triangleEnd * 3;
+	const int vertexCount = lastVertexOffset - firstVertexOffset + 3;
+
+	const ofbx::Geometry* geom = fbxMesh->getGeometry();
+
+	const ofbx::Vec3* vertices = geom->getVertices();
+	const ofbx::Vec3* normals = geom->getNormals();
+	const ofbx::Vec3* tangents = geom->getTangents();
+	const ofbx::Vec2* texcoords = geom->getUVs();
+
+	if (!tangents)
+	{
+		ofbx::Vec3* generatedTangents = new ofbx::Vec3[vertexCount];
+		ComputeTangents(generatedTangents, vertexCount, vertices, normals, texcoords);
+		tangents = generatedTangents;
+	}
+
+	ImportMesh importMesh;
+
+	importMesh.fbx = fbxMesh;
+	importMesh.vertices.resize(vertexCount);
+
+	for (int i = 0; i < vertexCount; i++)
+	{
+		Vertex& vertex = importMesh.vertices[i];
+
+		vertex.position = Vector3f((float)vertices[i].x, (float)vertices[i].y, (float)vertices[i].z);
+
+		importMesh.aabb.Merge(vertex.position);
+
+		if (normals)
+			vertex.normal = Vector3f((float)normals[i].x, (float)normals[i].y, (float)normals[i].z);
+		if (tangents)
+			vertex.tangent = Vector3f((float)tangents[i].x, (float)tangents[i].y, (float)tangents[i].z);
+		if (texcoords)
+			vertex.texcoord = Vector2f((float)texcoords[i].x, (float)texcoords[i].y);
+
+	}
+
+	// get the indices
+	uint32_t indexCount = (uint32_t)geom->getIndexCount();
+	for (uint32_t i = 0; i < indexCount; i++)
+	{
+		uint32_t index = i * 3;
+		importMesh.indices.push_back(index);
+		importMesh.indices.push_back(index + 1);
+		importMesh.indices.push_back(index + 2);
+	}
+
+	if (fbxMesh->getMaterialCount() > 0)
+	{
+		if (geom->getMaterials())
+			importMesh.materialSlot = geom->getMaterials()[triangleStart];
+		else
+			importMesh.materialSlot = 0;
+	}
+
+	importMesh.name = fbxMesh->name;
+	importMesh.name = importMesh.name.substr(importMesh.name.find_last_of("::") + 1);
+	return importMesh;
 }
 
 void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination)
@@ -124,14 +249,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		return;
 	}
 
-	enum class Orientation
-	{
-		Y_UP,
-		Z_UP,
-		Z_MINUS_UP,
-		X_MINUS_UP,
-		X_UP
-	}orientation;
+	Orientation orientation;
 
 	float m_fbx_scale = scene->getGlobalSettings()->UnitScaleFactor * 0.01f;
 
@@ -144,48 +262,52 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	case ofbx::UpVector_AxisZ: orientation = Orientation::Z_UP; break;
 	}
 
-	std::vector<ImportGeometry> geometries;
 	std::vector<ImportMesh> meshes;
 	std::vector<ImportMaterial> materials;
 	std::vector<ImportAnimation> animations;
 	std::vector<const ofbx::Object*> bones;
 	std::unordered_map<const ofbx::Material*, std::string> materialNameMap;
 
-	//gather the geometries
-	for (int i = 0, count = scene->getGeometryCount(); i < count; ++i)
-	{
-		ImportGeometry geom;
-		geom.fbx = scene->getGeometry(i);
-		geometries.push_back(geom);
-	}
+	std::string assetDirectory = filepath.string();
+	assetDirectory = assetDirectory.substr(0, assetDirectory.find_last_of(std::filesystem::path::preferred_separator));
 
-	// gather the meshes
+	uint32_t meshCount = 0;
+
 	for (int i = 0, count = scene->getMeshCount(); i < count; ++i)
 	{
-		const ofbx::Mesh* fbx_mesh = scene->getMesh(i);
-		const int materialCount = fbx_mesh->getMaterialCount();
-		for (int j = 0; j < materialCount; ++j)
+		const ofbx::Mesh* fbxMesh = scene->getMesh(i);
+		const ofbx::Geometry* geom = fbxMesh->getGeometry();
+		const int triangleCount = geom->getVertexCount() / 3;
+
+		if (triangleCount <= 0)
+			continue;
+
+		if (fbxMesh->getMaterialCount() < 2 || !geom->getMaterials())
 		{
-			ImportMesh mesh;
-			if (fbx_mesh->getGeometry() && fbx_mesh->getGeometry()->getSkin())
+			meshes.push_back(LoadMesh(fbxMesh, 0, triangleCount - 1));
+			meshCount++;
+		}
+		else
+		{
+			const int* materials = geom->getMaterials();
+			int rangeStart = 0;
+			int rangeStartMaterial = materials[rangeStart];
+			for (int triangleIndex = 1; triangleIndex < triangleCount; triangleIndex++)
 			{
-				const ofbx::Skin* skin = fbx_mesh->getGeometry()->getSkin();
-				for (int k = 0; k < skin->getClusterCount(); ++k)
+				if (rangeStartMaterial != materials[triangleIndex])
 				{
-					if (skin->getCluster(k)->getIndicesCount() > 0)
-					{
-						mesh.is_skinned = true;
-						break;
-					}
+					meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleIndex - 1));
+					meshCount++;
+					rangeStart = triangleIndex;
+					rangeStartMaterial = materials[triangleIndex];
 				}
 			}
-			mesh.fbx = fbx_mesh;
-			mesh.fbx_mat = fbx_mesh->getMaterial(j);
-			mesh.submesh = materialCount > 1 ? j : -1;
-			meshes.push_back(mesh);
+			meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleCount - 1));
+			meshCount++;
 		}
-	}
 
+	}
+	
 	// gather animations
 	for (int i = 0, count = scene->getAnimationStackCount(); i < count; ++i)
 	{
@@ -211,7 +333,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	// gather materials
 	for (ImportMesh& mesh : meshes)
 	{
-		const ofbx::Material* fbx_mat = mesh.fbx_mat;
+		const ofbx::Material* fbx_mat = mesh.fbx->getMaterial(mesh.materialSlot);
 		if (!fbx_mat) continue;
 
 		ImportMaterial mat;
@@ -229,18 +351,25 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 				filename = tex.fbx->getFileName();
 			char path[260];
 			filename.toString(path);
-			tex.src = tex.path = path;
-			tex.is_valid = std::filesystem::exists(tex.src);
+			tex.src = std::filesystem::absolute(std::filesystem::path(assetDirectory) / path);
+			tex.is_valid = (std::filesystem::exists(tex.src) && std::filesystem::is_regular_file(tex.src));
 
 			if (!tex.is_valid)
 			{
 				CLIENT_ERROR("Could not import texture from fbx: {0}", tex.src.string());
 			}
+			else
+			{
+				// Copy the texture into the destination folder
+				tex.path = destination / tex.src.filename();
+				if(!std::filesystem::exists(tex.path))
+					std::filesystem::copy_file(tex.src, tex.path);
+			}
 		}
 
 		materials.push_back(mat);
 	}
-
+	
 	std::vector<std::string> names;
 	for (ImportMaterial& mat : materials)
 	{
@@ -250,6 +379,8 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		}
 
 		std::string name = mat.fbx->name;
+
+		name = name.substr(name.find_last_of("::") + 1);
 
 		std::replace_if(name.begin(), name.end(), [](char c) {return !std::isalnum(c); }, '_');
 
@@ -275,7 +406,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	bool any_skinned = false;
 	for (const ImportMesh& mesh : meshes)
 	{
-		if (mesh.is_skinned)
+		if (mesh.isSkinned)
 		{
 			if (mesh.fbx->getGeometry())
 			{
@@ -285,7 +416,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 					for (int i = 0; i < skin->getClusterCount(); ++i)
 					{
 						const ofbx::Cluster* cluster = skin->getCluster(i);
-						insertHierarchy(bones, cluster->getLink());
+						InsertHierarchy(bones, cluster->getLink());
 					}
 				}
 			}
@@ -303,7 +434,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 				const ofbx::AnimationCurveNode* node = layer->getCurveNode(k);
 				if (node->getBone())
 				{
-					insertHierarchy(bones, node->getBone());
+					InsertHierarchy(bones, node->getBone());
 				}
 			}
 		}
@@ -312,93 +443,72 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	std::sort(bones.begin(), bones.end());
 	bones.erase(std::unique(bones.begin(), bones.end()), bones.end());
 
-	for (auto& geometry : geometries)
+	// write materials
+	for (ImportMaterial& material : materials)
 	{
-		const ofbx::Geometry* geom = geometry.fbx;
+		const std::string materialName = materialNameMap[material.fbx];
 
-		// get the vertices
-		uint32_t vertexCount = geom->getVertexCount();
-		const ofbx::Vec3* vertices = geom->getVertices();
-		const ofbx::Vec3* normals = geom->getNormals();
-		const ofbx::Vec3* tangents = geom->getTangents();
-		const ofbx::Vec2* texcoords = geom->getUVs();
-		const int* geom_materials = geom->getMaterials();
+		std::filesystem::path materialPath = destination / materialName;
+		materialPath.replace_extension(".material");
+		if (std::filesystem::exists(materialPath))
+			continue;
 
-		//int material_idx = getMaterialIndex(mesh, )
+		Material outputMaterial;
 
-		std::vector<float> verticesList;
+		ofbx::Color diffuseColour = material.fbx->getDiffuseColor();
 
-		for (uint32_t j = 0; j < vertexCount; j++)
+		outputMaterial.SetTint(Colour(diffuseColour.r, diffuseColour.g, diffuseColour.b, 1.0f));
+
+		if (material.textures[0].is_valid)
 		{
-			//if (geom_materials && geom_materials[j / 3] != mat)
-			verticesList.push_back((float)vertices[j].x);
-			verticesList.push_back((float)vertices[j].y);
-			verticesList.push_back((float)vertices[j].z);
-
-			if (normals)
-			{
-				verticesList.push_back((float)normals[j].x);
-				verticesList.push_back((float)normals[j].y);
-				verticesList.push_back((float)normals[j].z);
-			}
-			else
-			{
-				verticesList.push_back(0.0f);
-				verticesList.push_back(0.0f);
-				verticesList.push_back(0.0f);
-			}
-
-			if (tangents)
-			{
-				verticesList.push_back((float)tangents[j].x);
-				verticesList.push_back((float)tangents[j].y);
-				verticesList.push_back((float)tangents[j].z);
-			}
-			else
-			{
-				verticesList.push_back(0.0f);
-				verticesList.push_back(0.0f);
-				verticesList.push_back(0.0f);
-			}
-
-			if (texcoords)
-			{
-				verticesList.push_back((float)texcoords[j].x);
-				verticesList.push_back((float)texcoords[j].y);
-			}
-			else
-			{
-				verticesList.push_back(0.0f);
-				verticesList.push_back(0.0f);
-			}
+			Ref<Texture2D> albedo = Texture2D::Create(material.textures[0].path);
+			outputMaterial.AddTexture(albedo, 0);
 		}
 
-		std::vector<uint32_t> indicesList;
-
-		// get the indices
-		uint32_t indexCount = (uint32_t)geom->getIndexCount();
-		for (uint32_t j = 0; j < indexCount; j++)
+		if (material.textures[1].is_valid)
 		{
-			uint32_t index = j * 3;
-			indicesList.push_back(index);
-			indicesList.push_back(index + 1);
-			indicesList.push_back(index + 2);
+			Ref<Texture2D> normalMap = Texture2D::Create(material.textures[1].path);
+			outputMaterial.AddTexture(normalMap, 1);
 		}
 
-		//std::string meshName = std::string(mesh->name);
-		std::string meshName = "Test";
+		if (material.textures[2].is_valid)
+		{
+			Ref<Texture2D> mixMap = Texture2D::Create(material.textures[2].path);
+			outputMaterial.AddTexture(mixMap, 2);
+		}
 
-		size_t numIndices = indicesList.size();
+		outputMaterial.SetShader("Standard");
 
-		std::filesystem::path outFilename = destination / meshName.substr(meshName.find_last_of("::") + 1);
-		outFilename.replace_extension(".staticmesh");
-		std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
-		outbin.write((char*)&vertexCount, sizeof(uint32_t));
-		outbin.write((char*)&numIndices, sizeof(uint32_t));
-		outbin.write((char*)&verticesList[0], sizeof(float) * vertexCount * 11);
-		outbin.write((char*)&indicesList[0], sizeof(uint32_t) * numIndices);
-		outbin.close();
+		outputMaterial.SaveMaterial(materialPath);
 	}
+
+	// write mesh
+	std::filesystem::path outFilename = destination / filepath.filename();
+	outFilename.replace_extension(".staticmesh");
+
+	std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
+
+	outbin.write((char*)&meshCount, sizeof(uint32_t));
+
+	for (ImportMesh& mesh : meshes)
+	{
+		size_t numVertices = mesh.indices.size();
+		size_t numIndices = mesh.indices.size();
+
+		std::string materialName = materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)];
+
+		size_t materialNameSize = materialName.size();
+
+		outbin.write((char*)&materialNameSize, sizeof(materialNameSize));
+		outbin.write((char*)&materialName, sizeof(materialNameSize));
+		
+		outbin.write((char*)&numVertices, sizeof(numVertices));
+		outbin.write((char*)&numIndices, sizeof(numIndices));
+		outbin.write((char*)&mesh.vertices[0], sizeof(Vertex) * numVertices);
+		outbin.write((char*)&mesh.indices[0], sizeof(uint32_t) * numIndices);
+	}
+	outbin.close();
+
 	//TODO: import skeletons
 	//TODO: import textures
 	return;
