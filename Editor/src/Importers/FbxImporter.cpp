@@ -166,7 +166,7 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 	const ofbx::Vec3* tangents = geom->getTangents();
 	const ofbx::Vec2* texcoords = geom->getUVs();
 
-	if (!tangents)
+	if (!tangents && texcoords)
 	{
 		ofbx::Vec3* generatedTangents = new ofbx::Vec3[vertexCount];
 		ComputeTangents(generatedTangents, vertexCount, vertices, normals, texcoords);
@@ -211,6 +211,10 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 			importMesh.materialSlot = geom->getMaterials()[triangleStart];
 		else
 			importMesh.materialSlot = 0;
+	}
+	else
+	{
+		importMesh.materialSlot = -1;
 	}
 
 	importMesh.name = fbxMesh->name;
@@ -333,6 +337,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	// gather materials
 	for (ImportMesh& mesh : meshes)
 	{
+		if (mesh.materialSlot == -1) continue;
 		const ofbx::Material* fbx_mat = mesh.fbx->getMaterial(mesh.materialSlot);
 		if (!fbx_mat) continue;
 
@@ -495,7 +500,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		size_t numVertices = mesh.indices.size();
 		size_t numIndices = mesh.indices.size();
 
-		std::string materialName = materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)];
+		std::string materialName = mesh.materialSlot != -1 ? materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)] : "Default";
 
 		size_t materialNameSize = materialName.size();
 
