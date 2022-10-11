@@ -32,6 +32,7 @@ void SceneGraph::Traverse(entt::registry& registry, const Matrix4x4& view, const
 
 void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry)
 {
+	ASSERT(entity.BelongsToScene(parent.GetScene()), "Entities must belong to the same scene");
 	Unparent(entity, registry);
 
 	ASSERT(parent.GetHandle() != entt::null, "Parent must not be null");
