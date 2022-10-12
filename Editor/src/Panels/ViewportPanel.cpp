@@ -969,15 +969,15 @@ void ViewportPanel::HandleKeyboardInputs()
 
 	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
-		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('Q'))
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q)))
 			m_Operation = OperationMode::Select;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('W'))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_W)))
 			m_Operation = OperationMode::Move;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('E'))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_E)))
 			m_Operation = OperationMode::Rotate;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('R'))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)))
 			m_Operation = OperationMode::Scale;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed('T'))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_T)))
 			m_Operation = OperationMode::Universal;
 	}
 }

@@ -370,11 +370,11 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 			Paste();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
 			Cut();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
 			Duplicate();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
 			SelectAll();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('R') && m_NumberSelected == 1)
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)) && m_NumberSelected == 1)
 			ImGui::OpenPopup("Rename");
 	}
 }

@@ -437,7 +437,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
+	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)))
 	{
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 		{
@@ -452,15 +452,15 @@ void MainDockSpace::HandleKeyBoardInputs()
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 			iSave->SaveAs();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('N'))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
 	{
 		m_ContentExplorer->CreateNewScene();
 	}
-	else if (ctrl && shift && !alt && ImGui::IsKeyPressed('N'))
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
 	{
 		Application::Get().AddOverlay(new ProjectsStartScreen(true));
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('O'))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O)))
 	{
 		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
 		if (fileToOpen)
@@ -504,7 +504,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 			if (iCopy->HasSelection())
 				iCopy->Cut();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('D'))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
