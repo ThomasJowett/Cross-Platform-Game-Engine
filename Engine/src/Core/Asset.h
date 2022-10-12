@@ -8,6 +8,7 @@ class Asset
 {
 public:
 	virtual bool Load(const std::filesystem::path& filepath) = 0;
+	virtual const std::filesystem::path& GetFilepath() const = 0;
 
 	bool Reload() { return Load(m_Filepath); }
 

@@ -5,6 +5,7 @@
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
+#include "Renderer/VertexArray.h"
 
 struct TilemapComponent
 {

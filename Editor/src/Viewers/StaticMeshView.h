@@ -5,6 +5,7 @@
 #include "Core/Layer.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/Material.h"
+#include "Renderer/StaticMesh.h"
 
 #include "Renderer/FrameBuffer.h"
 #include "imgui/imgui.h"
@@ -29,7 +30,7 @@ private:
 
 	std::string m_WindowName;
 
-	Ref<Mesh> m_Mesh;
+	Ref<StaticMesh> m_Mesh;
 
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
@@ -40,8 +41,5 @@ private:
 
 	ViewportCameraController m_CameraController;
 
-	Ref<Material> m_StandardMaterial; // TODO: load the default material from the mesh file (requires changing mesh file format!)
-
-	Ref<Material> m_GridMaterial;
-	Ref<VertexArray> m_GridMesh;
+	Ref<Mesh> m_GridMesh;
 };

@@ -1,19 +1,19 @@
 #pragma once
 
 #include "Core/core.h"
-#include "Renderer/Mesh.h"
+#include "Renderer/StaticMesh.h"
 #include "Renderer/Material.h"
 #include "Scene/AssetManager.h"
 
 struct StaticMeshComponent
 {
-	Ref<Mesh> mesh;
-	Ref<Material> material;
+	Ref<StaticMesh> mesh;
+	std::vector<std::string> materialOverrides;
 
 	StaticMeshComponent() = default;
 	StaticMeshComponent(const StaticMeshComponent&) = default;
-	StaticMeshComponent(Ref<Mesh> mesh, Ref<Material> material)
-		:mesh(mesh), material(material) {}
+	StaticMeshComponent(Ref<StaticMesh> mesh)
+		:mesh(mesh) {}
 
 private:
 	friend cereal::access;
@@ -21,47 +21,32 @@ private:
 	void save(Archive& archive) const 
 	{
 		std::string relativeMeshPath;
-		std::string relativeMaterialPath;
 		if (mesh)
 		{
 			if (!mesh->GetFilepath().empty())
 				relativeMeshPath = FileUtils::RelativePath(mesh->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		}
 
-		if (material)
-		{
-			if (!material->GetFilepath().empty())
-				relativeMaterialPath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		}
-
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
-		archive(cereal::make_nvp("Material", relativeMaterialPath));
+		archive(cereal::make_nvp("MaterialOverrides", materialOverrides));
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		std::string relativeMeshPath;
-		std::string relativeMaterialPath;
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
-		archive(cereal::make_nvp("Material", relativeMaterialPath));
+		archive(cereal::make_nvp("Material", materialOverrides));
 
 		if (!relativeMeshPath.empty())
 		{
-			mesh = AssetManager::GetMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+			mesh = AssetManager::GetStaticMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+			materialOverrides.resize(mesh->GetMeshes().size());
 		}
 		else
 		{
 			mesh.reset();
-		}
-
-		if (!relativeMaterialPath.empty())
-		{
-			material = AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterialPath));
-		}
-		else
-		{
-			material.reset();
+			materialOverrides.clear();
 		}
 	}
 };

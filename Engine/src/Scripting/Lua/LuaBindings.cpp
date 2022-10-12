@@ -162,9 +162,9 @@ void BindScene(sol::state& state)
 		{
 			return AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
 		});
-	assetManager.set_function("GetMesh", [](std::string_view path) -> Ref<Mesh>
+	assetManager.set_function("GetStaticMesh", [](std::string_view path) -> Ref<StaticMesh>
 		{
-			return AssetManager::GetMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetStaticMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
 		});
 	assetManager.set_function("GetPhysicsMaterial", [](std::string_view path) -> Ref<PhysicsMaterial>
 		{

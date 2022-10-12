@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/VertexArray.h"
+#include "Renderer/Mesh.h"
 
 namespace GeometryGenerator
 {
@@ -12,7 +12,7 @@ namespace GeometryGenerator
 	 * @param depth 
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateCube(float width, float height, float depth);
+	Ref<Mesh> CreateCube(float width, float height, float depth);
 
 	/**
 	 * Create a Lat/Long Sphere Vertex array
@@ -22,7 +22,7 @@ namespace GeometryGenerator
 	 * @param latitudeLines 
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines);
+	Ref<Mesh> CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines);
 
 	/**
 	 * Create a Gridded Plane Vertex array
@@ -35,14 +35,14 @@ namespace GeometryGenerator
 	 * @param tileV tiling of texture on grid
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV);
+	Ref<Mesh> CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV);
 
 	/**
 	 * Create a Full Screen Quad used for post processing
 	 * 
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateFullScreenQuad();
+	Ref<Mesh> CreateFullScreenQuad();
 
 	/**
 	 * Create a Cylinder Vertex array
@@ -54,7 +54,7 @@ namespace GeometryGenerator
 	 * @param stackCount number of lines around cylinder
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount);
+	Ref<Mesh> CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount);
 
 	/**
 	 * Create a Torus Vertex array
@@ -64,5 +64,5 @@ namespace GeometryGenerator
 	 * @param segments 
 	 * @return Ref<VertexArray> 
 	 */
-	Ref<VertexArray> CreateTorus(float diameter, float thickness, uint32_t segments);
+	Ref<Mesh> CreateTorus(float diameter, float thickness, uint32_t segments);
 }

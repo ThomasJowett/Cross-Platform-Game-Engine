@@ -132,3 +132,8 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<VertexArray>& ver
 
 	RenderCommand::DrawIndexed(vertexArray, 0, !material->IsTwoSided());
 }
+
+void Renderer::Submit(const Ref<Mesh>& mesh, const Matrix4x4& transform, int entityId)
+{
+	Submit(mesh->GetMaterial(), mesh->GetVertexArray(), transform, entityId);
+}

@@ -76,8 +76,10 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f));
-					cubeEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
+					StaticMeshComponent& staticMesh = cubeEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh = CreateRef<StaticMesh>();
+					staticMesh.mesh->AddMesh(mesh);
 					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
 				}
@@ -85,8 +87,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(0.5f, 16, 32));
-					sphereEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateSphere(0.5f, 16, 32);
+					StaticMeshComponent& staticMesh = sphereEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh->AddMesh(mesh);
 					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
 				}
@@ -94,8 +97,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1));
-					planeEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1);
+					StaticMeshComponent& staticMesh = planeEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh->AddMesh(mesh);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
 				}
@@ -103,8 +107,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5));
-					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5);
+					StaticMeshComponent& staticMesh = cylinderEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh->AddMesh(mesh);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
 				}
@@ -112,8 +117,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5));
-					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5);
+					StaticMeshComponent& staticMesh = cylinderEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh->AddMesh(mesh);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
 				}
@@ -121,8 +127,9 @@ void HierarchyPanel::OnImGuiRender()
 				{
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
 
-					Ref<Mesh> mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32));
-					torusEntity.AddComponent<StaticMeshComponent>(mesh, m_StandardMaterial);
+					Ref<Mesh> mesh = GeometryGenerator::CreateTorus(1.0f, 0.4f, 32);
+					StaticMeshComponent& staticMesh = torusEntity.AddComponent<StaticMeshComponent>();
+					staticMesh.mesh->AddMesh(mesh);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
 				}
@@ -223,7 +230,7 @@ void HierarchyPanel::OnImGuiRender()
 						{
 							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-							if (entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
+							/*if (entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
 							{
 								StaticMeshComponent& staticMeshComp = entity.GetOrAddComponent<StaticMeshComponent>();
 								PrimitiveComponent& primitiveComp = entity.GetComponent<PrimitiveComponent>();
@@ -260,7 +267,7 @@ void HierarchyPanel::OnImGuiRender()
 									}
 									primitiveComp.needsUpdating = false;
 								}
-							}
+							}*/
 
 							// Only draw a node for root entites, children are drawn recursively
 							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();

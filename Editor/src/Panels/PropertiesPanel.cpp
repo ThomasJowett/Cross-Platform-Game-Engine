@@ -74,7 +74,7 @@ void PropertiesPanel::OnImGuiRender()
 
 					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
 					{
-						entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
+						//entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
 					}
 					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
 					{
@@ -263,15 +263,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 				{
-					staticMesh.mesh = AssetManager::GetMesh(meshFilepath);
-					if (!staticMesh.material)
-					{
-						staticMesh.material = m_DefaultMaterial;
-					}
+					staticMesh.mesh = AssetManager::GetStaticMesh(meshFilepath);
 					SceneManager::CurrentScene()->MakeDirty();
 				}
 			}
-			Dirty(ImGui::MaterialEdit("Material", staticMesh.material, m_DefaultMaterial));
+			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
+			{
+				Ref<Material> material = AssetManager::GetMaterial(
+					std::filesystem::absolute(Application::GetOpenDocumentDirectory() / staticMesh.materialOverrides[i]));
+
+				Dirty(ImGui::MaterialEdit("Material", material, staticMesh.mesh->GetMeshes()[i]->GetMaterial()));
+			}
 		});
 
 	// Camera------------------------------------------------------------------------------------------------------------

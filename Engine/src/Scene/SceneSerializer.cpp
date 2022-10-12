@@ -169,10 +169,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		tinyxml2::XMLElement* pStaticMeshElement = pElement->InsertNewChildElement("StaticMesh");
 
 		if (component.mesh)
-			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Mesh"), component.mesh->GetFilepath());
+			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
-		if (component.material)
-			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material->GetFilepath());
+		for(const std::string& materialOverride : component.materialOverrides)
+			pStaticMeshElement->SetAttribute("MaterialOverride", materialOverride.c_str());
 	}
 
 	if (entity.HasComponent<PrimitiveComponent>())
@@ -558,7 +558,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		StaticMeshComponent& component = entity.AddComponent<StaticMeshComponent>();
 
-		if (tinyxml2::XMLElement const* pMeshElement = pStaticMeshComponentElement->FirstChildElement("Mesh"))
+		if (tinyxml2::XMLElement const* pMeshElement = pStaticMeshComponentElement->FirstChildElement("StaticMesh"))
 		{
 			const char* meshFilepathChar = pMeshElement->Attribute("Filepath");
 
@@ -567,23 +567,23 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				if (std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
 					!meshFilepath.empty())
 				{
-					component.mesh = AssetManager::GetMesh(meshFilepath);
+					component.mesh = AssetManager::GetStaticMesh(meshFilepath);
 				}
 			}
 		}
 
-		if (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("Material"))
-		{
-			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
-			{
-				if (std::string materialFilepathStr(materialFilepathChar);
-					!materialFilepathStr.empty())
-				{
-					std::filesystem::path materialFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-					component.material = AssetManager::GetMaterial(materialFilepath);
-				}
-			}
-		}
+		//if (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("Material"))
+		//{
+		//	if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
+		//	{
+		//		if (std::string materialFilepathStr(materialFilepathChar);
+		//			!materialFilepathStr.empty())
+		//		{
+		//			std::filesystem::path materialFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
+		//			component.material = AssetManager::GetMaterial(materialFilepath);
+		//		}
+		//	}
+		//}
 	}
 
 	// Primitive -------------------------------------------------------------------------------------------------------

@@ -32,11 +32,12 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<Til
 
 	m_Framebuffer->ClearAttachment(1, -1);
 
-	m_GridMaterial = CreateRef<Material>("Grid", Colours::GREY);
-	m_GridMaterial->SetTwoSided(true);
-	m_GridMaterial->SetTilingFactor(100.0f);
+	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	gridMaterial->SetTwoSided(true);
+	gridMaterial->SetTilingFactor(100.0f);
 
 	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f);
+	m_GridMesh->SetMaterial(gridMaterial);
 }
 
 void ViewportPanel::OnAttach()
@@ -359,11 +360,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				Matrix4x4 gridTransform = Matrix4x4::Translate(Vector3f(m_CameraController.GetPosition().x, m_CameraController.GetPosition().y, 0.001f))
 					* Matrix4x4::RotateX((float)PIDIV2);
-				Renderer::Submit(m_GridMaterial, m_GridMesh, gridTransform);
+				Renderer::Submit(m_GridMesh, gridTransform);
 			}
 			else
 			{
-				Renderer::Submit(m_GridMaterial, m_GridMesh, Matrix4x4::Translate(Vector3f(m_CameraController.GetPosition().x, 0.0f, m_CameraController.GetPosition().z)));
+				Renderer::Submit(m_GridMesh, Matrix4x4::Translate(Vector3f(m_CameraController.GetPosition().x, 0.0f, m_CameraController.GetPosition().z)));
 			}
 		}
 
@@ -639,9 +640,8 @@ void ViewportPanel::OnImGuiRender()
 
 						StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
-						staticMeshComp.mesh = AssetManager::GetMesh(*file);
-						staticMeshComp.material = CreateRef<Material>("Standard", Colours::WHITE);
-						staticMeshComp.material->AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
+						staticMeshComp.mesh = AssetManager::GetStaticMesh(*file);
+						staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMeshes().size());
 					}
 					else if (file->extension() == ".tmx")
 					{

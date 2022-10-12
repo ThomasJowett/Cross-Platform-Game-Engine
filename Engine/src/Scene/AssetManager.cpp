@@ -17,14 +17,13 @@ Ref<Tileset> AssetManager::GetTileset(const std::filesystem::path& filepath)
 
 Ref<Material> AssetManager::GetMaterial(const std::filesystem::path& filepath)
 {
-	std::lock_guard lock(s_Mutex);
 	return Get().GetMaterialImpl(filepath);
 }
 
-Ref<Mesh> AssetManager::GetMesh(const std::filesystem::path& filepath)
+Ref<StaticMesh> AssetManager::GetStaticMesh(const std::filesystem::path& filepath)
 {
 	std::lock_guard lock(s_Mutex);
-	return Get().GetMeshImpl(filepath);
+	return Get().GetStaticMeshImpl(filepath);
 }
 
 Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterial(const std::filesystem::path& filepath)
@@ -57,9 +56,9 @@ Ref<Material> AssetManager::GetMaterialImpl(const std::filesystem::path& filepat
 	return m_Materials.Load(filepath);
 }
 
-Ref<Mesh> AssetManager::GetMeshImpl(const std::filesystem::path& filepath)
+Ref<StaticMesh> AssetManager::GetStaticMeshImpl(const std::filesystem::path& filepath)
 {
-	return m_Meshes.Load(filepath);
+	return m_StaticMeshes.Load(filepath);
 }
 
 Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterialImpl(const std::filesystem::path& filepath)

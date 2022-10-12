@@ -2,18 +2,11 @@
 #include "GeometryGenerator.h"
 
 #include "math/Quaternion.h"
-
-// All geometry return with this layout so that it can be used in standard shaders
-static BufferLayout layout = {
-		{ShaderDataType::Float3, "a_Position"},
-		{ShaderDataType::Float3, "a_Normal"},
-		{ShaderDataType::Float3, "a_Tangent"},
-		{ShaderDataType::Float2, "a_TexCoord"}
-};
+#include "Renderer/Mesh.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float depth)
+Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
 
@@ -83,17 +76,20 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(indices, 36);
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
+Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
 {
 	PROFILE_FUNCTION();
 
@@ -176,17 +172,20 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
+Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
 {
 	PROFILE_FUNCTION();
 
@@ -271,7 +270,7 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(indices, (uint32_t)facecount * 3);
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
@@ -279,12 +278,15 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	delete[] indices;
 	delete[] vertices;
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
+Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
 
@@ -309,17 +311,20 @@ Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(indices, (uint32_t)6);
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
 {
 	PROFILE_FUNCTION();
 
@@ -529,17 +534,20 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
+Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
 {
 	PROFILE_FUNCTION();
 
@@ -614,10 +622,13 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 	Ref<IndexBuffer> indexBuffer;
 	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
 
-	vertexBuffer->SetLayout(layout);
+	vertexBuffer->SetLayout(s_StaticMeshLayout);
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	return returnModel;
+	AABB aabb;
+	//TODO calculate bounds
+
+	return CreateRef<Mesh>(returnModel);
 }

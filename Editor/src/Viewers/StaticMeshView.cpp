@@ -16,15 +16,16 @@ void StaticMeshView::OnAttach()
 {
 	m_WindowName = ICON_FA_SHAPES + std::string(" " + m_FilePath.filename().string());
 
-	m_Mesh = AssetManager::GetMesh(m_FilePath);
+	m_Mesh = AssetManager::GetStaticMesh(m_FilePath);
 
-	m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
-	m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
+	//m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
+	//m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 
-	m_GridMaterial = CreateRef<Material>("Grid", Colours::GREY);
-	m_GridMaterial->SetTwoSided(true);
-	m_GridMaterial->SetTilingFactor(100.0f);
+	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	gridMaterial->SetTwoSided(true);
+	gridMaterial->SetTilingFactor(100.0f);
 	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f);
+	m_GridMesh->SetMaterial(gridMaterial);
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 	m_CameraController.SwitchCamera(true);
@@ -142,9 +143,12 @@ void StaticMeshView::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-	Renderer::Submit(m_StandardMaterial, m_Mesh->GetVertexArray());
+	for (auto mesh : m_Mesh->GetMeshes())
+	{
+		Renderer::Submit(mesh->GetMaterial(), mesh->GetVertexArray());
+	}
 
-	Renderer::Submit(m_GridMaterial, m_GridMesh);
+	Renderer::Submit(m_GridMesh->GetMaterial(), m_GridMesh->GetVertexArray());
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

@@ -497,18 +497,17 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 	for (ImportMesh& mesh : meshes)
 	{
-		size_t numVertices = mesh.indices.size();
+		size_t numVertices = mesh.vertices.size();
 		size_t numIndices = mesh.indices.size();
-
+	
 		std::string materialName = mesh.materialSlot != -1 ? materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)] : "Default";
-
-		size_t materialNameSize = materialName.size();
-
-		outbin.write((char*)&materialNameSize, sizeof(materialNameSize));
-		outbin.write((char*)&materialName, sizeof(materialNameSize));
-		
-		outbin.write((char*)&numVertices, sizeof(numVertices));
-		outbin.write((char*)&numIndices, sizeof(numIndices));
+	
+		outbin << materialName.size();
+		outbin << materialName;
+	
+		outbin.write((char*)&numVertices, sizeof(size_t));
+		outbin.write((char*)&numIndices, sizeof(size_t));
+	
 		outbin.write((char*)&mesh.vertices[0], sizeof(Vertex) * numVertices);
 		outbin.write((char*)&mesh.indices[0], sizeof(uint32_t) * numIndices);
 	}

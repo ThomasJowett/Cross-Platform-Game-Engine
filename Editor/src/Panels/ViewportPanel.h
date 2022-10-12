@@ -92,6 +92,5 @@ private:
 	Ref<TilemapEditor> m_TilemapEditor;
 	bool m_RightClickMenuOpen = false;
 
-	Ref<Material> m_GridMaterial;
-	Ref<VertexArray> m_GridMesh;
+	Ref<Mesh> m_GridMesh;
 };
