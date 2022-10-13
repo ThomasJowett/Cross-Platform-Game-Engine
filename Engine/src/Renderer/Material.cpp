@@ -47,7 +47,10 @@ void Material::AddTexture(Ref<Texture2D> texture, uint32_t slot)
 bool Material::Load(const std::filesystem::path& filepath)
 {
 	if (!std::filesystem::exists(filepath))
+	{
+		DefaultMaterial();
 		return false;
+	}
 
 	tinyxml2::XMLDocument doc;
 
@@ -58,6 +61,7 @@ bool Material::Load(const std::filesystem::path& filepath)
 		if (!pRoot)
 		{
 			ENGINE_ERROR("Could not read material file, no material node {0}", filepath);
+			DefaultMaterial();
 			return false;
 		}
 
@@ -133,4 +137,29 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 bool Material::SaveMaterial() const
 {
 	return SaveMaterial(m_Filepath);
+}
+
+void Material::DefaultMaterial()
+{
+	m_Filepath = "Default";
+	m_Tint.SetColour(Colours::WHITE);
+	m_TwoSided = false;
+	m_Shader = "Standard";
+	m_CastShadows = true;
+	m_TilingFactor = 1.0f;
+	const uint32_t textureSize = 8;
+	uint32_t textureData[textureSize][textureSize];
+
+	for (uint32_t i = 0; i < textureSize; i++)
+	{
+		for (uint32_t j = 0; j < textureSize; j++)
+		{
+			textureData[i][j] = ((i + j) % 2) ? 0x404040 : 0x969696;
+		}
+	}
+
+	Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize);
+	texture->SetData(&textureData, sizeof(uint32_t) * textureSize * textureSize);
+
+	AddTexture(texture, 0);
 }

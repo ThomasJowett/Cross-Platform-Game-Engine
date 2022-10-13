@@ -45,7 +45,10 @@ public:
 
 	float GetTilingFactor() { return m_TilingFactor; }
 	void SetTilingFactor(float tilingFactor) { m_TilingFactor = tilingFactor; }
+
 private:
+	void DefaultMaterial();
+
 	std::string m_Shader;
 
 	std::unordered_map<uint32_t, Ref<Texture2D>> m_Textures;

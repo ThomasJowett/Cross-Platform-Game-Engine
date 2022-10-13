@@ -23,6 +23,9 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 
 	m_Filepath = filepath;
 
+	std::filesystem::path assetDirectory = filepath;
+	assetDirectory.remove_filename();
+
 	uint32_t meshCount;
 
 	file.read((char*)&meshCount, sizeof(uint32_t));
@@ -43,7 +46,8 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		std::vector<char> tmp(materialPathSize);
 		file.read(tmp.data(), materialPathSize); // deserialize characters of string
 		materialPath.assign(tmp.data(), materialPathSize);
-		materialPath += ".material";
+		if(materialPath != "Default")
+			materialPath += ".material";
 	
 		//Read in the array sizes
 		file.read((char*)&numVertices, sizeof(size_t));
@@ -58,7 +62,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		std::vector<Vertex> verticesArr;
 		verticesArr.assign(numVertices, vertices[0]);
 	
-		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(sizeof(Vertex) * numVertices);
+		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(sizeof(Vertex) * (uint32_t)numVertices);
 		vertexBuffer->SetData(vertices);
 		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, numIndices);
 	
@@ -71,7 +75,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		//TODO: load aabb from file
 	
 		Ref<Mesh> mesh = CreateRef<Mesh>(vertexArray);
-		mesh->SetMaterial(AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialPath)));
+		mesh->SetMaterial(AssetManager::GetMaterial(std::filesystem::absolute(assetDirectory / materialPath)));
 	
 		m_Meshes.push_back(mesh);
 	
