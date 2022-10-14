@@ -138,6 +138,8 @@ void ContentExplorerPanel::SelectAll()
 
 	for (auto dir : m_SelectedDirs)
 		dir = true;
+
+	m_NumberSelected = (uint32_t)(m_SelectedDirs.size() + m_SelectedFiles.size());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -568,6 +570,8 @@ void ContentExplorerPanel::ClearSelected()
 	m_SelectedDirs.resize(m_Dirs.size());
 	m_SelectedFiles.clear();
 	m_SelectedFiles.resize(m_Files.size());
+	m_LastSelectedFile = -1;
+	m_LastSelectedDir = -1;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -705,6 +709,8 @@ void ContentExplorerPanel::OnImGuiRender()
 		ClearSelected();
 
 		m_NumberSelected = 0;
+		m_LastSelectedFile = -1;
+		m_LastSelectedDir = -1;
 
 		m_TextureLibrary.Clear();
 	}
@@ -1047,7 +1053,36 @@ void ContentExplorerPanel::OnImGuiRender()
 					std::string dirName = ICON_FA_FOLDER " " + SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 					if (ImGui::Selectable(dirName.c_str(), m_SelectedDirs[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
-						if (!ImGui::GetIO().KeyCtrl)
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							m_NumberSelected -= m_SelectedDirs[i];
+							m_SelectedDirs[i] = !m_SelectedDirs[i];
+
+							m_NumberSelected += m_SelectedDirs[i];
+						}
+						else if (ImGui::GetIO().KeyShift)
+						{
+							if (m_LastSelectedDir != -1)
+							{
+								for (int j = 0; j < m_Dirs.size(); j++)
+								{
+									m_SelectedDirs[j] = (j >= std::min(m_LastSelectedDir, (int)i) && j <= std::max(m_LastSelectedDir, (int)i));
+								}
+							}
+							else if (m_LastSelectedFile != -1)
+							{
+								for (int j = 0; j < m_Dirs.size(); j++)
+								{
+									m_SelectedDirs[j] = j >= i;
+								}
+								for (int j = 0; j < m_Files.size(); j++)
+								{
+									m_SelectedFiles[j] = j <= m_LastSelectedFile;
+								}
+							}
+							m_NumberSelected = 2;
+						}
+						else
 						{
 							ClearSelected();
 
@@ -1055,13 +1090,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 							m_NumberSelected = 1;
 							m_CurrentSelectedPath = m_Dirs[i];
-						}
-						else
-						{
-							m_NumberSelected -= m_SelectedDirs[i];
-							m_SelectedDirs[i] = !m_SelectedDirs[i];
-
-							m_NumberSelected += m_SelectedDirs[i];
 						}
 
 						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
@@ -1071,6 +1099,8 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_CurrentPath = *m_History.GetCurrentFolder();
 							m_ForceRescan = true;
 						}
+						m_LastSelectedDir = (int)i;
+						m_LastSelectedFile = -1;
 					}
 
 					ItemContextMenu(i, true, dirName);
@@ -1100,7 +1130,42 @@ void ContentExplorerPanel::OnImGuiRender()
 
 					if (ImGui::Selectable(filename.c_str(), m_SelectedFiles[i], ImGuiSelectableFlags_AllowDoubleClick))
 					{
-						if (!ImGui::GetIO().KeyCtrl)
+						if (ImGui::GetIO().KeyCtrl)
+						{
+							m_NumberSelected -= m_SelectedFiles[i];
+
+							m_SelectedFiles[i] = !m_SelectedFiles[i];
+
+							m_NumberSelected += m_SelectedFiles[i];
+
+							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
+							{
+								OpenAllSelectedItems();
+							}
+						}
+						else if (ImGui::GetIO().KeyShift)
+						{
+							if (m_LastSelectedFile != -1)
+							{
+								for (int j = 0; j < m_Files.size(); j++)
+								{
+									m_SelectedFiles[j] = (j >= std::min(m_LastSelectedFile, (int)i) && j <= std::max(m_LastSelectedFile, (int)i));
+								}
+							}
+							else if (m_LastSelectedDir != -1)
+							{
+								for (int j = 0; j < m_Dirs.size(); j++)
+								{
+									m_SelectedDirs[j] = j >= m_LastSelectedDir;
+								}
+								for (int j = 0; j < m_Files.size(); j++)
+								{
+									m_SelectedFiles[j] = j <= i;
+								}
+							}
+							m_NumberSelected = 2;
+						}
+						else
 						{
 							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
@@ -1116,19 +1181,8 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 							m_CurrentSelectedPath = m_Files[i];
 						}
-						else
-						{
-							m_NumberSelected -= m_SelectedFiles[i];
-
-							m_SelectedFiles[i] = !m_SelectedFiles[i];
-
-							m_NumberSelected += m_SelectedFiles[i];
-
-							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
-							{
-								OpenAllSelectedItems();
-							}
-						}
+						m_LastSelectedFile = i;
+						m_LastSelectedDir = -1;
 					}
 
 					ItemContextMenu(i, false, filename);
@@ -1219,6 +1273,8 @@ void ContentExplorerPanel::OnImGuiRender()
 							m_CurrentPath = *m_History.GetCurrentFolder();
 							m_ForceRescan = true;
 						}
+						m_LastSelectedDir = (int)i;
+						m_LastSelectedFile = -1;
 					}
 
 					//Files -------------------------------------------------------------------------------
@@ -1291,6 +1347,8 @@ void ContentExplorerPanel::OnImGuiRender()
 
 								m_NumberSelected += m_SelectedFiles[i];
 							}
+							m_LastSelectedFile = (int)i;
+							m_LastSelectedDir = -1;
 						}
 						ImGui::PopFont();
 						ItemContextMenu(i, false, filename);
@@ -1383,6 +1441,8 @@ void ContentExplorerPanel::OnImGuiRender()
 								m_CurrentPath = *m_History.GetCurrentFolder();
 								m_ForceRescan = true;
 							}
+							m_LastSelectedDir = (int)i;
+							m_LastSelectedFile = -1;
 						}
 
 						ItemContextMenu(i, true, dirName);
@@ -1447,6 +1507,8 @@ void ContentExplorerPanel::OnImGuiRender()
 									OpenAllSelectedItems();
 								}
 							}
+							m_LastSelectedFile = (int)i;
+							m_LastSelectedDir = -1;
 						}
 						ItemContextMenu(i, false, filename);
 						CreateDragDropSource(i);

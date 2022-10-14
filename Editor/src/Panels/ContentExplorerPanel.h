@@ -149,6 +149,9 @@ private:
 	std::vector<bool> m_SelectedDirs;
 	std::vector<bool> m_SelectedFiles;
 
+	int m_LastSelectedDir = -1;
+	int m_LastSelectedFile = -1;
+
 	int m_NumberSelected;
 	ImVec2 m_CurrentSelectedPosition;
 	std::filesystem::path m_CurrentSelectedPath;

@@ -177,19 +177,27 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 
 	importMesh.fbx = fbxMesh;
 	importMesh.vertices.resize(vertexCount);
+	ofbx::Matrix transform = fbxMesh->getGlobalTransform();
+
+	Matrix4x4 transformf(
+		(float)transform.m[0], (float)transform.m[4], (float)transform.m[8], (float)transform.m[12],
+		(float)transform.m[1], (float)transform.m[5], (float)transform.m[9], (float)transform.m[13],
+		(float)transform.m[2], (float)transform.m[6], (float)transform.m[10], (float)transform.m[14],
+		(float)transform.m[3], (float)transform.m[7], (float)transform.m[11], (float)transform.m[15]
+		);
 
 	for (int i = 0; i < vertexCount; i++)
 	{
 		Vertex& vertex = importMesh.vertices[i];
 
-		vertex.position = Vector3f((float)vertices[i].x, (float)vertices[i].y, (float)vertices[i].z);
+		vertex.position = transformf * Vector3f((float)vertices[i].x, (float)vertices[i].y, (float)vertices[i].z);
 
 		importMesh.aabb.Merge(vertex.position);
 
 		if (normals)
-			vertex.normal = Vector3f((float)normals[i].x, (float)normals[i].y, (float)normals[i].z);
+			vertex.normal = Vector3f((float)normals[i].x, (float)normals[i].y, (float)normals[i].z).GetNormalized();
 		if (tangents)
-			vertex.tangent = Vector3f((float)tangents[i].x, (float)tangents[i].y, (float)tangents[i].z);
+			vertex.tangent = Vector3f((float)tangents[i].x, (float)tangents[i].y, (float)tangents[i].z).GetNormalized();
 		if (texcoords)
 			vertex.texcoord = Vector2f((float)texcoords[i].x, (float)texcoords[i].y);
 

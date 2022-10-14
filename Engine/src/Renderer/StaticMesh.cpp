@@ -52,6 +52,11 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		//Read in the array sizes
 		file.read((char*)&numVertices, sizeof(size_t));
 		file.read((char*)&numIndices, sizeof(size_t));
+		if (numIndices > UINT_MAX || numVertices > UINT_MAX)
+		{
+			ENGINE_ERROR("Could not parse static mesh");
+			return false;
+		}
 		Vertex* vertices = new Vertex[numVertices];
 		uint32_t* indices = new uint32_t[numIndices];
 		
