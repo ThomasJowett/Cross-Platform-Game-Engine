@@ -22,27 +22,35 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 		if (!std::filesystem::exists(material->GetFilepath()))
 		{
 			material = defaultMaterial;
-			return true;
+			materialName.clear();
 		}
-		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(material->GetFilepath());
-
-		if (lastWrittenTime != s_MaterialFileTime)
+		else
 		{
-			material->Reload();
-			s_MaterialFileTime = lastWrittenTime;
+			std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(material->GetFilepath());
+
+			if (lastWrittenTime != s_MaterialFileTime)
+			{
+				material->Reload();
+				s_MaterialFileTime = lastWrittenTime;
+			}
 		}
 	}
 
 	if (materialName.empty())
 		materialName = "Default";
 
-	if (ImGui::BeginCombo("##materialEdit", materialName.c_str()))
+	std::string comboId = "##materialEdit";
+	
+	std::strcat(comboId.data(), label);
+
+	if (ImGui::BeginCombo(comboId.c_str(), materialName.c_str()))
 	{
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::MATERIAL)))
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
 				material = AssetManager::GetMaterial(file);
+				materialName = material->GetFilepath().filename().string();
 				edited = true;
 				break;
 			}
@@ -54,7 +62,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 	{
 		ImGui::SameLine();
 
-		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
+		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##EditMaterial"))
 		{
 			ViewerManager::OpenViewer(material->GetFilepath());
 		}

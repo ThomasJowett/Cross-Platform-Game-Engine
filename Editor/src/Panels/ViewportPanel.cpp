@@ -36,8 +36,7 @@ ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<Til
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
 
-	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f);
-	m_GridMesh->SetMaterial(gridMaterial);
+	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f), gridMaterial);
 }
 
 void ViewportPanel::OnAttach()

@@ -18,7 +18,7 @@ struct TransformComponent
 	TransformComponent(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
 		:position(position), rotation(rotation), scale(scale) {}
 
-	Matrix4x4 GetWorldMatrix() const
+	const Matrix4x4& GetWorldMatrix() const
 	{
 		return m_WorldMatrix;
 	}

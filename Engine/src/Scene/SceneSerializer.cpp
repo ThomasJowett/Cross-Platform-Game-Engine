@@ -171,8 +171,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		if (component.mesh)
 			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
-		for(const std::string& materialOverride : component.materialOverrides)
-			pStaticMeshElement->SetAttribute("MaterialOverride", materialOverride.c_str());
+		for (const std::string& materialOverride : component.materialOverrides)
+			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), std::filesystem::path(materialOverride));
 	}
 
 	if (entity.HasComponent<PrimitiveComponent>())
@@ -572,18 +572,14 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			}
 		}
 
-		//if (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("Material"))
-		//{
-		//	if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
-		//	{
-		//		if (std::string materialFilepathStr(materialFilepathChar);
-		//			!materialFilepathStr.empty())
-		//		{
-		//			std::filesystem::path materialFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-		//			component.material = AssetManager::GetMaterial(materialFilepath);
-		//		}
-		//	}
-		//}
+		for(tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
+			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+		{
+			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
+			{
+				component.materialOverrides.push_back(SerializationUtils::AbsolutePath(materialFilepathChar).string());
+			}
+		}
 	}
 
 	// Primitive -------------------------------------------------------------------------------------------------------

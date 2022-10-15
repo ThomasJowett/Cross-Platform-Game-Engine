@@ -204,8 +204,9 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 	}
 
 	// get the indices
-	uint32_t indexCount = (uint32_t)geom->getIndexCount();
-	for (uint32_t i = 0; i < indexCount; i++)
+	//uint32_t indexCount = (uint32_t)geom->getIndexCount();
+	//const int* indices = geom->getFaceIndices();
+	for (uint32_t i = 0; i < vertexCount / 3; i++)
 	{
 		uint32_t index = i * 3;
 		importMesh.indices.push_back(index);
@@ -283,8 +284,6 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	std::string assetDirectory = filepath.string();
 	assetDirectory = assetDirectory.substr(0, assetDirectory.find_last_of(std::filesystem::path::preferred_separator));
 
-	uint32_t meshCount = 0;
-
 	for (int i = 0, count = scene->getMeshCount(); i < count; ++i)
 	{
 		const ofbx::Mesh* fbxMesh = scene->getMesh(i);
@@ -297,7 +296,6 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		if (fbxMesh->getMaterialCount() < 2 || !geom->getMaterials())
 		{
 			meshes.push_back(LoadMesh(fbxMesh, 0, triangleCount - 1));
-			meshCount++;
 		}
 		else
 		{
@@ -309,15 +307,13 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 				if (rangeStartMaterial != materials[triangleIndex])
 				{
 					meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleIndex - 1));
-					meshCount++;
+					
 					rangeStart = triangleIndex;
 					rangeStartMaterial = materials[triangleIndex];
 				}
 			}
 			meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleCount - 1));
-			meshCount++;
 		}
-
 	}
 	
 	// gather animations
@@ -501,14 +497,15 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 
 	std::ofstream outbin(outFilename, std::ios::out | std::ios::binary);
 
-	outbin.write((char*)&meshCount, sizeof(uint32_t));
+	size_t meshCount = meshes.size();
+	outbin.write((char*)&meshCount, sizeof(size_t));
 
 	for (ImportMesh& mesh : meshes)
 	{
 		size_t numVertices = mesh.vertices.size();
 		size_t numIndices = mesh.indices.size();
 	
-		std::string materialName = mesh.materialSlot != -1 ? materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)] : "Default";
+		std::string materialName = mesh.materialSlot != -1 ? materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)] : "";
 	
 		outbin << materialName.size();
 		outbin << materialName;

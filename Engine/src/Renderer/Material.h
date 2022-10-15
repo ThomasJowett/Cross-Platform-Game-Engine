@@ -13,7 +13,7 @@
 class Material : public Asset
 {
 public:
-	Material() = default;
+	Material();
 	Material(const std::filesystem::path& filepath);
 	Material(const std::string& shader, Colour tint = Colours::WHITE);
 
@@ -54,8 +54,6 @@ private:
 	std::unordered_map<uint32_t, Ref<Texture2D>> m_Textures;
 
 	Colour m_Tint;
-
-	std::filesystem::path m_Filepath;
 
 	bool m_TwoSided = false;
 	bool m_Transparent = false;

@@ -26,11 +26,11 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	std::filesystem::path assetDirectory = filepath;
 	assetDirectory.remove_filename();
 
-	uint32_t meshCount;
+	size_t meshCount;
 
-	file.read((char*)&meshCount, sizeof(uint32_t));
+	file.read((char*)&meshCount, sizeof(size_t));
 
-	for (uint32_t i = 0; i < meshCount; i++)
+	for (size_t i = 0; i < meshCount; i++)
 	{
 		size_t numVertices;
 		size_t numIndices;
@@ -42,19 +42,20 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		size_t materialPathSize;
 	
 		file >> materialPathSize;
-	
+		
 		std::vector<char> tmp(materialPathSize);
 		file.read(tmp.data(), materialPathSize); // deserialize characters of string
 		materialPath.assign(tmp.data(), materialPathSize);
-		if(materialPath != "Default")
+		if(!materialPath.empty())
 			materialPath += ".material";
 	
 		//Read in the array sizes
 		file.read((char*)&numVertices, sizeof(size_t));
 		file.read((char*)&numIndices, sizeof(size_t));
-		if (numIndices > UINT_MAX || numVertices > UINT_MAX)
+
+		if (numVertices > UINT_MAX || numIndices > UINT_MAX)
 		{
-			ENGINE_ERROR("Could not parse static mesh");
+			ENGINE_ERROR("Static mesh could not be read");
 			return false;
 		}
 		Vertex* vertices = new Vertex[numVertices];
@@ -69,7 +70,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	
 		Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(sizeof(Vertex) * (uint32_t)numVertices);
 		vertexBuffer->SetData(vertices);
-		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, numIndices);
+		Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(indices, (uint32_t)numIndices);
 	
 		vertexBuffer->SetLayout(s_StaticMeshLayout);
 	
@@ -80,7 +81,8 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		//TODO: load aabb from file
 	
 		Ref<Mesh> mesh = CreateRef<Mesh>(vertexArray);
-		mesh->SetMaterial(AssetManager::GetMaterial(std::filesystem::absolute(assetDirectory / materialPath)));
+		if(!materialPath.empty())
+			mesh->SetMaterial(AssetManager::GetMaterial(std::filesystem::absolute(assetDirectory / materialPath)));
 	
 		m_Meshes.push_back(mesh);
 	

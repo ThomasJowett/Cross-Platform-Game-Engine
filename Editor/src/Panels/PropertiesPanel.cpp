@@ -255,24 +255,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [=](auto& staticMesh)
 		{
-			if (!entity.HasComponent<PrimitiveComponent>())
-			{
-				std::filesystem::path meshFilepath;
-				if (staticMesh.mesh)
-					meshFilepath = staticMesh.mesh->GetFilepath();
+			std::filesystem::path meshFilepath;
+			if (staticMesh.mesh)
+				meshFilepath = staticMesh.mesh->GetFilepath();
 
-				if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
-				{
-					staticMesh.mesh = AssetManager::GetStaticMesh(meshFilepath);
-					SceneManager::CurrentScene()->MakeDirty();
-				}
+			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
+			{
+				staticMesh.mesh = AssetManager::GetStaticMesh(meshFilepath);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
 			{
 				Ref<Material> material = AssetManager::GetMaterial(
 					std::filesystem::absolute(Application::GetOpenDocumentDirectory() / staticMesh.materialOverrides[i]));
 
-				Dirty(ImGui::MaterialEdit("Material", material, staticMesh.mesh->GetMeshes()[i]->GetMaterial()));
+				if (ImGui::MaterialEdit(std::string("Material " + std::to_string(i)).c_str(), material, staticMesh.mesh->GetMeshes()[i]->GetMaterial()))
+					staticMesh.materialOverrides[i] = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 			}
 		});
 
@@ -533,6 +531,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			default:
 				break;
 			}
+			Dirty(ImGui::MaterialEdit("Material", primitive.material, primitive.mesh->GetMaterial()));
 		});
 
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------

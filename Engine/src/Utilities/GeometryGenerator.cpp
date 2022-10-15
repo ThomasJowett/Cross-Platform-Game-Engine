@@ -6,7 +6,7 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
+Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
 
@@ -84,12 +84,12 @@ Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
+Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
 {
 	PROFILE_FUNCTION();
 
@@ -180,12 +180,12 @@ Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines,
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
+Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
 {
 	PROFILE_FUNCTION();
 
@@ -281,12 +281,12 @@ Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widt
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
+Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
 
@@ -319,12 +319,12 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
 {
 	PROFILE_FUNCTION();
 
@@ -542,12 +542,12 @@ Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius,
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
+Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
 {
 	PROFILE_FUNCTION();
 
@@ -630,5 +630,5 @@ Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32
 	AABB aabb;
 	//TODO calculate bounds
 
-	return CreateRef<Mesh>(returnModel);
+	return returnModel;
 }

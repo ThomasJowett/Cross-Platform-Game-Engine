@@ -75,61 +75,36 @@ void HierarchyPanel::OnImGuiRender()
 				if (ImGui::MenuItem("Cube"))
 				{
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f);
-					StaticMeshComponent& staticMesh = cubeEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh = CreateRef<StaticMesh>();
-					staticMesh.mesh->AddMesh(mesh);
 					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
 				}
 				if (ImGui::MenuItem("Sphere"))
 				{
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateSphere(0.5f, 16, 32);
-					StaticMeshComponent& staticMesh = sphereEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh->AddMesh(mesh);
 					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
 				}
 				if (ImGui::MenuItem("Plane"))
 				{
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1);
-					StaticMeshComponent& staticMesh = planeEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh->AddMesh(mesh);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
 				}
 				if (ImGui::MenuItem("Cylinder"))
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5);
-					StaticMeshComponent& staticMesh = cylinderEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh->AddMesh(mesh);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
 				}
 				if (ImGui::MenuItem("Cone"))
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5);
-					StaticMeshComponent& staticMesh = cylinderEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh->AddMesh(mesh);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
 				}
 				if (ImGui::MenuItem("Torus"))
 				{
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
-
-					Ref<Mesh> mesh = GeometryGenerator::CreateTorus(1.0f, 0.4f, 32);
-					StaticMeshComponent& staticMesh = torusEntity.AddComponent<StaticMeshComponent>();
-					staticMesh.mesh->AddMesh(mesh);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
 				}
@@ -230,44 +205,40 @@ void HierarchyPanel::OnImGuiRender()
 						{
 							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-							/*if (entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
+							if (entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
 							{
-								StaticMeshComponent& staticMeshComp = entity.GetOrAddComponent<StaticMeshComponent>();
 								PrimitiveComponent& primitiveComp = entity.GetComponent<PrimitiveComponent>();
 
 								if (primitiveComp.needsUpdating)
 								{
-									if (!staticMeshComp.material)
-									{
-										staticMeshComp.material = m_StandardMaterial;
-									}
-
+									if (!primitiveComp.material)
+										primitiveComp.material = CreateRef<Material>();
 									switch (primitiveComp.type)
 									{
 									case PrimitiveComponent::Shape::Cube:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth));
 										break;
 									case PrimitiveComponent::Shape::Sphere:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines));
 										break;
 									case PrimitiveComponent::Shape::Plane:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV));
 										break;
 									case PrimitiveComponent::Shape::Cylinder:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount));
 										break;
 									case PrimitiveComponent::Shape::Cone:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount));
 										break;
 									case PrimitiveComponent::Shape::Torus:
-										staticMeshComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount));
+										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount));
 										break;
 									default:
 										break;
 									}
 									primitiveComp.needsUpdating = false;
 								}
-							}*/
+							}
 
 							// Only draw a node for root entites, children are drawn recursively
 							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();

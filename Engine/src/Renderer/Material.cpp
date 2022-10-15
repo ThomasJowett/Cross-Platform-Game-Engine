@@ -5,6 +5,11 @@
 #include "Utilities/SerializationUtils.h"
 #include "Utilities/FileUtils.h"
 
+Material::Material()
+{
+	DefaultMaterial();
+}
+
 Material::Material(const std::filesystem::path& filepath)
 {
 	Load(filepath);
@@ -141,7 +146,7 @@ bool Material::SaveMaterial() const
 
 void Material::DefaultMaterial()
 {
-	m_Filepath = "Default";
+	m_Filepath = "";
 	m_Tint.SetColour(Colours::WHITE);
 	m_TwoSided = false;
 	m_Shader = "Standard";
@@ -154,7 +159,7 @@ void Material::DefaultMaterial()
 	{
 		for (uint32_t j = 0; j < textureSize; j++)
 		{
-			textureData[i][j] = ((i + j) % 2) ? 0x404040 : 0x969696;
+			textureData[i][j] = ((i + j) % 2) ? 0xff404040 : 0xff969696;
 		}
 	}
 

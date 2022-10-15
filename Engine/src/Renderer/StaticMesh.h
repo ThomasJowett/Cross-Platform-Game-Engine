@@ -16,7 +16,6 @@ public:
 	const std::vector<Ref<Mesh>> GetMeshes() const { return m_Meshes; }
 
 private:
-	std::filesystem::path m_Filepath;
 
 	std::vector<Ref<Mesh>> m_Meshes;
 };

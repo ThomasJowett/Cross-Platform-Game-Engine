@@ -2,6 +2,9 @@
 
 struct PrimitiveComponent
 {
+	Ref<Mesh> mesh;
+	Ref<Material> material;
+
 	enum class Shape
 	{
 		Cube,

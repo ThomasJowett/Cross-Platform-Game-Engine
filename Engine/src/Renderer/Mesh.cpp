@@ -4,8 +4,16 @@
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 Mesh::Mesh(Ref<VertexArray> vertexArray)
+	:m_VertexArray(vertexArray)
 {
-	LoadModel(vertexArray);
+	m_Material = CreateRef<Material>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Mesh::Mesh(Ref<VertexArray> vertexArray, Ref<Material> material)
+	:m_VertexArray(vertexArray), m_Material(material)
+{
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

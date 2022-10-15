@@ -24,8 +24,7 @@ void StaticMeshView::OnAttach()
 	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
-	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f);
-	m_GridMesh->SetMaterial(gridMaterial);
+	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f), gridMaterial);
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 	m_CameraController.SwitchCamera(true);

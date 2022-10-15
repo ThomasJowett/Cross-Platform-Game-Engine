@@ -26,7 +26,6 @@ public:
 	void SetRestitution(float restitution) { m_Restitution = std::clamp(restitution, 0.0f, 1.0f);}
 
 private:
-	std::filesystem::path m_Filepath;
 
 	float m_Density = 1.0f;
 	float m_Friction = 0.5f;

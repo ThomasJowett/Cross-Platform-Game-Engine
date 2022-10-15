@@ -40,6 +40,7 @@ class Mesh
 public:
 	Mesh() = default;
 	explicit Mesh(Ref<VertexArray> vertexArray);
+	explicit Mesh(Ref<VertexArray> vertexArray, Ref<Material> material);
 	virtual ~Mesh() = default;
 	void LoadModel(Ref<VertexArray> vertexArray);
 
