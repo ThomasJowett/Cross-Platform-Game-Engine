@@ -77,7 +77,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 		vertexArray->AddVertexBuffer(vertexBuffer);
 		vertexArray->SetIndexBuffer(indexBuffer);
 	
-		AABB aabb;
+		BoundingBox aabb;
 		//TODO: load aabb from file
 	
 		Ref<Mesh> mesh = CreateRef<Mesh>(vertexArray);

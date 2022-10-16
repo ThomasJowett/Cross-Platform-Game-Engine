@@ -1,6 +1,7 @@
 #include "ImportManager.h"
 
 #include "FbxImporter.h"
+#include "glTFImporter.h"
 #include "OBJImporter.h"
 #include "TiledImporter.h"
 
@@ -27,6 +28,10 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	else if (extString == ".tsx")
 	{
 		TiledImporter::ImportTileset(asset, destination);
+	}
+	else if (extString == ".gltf" || extString == ".glb")
+	{
+		glTFImporter::ImportAssets(asset, destination);
 	}
 }
 

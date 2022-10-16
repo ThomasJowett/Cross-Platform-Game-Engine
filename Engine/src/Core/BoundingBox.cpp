@@ -1,12 +1,12 @@
 #include "stdafx.h"
-#include "AABB.h"
+#include "BoundingBox.h"
 
-AABB::AABB(const Vector3f& min, const Vector3f& max)
+BoundingBox::BoundingBox(const Vector3f& min, const Vector3f& max)
 	:m_Min(min), m_Max(max)
 {
 }
 
-void AABB::Merge(const AABB& other)
+void BoundingBox::Merge(const BoundingBox& other)
 {
 	if (other.m_Min.x < m_Min.x)
 		m_Min.x = other.m_Min.x;
@@ -22,7 +22,7 @@ void AABB::Merge(const AABB& other)
 		m_Max.z = other.m_Max.z;
 }
 
-void AABB::Merge(const Vector3f& point)
+void BoundingBox::Merge(const Vector3f& point)
 {
 	if (point.x < m_Min.x)
 		m_Min.x = point.x;
@@ -38,7 +38,7 @@ void AABB::Merge(const Vector3f& point)
 		m_Max.z = point.z;
 }
 
-Vector3f AABB::Center() const
+Vector3f BoundingBox::Center() const
 {
 	return Vector3f();
 }

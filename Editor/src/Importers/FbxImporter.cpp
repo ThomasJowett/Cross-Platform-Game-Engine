@@ -18,7 +18,7 @@ struct ImportMesh
 	const ofbx::Mesh* fbx;
 	std::vector<Vertex> vertices;
 	std::vector<uint32_t> indices;
-	AABB aabb;
+	BoundingBox aabb;
 	int materialSlot;
 	std::string name;
 	bool isSkinned;
@@ -206,7 +206,7 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 	// get the indices
 	//uint32_t indexCount = (uint32_t)geom->getIndexCount();
 	//const int* indices = geom->getFaceIndices();
-	for (uint32_t i = 0; i < vertexCount / 3; i++)
+	for (int i = 0; i < vertexCount / 3; i++)
 	{
 		uint32_t index = i * 3;
 		importMesh.indices.push_back(index);

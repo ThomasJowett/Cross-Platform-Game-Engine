@@ -195,7 +195,8 @@ project "Editor"
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
 		"Engine/vendor/box2d/include",
-		"Engine/vendor/lua"
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
 	}
 	
 	links

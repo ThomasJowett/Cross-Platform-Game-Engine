@@ -2,13 +2,13 @@
 
 #include "math/Vector3f.h"
 
-class AABB
+class BoundingBox
 {
 public:
-	AABB() = default;
-	AABB(const Vector3f& min, const Vector3f& max);
+	BoundingBox() = default;
+	BoundingBox(const Vector3f& min, const Vector3f& max);
 
-	void Merge(const AABB& other);
+	void Merge(const BoundingBox& other);
 	void Merge(const Vector3f& point);
 
 	Vector3f Center() const;
