@@ -55,6 +55,43 @@ void GetNodeProps(const tinygltf::Node& node, const tinygltf::Model& model, size
 
 void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, const tinygltf::Model& model, LoaderInfo& loaderInfo, float globalScale)
 {
+	Node* newNode = new Node{};
+	newNode->index = nodeIndex;
+	newNode->parent = parent;
+	newNode->name = node.name;
+	//newNode->skinIndex = node.skin;
+
+	// Generate local node matrix
+	if (node.translation.size() == 3)
+	{
+		newNode->translation = Vector3f((float)node.translation[0], (float)node.translation[1], (float)node.translation[2]);
+	}
+	if (node.rotation.size() == 4)
+	{
+		newNode->rotation = Quaternion((float)node.rotation[0], (float)node.rotation[1], (float)node.rotation[2], (float)node.rotation[3]);
+	}
+	if (node.scale.size() == 3)
+	{
+		newNode->scale = Vector3f((float)node.scale[0], (float)node.scale[1], (float)node.scale[2]);
+	}
+	if (node.matrix.size() == 16)
+	{
+		newNode->matrix  = Matrix4x4(
+			(float)node.matrix[0], (float)node.matrix[4], (float)node.matrix[8], (float)node.matrix[12],
+			(float)node.matrix[1], (float)node.matrix[5], (float)node.matrix[9], (float)node.matrix[13],
+			(float)node.matrix[2], (float)node.matrix[6], (float)node.matrix[10], (float)node.matrix[14],
+			(float)node.matrix[3], (float)node.matrix[7], (float)node.matrix[11], (float)node.matrix[15]
+		);
+	}
+
+	if (node.children.size() > 0)
+	{
+		for (size_t i = 0; i < node.children.size(); i++)
+		{
+			LoadNode(newNode, model.nodes[node.children[i]], node.children[i], model, loaderInfo, globalScale);
+		}
+	}
+
 
 }
 
