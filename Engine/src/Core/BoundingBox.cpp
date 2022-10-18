@@ -1,9 +1,31 @@
 #include "stdafx.h"
 #include "BoundingBox.h"
 
+BoundingBox::BoundingBox()
+{
+	Invalidate();
+}
+
 BoundingBox::BoundingBox(const Vector3f& min, const Vector3f& max)
 	:m_Min(min), m_Max(max)
 {
+}
+
+void BoundingBox::EnclosePoints(const float* vertices, uint32_t vertexCount, int stride)
+{
+	if (vertexCount == 0)
+	{
+		m_Min = Vector3f();
+		m_Max = Vector3f();
+		return;
+	}
+
+	Invalidate();
+
+	for (uint32_t i = 0; i < vertexCount; i += stride)
+	{
+		Merge(Vector3f(vertices[i], vertices[i + 1], vertices[i + 2]));
+	}
 }
 
 void BoundingBox::Merge(const BoundingBox& other)
@@ -40,5 +62,21 @@ void BoundingBox::Merge(const Vector3f& point)
 
 Vector3f BoundingBox::Center() const
 {
-	return Vector3f();
+	return (m_Min - m_Max) * 0.5f;
+}
+
+void BoundingBox::Invalidate()
+{
+	m_Min.x = FLT_MAX;
+	m_Min.y = FLT_MAX;
+	m_Min.z = FLT_MAX;
+
+	m_Max.x = FLT_MIN;
+	m_Max.y = FLT_MIN;
+	m_Max.z = FLT_MIN;
+}
+
+bool BoundingBox::IsValid()
+{
+	return m_Min.x <= m_Max.x;
 }

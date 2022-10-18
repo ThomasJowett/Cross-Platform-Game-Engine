@@ -181,6 +181,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pPrimitiveElement = pElement->InsertNewChildElement("Primitive");
 
+		if(component.material)
+			SerializationUtils::Encode(pPrimitiveElement->InsertNewChildElement("Material"), component.material->GetFilepath());
+
 		pPrimitiveElement->SetAttribute("Type", (int)component.type);
 
 		switch (component.type)
@@ -588,6 +591,9 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		PrimitiveComponent::Shape type =
 			(PrimitiveComponent::Shape)pPrimitiveComponentElement->IntAttribute("Type", (int)PrimitiveComponent::Shape::Cube);
 
+		std::filesystem::path materialPath;
+		SerializationUtils::Decode(pPrimitiveComponentElement->FirstChildElement("Material"), materialPath);
+
 		switch (type)
 		{
 		case PrimitiveComponent::Shape::Cube:
@@ -599,6 +605,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCubeElement->QueryFloatAttribute("Width", &component.cubeWidth);
 				pCubeElement->QueryFloatAttribute("Height", &component.cubeHeight);
 				pCubeElement->QueryFloatAttribute("Depth", &component.cubeDepth);
+				
+				if(!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}
@@ -611,6 +619,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pSphereElement->QueryFloatAttribute("Radius", &component.sphereRadius);
 				pSphereElement->QueryUnsignedAttribute("LongitudeLines", &component.sphereLongitudeLines);
 				pSphereElement->QueryUnsignedAttribute("LatitudeLines", &component.sphereLatitudeLines);
+				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}
@@ -626,6 +635,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pPlaneElement->QueryUnsignedAttribute("LengthLines", &component.planeLengthLines);
 				pPlaneElement->QueryFloatAttribute("TileU", &component.planeTileU);
 				pPlaneElement->QueryFloatAttribute("TileV", &component.planeTileV);
+				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}
@@ -640,6 +650,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCylinderElement->QueryFloatAttribute("Height", &component.cylinderHeight);
 				pCylinderElement->QueryUnsignedAttribute("SliceCount", &component.cylinderSliceCount);
 				pCylinderElement->QueryUnsignedAttribute("StackCount", &component.cylinderStackCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}
@@ -653,6 +664,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pConeElement->QueryFloatAttribute("Height", &component.coneHeight);
 				pConeElement->QueryUnsignedAttribute("SliceCount", &component.coneSliceCount);
 				pConeElement->QueryUnsignedAttribute("StackCount", &component.coneStackCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}
@@ -665,6 +677,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pTorusElement->QueryFloatAttribute("OuterRadius", &component.torusOuterRadius);
 				pTorusElement->QueryFloatAttribute("InnerRadius", &component.torusInnerRadius);
 				pTorusElement->QueryUnsignedAttribute("SliceCount", &component.torusSliceCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
 			}
 			break;
 		}

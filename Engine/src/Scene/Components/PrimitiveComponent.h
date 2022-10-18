@@ -173,40 +173,42 @@ struct PrimitiveComponent
 	operator const PrimitiveComponent::Shape& () { return type; }
 private:
 	friend cereal::access;
+
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Primitive Shape", type));
+		archive(type,
+			cubeWidth, cubeHeight, cubeDepth,
+			sphereRadius, sphereLongitudeLines, sphereLatitudeLines,
+			planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV,
+			cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount,
+			coneBottomRadius, coneHeight, coneSliceCount, coneStackCount,
+			torusOuterRadius, torusInnerRadius, torusSliceCount);
 
-		archive(cereal::make_nvp("Cube Width", cubeWidth));
-		archive(cereal::make_nvp("Cube Height", cubeHeight));
-		archive(cereal::make_nvp("Cube Depth", cubeDepth));
+		std::string relativePath;
+		if (material && !material->GetFilepath().empty())
+		{
+			relativePath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(cereal::make_nvp("Material", relativePath));
+	}
 
-		archive(cereal::make_nvp("Sphere Radius", sphereRadius));
-		archive(cereal::make_nvp("Sphere Longitude Lines", sphereLongitudeLines));
-		archive(cereal::make_nvp("Sphere Latitude Lines", sphereLatitudeLines));
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(type,
+			cubeWidth, cubeHeight, cubeDepth,
+			sphereRadius, sphereLongitudeLines, sphereLatitudeLines,
+			planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV,
+			cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount,
+			coneBottomRadius, coneHeight, coneSliceCount, coneStackCount,
+			torusOuterRadius, torusInnerRadius, torusSliceCount);
+		std::string relativePath;
 
-
-		archive(cereal::make_nvp("Plane Width", planeWidth));
-		archive(cereal::make_nvp("Plane Length", planeLength));
-		archive(cereal::make_nvp("Plane Width Lines", planeWidthLines));
-		archive(cereal::make_nvp("Plane Length Lines", planeLengthLines));
-		archive(cereal::make_nvp("Plane Tile U", planeTileU));
-		archive(cereal::make_nvp("Plane Tile V", planeTileV));
-
-		archive(cereal::make_nvp("Cylinder Bottom Radius", cylinderBottomRadius));
-		archive(cereal::make_nvp("Cylinder Top Radius", cylinderTopRadius));
-		archive(cereal::make_nvp("Cylinder Height", cylinderHeight));
-		archive(cereal::make_nvp("Cylinder Slice Count", cylinderSliceCount));
-		archive(cereal::make_nvp("Cylinder Stack Count", cylinderStackCount));
-
-		archive(cereal::make_nvp("Cone Bottom Radius", coneBottomRadius));
-		archive(cereal::make_nvp("Cone Height", coneHeight));
-		archive(cereal::make_nvp("Cone Slice Count", coneSliceCount));
-		archive(cereal::make_nvp("Cone Stack Count", coneStackCount));
-
-		archive(cereal::make_nvp("Torus Outer Radius", torusOuterRadius));
-		archive(cereal::make_nvp("Torus Inner Radius", torusInnerRadius));
-		archive(cereal::make_nvp("Torus Slice Count", torusSliceCount));
+		archive(cereal::make_nvp("Material", relativePath));
+		if (!relativePath.empty())
+		{
+			material = AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		}
 	}
 };
