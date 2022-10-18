@@ -35,7 +35,9 @@ enum class EventType
 
 	SCENE_CHANGED,
 	SCENE_SAVED,
-	SCENE_LOADED
+	SCENE_LOADED,
+
+	FILE_DROP
 };
 
 enum class EventCategory
@@ -47,7 +49,8 @@ enum class EventCategory
 	MOUSE			= BIT(3),
 	MOUSE_BUTTON	= BIT(4),
 	JOYSTICK		= BIT(5),
-	SCENE			= BIT(6)
+	SCENE			= BIT(6),
+	FILE			= BIT(7)
 };
 
 EventCategory operator |(EventCategory lhs, EventCategory rhs);

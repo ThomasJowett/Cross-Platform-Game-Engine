@@ -129,3 +129,24 @@ public:
 	EVENT_CLASS_TYPE(APP_OPEN_DOCUMENT_CHANGE);
 	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
+
+class FileDropEvent : public Event
+{
+public:
+	FileDropEvent(const std::filesystem::path& filepath)
+		:m_Filepath(filepath)
+	{}
+
+	const std::filesystem::path& GetFilepath() const { return m_Filepath; }
+
+	std::string to_string() const override
+	{
+		return "FileDropEvent: " + m_Filepath.string();
+	}
+
+	EVENT_CLASS_TYPE(FILE_DROP);
+	EVENT_CLASS_CATEGORY(EventCategory::FILE);
+
+private:
+	std::filesystem::path m_Filepath;
+};

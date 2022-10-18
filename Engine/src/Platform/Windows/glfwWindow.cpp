@@ -459,6 +459,16 @@ void glfwWindow::Init(const WindowProps& props)
 				});
 		}
 	}
+	{
+		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int numDropped, const char** filenames)
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				std::filesystem::path filepath = filenames[0];
+				FileDropEvent event(filepath);
+				data.eventCallback(event);
+			});
+	}
 }
 
 void glfwWindow::Shutdown()
