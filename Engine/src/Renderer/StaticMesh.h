@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/Asset.h"
-class Mesh;
+#include "Mesh.h"
 
 class StaticMesh : public Asset
 {

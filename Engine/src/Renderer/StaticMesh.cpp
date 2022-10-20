@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "StaticMesh.h"
-#include "Mesh.h"
+
 #include "Scene/AssetManager.h"
 
 StaticMesh::StaticMesh(const std::filesystem::path& filepath)
