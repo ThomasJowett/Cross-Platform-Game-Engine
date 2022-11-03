@@ -82,6 +82,9 @@ void BindApp(sol::state& state)
 	application.set_function("SetWindowMode", [](sol::this_state s, WindowMode windowMode)
 		{ return Application::GetWindow().SetWindowMode(windowMode); });
 
+	application.set_function("GetDocumentDirectory", []()
+		{ return Application::GetOpenDocumentDirectory().string(); });
+
 	sol::table settings = state.create_table("Settings");
 
 	settings.set_function("SetValue", &Settings::SetValue);
