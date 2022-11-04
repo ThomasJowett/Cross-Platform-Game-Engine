@@ -167,6 +167,40 @@ std::vector<Entity> SceneGraph::GetChildren(Entity entity, entt::registry& regis
 	return children;
 }
 
+entt::entity SceneGraph::FindEntity(const std::vector<std::string>& path, entt::registry& registry)
+{
+	auto view = registry.view<NameComponent, HierarchyComponent>();
+	for (auto entity : view)
+	{
+		auto [nameComp, hierarchyComp] = view.get<NameComponent, HierarchyComponent>(entity);
+		if (hierarchyComp.parent == entt::null && nameComp.name == path[0])
+		{
+			if (path.size() == 1)
+				return entity;
+			else
+			{
+				int i = 1;
+				entt::entity child = hierarchyComp.firstChild;
+				while (child != entt::null && registry.valid(child) && i < path.size())
+				{
+					nameComp = registry.get<NameComponent>(child);
+					hierarchyComp = registry.get<HierarchyComponent>(child);
+					if (nameComp.name == path[i])
+					{
+						i++;
+						if (i == path.size())
+							return child;
+						child = hierarchyComp.firstChild;
+					}
+					else 
+						child = hierarchyComp.nextSibling;
+				}
+			}
+		}
+	}
+	return entt::null;
+}
+
 void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyComponent* hierarchyComp, entt::registry& registry)
 {
 	if (hierarchyComp->parent != entt::null)

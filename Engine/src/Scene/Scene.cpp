@@ -661,6 +661,38 @@ Entity Scene::GetPrimaryCameraEntity()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+Entity Scene::GetEntityByName(const std::string& name)
+{
+	auto view = m_Registry.view<NameComponent>();
+	for (auto entity : view)
+	{
+		auto [nameComp] = view.get(entity);
+		if (name == nameComp.name)
+			return Entity(entity, this);
+	}
+	return Entity();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::GetEntityByPath(const std::string& path)
+{
+	std::vector<std::string> splitPath = SplitString(path, '/');
+
+	if (splitPath.size() == 1)
+		return GetEntityByName(splitPath[0]);
+	else
+	{
+		entt::entity entity = SceneGraph::FindEntity(splitPath, m_Registry);
+		if (entity != entt::null)
+			return Entity(entity, this);
+		else
+			return Entity();
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Scene::DestroyBody(b2Body* body)
 {
 	if (m_Box2DWorld)

@@ -85,6 +85,7 @@ public:
 	template<typename T>
 	T& GetComponent()
 	{
+		CORE_ASSERT(IsValid(), "Entity not valid");
 		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(type_name<T>().data()));
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}

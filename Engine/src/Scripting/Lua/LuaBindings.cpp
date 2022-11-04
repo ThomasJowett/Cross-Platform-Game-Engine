@@ -123,29 +123,17 @@ void ChangeScene(const std::string_view sceneFilepath)
 	SceneManager::ChangeScene(std::filesystem::path(sceneFilepath));
 }
 
-Entity FindEntity(std::string_view name)
-{
-	auto view = SceneManager::CurrentScene()->GetRegistry().view<NameComponent>();
-	for (auto entity : view)
-	{
-		auto [nameComp] = view.get(entity);
-		if (name == nameComp.name)
-			return Entity(entity, SceneManager::CurrentScene());
-	}
-	return Entity();
-}
-
 void BindScene(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
 	state.set_function("ChangeScene", &ChangeScene);
-	state.set_function("FindEntity", &FindEntity);
 
 	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
 	scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
 	scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
+	scene_type.set_function("FindEntity", &Scene::GetEntityByPath);
 
 	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
 	hitResult_type["Hit"] = &HitResult2D::hit;

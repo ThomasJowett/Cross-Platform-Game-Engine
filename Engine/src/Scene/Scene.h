@@ -64,6 +64,8 @@ public:
 	void SetFilepath(std::filesystem::path filepath);
 
 	Entity GetPrimaryCameraEntity();
+	Entity GetEntityByName(const std::string& name);
+	Entity GetEntityByPath(const std::string& path);
 
 	void DestroyBody(b2Body* body);
 	void SetShowDebug(bool show);
