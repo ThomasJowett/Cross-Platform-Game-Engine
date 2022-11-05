@@ -121,7 +121,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
 	if (m_CursorDisabled)
-		m_CameraController.OnUpdate(deltaTime);
+		m_CameraController.OnUpdate(deltaTime, true);
 
 	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
 	{

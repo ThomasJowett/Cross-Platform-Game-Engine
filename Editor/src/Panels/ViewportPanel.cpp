@@ -87,12 +87,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		return;
 
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+	bool leftMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
-	if(m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
-		&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f)
-		m_CameraController.OnUpdate(deltaTime);
+	m_CameraController.OnUpdate(deltaTime, m_ViewportHovered);
 
-	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
+	if (m_ViewportHovered && rightMouseDown && !m_CursorDisabled)
 	{
 		Application::GetWindow().DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
 		m_CursorDisabled = true;
@@ -132,8 +131,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	{
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.y > 0.0f
-			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y)
+		if (m_ViewportHovered)
 		{
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
@@ -429,7 +427,6 @@ void ViewportPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
 
-	ImVec2 pos;
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
@@ -584,16 +581,14 @@ void ViewportPanel::OnImGuiRender()
 			SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		//pos = ImGui::GetCursorScreenPos();
+		ImVec2 window_pos = ImGui::GetCursorScreenPos();
 
 		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
 
 		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
-		ImVec2 window_pos = ImGui::GetItemRectMin();
 		ImGui::PopStyleVar(2);
 		m_RightClickMenuOpen = false;
-		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right) && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y <= FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x <= FLT_EPSILON
-			&& ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).y >= -FLT_EPSILON && ImGui::GetMouseDragDelta(ImGuiMouseButton_Right).x >= -FLT_EPSILON)
+		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right))
 		{
 			if (ImGui::BeginPopupContextItem("Viewport Right Click"))
 			{
@@ -612,13 +607,19 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		auto [mouseX, mouseY] = Input::GetMousePos();
+		ImVec2 mouse_pos = ImGui::GetMousePos();
 
-		m_RelativeMousePosition = { (float)mouseX - window_pos.x, (float)mouseY - window_pos.y };
+		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
 		if ((ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)))
 		{
 			m_MousePositionBeginClick = m_RelativeMousePosition;
 		}
+
+		m_ViewportHovered = m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
+			&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f
+			|| (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)
+				&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
+				&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f);
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 		{
@@ -678,8 +679,8 @@ void ViewportPanel::OnImGuiRender()
 				// Draw a camera preview if the selected entity has a camera
 				if (selectedEntity.HasComponent<CameraComponent>())
 				{
-					ImVec2 cameraPreviewPosition = ImVec2(pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
-						pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
+					ImVec2 cameraPreviewPosition = ImVec2(window_pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
+						window_pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
 
 					ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
 						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
@@ -865,25 +866,25 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::SetCursorPos(statsBoxPosition);
 		if (m_ShowFrameRate)
 		{
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 50, pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x + ImGui::GetStyle().ItemSpacing.x, window_pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(window_pos.x + 50, window_pos.y + 24), IM_COL32(0, 0, 0, 30), 3.0f);
 			ImGui::Text("%.1f", io.Framerate);
 		}
 
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f
-			&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y 
+			&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
 			&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f)
 		{
 			ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].x * 255.0f)) |
 				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].y * 255.0f) << 8) |
 				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].z * 255.0f) << 16) |
 				100 << 24;
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + m_MousePositionBeginClick.x, pos.y + m_MousePositionBeginClick.y),
-				ImVec2(pos.x + m_RelativeMousePosition.x, pos.y + m_RelativeMousePosition.y), color);
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x + m_MousePositionBeginClick.x, window_pos.y + m_MousePositionBeginClick.y),
+				ImVec2(window_pos.x + m_RelativeMousePosition.x, window_pos.y + m_RelativeMousePosition.y), color);
 		}
 
 		if (m_ShowStats)
 		{
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(pos.x + ImGui::GetStyle().ItemSpacing.x, pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(pos.x + 250, pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, window_pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(window_pos.x + 250, window_pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
 			ImGui::Text("Draw Calls: %i", Renderer2D::GetStats().drawCalls);
 			ImGui::Text("Quad Count: %i", Renderer2D::GetStats().quadCount);
 			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);

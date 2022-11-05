@@ -17,7 +17,7 @@ ViewportCameraController::~ViewportCameraController()
 {
 }
 
-void ViewportCameraController::OnUpdate(float deltaTime)
+void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 {
 	PROFILE_FUNCTION();
 
@@ -26,7 +26,7 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 
 	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
 
-	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && hoveredViewport)
 	{
 		Application::GetWindow().SetCursor(Cursors::ResizeAll);
 		if (m_Is3DCamera)
@@ -42,6 +42,9 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 	}
 
 	m_MouseLastPosition = mousePosition;
+
+	if (!hoveredViewport)
+		return;
 
 	double mouseWheel = Input::GetMouseWheel();
 

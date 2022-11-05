@@ -62,6 +62,7 @@ private:
 	bool* m_Show;
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
+	bool m_ViewportHovered = false;
 	bool m_CursorDisabled = false;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;

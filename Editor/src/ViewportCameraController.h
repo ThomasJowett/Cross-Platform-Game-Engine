@@ -8,7 +8,7 @@ public:
 	ViewportCameraController();
 	~ViewportCameraController();
 
-	void OnUpdate(float deltaTime);
+	void OnUpdate(float deltaTime, bool hoveredViewport);
 
 	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position; }
 	Vector3f GetPosition() const;
