@@ -88,7 +88,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
-	if (m_CursorDisabled)
+	if(m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
+		&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f)
 		m_CameraController.OnUpdate(deltaTime);
 
 	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
@@ -574,9 +575,6 @@ void ViewportPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		if (m_WindowHovered && io.MouseWheel != 0.0f)
-			m_CameraController.OnMouseWheel(io.MouseWheel);
-
 		ImVec2 panelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
 		{
@@ -586,8 +584,7 @@ void ViewportPanel::OnImGuiRender()
 			SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
-		pos = ImGui::GetCursorScreenPos();
-		ImVec2 mouse_pos = ImGui::GetMousePos();
+		//pos = ImGui::GetCursorScreenPos();
 
 		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
 
@@ -615,13 +612,13 @@ void ViewportPanel::OnImGuiRender()
 			}
 		}
 
-		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
-		if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+		auto [mouseX, mouseY] = Input::GetMousePos();
+
+		m_RelativeMousePosition = { (float)mouseX - window_pos.x, (float)mouseY - window_pos.y };
+		if ((ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)))
 		{
 			m_MousePositionBeginClick = m_RelativeMousePosition;
 		}
-
-		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 		{
@@ -872,7 +869,9 @@ void ViewportPanel::OnImGuiRender()
 			ImGui::Text("%.1f", io.Framerate);
 		}
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f)
+		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f
+			&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y 
+			&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f)
 		{
 			ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].x * 255.0f)) |
 				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].y * 255.0f) << 8) |
@@ -896,7 +895,6 @@ void ViewportPanel::OnImGuiRender()
 	if (!shown)
 		ImGui::PopStyleVar();
 	ImGui::End();
-	//ImGui::PopStyleVar();
 }
 
 void ViewportPanel::Copy()

@@ -20,9 +20,15 @@ public:
 		{ return s_Instance->IsJoystickButtonPressedImpl(joystickSlot, button); }
 	inline static double GetJoystickAxis(int joystickSlot, int axis) 
 		{ return s_Instance->GetJoystickAxisImpl(joystickSlot, axis); }
+	inline static double GetMouseWheel()
+		{ return s_Instance->m_MouseWheelY; }
+	inline static double GetMouseWheelHorizontal()
+		{ return s_Instance->m_MouseWheelX; }
 
 	static void Init();
 
+	static void SetMouseWheel(double X, double Y);
+	static void ClearInputData() { s_Instance->m_MouseWheelX = 0.0f; s_Instance->m_MouseWheelY = 0.0f; }
 protected:
 	virtual bool IsKeyPressedImpl(int keycode) = 0;
 	virtual bool IsMouseButtonPressedImpl(int button) = 0;
@@ -33,4 +39,6 @@ protected:
 	virtual double GetJoystickAxisImpl(int joystickSlot, int axis) = 0;
 private:
 	static Scope<Input> s_Instance;
+
+	double m_MouseWheelX = 0.0f, m_MouseWheelY = 0.0f;
 };

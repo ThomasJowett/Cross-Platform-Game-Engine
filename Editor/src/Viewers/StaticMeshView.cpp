@@ -65,9 +65,6 @@ void StaticMeshView::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		if (m_WindowHovered && io.MouseWheel != 0.0f)
-			m_CameraController.OnMouseWheel(io.MouseWheel);
-
 		ImVec2 panelSize = ImGui::GetContentRegionAvail();
 		if (m_ViewportSize.x != panelSize.x || m_ViewportSize.y != panelSize.y)
 		{
@@ -78,8 +75,6 @@ void StaticMeshView::OnImGuiRender()
 		ImVec2 mouse_pos = ImGui::GetMousePos();
 
 		m_RelativeMousePosition = { mouse_pos.x - ImGui::GetWindowPos().x - 1.0f, mouse_pos.y - ImGui::GetWindowPos().y - 8.0f - ImGui::GetFontSize() };
-
-		m_CameraController.OnMouseMotion(m_RelativeMousePosition);
 
 		if (ImGui::BeginMenuBar())
 		{

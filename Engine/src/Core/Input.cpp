@@ -9,3 +9,9 @@ void Input::Init()
 {
 	s_Instance = CreateScope<glfwInput>();
 }
+
+void Input::SetMouseWheel(double X, double Y)
+{
+	s_Instance->m_MouseWheelX += X; 
+	s_Instance->m_MouseWheelY += Y;
+};

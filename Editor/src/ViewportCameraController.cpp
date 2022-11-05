@@ -21,7 +21,57 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	if (m_Is3DCamera)
+	auto [mouseX, mouseY] = Input::GetMousePos();
+	Vector2f mousePosition(mouseX, mouseY);
+
+	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
+
+	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
+	{
+		Application::GetWindow().SetCursor(Cursors::ResizeAll);
+		if (m_Is3DCamera)
+		{
+			Strafe(-m_MouseRelativeVelocity.x * 5.0f / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			Raise(m_MouseRelativeVelocity.y * 5.0f / (m_ViewPortSize.y * 0.5f), m_Up);
+		}
+		else
+		{
+			m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+			m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+		}
+	}
+
+	m_MouseLastPosition = mousePosition;
+
+	double mouseWheel = Input::GetMouseWheel();
+
+	if (mouseWheel != 0.0) {
+		if (m_Is3DCamera)
+		{
+			if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
+			{
+				float ln = 10.0f * log(m_TranslationSpeed);
+				m_TranslationSpeed = std::clamp((float)exp(0.1f * (ln + mouseWheel)), FLT_MIN, 1000.0f);
+
+				if (m_TranslationSpeed < 0.0f)
+					m_TranslationSpeed = FLT_MIN;
+			}
+			else
+			{
+				Walk(mouseWheel * m_TranslationSpeed);
+			}
+		}
+		else
+		{
+			m_ZoomLevel -= mouseWheel / 10.0f * m_ZoomLevel;
+			m_ZoomLevel = std::clamp(m_ZoomLevel, 0.25f, 1000.0f);
+			m_2DCamera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+
+			m_TranslationSpeed = m_ZoomLevel;
+		}
+	}
+
+	if (m_Is3DCamera && Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
 	{
 		Vector2f movement;
 		if (Input::IsKeyPressed(KEY_A))
@@ -67,12 +117,6 @@ void ViewportCameraController::OnUpdate(float deltaTime)
 		//make sure right and forward are orthogonal to each other
 		Vector3f up = Vector3f::Cross(m_Right, m_Forward).GetNormalized();
 		m_Right = Vector3f::Cross(m_Forward, up).GetNormalized();
-
-		//m_MouseRelativeVelocity = Vector2f();
-	}
-	else
-	{
-		//TODO: 2D camera controller
 	}
 }
 
@@ -98,55 +142,6 @@ Matrix4x4 ViewportCameraController::GetTransformMatrix()
 		return Matrix4x4::Translate(m_3DCameraPosition) * Matrix4x4::Rotate({ m_3DCameraRotation });
 	else
 		return Matrix4x4::Translate(m_2DCameraPosition);
-}
-
-void ViewportCameraController::OnMouseMotion(Vector2f mousePosition)
-{
-	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
-
-	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE))
-	{
-		Application::GetWindow().SetCursor(Cursors::ResizeAll);
-		if (m_Is3DCamera)
-		{
-			Strafe(-m_MouseRelativeVelocity.x * 5.0f / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
-			Raise(m_MouseRelativeVelocity.y * 5.0f / (m_ViewPortSize.y * 0.5f), m_Up);
-		}
-		else
-		{
-			m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
-			m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
-		}
-	}
-
-	m_MouseLastPosition = mousePosition;
-}
-
-void ViewportCameraController::OnMouseWheel(float mouseWheel)
-{
-	if (m_Is3DCamera)
-	{
-		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT))
-		{
-			float ln = 10.0f * log(m_TranslationSpeed);
-			m_TranslationSpeed = std::clamp((float)exp(0.1f * (ln + mouseWheel)), FLT_MIN, 1000.0f);
-
-			if (m_TranslationSpeed < 0.0f)
-				m_TranslationSpeed = FLT_MIN;
-		}
-		else
-		{
-			Walk(mouseWheel * m_TranslationSpeed);
-		}
-	}
-	else
-	{
-		m_ZoomLevel -= mouseWheel / 10.0f * m_ZoomLevel;
-		m_ZoomLevel = std::clamp(m_ZoomLevel, 0.25f, 1000.0f);
-		m_2DCamera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
-
-		m_TranslationSpeed = m_ZoomLevel;
-	}
 }
 
 void ViewportCameraController::SwitchCamera(bool is3D)

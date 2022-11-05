@@ -139,6 +139,8 @@ void Application::Run()
 			accumulator -= m_FixedUpdateInterval;
 		}
 
+		m_Window->OnUpdate();
+
 		// On Update
 		{
 			OnUpdate();
@@ -167,7 +169,6 @@ void Application::Run()
 			m_ImGuiManager->End();
 		}
 
-		m_Window->OnUpdate();
 
 		// Push any layers that were created during the update to the stack
 		for (Layer* layer : m_WaitingLayers)
@@ -196,6 +197,8 @@ void Application::Run()
 
 		m_DeadLayers.clear();
 		m_DeadOverlays.clear();
+
+		Input::ClearInputData();
 	}
 }
 

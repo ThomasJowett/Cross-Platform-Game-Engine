@@ -8,6 +8,7 @@
 #include "Events/JoystickEvent.h"
 
 #include "Core/Joysticks.h"
+#include "Core/Input.h"
 
 #include "Renderer/Renderer.h"
 
@@ -196,7 +197,7 @@ void glfwWindow::RestoreWindow()
 
 void glfwWindow::DisableCursor()
 {
-	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
 void glfwWindow::EnableCursor()
@@ -277,6 +278,9 @@ void glfwWindow::Init(const WindowProps& props)
 	glfwGetWindowPos(m_Window, &(m_OldWindowedParams.xPos), &(m_OldWindowedParams.yPos));
 
 	glfwSetWindowUserPointer(m_Window, &m_Data);
+	if (glfwRawMouseMotionSupported())
+		glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+
 	SetVSync(Settings::GetBool("Display", "V-Sync"));
 	SetWindowMode((WindowMode)Settings::GetInt("Display", "Window_Mode"));
 
@@ -404,6 +408,8 @@ void glfwWindow::Init(const WindowProps& props)
 
 				MouseWheelEvent event((float)xOffset, (float)yOffset);
 				data.eventCallback(event);
+
+				Input::SetMouseWheel(xOffset, yOffset);
 			});
 
 		glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)

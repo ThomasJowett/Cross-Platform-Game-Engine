@@ -23,8 +23,6 @@ public:
 
 	Matrix4x4 GetTransformMatrix();
 
-	void OnMouseMotion(Vector2f mousePosition);
-	void OnMouseWheel(float mouseWheel);
 	void SwitchCamera(bool is3D);
 
 	void LookAt(Vector3f focalPoint, float distance);
@@ -65,7 +63,7 @@ private:
 
 	Vector2f m_MouseRelativeVelocity;
 	Vector2f m_MouseLastPosition;
-	float m_Sensitivity = 0.03f;
+	float m_Sensitivity = 0.003f;
 
 	OrthographicCamera m_2DCamera;
 	PerspectiveCamera m_3DCamera;
