@@ -26,6 +26,9 @@ public:
 	Entity CreateEntity(const std::string& name = "");
 	Entity CreateEntity(Uuid id, const std::string& name = "");
 
+	void InstantiateScene(const Ref<Scene> prefab, const Vector3f& position);
+	Entity InstantiateEntity(const Entity prefab, const Vector3f& position);
+
 	bool RemoveEntity(Entity& entity);
 
 	void DuplicateEntity(Entity entity, Entity parent);

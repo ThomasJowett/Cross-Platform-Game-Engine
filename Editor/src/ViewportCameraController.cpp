@@ -22,7 +22,7 @@ void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 	PROFILE_FUNCTION();
 
 	auto [mouseX, mouseY] = Input::GetMousePos();
-	Vector2f mousePosition(mouseX, mouseY);
+	Vector2f mousePosition((float)mouseX, (float)mouseY);
 
 	m_MouseRelativeVelocity = (mousePosition - m_MouseLastPosition);
 
@@ -61,12 +61,12 @@ void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 			}
 			else
 			{
-				Walk(mouseWheel * m_TranslationSpeed);
+				Walk((float)mouseWheel * m_TranslationSpeed);
 			}
 		}
 		else
 		{
-			m_ZoomLevel -= mouseWheel / 10.0f * m_ZoomLevel;
+			m_ZoomLevel -= (float)mouseWheel / 10.0f * m_ZoomLevel;
 			m_ZoomLevel = std::clamp(m_ZoomLevel, 0.25f, 1000.0f);
 			m_2DCamera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
 

@@ -46,6 +46,9 @@ public:
 	float GetTilingFactor() { return m_TilingFactor; }
 	void SetTilingFactor(float tilingFactor) { m_TilingFactor = tilingFactor; }
 
+	Vector2f GetTextureOffset() { return m_TextureOffset; }
+	void SetTextureOffset(Vector2f textureOffset) { m_TextureOffset = textureOffset; }
+
 private:
 	void DefaultMaterial();
 
@@ -60,4 +63,5 @@ private:
 	bool m_CastShadows = true;
 
 	float m_TilingFactor = 1.0f;
+	Vector2f m_TextureOffset;
 };

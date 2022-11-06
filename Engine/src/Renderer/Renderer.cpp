@@ -28,6 +28,7 @@ struct SceneData
 	{
 		Matrix4x4 modelMatrix;
 		Colour colour;
+		Vector2f textureOffset;
 		float tilingFactor = 1.0f;
 		int entityId = -1;
 	}ModelBuffer;
@@ -118,6 +119,7 @@ void Renderer::Submit(const Ref<Material>& material, const Ref<VertexArray>& ver
 	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
 	s_SceneData.modelBuffer.colour = material->GetTint();
 	//TODO: each texture should have it's own tiling factor
+	s_SceneData.modelBuffer.textureOffset = material->GetTextureOffset();
 	s_SceneData.modelBuffer.tilingFactor = material->GetTilingFactor();
 	s_SceneData.modelBuffer.entityId = entityId;
 	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));

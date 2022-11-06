@@ -15,6 +15,7 @@ layout(std140, binding = 1) uniform ModelBuffer
 {
 	uniform mat4 u_ModelMatrix;
 	uniform vec4 u_Colour;
+	uniform vec2 u_TextureOffset;
 	uniform float u_TilingFactor;
 	uniform int u_EntityId;
 };
@@ -28,7 +29,7 @@ layout (location = 0) in VertexOutput Input;
 
 void main()
 {
-	frag_colour = texture(u_Albedo, Input.TexCoord * u_TilingFactor) * u_Colour;
+	frag_colour = texture(u_Albedo, (Input.TexCoord + u_TextureOffset) * u_TilingFactor) * u_Colour;
 	if(frag_colour.a <= 0.0001)
 		discard;
 	entityId = u_EntityId;

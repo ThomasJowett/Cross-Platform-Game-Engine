@@ -121,7 +121,49 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	return entity;
 }
 
+void Scene::InstantiateScene(const Ref<Scene> prefab, const Vector3f& position)
+{
+	PROFILE_FUNCTION();
+	prefab->GetRegistry().each([=](const entt::entity entity) {
+		Entity prefabEntity(entity, prefab.get());
+		if (HierarchyComponent* hierarchyComp = prefabEntity.TryGetComponent<HierarchyComponent>())
+			if (hierarchyComp->parent != entt::null)
+				return;
+
+		InstantiateEntity(prefabEntity, position);
+		});
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, prefab);
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+
+	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
+
+	newEntity.GetTransform().position += position;
+
+	if (RigidBody2DComponent* rigidBodyComponent = newEntity.TryGetComponent<RigidBody2DComponent>())
+	{
+		rigidBodyComponent->Init(newEntity, m_Box2DWorld);
+	}
+
+	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
+	{
+		std::optional<std::pair<int, std::string>> result = scriptComponent->ParseScript(newEntity);
+		if (result.has_value())
+		{
+			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->absoluteFilepath, result.value().first, result.value().second);
+		}
+	}
+	return Entity();
+}
 
 bool Scene::RemoveEntity(Entity& entity)
 {

@@ -123,17 +123,27 @@ void ChangeScene(const std::string_view sceneFilepath)
 	SceneManager::ChangeScene(std::filesystem::path(sceneFilepath));
 }
 
+Ref<Scene> LoadScene(const std::string_view sceneFilepath)
+{
+	Ref<Scene> newScene = CreateRef<Scene>(Application::GetOpenDocumentDirectory() / sceneFilepath);
+	newScene->Load();
+	return newScene;
+}
+
 void BindScene(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
 	state.set_function("ChangeScene", &ChangeScene);
+	state.set_function("LoadScene", &LoadScene);
 
 	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
 	scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
 	scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
 	scene_type.set_function("FindEntity", &Scene::GetEntityByPath);
+	scene_type.set_function("InstantiateScene", &Scene::InstantiateScene);
+	scene_type.set_function("InstantiateEntity", &Scene::InstantiateEntity);
 
 	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
 	hitResult_type["Hit"] = &HitResult2D::hit;
@@ -165,6 +175,13 @@ void BindScene(sol::state& state)
 		{
 			return AssetManager::GetTileset(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
 		});
+
+	sol::usertype<Material> material_type = state.new_usertype<Material>("Material");
+	material_type.set_function("SetShader", &Material::SetShader);
+	material_type.set_function("GetShader", &Material::GetShader);
+	material_type.set_function("AddTexture", &Material::AddTexture);
+	material_type.set_function("GetTextureOffset", &Material::GetTextureOffset);
+	material_type.set_function("SetTextureOffset", &Material::SetTextureOffset);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -304,6 +321,8 @@ void BindEntity(sol::state& state)
 	primitive_type["TorusOuterRadius"] = &PrimitiveComponent::torusOuterRadius;
 	primitive_type["TorusInnerRadius"] = &PrimitiveComponent::torusInnerRadius;
 	primitive_type["TorusSliceCount"] = &PrimitiveComponent::torusSliceCount;
+	primitive_type["Material"] = &PrimitiveComponent::material;
+	primitive_type["Mesh"] = &PrimitiveComponent::mesh;
 	primitive_type.set_function("SetCube", &PrimitiveComponent::SetCube);
 	primitive_type.set_function("SetSphere", &PrimitiveComponent::SetSphere);
 	primitive_type.set_function("SetPlane", &PrimitiveComponent::SetPlane);
@@ -386,6 +405,7 @@ void BindMath(sol::state& state)
 		"y", &Vector2f::y,
 		sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
 		sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; },
+		sol::meta_function::multiplication, [](const Vector2f& a, const float& b) {return a * b; },
 		sol::meta_function::unary_minus, [](Vector2f const& a) {return -a; }
 	);
 
@@ -403,6 +423,7 @@ void BindMath(sol::state& state)
 		"z", &Vector3f::z,
 		sol::meta_function::addition, [](const Vector3f& a, const Vector3f& b) { return a + b; },
 		sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; },
+		sol::meta_function::multiplication, [](const Vector3f& a, const float& b) {return a * b; },
 		sol::meta_function::unary_minus, [](Vector3f const& a) {return -a; }
 	);
 
