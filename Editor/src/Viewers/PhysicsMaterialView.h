@@ -6,9 +6,10 @@
 #include "Interfaces/ISaveable.h"
 #include "Interfaces/IUndoable.h"
 #include "Physics/PhysicsMaterial.h"
+#include "ViewerManager.h"
 
 class PhysicsMaterialView :
-	public Layer, public ISaveable, public IUndoable
+	public View, public ISaveable, public IUndoable
 {
 public:
 	PhysicsMaterialView(bool* show, std::filesystem::path filepath);
@@ -32,7 +33,6 @@ private:
 	bool* m_Show;
 
 	std::filesystem::path m_FilePath;
-	std::string m_windowName;
 
 	Ref<PhysicsMaterial> m_PhysicsMaterial;
 

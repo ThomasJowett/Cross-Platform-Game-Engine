@@ -5,7 +5,7 @@
 #include "Engine.h"
 
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
-	:Layer("StaticMeshView"), m_Show(show), m_FilePath(filepath)
+	:View("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
 	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
@@ -121,7 +121,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
 
 	if (m_CursorDisabled)
-		m_CameraController.OnUpdate(deltaTime, true);
+		m_CameraController.OnUpdate(deltaTime, m_WindowHovered);
 
 	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
 	{

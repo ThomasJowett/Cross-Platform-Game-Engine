@@ -495,7 +495,6 @@ void MainDockSpace::HandleKeyBoardInputs()
 		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-			if (iCopy->HasSelection())
 				iCopy->Paste();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))

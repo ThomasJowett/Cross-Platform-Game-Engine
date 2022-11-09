@@ -9,7 +9,7 @@
 #include "Engine.h"
 
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
-	:Layer("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
+	:View("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
 {
 	m_Mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(1.0f, 50, 50));
 

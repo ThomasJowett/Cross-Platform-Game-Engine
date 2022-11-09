@@ -10,7 +10,7 @@
 #include "ViewerManager.h"
 
 TilesetView::TilesetView(bool* show, std::filesystem::path filepath)
-	:Layer("TilesetView"), m_Show(show), m_Filepath(filepath)
+	:View("TilesetView"), m_Show(show), m_Filepath(filepath)
 {
 }
 

@@ -8,7 +8,7 @@
 #include "ViewerManager.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
-	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
+	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
 {
 }
 

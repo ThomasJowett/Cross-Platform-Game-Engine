@@ -4,7 +4,7 @@
 #include "ViewerManager.h"
 
 VisualSriptView::VisualSriptView(bool* show, const std::filesystem::path& filepath)
-	:Layer("VisualScriptView"), m_Show(show), m_Filepath(filepath)
+	:View("VisualScriptView"), m_Show(show), m_Filepath(filepath)
 {
 }
 

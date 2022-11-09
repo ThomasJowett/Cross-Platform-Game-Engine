@@ -26,6 +26,17 @@ enum class FileType
 	PHYSICSMATERIAL
 };
 
+class View : public Layer
+{
+public:
+	View(std::string name)
+		:Layer(name) {}
+	virtual ~View() = default;
+	const std::string& GetWindowName() { return m_WindowName; }
+protected:
+	std::string m_WindowName;
+};
+
 class ViewerManager
 {
 public:
@@ -40,5 +51,6 @@ public:
 	static void SaveAll();
 
 private:
-	static std::map<std::filesystem::path, std::pair<Layer*, bool*>> s_AssetViewers;
+	static std::map<std::filesystem::path, std::pair<View*, bool*>> s_AssetViewers;
 };
+

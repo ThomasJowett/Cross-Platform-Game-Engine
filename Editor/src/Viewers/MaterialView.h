@@ -11,9 +11,10 @@
 #include "Renderer/Camera.h"
 
 #include "Interfaces/ISaveable.h"
+#include "ViewerManager.h"
 
 class MaterialView :
-	public Layer, public ISaveable
+	public View, public ISaveable
 {
 public:
 	MaterialView(bool* show, std::filesystem::path filepath);
@@ -26,8 +27,6 @@ private:
 	bool* m_Show;
 
 	std::filesystem::path m_FilePath;
-
-	std::string m_WindowName;
 
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;

@@ -10,7 +10,7 @@
 #include "PhysicsMaterialView.h"
 #include "Scene/SceneManager.h"
 
-std::map<std::filesystem::path, std::pair<Layer*, bool*>> ViewerManager::s_AssetViewers;
+std::map<std::filesystem::path, std::pair<View*, bool*>> ViewerManager::s_AssetViewers;
 
 static const char* TextExtensions[] =
 {
@@ -57,6 +57,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	if (s_AssetViewers.find(assetPath) != s_AssetViewers.end())
 	{
 		*s_AssetViewers.at(assetPath).second = true;
+		ImGui::SetWindowFocus(s_AssetViewers.at(assetPath).first->GetWindowName().c_str());
 		return;
 	}
 
@@ -65,7 +66,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::IMAGE:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new TextureView(show, assetPath);
+		View* layer = new TextureView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -73,7 +74,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::MESH:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new StaticMeshView(show, assetPath);
+		View* layer = new StaticMeshView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -88,7 +89,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::TEXT:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new ScriptView(show, assetPath);
+		View* layer = new ScriptView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -96,7 +97,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::MATERIAL:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new MaterialView(show, assetPath);
+		View* layer = new MaterialView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -109,7 +110,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::TILESET:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new TilesetView(show, assetPath);
+		View* layer = new TilesetView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -117,7 +118,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::VISUALSCRIPT:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new VisualSriptView(show, assetPath);
+		View* layer = new VisualSriptView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;
@@ -125,7 +126,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::PHYSICSMATERIAL:
 	{
 		bool* show = new bool(true);
-		Layer* layer = new PhysicsMaterialView(show, assetPath);
+		View* layer = new PhysicsMaterialView(show, assetPath);
 		s_AssetViewers[assetPath] = std::make_pair(layer, show);
 		Application::Get().AddOverlay(layer);
 		return;

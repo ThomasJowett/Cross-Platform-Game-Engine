@@ -9,14 +9,14 @@
 #include "ImGui/ImGuiUtilites.h"
 
 PhysicsMaterialView::PhysicsMaterialView(bool* show, std::filesystem::path filepath)
-	:Layer("PhysicsMaterialView"), m_Show(show), m_FilePath(filepath)
+	:View("PhysicsMaterialView"), m_Show(show), m_FilePath(filepath)
 {
 }
 
 void PhysicsMaterialView::OnAttach()
 {
 	m_PhysicsMaterial = AssetManager::GetPhysicsMaterial(m_FilePath);
-	m_windowName = ICON_FA_VOLLEYBALL + std::string(" " + m_FilePath.filename().string());
+	m_WindowName = ICON_FA_VOLLEYBALL + std::string(" " + m_FilePath.filename().string());
 }
 
 void PhysicsMaterialView::OnImGuiRender()
@@ -30,7 +30,7 @@ void PhysicsMaterialView::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(300, 150), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(m_windowName.c_str(), m_Show, flags))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
 		if (ImGui::IsWindowFocused())
 		{

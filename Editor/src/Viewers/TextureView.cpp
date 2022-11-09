@@ -6,7 +6,7 @@
 #include "MainDockSpace.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
-	:Layer("TextureView"), m_Show(show), m_FilePath(filepath)
+	:View("TextureView"), m_Show(show), m_FilePath(filepath)
 {
 
 }

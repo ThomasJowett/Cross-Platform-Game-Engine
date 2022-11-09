@@ -11,8 +11,10 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
+#include "ViewerManager.h"
+
 class VisualSriptView
-	:public Layer, public ICopyable, public IUndoable, public ISaveable
+	:public View, public ICopyable, public IUndoable, public ISaveable
 {
 	struct Variable
 	{
@@ -67,8 +69,6 @@ private:
 	std::filesystem::path m_Filepath;
 
 	bool m_Dirty = false;
-
-	std::string m_WindowName;
 
 	LuaNodeEditor m_LuaNodeEditor;
 

@@ -6,9 +6,10 @@
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
+#include "ViewerManager.h"
 
 class ScriptView
-	:public Layer, public ICopyable, public IUndoable, public ISaveable
+	:public View, public ICopyable, public IUndoable, public ISaveable
 {
 public:
 	ScriptView(bool* show, const std::filesystem::path& filepath);
@@ -44,8 +45,6 @@ private:
 	bool* m_Show;
 
 	std::filesystem::path m_FilePath;
-
-	std::string m_WindowName;
 
 	TextEditor m_TextEditor;
 };

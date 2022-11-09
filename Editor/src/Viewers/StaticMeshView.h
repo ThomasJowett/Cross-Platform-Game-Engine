@@ -11,9 +11,10 @@
 #include "imgui/imgui.h"
 
 #include "ViewportCameraController.h"
+#include "ViewerManager.h"
 
 class StaticMeshView :
-	public Layer
+	public View
 {
 public:
 	StaticMeshView(bool* show, std::filesystem::path filepath);
@@ -27,8 +28,6 @@ private:
 	bool* m_Show;
 
 	std::filesystem::path m_FilePath;
-
-	std::string m_WindowName;
 
 	Ref<StaticMesh> m_Mesh;
 
