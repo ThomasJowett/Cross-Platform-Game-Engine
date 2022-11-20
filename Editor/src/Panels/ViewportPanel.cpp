@@ -430,7 +430,7 @@ void ViewportPanel::OnImGuiRender()
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
-	if (SceneManager::CurrentScene()->IsDirty())
+	if (SceneManager::CurrentScene()->IsDirty() && SceneManager::GetSceneState() == SceneState::Edit)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
