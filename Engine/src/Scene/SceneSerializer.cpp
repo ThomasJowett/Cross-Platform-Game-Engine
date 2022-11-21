@@ -600,13 +600,14 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pCubeElement = pPrimitiveComponentElement->FirstChildElement("Cube"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pCubeElement->QueryFloatAttribute("Width", &component.cubeWidth);
 				pCubeElement->QueryFloatAttribute("Height", &component.cubeHeight);
 				pCubeElement->QueryFloatAttribute("Depth", &component.cubeDepth);
 				
 				if(!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetCube(component.cubeWidth, component.cubeDepth, component.cubeHeight);
 			}
 			break;
 		}
@@ -614,12 +615,13 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pSphereElement = pPrimitiveComponentElement->FirstChildElement("Sphere"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pSphereElement->QueryFloatAttribute("Radius", &component.sphereRadius);
 				pSphereElement->QueryUnsignedAttribute("LongitudeLines", &component.sphereLongitudeLines);
 				pSphereElement->QueryUnsignedAttribute("LatitudeLines", &component.sphereLatitudeLines);
 				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetSphere(component.sphereRadius, component.sphereLongitudeLines, component.sphereLatitudeLines);
 			}
 			break;
 		}
@@ -627,7 +629,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pPlaneElement = pPrimitiveComponentElement->FirstChildElement("Plane"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pPlaneElement->QueryFloatAttribute("Width", &component.planeWidth);
 				pPlaneElement->QueryFloatAttribute("Length", &component.planeLength);
@@ -636,6 +638,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pPlaneElement->QueryFloatAttribute("TileU", &component.planeTileU);
 				pPlaneElement->QueryFloatAttribute("TileV", &component.planeTileV);
 				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetPlane(component.planeWidth, component.planeLength, component.planeWidthLines, component.planeLengthLines, component.planeTileU, component.planeTileV);
 			}
 			break;
 		}
@@ -643,7 +646,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pCylinderElement = pPrimitiveComponentElement->FirstChildElement("Cylinder"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pCylinderElement->QueryFloatAttribute("BottomRadius", &component.cylinderBottomRadius);
 				pCylinderElement->QueryFloatAttribute("TopRadius", &component.cylinderTopRadius);
@@ -651,6 +654,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCylinderElement->QueryUnsignedAttribute("SliceCount", &component.cylinderSliceCount);
 				pCylinderElement->QueryUnsignedAttribute("StackCount", &component.cylinderStackCount);
 				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetCylinder(component.cylinderBottomRadius, component.cylinderTopRadius, component.cylinderHeight, component.cylinderSliceCount, component.cylinderStackCount);
 			}
 			break;
 		}
@@ -658,13 +662,14 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pConeElement = pPrimitiveComponentElement->FirstChildElement("Cone"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pConeElement->QueryFloatAttribute("BottomRadius", &component.coneBottomRadius);
 				pConeElement->QueryFloatAttribute("Height", &component.coneHeight);
 				pConeElement->QueryUnsignedAttribute("SliceCount", &component.coneSliceCount);
 				pConeElement->QueryUnsignedAttribute("StackCount", &component.coneStackCount);
 				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetCone(component.coneBottomRadius, component.coneHeight, component.coneSliceCount, component.coneStackCount);
 			}
 			break;
 		}
@@ -672,12 +677,13 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		{
 			if (tinyxml2::XMLElement const* pTorusElement = pPrimitiveComponentElement->FirstChildElement("Torus"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pTorusElement->QueryFloatAttribute("OuterRadius", &component.torusOuterRadius);
 				pTorusElement->QueryFloatAttribute("InnerRadius", &component.torusInnerRadius);
 				pTorusElement->QueryUnsignedAttribute("SliceCount", &component.torusSliceCount);
 				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				component.SetTorus(component.torusOuterRadius, component.torusInnerRadius, component.torusSliceCount);
 			}
 			break;
 		}

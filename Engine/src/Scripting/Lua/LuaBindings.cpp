@@ -329,6 +329,7 @@ void BindEntity(sol::state& state)
 	primitive_type.set_function("SetCylinder", &PrimitiveComponent::SetCylinder);
 	primitive_type.set_function("SetCone", &PrimitiveComponent::SetCone);
 	primitive_type.set_function("SetTorus", &PrimitiveComponent::SetTorus);
+	primitive_type.set_function("SetType", &PrimitiveComponent::SetType);
 }
 
 //--------------------------------------------------------------------------------------------------------------

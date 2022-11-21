@@ -6,6 +6,6 @@
 
 namespace ImGui
 {
-	IMGUI_API bool MaterialEdit(const char* label, Ref<Material> material, Ref<Material> defaultMaterial);
+	IMGUI_API bool MaterialEdit(const char* label, Ref<Material>& material, Ref<Material> defaultMaterial);
 }
 

@@ -361,7 +361,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : primitiveGroup)
 	{
 		auto [transformComp, primitiveComp] = primitiveGroup.get(entity);
-		Renderer::Submit(primitiveComp.material, primitiveComp.mesh->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+		Renderer::Submit(primitiveComp.material, primitiveComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
@@ -433,34 +433,7 @@ void Scene::OnUpdate(float deltaTime)
 		{
 			if (primitiveComponent.needsUpdating)
 			{
-				if (!primitiveComponent.mesh)
-					primitiveComponent.mesh = CreateRef<Mesh>();
-				if (!primitiveComponent.material)
-					primitiveComponent.material = CreateRef<Material>();
-				switch (primitiveComponent.type)
-				{
-				case PrimitiveComponent::Shape::Cube:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth));
-					break;
-				case PrimitiveComponent::Shape::Sphere:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines));
-					break;
-				case PrimitiveComponent::Shape::Plane:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV));
-					break;
-				case PrimitiveComponent::Shape::Cylinder:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount));
-					break;
-				case PrimitiveComponent::Shape::Cone:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount));
-					break;
-				case PrimitiveComponent::Shape::Torus:
-					primitiveComponent.mesh->LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount));
-					break;
-				default:
-					break;
-				}
-				primitiveComponent.needsUpdating = false;
+				primitiveComponent.SetType(primitiveComponent.type);
 			}
 		});
 

@@ -1,8 +1,10 @@
 #pragma once
+#include "Utilities/GeometryGenerator.h"
+#include "Core/BoundingBox.h"
 
 struct PrimitiveComponent
 {
-	Ref<Mesh> mesh;
+	Ref<VertexArray> mesh;
 	Ref<Material> material;
 
 	enum class Shape
@@ -51,61 +53,45 @@ struct PrimitiveComponent
 
 	PrimitiveComponent() = default;
 	PrimitiveComponent(Shape shape)
-		:type(shape) {}
+		:type(shape) {
+		SetType(shape);
+	}
 
 	// Cube
 	PrimitiveComponent(float cubeWidth, float cubeHeight, float cubeDepth)
-		:type(Shape::Cube),
-		cubeWidth(cubeWidth),
-		cubeHeight(cubeHeight),
-		cubeDepth(cubeDepth)
-	{}
+	{
+		SetCube(cubeWidth, cubeHeight, cubeDepth);
+	}
 
 	//Sphere
 	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLines, uint32_t sphereLatitudeLines)
-		:type(Shape::Sphere),
-		sphereRadius(shpereRadius),
-		sphereLongitudeLines(sphereLongitudeLines),
-		sphereLatitudeLines(sphereLatitudeLines)
-	{}
+	{
+		SetSphere(shpereRadius, sphereLongitudeLines, sphereLatitudeLines);
+	}
 
 	// Plane
 	PrimitiveComponent(float planeWidth, float planeLength, uint32_t planeWidthLines, uint32_t planeLengthLines, float planeTileU, float planeTileV)
-		:type(Shape::Plane),
-		planeWidth(planeWidth),
-		planeLength(planeLength),
-		planeWidthLines(planeWidthLines),
-		planeLengthLines(planeLengthLines),
-		planeTileU(planeTileU),
-		planeTileV(planeTileV)
-	{}
+	{
+		SetPlane(planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV);
+	}
 
 	// Cylinder
 	PrimitiveComponent(float cylinderBottomRadius, float cylinderTopRadius, float cylinderHeight, uint32_t cylinderSliceCount, uint32_t cylinderStackCount)
-		:type(Shape::Cylinder),
-		cylinderBottomRadius(cylinderBottomRadius),
-		cylinderTopRadius(cylinderTopRadius),
-		cylinderHeight(cylinderHeight),
-		cylinderSliceCount(cylinderSliceCount),
-		cylinderStackCount(cylinderStackCount)
-	{}
+	{
+		SetCylinder(cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount);
+	}
 
 	//Cone
 	PrimitiveComponent(float coneBottomRadius, float coneHeight, uint32_t coneSliceCount, uint32_t coneStackCount)
-		:type(Shape::Cone),
-		coneBottomRadius(coneBottomRadius),
-		coneHeight(coneHeight),
-		coneSliceCount(coneSliceCount),
-		coneStackCount(coneStackCount)
-	{}
+	{
+		SetCone(coneBottomRadius, coneHeight, coneSliceCount, coneStackCount);
+	}
 
 	//Torus
 	PrimitiveComponent(float torusOuterRadius, float torusInnerRadius, uint32_t torusSliceCount)
-		:type(Shape::Torus),
-		torusOuterRadius(torusOuterRadius),
-		torusInnerRadius(torusInnerRadius),
-		torusSliceCount(torusSliceCount)
-	{}
+	{
+		SetTorus(torusOuterRadius, torusInnerRadius, torusSliceCount);
+	}
 
 	PrimitiveComponent(const PrimitiveComponent&) = default;
 
@@ -115,7 +101,11 @@ struct PrimitiveComponent
 		cubeDepth = depth;
 		cubeHeight = height;
 		type = Shape::Cube;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCube(cubeWidth, cubeHeight, cubeDepth);
+		if (!material) material = CreateRef<Material>();
+
+		m_Bounds = BoundingBox(Vector3f(-width * .5f, -height * .5f, -depth * .5f), Vector3f(width * .5f, height * .5f, depth * .5f));
 	}
 
 	void SetSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
@@ -124,7 +114,11 @@ struct PrimitiveComponent
 		sphereLongitudeLines = longitudeLines;
 		sphereLatitudeLines = latitudeLines;
 		type = Shape::Sphere;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateSphere(radius, longitudeLines, latitudeLines);
+		if (!material) material = CreateRef<Material>();
+
+		m_Bounds = BoundingBox(Vector3f(-radius, -radius, -radius), Vector3f(radius, radius, radius));
 	}
 
 	void SetPlane(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
@@ -136,7 +130,11 @@ struct PrimitiveComponent
 		planeTileU = tileU;
 		planeTileV = tileV;
 		type = Shape::Plane;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateGrid(width, length, widthLines, lengthLines, tileU, tileV);
+		if (!material) material = CreateRef<Material>();
+
+		m_Bounds = BoundingBox(Vector3f(-width * .5f, -0.0f, -length * .5f), Vector3f(width * .5f, 0.0f, length * .5f));
 	}
 
 	void SetCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
@@ -147,7 +145,11 @@ struct PrimitiveComponent
 		cylinderSliceCount = sliceCount;
 		cylinderStackCount = stackCount;
 		type = Shape::Cylinder;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCylinder(bottomRadius, topRadius, height, sliceCount, stackCount);
+		if (!material) material = CreateRef<Material>();
+		float maxRadius = std::max(bottomRadius, topRadius);
+		m_Bounds = BoundingBox(Vector3f(-maxRadius, -height * 0.5f, -maxRadius), Vector3f(maxRadius, height * 0.5f, maxRadius));
 	}
 
 	void SetCone(float bottomRadius, float height, uint32_t sliceCount, uint32_t stackCount)
@@ -157,7 +159,10 @@ struct PrimitiveComponent
 		coneSliceCount = sliceCount;
 		coneStackCount = stackCount;
 		type = Shape::Cone;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCylinder(bottomRadius, 0, height, sliceCount, stackCount);
+		if (!material) material = CreateRef<Material>();
+		m_Bounds = BoundingBox(Vector3f(-bottomRadius, -height * 0.5f, -bottomRadius), Vector3f(bottomRadius, height * 0.5f, bottomRadius));
 	}
 
 	void SetTorus(float outerRadius, float innerRadius, uint32_t sliceCount)
@@ -166,12 +171,43 @@ struct PrimitiveComponent
 		torusInnerRadius = innerRadius;
 		torusSliceCount = sliceCount;
 		type = Shape::Torus;
-		needsUpdating = true;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateTorus(outerRadius, innerRadius, sliceCount);
+		if(!material) material = CreateRef<Material>();
+		m_Bounds = BoundingBox(Vector3f(-(outerRadius + innerRadius) * .5f, -innerRadius * .5f, -(outerRadius + innerRadius) * .5f), Vector3f((outerRadius + innerRadius) * .5f, innerRadius * .5f, (outerRadius + innerRadius) * .5f));
 	}
+
+	void SetType(Shape type)
+	{
+		switch (type)
+		{
+		case PrimitiveComponent::Shape::Cube:
+			SetCube(cubeWidth, cubeDepth, cubeHeight);
+			return;
+		case PrimitiveComponent::Shape::Sphere:
+			SetSphere(sphereRadius, sphereLongitudeLines, sphereLatitudeLines);
+			return;
+		case PrimitiveComponent::Shape::Plane:
+			SetPlane(planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV);
+			return;
+		case PrimitiveComponent::Shape::Cylinder:
+			SetCylinder(cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount);
+			return;
+		case PrimitiveComponent::Shape::Cone:
+			SetCone(coneBottomRadius, coneHeight, coneSliceCount, coneStackCount);
+			return;
+		case PrimitiveComponent::Shape::Torus:
+			SetTorus(torusOuterRadius, torusInnerRadius, torusSliceCount);
+			return;
+		}
+	}
+
+	const BoundingBox& GetBounds() { return m_Bounds; }
 
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
 private:
+	BoundingBox m_Bounds;
 	friend cereal::access;
 
 	template<typename Archive>
@@ -210,5 +246,6 @@ private:
 		{
 			material = AssetManager::GetMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
+		SetType(type);
 	}
 };

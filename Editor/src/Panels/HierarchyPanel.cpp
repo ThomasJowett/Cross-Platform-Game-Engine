@@ -211,36 +211,10 @@ void HierarchyPanel::OnImGuiRender()
 
 								if (primitiveComp.needsUpdating)
 								{
-									if (!primitiveComp.material)
-										primitiveComp.material = CreateRef<Material>();
-									switch (primitiveComp.type)
-									{
-									case PrimitiveComponent::Shape::Cube:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCube(primitiveComp.cubeWidth, primitiveComp.cubeHeight, primitiveComp.cubeDepth));
-										break;
-									case PrimitiveComponent::Shape::Sphere:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(primitiveComp.sphereRadius, primitiveComp.sphereLongitudeLines, primitiveComp.sphereLatitudeLines));
-										break;
-									case PrimitiveComponent::Shape::Plane:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(primitiveComp.planeWidth, primitiveComp.planeLength, primitiveComp.planeLengthLines, primitiveComp.planeWidthLines, primitiveComp.planeTileU, primitiveComp.planeTileV));
-										break;
-									case PrimitiveComponent::Shape::Cylinder:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.cylinderBottomRadius, primitiveComp.cylinderTopRadius, primitiveComp.cylinderHeight, primitiveComp.cylinderSliceCount, primitiveComp.cylinderStackCount));
-										break;
-									case PrimitiveComponent::Shape::Cone:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateCylinder(primitiveComp.coneBottomRadius, 0.00001f, primitiveComp.coneHeight, primitiveComp.coneSliceCount, primitiveComp.coneStackCount));
-										break;
-									case PrimitiveComponent::Shape::Torus:
-										primitiveComp.mesh = CreateRef<Mesh>(GeometryGenerator::CreateTorus(primitiveComp.torusOuterRadius, primitiveComp.torusInnerRadius, primitiveComp.torusSliceCount));
-										break;
-									default:
-										break;
-									}
-									primitiveComp.needsUpdating = false;
+									primitiveComp.SetType(primitiveComp.type);
 								}
 							}
-
-							// Only draw a node for root entites, children are drawn recursively
+							// Only draw a node for root entities, children are drawn recursively
 							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
 							if (!hierarchyComp || hierarchyComp->parent == entt::null
 								|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))

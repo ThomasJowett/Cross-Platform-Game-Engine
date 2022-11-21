@@ -81,9 +81,6 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	BoundingBox aabb;
-	//TODO calculate bounds
-
 	return returnModel;
 }
 
@@ -176,9 +173,6 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
-
-	BoundingBox aabb;
-	//TODO calculate bounds
 
 	return returnModel;
 }
@@ -278,9 +272,6 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	delete[] indices;
 	delete[] vertices;
 
-	BoundingBox aabb;
-	//TODO calculate bounds
-
 	return returnModel;
 }
 
@@ -315,9 +306,6 @@ Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
-
-	BoundingBox aabb;
-	//TODO calculate bounds
 
 	return returnModel;
 }
@@ -539,9 +527,6 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
 
-	BoundingBox aabb;
-	//TODO calculate bounds
-
 	return returnModel;
 }
 
@@ -626,9 +611,6 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 
 	returnModel->AddVertexBuffer(vertexBuffer);
 	returnModel->SetIndexBuffer(indexBuffer);
-
-	BoundingBox aabb;
-	//TODO calculate bounds
 
 	return returnModel;
 }

@@ -738,6 +738,16 @@ void ViewportPanel::OnImGuiRender()
 					bounds[4] = 0.5f;
 					bounds[5] = 0.5f;
 				}
+				else if (selectedEntity.HasComponent<PrimitiveComponent>())
+				{
+					const BoundingBox& box = selectedEntity.GetComponent<PrimitiveComponent>().GetBounds();
+					bounds[0] = box.Min().x;
+					bounds[1] = box.Min().y;
+					bounds[2] = box.Min().z;
+					bounds[3] = box.Max().x;
+					bounds[4] = box.Max().y;
+					bounds[5] = box.Max().z;
+				}
 				else if (selectedEntity.HasComponent<TilemapComponent>())
 				{
 					TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();

@@ -510,12 +510,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 				break;
 			case PrimitiveComponent::Shape::Torus:
-				if (ImGui::DragFloat("Outer Radius##Torus", &primitive.torusOuterRadius, 0.1f, 0.0f))
+				if (ImGui::DragFloat("Outer Radius##Torus", &primitive.torusOuterRadius, 0.1f, 0.0f, 100.0f))
 				{
 					primitive.needsUpdating = true;
 					SceneManager::CurrentScene()->MakeDirty();
 				}
-				if (ImGui::DragFloat("Inner Radius##Torus", &primitive.torusInnerRadius, 0.1f, 0.0f))
+				if (ImGui::DragFloat("Inner Radius##Torus", &primitive.torusInnerRadius, 0.1f, 0.0f, 100.0f))
 				{
 					primitive.needsUpdating = true;
 					SceneManager::CurrentScene()->MakeDirty();
@@ -531,7 +531,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			default:
 				break;
 			}
-			Dirty(ImGui::MaterialEdit("Material", primitive.material, primitive.mesh->GetMaterial()));
+			Dirty(ImGui::MaterialEdit("Material", primitive.material, AssetManager::GetMaterial("")));// TODO: find a better way to get a default material
 		});
 
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------
