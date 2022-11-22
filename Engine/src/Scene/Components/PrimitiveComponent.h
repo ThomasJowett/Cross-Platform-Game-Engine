@@ -1,6 +1,7 @@
 #pragma once
 #include "Utilities/GeometryGenerator.h"
 #include "Core/BoundingBox.h"
+#include "Scene/AssetManager.h"
 
 struct PrimitiveComponent
 {
@@ -103,7 +104,7 @@ struct PrimitiveComponent
 		type = Shape::Cube;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCube(cubeWidth, cubeHeight, cubeDepth);
-		if (!material) material = CreateRef<Material>();
+		if (!material) material = AssetManager::GetMaterial("_");
 
 		m_Bounds = BoundingBox(Vector3f(-width * .5f, -height * .5f, -depth * .5f), Vector3f(width * .5f, height * .5f, depth * .5f));
 	}
@@ -116,7 +117,7 @@ struct PrimitiveComponent
 		type = Shape::Sphere;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateSphere(radius, longitudeLines, latitudeLines);
-		if (!material) material = CreateRef<Material>();
+		if (!material) material = AssetManager::GetMaterial("_");
 
 		m_Bounds = BoundingBox(Vector3f(-radius, -radius, -radius), Vector3f(radius, radius, radius));
 	}
@@ -132,7 +133,7 @@ struct PrimitiveComponent
 		type = Shape::Plane;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateGrid(width, length, widthLines, lengthLines, tileU, tileV);
-		if (!material) material = CreateRef<Material>();
+		if (!material) material = AssetManager::GetMaterial("_");
 
 		m_Bounds = BoundingBox(Vector3f(-width * .5f, -0.0f, -length * .5f), Vector3f(width * .5f, 0.0f, length * .5f));
 	}
@@ -147,7 +148,7 @@ struct PrimitiveComponent
 		type = Shape::Cylinder;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCylinder(bottomRadius, topRadius, height, sliceCount, stackCount);
-		if (!material) material = CreateRef<Material>();
+		if (!material) material = AssetManager::GetMaterial("_");
 		float maxRadius = std::max(bottomRadius, topRadius);
 		m_Bounds = BoundingBox(Vector3f(-maxRadius, -height * 0.5f, -maxRadius), Vector3f(maxRadius, height * 0.5f, maxRadius));
 	}
@@ -161,7 +162,7 @@ struct PrimitiveComponent
 		type = Shape::Cone;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCylinder(bottomRadius, 0, height, sliceCount, stackCount);
-		if (!material) material = CreateRef<Material>();
+		if (!material) material = AssetManager::GetMaterial("_");
 		m_Bounds = BoundingBox(Vector3f(-bottomRadius, -height * 0.5f, -bottomRadius), Vector3f(bottomRadius, height * 0.5f, bottomRadius));
 	}
 
@@ -173,7 +174,7 @@ struct PrimitiveComponent
 		type = Shape::Torus;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateTorus(outerRadius, innerRadius, sliceCount);
-		if(!material) material = CreateRef<Material>();
+		if(!material) material = AssetManager::GetMaterial("_");
 		m_Bounds = BoundingBox(Vector3f(-(outerRadius + innerRadius) * .5f, -innerRadius * .5f, -(outerRadius + innerRadius) * .5f), Vector3f((outerRadius + innerRadius) * .5f, innerRadius * .5f, (outerRadius + innerRadius) * .5f));
 	}
 

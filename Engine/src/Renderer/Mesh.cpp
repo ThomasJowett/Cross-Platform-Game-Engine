@@ -1,12 +1,13 @@
 #include "stdafx.h"
 #include "Mesh.h"
+#include "Scene/AssetManager.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 Mesh::Mesh(Ref<VertexArray> vertexArray)
 	:m_VertexArray(vertexArray)
 {
-	m_Material = CreateRef<Material>();
+	m_Material = AssetManager::GetMaterial("_");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -5,6 +5,7 @@
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
 #include "IconsFontAwesome6.h"
+#include "Scene/AssetManager.h"
 
 #include <filesystem>
 
@@ -83,7 +84,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 			const bool is_selected = false;
 			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 			{
-				texture = Texture2D::Create(file);
+				texture = AssetManager::GetTexture(file);
 				edited = true;
 				break;
 			}

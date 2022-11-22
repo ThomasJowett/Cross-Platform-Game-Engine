@@ -27,10 +27,9 @@ PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref
 
 void PropertiesPanel::OnAttach()
 {
-	m_DefaultMaterial = CreateRef<Material>("Standard", Colours::WHITE);
-	m_DefaultMaterial->AddTexture(Texture2D::Create(Application::GetWorkingDirectory() / "resources" / "UVChecker.png"), 0);
+	m_DefaultMaterial = AssetManager::GetMaterial("_");
 
-	m_DefaultPhysMaterial = CreateRef<PhysicsMaterial>();
+	m_DefaultPhysMaterial = AssetManager::GetPhysicsMaterial("_");
 }
 
 void PropertiesPanel::OnUpdate(float deltaTime)
@@ -531,7 +530,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			default:
 				break;
 			}
-			Dirty(ImGui::MaterialEdit("Material", primitive.material, AssetManager::GetMaterial("")));// TODO: find a better way to get a default material
+			Dirty(ImGui::MaterialEdit("Material", primitive.material, m_DefaultMaterial));
 		});
 
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------

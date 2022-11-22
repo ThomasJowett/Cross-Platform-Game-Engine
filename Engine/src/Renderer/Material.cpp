@@ -146,7 +146,7 @@ bool Material::SaveMaterial() const
 
 void Material::DefaultMaterial()
 {
-	m_Filepath = "";
+	m_Filepath = "_";
 	m_Tint.SetColour(Colours::WHITE);
 	m_TwoSided = false;
 	m_Shader = "Standard";
