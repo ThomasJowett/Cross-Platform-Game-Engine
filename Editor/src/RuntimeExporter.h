@@ -9,7 +9,6 @@ class RuntimeExporter
 public:
     void Init(std::filesystem::path exportLocation);
     void ExportGame();
-    void ExportScene(Ref<Scene> scene);
 private:
     std::filesystem::path m_ExportLocation;
     std::filesystem::path m_GameName;

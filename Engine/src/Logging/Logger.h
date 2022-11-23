@@ -67,17 +67,9 @@ private:
 // Normal application behaviour
 #define CLIENT_INFO(...)		::Logger::GetClientLogger()->info(__VA_ARGS__)
 
-#if defined(RELEASE) && defined(STANDALONE)
-// Nothing logged in standalone release
-#define CLIENT_DEBUG(...)
-// Nothing logged in standalone release
-#define CLIENT_TRACE(...)
-#else
 // Diagnostic information to help the understand the flow of the engine
 #define CLIENT_DEBUG(...)		::Logger::GetClientLogger()->debug(__VA_ARGS__); \
 								DBG_OUTPUT("\n")\
 
 // Very fine detailed Diagnostic information
 #define CLIENT_TRACE(...)		::Logger::GetClientLogger()->trace(__VA_ARGS__)
-
-#endif

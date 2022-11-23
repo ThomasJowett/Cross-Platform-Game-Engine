@@ -308,11 +308,6 @@ project "Runtime"
 		"lua"
 	}
 
-	defines
-	{
-		"STANDALONE"
-	}
-
 	filter "system:windows"
 		staticruntime "Off"
 		systemversion "latest"

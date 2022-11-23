@@ -46,18 +46,9 @@ void RuntimeExporter::ExportGame()
 	}
 	// --------------------------------------------
 
-	// Export all the scenes within the project folder
-	std::vector<std::string> fileExtensions = { ".scene" };
-	auto sceneFiles = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), fileExtensions);
+	std::filesystem::remove(m_ExportLocation / Application::GetOpenDocument().filename());
 
-	for (std::filesystem::path sceneFile : sceneFiles)
-	{
-		Ref<Scene> scene = CreateRef<Scene>(sceneFile);
-		scene->Load();
-		ExportScene(scene);
-	}
-
-	// Copy the runtime executeable 
+	// Copy the runtime executable 
 	try
 	{
 		if (std::filesystem::exists(Application::GetWorkingDirectory() / "runtime" / "Runtime.exe"))
@@ -106,14 +97,9 @@ void RuntimeExporter::ExportGame()
 	outbin.close();
 
 	
+
+	
 	// TODO: form a list of all lua scripts and copy them
 	// TODO: form a list of all textures and copy them
 	// TODO: form a list of all static meshes and copy them
-}
-
-void RuntimeExporter::ExportScene(Ref<Scene> scene)
-{
-	std::filesystem::path relativePath = FileUtils::RelativePath(scene->GetFilepath(), Application::GetOpenDocumentDirectory());
-	std::filesystem::path finalPath = m_ExportLocation / relativePath;
-	scene->Save(finalPath, true);
 }

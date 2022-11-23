@@ -22,7 +22,7 @@ Runtime::Runtime(const WindowProps& props)
 	file.read((char*)&startupScene[0], size);
 	file.close();
 
-	SceneManager::ChangeScene(std::filesystem::path(startupScene), true);
+	SceneManager::ChangeScene(std::filesystem::path(startupScene));
 }
 
 void Runtime::OnUpdate()

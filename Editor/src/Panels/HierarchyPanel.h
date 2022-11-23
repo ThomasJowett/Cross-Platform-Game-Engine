@@ -48,6 +48,4 @@ private:
     bool m_Focused = false;
 
     ImGuiTextFilter* m_TextFilter;
-
-    Ref<Material> m_StandardMaterial;
 };

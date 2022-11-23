@@ -33,13 +33,13 @@ public:
 	static Window& GetWindow() { return Get().GetWindowImpl(); }
 
 	/**
-	 * Set wether to show Dear ImGui
+	 * Set whether to show Dear ImGui
 	 * @param showImgui
 	 */
 	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
 
 	/**
-	 * Toggle wether Dear ImGui to shown
+	 * Toggle whether Dear ImGui to shown
 	 */
 	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 

@@ -21,8 +21,6 @@ HierarchyPanel::~HierarchyPanel()
 
 void HierarchyPanel::OnAttach()
 {
-	m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
-	m_StandardMaterial->AddTexture(AssetManager::GetTexture(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
 }
 
 void HierarchyPanel::OnDetach()
