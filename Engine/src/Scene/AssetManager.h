@@ -8,6 +8,7 @@
 #include "Renderer/Material.h"
 #include "Renderer/StaticMesh.h"
 #include "Physics/PhysicsMaterial.h"
+#include "Renderer/Font.h"
 
 #include <mutex>
 
@@ -19,6 +20,7 @@ public:
 	static Ref<Material> GetMaterial(const std::filesystem::path& filepath);
 	static Ref<StaticMesh> GetStaticMesh(const std::filesystem::path& filepath);
 	static Ref<PhysicsMaterial> GetPhysicsMaterial(const std::filesystem::path& filepath);
+	static Ref<Font> GetFont(const std::filesystem::path& filepath);
 
 private:
 	AssetManager() {};
@@ -30,12 +32,14 @@ private:
 	Ref<Material> GetMaterialImpl(const std::filesystem::path& filepath);
 	Ref<StaticMesh> GetStaticMeshImpl(const std::filesystem::path& filepath);
 	Ref<PhysicsMaterial> GetPhysicsMaterialImpl(const std::filesystem::path& filepath);
+	Ref<Font> GetFontImpl(const std::filesystem::path& filepath);
 
 	TextureLibrary2D m_Textures;
 	AssetLibrary<Tileset> m_Tilesets;
 	AssetLibrary<Material> m_Materials;
 	AssetLibrary<StaticMesh> m_StaticMeshes;
 	AssetLibrary<PhysicsMaterial> m_PhysicsMaterials;
+	AssetLibrary<Font> m_Fonts;
 
 	static AssetManager* s_Instance;
 	static std::mutex s_Mutex;

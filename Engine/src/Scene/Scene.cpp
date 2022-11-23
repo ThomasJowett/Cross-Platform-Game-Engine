@@ -23,54 +23,7 @@
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
 #include "Physics/HitResult2D.h"
-
-class ContactListener : public b2ContactListener
-{
-	struct Contact
-	{
-		b2Fixture* fixtureA;
-		b2Fixture* fixtureB;
-
-		bool triggeredA = false;
-		bool triggeredB = false;
-		bool old = false;
-
-		Contact(b2Fixture* A, b2Fixture* B)
-			:fixtureA(A), fixtureB(B)
-		{}
-
-		bool operator==(const Contact& other) const
-		{
-			return (fixtureA == other.fixtureA) && (fixtureB == other.fixtureB);
-		}
-
-
-	};
-public:
-	ContactListener() = default;
-	~ContactListener() = default;
-
-	std::vector<Contact> m_Contacts;
-
-	virtual void BeginContact(b2Contact* contact) override
-	{
-		m_Contacts.push_back(Contact(contact->GetFixtureA(), contact->GetFixtureB()));
-	}
-	virtual void EndContact(b2Contact* contact) override
-	{
-		Contact oldContact(contact->GetFixtureA(), contact->GetFixtureB());
-
-		auto currentContact = std::find(m_Contacts.begin(), m_Contacts.end(), oldContact);
-		if (currentContact != m_Contacts.end())
-			currentContact->old = true;
-	}
-
-	void RemoveOld()
-	{
-		if (m_Contacts.size() > 0)
-			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](Contact c) {return c.old; }), m_Contacts.end());
-	}
-};
+#include "Physics/Contact2D.h"
 
 template<typename Component>
 static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
@@ -235,7 +188,7 @@ void Scene::OnRuntimeStart()
 	if (m_Box2DDraw)
 		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
 
-	m_ContactListener = CreateScope<ContactListener>();
+	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
 
 	m_Registry.view<LuaScriptComponent>().each(
@@ -489,13 +442,14 @@ void Scene::OnFixedUpdate()
 			{
 				for (auto fixture : luaScriptComp.GetFixtures())
 				{
-					for (auto& contact : m_ContactListener->m_Contacts)
+					for (Contact2D& contact : m_ContactListener->m_Contacts)
 					{
 						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
 						{
 							if (!contact.triggeredA || !contact.triggeredB)
 							{
-								luaScriptComp.OnBeginContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
+								luaScriptComp.OnBeginContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA,
+									contact.localNormal, contact.localPoint);
 								if (contact.fixtureA == fixture)
 									contact.triggeredA = true;
 								else

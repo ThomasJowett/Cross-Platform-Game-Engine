@@ -824,6 +824,31 @@ void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const
 	DrawHairLine(vertices[vertices.size() - 1], vertices[0], colour, entityId);
 }
 
+void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector2f& position, const Colour& colour, int entityId)
+{
+	DrawText(text, font, size, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)), colour, entityId);
+}
+
+void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector3f& position, const Colour& colour, int entityId)
+{
+	DrawText(text, font, size, Matrix4x4::Translate(position), colour, entityId);
+}
+
+void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector2f& position, const float& rotation, const Colour& colour, int entityId)
+{
+	DrawText(text, font, size, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)) * Matrix4x4::RotateZ(rotation), colour, entityId);
+}
+
+void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector3f& position, const float& rotation, const Colour& colour, int entityId)
+{
+	DrawText(text, font, size, Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation), colour, entityId);
+}
+
+void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Matrix4x4& transform, const Colour& colour, int entityId)
+{
+	//TODO: draw text
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawPolyline(const std::vector<Vector2f>& points, const float& thickness, const Colour& colour)

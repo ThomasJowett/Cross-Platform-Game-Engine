@@ -7,7 +7,7 @@
 #include "Core/UUID.h"
 #include "math/Vector2f.h"
 
-class ContactListener;
+class ContactListener2D;
 class Entity;
 class FrameBuffer;
 class Camera;
@@ -96,7 +96,7 @@ private:
 	b2World* m_Box2DWorld = nullptr;
 	b2Draw* m_Box2DDraw = nullptr;
 
-	Scope<ContactListener> m_ContactListener;
+	Scope<ContactListener2D> m_ContactListener;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 

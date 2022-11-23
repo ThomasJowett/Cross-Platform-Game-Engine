@@ -32,6 +32,12 @@ Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterial(const std::filesystem::pat
 	return Get().GetPhysicsMaterialImpl(filepath);
 }
 
+Ref<Font> AssetManager::GetFont(const std::filesystem::path& filepath)
+{
+	std::lock_guard lock(s_Mutex);
+	return Get().GetFontImpl(filepath);
+}
+
 AssetManager& AssetManager::Get()
 {
 	if (!s_Instance)
@@ -64,4 +70,9 @@ Ref<StaticMesh> AssetManager::GetStaticMeshImpl(const std::filesystem::path& fil
 Ref<PhysicsMaterial> AssetManager::GetPhysicsMaterialImpl(const std::filesystem::path& filepath)
 {
 	return m_PhysicsMaterials.Load(filepath);
+}
+
+Ref<Font> AssetManager::GetFontImpl(const std::filesystem::path& filepath)
+{
+	return m_Fonts.Load(filepath);
 }

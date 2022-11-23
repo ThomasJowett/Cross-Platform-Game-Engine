@@ -30,7 +30,7 @@ struct LuaScriptComponent
 	void OnUpdate(float deltaTime);
 	void OnFixedUpdate();
 	void OnDebugRender();
-	void OnBeginContact(b2Fixture* fixture);
+	void OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point);
 	void OnEndContact(b2Fixture* fixture);
 	bool IsContactListener();
 
