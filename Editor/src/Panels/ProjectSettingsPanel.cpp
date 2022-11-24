@@ -63,6 +63,9 @@ void ProjectSettingsPanel::ReadProjectFile()
 
 	file.close();
 
+	memset(m_DefaultSceneBuffer, 0, sizeof(m_DefaultSceneBuffer));
+	memset(m_DescriptionBuffer, 0, sizeof(m_DescriptionBuffer));
+
 	for (int i = 0; i < m_ProjectData.defaultScene.length(); i++)
 	{
 		m_DefaultSceneBuffer[i] = m_ProjectData.defaultScene[i];
