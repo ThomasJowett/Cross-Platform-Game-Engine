@@ -625,28 +625,39 @@ void ViewportPanel::OnImGuiRender()
 		{
 			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
 					if (ViewerManager::GetFileType(*file) == FileType::MESH)
 					{
-						std::string entityName = file->filename().string();
-						entityName = entityName.substr(0, entityName.find_last_of('.'));
-						Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
+						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						{
+							std::string entityName = file->filename().string();
+							entityName = entityName.substr(0, entityName.find_last_of('.'));
+							Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
 
-						StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
+							StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
-						staticMeshComp.mesh = AssetManager::GetStaticMesh(*file);
-						staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMeshes().size());
+							staticMeshComp.mesh = AssetManager::GetStaticMesh(*file);
+							staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMeshes().size());
+						}
 					}
 					else if (file->extension() == ".tmx")
 					{
-						ImportManager::ImportAsset(*file, file->stem());
+						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						{
+							ImportManager::ImportAsset(*file, file->stem());
+						}
 					}
 					else if (file->extension() == ".scene")
 					{
-						SceneManager::ChangeScene(*file);
+						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						{
+							Ref<Scene> scene = CreateRef<Scene>(*file);
+							scene->Load();
+							SceneManager::CurrentScene()->InstantiateScene(scene, Vector3f());
+						}
 					}
 
 					CLIENT_DEBUG(file->string());

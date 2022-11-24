@@ -40,7 +40,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	ImGui::EndGroup();
 	if (ImGui::BeginDragDropTarget())
 	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
 		{
 			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
@@ -48,8 +48,11 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 
 			if (filterStr.find(ConvertToWideChar(file->extension().string())) != std::string::npos)
 			{
-				filepath = *file;
-				edited = true;
+				if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				{
+					filepath = *file;
+					edited = true;
+				}
 			}
 		}
 		ImGui::EndDragDropTarget();

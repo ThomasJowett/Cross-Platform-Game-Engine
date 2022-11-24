@@ -40,7 +40,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 		materialName = "Default";
 
 	std::string comboId = "##materialEdit";
-	
+
 	std::strcat(comboId.data(), label);
 
 	if (ImGui::BeginCombo(comboId.c_str(), materialName.c_str()))
@@ -57,6 +57,24 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 		}
 		ImGui::EndCombo();
 	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+			for (std::string& ext : ViewerManager::GetExtensions(FileType::MATERIAL))
+			{
+				if (file->extension().string() == ext)
+				{
+					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						material = AssetManager::GetMaterial(*file);
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
+
 
 	if (materialName != "Default")
 	{

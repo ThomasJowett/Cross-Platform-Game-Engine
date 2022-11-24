@@ -67,17 +67,26 @@ void PropertiesPanel::OnImGuiRender()
 			ImGui::EndGroup();
 			if (ImGui::BeginDragDropTarget())
 			{
-				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					if (ViewerManager::GetFileType(*file) == FileType::MESH && !entity.HasComponent<StaticMeshComponent>())
+					if (ViewerManager::GetFileType(*file) == FileType::MESH)
 					{
-						//entity.AddComponent<StaticMeshComponent>(AssetManager::GetMesh(*file), m_DefaultMaterial);
+						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						{
+							StaticMeshComponent comp = entity.GetOrAddComponent<StaticMeshComponent>();
+							comp.mesh->Load(*file);
+						}
 					}
-					else if (file->extension() == ".lua" && !entity.HasComponent<LuaScriptComponent>())
+					else if (file->extension() == ".lua")
 					{
-						entity.AddComponent<LuaScriptComponent>(*file);
+						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						{
+							LuaScriptComponent comp = entity.GetOrAddComponent<LuaScriptComponent>();
+							comp.absoluteFilepath = *file;
+							comp.ParseScript(entity);
+						}
 					}
 
 					CLIENT_DEBUG(file->string());
@@ -207,6 +216,23 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					ImGui::Tooltip(file.string().c_str());
 				}
 				ImGui::EndCombo();
+			}
+			if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+				{
+					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+					for (std::string& ext : ViewerManager::GetExtensions(FileType::TILESET))
+					{
+						if (file->extension().string() == ext)
+						{
+							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+								sprite.tileset = AssetManager::GetTileset(*file);
+						}
+					}
+				}
+				ImGui::EndDragDropTarget();
 			}
 			if (sprite.tileset)
 			{

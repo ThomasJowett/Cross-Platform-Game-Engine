@@ -102,9 +102,12 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	newEntity.GetTransform().position += position;
 
-	if (RigidBody2DComponent* rigidBodyComponent = newEntity.TryGetComponent<RigidBody2DComponent>())
+	if (m_Box2DWorld)
 	{
-		rigidBodyComponent->Init(newEntity, m_Box2DWorld);
+		if (RigidBody2DComponent* rigidBodyComponent = newEntity.TryGetComponent<RigidBody2DComponent>())
+		{
+			rigidBodyComponent->Init(newEntity, m_Box2DWorld);
+		}
 	}
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())

@@ -91,11 +91,33 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
 				tilemap.tileset = AssetManager::GetTileset(file);
+				tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::Tooltip(file.string().c_str());
 		}
 		ImGui::EndCombo();
+	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+			for (std::string& ext : ViewerManager::GetExtensions(FileType::TILESET))
+			{
+				if (file->extension().string() == ext)
+				{
+					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+					{
+						tilemap.tileset = AssetManager::GetTileset(*file);
+						tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
 	}
 	if (tilemap.tileset)
 	{

@@ -48,6 +48,23 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 		}
 		ImGui::EndCombo();
 	}
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+			for (std::string& ext : ViewerManager::GetExtensions(FileType::PHYSICSMATERIAL))
+			{
+				if (file->extension().string() == ext)
+				{
+					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						physMaterial = AssetManager::GetPhysicsMaterial(*file);
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
 
 	if (physMaterialName != "Default")
 	{
@@ -57,6 +74,12 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 			ViewerManager::OpenViewer(physMaterial->GetFilepath());
 		}
 		ImGui::Tooltip("Edit Physics Material");
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_XMARK))
+		{
+			physMaterial = defaultPyhsMaterial;
+		}
 	}
 
 	return edited;

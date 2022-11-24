@@ -13,6 +13,7 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 {
 	bool edited = false;
 	ImGui::TextUnformatted(label);
+	ImGui::BeginGroup();
 	if (texture)
 	{
 		ImGui::BeginGroup();
@@ -133,6 +134,24 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		ImGui::Tooltip("Wrapping Method");
 	}
 	ImGui::EndGroup();
+	ImGui::EndGroup();
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+			for (std::string& ext : ViewerManager::GetExtensions(FileType::IMAGE))
+			{
+				if (file->extension().string() == ext)
+				{
+					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						texture = AssetManager::GetTexture(*file);
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
+	}
 
 	return edited;
 }
