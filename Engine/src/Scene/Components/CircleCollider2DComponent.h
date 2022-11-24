@@ -13,7 +13,7 @@ struct CircleCollider2DComponent
 
   Ref<PhysicsMaterial> physicsMaterial;
 
-  void* RuntimeFixture = nullptr;
+  void* runtimeFixture = nullptr;
 
   CircleCollider2DComponent() = default;
   CircleCollider2DComponent(const CircleCollider2DComponent&) = default;

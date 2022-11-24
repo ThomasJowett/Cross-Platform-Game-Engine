@@ -21,7 +21,7 @@ struct CapsuleCollider2DComponent
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	void* RuntimeFixture = nullptr;
+	void* runtimeFixture = nullptr;
 
 	CapsuleCollider2DComponent() = default;
 	CapsuleCollider2DComponent(const CapsuleCollider2DComponent&) = default;

@@ -103,7 +103,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	PROFILE_FUNCTION();
 
 	pElement->SetAttribute("Name", entity.GetName().c_str());
-	pElement->SetAttribute("ID", entity.GetID());
+	pElement->SetAttribute("ID", entity.GetID().to_string().c_str());
 
 	TransformComponent const& transformcomp = entity.GetTransform();
 
@@ -463,7 +463,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (const char* uuidChar = pEntityElement->Attribute("ID");
 		uuidChar && entityName && !resetUuid)
 	{
-		Uuid uuid(std::stoull(uuidChar));
+		Uuid uuid(uuidChar);
 		entity = scene->CreateEntity(uuid, entityName);
 	}
 	else if (entityName && resetUuid)
