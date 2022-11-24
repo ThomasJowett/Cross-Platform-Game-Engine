@@ -243,6 +243,12 @@ void TilesetView::OnImGuiRender()
 
 			ImGui::TableSetColumnIndex(1);
 
+			ImGui::Button("New Single Tile");
+			ImGui::SameLine();
+			ImGui::Button("New Auto Tile");
+			ImGui::SameLine();
+			ImGui::Button("New Random Tile");
+
 			ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 4.0f, "%.2f");
 
 			if (m_LocalTileset->GetSubTexture()->GetTexture())

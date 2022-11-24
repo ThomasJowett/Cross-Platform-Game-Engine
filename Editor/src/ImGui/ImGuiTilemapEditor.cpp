@@ -106,6 +106,8 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		}
 	}
 
+	ImGui::Button("Edit Tilemap");
+
 	bool selected = false;
 
 	// Stamp ---------------------------------
