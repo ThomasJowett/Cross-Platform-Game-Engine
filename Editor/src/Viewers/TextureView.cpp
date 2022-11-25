@@ -15,6 +15,11 @@ void TextureView::OnAttach()
 	m_Texture = AssetManager::GetTexture(m_FilePath.string());
 
 	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string(m_Texture->GetRendererID());
+
+	if (m_Texture->GetWidth() <= 32 || m_Texture->GetHeight() <= 32)
+		m_Zoom = 2.0f;
+	if (m_Texture->GetWidth() <= 16 || m_Texture->GetHeight() <= 16)
+		m_Zoom = 4.0f;
 }
 void TextureView::OnImGuiRender()
 {
@@ -23,7 +28,7 @@ void TextureView::OnImGuiRender()
 
 	ImVec2 displaySize = ImVec2((float)m_Texture->GetWidth() * m_Zoom, (float)m_Texture->GetHeight() * m_Zoom);
 
-	ImGui::SetNextWindowSize(ImVec2(displaySize.x, displaySize.y + 200), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(std::max(displaySize.x, 400.0f), std::max(displaySize.y + 200, 400.0f)), ImGuiCond_FirstUseEver);
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
@@ -76,7 +81,7 @@ void TextureView::OnImGuiRender()
 			m_Texture->Reload();
 		}
 
-		ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 4.0f, "%.2f");
+		ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 8.0f, "%.2f");
 
 		ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar;
 		ImGui::BeginChild("Image", ImGui::GetContentRegionAvail(), false, window_flags_image);
