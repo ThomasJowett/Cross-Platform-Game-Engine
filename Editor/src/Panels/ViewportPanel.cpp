@@ -226,11 +226,57 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			if (selectedEntity.HasComponent<CapsuleCollider2DComponent>())
 			{
 				CapsuleCollider2DComponent& capsuleComp = selectedEntity.GetComponent<CapsuleCollider2DComponent>();
-				// TODO debug draw capsule collider
+				Vector3f worldPosition = transformComp.GetWorldPosition();
+				worldPosition += Vector3f(capsuleComp.offset.x, capsuleComp.offset.y, 0.001f);
 				if (capsuleComp.direction == CapsuleCollider2DComponent::Direction::Vertical)
 				{
-					Vector3f worldPosition = transformComp.GetWorldPosition();
-					//Renderer2D::DrawHairLine()
+					float scaledHeight = capsuleComp.height * transformComp.scale.y;
+					float scaledRadius = capsuleComp.radius * transformComp.scale.x;
+					float halfHeight = scaledHeight / 2.0f;
+					float diameter = (2.0f * scaledRadius);
+					if (scaledHeight < diameter)
+						halfHeight = scaledRadius;
+
+					if (scaledHeight > diameter)
+					{
+						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(0.0f, halfHeight - scaledRadius, 0.0f), scaledRadius, (float)DegToRad(270), (float)DegToRad(90), 30U, Colours::LIME_GREEN, selectedEntity);
+						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(0.0f, -(halfHeight - scaledRadius), 0.0f), scaledRadius, (float)DegToRad(90), (float)DegToRad(270), 30U, Colours::LIME_GREEN, selectedEntity);
+
+						Renderer2D::DrawHairLine(worldPosition + Vector3f(scaledRadius, halfHeight - scaledRadius, 0.0f), worldPosition + Vector3f(scaledRadius, -(halfHeight - scaledRadius), 0.0f),
+							Colours::LIME_GREEN, selectedEntity);
+
+						Renderer2D::DrawHairLine(worldPosition + Vector3f(-scaledRadius, halfHeight - scaledRadius, 0.0f), worldPosition + Vector3f(-scaledRadius, -(halfHeight - scaledRadius), 0.0f),
+							Colours::LIME_GREEN, selectedEntity);
+					}
+					else
+					{
+						Renderer2D::DrawHairLineCircle(worldPosition + Vector3f(0.0f, halfHeight - scaledRadius, 0.0f), scaledRadius, 60U, Colours::LIME_GREEN, selectedEntity);
+					}
+				}
+				else
+				{
+					float scaledHeight = capsuleComp.height * transformComp.scale.x;
+					float scaledRadius = capsuleComp.radius * transformComp.scale.y;
+					float halfHeight = scaledHeight / 2.0f;
+					float diameter = (2.0f * scaledRadius);
+					if (scaledHeight < diameter)
+						halfHeight = scaledRadius;
+
+					if (scaledHeight > diameter)
+					{
+						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(-(halfHeight - scaledRadius), 0.0f, 0.0f), scaledRadius, (float)PI, (float)PI * 2.0f, 30U, Colours::LIME_GREEN, selectedEntity);
+						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(halfHeight - scaledRadius, 0.0f, 0.0f), scaledRadius, 0.0f, (float)PI, 30U, Colours::LIME_GREEN, selectedEntity);
+
+						Renderer2D::DrawHairLine(worldPosition + Vector3f(-(halfHeight - scaledRadius), scaledRadius, 0.0f), worldPosition + Vector3f(halfHeight - scaledRadius, scaledRadius, 0.0f),
+							Colours::LIME_GREEN, selectedEntity);
+
+						Renderer2D::DrawHairLine(worldPosition + Vector3f(halfHeight - scaledRadius, -scaledRadius, 0.0f), worldPosition + Vector3f(-(halfHeight - scaledRadius), -scaledRadius, 0.0f),
+							Colours::LIME_GREEN, selectedEntity);
+					}
+					else
+					{
+						Renderer2D::DrawHairLineCircle(worldPosition + Vector3f(halfHeight - scaledRadius, 0.0f, 0.0f), scaledRadius, 60U, Colours::LIME_GREEN, selectedEntity);
+					}
 				}
 			}
 
@@ -615,10 +661,10 @@ void ViewportPanel::OnImGuiRender()
 			m_MousePositionBeginClick = m_RelativeMousePosition;
 		}
 
-		m_ViewportHovered = m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
+		m_ViewportHovered = m_RelativeMousePosition.x < m_ViewportSize.x&& m_RelativeMousePosition.y < m_ViewportSize.y
 			&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f
 			|| (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)
-				&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
+				&& m_MousePositionBeginClick.x < m_ViewportSize.x&& m_MousePositionBeginClick.y < m_ViewportSize.y
 				&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f);
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)

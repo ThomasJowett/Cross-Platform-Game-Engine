@@ -67,6 +67,8 @@ public:
 	static void DrawHairLineCircle(const Vector3f& position, float radius, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineArc(const Vector3f& position, float radius, float start, float end, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineArc(const Matrix4x4& transform, float start, float end, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	// Text
 	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Vector2f& position, const Colour & = Colours::WHITE, int entityId = -1);

@@ -792,27 +792,7 @@ void Renderer2D::DrawHairLineCircle(const Vector3f& position, float radius, uint
 
 void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments, const Colour& colour, int entityId)
 {
-	if (segments < 3)
-		return;
-	Vector3f previousPoint(1.0f, 0.0f, 0.0f);
-	Vector3f currentPoint;
-
-	previousPoint = transform * previousPoint;
-	Vector3f firstPoint = previousPoint;
-
-	float step = (float)(2 * PI) / segments;
-
-	for (float angle = step; angle <= 2 * PI; angle += step)
-	{
-		currentPoint.x = cos(angle);
-		currentPoint.y = sin(angle);
-		currentPoint.z = 0.0f;
-		currentPoint = transform * currentPoint;
-
-		DrawHairLine(previousPoint, currentPoint, colour, entityId);
-		previousPoint = currentPoint;
-	}
-	DrawHairLine(currentPoint, firstPoint, colour, entityId);
+	DrawHairLineArc(transform, 0, 2 * (float)PI, segments, colour, entityId);
 }
 
 void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour, int entityId)
@@ -822,6 +802,37 @@ void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const
 		DrawHairLine(vertices[i], vertices[i + 1], colour, entityId);
 	}
 	DrawHairLine(vertices[vertices.size() - 1], vertices[0], colour, entityId);
+}
+
+void Renderer2D::DrawHairLineArc(const Vector3f& position, float radius, float start, float end, uint32_t segments, const Colour& colour, int entityId)
+{
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(radius, radius, 1.0f));
+	DrawHairLineArc(transform, start, end, segments, colour, entityId);
+}
+
+void Renderer2D::DrawHairLineArc(const Matrix4x4& transform, float start, float end, uint32_t segments, const Colour& colour, int entityId)
+{
+	if (segments < 3)
+		return;
+	Vector3f previousPoint(sin(start), cos(start), 0.0f);
+	Vector3f currentPoint;
+
+	previousPoint = transform * previousPoint;
+
+	float step = abs(end - start) / segments;
+	float angle = start;
+
+	for (uint32_t i = 0; i <= segments; ++i)
+	{
+		currentPoint.x = sin(angle);
+		currentPoint.y = cos(angle);
+		currentPoint.z = 0.0f;
+		currentPoint = transform * currentPoint;
+
+		DrawHairLine(previousPoint, currentPoint, colour, entityId);
+		previousPoint = currentPoint;
+		angle += step;
+	}
 }
 
 void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector2f& position, const Colour& colour, int entityId)
