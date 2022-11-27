@@ -32,8 +32,6 @@ public:
 	bool SaveMaterial(const std::filesystem::path& filepath) const;
 	bool SaveMaterial() const;
 
-	const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
-
 	bool IsTwoSided() { return m_TwoSided; }
 	void SetTwoSided(bool twoSided) { m_TwoSided = twoSided; }
 

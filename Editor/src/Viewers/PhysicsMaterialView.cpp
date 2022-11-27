@@ -15,7 +15,7 @@ PhysicsMaterialView::PhysicsMaterialView(bool* show, std::filesystem::path filep
 
 void PhysicsMaterialView::OnAttach()
 {
-	m_PhysicsMaterial = AssetManager::GetPhysicsMaterial(m_FilePath);
+	m_PhysicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(m_FilePath);
 	m_WindowName = ICON_FA_VOLLEYBALL + std::string(" " + m_FilePath.filename().string());
 }
 

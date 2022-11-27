@@ -49,7 +49,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				material = AssetManager::GetMaterial(file);
+				material = AssetManager::GetAsset<Material>(file);
 				materialName = material->GetFilepath().filename().string();
 				edited = true;
 				break;
@@ -68,7 +68,7 @@ IMGUI_API bool ImGui::MaterialEdit(const char* label, Ref<Material>& material, R
 				if (file->extension().string() == ext)
 				{
 					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-						material = AssetManager::GetMaterial(*file);
+						material = AssetManager::GetAsset<Material>(*file);
 				}
 			}
 		}

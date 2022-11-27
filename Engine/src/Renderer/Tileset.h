@@ -18,7 +18,6 @@ public:
 
 	void SetCurrentTile(uint32_t tile);
 
-	const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 

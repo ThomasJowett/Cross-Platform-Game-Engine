@@ -28,6 +28,26 @@ struct Vertex
 	}
 };
 
+struct SkinnedVertex
+{
+	Vector3f position;
+	Vector3f normal;
+	Vector3f tangent;
+	Vector2f texcoord;
+	Vector4f joint;
+	Vector4f weight;
+
+	bool operator==(const SkinnedVertex& other) const
+	{
+		return position == other.position
+			&& normal == other.normal
+			&& tangent == other.tangent
+			&& texcoord == other.texcoord
+			&& joint == other.joint
+			&& weight == other.weight;
+	}
+};
+
 static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float3, "a_Position"},
 		{ShaderDataType::Float3, "a_Normal"},
@@ -46,6 +66,7 @@ public:
 
 	Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
 	const BoundingBox& GetBounds() const { return m_Bounds; }
+	void SetBounds(const BoundingBox& bb) { m_Bounds = bb; }
 	void SetMaterial(Ref<Material> material) { m_Material = material; }
 	Ref<Material> GetMaterial() const { return m_Material; }
 private:

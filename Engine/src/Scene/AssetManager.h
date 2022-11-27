@@ -3,44 +3,40 @@
 #include "Core/core.h"
 
 #include "Core/Asset.h"
+#include "Logging/Instrumentor.h"
 #include "Renderer/Texture.h"
-#include "Renderer/Tileset.h"
-#include "Renderer/Material.h"
-#include "Renderer/StaticMesh.h"
-#include "Physics/PhysicsMaterial.h"
-#include "Renderer/Font.h"
-
-#include <mutex>
+#include "Core/Factory.h"
 
 class AssetManager
 {
 public:
-	static Ref<Texture2D> GetTexture(const std::filesystem::path& filepath);
-	static Ref<Tileset> GetTileset(const std::filesystem::path& filepath);
-	static Ref<Material> GetMaterial(const std::filesystem::path& filepath);
-	static Ref<StaticMesh> GetStaticMesh(const std::filesystem::path& filepath);
-	static Ref<PhysicsMaterial> GetPhysicsMaterial(const std::filesystem::path& filepath);
-	static Ref<Font> GetFont(const std::filesystem::path& filepath);
+	template<typename T>
+	static Ref<T> GetAsset(const std::filesystem::path& filepath)
+	{
+		PROFILE_FUNCTION();
+		Ref<Asset> asset = nullptr;
+		asset = s_Assets.Load<T>(filepath);
+		return std::dynamic_pointer_cast<T>(asset);
+	}
+
+	static Ref<Texture2D> GetTexture(const std::filesystem::path& filepath)
+	{
+		PROFILE_FUNCTION();
+		return s_Textures.Load(filepath);
+	}
+
+	static void CleanUp()
+	{
+		s_Assets.CleanUnused();
+	}
 
 private:
 	AssetManager() {};
 	~AssetManager() = default;
 	static AssetManager& Get();
 
-	Ref<Texture2D> GetTextureImpl(const std::filesystem::path& filepath);
-	Ref<Tileset> GetTilesetImpl(const std::filesystem::path& filepath);
-	Ref<Material> GetMaterialImpl(const std::filesystem::path& filepath);
-	Ref<StaticMesh> GetStaticMeshImpl(const std::filesystem::path& filepath);
-	Ref<PhysicsMaterial> GetPhysicsMaterialImpl(const std::filesystem::path& filepath);
-	Ref<Font> GetFontImpl(const std::filesystem::path& filepath);
-
-	TextureLibrary2D m_Textures;
-	AssetLibrary<Tileset> m_Tilesets;
-	AssetLibrary<Material> m_Materials;
-	AssetLibrary<StaticMesh> m_StaticMeshes;
-	AssetLibrary<PhysicsMaterial> m_PhysicsMaterials;
-	AssetLibrary<Font> m_Fonts;
+	static AssetLibrary s_Assets;
+	static TextureLibrary2D s_Textures;
 
 	static AssetManager* s_Instance;
-	static std::mutex s_Mutex;
 };

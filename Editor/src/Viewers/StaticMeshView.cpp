@@ -16,7 +16,7 @@ void StaticMeshView::OnAttach()
 {
 	m_WindowName = ICON_FA_SHAPES + std::string(" " + m_FilePath.filename().string());
 
-	m_Mesh = AssetManager::GetStaticMesh(m_FilePath);
+	m_Mesh = AssetManager::GetAsset<StaticMesh>(m_FilePath);
 
 	//m_StandardMaterial = CreateRef<Material>("Standard", Colours::WHITE);
 	//m_StandardMaterial->AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);

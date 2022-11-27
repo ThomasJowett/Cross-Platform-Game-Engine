@@ -547,7 +547,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				if (std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
 					!tilesetFilepath.empty())
 				{
-					component.tileset = AssetManager::GetTileset(tilesetFilepath);
+					component.tileset = AssetManager::GetAsset<Tileset>(tilesetFilepath);
 				}
 			}
 		}
@@ -570,7 +570,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				if (std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
 					!meshFilepath.empty())
 				{
-					component.mesh = AssetManager::GetStaticMesh(meshFilepath);
+					component.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
 				}
 			}
 		}
@@ -606,7 +606,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCubeElement->QueryFloatAttribute("Height", &component.cubeHeight);
 				pCubeElement->QueryFloatAttribute("Depth", &component.cubeDepth);
 				
-				if(!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if(!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetCube(component.cubeWidth, component.cubeDepth, component.cubeHeight);
 			}
 			break;
@@ -620,7 +620,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pSphereElement->QueryFloatAttribute("Radius", &component.sphereRadius);
 				pSphereElement->QueryUnsignedAttribute("LongitudeLines", &component.sphereLongitudeLines);
 				pSphereElement->QueryUnsignedAttribute("LatitudeLines", &component.sphereLatitudeLines);
-				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetSphere(component.sphereRadius, component.sphereLongitudeLines, component.sphereLatitudeLines);
 			}
 			break;
@@ -637,7 +637,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pPlaneElement->QueryUnsignedAttribute("LengthLines", &component.planeLengthLines);
 				pPlaneElement->QueryFloatAttribute("TileU", &component.planeTileU);
 				pPlaneElement->QueryFloatAttribute("TileV", &component.planeTileV);
-				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetPlane(component.planeWidth, component.planeLength, component.planeWidthLines, component.planeLengthLines, component.planeTileU, component.planeTileV);
 			}
 			break;
@@ -653,7 +653,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCylinderElement->QueryFloatAttribute("Height", &component.cylinderHeight);
 				pCylinderElement->QueryUnsignedAttribute("SliceCount", &component.cylinderSliceCount);
 				pCylinderElement->QueryUnsignedAttribute("StackCount", &component.cylinderStackCount);
-				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetCylinder(component.cylinderBottomRadius, component.cylinderTopRadius, component.cylinderHeight, component.cylinderSliceCount, component.cylinderStackCount);
 			}
 			break;
@@ -668,7 +668,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pConeElement->QueryFloatAttribute("Height", &component.coneHeight);
 				pConeElement->QueryUnsignedAttribute("SliceCount", &component.coneSliceCount);
 				pConeElement->QueryUnsignedAttribute("StackCount", &component.coneStackCount);
-				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetCone(component.coneBottomRadius, component.coneHeight, component.coneSliceCount, component.coneStackCount);
 			}
 			break;
@@ -682,7 +682,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pTorusElement->QueryFloatAttribute("OuterRadius", &component.torusOuterRadius);
 				pTorusElement->QueryFloatAttribute("InnerRadius", &component.torusInnerRadius);
 				pTorusElement->QueryUnsignedAttribute("SliceCount", &component.torusSliceCount);
-				if (!materialPath.empty()) component.material = AssetManager::GetMaterial(materialPath);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetTorus(component.torusOuterRadius, component.torusInnerRadius, component.torusSliceCount);
 			}
 			break;
@@ -702,7 +702,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
 			if (!tilesetfilepath.empty())
 			{
-				component.tileset = AssetManager::GetTileset(tilesetfilepath);
+				component.tileset = AssetManager::GetAsset<Tileset>(tilesetfilepath);
 			}
 		}
 
@@ -767,7 +767,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (!physicsMaterial.empty())
 		{
-			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
 		}
 		else
 			component.physicsMaterial = nullptr;
@@ -785,7 +785,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (!physicsMaterial.empty())
 		{
-			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
 		}
 		else
 			component.physicsMaterial = nullptr;
@@ -804,7 +804,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (!physicsMaterial.empty())
 		{
-			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
 		}
 		else
 			component.physicsMaterial = nullptr;
@@ -831,7 +831,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (!physicsMaterial.empty())
 		{
-			component.physicsMaterial = AssetManager::GetPhysicsMaterial(physicsMaterial);
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
 		}
 		else
 			component.physicsMaterial = nullptr;

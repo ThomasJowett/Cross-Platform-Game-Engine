@@ -258,6 +258,7 @@ void Scene::OnRuntimeStop()
 	}
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
+	AssetManager::CleanUp();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -306,7 +307,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 			for (size_t i = 0; i < meshes.size(); i++)
 			{
 				if (!staticMeshComp.materialOverrides[i].empty())
-					Renderer::Submit(AssetManager::GetMaterial(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+					Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
 				else
 					Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
 			}

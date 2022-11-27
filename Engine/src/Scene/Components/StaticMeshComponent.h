@@ -47,7 +47,7 @@ private:
 		if (!relativeMeshPath.empty())
 		{
 			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
-			mesh = AssetManager::GetStaticMesh(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+			mesh = AssetManager::GetAsset<StaticMesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
 			materialOverrides.resize(mesh->GetMeshes().size());
 			for (size_t i = 0; i < mesh->GetMeshes().size(); ++i)
 			{

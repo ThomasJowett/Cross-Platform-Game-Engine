@@ -47,7 +47,7 @@ private:
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())
-			physicsMaterial = AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		else
 			physicsMaterial = nullptr;
 	}

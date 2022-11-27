@@ -2,6 +2,7 @@
 
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
+#include "Physics/PhysicsMaterial.h"
 
 #include "IconsFontAwesome6.h"
 

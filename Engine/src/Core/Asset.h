@@ -1,71 +1,77 @@
 #pragma once
 
 #include "Core/core.h"
+#include "Core/UUID.h"
+#include "Core/Factory.h"
 
 #include <filesystem>
+
 
 class Asset
 {
 public:
 	virtual bool Load(const std::filesystem::path& filepath) = 0;
-	virtual const std::filesystem::path& GetFilepath() const = 0;
+	virtual const std::filesystem::path& GetFilepath() const { return m_Filepath; };
 
 	bool Reload() { return Load(m_Filepath); }
-
 protected:
 	std::filesystem::path m_Filepath;
+	Uuid m_Uuid;
 };
 
-template<typename T>
 class AssetLibrary
 {
 public:
-	AssetLibrary<T>() {}
-	void Add(const Ref<T>& resource);
-	Ref<T> Load(const std::filesystem::path& filepath);
-	Ref<T> Get(const std::filesystem::path& filepath);
-	bool Exists(const std::filesystem::path& filepath);
-	void Clear();
+	AssetLibrary() {}
+	void Add(const Ref<Asset>& resource)
+	{
+		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
+		m_Assets[resource->GetFilepath().string()] = resource;
+	}
+
+	template<typename T>
+	Ref<T> Load(const std::filesystem::path& filepath)
+	{
+		if (Exists(filepath))
+			return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
+
+		Ref<T> asset = CreateRef<T>(filepath);
+		Add(asset);
+		return std::dynamic_pointer_cast<T>(asset);
+	}
+	template<typename T>
+	Ref<T> Get(const std::filesystem::path& filepath)
+	{
+		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
+		return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
+	}
+
+	bool Exists(const std::filesystem::path& filepath)
+	{
+		if (m_Assets.find(filepath.string()) != m_Assets.end())
+			return m_Assets[filepath.string()].use_count() > 0;
+		return false;
+	}
+
+	void Clear()
+	{
+		m_Assets.clear();
+	}
+
+	void CleanUnused()
+	{
+		auto iter = m_Assets.begin();
+		while (iter != m_Assets.end())
+		{
+			if (iter->second.use_count() <= 0)
+				iter = m_Assets.erase(iter);
+			else
+				++iter;
+		}
+	}
 
 private:
-	std::unordered_map<std::string, std::weak_ptr<T>> m_Assets;
+	std::unordered_map<std::string, std::weak_ptr<Asset>> m_Assets;
 };
 
-template<typename T>
-inline void AssetLibrary<T>::Add(const Ref<T>& resource)
-{
-	CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
-	m_Assets[resource->GetFilepath().string()] = resource;
-}
 
-template<typename T>
-inline Ref<T> AssetLibrary<T>::Load(const std::filesystem::path& filepath)
-{
-	if (Exists(filepath))
-		return m_Assets[filepath.string()].lock();
-
-	Ref<T> asset = CreateRef<T>(filepath);
-	Add(asset);
-	return asset;
-}
-
-template<typename T>
-inline Ref<T> AssetLibrary<T>::Get(const std::filesystem::path& filepath)
-{
-	CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
-	return m_Assets[filepath.string()].lock();
-}
-
-template<typename T>
-inline bool AssetLibrary<T>::Exists(const std::filesystem::path& filepath)
-{
-	if (m_Assets.find(filepath.string()) != m_Assets.end())
-		return m_Assets[filepath.string()].use_count() > 0;
-	return false;
-}
-
-template<typename T>
-inline void AssetLibrary<T>::Clear()
-{
-	m_Assets.clear();
-}

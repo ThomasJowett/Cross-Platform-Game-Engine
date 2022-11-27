@@ -4,8 +4,9 @@
 #include <filesystem>
 
 #include "Core/core.h"
+#include "Core/Asset.h"
 
-class Texture
+class Texture : public Asset
 {
 public:
 	enum class FilterMethod
@@ -30,15 +31,14 @@ public:
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
 	virtual std::string GetName() const = 0;
-	virtual const std::filesystem::path& GetFilepath() const = 0;
 
 	virtual uint32_t GetRendererID() const = 0;
 
 	virtual void Reload() = 0;
 
 	FilterMethod GetFilterMethod() const { return m_FilterMethod; }
-	virtual void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }	
-	
+	virtual void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }
+
 	WrapMethod GetWrapMethod() const { return m_WrapMethod; }
 	virtual void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
 
@@ -51,6 +51,7 @@ public:
 class Texture2D :public Texture
 {
 public:
+	virtual bool Load(const std::filesystem::path& filepath) override;
 	static Ref<Texture2D> Create(uint32_t width, uint32_t height);
 	static Ref<Texture2D> Create(const std::filesystem::path& filepath);
 };
@@ -67,3 +68,4 @@ public:
 private:
 	std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
 };
+

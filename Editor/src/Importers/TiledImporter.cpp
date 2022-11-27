@@ -352,7 +352,7 @@ void TiledImporter::ImportTilemap(const std::filesystem::path& filepath, const s
 
 			tilesetPath.replace_extension(".tileset");
 
-			Ref<Tileset> tileset = AssetManager::GetTileset(tilesetPath);
+			Ref<Tileset> tileset = AssetManager::GetAsset<Tileset>(tilesetPath);
 			if (tileset)
 				s_Tilesets.insert(std::make_pair(atoi(pTileSet->Attribute("firstgid")), tileset));
 

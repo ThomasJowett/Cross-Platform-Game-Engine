@@ -82,7 +82,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	
 		Ref<Mesh> mesh = CreateRef<Mesh>(vertexArray);
 		if(!materialPath.empty())
-			mesh->SetMaterial(AssetManager::GetMaterial(std::filesystem::absolute(assetDirectory / materialPath)));
+			mesh->SetMaterial(AssetManager::GetAsset<Material>(std::filesystem::absolute(assetDirectory / materialPath)));
 	
 		m_Meshes.push_back(mesh);
 	
@@ -93,9 +93,4 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	file.close();
 
 	return true;
-}
-
-const std::filesystem::path& StaticMesh::GetFilepath() const
-{
-	return m_Filepath;
 }

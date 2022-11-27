@@ -67,6 +67,13 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+bool Texture2D::Load(const std::filesystem::path& filepath)
+{
+	return (Texture2D::Create(filepath) == nullptr);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
 {
 	CORE_ASSERT(!Exists(texture->GetName()), "Texture already exists!");

@@ -10,12 +10,14 @@ public:
 	StaticMesh(const std::filesystem::path& filepath);
 	// Inherited via Asset
 	virtual bool Load(const std::filesystem::path& filepath) override;
-	virtual const std::filesystem::path& GetFilepath() const override;
 	void AddMesh(Ref<Mesh> mesh) { m_Meshes.push_back(mesh); }
 
-	const std::vector<Ref<Mesh>> GetMeshes() const { return m_Meshes; }
+	const BoundingBox& GetBounds() { return m_Bounds; }
+	void SetBounds(const BoundingBox& bounds) { m_Bounds = bounds; }
+
+	const std::vector<Ref<Mesh>>& GetMeshes() const { return m_Meshes; }
 
 private:
-
 	std::vector<Ref<Mesh>> m_Meshes;
+	BoundingBox m_Bounds;
 };

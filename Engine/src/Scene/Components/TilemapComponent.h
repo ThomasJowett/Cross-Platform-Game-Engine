@@ -6,6 +6,7 @@
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 #include "Renderer/VertexArray.h"
+#include "Renderer/Material.h"
 
 struct TilemapComponent
 {
@@ -70,7 +71,7 @@ private:
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())
 		{
-			tileset = AssetManager::GetTileset(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			tileset = AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
 		else
 		{

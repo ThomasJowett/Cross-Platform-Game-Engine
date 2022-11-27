@@ -76,7 +76,7 @@ void BoundingBox::Invalidate()
 	m_Max.z = FLT_MIN;
 }
 
-bool BoundingBox::IsValid()
+bool BoundingBox::IsValid() const
 {
 	return m_Min.x <= m_Max.x;
 }

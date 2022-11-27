@@ -30,7 +30,7 @@ private:
 		archive(relativePath);
 		if (!relativePath.empty())
 		{
-			font = AssetManager::GetFont(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			font = AssetManager::GetAsset<Font>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
 		else
 		{

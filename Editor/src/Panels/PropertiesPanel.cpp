@@ -27,9 +27,9 @@ PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref
 
 void PropertiesPanel::OnAttach()
 {
-	m_DefaultMaterial = AssetManager::GetMaterial("_");
+	m_DefaultMaterial = AssetManager::GetAsset<Material>("DefaultMaterial");
 
-	m_DefaultPhysMaterial = AssetManager::GetPhysicsMaterial("_");
+	m_DefaultPhysMaterial = AssetManager::GetAsset<PhysicsMaterial>("DefaultPhysicsMaterial");
 }
 
 void PropertiesPanel::OnUpdate(float deltaTime)
@@ -210,7 +210,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						sprite.tileset = AssetManager::GetTileset(file);
+						sprite.tileset = AssetManager::GetAsset<Tileset>(file);
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 					ImGui::Tooltip(file.string().c_str());
@@ -228,7 +228,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						if (file->extension().string() == ext)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-								sprite.tileset = AssetManager::GetTileset(*file);
+								sprite.tileset = AssetManager::GetAsset<Tileset>(*file);
 						}
 					}
 				}
@@ -286,12 +286,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 			{
-				staticMesh.mesh = AssetManager::GetStaticMesh(meshFilepath);
+				staticMesh.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
 			{
-				Ref<Material> material = AssetManager::GetMaterial(
+				Ref<Material> material = AssetManager::GetAsset<Material>(
 					std::filesystem::absolute(Application::GetOpenDocumentDirectory() / staticMesh.materialOverrides[i]));
 
 				if (ImGui::MaterialEdit(std::string("Material " + std::to_string(i)).c_str(), material, staticMesh.mesh->GetMeshes()[i]->GetMaterial()))

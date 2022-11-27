@@ -18,8 +18,6 @@ public:
 
 	virtual std::string GetName() const override;
 
-	virtual const std::filesystem::path& GetFilepath() const override;
-
 	virtual uint32_t GetRendererID() const override;
 
 	virtual void Reload() override;
@@ -30,7 +28,6 @@ private:
 	void NullTexture();
 
 	bool LoadTextureFromFile();
-	std::filesystem::path m_Path;
 	uint32_t m_Width, m_Height;
 
 	ID3D11ShaderResourceView* m_ShaderResourceView;

@@ -9,15 +9,17 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 
 DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
-	:m_Width(width), m_Height(height), m_Path("NO DATA")
+	:m_Width(width), m_Height(height)
 {
+	m_Filepath = "NO DATA";
 	m_ShaderResourceView = nullptr;
 }
 
 DirectX11Texture2D::DirectX11Texture2D(const std::filesystem::path& path)
-	: m_Path(path)
 {
 	PROFILE_FUNCTION();
+
+	m_Filepath = path;
 
 	m_ShaderResourceView = nullptr;
 
@@ -43,7 +45,7 @@ DirectX11Texture2D::~DirectX11Texture2D()
 
 void DirectX11Texture2D::SetData(void* data, uint32_t size)
 {
-	m_Path = "";
+	m_Filepath = "";
 }
 
 void DirectX11Texture2D::Bind(uint32_t slot) const
@@ -53,12 +55,7 @@ void DirectX11Texture2D::Bind(uint32_t slot) const
 
 std::string DirectX11Texture2D::GetName() const
 {
-	return m_Path.filename().string();
-}
-
-const std::filesystem::path& DirectX11Texture2D::GetFilepath() const
-{
-	return m_Path;
+	return Asset::m_Filepath.filename().string();
 }
 
 uint32_t DirectX11Texture2D::GetRendererID() const
@@ -68,7 +65,7 @@ uint32_t DirectX11Texture2D::GetRendererID() const
 
 void DirectX11Texture2D::Reload()
 {
-	if (!m_Path.empty() || m_Path != "NO DATA")
+	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 		LoadTextureFromFile();
 }
 
@@ -79,7 +76,7 @@ bool DirectX11Texture2D::operator==(const Texture& other) const
 
 void DirectX11Texture2D::NullTexture()
 {
-	m_Path = "NULL";
+	m_Filepath = "NULL";
 	m_Width = m_Height = 4;
 
 	uint32_t textureData[4][4];
@@ -101,10 +98,10 @@ bool DirectX11Texture2D::LoadTextureFromFile()
 	unsigned char* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image Directx11Texture2D(const std::string&)");
-		data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image: %s", m_Path);
+	CORE_ASSERT(data, "Failed to load image: %s", m_Filepath);
 
 	if (!data)
 	{

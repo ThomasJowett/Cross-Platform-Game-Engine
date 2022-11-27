@@ -14,8 +14,6 @@ public:
 	bool SaveAs(const std::filesystem::path& filepath) const;
 	bool Save() const;
 
-	const std::filesystem::path& GetFilepath() const override { return m_Filepath; }
-
 	float GetDensity() { return m_Density; }
 	void SetDensity(float density) { m_Density = density; }
 

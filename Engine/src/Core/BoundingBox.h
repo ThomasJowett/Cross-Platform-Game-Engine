@@ -19,7 +19,7 @@ public:
 	Vector3f Max() const { return m_Max; };
 
 	void Invalidate();
-	bool IsValid();
+	bool IsValid() const;
 private:
 	Vector3f m_Min;
 	Vector3f m_Max;

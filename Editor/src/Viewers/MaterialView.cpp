@@ -20,7 +20,7 @@ MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 
 void MaterialView::OnAttach()
 {
-	m_Material = AssetManager::GetMaterial(m_FilePath);
+	m_Material = AssetManager::GetAsset<Material>(m_FilePath);
 
 	m_LocalMaterial = CreateRef<Material>(*m_Material);
 

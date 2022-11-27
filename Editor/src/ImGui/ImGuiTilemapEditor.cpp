@@ -90,7 +90,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				tilemap.tileset = AssetManager::GetTileset(file);
+				tilemap.tileset = AssetManager::GetAsset<Tileset>(file);
 				tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
@@ -110,7 +110,7 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 				{
 					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 					{
-						tilemap.tileset = AssetManager::GetTileset(*file);
+						tilemap.tileset = AssetManager::GetAsset<Tileset>(*file);
 						tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 						SceneManager::CurrentScene()->MakeDirty();
 					}

@@ -18,7 +18,7 @@ void TilesetView::OnAttach()
 {
 	m_WindowName = ICON_FA_GRIP + std::string(" " + m_Filepath.filename().string());
 
-	m_Tileset = AssetManager::GetTileset(m_Filepath);
+	m_Tileset = AssetManager::GetAsset<Tileset>(m_Filepath);
 	m_LocalTileset = CreateRef<Tileset>(*m_Tileset);
 	m_LocalTileset->SetSubTexture(CreateRef<SubTexture2D>(*m_LocalTileset->GetSubTexture()));
 }

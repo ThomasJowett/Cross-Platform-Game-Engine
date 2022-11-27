@@ -40,7 +40,7 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				physMaterial = AssetManager::GetPhysicsMaterial(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file));
+				physMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file));
 				edited = true;
 				break;
 			}
@@ -59,7 +59,7 @@ IMGUI_API bool ImGui::PhysMaterialEdit(const char* label, Ref<PhysicsMaterial>& 
 				if (file->extension().string() == ext)
 				{
 					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-						physMaterial = AssetManager::GetPhysicsMaterial(*file);
+						physMaterial = AssetManager::GetAsset<PhysicsMaterial>(*file);
 				}
 			}
 		}

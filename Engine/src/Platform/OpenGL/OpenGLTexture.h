@@ -19,8 +19,6 @@ public:
 
 	virtual std::string GetName() const override;
 
-	virtual const std::filesystem::path& GetFilepath() const override;
-
 	virtual uint32_t GetRendererID() const override;
 
 	virtual void Reload() override;
@@ -36,7 +34,6 @@ private:
 	bool LoadTextureFromFile();
 
 	void SetFilteringAndWrappingMethod();
-	std::filesystem::path m_Path;
 	uint32_t m_Width, m_Height;
 
 	uint32_t m_RendererID;

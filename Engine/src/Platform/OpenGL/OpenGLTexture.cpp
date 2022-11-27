@@ -41,9 +41,11 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 }
 
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
-	:m_Width(width), m_Height(height), m_Path("NO DATA")
+	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
+
+	m_Filepath = "NO DATA";
 
 	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
 
@@ -54,9 +56,11 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
-	:m_Path(path), m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
+	:m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
 {
 	PROFILE_FUNCTION();
+
+	m_Filepath = path;
 
 	bool isValid = std::filesystem::exists(path);
 
@@ -84,7 +88,7 @@ void OpenGLTexture2D::SetData(void* data, uint32_t size)
 {
 	PROFILE_FUNCTION();
 
-	m_Path = "";
+	m_Filepath = "";
 
 	uint32_t bytePerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
 
@@ -104,12 +108,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 
 std::string OpenGLTexture2D::GetName() const
 {
-	return m_Path.filename().string();
-}
-
-const std::filesystem::path& OpenGLTexture2D::GetFilepath() const
-{
-	return m_Path;
+	return m_Filepath.filename().string();
 }
 
 uint32_t OpenGLTexture2D::GetRendererID() const
@@ -119,7 +118,7 @@ uint32_t OpenGLTexture2D::GetRendererID() const
 
 void OpenGLTexture2D::Reload()
 {
-	if (!m_Path.empty() || m_Path != "NO DATA")
+	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 	{
 		glDeleteTextures(1, &m_RendererID);
 		LoadTextureFromFile();
@@ -145,7 +144,7 @@ void OpenGLTexture2D::SetWrapMethod(WrapMethod wrapMethod)
 
 void OpenGLTexture2D::NullTexture()
 {
-	m_Path = "NULL";
+	m_Filepath = "NULL";
 	m_Width = m_Height = 4;
 
 	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
@@ -180,10 +179,10 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::string&)");
-		data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image! " + m_Path.string());
+	CORE_ASSERT(data, "Failed to load image! " + m_Filepath.string());
 
 	if (!data)
 	{
