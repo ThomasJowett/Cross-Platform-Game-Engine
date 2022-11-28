@@ -99,7 +99,7 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
 
 		b2CircleShape circleShape;
-		circleShape.m_radius = circleColliderComp.radius * std::max(transformComp.scale.x, transformComp.scale.y);
+		circleShape.m_radius = abs(circleColliderComp.radius * std::max(transformComp.scale.x, transformComp.scale.y));
 		circleShape.m_p.Set(circleColliderComp.offset.x, circleColliderComp.offset.y);
 
 		b2FixtureDef fixtureDef;
@@ -149,8 +149,8 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		auto& capsuleColliderComp = entity.GetComponent<CapsuleCollider2DComponent>();
 		if (capsuleColliderComp.direction == CapsuleCollider2DComponent::Direction::Vertical)
 		{
-			float scaledHeight = capsuleColliderComp.height * transformComp.scale.y;
-			float scaledRadius = capsuleColliderComp.radius * transformComp.scale.x;
+			float scaledHeight = abs(capsuleColliderComp.height * transformComp.scale.y);
+			float scaledRadius = abs(capsuleColliderComp.radius * transformComp.scale.x);
 			float halfHeight = scaledHeight / 2.0f;
 			float diameter = (2.0f * scaledRadius);
 			if (scaledHeight < diameter)
@@ -191,8 +191,8 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		}
 		else
 		{
-			float scaledHeight = capsuleColliderComp.height * transformComp.scale.x;
-			float scaledRadius = capsuleColliderComp.radius * transformComp.scale.y;
+			float scaledHeight = abs(capsuleColliderComp.height * transformComp.scale.x);
+			float scaledRadius = abs(capsuleColliderComp.radius * transformComp.scale.y);
 			float halfHeight = scaledHeight / 2.0f;
 			float diameter = (2.0f * scaledRadius);
 			if (scaledHeight < diameter)

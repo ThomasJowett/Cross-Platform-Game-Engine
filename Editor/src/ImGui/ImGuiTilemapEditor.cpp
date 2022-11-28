@@ -20,15 +20,6 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 		else if (m_Columns != tilemap.tileset->GetSubTexture()->GetCellsWide())
 			updateSelectedTiles = true;
 
-		std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
-
-		if (lastWrittenTime != m_CurrentFileTime)
-		{
-			tilemap.tileset->Reload();
-			updateSelectedTiles = true;
-			m_CurrentFileTime = lastWrittenTime;
-		}
-
 		if (updateSelectedTiles)
 		{
 			m_SelectedTiles.clear();
@@ -41,94 +32,6 @@ void TilemapEditor::OnImGuiRender(TilemapComponent& tilemap)
 			m_Columns = tilemap.tileset->GetSubTexture()->GetCellsWide();
 		}
 	}
-
-	if (ImGui::Combo("Orientation", (int*)&tilemap.orientation,
-		"Orthogonal\0"
-		"Isometric\0"
-		"Isometric (staggered)\0"
-		"Hexagonal (staggered)"))
-	{
-		SceneManager::CurrentScene()->MakeDirty();
-	}
-
-	int tilesWide = tilemap.tilesWide;
-	if (ImGui::DragInt("Width", &tilesWide, 1.0f, 0, 1000))
-	{
-		tilemap.tilesWide = tilesWide;
-
-		for (auto& row : tilemap.tiles)
-		{
-			row.resize(tilesWide);
-		}
-
-		SceneManager::CurrentScene()->MakeDirty();
-	}
-
-	int tilesHigh = tilemap.tilesHigh;
-	if (ImGui::DragInt("Height", &tilesHigh, 1.0f, 0, 1000))
-	{
-		tilemap.tiles.resize(tilesHigh);
-		if (tilemap.tilesHigh < (uint32_t)tilesHigh)
-		{
-			for (size_t i = tilemap.tilesHigh; i < tilesHigh; i++)
-			{
-				tilemap.tiles[i].resize(tilemap.tilesWide);
-			}
-		}
-		tilemap.tilesHigh = tilesHigh;
-
-		SceneManager::CurrentScene()->MakeDirty();
-	}
-
-	std::string tilesetName;
-	if (tilemap.tileset)
-		tilesetName = tilemap.tileset->GetFilepath().filename().string();
-
-	if (ImGui::BeginCombo("Tileset", tilesetName.c_str()))
-	{
-		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
-		{
-			if (ImGui::Selectable(file.filename().string().c_str()))
-			{
-				tilemap.tileset = AssetManager::GetAsset<Tileset>(file);
-				tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
-				SceneManager::CurrentScene()->MakeDirty();
-			}
-			ImGui::Tooltip(file.string().c_str());
-		}
-		ImGui::EndCombo();
-	}
-	if (ImGui::BeginDragDropTarget())
-	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
-		{
-			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
-
-			for (std::string& ext : ViewerManager::GetExtensions(FileType::TILESET))
-			{
-				if (file->extension().string() == ext)
-				{
-					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-					{
-						tilemap.tileset = AssetManager::GetAsset<Tileset>(*file);
-						tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
-						SceneManager::CurrentScene()->MakeDirty();
-					}
-				}
-			}
-		}
-		ImGui::EndDragDropTarget();
-	}
-	if (tilemap.tileset)
-	{
-		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE))
-		{
-			ViewerManager::OpenViewer(tilemap.tileset->GetFilepath());
-		}
-	}
-
-	ImGui::Button("Edit Tilemap");
 
 	bool selected = false;
 

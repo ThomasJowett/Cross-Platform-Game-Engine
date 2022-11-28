@@ -183,7 +183,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 				Matrix4x4 transform = transformComp.GetParentMatrix()
 					* Matrix4x4::Translate(transformComp.position)
-					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::RotateZ(transformComp.rotation.z)
 					* Matrix4x4::Translate(Vector3f(circleComp.offset.x, circleComp.offset.y, 0.001f))
 					* Matrix4x4::Scale(Vector3f(scale, scale, 1.0f));
 
@@ -196,7 +196,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 				Matrix4x4 transform = transformComp.GetParentMatrix()
 					* Matrix4x4::Translate(transformComp.position)
-					* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+					* Matrix4x4::RotateZ(transformComp.rotation.z)
 					* Matrix4x4::Translate(Vector3f(boxComp.offset.x, boxComp.offset.y, 0.001f))
 					* Matrix4x4::Scale(Vector3f(boxComp.size.x * transformComp.scale.x * 2, boxComp.size.y * transformComp.scale.y * 2, 1.0f));
 
@@ -214,7 +214,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				{
 					Matrix4x4 transform = transformComp.GetParentMatrix()
 						* Matrix4x4::Translate(transformComp.position)
-						* Matrix4x4::Rotate(Vector3f(0.0f, 0.0f, transformComp.rotation.z))
+						* Matrix4x4::RotateZ(transformComp.rotation.z)
 						* Matrix4x4::Translate(Vector3f(polygonComp.offset.x + vertex.x * transformComp.scale.x,
 							polygonComp.offset.y + vertex.y * transformComp.scale.y, 0.001f));
 					vertices.push_back(transform * Vector3f());
@@ -226,57 +226,48 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			if (selectedEntity.HasComponent<CapsuleCollider2DComponent>())
 			{
 				CapsuleCollider2DComponent& capsuleComp = selectedEntity.GetComponent<CapsuleCollider2DComponent>();
-				Vector3f worldPosition = transformComp.GetWorldPosition();
-				worldPosition += Vector3f(capsuleComp.offset.x, capsuleComp.offset.y, 0.001f);
-				if (capsuleComp.direction == CapsuleCollider2DComponent::Direction::Vertical)
+				Matrix4x4 transform = transformComp.GetParentMatrix()
+					* Matrix4x4::Translate(transformComp.position)
+					* Matrix4x4::RotateZ(transformComp.rotation.z)
+					* Matrix4x4::Translate(Vector3f(capsuleComp.offset.x, capsuleComp.offset.y, 0.001f));
+				float scaledradius;
+				float halfHeight;
+				if (capsuleComp.direction == CapsuleCollider2DComponent::Direction::Horizontal)
 				{
-					float scaledHeight = capsuleComp.height * transformComp.scale.y;
-					float scaledRadius = capsuleComp.radius * transformComp.scale.x;
-					float halfHeight = scaledHeight / 2.0f;
-					float diameter = (2.0f * scaledRadius);
-					if (scaledHeight < diameter)
-						halfHeight = scaledRadius;
-
-					if (scaledHeight > diameter)
-					{
-						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(0.0f, halfHeight - scaledRadius, 0.0f), scaledRadius, (float)DegToRad(270), (float)DegToRad(90), 30U, Colours::LIME_GREEN, selectedEntity);
-						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(0.0f, -(halfHeight - scaledRadius), 0.0f), scaledRadius, (float)DegToRad(90), (float)DegToRad(270), 30U, Colours::LIME_GREEN, selectedEntity);
-
-						Renderer2D::DrawHairLine(worldPosition + Vector3f(scaledRadius, halfHeight - scaledRadius, 0.0f), worldPosition + Vector3f(scaledRadius, -(halfHeight - scaledRadius), 0.0f),
-							Colours::LIME_GREEN, selectedEntity);
-
-						Renderer2D::DrawHairLine(worldPosition + Vector3f(-scaledRadius, halfHeight - scaledRadius, 0.0f), worldPosition + Vector3f(-scaledRadius, -(halfHeight - scaledRadius), 0.0f),
-							Colours::LIME_GREEN, selectedEntity);
-					}
-					else
-					{
-						Renderer2D::DrawHairLineCircle(worldPosition + Vector3f(0.0f, halfHeight - scaledRadius, 0.0f), scaledRadius, 60U, Colours::LIME_GREEN, selectedEntity);
-					}
+					scaledradius = abs(capsuleComp.radius * transformComp.scale.y);
+					halfHeight = abs((capsuleComp.height * transformComp.scale.x) /2.0f);
+					transform = transform * Matrix4x4::RotateZ(PIDIV2);
 				}
 				else
 				{
-					float scaledHeight = capsuleComp.height * transformComp.scale.x;
-					float scaledRadius = capsuleComp.radius * transformComp.scale.y;
-					float halfHeight = scaledHeight / 2.0f;
-					float diameter = (2.0f * scaledRadius);
-					if (scaledHeight < diameter)
-						halfHeight = scaledRadius;
+					scaledradius = abs(capsuleComp.radius * transformComp.scale.x);
+					halfHeight = abs((capsuleComp.height * transformComp.scale.y) / 2.0f);
+				}
 
-					if (scaledHeight > diameter)
-					{
-						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(-(halfHeight - scaledRadius), 0.0f, 0.0f), scaledRadius, (float)PI, (float)PI * 2.0f, 30U, Colours::LIME_GREEN, selectedEntity);
-						Renderer2D::DrawHairLineArc(worldPosition + Vector3f(halfHeight - scaledRadius, 0.0f, 0.0f), scaledRadius, 0.0f, (float)PI, 30U, Colours::LIME_GREEN, selectedEntity);
+				if (halfHeight > scaledradius)
+				{
+					Matrix4x4 topArcTransform = transform
+						* Matrix4x4::Translate(Vector3f(0.0f, halfHeight - scaledradius, 0.0f))
+						* Matrix4x4::Scale(Vector3f(scaledradius, scaledradius, 1.0f));
+					Renderer2D::DrawHairLineArc(topArcTransform, (float)DegToRad(270), (float)DegToRad(90), 30U, Colours::LIME_GREEN, selectedEntity);
 
-						Renderer2D::DrawHairLine(worldPosition + Vector3f(-(halfHeight - scaledRadius), scaledRadius, 0.0f), worldPosition + Vector3f(halfHeight - scaledRadius, scaledRadius, 0.0f),
-							Colours::LIME_GREEN, selectedEntity);
+					Matrix4x4 bottomArcTransform = transform
+						* Matrix4x4::Translate(Vector3f(0.0f, -(halfHeight - scaledradius), 0.0f))
+						* Matrix4x4::Scale(Vector3f(scaledradius, scaledradius, 1.0f));
+					Renderer2D::DrawHairLineArc(bottomArcTransform, (float)DegToRad(90), (float)DegToRad(270), 30U, Colours::LIME_GREEN, selectedEntity);
 
-						Renderer2D::DrawHairLine(worldPosition + Vector3f(halfHeight - scaledRadius, -scaledRadius, 0.0f), worldPosition + Vector3f(-(halfHeight - scaledRadius), -scaledRadius, 0.0f),
-							Colours::LIME_GREEN, selectedEntity);
-					}
-					else
-					{
-						Renderer2D::DrawHairLineCircle(worldPosition + Vector3f(halfHeight - scaledRadius, 0.0f, 0.0f), scaledRadius, 60U, Colours::LIME_GREEN, selectedEntity);
-					}
+					Vector3f leftStart = transform * Vector3f(-scaledradius, -(halfHeight - scaledradius), 0.0f);
+					Vector3f leftEnd = transform * Vector3f(-scaledradius, halfHeight - scaledradius, 0.0f);
+					Renderer2D::DrawHairLine(leftStart, leftEnd, Colours::LIME_GREEN, selectedEntity);
+
+					Vector3f rightStart = transform * Vector3f(scaledradius, -(halfHeight - scaledradius), 0.0f);
+					Vector3f rightEnd = transform * Vector3f(scaledradius, halfHeight - scaledradius, 0.0f);
+					Renderer2D::DrawHairLine(rightStart, rightEnd, Colours::LIME_GREEN, selectedEntity);
+				}
+				else
+				{
+					Matrix4x4 circleTransform = transform * Matrix4x4::Scale(Vector3f(scaledradius, scaledradius, 1.0f));
+					Renderer2D::DrawHairLineCircle(circleTransform, 60U, Colours::LIME_GREEN, selectedEntity);
 				}
 			}
 
@@ -321,31 +312,28 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 				if (m_TilemapEditor->HasSelection())
 				{
-					// Calculate which tilemap cell is hovererd
-					if (tilemapComp.orientation == TilemapComponent::Orientation::orthogonal)
+					// Calculate which tilemap cell is hovered
+					Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
+					Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
+					Line3D ray = MathUtils::ComputeCameraRay(cameraViewMat, cameraProjectionMat, m_RelativeMousePosition, Vector2f(m_ViewportSize.x, m_ViewportSize.y));
+
+					Vector3f normal(0.0f, 0.0f, 1.0f);
+					Matrix4x4 transformMat = transformComp.GetWorldMatrix();
+
+					transformMat.Transpose();
+
+					float translation[3], rotation[3], scale[3];
+					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
+
+					Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
+
+					Quaternion quat(rotationRad);
+					quat.RotateVectorByQuaternion(normal);
+					Plane tilemapPlane(transformComp.GetWorldPosition(), normal);
+
+					if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
 					{
-						Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
-						Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
-						Line3D ray = MathUtils::ComputeCameraRay(cameraViewMat, cameraProjectionMat, m_RelativeMousePosition, Vector2f(m_ViewportSize.x, m_ViewportSize.y));
-
-						Vector3f normal(0.0f, 0.0f, 1.0f);
-						Matrix4x4 transformMat = transformComp.GetWorldMatrix();
-
-						transformMat.Transpose();
-
-						float translation[3], rotation[3], scale[3];
-						ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
-
-						Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
-
-						Quaternion quat(rotationRad);
-						quat.RotateVectorByQuaternion(normal);
-						Plane tilemapPlane(transformComp.GetWorldPosition(), normal);
-
-						if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
-						{
-							m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
-						}
+						m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
 					}
 				}
 			}
