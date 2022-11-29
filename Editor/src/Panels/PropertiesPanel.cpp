@@ -773,6 +773,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	DrawComponent<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity, [](auto& billboard)
 		{
 			//combo
+			Dirty(ImGui::Combo("Orientation", (int*)&billboard.orientation,
+				"World Up\0"
+				"Camera\0"));
+			Dirty(ImGui::Combo("Position", (int*)&billboard.position,
+				"World\0"
+				"Camera\0"));
+			if(billboard.position == BillboardComponent::Position::Camera)
+				Dirty(ImGui::Vector("Screen Position", billboard.screenPosition, 0.0f));
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
