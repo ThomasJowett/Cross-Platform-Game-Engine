@@ -267,7 +267,34 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 {
 	PROFILE_FUNCTION();
 
-	SceneGraph::Traverse(m_Registry, cameraTransform, projection);
+	auto billboardView = m_Registry.view<TransformComponent, BillboardComponent>();
+	for (auto entity : billboardView)
+	{
+		auto& [transformComp, billboardComp] = m_Registry.get<TransformComponent, BillboardComponent>(entity);
+		Matrix4x4 transform = Matrix4x4();
+
+		Vector3f cameraRight = Vector3f(cameraTransform(0, 0), cameraTransform(1, 0), cameraTransform(2, 0));
+		Vector3f billboardRight = Vector3f(1.0f, 0.0f, 0.0f);
+
+		float angleY = acos(Vector3f::Dot(cameraRight, billboardRight));
+		if (Vector3f::Cross(cameraRight, billboardRight).y > 0.0f)
+			angleY = -angleY;
+		transform = Matrix4x4::RotateY(angleY);
+
+		if (billboardComp.orientation == BillboardComponent::Orientation::Camera)
+		{
+			Vector3f cameraUp = Vector3f(cameraTransform(0, 1), cameraTransform(1, 1), cameraTransform(2, 1));
+			Vector3f billboardUp = Vector3f(0.0f, 1.0f, 0.0f);
+			float angleX = acos(Vector3f::Dot(cameraUp, billboardUp));
+			if ((Vector3f::Cross(cameraUp, billboardUp).x > 0.0f) != (angleY > PIDIV2 || angleY < -PIDIV2))
+				angleX = -angleX;
+			transform = transform * Matrix4x4::RotateX(angleX);
+		}
+		Quaternion rot = transform.ExtractRotation();
+		transformComp.rotation = rot.EulerAngles();
+	}
+
+	SceneGraph::Traverse(m_Registry);
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
 
