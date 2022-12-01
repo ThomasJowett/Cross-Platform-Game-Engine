@@ -428,6 +428,16 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pPointLightElement->InsertNewChildElement("Colour"), component.colour);
 	}
 
+	if (BillboardComponent* component = entity.TryGetComponent<BillboardComponent>())
+	{
+		tinyxml2::XMLElement* pBillboardElement = pElement->InsertNewChildElement("Billboard");
+
+		pBillboardElement->SetAttribute("Orientation", (int)component->orientation);
+		pBillboardElement->SetAttribute("Position", (int)component->position);
+		if (component->position == BillboardComponent::Position::Camera)
+			SerializationUtils::Encode(pBillboardElement->InsertNewChildElement("ScreenPosition"), component->screenPosition);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
 		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
@@ -886,7 +896,18 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pPointLightComponentElement->FirstChildElement("Colour"), component.colour);
 	}
 
-	// Hierarachy ---------------------------------------------------------------------------------------------------
+	// Billboard ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pBillboardComponentElement = pEntityElement->FirstChildElement("Billboard"))
+	{
+		BillboardComponent& component = entity.AddComponent<BillboardComponent>();
+
+		component.orientation = (BillboardComponent::Orientation)pBillboardComponentElement->IntAttribute("Orientation", (int)component.orientation);
+		component.position = (BillboardComponent::Position)pBillboardComponentElement->IntAttribute("Position", (int)component.position);
+		if(component.position == BillboardComponent::Position::Camera)
+			SerializationUtils::Decode(pBillboardComponentElement->FirstChildElement("ScreenPosition"), component.screenPosition);
+	}
+
+	// Hierarchy --------------------------------------------------------------------------------------------------
 	if (tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity"))
 	{
 		entity.AddComponent<HierarchyComponent>();
