@@ -356,6 +356,8 @@ project "lua"
 		runtime "Release"
 		optimize "On"
 
+include "msdf-atlas-gen"
+
 group "Tests"
 project "Box2D_Testbed"
 	kind "ConsoleApp"

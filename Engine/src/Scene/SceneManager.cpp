@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "Events/SceneEvent.h"
 #include "Core/Application.h"
+#include "AssetManager.h"
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
@@ -124,6 +125,8 @@ bool SceneManager::FinalChangeScene()
 
 	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate && IsSceneLoaded())
 		s_CurrentScene->OnRuntimeStart();
+
+	AssetManager::CleanUp();
 
 	return IsSceneLoaded();
 }

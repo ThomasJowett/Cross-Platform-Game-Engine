@@ -58,7 +58,9 @@ project "Engine"
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
 		"%{prj.name}/vendor/box2d/include",
-		"%{prj.name}/vendor/lua"
+		"%{prj.name}/vendor/lua",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen"
 	}
 	
 	links
@@ -69,7 +71,8 @@ project "Engine"
 		"TinyXml2",
 		"Box2D",
 		"SPIRV-Cross",
-		"lua"
+		"lua",
+		"msdf-atlas-gen"
 	}
 	
 	defines

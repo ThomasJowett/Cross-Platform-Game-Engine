@@ -72,11 +72,11 @@ public:
 	static void DrawHairLineArc(const Matrix4x4& transform, float start, float end, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	// Text
-	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Vector2f& position, const Colour & = Colours::WHITE, int entityId = -1);
-	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Vector3f& position, const Colour & = Colours::WHITE, int entityId = -1);
-	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Vector2f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
-	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Vector3f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
-	static void DrawText(const std::string& text, const Ref<Font> font , uint32_t size, const Matrix4x4& transform, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour & = Colours::WHITE, int entityId = -1);
 
 	struct Stats
 	{

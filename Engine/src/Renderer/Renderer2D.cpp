@@ -8,6 +8,10 @@
 #include "UniformBuffer.h"
 #include "Core/Asset.h"
 
+#include "Renderer/UI/MSDFData.h"
+
+#include <codecvt>
+
 struct QuadVertex
 {
 	Vector3f position;
@@ -47,6 +51,20 @@ struct LineVertex
 	int EntityId;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+struct TextVertex
+{
+	Vector3f position;
+	Colour colour;
+	Vector2f texCoords;
+	float texIndex;
+
+	int EntityId;
+};
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 struct HairLineVertex
 {
 	Vector3f position;
@@ -82,6 +100,10 @@ struct Renderer2DData
 	Ref<VertexBuffer> lineVertexBuffer;
 	Ref<Shader> lineShader;
 
+	Ref<VertexArray> textVertexArray;
+	Ref<VertexBuffer> textVertexBuffer;
+	Ref<Shader> textShader;
+
 	Ref<VertexArray> hairLineVertexArray;
 	Ref<VertexBuffer> hairLineVertexBuffer;
 	Ref<Shader> hairLineShader;
@@ -98,12 +120,19 @@ struct Renderer2DData
 	LineVertex* lineVertexBufferBase = nullptr;
 	LineVertex* lineVertexBufferPtr = nullptr;
 
+	uint32_t textIndexCount = 0;
+	TextVertex* textVertexBufferBase = nullptr;
+	TextVertex* textVertexBufferPtr = nullptr;
+
 	uint32_t hairLineVertexCount = 0;
 	HairLineVertex* hairLineVertexBufferBase = nullptr;
 	HairLineVertex* hairLineVertexBufferPtr = nullptr;
 
 	std::array<Ref<Texture>, maxTexturesSlots> textureSlots;
 	uint32_t textureSlotIndex = 1;
+
+	std::array<Ref<Texture2D>, maxTexturesSlots> fontAtlasSlots;
+	uint32_t fontAtlasSlotIndex = 1;
 
 	Vector3f quadVertexPositions[4];
 
@@ -211,6 +240,39 @@ bool Renderer2D::Init()
 	Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.maxLineIndices);
 	s_Data.lineVertexArray->SetIndexBuffer(lineIndexBuffer);
 	delete[] lineIndices;
+
+	// Text ------------------------------------------------------------------------------------------
+	s_Data.textVertexArray = VertexArray::Create();
+	s_Data.textVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(TextVertex));
+
+	s_Data.textVertexBuffer->SetLayout({
+		{ShaderDataType::Float3, "a_position"},
+		{ShaderDataType::Float4, "a_colour"},
+		{ShaderDataType::Float2, "a_texcoord"},
+		{ShaderDataType::Float, "a_texIndex"},
+		{ShaderDataType::Int, "a_EntityId"}
+		});
+
+	s_Data.textVertexArray->AddVertexBuffer(s_Data.textVertexBuffer);
+
+	uint32_t* textIndices = new uint32_t[s_Data.maxIndices];
+	offset = 0;
+	for (uint32_t i = 0; i < s_Data.maxIndices; i += 6)
+	{
+		textIndices[i + 0] = offset + 0;
+		textIndices[i + 1] = offset + 1;
+		textIndices[i + 2] = offset + 2;
+
+		textIndices[i + 3] = offset + 2;
+		textIndices[i + 4] = offset + 3;
+		textIndices[i + 5] = offset + 0;
+
+		offset += 4;
+	}
+
+	Ref<IndexBuffer> textIndexBuffer = IndexBuffer::Create(textIndices, s_Data.maxIndices);
+	s_Data.textVertexArray->SetIndexBuffer(textIndexBuffer);
+	delete[] textIndices;
 
 	// Hair Lines ------------------------------------------------------------------------------------
 
@@ -835,29 +897,119 @@ void Renderer2D::DrawHairLineArc(const Matrix4x4& transform, float start, float 
 	}
 }
 
-void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector2f& position, const Colour& colour, int entityId)
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const Colour& colour, int entityId)
 {
-	DrawText(text, font, size, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)), colour, entityId);
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)), colour, entityId);
 }
 
-void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector3f& position, const Colour& colour, int entityId)
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const Colour& colour, int entityId)
 {
-	DrawText(text, font, size, Matrix4x4::Translate(position), colour, entityId);
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(position), colour, entityId);
 }
 
-void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector2f& position, const float& rotation, const Colour& colour, int entityId)
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const float& rotation, const Colour& colour, int entityId)
 {
-	DrawText(text, font, size, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)) * Matrix4x4::RotateZ(rotation), colour, entityId);
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)) * Matrix4x4::RotateZ(rotation), colour, entityId);
 }
 
-void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Vector3f& position, const float& rotation, const Colour& colour, int entityId)
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const float& rotation, const Colour& colour, int entityId)
 {
-	DrawText(text, font, size, Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation), colour, entityId);
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation), colour, entityId);
 }
 
-void Renderer2D::DrawText(const std::string& text, const Ref<Font> font, uint32_t size, const Matrix4x4& transform, const Colour& colour, int entityId)
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	//TODO: draw text
+	if (text.empty())
+		return;
+
+	float textureIndex = 0.0f;
+
+	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
+	ASSERT(fontAtlas, "Font atlas cannot be null");
+
+	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
+	{
+		if (*s_Data.fontAtlasSlots[i].get() == *fontAtlas.get())
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		textureIndex = (float)s_Data.fontAtlasSlotIndex;
+		s_Data.fontAtlasSlots[s_Data.fontAtlasSlotIndex] = fontAtlas;
+		s_Data.fontAtlasSlotIndex++;
+	}
+
+	const msdf_atlas::FontGeometry& fontGeometry = font->GetMSDFData()->fontGeometry;
+	const msdfgen::FontMetrics& metrics = fontGeometry.getMetrics();
+
+	std::vector<int> nextLines;
+	double x = 0.0;
+	double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+	double y = -fsScale * metrics.ascenderY;
+	int lastSpace = -1;
+
+	std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>conv;
+	std::u32string utf32string = conv.from_bytes(text);
+
+	for (int i = 0; i < utf32string.size(); i++)
+	{
+		char32_t character = utf32string[i];
+		if (character == '\n')
+		{
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+
+		auto glyph = fontGeometry.getGlyph(character);
+		if (!glyph)
+			glyph = fontGeometry.getGlyph('?');
+		if (!glyph)
+			continue;
+
+		if (character != ' ')
+		{
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			Vector2f quadMin((float)pl, (float)pb);
+			Vector2f quadMax((float)pr, (float)pt);
+
+			quadMin = quadMin * (float)fsScale;
+			quadMax = quadMax * (float)fsScale;
+			quadMin += Vector2f((float)x, (float)y);
+			quadMax += Vector2f((float)x, (float)y);
+
+			if (quadMax.x > maxWidth && lastSpace != -1)
+			{
+				i = lastSpace;
+				nextLines.emplace_back(lastSpace);
+				lastSpace = -1;
+				x = 0;
+				y -= fsScale * metrics.lineHeight;
+			}
+		}
+		else
+		{
+			lastSpace = i;
+		}
+
+		double advance = glyph->getAdvance();
+		fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+		x += fsScale * advance;
+	}
+
+	x = 0.0;
+	fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+	y = 0.0;
+	for (int i = 0; i < utf32string.size(); i++)
+	{
+
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

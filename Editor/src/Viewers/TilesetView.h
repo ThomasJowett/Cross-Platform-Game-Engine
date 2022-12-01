@@ -29,4 +29,6 @@ private:
 
 	float m_Zoom = 1.0f;
 	bool m_Dirty = false;
+
+	std::vector<std::vector<bool>> m_SelectedTiles;
 };

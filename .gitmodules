@@ -41,3 +41,6 @@
 [submodule "Engine/vendor/box2d"]
 	path = Engine/vendor/box2d
 	url = https://github.com/ThomasJowett/box2d-particles
+[submodule "Engine/vendor/msdf-atlas-gen"]
+	path = Engine/vendor/msdf-atlas-gen
+	url = https://github.com/TheCherno/msdf-atlas-gen

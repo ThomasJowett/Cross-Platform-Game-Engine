@@ -5,7 +5,8 @@
 
 PhysicsMaterial::PhysicsMaterial(const std::filesystem::path& filepath)
 {
-    Load(filepath);
+    if (!Load(filepath))
+        m_Filepath = "DefaultPhysicsMaterial";
 }
 
 PhysicsMaterial::PhysicsMaterial(float density, float friction, float restitution)
