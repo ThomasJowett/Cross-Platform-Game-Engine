@@ -7,6 +7,7 @@
 
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/Font.h"
 
 #include "Events/JoystickEvent.h"
 #include "Events/SceneEvent.h"
@@ -38,6 +39,7 @@ Application::Application(const WindowProps& props)
 	Random::Init();
 	LuaManager::Init();
 	Input::Init();
+	Font::Init();
 
 	SetDefaultSettings(props);
 
@@ -69,6 +71,7 @@ Application::~Application()
 	Settings::SaveSettings();
 	Renderer::Shutdown();
 	LuaManager::Shutdown();
+	Font::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

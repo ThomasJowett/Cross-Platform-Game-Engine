@@ -270,7 +270,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto billboardView = m_Registry.view<TransformComponent, BillboardComponent>();
 	for (auto entity : billboardView)
 	{
-		auto& [transformComp, billboardComp] = m_Registry.get<TransformComponent, BillboardComponent>(entity);
+		auto& [transformComp, billboardComp] = billboardView.get(entity);
 		Matrix4x4 transform = Matrix4x4();
 
 		Vector3f cameraRight = Vector3f(cameraTransform(0, 0), cameraTransform(1, 0), cameraTransform(2, 0));
@@ -320,6 +320,13 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	{
 		auto [transformComp, circleComp] = circleGroup.get(entity);
 		Renderer2D::DrawCircle(transformComp.GetWorldMatrix(), circleComp, (int)entity);
+	}
+
+	auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+	for (auto entity : textGroup)
+	{
+		auto [transformComp, textComp] = textGroup.get(entity);
+		//Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
 	}
 
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();

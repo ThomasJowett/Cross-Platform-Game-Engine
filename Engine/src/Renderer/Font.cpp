@@ -24,5 +24,7 @@ void Font::Shutdown()
 
 bool Font::Load(const std::filesystem::path& filepath)
 {
+	if (std::filesystem::exists(filepath))
+		m_Filepath = filepath;
 	return true;
 }

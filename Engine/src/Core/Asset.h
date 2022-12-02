@@ -14,6 +14,7 @@ public:
 	virtual const std::filesystem::path& GetFilepath() const { return m_Filepath; };
 
 	bool Reload() { return Load(m_Filepath); }
+	const Uuid& GetUUID() { return m_Uuid; }
 protected:
 	std::filesystem::path m_Filepath;
 	Uuid m_Uuid;

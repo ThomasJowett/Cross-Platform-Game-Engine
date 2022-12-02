@@ -14,283 +14,302 @@ std::map<std::filesystem::path, std::pair<View*, bool*>> ViewerManager::s_AssetV
 
 static const char* TextExtensions[] =
 {
-	".txt", ".ini", ".lua", ".cpp", ".h", ".c", ".hlsl", ".fx",
-	".glsl", ".frag", ".vert", ".tesc", ".tese", ".geom", ".comp",
-	".json"
+  ".txt", ".ini", ".lua", ".cpp", ".h", ".c", ".hlsl", ".fx",
+  ".glsl", ".frag", ".vert", ".tesc", ".tese", ".geom", ".comp",
+  ".json"
 };
 
 static const char* ImageExtensions[] =
 {
-	".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"
+  ".png", ".jpg", ".jpeg", ".tga", ".bmp", ".psd", ".gif", ".hdr", ".pic", ".pnm"
 };
 
 static const char* MeshExtensions[] =
 {
-	".staticmesh"
-	//".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
+  ".staticmesh"
+  //".3ds", ".blend", ".dae", ".fbx", ".obj", ".mesh", ".stl"
 };
 
 static const char* AudioExtensions[] =
 {
-	".ogg", ".mp3", ".wav"
+  ".ogg", ".mp3", ".wav"
+};
+
+static const char* FontExtensions[] =
+{
+  ".ttf", ".otf"
 };
 
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 {
-	//check if any old ones can be closed
-	if (s_AssetViewers.size() > MAX_ASSET_VIEWERS)
-	{
-		auto iter = s_AssetViewers.begin();
+  //check if any old ones can be closed
+  if (s_AssetViewers.size() > MAX_ASSET_VIEWERS)
+  {
+    auto iter = s_AssetViewers.begin();
 
-		for (; iter != s_AssetViewers.end();)
-		{
-			if (!*iter->second.second)
-			{
-				Application::Get().RemoveOverlay(iter->second.first);
-				iter = s_AssetViewers.erase(iter);
-			}
-			else
-				++iter;
-		}
-	}
+    for (; iter != s_AssetViewers.end();)
+    {
+      if (!*iter->second.second)
+      {
+        Application::Get().RemoveOverlay(iter->second.first);
+        iter = s_AssetViewers.erase(iter);
+      }
+      else
+        ++iter;
+    }
+  }
 
-	if (s_AssetViewers.find(assetPath) != s_AssetViewers.end())
-	{
-		*s_AssetViewers.at(assetPath).second = true;
-		ImGui::SetWindowFocus(s_AssetViewers.at(assetPath).first->GetWindowName().c_str());
-		return;
-	}
+  if (s_AssetViewers.find(assetPath) != s_AssetViewers.end())
+  {
+    *s_AssetViewers.at(assetPath).second = true;
+    ImGui::SetWindowFocus(s_AssetViewers.at(assetPath).first->GetWindowName().c_str());
+    return;
+  }
 
-	switch (GetFileType(assetPath))
-	{
-	case FileType::IMAGE:
-	{
-		bool* show = new bool(true);
-		View* layer = new TextureView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::MESH:
-	{
-		bool* show = new bool(true);
-		View* layer = new StaticMeshView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::SCENE:
-	{
-		SceneManager::ChangeScene(assetPath);
-	}
-	return;
-	[[fallthrough]];
-	case FileType::SCRIPT:
-	case FileType::TEXT:
-	{
-		bool* show = new bool(true);
-		View* layer = new ScriptView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::MATERIAL:
-	{
-		bool* show = new bool(true);
-		View* layer = new MaterialView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::AUDIO:
-	{
-		CLIENT_WARN("No audio viewer implemented");
-		return;
-	}
-	case FileType::TILESET:
-	{
-		bool* show = new bool(true);
-		View* layer = new TilesetView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::VISUALSCRIPT:
-	{
-		bool* show = new bool(true);
-		View* layer = new VisualSriptView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	case FileType::PHYSICSMATERIAL:
-	{
-		bool* show = new bool(true);
-		View* layer = new PhysicsMaterialView(show, assetPath);
-		s_AssetViewers[assetPath] = std::make_pair(layer, show);
-		Application::Get().AddOverlay(layer);
-		return;
-	}
-	default:
-		return;
-	}
+  switch (GetFileType(assetPath))
+  {
+  case FileType::IMAGE:
+  {
+    bool* show = new bool(true);
+    View* layer = new TextureView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::MESH:
+  {
+    bool* show = new bool(true);
+    View* layer = new StaticMeshView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::SCENE:
+  {
+    SceneManager::ChangeScene(assetPath);
+  }
+  return;
+  [[fallthrough]];
+  case FileType::SCRIPT:
+  case FileType::TEXT:
+  {
+    bool* show = new bool(true);
+    View* layer = new ScriptView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::MATERIAL:
+  {
+    bool* show = new bool(true);
+    View* layer = new MaterialView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::AUDIO:
+  {
+    CLIENT_WARN("No audio viewer implemented");
+    return;
+  }
+  case FileType::TILESET:
+  {
+    bool* show = new bool(true);
+    View* layer = new TilesetView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::VISUALSCRIPT:
+  {
+    bool* show = new bool(true);
+    View* layer = new VisualSriptView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  case FileType::PHYSICSMATERIAL:
+  {
+    bool* show = new bool(true);
+    View* layer = new PhysicsMaterialView(show, assetPath);
+    s_AssetViewers[assetPath] = std::make_pair(layer, show);
+    Application::Get().AddOverlay(layer);
+    return;
+  }
+  default:
+    return;
+  }
 }
 
 void ViewerManager::CloseViewer(const std::filesystem::path& assetPath)
 {
-	Application::Get().RemoveOverlay(s_AssetViewers.at(assetPath).first);
-	s_AssetViewers.erase(assetPath);
+  Application::Get().RemoveOverlay(s_AssetViewers.at(assetPath).first);
+  s_AssetViewers.erase(assetPath);
 }
 
 FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 {
-	std::string extString = assetPath.extension().string();
+  std::string extString = assetPath.extension().string();
 
-	std::transform(extString.begin(), extString.end(), extString.begin(), ::tolower);
+  std::transform(extString.begin(), extString.end(), extString.begin(), ::tolower);
 
-	const char* ext = extString.c_str();
+  const char* ext = extString.c_str();
 
-	for (const char* knownExt : TextExtensions)
-	{
-		if (strcmp(ext, knownExt) == 0)
-		{
-			return FileType::TEXT;
-		}
-	}
+  for (const char* knownExt : TextExtensions)
+  {
+    if (strcmp(ext, knownExt) == 0)
+    {
+      return FileType::TEXT;
+    }
+  }
 
-	for (const char* knownExt : ImageExtensions)
-	{
-		if (strcmp(ext, knownExt) == 0)
-		{
-			return FileType::IMAGE;
-		}
-	}
+  for (const char* knownExt : ImageExtensions)
+  {
+    if (strcmp(ext, knownExt) == 0)
+    {
+      return FileType::IMAGE;
+    }
+  }
 
-	for (const char* knownExt : MeshExtensions)
-	{
-		if (strcmp(ext, knownExt) == 0)
-		{
-			return FileType::MESH;
-		}
-	}
+  for (const char* knownExt : MeshExtensions)
+  {
+    if (strcmp(ext, knownExt) == 0)
+    {
+      return FileType::MESH;
+    }
+  }
 
-	if (strcmp(ext, ".scene") == 0)
-	{
-		return FileType::SCENE;
-	}
+  if (strcmp(ext, ".scene") == 0)
+  {
+    return FileType::SCENE;
+  }
 
-	if (strcmp(ext, ".lua") == 0)
-	{
-		return FileType::SCRIPT;
-	}
+  if (strcmp(ext, ".lua") == 0)
+  {
+    return FileType::SCRIPT;
+  }
 
-	if (strcmp(ext, ".visualscript") == 0)
-	{
-		return FileType::VISUALSCRIPT;
-	}
+  if (strcmp(ext, ".visualscript") == 0)
+  {
+    return FileType::VISUALSCRIPT;
+  }
 
-	if (strcmp(ext, ".material") == 0)
-	{
-		return FileType::MATERIAL;
-	}
+  if (strcmp(ext, ".material") == 0)
+  {
+    return FileType::MATERIAL;
+  }
 
-	for (const char* knownExt : AudioExtensions)
-	{
-		if (strcmp(ext, knownExt) == 0)
-		{
-			return FileType::AUDIO;
-		}
-	}
+  for (const char* knownExt : AudioExtensions)
+  {
+    if (strcmp(ext, knownExt) == 0)
+    {
+      return FileType::AUDIO;
+    }
+  }
 
-	if (strcmp(ext, ".tileset") == 0)
-	{
-		return FileType::TILESET;
-	}
+  if (strcmp(ext, ".tileset") == 0)
+  {
+    return FileType::TILESET;
+  }
 
-	if (strcmp(ext, ".physicsmaterial") == 0)
-	{
-		return FileType::PHYSICSMATERIAL;
-	}
+  if (strcmp(ext, ".physicsmaterial") == 0)
+  {
+    return FileType::PHYSICSMATERIAL;
+  }
 
-	return FileType::UNKNOWN;
+  for (const char* knownExt : FontExtensions)
+  {
+    if (strcmp(ext, knownExt) == 0)
+    {
+      return FileType::FONT;
+    }
+  }
+  return FileType::UNKNOWN;
 }
 
 std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 {
-	std::vector<std::string> extensions;
-	switch (fileType)
-	{
-	case FileType::UNKNOWN:
-		return extensions;
-	case FileType::TEXT:
-	{
-		for (const char* ext : TextExtensions)
-		{
-			extensions.push_back(ext);
-		}
-		break;
-	}
-	case FileType::IMAGE:
-	{
-		for (const char* ext : ImageExtensions)
-		{
-			extensions.push_back(ext);
-		}
-		break;
-	}
-	case FileType::MESH:
-	{
-		for (const char* ext : MeshExtensions)
-		{
-			extensions.push_back(ext);
-		}
-		break;
-	}
-	case FileType::SCENE:
-	{
-		extensions.push_back(".scene");
-		break;
-	}
-	case FileType::SCRIPT:
-	{
-		extensions.push_back(".lua");
-		break;
-	}
-	case FileType::VISUALSCRIPT:
-	{
-		extensions.push_back(".visualscript");
-	}
-	case FileType::AUDIO:
-	{
-		for (const char* ext : AudioExtensions)
-		{
-			extensions.push_back(ext);
-		}
-		break;
-	}
-	case FileType::MATERIAL:
-	{
-		extensions.push_back(".material");
-		break;
-	}
-	case FileType::TILESET:
-	{
-		extensions.push_back(".tileset");
-		break;
-	}
-	case FileType::PHYSICSMATERIAL:
-		extensions.push_back(".physicsmaterial");
-		break;
-	}
-	return extensions;
+  std::vector<std::string> extensions;
+  switch (fileType)
+  {
+  case FileType::UNKNOWN:
+    return extensions;
+  case FileType::TEXT:
+  {
+    for (const char* ext : TextExtensions)
+    {
+      extensions.push_back(ext);
+    }
+    break;
+  }
+  case FileType::IMAGE:
+  {
+    for (const char* ext : ImageExtensions)
+    {
+      extensions.push_back(ext);
+    }
+    break;
+  }
+  case FileType::MESH:
+  {
+    for (const char* ext : MeshExtensions)
+    {
+      extensions.push_back(ext);
+    }
+    break;
+  }
+  case FileType::SCENE:
+  {
+    extensions.push_back(".scene");
+    break;
+  }
+  case FileType::SCRIPT:
+  {
+    extensions.push_back(".lua");
+    break;
+  }
+  case FileType::VISUALSCRIPT:
+  {
+    extensions.push_back(".visualscript");
+    break;
+  }
+  case FileType::AUDIO:
+  {
+    for (const char* ext : AudioExtensions)
+    {
+      extensions.push_back(ext);
+    }
+    break;
+  }
+  case FileType::MATERIAL:
+  {
+    extensions.push_back(".material");
+    break;
+  }
+  case FileType::TILESET:
+  {
+    extensions.push_back(".tileset");
+    break;
+  }
+  case FileType::PHYSICSMATERIAL:
+    extensions.push_back(".physicsmaterial");
+    break;
+  case FileType::FONT:
+    for (const char* ext : FontExtensions)
+    {
+      extensions.push_back(ext);
+    }
+    break;
+  }
+  return extensions;
 }
 
 void ViewerManager::SaveAll()
 {
-	for (auto&& [path, viewer] : s_AssetViewers)
-	{
-		if (ISaveable* saveableView = dynamic_cast<ISaveable*>(viewer.first))
-			if(saveableView->NeedsSaving())
-				saveableView->Save();
-	}
+  for (auto&& [path, viewer] : s_AssetViewers)
+  {
+    if (ISaveable* saveableView = dynamic_cast<ISaveable*>(viewer.first))
+      if (saveableView->NeedsSaving())
+        saveableView->Save();
+  }
 }

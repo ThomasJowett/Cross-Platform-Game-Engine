@@ -9,14 +9,16 @@ struct TextComponent
 	TextComponent(const TextComponent&) = default;
 
 	std::string text;
-	Ref<Font> font;
+	Ref<Font> font = Font::GetDefaultFont();
+	float maxWidth = 10.0f;
+	Colour colour{ Colours::WHITE };
 
 private:
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(text);
+		archive(text, maxWidth, colour);
 		std::string relativePath;
 		relativePath = FileUtils::RelativePath(font->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		archive(relativePath);
@@ -25,7 +27,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(text);
+		archive(text, maxWidth, colour);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())
@@ -34,7 +36,7 @@ private:
 		}
 		else
 		{
-			font.reset();
+			font = Font::GetDefaultFont();
 		}
 	}
 };

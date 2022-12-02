@@ -23,7 +23,8 @@ enum class FileType
 	AUDIO,
 	MATERIAL,
 	TILESET,
-	PHYSICSMATERIAL
+	PHYSICSMATERIAL,
+	FONT
 };
 
 class View : public Layer

@@ -254,9 +254,10 @@ void TilesetView::OnImGuiRender()
 
 			if (m_LocalTileset->GetSubTexture()->GetTexture())
 			{
+				ImVec2 tileSize((float)m_LocalTileset->GetSubTexture()->GetSpriteWidth() * m_Zoom, (float)m_LocalTileset->GetSubTexture()->GetSpriteHeight() * m_Zoom);
 				ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_HorizontalScrollbar;
 				ImGui::BeginChild("Tileset Texture",
-					ImVec2(ImGui::GetContentRegionAvail().x, displaySize.y + 5.0f),
+					ImVec2(ImGui::GetContentRegionAvail().x - 5.0f, std::min(displaySize.y + 5.0f, ImGui::GetContentRegionAvail().y - 5.0f)),
 					false, window_flags_image);
 				const ImVec2 p = ImGui::GetCursorScreenPos();
 				ImGui::Image(m_LocalTileset->GetSubTexture()->GetTexture(), displaySize);
@@ -269,28 +270,27 @@ void TilesetView::OnImGuiRender()
 				//Horizontal Lines
 				for (uint32_t i = 0; i <= m_LocalTileset->GetSubTexture()->GetCellsTall(); i++)
 				{
-					float y = (float)(m_LocalTileset->GetSubTexture()->GetSpriteHeight() * i) * m_Zoom;
+					float y = tileSize.y * (float)i;
 					draw_list->AddLine(ImVec2(p.x, p.y + y), ImVec2(p.x + displaySize.x, p.y + y), lineColour);
 				}
 				//Vertical Lines
 				for (uint32_t i = 0; i <= m_LocalTileset->GetSubTexture()->GetCellsWide(); i++)
 				{
-					float x = (float)(m_LocalTileset->GetSubTexture()->GetSpriteWidth() * i) * m_Zoom;
+					float x = tileSize.x * (float)i;
 					draw_list->AddLine(ImVec2(p.x + x, p.y), ImVec2(p.x + x, p.y + displaySize.y), lineColour);
 
 					if (i != m_LocalTileset->GetSubTexture()->GetCellsWide()
-						&& m_LocalTileset->GetSubTexture()->GetSpriteWidth() * m_Zoom > 20)
+						&& tileSize.y > 20.0f)
 					{
 						for (uint32_t j = 0; j < m_LocalTileset->GetSubTexture()->GetCellsTall(); j++)
 						{
-							float y = (float)(m_LocalTileset->GetSubTexture()->GetSpriteHeight() * j) * m_Zoom;
+							float y = tileSize.y * (float)j;
 							std::string number = std::to_string(i + (j * m_LocalTileset->GetSubTexture()->GetCellsWide()));
 							draw_list->AddText(ImVec2(p.x + x + 2, p.y + y + 2), lineColour, number.c_str());
 						}
 					}
 				}
 
-				ImVec2 tileSize((float)m_LocalTileset->GetSubTexture()->GetSpriteWidth() * m_Zoom, (float)m_LocalTileset->GetSubTexture()->GetSpriteHeight() * m_Zoom);
 
 				if (ImGui::IsItemHovered())
 				{

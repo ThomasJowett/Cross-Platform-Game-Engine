@@ -307,6 +307,18 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pTilemapElement->SetText(csv.str().c_str());
 	}
 
+	if (TextComponent* component = entity.TryGetComponent<TextComponent>())
+	{
+		tinyxml2::XMLElement* pTextElement = pElement->InsertNewChildElement("Text");
+		pTextElement->SetText(component->text.c_str());
+		if(component->font != Font::GetDefaultFont())
+			SerializationUtils::Encode(pTextElement->InsertNewChildElement("Font"), component->font->GetFilepath());
+
+		pTextElement->SetAttribute("MaxWidth", component->maxWidth);
+
+		SerializationUtils::Encode(pTextElement->InsertNewChildElement("Colour"), component->colour);
+	}
+
 	if (entity.HasComponent<RigidBody2DComponent>())
 	{
 		RigidBody2DComponent const& component = entity.GetComponent<RigidBody2DComponent>();
@@ -862,6 +874,25 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCircleRendererComponentElement->QueryFloatAttribute("Fade", &component.fade);
 
 		SerializationUtils::Decode(pCircleRendererComponentElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// Text --------------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pTextComponentElement = pEntityElement->FirstChildElement("Text"))
+	{
+		TextComponent& component = entity.AddComponent<TextComponent>();
+
+		if (const char* text = pTextComponentElement->GetText())
+		{
+			component.text = text;
+		}
+		pTextComponentElement->QueryFloatAttribute("MaxWidth", &component.maxWidth);
+		std::filesystem::path fontPath;
+		SerializationUtils::Decode(pTextComponentElement->FirstChildElement("Font"), fontPath);
+		if (!fontPath.empty())
+			component.font = AssetManager::GetAsset<Font>(fontPath);
+		else
+			component.font = Font::GetDefaultFont();
+		SerializationUtils::Decode(pTextComponentElement->FirstChildElement("Colour"), component.colour);
 	}
 
 	// Behaviour Tree ----------------------------------------------------------------------------------------------

@@ -11,8 +11,7 @@
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
-#include "ImGui/ImGuiMaterialEdit.h"
-#include "ImGui/ImGuiPhysicsMaterialEdit.h"
+#include "ImGui/ImGuiAssetEdit.h"
 #include "ImGui/ImGuiVectorEdit.h"
 
 #include "Viewers/ViewerManager.h"
@@ -394,7 +393,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				Ref<Material> material = AssetManager::GetAsset<Material>(
 					std::filesystem::absolute(Application::GetOpenDocumentDirectory() / staticMesh.materialOverrides[i]));
 
-				if (ImGui::MaterialEdit(std::string("Material " + std::to_string(i)).c_str(), material, staticMesh.mesh->GetMeshes()[i]->GetMaterial()))
+				if (ImGui::AssetEdit<Material>(std::string("Material " + std::to_string(i)).c_str(), material, staticMesh.mesh->GetMeshes()[i]->GetMaterial(), FileType::MATERIAL))
 					staticMesh.materialOverrides[i] = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 			}
 		});
@@ -656,7 +655,32 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			default:
 				break;
 			}
-			Dirty(ImGui::MaterialEdit("Material", primitive.material, m_DefaultMaterial));
+			Dirty(ImGui::AssetEdit<Material>("Material", primitive.material, m_DefaultMaterial, FileType::MATERIAL));
+		});
+
+	// Text Component ------------------------------------------------------------------------------------------------------------
+	DrawComponent<TextComponent>(ICON_FA_FONT" Text", entity, [](auto& text)
+		{
+			static char inputBuffer[1024] = "";
+			memset(inputBuffer, 0, sizeof(inputBuffer));
+			for (int i = 0; i < text.text.length(); i++)
+			{
+				inputBuffer[i] = text.text[i];
+			}
+
+			if (ImGui::InputTextMultiline("Text", inputBuffer, sizeof(inputBuffer)))
+			{
+				text.text = inputBuffer;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+
+			if (ImGui::AssetEdit<Font>("Font", text.font, Font::GetDefaultFont(), FileType::FONT))
+			{
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			Dirty(ImGui::DragFloat("Max Width", &text.maxWidth, 0.001f, 0.0f, 100.0f, "%.2f"));
+			float* colour[4] = { &text.colour.r, &text.colour.g, &text.colour.b, &text.colour.a };
+			Dirty(ImGui::ColorEdit4("Colour", colour[0]));
 		});
 
 	// Rigid Body 2D--------------------------------------------------------------------------------------------------------------
@@ -681,7 +705,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			Dirty(ImGui::Vector("Offset", boxCollider2D.offset));
 			Dirty(ImGui::Vector("Size", boxCollider2D.size));
-			Dirty(ImGui::PhysMaterialEdit("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial));
+			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
 	// Circle Collider 2D--------------------------------------------------------------------------------------------------------------
@@ -689,7 +713,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			Dirty(ImGui::Vector("Offset", circleCollider2D.offset));
 			Dirty(ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f));
-			Dirty(ImGui::PhysMaterialEdit("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial));
+			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
 	// Polygon Collider 2D ------------------------------------------------------------------------------------------------------------
@@ -723,7 +747,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::TreePop();
 			}
 
-			Dirty(ImGui::PhysMaterialEdit("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial));
+			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 
 			if (polygonCollider2D.vertices.size() < 3)
 			{
@@ -745,7 +769,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				"Vertical\0"
 				"Horizontal\0"));
 
-			Dirty(ImGui::PhysMaterialEdit("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial));
+			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
 	// Point Light --------------------------------------------------------------------------------------------------------------------
@@ -829,6 +853,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity);
 		AddComponentMenuItem<CameraComponent>(ICON_FA_VIDEO" Camera", entity);
 		AddComponentMenuItem<PrimitiveComponent>(ICON_FA_SHAPES" Primitive", entity);
+		AddComponentMenuItem<TextComponent>(ICON_FA_FONT" Text", entity);
 		AddComponentMenuItem<RigidBody2DComponent>(ICON_FA_BASEBALL" Rigid Body 2D", entity);
 		AddComponentMenuItem<BoxCollider2DComponent>(ICON_FA_VECTOR_SQUARE" Box Collider 2D", entity);
 		AddComponentMenuItem<CircleCollider2DComponent>(ICON_MDI_CIRCLE_OUTLINE" Circle Collider 2D", entity);

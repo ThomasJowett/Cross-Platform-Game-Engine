@@ -115,6 +115,9 @@ IMGUI_API bool ImGui::FileEdit(const char* label, std::filesystem::path& filepat
 	case FileType::MATERIAL:
 		filter = L"Material (.material)\0*.material\0";
 		break;
+	case FileType::FONT:
+		filter = L"TrueType (.ttf)\0*.ttf\0";
+		break;
 	default:
 		filter = L"Any\0*.*\0";
 		break;
