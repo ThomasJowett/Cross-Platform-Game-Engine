@@ -270,7 +270,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto billboardView = m_Registry.view<TransformComponent, BillboardComponent>();
 	for (auto entity : billboardView)
 	{
-		auto& [transformComp, billboardComp] = billboardView.get(entity);
+		auto&& [transformComp, billboardComp] = billboardView.get(entity);
 		Matrix4x4 transform = Matrix4x4();
 
 		Vector3f cameraRight = Vector3f(cameraTransform(0, 0), cameraTransform(1, 0), cameraTransform(2, 0));
@@ -303,14 +303,14 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto spriteGroup = m_Registry.view<TransformComponent, SpriteComponent>();
 	for (auto entity : spriteGroup)
 	{
-		auto [transformComp, spriteComp] = spriteGroup.get(entity);
+		auto&& [transformComp, spriteComp] = spriteGroup.get(entity);
 		Renderer2D::DrawSprite(transformComp.GetWorldMatrix(), spriteComp, (int)entity);
 	}
 
 	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
 	for (auto entity : animatedSpriteGroup)
 	{
-		auto [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
+		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
 		if (spriteComp.tileset)
 			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.tileset->GetSubTexture(), spriteComp.tint, (int)entity);
 	}
@@ -318,21 +318,21 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
 	for (auto entity : circleGroup)
 	{
-		auto [transformComp, circleComp] = circleGroup.get(entity);
+		auto&& [transformComp, circleComp] = circleGroup.get(entity);
 		Renderer2D::DrawCircle(transformComp.GetWorldMatrix(), circleComp, (int)entity);
 	}
 
 	auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
 	for (auto entity : textGroup)
 	{
-		auto [transformComp, textComp] = textGroup.get(entity);
+		auto&& [transformComp, textComp] = textGroup.get(entity);
 		//Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
 	}
 
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 	for (auto entity : staticMeshGroup)
 	{
-		auto [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
+		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
 		if (staticMeshComp.mesh)
 		{
 			const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
@@ -351,14 +351,14 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto primitiveGroup = m_Registry.view<TransformComponent, PrimitiveComponent>();
 	for (auto entity : primitiveGroup)
 	{
-		auto [transformComp, primitiveComp] = primitiveGroup.get(entity);
+		auto&& [transformComp, primitiveComp] = primitiveGroup.get(entity);
 		Renderer::Submit(primitiveComp.material, primitiveComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
 	for (auto entity : tilemapGroup)
 	{
-		auto [transformComp, tilemapComp] = tilemapGroup.get(entity);
+		auto&& [transformComp, tilemapComp] = tilemapGroup.get(entity);
 		if (tilemapComp.tileset && tilemapComp.vertexArray)
 		{
 			Renderer::Submit(tilemapComp.material, tilemapComp.vertexArray, transformComp.GetWorldMatrix(), (int)entity);

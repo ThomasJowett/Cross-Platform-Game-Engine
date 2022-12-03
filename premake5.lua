@@ -72,7 +72,8 @@ project "Engine"
 		"Box2D",
 		"SPIRV-Cross",
 		"lua",
-		"msdf-atlas-gen"
+		"msdf-atlas-gen",
+		"freetype"
 	}
 	
 	defines
@@ -249,7 +250,10 @@ project "Editor"
 			"X11",
 			"dl",
 			"pthread",
-			"stdc++fs"
+			"stdc++fs",
+			"msdf-atlas-gen",
+			"msdfgen",
+			"freetype"
 		}
 		
 		defines
@@ -334,7 +338,10 @@ project "Runtime"
 			"X11",
 			"dl",
 			"pthread",
-			"stdc++fs"
+			"stdc++fs",
+			"msdf-atlas-gen",
+			"msdfgen",
+			"freetype"
 		}
 		
 		defines

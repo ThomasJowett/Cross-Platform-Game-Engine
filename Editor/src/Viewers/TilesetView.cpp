@@ -117,6 +117,7 @@ void TilesetView::OnImGuiRender()
 			if (ImGui::Texture2DEdit("Texture", m_LocalTileset->GetSubTexture()->GetTexture()))
 			{
 				m_Dirty = true;
+				m_LocalTileset->SetCurrentTile(1);
 				m_LocalTileset->GetSubTexture()->RecalculateCellsDimensions();
 			}
 

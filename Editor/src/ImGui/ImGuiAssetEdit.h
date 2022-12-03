@@ -4,6 +4,7 @@
 
 #include "Renderer/Material.h"
 #include "Viewers/ViewerManager.h"
+#include "FileSystem/Directory.h"
 
 static std::filesystem::file_time_type s_AssetFileTime;
 

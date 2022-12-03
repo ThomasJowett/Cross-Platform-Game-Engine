@@ -275,15 +275,18 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			//m_TilemapEditor->OnImGuiRender(tilemap);
 
-			static std::filesystem::file_time_type currentFileTime;
-
-			std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
-
-			if (lastWrittenTime != currentFileTime)
+			if(tilemap.tileset)
 			{
-				tilemap.tileset->Reload();
-				tilemap.Rebuild();
-				currentFileTime = lastWrittenTime;
+				static std::filesystem::file_time_type currentFileTime;
+
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
+
+				if (lastWrittenTime != currentFileTime)
+				{
+					tilemap.tileset->Reload();
+					tilemap.Rebuild();
+					currentFileTime = lastWrittenTime;
+				}
 			}
 
 			if (ImGui::Combo("Orientation", (int*)&tilemap.orientation,

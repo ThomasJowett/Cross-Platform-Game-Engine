@@ -902,15 +902,23 @@ void ViewportPanel::OnImGuiRender()
 						Vector3f deltaRotation = rotationRad - transformComp.rotation;
 						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
-							transformComp.position = Vector3f(translation[0], translation[1], translation[2]);
+							Vector3f translationVec = Vector3f(translation[0], translation[1], translation[2]);
+							if((translationVec - transformComp.position).SqrMagnitude() >= 0.000001f)
+								SceneManager::CurrentScene()->MakeDirty();
+							transformComp.position = translationVec;
 						}
 						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
 						{
+							if(deltaRotation.SqrMagnitude() >= 0.000001f)
+								SceneManager::CurrentScene()->MakeDirty();
 							transformComp.rotation += deltaRotation;
 						}
 						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
-							transformComp.scale = Vector3f(scale[0], scale[1], scale[2]);
+							Vector3f scaleVec = Vector3f(scale[0], scale[1], scale[2]);
+							if((scaleVec - transformComp.scale).SqrMagnitude() >= 0.000001f)
+								SceneManager::CurrentScene()->MakeDirty();
+							transformComp.scale = scaleVec;
 						}
 					}
 				}
