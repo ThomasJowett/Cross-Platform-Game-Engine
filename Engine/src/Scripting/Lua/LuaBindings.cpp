@@ -238,7 +238,7 @@ void BindEntity(sol::state& state)
 
 	auto animated_sprite_type = state["AnimatedSpriteComponent"].get_or_create<sol::usertype<AnimatedSpriteComponent>>();
 	animated_sprite_type["Tint"] = &AnimatedSpriteComponent::tint;
-	animated_sprite_type["Tileset"] = &AnimatedSpriteComponent::tileset;
+	animated_sprite_type["SpriteSheet"] = &AnimatedSpriteComponent::spriteSheet;
 	animated_sprite_type.set_function("SelectAnimation", &AnimatedSpriteComponent::SelectAnimation);
 
 	std::initializer_list<std::pair<sol::string_view, int>> rigidBodyTypesItems =

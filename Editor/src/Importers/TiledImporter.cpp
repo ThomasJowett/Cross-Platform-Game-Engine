@@ -153,7 +153,7 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 
 			// find tileset to use
 			uint32_t gid = 1;
-			for (auto& [id, tileset] : s_Tilesets)
+			for (auto&& [id, tileset] : s_Tilesets)
 			{
 				if (tilemapComp.tiles[i][j] > (id - 1) && (id - 1) >= gid)
 				{
@@ -264,7 +264,8 @@ void LoadTileset(const std::filesystem::path& filepath, const std::filesystem::p
 				tileset->SetTileProbability(tileId, atof(probability));
 			}
 
-			tinyxml2::XMLElement* pAnimation = pTile->FirstChildElement("animation");
+			// TODO animated tiles
+			/*tinyxml2::XMLElement* pAnimation = pTile->FirstChildElement("animation");
 			if (pAnimation)
 			{
 				tinyxml2::XMLElement* pFrame = pAnimation->FirstChildElement("frame");
@@ -285,7 +286,7 @@ void LoadTileset(const std::filesystem::path& filepath, const std::filesystem::p
 					pFrame = pFrame->NextSiblingElement("frame");
 				}
 				tileset->AddAnimation("Unnamed Animation", startFrame, endFrame - startFrame + 1, duration);
-			}
+			}*/
 			pTile = pTile->NextSiblingElement("tile");
 		}
 		std::filesystem::path newFilePath = filepath;

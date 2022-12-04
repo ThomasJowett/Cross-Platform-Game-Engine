@@ -10,8 +10,6 @@
 #include "HierarchyComponent.h"
 #include "TransformComponent.h"
 
-static PhysicsMaterial s_DefaultPhysicsMaterial;
-
 void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMaterial)
 {
 	if (physicsMaterial)
@@ -22,9 +20,10 @@ void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMa
 	}
 	else
 	{
-		fixtureDef.density = s_DefaultPhysicsMaterial.GetDensity();
-		fixtureDef.friction = s_DefaultPhysicsMaterial.GetFriction();
-		fixtureDef.restitution = s_DefaultPhysicsMaterial.GetRestitution();
+		Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
+		fixtureDef.density = defaultPhysicsMaterial->GetDensity();
+		fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
+		fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
 	}
 }
 
@@ -229,6 +228,21 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
 				body->CreateFixture(&rectFixtureDef);
+			}
+		}
+	}
+
+	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
+	{
+		for (auto& row : tilemapComp->tiles)
+		{
+			for (uint32_t index : row)
+			{
+				const Tile& tile = tilemapComp->tileset->GetTile(index);
+				if (tile.GetCollisionShape() != Tile::CollisionShape::None)
+				{
+
+				}
 			}
 		}
 	}

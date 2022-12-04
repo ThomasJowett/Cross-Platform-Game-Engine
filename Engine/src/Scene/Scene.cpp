@@ -311,8 +311,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : animatedSpriteGroup)
 	{
 		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
-		if (spriteComp.tileset)
-			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.tileset->GetSubTexture(), spriteComp.tint, (int)entity);
+		if (spriteComp.spriteSheet)
+			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.spriteSheet->GetSubTexture(), spriteComp.tint, (int)entity);
 	}
 
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
@@ -406,8 +406,8 @@ void Scene::OnUpdate(float deltaTime)
 	m_IsUpdating = true;
 	m_Registry.view<AnimatedSpriteComponent>().each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
-			if (animatedSpriteComp.tileset)
-				animatedSpriteComp.tileset->Animate(deltaTime);
+			if (animatedSpriteComp.spriteSheet)
+				animatedSpriteComp.spriteSheet->Animate(deltaTime);
 		});
 
 	m_Registry.view<LuaScriptComponent>().each([deltaTime](auto entity, auto& luaScriptComp)

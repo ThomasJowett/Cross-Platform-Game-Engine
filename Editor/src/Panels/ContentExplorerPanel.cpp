@@ -289,6 +289,16 @@ void ContentExplorerPanel::CreateNewTileset()
 	m_CurrentSelectedPath = newTilesetPath;
 }
 
+void ContentExplorerPanel::CreateNewSpriteSheet()
+{
+	std::filesystem::path newSpriteSheetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Sprite Sheet", ".spritesheet");
+
+	SpriteSheet spritesheet;
+	spritesheet.SaveAs(newSpriteSheetPath);
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newSpriteSheetPath;
+}
+
 void ContentExplorerPanel::CreateNewPhysicsMaterial()
 {
 	std::filesystem::path newPhysicsMaterial = Directory::GetNextNewFileName(m_CurrentPath, "New Physics Material", ".physicsmaterial");
@@ -441,19 +451,20 @@ void ContentExplorerPanel::RightClickMenu()
 			ImGui::OpenPopup("Rename");
 		}
 
+		if (ImGui::Selectable("Sprite Sheet"))
+		{
+			CreateNewSpriteSheet();
+			ImGui::OpenPopup("Rename");
+		}
+
 		if (ImGui::Selectable("Physics Material"))
 		{
 			CreateNewPhysicsMaterial();
 			ImGui::OpenPopup("Rename");
 		}
-
-		if (ImGui::BeginPopup("Rename"))
-		{
-			Rename();
-			ImGui::EndPopup();
-		}
 		ImGui::EndMenu();
 	}
+
 	if (ImGui::MenuItem(ICON_FA_FILE_IMPORT" Import Assets"))
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
@@ -598,6 +609,8 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		return ICON_FA_BOWLING_BALL;
 	case FileType::TILESET:
 		return ICON_FA_GRIP;
+	case FileType::SPRITESHEET:
+		return ICON_FA_PHOTO_FILM;
 	case FileType::PHYSICSMATERIAL:
 		return ICON_FA_VOLLEYBALL;
 	}

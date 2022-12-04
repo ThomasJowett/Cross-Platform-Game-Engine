@@ -27,7 +27,8 @@ public:
 	void Add(const Ref<Asset>& resource)
 	{
 		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
-		m_Assets[resource->GetFilepath().string()] = resource;
+		if(!resource->GetFilepath().empty())
+			m_Assets[resource->GetFilepath().string()] = resource;
 	}
 
 	template<typename T>

@@ -33,6 +33,7 @@ struct RigidBody2DComponent
 	void Init(Entity& entity, b2World* b2World);
 
 	static uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type);
+	
 
 	void ApplyImpulse(Vector2f impulse);
 	void ApplyImpulseAtPoint(Vector2f impulse, Vector2f center);

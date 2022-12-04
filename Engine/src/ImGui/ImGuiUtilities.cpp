@@ -25,6 +25,18 @@ void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_c
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void ImGui::Image(Ref<SubTexture2D> subtexture, const ImVec2& size, const ImVec4& tint_col, const ImVec4& border_col)
+{
+	if (subtexture && subtexture->GetTexture())
+	{
+		ImTextureID my_tex_id = (void*)(uintptr_t)subtexture->GetTexture()->GetRendererID();
+		const Vector2f* coords = subtexture->GetTextureCoordinates();
+		ImGui::Image(my_tex_id, size, ImVec2(coords[0].x, coords[2].y), ImVec2(coords[2].x, coords[0].y), tint_col, border_col);
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
 {
 	ImTextureID my_tex_id = (void*)(uintptr_t)texture->GetRendererID();

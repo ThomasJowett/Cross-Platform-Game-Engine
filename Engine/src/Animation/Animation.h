@@ -8,10 +8,10 @@ class Animation
 {
 public:
 	Animation() = default;
-	Animation(Ref<SubTexture2D> texture, int startFrame, int frameCount, float holdTime);
+	Animation(int startFrame, int frameCount, float holdTime);
 
 	void Start();
-	void Update(float deltaTime);
+	void Update(float deltaTime, Ref<SubTexture2D> texture);
 
 	float GetAnimationLength() const;
 
@@ -24,18 +24,16 @@ public:
 	float GetHoldTime() const { return m_HoldTime; }
 	void SetHoldTime(float holdTime) { m_HoldTime = holdTime; }
 
-	void SetTexture(Ref<SubTexture2D> texture) { m_Texture = texture; }
+	uint32_t GetCurrentFame() const { return m_CurrentFrame; }
 
 private:
-	void Advance();
+	void Advance(Ref<SubTexture2D> texture);
 
 	uint32_t m_StartFrame = 0;
 	uint32_t m_FrameCount = 1;
 	float m_HoldTime = 0.01f;
 	uint32_t m_CurrentFrame = 0;
 	float m_CurrentFrameTime = 0.0f;
-
-	Ref<SubTexture2D> m_Texture;
 
 	friend cereal::access;
 	template<typename Archive>

@@ -76,7 +76,7 @@ void ErrorListPanel::OnImGuiRender()
 			ImGui::TableHeadersRow();
 
 			for (size_t i = 0; i < m_ErrorList.size(); i++)
-			for(auto& [error, selected] : m_ErrorList)
+			for(auto&& [error, selected] : m_ErrorList)
 			{
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
@@ -90,7 +90,7 @@ void ErrorListPanel::OnImGuiRender()
 							ViewerManager::OpenViewer(error.filepath);
 						}
 
-						for (auto& [_, s] : m_ErrorList)
+						for (auto&& [_, s] : m_ErrorList)
 						{
 							s = false;
 						}
@@ -106,7 +106,7 @@ void ErrorListPanel::OnImGuiRender()
 
 						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
-							for (auto& [e, s] : m_ErrorList)
+							for (auto&& [e, s] : m_ErrorList)
 							{
 								if (s)
 									ViewerManager::OpenViewer(e.filepath);

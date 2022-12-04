@@ -7,6 +7,25 @@
 #include <map>
 #include <filesystem>
 
+class Tile
+{
+public:
+	enum CollisionShape
+	{
+		None,
+		Rect,
+		Polygon
+	};
+	void SetProbability(double probability) { m_Probability = probability; }
+	double GetProbability() const { return m_Probability; }
+
+	CollisionShape GetCollisionShape() const { return m_CollisionShape; }
+private:
+	double m_Probability = 1.0;
+	CollisionShape m_CollisionShape = CollisionShape::None;
+	std::vector<Vector2f> m_Vertices;
+};
+
 class Tileset : public Asset
 {
 public:
@@ -21,21 +40,10 @@ public:
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
-	void AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime);
-	void RemoveAnimation(std::string name);
-	void RenameAnimation(const std::string& oldName, const std::string& newName);
-	void Animate(float deltaTime);
-
-	void SelectAnimation(const std::string& animationName);
-
-	std::map<std::string, Animation>& GetAnimations() { return m_Animations; }
-	const std::string GetCurrentAnimation() const { return m_CurrentAnimation; }
-
 	void SetTileProbability(size_t tile, double probability);
+	const Tile& GetTile(uint32_t index) { ASSERT(index < m_Tiles.size(), "Index out of range!"); return m_Tiles[index]; }
 private:
 	Ref<SubTexture2D> m_Texture;
 
-	std::vector<double> m_TileProbabilities;
-	std::map<std::string, Animation> m_Animations;
-	std::string m_CurrentAnimation;
+	std::vector<Tile> m_Tiles;
 };

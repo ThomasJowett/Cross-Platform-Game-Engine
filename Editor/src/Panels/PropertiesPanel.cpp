@@ -26,9 +26,9 @@ PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref
 
 void PropertiesPanel::OnAttach()
 {
-	m_DefaultMaterial = AssetManager::GetAsset<Material>("DefaultMaterial");
+	m_DefaultMaterial = Material::GetDefaultMaterial();
 
-	m_DefaultPhysMaterial = AssetManager::GetAsset<PhysicsMaterial>("DefaultPhysicsMaterial");
+	m_DefaultPhysMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
 }
 
 void PropertiesPanel::OnUpdate(float deltaTime)
@@ -176,40 +176,40 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::ColorEdit4("Tint", tint[0]));
 
 			std::string tilesetName;
-			if (sprite.tileset)
+			if (sprite.spriteSheet)
 			{
 				if (ImGui::Button("Pixel Perfect"))
 				{
-					if (sprite.tileset)
+					if (sprite.spriteSheet)
 					{
-						entity.GetTransform().scale.x = (float)sprite.tileset->GetSubTexture()->GetSpriteWidth() / 16.0f;
-						entity.GetTransform().scale.y = (float)sprite.tileset->GetSubTexture()->GetSpriteHeight() / 16.0f;
+						entity.GetTransform().scale.x = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteWidth() / 16.0f;
+						entity.GetTransform().scale.y = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteHeight() / 16.0f;
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
-				tilesetName = sprite.tileset->GetFilepath().filename().string();
+				tilesetName = sprite.spriteSheet->GetFilepath().filename().string();
 
 				static std::filesystem::file_time_type currentFileTime;
 
-				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(sprite.tileset->GetFilepath());
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(sprite.spriteSheet->GetFilepath());
 
 				if (lastWrittenTime != currentFileTime)
 				{
-					sprite.tileset->Reload();
+					sprite.spriteSheet->Reload();
 					currentFileTime = lastWrittenTime;
-					sprite.tileset->SelectAnimation(sprite.tileset->GetCurrentAnimation());
+					sprite.spriteSheet->SelectAnimation(sprite.spriteSheet->GetCurrentAnimation());
 				}
 			}
 
-			if (ImGui::BeginCombo("Tileset", tilesetName.c_str()))
+			if (ImGui::BeginCombo("SpriteSheet", tilesetName.c_str()))
 			{
-				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::TILESET)))
+				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SPRITESHEET)))
 				{
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						sprite.tileset = AssetManager::GetAsset<Tileset>(file);
+						sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(file);
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 					ImGui::Tooltip(file.string().c_str());
@@ -222,33 +222,33 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-					for (std::string& ext : ViewerManager::GetExtensions(FileType::TILESET))
+					for (std::string& ext : ViewerManager::GetExtensions(FileType::SPRITESHEET))
 					{
 						if (file->extension().string() == ext)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-								sprite.tileset = AssetManager::GetAsset<Tileset>(*file);
+								sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(*file);
 						}
 					}
 				}
 				ImGui::EndDragDropTarget();
 			}
-			if (sprite.tileset)
+			if (sprite.spriteSheet)
 			{
 				ImGui::SameLine();
 
 				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##AnimatedSprite"))
 				{
-					ViewerManager::OpenViewer(sprite.tileset->GetFilepath());
+					ViewerManager::OpenViewer(sprite.spriteSheet->GetFilepath());
 				}
 				ImGui::Tooltip("Edit Tileset");
 			}
 
-			if (sprite.tileset)
+			if (sprite.spriteSheet)
 			{
-				if (ImGui::BeginCombo("Animation", sprite.tileset->GetCurrentAnimation().c_str()))
+				if (ImGui::BeginCombo("Animation", sprite.spriteSheet->GetCurrentAnimation().c_str()))
 				{
-					for (auto& [name, animation] : sprite.tileset->GetAnimations())
+					for (auto&& [name, animation] : sprite.spriteSheet->GetAnimations())
 					{
 						if (ImGui::Selectable(name.c_str()))
 						{
@@ -339,7 +339,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(file.filename().string().c_str()))
 					{
 						tilemap.tileset = AssetManager::GetAsset<Tileset>(file);
-						tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
+						tilemap.Rebuild();
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 					ImGui::Tooltip(file.string().c_str());

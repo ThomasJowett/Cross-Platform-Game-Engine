@@ -23,9 +23,13 @@ public:
 	float GetRestitution() { return m_Restitution; }
 	void SetRestitution(float restitution) { m_Restitution = std::clamp(restitution, 0.0f, 1.0f);}
 
+	static Ref<PhysicsMaterial> GetDefaultPhysicsMaterial();
+
 private:
 
 	float m_Density = 1.0f;
 	float m_Friction = 0.5f;
 	float m_Restitution = 0.0f;
+
+	static Ref<PhysicsMaterial> s_DefaultPhysicsMaterial;
 };

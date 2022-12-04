@@ -120,6 +120,7 @@ public:
 	void CreateNewMaterial();
 	void CreateNewLuaScript();
 	void CreateNewTileset();
+	void CreateNewSpriteSheet();
 	void CreateNewPhysicsMaterial();
 
 private:

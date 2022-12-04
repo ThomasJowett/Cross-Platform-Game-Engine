@@ -47,14 +47,15 @@ public:
 	Vector2f GetTextureOffset() { return m_TextureOffset; }
 	void SetTextureOffset(Vector2f textureOffset) { m_TextureOffset = textureOffset; }
 
-private:
-	void DefaultMaterial();
+	static Ref<Material> GetDefaultMaterial();
 
-	std::string m_Shader;
+private:
+
+	std::string m_Shader = "Standard";
 
 	std::unordered_map<uint32_t, Ref<Texture2D>> m_Textures;
 
-	Colour m_Tint;
+	Colour m_Tint{ Colours::WHITE };
 
 	bool m_TwoSided = false;
 	bool m_Transparent = false;
@@ -62,4 +63,6 @@ private:
 
 	float m_TilingFactor = 1.0f;
 	Vector2f m_TextureOffset;
+
+	static Ref<Material> s_DefaultMaterial;
 };

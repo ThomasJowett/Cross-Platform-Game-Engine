@@ -154,8 +154,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
 
-		if (component.tileset)
-			SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tileset"), component.tileset->GetFilepath());
+		if (component.spriteSheet)
+			SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("SpriteSheet"), component.spriteSheet->GetFilepath());
 
 		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
 
@@ -181,7 +181,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pPrimitiveElement = pElement->InsertNewChildElement("Primitive");
 
-		if(component.material)
+		if(component.material != Material::GetDefaultMaterial())
 			SerializationUtils::Encode(pPrimitiveElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 
 		pPrimitiveElement->SetAttribute("Type", (int)component.type);
@@ -560,7 +560,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		SerializationUtils::Decode(pAnimatedSpriteComponentElement->FirstChildElement("Tint"), component.tint);
 
-		if (tinyxml2::XMLElement const* pTilesetElement = pAnimatedSpriteComponentElement->FirstChildElement("Tileset"))
+		if (tinyxml2::XMLElement const* pTilesetElement = pAnimatedSpriteComponentElement->FirstChildElement("SpriteSheet"))
 		{
 			const char* tilesetChar = pTilesetElement->Attribute("Filepath");
 
@@ -569,7 +569,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				if (std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
 					!tilesetFilepath.empty())
 				{
-					component.tileset = AssetManager::GetAsset<Tileset>(tilesetFilepath);
+					component.spriteSheet = AssetManager::GetAsset<SpriteSheet>(tilesetFilepath);
 				}
 			}
 		}

@@ -27,6 +27,11 @@ void TilesetView::OnAttach()
 	{
 		m_SelectedTiles[i].resize((size_t)(m_LocalTileset->GetSubTexture()->GetCellsWide()));
 	}
+
+	if (m_LocalTileset->GetSubTexture()->GetSpriteWidth() <= 32 || m_LocalTileset->GetSubTexture()->GetSpriteHeight() <= 32)
+		m_Zoom = 2.0f;
+	if (m_LocalTileset->GetSubTexture()->GetSpriteWidth() <= 16 || m_LocalTileset->GetSubTexture()->GetSpriteHeight() <= 16)
+		m_Zoom = 4.0f;
 }
 
 void TilesetView::OnImGuiRender()
@@ -121,10 +126,10 @@ void TilesetView::OnImGuiRender()
 				m_LocalTileset->GetSubTexture()->RecalculateCellsDimensions();
 			}
 
-			int spriteSize[2] = { (int)m_LocalTileset->GetSubTexture()->GetSpriteWidth(), (int)m_LocalTileset->GetSubTexture()->GetSpriteHeight() };
-			if (ImGui::InputInt2("Sprite Size", spriteSize))
+			int tileSize[2] = { (int)m_LocalTileset->GetSubTexture()->GetSpriteWidth(), (int)m_LocalTileset->GetSubTexture()->GetSpriteHeight() };
+			if (ImGui::InputInt2("Tile Size", tileSize))
 			{
-				m_LocalTileset->GetSubTexture()->SetSpriteDimensions(spriteSize[0], spriteSize[1]);
+				m_LocalTileset->GetSubTexture()->SetSpriteDimensions(tileSize[0], tileSize[1]);
 				m_Dirty = true;
 			}
 
@@ -143,111 +148,6 @@ void TilesetView::OnImGuiRender()
 			}
 
 			ImGui::Separator();
-
-			if (ImGui::TreeNodeEx("Animations", ImGuiTreeNodeFlags_DefaultOpen))
-			{
-				ImGui::SameLine();
-				if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
-				{
-					m_LocalTileset->AddAnimation("New Animation", 0, 3, 0.1f);
-					m_Dirty = true;
-				}
-				ImGui::Tooltip("Add animation");
-
-				if (ImGui::BeginTable("Animations", 5, table_flags))
-				{
-					ImGui::TableSetupColumn("Name");
-					ImGui::TableSetupColumn("Start Frame");
-					ImGui::TableSetupColumn("Frame Count");
-					ImGui::TableSetupColumn("Frame Time (ms)");
-					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 24.0f);
-					ImGui::TableSetupScrollFreeze(0, 1);
-					ImGui::TableHeadersRow();
-
-					static char inputBuffer[1024] = "";
-
-					static int activeIndex = -1;
-
-					std::string deletedAnimation;
-
-					int index = 0;
-					for (auto& [name, animation] : m_LocalTileset->GetAnimations())
-					{
-						memset(inputBuffer, 0, sizeof(inputBuffer));
-						for (int i = 0; i < name.length(); i++)
-						{
-							inputBuffer[i] = name[i];
-						}
-						ImGui::TableNextRow();
-						ImGui::TableSetColumnIndex(0);
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						std::string nameStr = "##name" + std::to_string(index);
-						ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer),
-							ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
-
-						if (ImGui::IsItemActive())
-						{
-							activeIndex = index;
-						}
-
-						if (activeIndex == index && !ImGui::IsItemActive())
-						{
-							m_LocalTileset->RenameAnimation(name, inputBuffer);
-							m_Dirty = true;
-							activeIndex = -1;
-						}
-
-						int frameStart = (int)animation.GetStartFrame();
-						int frameCount = (int)animation.GetFrameCount();
-						float frameTime = animation.GetHoldTime();
-
-						ImGui::TableSetColumnIndex(1);
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						std::string starFrameStr = "##startFrame" + std::to_string(index);
-						if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
-						{
-							if (frameStart < 0)
-								frameStart = 0;
-							animation.SetStartFrame((uint32_t)frameStart);
-							m_Dirty = true;
-						}
-
-						ImGui::TableSetColumnIndex(2);
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						std::string frameCountStr = "##frameCount" + std::to_string(index);
-						if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
-						{
-							if (frameCount < 0)
-								frameCount = 0;
-							animation.SetFrameCount((uint32_t)frameCount);
-							m_Dirty = true;
-						}
-
-						ImGui::TableSetColumnIndex(3);
-						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						std::string frameTimeStr = "##frameTime" + std::to_string(index);
-						if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.001f, 10.0f, "% .3f"))
-						{
-							animation.SetHoldTime(frameTime);
-							m_Dirty = true;
-						}
-
-						ImGui::TableSetColumnIndex(4);
-						std::string deleteStr = ICON_FA_TRASH_CAN"##" + name + std::to_string(index);
-						if (ImGui::Button(deleteStr.c_str()))
-							deletedAnimation = name;
-						ImGui::Tooltip("Delete Animation");
-
-						index++;
-					}
-					ImGui::EndTable();
-
-					if (!deletedAnimation.empty())
-						m_LocalTileset->RemoveAnimation(deletedAnimation);
-				}
-
-				ImGui::TreePop();
-			}
 
 			ImGui::TableSetColumnIndex(1);
 
@@ -361,12 +261,13 @@ void TilesetView::OnImGuiRender()
 						}
 					}
 				}
+
+				ImGui::EndChild();
 			}
 			else
 			{
 				ImGui::Dummy(displaySize);
 			}
-			ImGui::EndChild();
 
 			ImGui::EndTable();
 		}
@@ -379,7 +280,6 @@ void TilesetView::Save()
 	m_LocalTileset->Save();
 	m_Tileset->Load(m_Filepath);
 	m_Dirty = false;
-
 }
 
 void TilesetView::SaveAs()

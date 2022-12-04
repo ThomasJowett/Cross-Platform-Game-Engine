@@ -23,6 +23,7 @@ enum class FileType
 	AUDIO,
 	MATERIAL,
 	TILESET,
+	SPRITESHEET,
 	PHYSICSMATERIAL,
 	FONT
 };
@@ -50,8 +51,5 @@ public:
 	static std::vector<std::string> GetExtensions(FileType fileType);
 
 	static void SaveAll();
-
-private:
-	static std::map<std::filesystem::path, std::pair<View*, bool*>> s_AssetViewers;
 };
 

@@ -2,7 +2,7 @@
 
 #include "cereal/access.hpp"
 
-#include "Renderer/Tileset.h"
+#include "Renderer/SpriteSheet.h"
 #include "Core/Colour.h"
 #include "Scene/AssetManager.h"
 #include "Core/Application.h"
@@ -10,14 +10,14 @@
 struct AnimatedSpriteComponent
 {
 	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
-	Ref<Tileset> tileset;
+	Ref<SpriteSheet> spriteSheet;
 
 	AnimatedSpriteComponent() = default;
 
 	void SelectAnimation(const std::string& animationName)
 	{
-		if (tileset)
-			tileset->SelectAnimation(animationName);
+		if (spriteSheet)
+			spriteSheet->SelectAnimation(animationName);
 		m_CurrentAnimation = animationName;
 	}
 
@@ -30,8 +30,8 @@ private:
 	{
 		archive(tint);
 		std::string relativePath;
-		if (tileset && !tileset->GetFilepath().empty())
-			relativePath = FileUtils::RelativePath(tileset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		if (spriteSheet && !spriteSheet->GetFilepath().empty())
+			relativePath = FileUtils::RelativePath(spriteSheet->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		archive(cereal::make_nvp("Filepath", relativePath));
 		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
 	}
@@ -44,14 +44,14 @@ private:
 		archive(cereal::make_nvp("Filepath", relativePath));
 		if (!relativePath.empty())
 		{
-			tileset = AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			spriteSheet = AssetManager::GetAsset<SpriteSheet>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		}
 		else
 		{
-			tileset.reset();
+			spriteSheet.reset();
 		}
 		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
-		if (tileset)
-			tileset->SelectAnimation(m_CurrentAnimation);
+		if (spriteSheet)
+			spriteSheet->SelectAnimation(m_CurrentAnimation);
 	}
 };

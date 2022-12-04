@@ -3,6 +3,15 @@
 
 #include "TinyXml2/tinyxml2.h"
 
+Ref<PhysicsMaterial> PhysicsMaterial::s_DefaultPhysicsMaterial = nullptr;
+
+Ref<PhysicsMaterial> PhysicsMaterial::GetDefaultPhysicsMaterial()
+{
+    if (!s_DefaultPhysicsMaterial)
+        s_DefaultPhysicsMaterial = CreateRef<PhysicsMaterial>();
+    return s_DefaultPhysicsMaterial;
+}
+
 PhysicsMaterial::PhysicsMaterial(const std::filesystem::path& filepath)
 {
     if (!Load(filepath))

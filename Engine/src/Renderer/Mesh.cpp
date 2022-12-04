@@ -7,7 +7,7 @@
 Mesh::Mesh(Ref<VertexArray> vertexArray)
 	:m_VertexArray(vertexArray)
 {
-	m_Material = AssetManager::GetAsset<Material>("DefaultMaterial");
+	m_Material = Material::GetDefaultMaterial();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
