@@ -103,7 +103,7 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 	float thetaStep = 2.0f * (float)PI / longitudeLines;
 
 	// Compute vertices for each latitude ring
-	for (uint32_t i = 0; i <= latitudeLines - 1; ++i)
+	for (uint32_t i = 0; i < latitudeLines; ++i)
 	{
 		float phi = i * phiStep;
 
@@ -149,18 +149,27 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 	}
 
 	std::vector<uint32_t> indicesList;
-
-	for (uint32_t i = 0; i <= latitudeLines - 2; i++)
+	uint32_t k1, k2;
+	for (uint32_t i = 0; i <= latitudeLines; i++)
 	{
-		for (uint32_t j = 0; j < longitudeLines; j++)
-		{
-			indicesList.push_back(i * longitudeLines + j + 1);
-			indicesList.push_back(i * longitudeLines + j + 2);
-			indicesList.push_back((i + 1) * longitudeLines + j + 2);
+		k1 = i * (longitudeLines + 1);
+		k2 = k1 + (longitudeLines + 1);
 
-			indicesList.push_back(i * longitudeLines + j + 1);
-			indicesList.push_back((i + 1) * longitudeLines + j + 2);
-			indicesList.push_back((i + 1) * longitudeLines + j + 1);
+		for (uint32_t j = 0; j < longitudeLines; ++j, ++k1, ++k2)
+		{
+			if (i != 0)
+			{
+				indicesList.push_back(k1 + 1);
+				indicesList.push_back(k2);
+				indicesList.push_back(k1);
+			}
+
+			if (i != (latitudeLines - 2))
+			{
+				indicesList.push_back(k2 + 1);
+				indicesList.push_back(k2);
+				indicesList.push_back(k1 + 1);
+			}
 		}
 	}
 

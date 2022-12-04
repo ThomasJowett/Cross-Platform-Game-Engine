@@ -5,6 +5,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "FileSystem/Directory.h"
+#include "FileSystem/FileWatcher.h"
 #include "Interfaces/ICopyable.h"
 #include "Renderer/Texture.h"
 #include "Viewers/ViewerManager.h"
@@ -173,4 +174,6 @@ private:
 
 	ImGuiTextFilter* m_TextFilter;
 	FileType m_TypeFilter = FileType::UNKNOWN;
+
+	FileWatcher m_FileWatcher;
 };

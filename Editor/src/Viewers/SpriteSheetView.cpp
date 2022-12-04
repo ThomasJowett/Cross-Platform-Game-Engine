@@ -34,7 +34,6 @@ void SpriteSheetView::OnAttach()
 
 void SpriteSheetView::OnUpdate(float deltaTime)
 {
-	//m_SpriteSheet->Animate(deltaTime);
 	m_LocalSpriteSheet->Animate(deltaTime);
 }
 

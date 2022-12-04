@@ -63,7 +63,7 @@ public:
 	Ref<Texture2D> Load(const std::filesystem::path& path);
 	Ref<Texture2D> Get(const std::string& name);
 	void Clear();
-
+	size_t Size() const { return m_Textures.size(); }
 	bool Exists(const std::string& name) const;
 private:
 	std::unordered_map<std::string, Ref<Texture2D>> m_Textures;

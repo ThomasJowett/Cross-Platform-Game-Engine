@@ -13,6 +13,7 @@
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/FileWatcher.h"
 
 #include "Importers/ImportManager.h"
 
@@ -632,13 +633,15 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
-	: m_Show(show), Layer("ContentExplorer")
+	: m_Show(show), Layer("ContentExplorer"),
+	m_FileWatcher(std::chrono::milliseconds(2000))
 {
 	m_TotalNumBrowsingEntries = 0;
 	m_NumBrowsingColumns = 0;
 	m_NumBrowsingEntriesPerColumn = 0;
 	m_NumberSelected = 0;
 	m_Cut = false;
+	m_TextFilter = new ImGuiTextFilter();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -649,7 +652,11 @@ void ContentExplorerPanel::OnAttach()
 	Settings::SetDefaultInt("ContentExplorer", "SortingMode", 0);
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
-	m_TextFilter = new ImGuiTextFilter();
+
+	m_FileWatcher.Start([&](std::string path, FileStatus status) -> void
+		{
+			m_ForceRescan = true;
+		});
 }
 
 void ContentExplorerPanel::OnDetach()
@@ -725,7 +732,10 @@ void ContentExplorerPanel::OnImGuiRender()
 		m_LastSelectedFile = -1;
 		m_LastSelectedDir = -1;
 
-		m_TextureLibrary.Clear();
+		if(m_TextureLibrary.Size() > 100)
+			m_TextureLibrary.Clear();
+
+		m_FileWatcher.SetPathToWatch(m_CurrentPath);
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);

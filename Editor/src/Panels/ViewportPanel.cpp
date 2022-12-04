@@ -236,7 +236,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				{
 					scaledradius = abs(capsuleComp.radius * transformComp.scale.y);
 					halfHeight = abs((capsuleComp.height * transformComp.scale.x) /2.0f);
-					transform = transform * Matrix4x4::RotateZ(PIDIV2);
+					transform = transform * Matrix4x4::RotateZ((float)PIDIV2);
 				}
 				else
 				{
