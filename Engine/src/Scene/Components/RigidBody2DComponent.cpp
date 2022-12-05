@@ -234,11 +234,11 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
 	{
-		for (auto& row : tilemapComp->tiles)
+		for (uint32_t row = 0; tilemapComp->tiles.size(); ++row)
 		{
-			for (uint32_t index : row)
+			for (uint32_t column = 0 ; tilemapComp->tiles[row].size(); ++column)
 			{
-				const Tile& tile = tilemapComp->tileset->GetTile(index);
+				const Tile& tile = tilemapComp->tileset->GetTile(column, row);
 				if (tile.GetCollisionShape() != Tile::CollisionShape::None)
 				{
 

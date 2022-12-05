@@ -3,6 +3,7 @@
 #include "Core/core.h"
 #include "Core/UUID.h"
 #include "Core/Factory.h"
+#include "Utilities/FileWatcher.h"
 
 #include <filesystem>
 
@@ -23,7 +24,37 @@ protected:
 class AssetLibrary
 {
 public:
-	AssetLibrary() {}
+	AssetLibrary(const std::filesystem::path& directory)
+		:m_FileWatcher(std::chrono::milliseconds(2000))
+	{
+		m_FileWatcher.SetPathToWatch(directory);
+		m_FileWatcher.Start([=](std::string path, FileStatus status)
+			{
+				switch (status)
+				{
+				case FileStatus::Created:
+					break;
+				case FileStatus::Modified:
+					if (Exists(path))
+					{
+						ENGINE_DEBUG("Reloading asset {0}", path);
+						m_Assets[path].lock()->Reload();
+					}
+					break;
+				case FileStatus::Erased:
+					if (Exists(path))
+					{
+						ENGINE_ERROR("An asset in use has been deleted! {0}", path);
+						m_Assets.at(path).reset();
+						m_Assets.erase(path);
+					}
+					break;
+				default:
+					break;
+				}
+			});
+	}
+
 	void Add(const Ref<Asset>& resource)
 	{
 		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
@@ -74,6 +105,7 @@ public:
 
 private:
 	std::unordered_map<std::string, std::weak_ptr<Asset>> m_Assets;
+	FileWatcher m_FileWatcher;
 };
 
 

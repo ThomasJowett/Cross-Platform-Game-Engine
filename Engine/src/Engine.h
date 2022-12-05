@@ -43,6 +43,7 @@
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Random.h"
 #include "Utilities/StringUtils.h"
+#include "Utilities/FileWatcher.h"
 
 // Scene
 #include "Scene/Scene.h"

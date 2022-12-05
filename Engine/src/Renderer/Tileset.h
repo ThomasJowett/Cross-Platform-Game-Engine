@@ -36,13 +36,17 @@ public:
 	bool SaveAs(const std::filesystem::path& filepath) const;
 
 	void SetCurrentTile(uint32_t tile);
+	void SetCurrentTile(uint32_t x, uint32_t y);
 
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
 	void SetTileProbability(size_t tile, double probability);
 	const Tile& GetTile(uint32_t index) { ASSERT(index < m_Tiles.size(), "Index out of range!"); return m_Tiles[index]; }
+	const Tile& GetTile(uint32_t x, uint32_t y) const { return m_Tiles[CoordsToIndex(x, y)]; }
+	Tile& GetTile(uint32_t x, uint32_t y) { return m_Tiles[CoordsToIndex(x, y)]; }
 private:
+	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
 	Ref<SubTexture2D> m_Texture;
 
 	std::vector<Tile> m_Tiles;

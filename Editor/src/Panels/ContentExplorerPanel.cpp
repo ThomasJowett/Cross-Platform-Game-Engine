@@ -13,7 +13,6 @@
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
-#include "FileSystem/FileWatcher.h"
 
 #include "Importers/ImportManager.h"
 
@@ -634,7 +633,7 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: m_Show(show), Layer("ContentExplorer"),
-	m_FileWatcher(std::chrono::milliseconds(2000))
+	m_FileWatcher(std::chrono::seconds(1))
 {
 	m_TotalNumBrowsingEntries = 0;
 	m_NumBrowsingColumns = 0;

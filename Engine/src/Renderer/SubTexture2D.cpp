@@ -25,7 +25,7 @@ SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, 
 
 void SubTexture2D::SetCurrentCell(const uint32_t cell)
 {
-	if (cell != m_CurrentCell)
+	if (cell != m_CurrentCell && cell < GetNumberOfCells())
 	{
 		m_CurrentCell = cell;
 		CalculateTextureCoordinates();

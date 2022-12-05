@@ -12,6 +12,3 @@ AssetManager& AssetManager::Get()
 	}
 	return *s_Instance;
 }
-
-AssetLibrary AssetManager::s_Assets;
-TextureLibrary2D AssetManager::s_Textures;

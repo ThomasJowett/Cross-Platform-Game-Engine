@@ -101,10 +101,10 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 		for (size_t j = 0; j < mesh.primitives.size(); j++)
 		{
 			const tinygltf::Primitive& primitive = mesh.primitives[j];
-			uint32_t vertexStart = loaderInfo.vertexPos;
-			uint32_t indesxStart = loaderInfo.indexPos;
-			uint32_t indexCount = 0;
-			uint32_t vertexCount = 0;
+			size_t vertexStart = loaderInfo.vertexPos;
+			size_t indesxStart = loaderInfo.indexPos;
+			size_t indexCount = 0;
+			size_t vertexCount = 0;
 			Vector3f posMin{};
 			Vector3f posMax{};
 			bool hasSkin = false;
@@ -185,7 +185,7 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 					const tinygltf::BufferView& bufferView = model.bufferViews[accessor.bufferView];
 					const tinygltf::Buffer& buffer = model.buffers[bufferView.buffer];
 
-					indexCount = static_cast<uint32_t>(accessor.count);
+					indexCount = static_cast<size_t>(accessor.count);
 					const void* dataPtr = &(buffer.data[accessor.byteOffset + bufferView.byteOffset]);
 
 					switch (accessor.componentType)

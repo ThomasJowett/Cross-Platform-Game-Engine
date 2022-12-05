@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Core/core.h"
-
+#include "Core/Application.h"
 #include "Core/Asset.h"
 #include "Logging/Instrumentor.h"
 #include "Renderer/Texture.h"
@@ -15,28 +15,28 @@ public:
 	{
 		PROFILE_FUNCTION();
 		Ref<Asset> asset = nullptr;
-		asset = s_Assets.Load<T>(filepath);
+		asset = AssetManager::Get().m_Assets.Load<T>(filepath);
 		return std::dynamic_pointer_cast<T>(asset);
 	}
 
 	static Ref<Texture2D> GetTexture(const std::filesystem::path& filepath)
 	{
 		PROFILE_FUNCTION();
-		return s_Textures.Load(filepath);
+		return AssetManager::Get().m_Textures.Load(filepath);
 	}
 
 	static void CleanUp()
 	{
-		s_Assets.CleanUnused();
+		AssetManager::Get().m_Assets.CleanUnused();
 	}
 
 private:
-	AssetManager() {};
+	AssetManager():m_Assets(Application::GetOpenDocumentDirectory()) {};
 	~AssetManager() = default;
 	static AssetManager& Get();
 
-	static AssetLibrary s_Assets;
-	static TextureLibrary2D s_Textures;
+	AssetLibrary m_Assets;
+	TextureLibrary2D m_Textures;
 
 	static AssetManager* s_Instance;
 };

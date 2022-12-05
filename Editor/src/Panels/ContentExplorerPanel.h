@@ -5,7 +5,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "FileSystem/Directory.h"
-#include "FileSystem/FileWatcher.h"
+#include "Utilities/FileWatcher.h"
 #include "Interfaces/ICopyable.h"
 #include "Renderer/Texture.h"
 #include "Viewers/ViewerManager.h"

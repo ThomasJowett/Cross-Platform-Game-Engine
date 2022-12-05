@@ -28,7 +28,7 @@ void TilemapComponent::Rebuild()
 			if (tiles[i][j] == 0)
 				continue;
 
-			tileset->SetCurrentTile(tiles[i][j]);
+			tileset->SetCurrentTile(tiles[i][j] - 1);
 			const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
 
 			for (size_t v = 0; v < 4; v++)

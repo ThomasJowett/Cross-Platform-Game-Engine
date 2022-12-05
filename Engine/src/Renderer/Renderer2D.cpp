@@ -10,8 +10,6 @@
 
 #include "Renderer/UI/MSDFData.h"
 
-#include <codecvt>
-
 struct QuadVertex
 {
 	Vector3f position;
@@ -953,8 +951,9 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 	double y = -fsScale * metrics.ascenderY;
 	int lastSpace = -1;
 
-	std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t>conv;
-	std::u32string utf32string = conv.from_bytes(text);
+	std::u32string utf32string;
+	utf32string.resize(text.size());
+	std::transform(text.begin(), text.end(), utf32string.begin(), [](char c) -> unsigned char {return c; });
 
 	for (int i = 0; i < utf32string.size(); i++)
 	{

@@ -12,6 +12,7 @@
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<View*, bool*>> s_AssetViewers;
+Ref<FileWatcher> s_FileWatcher = nullptr;
 
 static const char* TextExtensions[] =
 {
@@ -52,6 +53,20 @@ void OpenAssetViewer(const std::filesystem::path& assetPath)
 
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 {
+	if (s_FileWatcher == nullptr)
+	{
+		s_FileWatcher = CreateRef<FileWatcher>(std::chrono::seconds(1));
+		s_FileWatcher->SetPathToWatch(Application::GetOpenDocumentDirectory());
+		s_FileWatcher->Start([=](std::string path, FileStatus status)
+			{
+				if (status == FileStatus::Erased)
+				{
+					if(s_AssetViewers.find(path) != s_AssetViewers.end())
+						CloseViewer(path);
+				}
+			});
+	}
+
 	//check if any old ones can be closed
 	if (s_AssetViewers.size() > MAX_ASSET_VIEWERS)
 	{

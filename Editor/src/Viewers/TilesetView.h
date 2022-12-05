@@ -30,5 +30,5 @@ private:
 	float m_Zoom = 1.0f;
 	bool m_Dirty = false;
 
-	std::vector<std::vector<bool>> m_SelectedTiles;
+	uint32_t m_SelectedYCoord = 0, m_SelectedXCoord = 0;
 };

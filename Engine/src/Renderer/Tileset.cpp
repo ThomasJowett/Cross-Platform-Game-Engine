@@ -129,11 +129,17 @@ void Tileset::SetCurrentTile(uint32_t tile)
 {
 	if (m_Texture)
 	{
-		m_Texture->SetCurrentCell(tile - 1);
+		m_Texture->SetCurrentCell(tile);
 	}
 }
 
-
+void Tileset::SetCurrentTile(uint32_t x, uint32_t y)
+{
+	if (m_Texture)
+	{
+		m_Texture->SetCurrentCell(CoordsToIndex(x,y));
+	}
+}
 
 void Tileset::SetTileProbability(size_t tile, double probability)
 {
@@ -149,4 +155,11 @@ void Tileset::SetSubTexture(Ref<SubTexture2D> subTexture)
 		if (m_Tiles.size() != m_Texture->GetNumberOfCells())
 			m_Tiles.resize(m_Texture->GetNumberOfCells());
 	}
+}
+
+uint32_t Tileset::CoordsToIndex(uint32_t x, uint32_t y) const
+{
+	if(m_Texture)
+		return std::clamp((y * m_Texture->GetCellsWide()) + x, 0U, m_Texture->GetNumberOfCells() - 1);
+	return 0;
 }
