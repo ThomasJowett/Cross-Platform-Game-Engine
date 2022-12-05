@@ -139,6 +139,10 @@ void SpriteSheet::AddAnimation(std::string name, uint32_t startFrame, uint32_t f
 void SpriteSheet::RemoveAnimation(std::string name)
 {
 	m_Animations.erase(name);
+	if (m_CurrentAnimation == name)
+	{
+		m_CurrentAnimation = m_Animations.begin()->first;
+	}
 }
 
 void SpriteSheet::RenameAnimation(const std::string& oldName, const std::string& newName)
@@ -151,6 +155,8 @@ void SpriteSheet::RenameAnimation(const std::string& oldName, const std::string&
 			node.key() = newName;
 			m_Animations.insert(std::move(node));
 		}
+		if (m_CurrentAnimation == oldName)
+			m_CurrentAnimation = newName;
 	}
 }
 

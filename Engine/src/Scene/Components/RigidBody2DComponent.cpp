@@ -234,14 +234,14 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
 	{
-		for (uint32_t row = 0; tilemapComp->tiles.size(); ++row)
+		for (auto& row : tilemapComp->tiles)
 		{
-			for (uint32_t column = 0 ; tilemapComp->tiles[row].size(); ++column)
+			for (uint32_t index: row)
 			{
-				const Tile& tile = tilemapComp->tileset->GetTile(column, row);
+				const Tile& tile = tilemapComp->tileset->GetTile(index);
 				if (tile.GetCollisionShape() != Tile::CollisionShape::None)
 				{
-
+					// TODO: add a fixture for tilemaps
 				}
 			}
 		}

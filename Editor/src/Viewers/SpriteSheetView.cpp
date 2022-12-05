@@ -30,6 +30,10 @@ void SpriteSheetView::OnAttach()
 		m_Zoom = 2.0f;
 	if (m_LocalSpriteSheet->GetSubTexture()->GetSpriteWidth() <= 16 || m_LocalSpriteSheet->GetSubTexture()->GetSpriteHeight() <= 16)
 		m_Zoom = 4.0f;
+
+	m_LocalSpriteSheet->SelectAnimation(m_LocalSpriteSheet->GetAnimations().begin()->first);
+	GetListOfAnimations();
+
 }
 
 void SpriteSheetView::OnUpdate(float deltaTime)
@@ -150,25 +154,30 @@ void SpriteSheetView::OnImGuiRender()
 
 			ImGui::Separator();
 
-			std::string selectedAnimation;
+			float ratio = ImGui::GetContentRegionAvail().x / spriteSize[0];
+
+			ImGui::Image(m_LocalSpriteSheet->GetSubTexture(),
+				ImVec2(ImGui::GetContentRegionAvail().x, spriteSize[1] * ratio));
+
 
 			if (ImGui::TreeNodeEx("Animations", ImGuiTreeNodeFlags_DefaultOpen))
 			{
 				if (ImGui::Button(ICON_FA_PLUS"## Add animation"))
 				{
 					m_LocalSpriteSheet->AddAnimation("New Animation", 0, 3, 0.1f);
+					GetListOfAnimations();
 					m_Dirty = true;
 				}
 				ImGui::Tooltip("Add animation");
 
-				if (ImGui::BeginTable("Animations", 6, table_flags))
+				if (ImGui::BeginTable("Animations", 6, table_flags | ImGuiTableFlags_Sortable | ImGuiTableFlags_SortMulti))
 				{
-					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 24.0f);
-					ImGui::TableSetupColumn("Name");
-					ImGui::TableSetupColumn("Start Frame");
-					ImGui::TableSetupColumn("Frame Count");
-					ImGui::TableSetupColumn("Frame Time (ms)");
-					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed, 24.0f);
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 24.0f);
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort, 0.0f, 0);
+					ImGui::TableSetupColumn("Start Frame", ImGuiTableColumnFlags_None, 0.0f, 1);
+					ImGui::TableSetupColumn("Frame Count", ImGuiTableColumnFlags_None, 0.0f, 2);
+					ImGui::TableSetupColumn("Frame Time (s)", ImGuiTableColumnFlags_None, 0.0f, 3);
+					ImGui::TableSetupColumn("", ImGuiTableColumnFlags_WidthFixed | ImGuiTableColumnFlags_NoSort, 24.0f);
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
 
@@ -182,14 +191,61 @@ void SpriteSheetView::OnImGuiRender()
 						| ImGuiSelectableFlags_AllowItemOverlap
 						| ImGuiSelectableFlags_AllowDoubleClick;
 
+
+					if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
+					{
+						if (sort_specs->SpecsDirty)
+						{
+							for (int n = 0; n < sort_specs->SpecsCount; n++)
+							{
+								const ImGuiTableColumnSortSpecs* sort_spec = &sort_specs->Specs[n];
+								if (sort_spec->SortDirection == ImGuiSortDirection_Ascending)
+								{
+
+									switch (sort_spec->ColumnUserID)
+									{
+									case 0: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareName);				break;
+									case 1: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareStartFrame); break;
+									case 2: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareFrameCount); break;
+									case 3: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareHoldTime);		break;
+									default:
+										break;
+									}
+								}
+								else if (sort_spec->SortDirection == ImGuiSortDirection_Descending)
+								{
+									switch (sort_spec->ColumnUserID)
+									{
+									case 0: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareNameReverse);				break;
+									case 1: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareStartFrameReverse);	break;
+									case 2: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareFrameCountReverse);	break;
+									case 3: std::sort(m_AnimationsSorted.begin(), m_AnimationsSorted.end(), CompareHoldTimeReverse);		break;
+									default:
+										break;
+									}
+								}
+							}
+							sort_specs->SpecsDirty = false;
+						}
+					}
+
+					for (int i = 0; i < m_AnimationsSorted.size(); ++i)
+					{
+						if (m_AnimationsSorted[i].first == m_LocalSpriteSheet->GetCurrentAnimation())
+						{
+							m_SelectedAnimation = i;
+							break;
+						}
+					}
+
 					int index = 0;
-					for (auto&& [name, animation] : m_LocalSpriteSheet->GetAnimations())
+					for (auto&& [name, animation] : m_AnimationsSorted)
 					{
 						ImGui::TableNextRow();
 						ImGui::TableSetColumnIndex(0);
 						std::string radioBtnId = "##selected" + std::to_string(index);
 						if (ImGui::RadioButton(radioBtnId.c_str(), &m_SelectedAnimation, index))
-							selectedAnimation = name;
+							m_LocalSpriteSheet->SelectAnimation(name);
 						memset(inputBuffer, 0, sizeof(inputBuffer));
 						for (int i = 0; i < name.length(); i++)
 						{
@@ -210,33 +266,35 @@ void SpriteSheetView::OnImGuiRender()
 						if (activeIndex == index && !ImGui::IsItemActive())
 						{
 							m_LocalSpriteSheet->RenameAnimation(name, inputBuffer);
+							GetListOfAnimations();
+							name = inputBuffer;
 							m_Dirty = true;
 							activeIndex = -1;
 						}
 
-						int frameStart = (int)animation.GetStartFrame();
-						int frameCount = (int)animation.GetFrameCount();
-						float frameTime = animation.GetHoldTime();
+						int frameStart = (int)animation->GetStartFrame();
+						int frameCount = (int)animation->GetFrameCount();
+						float frameTime = animation->GetHoldTime();
 
 						ImGui::TableSetColumnIndex(2);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 						std::string starFrameStr = "##startFrame" + std::to_string(index);
-						if (ImGui::DragInt(starFrameStr.c_str(), &frameStart))
+						if (ImGui::DragInt(starFrameStr.c_str(), &frameStart, 1.0f, 0, m_LocalSpriteSheet->GetSubTexture()->GetNumberOfCells()))
 						{
 							if (frameStart < 0)
 								frameStart = 0;
-							animation.SetStartFrame((uint32_t)frameStart);
+							m_LocalSpriteSheet->GetAnimations().at(name).SetStartFrame((uint32_t)frameStart);
 							m_Dirty = true;
 						}
 
 						ImGui::TableSetColumnIndex(3);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 						std::string frameCountStr = "##frameCount" + std::to_string(index);
-						if (ImGui::DragInt(frameCountStr.c_str(), &frameCount))
+						if (ImGui::DragInt(frameCountStr.c_str(), &frameCount, 1.0f, 1, m_LocalSpriteSheet->GetSubTexture()->GetNumberOfCells()))
 						{
 							if (frameCount < 0)
 								frameCount = 0;
-							animation.SetFrameCount((uint32_t)frameCount);
+							m_LocalSpriteSheet->GetAnimations().at(name).SetFrameCount((uint32_t)frameCount);
 							m_Dirty = true;
 						}
 
@@ -245,7 +303,7 @@ void SpriteSheetView::OnImGuiRender()
 						std::string frameTimeStr = "##frameTime" + std::to_string(index);
 						if (ImGui::DragFloat(frameTimeStr.c_str(), &frameTime, 0.001f, 0.001f, 10.0f, "% .3f"))
 						{
-							animation.SetHoldTime(frameTime);
+							m_LocalSpriteSheet->GetAnimations().at(name).SetHoldTime(frameTime);
 							m_Dirty = true;
 						}
 
@@ -262,15 +320,14 @@ void SpriteSheetView::OnImGuiRender()
 					if (!deletedAnimation.empty())
 					{
 						m_LocalSpriteSheet->RemoveAnimation(deletedAnimation);
+						GetListOfAnimations();
 						m_Dirty = true;
 					}
 				}
 				ImGui::TreePop();
 			}
-			m_LocalSpriteSheet->SelectAnimation(selectedAnimation);
 
-			ImGui::Image(m_LocalSpriteSheet->GetSubTexture(),
-				ImVec2((float)m_LocalSpriteSheet->GetSubTexture()->GetSpriteWidth(), (float)m_LocalSpriteSheet->GetSubTexture()->GetSpriteHeight()));
+
 
 			ImGui::TableSetColumnIndex(1);
 
@@ -315,6 +372,19 @@ void SpriteSheetView::OnImGuiRender()
 						}
 					}
 				}
+
+				Animation& currentAnimation = m_LocalSpriteSheet->GetAnimations().at(m_LocalSpriteSheet->GetCurrentAnimation());
+				uint32_t startFrame = currentAnimation.GetStartFrame();
+				for (int i = startFrame; i < (int)(startFrame + currentAnimation.GetFrameCount()); ++i)
+				{
+					div_t div = std::div(i, (int)m_LocalSpriteSheet->GetSubTexture()->GetCellsWide());
+					uint32_t cellX = div.rem;
+					uint32_t cellY = div.quot;
+					ImVec2 topLeft(cellX * tileSize.x + p.x, cellY * tileSize.y + p.y);
+					ImVec2 bottomRight(cellX * tileSize.x + p.x + tileSize.x, cellY * tileSize.y + p.y + tileSize.y);
+					draw_list->AddRectFilled(topLeft, bottomRight, selectionColour);
+					draw_list->AddRect(topLeft, bottomRight, selectionColourOutline);
+				}
 				ImGui::EndChild();
 			}
 			else
@@ -347,4 +417,48 @@ void SpriteSheetView::SaveAs()
 		m_LocalSpriteSheet->SaveAs(filepath);
 		m_Dirty = false;
 	}
+}
+
+bool SpriteSheetView::CompareName(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.first < second.first;
+}
+bool SpriteSheetView::CompareStartFrame(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetStartFrame() < second.second->GetStartFrame();
+}
+bool SpriteSheetView::CompareFrameCount(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetFrameCount() < second.second->GetFrameCount();
+}
+bool SpriteSheetView::CompareHoldTime(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetHoldTime() < second.second->GetHoldTime();
+}
+
+bool SpriteSheetView::CompareNameReverse(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.first > second.first;
+}
+bool SpriteSheetView::CompareStartFrameReverse(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetStartFrame() > second.second->GetStartFrame();
+}
+bool SpriteSheetView::CompareFrameCountReverse(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetFrameCount() > second.second->GetFrameCount();
+}
+bool SpriteSheetView::CompareHoldTimeReverse(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second)
+{
+	return first.second->GetHoldTime() > second.second->GetHoldTime();
+}
+
+void SpriteSheetView::GetListOfAnimations()
+{
+	m_AnimationsSorted.clear();
+	for (auto&& [name, animation] : m_LocalSpriteSheet->GetAnimations())
+	{
+		m_AnimationsSorted.push_back(std::make_pair(name, &animation));
+	}
+	//m_AnimationsSorted.assign(m_LocalSpriteSheet->GetAnimations().begin(), m_LocalSpriteSheet->GetAnimations().end());
 }
