@@ -122,12 +122,14 @@ void TilesetView::OnImGuiRender()
 				m_Dirty = true;
 				m_LocalTileset->SetCurrentTile(0);
 				m_LocalTileset->GetSubTexture()->RecalculateCellsDimensions();
+				m_LocalTileset->ResizeTiles();
 			}
 
 			int tileSize[2] = { (int)m_LocalTileset->GetSubTexture()->GetSpriteWidth(), (int)m_LocalTileset->GetSubTexture()->GetSpriteHeight() };
 			if (ImGui::InputInt2("Tile Size", tileSize))
 			{
 				m_LocalTileset->GetSubTexture()->SetSpriteDimensions(tileSize[0], tileSize[1]);
+				m_LocalTileset->ResizeTiles();
 				m_Dirty = true;
 			}
 
@@ -137,11 +139,13 @@ void TilesetView::OnImGuiRender()
 			if (ImGui::InputInt("Cells Wide", &cellsWide))
 			{
 				m_LocalTileset->GetSubTexture()->SetCellDimensions(cellsWide, cellsTall);
+				m_LocalTileset->ResizeTiles();
 				m_Dirty = true;
 			}
 			if (ImGui::InputInt("Cells Tall", &cellsTall))
 			{
 				m_LocalTileset->GetSubTexture()->SetCellDimensions(cellsWide, cellsTall);
+				m_LocalTileset->ResizeTiles();
 				m_Dirty = true;
 			}
 

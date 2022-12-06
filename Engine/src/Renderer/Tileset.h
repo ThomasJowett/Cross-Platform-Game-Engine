@@ -41,6 +41,8 @@ public:
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
+	void ResizeTiles() { m_Tiles.resize(m_Texture->GetNumberOfCells()); };
+
 	void SetTileProbability(size_t tile, double probability);
 	const Tile& GetTile(uint32_t index) { ASSERT(index < m_Tiles.size(), "Index out of range!"); return m_Tiles[index]; }
 	const Tile& GetTile(uint32_t x, uint32_t y) const { return m_Tiles[CoordsToIndex(x, y)]; }

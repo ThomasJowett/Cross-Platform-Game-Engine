@@ -1404,10 +1404,43 @@ void ContentExplorerPanel::OnImGuiRender()
 
 				if (ImGui::BeginTable("Details Table", 3, table_flags))
 				{
-					ImGui::TableSetupColumn("Name");
-					ImGui::TableSetupColumn("Date Modified");
-					ImGui::TableSetupColumn("Size");
+					ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_DefaultSort, 0.0f, 0);
+					ImGui::TableSetupColumn("Date Modified", ImGuiTableColumnFlags_None, 0.0f, 1);
+					ImGui::TableSetupColumn("Size", ImGuiTableColumnFlags_None, 0.0f, 2);
 					ImGui::TableSetupScrollFreeze(0, 1);
+
+					if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
+					{
+						if (sort_specs->SpecsDirty)
+						{
+							m_ForceRescan = true;
+							for (int n = 0; n < sort_specs->SpecsCount; n++)
+							{
+								const ImGuiTableColumnSortSpecs* sort_spec = &sort_specs->Specs[n];
+								if (sort_spec->SortDirection == ImGuiSortDirection_Ascending)
+								{
+									switch (sort_spec->ColumnUserID)
+									{
+									case 0: m_SortingMode = Sorting::ALPHABETIC; break;
+									case 1: m_SortingMode = Sorting::LAST_MODIFICATION; break;
+									case 2: m_SortingMode = Sorting::SIZE; break;
+									default: break;
+									}
+								}
+								else if (sort_spec->SortDirection == ImGuiSortDirection_Descending)
+								{
+									switch (sort_spec->ColumnUserID)
+									{
+									case 0: m_SortingMode = Sorting::ALPHABETIC_INVERSE; break;
+									case 1: m_SortingMode = Sorting::LAST_MODIFICATION_INVERSE; break;
+									case 2: m_SortingMode = Sorting::SIZE_INVERSE; break;
+									default: break;
+									}
+								}
+							}
+							sort_specs->SpecsDirty = false;
+						}
+					}
 
 					ImGui::TableHeadersRow();
 

@@ -107,9 +107,9 @@ void SortingHelper::Sort(std::vector<std::filesystem::path>& paths, Sorting sort
 	switch (sortOrder)
 	{
 	case Sorting::ALPHABETIC:					std::sort(paths.begin(), paths.end(), CompareAlphabetic);			break;
-	case Sorting::ALPHBETIC_INVERSE:			std::sort(paths.begin(), paths.end(), CompareAlphabeticInverse);	break;
+	case Sorting::ALPHABETIC_INVERSE:			std::sort(paths.begin(), paths.end(), CompareAlphabeticInverse);	break;
 	case Sorting::LAST_MODIFICATION:			std::sort(paths.begin(), paths.end(), CompareModification);			break;
-	case Sorting::LAST_MODIFICATION_REVERSE:	std::sort(paths.begin(), paths.end(), CompareModificationInverse);	break;
+	case Sorting::LAST_MODIFICATION_INVERSE:	std::sort(paths.begin(), paths.end(), CompareModificationInverse);	break;
 	case Sorting::SIZE:							std::sort(paths.begin(), paths.end(), CompareSize);					break;
 	case Sorting::SIZE_INVERSE:					std::sort(paths.begin(), paths.end(), CompareSizeInverse);			break;
 	case Sorting::TYPE:							std::sort(paths.begin(), paths.end(), CompareType);					break;
