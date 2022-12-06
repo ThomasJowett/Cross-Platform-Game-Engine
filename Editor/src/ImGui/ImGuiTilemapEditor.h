@@ -1,8 +1,9 @@
 #pragma once
 #include "Scene/Components/TilemapComponent.h"
 #include "Scene/Components/TransformComponent.h"
+#include "Core/Layer.h"
 
-class TilemapEditor
+class TilemapEditor : public Layer
 {
 	enum class DrawMode
 	{
@@ -12,11 +13,17 @@ class TilemapEditor
 		Rect
 	};
 public:
-	void OnImGuiRender(TilemapComponent& tilemap);
+	TilemapEditor(bool* show);
+	virtual void OnImGuiRender() override;
 	void OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp);
 
 	bool HasSelection();
+	bool IsShown() { return *m_Show; }
+
+	void Show();
+	void Hide();
 private:
+	bool* m_Show;
 
 	Matrix4x4 CalculateTransform(const TransformComponent& transformComp, uint32_t x, uint32_t y);
 	DrawMode m_DrawMode = DrawMode::Stamp;
@@ -29,4 +36,6 @@ private:
 	std::filesystem::file_time_type m_CurrentFileTime;
 
 	int m_HoveredCoords[2];
+
+	TilemapComponent* m_TilemapComp;
 };

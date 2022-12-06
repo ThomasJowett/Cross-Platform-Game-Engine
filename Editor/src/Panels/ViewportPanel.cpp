@@ -18,7 +18,7 @@
 #include "ImGui/ImGuizmo.h"
 #include "Utilities/MathUtils.h"
 
-ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
+ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor),
 	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
 {
@@ -131,7 +131,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	{
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_ViewportHovered)
+		if (m_ViewportHovered && !m_TilemapEditor->IsShown())
 		{
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
@@ -235,7 +235,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				if (capsuleComp.direction == CapsuleCollider2DComponent::Direction::Horizontal)
 				{
 					scaledradius = abs(capsuleComp.radius * transformComp.scale.y);
-					halfHeight = abs((capsuleComp.height * transformComp.scale.x) /2.0f);
+					halfHeight = abs((capsuleComp.height * transformComp.scale.x) / 2.0f);
 					transform = transform * Matrix4x4::RotateZ((float)PIDIV2);
 				}
 				else
@@ -310,7 +310,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					break;
 				}
 
-				if (m_TilemapEditor->HasSelection())
+				if (m_TilemapEditor->IsShown())
 				{
 					// Calculate which tilemap cell is hovered
 					Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
@@ -337,6 +337,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					}
 				}
 			}
+			else
+			{
+				m_TilemapEditor->Hide();
+			}
+		}
+		else
+		{
+			m_TilemapEditor->Hide();
 		}
 
 		SceneManager::CurrentScene()->GetRegistry().view<TransformComponent, CameraComponent>().each(
@@ -903,20 +911,20 @@ void ViewportPanel::OnImGuiRender()
 						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
 							Vector3f translationVec = Vector3f(translation[0], translation[1], translation[2]);
-							if((translationVec - transformComp.position).SqrMagnitude() >= 0.000001f)
+							if ((translationVec - transformComp.position).SqrMagnitude() >= 0.000001f)
 								SceneManager::CurrentScene()->MakeDirty();
 							transformComp.position = translationVec;
 						}
 						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
 						{
-							if(deltaRotation.SqrMagnitude() >= 0.000001f)
+							if (deltaRotation.SqrMagnitude() >= 0.000001f)
 								SceneManager::CurrentScene()->MakeDirty();
 							transformComp.rotation += deltaRotation;
 						}
 						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
 						{
 							Vector3f scaleVec = Vector3f(scale[0], scale[1], scale[2]);
-							if((scaleVec - transformComp.scale).SqrMagnitude() >= 0.000001f)
+							if ((scaleVec - transformComp.scale).SqrMagnitude() >= 0.000001f)
 								SceneManager::CurrentScene()->MakeDirty();
 							transformComp.scale = scaleVec;
 						}

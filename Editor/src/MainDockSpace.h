@@ -43,6 +43,7 @@ private:
 	bool m_ShowHierarchy;
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
+	bool m_ShowTilemapEditor;
 
 #ifdef DEBUG
 	bool m_ShowImGuiDemo;
@@ -66,6 +67,4 @@ private:
 
 	PlayPauseToolbar m_PlayPauseToolbar;
 	SaveOpenToolbar m_SaveOpenToolbar;
-
-	Ref<TilemapEditor> m_TilemapEditor;
 };

@@ -19,7 +19,7 @@
 
 #define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
 
-PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
+PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor)
 {
 }
@@ -376,7 +376,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 			}
 
-			ImGui::Button("Edit Tilemap");
+			if (ImGui::Button("Edit Tilemap"))
+				m_TilemapEditor->Show();
 		});
 
 	// Static Mesh------------------------------------------------------------------------------------------------------------

@@ -54,6 +54,8 @@ MainDockSpace::MainDockSpace()
 	m_ShowContentExplorer = true;
 	m_ShowJoystickInfo = true;
 
+	m_ShowTilemapEditor = false;
+
 	m_ShowPlayPauseToolbar = true;
 	m_ShowLightsToolbar = false;
 	m_ShowVolumesToolbar = false;
@@ -110,7 +112,7 @@ void MainDockSpace::OnAttach()
 
 	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
 
-	m_TilemapEditor = CreateRef<TilemapEditor>();
+	TilemapEditor* tilemapEditor = new TilemapEditor(&m_ShowTilemapEditor);
 
 	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
 	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
@@ -119,9 +121,11 @@ void MainDockSpace::OnAttach()
 	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
 	HierarchyPanel* hierarchyPanel = new HierarchyPanel(&m_ShowHierarchy);
 	Application::Get().AddOverlay(hierarchyPanel);
-	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel, m_TilemapEditor));
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel, m_TilemapEditor));
+	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel, tilemapEditor));
+	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel, tilemapEditor));
 	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
+
+	Application::Get().AddOverlay(tilemapEditor);
 
 	if (!Application::GetOpenDocument().empty())
 	{
