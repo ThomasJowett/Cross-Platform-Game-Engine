@@ -7,6 +7,7 @@
 #include "IconsMaterialDesign.h"
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
+#include "Events/SceneEvent.h"
 
 #include "Engine.h"
 
@@ -204,9 +205,28 @@ void TilemapEditor::OnImGuiRender()
 	ImGui::End();
 }
 
+void TilemapEditor::OnEvent(Event& e)
+{
+	EventDispatcher dispatcher(e);
+	dispatcher.Dispatch<SceneChanged>([&](SceneChanged& event) -> bool {
+		Hide();
+		return false;
+		});
+
+	dispatcher.Dispatch<MouseButtonPressedEvent>([](MouseButtonPressedEvent& event)->bool {
+		return false;
+		});
+
+	dispatcher.Dispatch<MouseButtonReleasedEvent>([](MouseButtonReleasedEvent& event)->bool {
+		return false;
+		});
+}
+
 void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp)
 {
 	m_TilemapComp = &tilemapComp;
+	if (!m_TilemapComp->tileset)
+		return;
 	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetWorldMatrix());
 
 	uint32_t cellX((uint32_t)std::floor(localPosition.x));
@@ -215,9 +235,10 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformCompo
 	Matrix4x4 tileTransform = transformComp.GetWorldMatrix()
 		* Matrix4x4::Translate(Vector3f((float)cellX + 0.5f, -(float)cellY - 0.5f, 0.01f));
 
+	uint32_t temp = 0;
+
 	if (cellX >= 0 && cellX < m_TilemapComp->tilesWide && cellY >= 0 && cellY < m_TilemapComp->tilesHigh)
 	{
-		//Renderer2D::DrawQuad(tileTransform, Colours::INDIGO);
 		for (size_t y = 0; y < m_SelectedTiles.size(); y++)
 		{
 			for (size_t x = 0; x < m_SelectedTiles[y].size(); x++)
@@ -226,12 +247,20 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformCompo
 				{
 					if (m_TilemapComp->tileset)
 						m_TilemapComp->tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x));
+					temp = (y * m_SelectedTiles[y].size() + x) + 1;
 					break;
 				}
 			}
 		}
 		Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+
+		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+		{
+			m_TilemapComp->tiles[cellY][cellX] = temp;
+			m_TilemapComp->Rebuild();
+		}
 	}
+
 
 	m_HoveredCoords[0] = cellX;
 	m_HoveredCoords[1] = cellY;

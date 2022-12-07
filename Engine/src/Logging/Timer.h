@@ -64,10 +64,10 @@ private:
 	{
 		const char* unit = "ms";
 
-		if (time > 100.0)
+		if (time > 1000.0)
 		{
 			unit = "s";
-			time /= 100.0;
+			time /= 1000.0;
 		}
 
 		ENGINE_INFO("Timer:{0} took {1}{2}", name, time, unit);

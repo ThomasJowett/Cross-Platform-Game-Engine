@@ -15,6 +15,7 @@ class TilemapEditor : public Layer
 public:
 	TilemapEditor(bool* show);
 	virtual void OnImGuiRender() override;
+	virtual void OnEvent(Event& event) override;
 	void OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp);
 
 	bool HasSelection();
