@@ -14,6 +14,7 @@ Ref<Font> Font::s_DefaultFont;
 
 void Font::Init()
 {
+	PROFILE_FUNCTION();
 	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Roboto-Medium.tff");
 }
 

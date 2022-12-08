@@ -80,7 +80,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 {
 	PROFILE_FUNCTION();
 
-	if (!m_Show)
+	if (!*m_Show)
 		return;
 
 	if (!SceneManager::IsSceneLoaded())

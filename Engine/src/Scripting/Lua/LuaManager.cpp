@@ -52,6 +52,7 @@ void UnloadModules()
 
 void LuaManager::Init()
 {
+	PROFILE_FUNCTION();
 	s_State = CreateScope<sol::state>(nullptr);
 
 	s_State->open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table);

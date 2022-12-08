@@ -32,6 +32,7 @@ Application::EventCallbackFn Application::s_EventCallback;
 
 Application::Application(const WindowProps& props)
 {
+	PROFILE_FUNCTION();
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
 
@@ -66,6 +67,7 @@ Application::Application(const WindowProps& props)
 
 Application::~Application()
 {
+	PROFILE_FUNCTION();
 	SceneManager::Shutdown();
 	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();

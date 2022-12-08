@@ -424,9 +424,10 @@ void glfwWindow::Init(const WindowProps& props)
 		PROFILE_SCOPE("Joysticks")
 			for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
 			{
-				PROFILE_SCOPE("Joystick");
+				PROFILE_SCOPE("Checking Joystick");
 				if (glfwJoystickPresent(jid))
 				{
+					PROFILE_SCOPE("Adding Joystick");
 					GLFWgamepadstate state;
 					Joysticks::Joystick joystick;
 					joystick.id = jid;

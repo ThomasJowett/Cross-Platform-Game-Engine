@@ -11,6 +11,7 @@ Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
 void RenderCommand::CreateRendererAPI()
 {
+	PROFILE_FUNCTION();
 	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
 
 	std::string api = Settings::GetValue("Renderer", "API");

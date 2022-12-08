@@ -374,13 +374,15 @@ project "Box2D_Testbed"
 		"box2d/testbed",
 		"box2d/extern",
 		"box2d/extern/glad/include",
-		"box2d/extern/glfw/include"
+		"box2d/extern/glfw/include",
+		"box2d/extern/imgui"
 	}
 
 	files
 	{
 		"box2d/testbed/**.h",
-		"box2d/testbed/**.cpp"
+		"box2d/testbed/**.cpp",
+		"box2d/extern/imgui/**.cpp"
 	}
 
 	links
