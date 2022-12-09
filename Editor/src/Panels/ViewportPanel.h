@@ -38,7 +38,6 @@ public:
 	void OnAttach() override;
 	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
-	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
 
 	virtual void Copy() override;

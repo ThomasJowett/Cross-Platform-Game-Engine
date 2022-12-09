@@ -154,18 +154,39 @@ void TilesetView::OnImGuiRender()
 			ImGui::Button(ICON_FA_DRAW_POLYGON"##Add Polygon Collider");
 			ImGui::Tooltip("Add Polygon Collider");
 			ImGui::SameLine();
-			ImGui::Button(ICON_FA_VECTOR_SQUARE"##Add Box Collider");
+			if (ImGui::Button(ICON_FA_VECTOR_SQUARE"##Add Box Collider"))
+			{
+				m_Dirty = true;
+				Tile& tile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
+				tile.SetCollisionShape(Tile::CollisionShape::Rect);
+			}
 			ImGui::Tooltip("Add Box Collider");
 			ImGui::SameLine();
 			ImGui::Button(ICON_FA_MAGNET"##Snap");
 			ImGui::Tooltip("Snapping");
 			ImGui::SameLine();
-			ImGui::Button(ICON_FA_TRASH"##Delete Collider");
+			if (ImGui::Button(ICON_FA_TRASH"##Delete Collider"))
+			{
+				m_Dirty = true;
+				Tile& tile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
+				tile.SetCollisionShape(Tile::CollisionShape::None);
+			}
 			ImGui::Tooltip("Remove Collider");
 
 			float ratio = ImGui::GetContentRegionAvail().x / tileSize[0];
+			const ImVec2 previewPos = ImGui::GetCursorScreenPos();
 
-			ImGui::Image(m_LocalTileset->GetSubTexture(), ImVec2(ImGui::GetContentRegionAvail().x, tileSize[1] * ratio));
+			ImVec2 previewSize = ImVec2(ImGui::GetContentRegionAvail().x, tileSize[1] * ratio);
+
+			ImGui::Image(m_LocalTileset->GetSubTexture(), previewSize);
+
+			if (m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord).GetCollisionShape() == Tile::CollisionShape::Rect)
+			{
+				ImVec2 topLeft(previewPos.x, previewPos.y);
+				ImVec2 bottomRight(previewSize.x + previewPos.x, previewSize.y + previewPos.y);
+
+				ImGui::GetWindowDrawList()->AddRectFilled(previewPos, bottomRight, ImColor(ImVec4(0.3f, 0.3f, 0.5f, 0.5f)));
+			}
 
 			float probability = (float)m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord).GetProbability();
 			if (ImGui::SliderFloat("Probability", &probability, 0.0f, 1.0f, "%.2f"))
@@ -179,7 +200,7 @@ void TilesetView::OnImGuiRender()
 
 			if (m_LocalTileset->GetSubTexture()->GetTexture())
 			{
-				ImVec2 tileSize((float)m_LocalTileset->GetSubTexture()->GetSpriteWidth() * m_Zoom, (float)m_LocalTileset->GetSubTexture()->GetSpriteHeight() * m_Zoom);
+				ImVec2 tileSizeZoomed((float)m_LocalTileset->GetSubTexture()->GetSpriteWidth() * m_Zoom, (float)m_LocalTileset->GetSubTexture()->GetSpriteHeight() * m_Zoom);
 				ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_HorizontalScrollbar;
 				ImGui::BeginChild("Tileset Texture",
 					ImVec2(ImGui::GetContentRegionAvail().x - 5.0f, std::min(displaySize.y + 5.0f, ImGui::GetContentRegionAvail().y - 5.0f)),
@@ -195,21 +216,21 @@ void TilesetView::OnImGuiRender()
 				//Horizontal Lines
 				for (uint32_t i = 0; i <= m_LocalTileset->GetSubTexture()->GetCellsTall(); i++)
 				{
-					float y = tileSize.y * (float)i;
+					float y = tileSizeZoomed.y * (float)i;
 					draw_list->AddLine(ImVec2(p.x, p.y + y), ImVec2(p.x + displaySize.x, p.y + y), lineColour);
 				}
 				//Vertical Lines
 				for (uint32_t i = 0; i <= m_LocalTileset->GetSubTexture()->GetCellsWide(); i++)
 				{
-					float x = tileSize.x * (float)i;
+					float x = tileSizeZoomed.x * (float)i;
 					draw_list->AddLine(ImVec2(p.x + x, p.y), ImVec2(p.x + x, p.y + displaySize.y), lineColour);
 
 					if (i != m_LocalTileset->GetSubTexture()->GetCellsWide()
-						&& tileSize.y > 20.0f)
+						&& tileSizeZoomed.y > 20.0f)
 					{
 						for (uint32_t j = 0; j < m_LocalTileset->GetSubTexture()->GetCellsTall(); j++)
 						{
-							float y = tileSize.y * (float)j;
+							float y = tileSizeZoomed.y * (float)j;
 							std::string number = std::to_string(i + (j * m_LocalTileset->GetSubTexture()->GetCellsWide()));
 							draw_list->AddText(ImVec2(p.x + x + 2, p.y + y + 2), lineColour, number.c_str());
 						}
@@ -225,8 +246,8 @@ void TilesetView::OnImGuiRender()
 					{
 						beginClickPosX = ImGui::GetMousePos().x - p.x;
 						beginClickPosY = ImGui::GetMousePos().y - p.y;
-						uint32_t cellX = (uint32_t)std::floor(beginClickPosX / tileSize.x);
-						uint32_t cellY = (uint32_t)std::floor(beginClickPosY / tileSize.y);
+						uint32_t cellX = (uint32_t)std::floor(beginClickPosX / tileSizeZoomed.x);
+						uint32_t cellY = (uint32_t)std::floor(beginClickPosY / tileSizeZoomed.y);
 
 						m_LocalTileset->SetCurrentTile(cellX, cellY);
 						m_SelectedXCoord = cellX;
@@ -240,8 +261,8 @@ void TilesetView::OnImGuiRender()
 					}
 				}
 
-				ImVec2 topLeft(m_SelectedXCoord * tileSize.x + p.x, m_SelectedYCoord * tileSize.y + p.y);
-				ImVec2 bottomRight(m_SelectedXCoord * tileSize.x + p.x + tileSize.x, m_SelectedYCoord * tileSize.y + p.y + tileSize.y);
+				ImVec2 topLeft(m_SelectedXCoord * tileSizeZoomed.x + p.x, m_SelectedYCoord * tileSizeZoomed.y + p.y);
+				ImVec2 bottomRight(m_SelectedXCoord * tileSizeZoomed.x + p.x + tileSizeZoomed.x, m_SelectedYCoord * tileSizeZoomed.y + p.y + tileSizeZoomed.y);
 				draw_list->AddRectFilled(topLeft, bottomRight, selectionColour);
 				draw_list->AddRect(topLeft, bottomRight, selectionColourOutline);
 

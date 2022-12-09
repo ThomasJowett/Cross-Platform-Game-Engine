@@ -163,7 +163,10 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 			topCirclefixtureDef.shape = &topShape;
 
 			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
-			body->CreateFixture(&topCirclefixtureDef);
+			b2Fixture* fixture = body->CreateFixture(&topCirclefixtureDef);
+
+			if (luaScriptComponent)
+				luaScriptComponent->m_Fixtures.push_back(fixture);
 
 			if (scaledHeight > diameter)
 			{
@@ -175,17 +178,27 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				bottomCircleFixtureDef.shape = &bottomShape;
 				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
-				body->CreateFixture(&bottomCircleFixtureDef);
+				fixture = body->CreateFixture(&bottomCircleFixtureDef);
 
-				b2PolygonShape rectShape;
-				rectShape.SetAsBox(scaledRadius, halfHeight - scaledRadius,
-					b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
+				if (luaScriptComponent)
+				{
+					luaScriptComponent->m_Fixtures.push_back(fixture);
 
-				b2FixtureDef rectFixtureDef;
-				rectFixtureDef.shape = &rectShape;
-				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
-				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
-				body->CreateFixture(&rectFixtureDef);
+					b2PolygonShape rectShape;
+					rectShape.SetAsBox(scaledRadius, halfHeight - scaledRadius,
+						b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
+
+					b2FixtureDef rectFixtureDef;
+					rectFixtureDef.shape = &rectShape;
+					rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+					SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
+					fixture = body->CreateFixture(&rectFixtureDef);
+
+					if (luaScriptComponent)
+					{
+						luaScriptComponent->m_Fixtures.push_back(fixture);
+					}
+				}
 			}
 		}
 		else
@@ -205,7 +218,10 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
-			body->CreateFixture(&topCirclefixtureDef);
+			b2Fixture* fixture = body->CreateFixture(&topCirclefixtureDef);
+
+			if (luaScriptComponent)
+				luaScriptComponent->m_Fixtures.push_back(fixture);
 
 			if (scaledHeight - diameter > 0)
 			{
@@ -217,7 +233,10 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				bottomCircleFixtureDef.shape = &bottomShape;
 				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
-				body->CreateFixture(&bottomCircleFixtureDef);
+				fixture = body->CreateFixture(&bottomCircleFixtureDef);
+
+				if (luaScriptComponent)
+					luaScriptComponent->m_Fixtures.push_back(fixture);
 
 				b2PolygonShape rectShape;
 				rectShape.SetAsBox(halfHeight - scaledRadius, scaledRadius,
@@ -227,23 +246,50 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				rectFixtureDef.shape = &rectShape;
 				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
-				body->CreateFixture(&rectFixtureDef);
+				fixture = body->CreateFixture(&rectFixtureDef);
+
+				if (luaScriptComponent)
+					luaScriptComponent->m_Fixtures.push_back(fixture);
 			}
 		}
 	}
 
 	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
 	{
+		float tileWidth = transformComp.scale.x;
+		float tileHieght = transformComp.scale.y;
+
+		uint32_t i = 0;
 		for (auto& row : tilemapComp->tiles)
 		{
+			uint32_t j = 0;
 			for (uint32_t index: row)
 			{
-				const Tile& tile = tilemapComp->tileset->GetTile(index);
-				if (tile.GetCollisionShape() != Tile::CollisionShape::None)
+				if (index > 0)
 				{
-					// TODO: add a fixture for tilemaps
+					const Tile& tile = tilemapComp->tileset->GetTile(index - 1);
+					if (tile.GetCollisionShape() != Tile::CollisionShape::None)
+					{
+						// TODO: add a fixture for tilemaps
+						if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
+						{
+							b2Vec2 center = b2Vec2(j * tileWidth + (0.5f * tileWidth), -(i * tileHieght + (0.5f * tileHieght)));
+							b2PolygonShape rectShape;
+							rectShape.SetAsBox(tileWidth * 0.5f, tileHieght * 0.5f, center, 0.0f);
+
+							b2FixtureDef rectFixtureDef;
+							rectFixtureDef.shape = &rectShape;
+							rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+							b2Fixture* fixture = body->CreateFixture(&rectFixtureDef);
+
+							if (luaScriptComponent)
+								luaScriptComponent->m_Fixtures.push_back(fixture);
+						}
+					}
 				}
+				j++;
 			}
+			i++;
 		}
 	}
 }

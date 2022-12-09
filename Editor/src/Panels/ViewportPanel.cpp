@@ -116,22 +116,17 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	m_Framebuffer->ClearAttachment(1, -1);
 	m_HoveredEntity = Entity();
 
-	switch (SceneManager::GetSceneState())
+	SceneState sceneState = SceneManager::GetSceneState();
+
+	if (sceneState == SceneState::Play || sceneState == SceneState::Pause)
 	{
-		[[fallthrough]];
-	case SceneState::Play:
-	case SceneState::Pause:
 		SceneManager::CurrentScene()->Render(m_Framebuffer);
-		break;
-		[[fallthrough]];
-	case SceneState::SimulatePause:
-		[[fallthrough]];
-	case SceneState::Edit:
-	case SceneState::Simulate:
+	}
+	else if (sceneState == SceneState::SimulatePause || sceneState == SceneState::Edit || sceneState == SceneState::Simulate)
 	{
 		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (m_ViewportHovered && !m_TilemapEditor->IsShown())
+		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
@@ -310,7 +305,9 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					break;
 				}
 
-				if (m_TilemapEditor->IsShown())
+				m_TilemapEditor->SetTilemapComp(transformComp, tilemapComp);
+
+				if (m_TilemapEditor->IsShown() && m_WindowHovered)
 				{
 					// Calculate which tilemap cell is hovered
 					Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
@@ -333,7 +330,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 					if (Vector3f position; Plane::PlaneLineIntersection(tilemapPlane, ray, transformComp.GetWorldPosition(), position))
 					{
-						m_TilemapEditor->OnRender(position, transformComp, tilemapComp);
+						m_TilemapEditor->OnRender(position);
 					}
 				}
 			}
@@ -410,14 +407,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		Renderer::EndScene();
 		m_Framebuffer->UnBind();
-		break;
-	}
-	default:
-		break;
 	}
 
-	if (SceneManager::GetSceneState() == SceneState::Simulate)
+	if (sceneState == SceneState::Simulate)
 	{
+		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
 		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
@@ -427,13 +421,13 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		Renderer2D::EndScene();
 		m_Framebuffer->UnBind();
 	}
-	else if (SceneManager::GetSceneState() == SceneState::Play)
+	else if (sceneState == SceneState::Play)
 	{
+		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
 		Matrix4x4 view;
 		Matrix4x4 projection;
-		Entity cameraEntity = SceneManager::CurrentScene()->GetPrimaryCameraEntity();
-		if (cameraEntity)
+		if (Entity cameraEntity = SceneManager::CurrentScene()->GetPrimaryCameraEntity())
 		{
 			auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
 			view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
@@ -448,10 +442,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		Renderer2D::EndScene();
 		m_Framebuffer->UnBind();
 	}
-}
-
-void ViewportPanel::OnFixedUpdate()
-{
 }
 
 void ViewportPanel::OnImGuiRender()
@@ -943,7 +933,8 @@ void ViewportPanel::OnImGuiRender()
 
 		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f
 			&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
-			&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f)
+			&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f
+			&& !m_TilemapEditor->IsHovered())
 		{
 			ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].x * 255.0f)) |
 				((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_FrameBgHovered].y * 255.0f) << 8) |

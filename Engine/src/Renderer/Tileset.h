@@ -20,6 +20,7 @@ public:
 	double GetProbability() const { return m_Probability; }
 
 	CollisionShape GetCollisionShape() const { return m_CollisionShape; }
+	void SetCollisionShape(CollisionShape shape) { m_CollisionShape = shape; }
 private:
 	double m_Probability = 1.0;
 	CollisionShape m_CollisionShape = CollisionShape::None;

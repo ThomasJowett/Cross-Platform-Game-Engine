@@ -55,7 +55,14 @@ void LuaManager::Init()
 	PROFILE_FUNCTION();
 	s_State = CreateScope<sol::state>(nullptr);
 
-	s_State->open_libraries(sol::lib::base, sol::lib::package, sol::lib::math, sol::lib::table);
+	s_State->open_libraries(
+		sol::lib::base, 
+		sol::lib::package, 
+		sol::lib::math, 
+		sol::lib::table, 
+		sol::lib::coroutine, 
+		sol::lib::os,
+		sol::lib::string);
 
 	Lua::BindLogging(*s_State);
 	Lua::BindApp(*s_State);

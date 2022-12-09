@@ -12,9 +12,10 @@
 #include "Engine.h"
 
 TilemapEditor::TilemapEditor(bool* show)
-	:Layer("Tilemap Editor"), m_Show(show), m_TilemapComp(nullptr)
+	:Layer("Tilemap Editor"), m_Show(show)
 {
-
+	m_HoveredCoords[0] = -1;
+	m_HoveredCoords[1] = -1;
 }
 
 void TilemapEditor::OnImGuiRender()
@@ -143,8 +144,8 @@ void TilemapEditor::OnImGuiRender()
 				{
 					beginClickPosX = ImGui::GetMousePos().x - p.x;
 					beginClickPosY = ImGui::GetMousePos().y - p.y;
-					size_t cellX = (size_t)std::floor(beginClickPosX / m_TilemapComp->tileset->GetSubTexture()->GetSpriteWidth());
-					size_t cellY = (size_t)std::floor(beginClickPosY / m_TilemapComp->tileset->GetSubTexture()->GetSpriteHeight());
+					size_t cellX = (size_t)std::floor(beginClickPosX / spriteSize.x);
+					size_t cellY = (size_t)std::floor(beginClickPosY / spriteSize.x);
 					if (!ImGui::GetIO().KeyCtrl)
 					{
 						std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
@@ -163,11 +164,11 @@ void TilemapEditor::OnImGuiRender()
 					float currentClickPosX = ImGui::GetMousePos().x - p.x;
 					float currentClickPosY = ImGui::GetMousePos().y - p.y;
 
-					size_t cellXMin = (size_t)std::floor(std::min(beginClickPosX, currentClickPosX) / m_TilemapComp->tileset->GetSubTexture()->GetSpriteWidth());
-					size_t cellYMin = (size_t)std::floor(std::min(beginClickPosY, currentClickPosY) / m_TilemapComp->tileset->GetSubTexture()->GetSpriteHeight());
+					size_t cellXMin = (size_t)std::floor(std::min(beginClickPosX, currentClickPosX) / spriteSize.x);
+					size_t cellYMin = (size_t)std::floor(std::min(beginClickPosY, currentClickPosY) / spriteSize.y);
 
-					size_t cellXMax = (size_t)std::ceil(std::max(beginClickPosX, currentClickPosX) / m_TilemapComp->tileset->GetSubTexture()->GetSpriteWidth());
-					size_t cellYMax = (size_t)std::ceil(std::max(beginClickPosY, currentClickPosY) / m_TilemapComp->tileset->GetSubTexture()->GetSpriteHeight());
+					size_t cellXMax = (size_t)std::ceil(std::max(beginClickPosX, currentClickPosX) / spriteSize.x);
+					size_t cellYMax = (size_t)std::ceil(std::max(beginClickPosY, currentClickPosY) / spriteSize.y);
 
 					if (!ImGui::GetIO().KeyCtrl)
 					{
@@ -208,62 +209,80 @@ void TilemapEditor::OnImGuiRender()
 void TilemapEditor::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<SceneChanged>([&](SceneChanged& event) -> bool {
+	dispatcher.Dispatch<SceneChanged>([this](SceneChanged& event) {
 		Hide();
 		return false;
 		});
 
-	dispatcher.Dispatch<MouseButtonPressedEvent>([](MouseButtonPressedEvent& event)->bool {
+	dispatcher.Dispatch<MouseButtonPressedEvent>([this](MouseButtonPressedEvent& event) {
 		return false;
 		});
 
-	dispatcher.Dispatch<MouseButtonReleasedEvent>([](MouseButtonReleasedEvent& event)->bool {
+	dispatcher.Dispatch<MouseButtonReleasedEvent>([](MouseButtonReleasedEvent& event) {
 		return false;
 		});
 }
 
-void TilemapEditor::OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp)
+void TilemapEditor::OnRender(const Vector3f& mousePosition)
 {
-	m_TilemapComp = &tilemapComp;
-	if (!m_TilemapComp->tileset)
+	if (!m_TilemapComp || !m_TransformComp || !m_TilemapComp->tileset)
 		return;
-	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(transformComp.GetWorldMatrix());
 
-	uint32_t cellX((uint32_t)std::floor(localPosition.x));
-	uint32_t cellY((uint32_t)std::floor(-localPosition.y));
+	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(m_TransformComp->GetWorldMatrix());
 
-	Matrix4x4 tileTransform = transformComp.GetWorldMatrix()
-		* Matrix4x4::Translate(Vector3f((float)cellX + 0.5f, -(float)cellY - 0.5f, 0.01f));
+	m_HoveredCoords[0] = (int)std::floor(localPosition.x);
+	m_HoveredCoords[1] = (int)std::floor(-localPosition.y);
+
+	Matrix4x4 tileTransform = m_TransformComp->GetWorldMatrix()
+		* Matrix4x4::Translate(Vector3f((float)m_HoveredCoords[0] + 0.5f, -(float)m_HoveredCoords[1] - 0.5f, 0.01f));
 
 	uint32_t temp = 0;
 
-	if (cellX >= 0 && cellX < m_TilemapComp->tilesWide && cellY >= 0 && cellY < m_TilemapComp->tilesHigh)
+	if (IsHovered())
 	{
-		for (size_t y = 0; y < m_SelectedTiles.size(); y++)
+		if (HasSelection())
 		{
-			for (size_t x = 0; x < m_SelectedTiles[y].size(); x++)
+			for (size_t y = 0; y < m_SelectedTiles.size(); y++)
 			{
-				if (m_SelectedTiles[y][x])
+				for (size_t x = 0; x < m_SelectedTiles[y].size(); x++)
 				{
-					if (m_TilemapComp->tileset)
-						m_TilemapComp->tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x));
-					temp = (y * m_SelectedTiles[y].size() + x) + 1;
-					break;
+					if (m_SelectedTiles[y][x])
+					{
+						if (m_TilemapComp->tileset)
+							m_TilemapComp->tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x));
+						temp = (y * m_SelectedTiles[y].size() + x) + 1;
+						break;
+					}
 				}
 			}
+			Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
 		}
-		Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
 
 		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
 		{
-			m_TilemapComp->tiles[cellY][cellX] = temp;
-			m_TilemapComp->Rebuild();
+			if (Input::IsKeyPressed(KEY_LEFT_ALT))
+			{
+				uint32_t pickedTile = m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]];
+
+				if (pickedTile > 0)
+				{
+					div_t div = std::div((int)pickedTile - 1, m_Columns);
+					std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
+					m_SelectedTiles[div.quot][div.rem] = true;
+				}
+			}
+			else if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
+			{
+				m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = 0;
+				m_TilemapComp->Rebuild();
+			}
+			else if (HasSelection())
+			{
+				m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
+				m_TilemapComp->Rebuild();
+			}
 		}
 	}
-
-
-	m_HoveredCoords[0] = cellX;
-	m_HoveredCoords[1] = cellY;
 }
 
 void TilemapEditor::Show()
@@ -275,6 +294,12 @@ void TilemapEditor::Hide()
 {
 	*m_Show = false;
 	m_TilemapComp = nullptr;
+}
+
+void TilemapEditor::SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp)
+{
+	m_TilemapComp = &tilemapComp;
+	m_TransformComp = &transformComp;
 }
 
 bool TilemapEditor::HasSelection()
@@ -290,9 +315,11 @@ bool TilemapEditor::HasSelection()
 	return false;
 }
 
-Matrix4x4 TilemapEditor::CalculateTransform(const TransformComponent& transformComp, uint32_t x, uint32_t y)
+bool TilemapEditor::IsHovered() const
 {
-	// Calculate the 3D position of the cell
-
-	return Matrix4x4();
+	return *m_Show
+		&& m_HoveredCoords[0] >= 0
+		&& m_HoveredCoords[0] < m_TilemapComp->tilesWide
+		&& m_HoveredCoords[1] >= 0
+		&& m_HoveredCoords[1] < m_TilemapComp->tilesHigh;
 }

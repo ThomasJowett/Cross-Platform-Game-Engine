@@ -16,17 +16,16 @@ public:
 	TilemapEditor(bool* show);
 	virtual void OnImGuiRender() override;
 	virtual void OnEvent(Event& event) override;
-	void OnRender(const Vector3f& mousePosition, const TransformComponent& transformComp, TilemapComponent& tilemapComp);
-
+	void OnRender(const Vector3f& mousePosition);
+	void SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp);
 	bool HasSelection();
-	bool IsShown() { return *m_Show; }
+	bool IsShown() const { return *m_Show; }
+	bool IsHovered() const;
 
 	void Show();
 	void Hide();
 private:
 	bool* m_Show;
-
-	Matrix4x4 CalculateTransform(const TransformComponent& transformComp, uint32_t x, uint32_t y);
 	DrawMode m_DrawMode = DrawMode::Stamp;
 
 	std::vector<std::vector<bool>> m_SelectedTiles;
@@ -38,5 +37,6 @@ private:
 
 	int m_HoveredCoords[2];
 
-	TilemapComponent* m_TilemapComp;
+	TilemapComponent* m_TilemapComp = nullptr;
+	const TransformComponent* m_TransformComp = nullptr;
 };
