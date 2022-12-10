@@ -3,7 +3,7 @@
 #include "Core/core.h"
 #include "Events/Event.h"
 
-class Layer
+class Layer: public std::enable_shared_from_this<Layer>
 {
 public:
 	Layer(const std::string& name = "Layer");

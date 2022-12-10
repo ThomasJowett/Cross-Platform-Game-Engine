@@ -19,110 +19,45 @@ public:
 	Application(const Application&) = delete;
 	virtual ~Application();
 
-	/**
-	 * Gets the static instance of the application
-	 * @return Application& The instance of the application
-	 */
+	// Gets the static instance of the application
 	static inline Application& Get() { return *s_Instance; }
 
-	/**
-	 * Get the applications Window object
-	 *
-	 * @return Window&
-	 */
+	// Get the applications Window object
 	static Window& GetWindow() { return Get().GetWindowImpl(); }
 
-	/**
-	 * Set whether to show Dear ImGui
-	 * @param showImgui
-	 */
+	// Set whether to show Dear ImGui
 	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
 
-	/**
-	 * Toggle whether Dear ImGui to shown
-	 */
+	// Toggle whether Dear ImGui to shown
 	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 
-	/**
-	 * Add a layer to the layer stack
-	 * @param layer
-	 */
-	void AddLayer(Layer* layer);
+	static LayerStack& GetLayerStack() { return Get().m_LayerStack; }
 
-	/**
-	 * Add an overlay to the  layer stack
-	 * @param layer
-	 */
-	void AddOverlay(Layer* layer);
-
-	/**
-	 * Removes a layer from the layer stack
-	 * @param layer
-	 */
-	void RemoveLayer(Layer* layer);
-
-	/**
-	 * Removes an overlay from the layer stack
-	 * @param layer
-	 */
-	void RemoveOverlay(Layer* layer);
-
-	/**
-	 * Stops the application from running and closes the window
-	 */
+	// Stops the application from running and closes the window
 	void Close() { m_Running = false; }
 
-	/**
-	 * Is the application currently in the run function
-	 * @return true
-	 * @return false
-	 */
+	// Is the application currently in the run function
 	bool IsRunning() { return m_Running; }
 
-	/**
-	 * fixed update delta time. Default of 10ms seconds (100 times a second)
-	 */
+	// fixed update delta time. Default of 10ms seconds (100 times a second)
 	float GetFixedUpdateInterval() { return m_FixedUpdateInterval; }
 
-	/**
-	 * Sets the main document that the application has open
-	 * @param filepath
-	 */
+	// Sets the main document that the application has open
 	static void SetOpenDocument(const std::filesystem::path& filepath);
 
-	/**
-	 * Gets the document that the application has open
-	 * @return const std::filesystem::path&
-	 */
+	// Gets the document that the application has open
 	static const std::filesystem::path& GetOpenDocument();
 
-	/**
-	 * Get the Open Document Directory object
-	 * @return const std::filesystem::path&
-	 */
+	// Get the Open Document Directory object
 	static const std::filesystem::path& GetOpenDocumentDirectory();
 
-	/**
-	 * Get the directory that the application was launched from
-	 * @return const std::filesystem::path&
-	 */
+	// Get the directory that the application was launched from
 	static const std::filesystem::path& GetWorkingDirectory() { return s_WorkingDirectory; }
 
-	/**
-	 * Calls an event
-	 * @param event
-	 */
+	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
-protected:
-	/**
-	 * Called once per frame
-	 */
-	virtual void OnUpdate() {};
 
-	/**
-	 * Called 100 times a second
-	 */
-	virtual void OnFixedUpdate() {};
+	LayerStack m_LayerStack;
 private:
 	inline Window& GetWindowImpl() { return *m_Window; }
 	void Run();
@@ -142,13 +77,6 @@ private:
 	bool m_Running = false;
 	bool m_Minimized = false;
 	float m_FixedUpdateInterval = 0.01f;
-	LayerStack m_LayerStack;
-
-	std::vector<Layer*> m_WaitingLayers;
-	std::vector<Layer*> m_WaitingOverlays;
-
-	std::vector<Layer*> m_DeadLayers;
-	std::vector<Layer*> m_DeadOverlays;
 
 	static Application* s_Instance;
 	friend int ::main(int argc, char* argv[]);
@@ -158,32 +86,7 @@ private:
 	static std::filesystem::path s_WorkingDirectory;
 
 	static EventCallbackFn s_EventCallback;
-
-protected:
-	/**
-	 * Immediately pushes a new layer to the layer stack, Should not be called during a frame
-	 * @param layer
-	 */
-	void PushLayer(Layer* layer);
-
-	/**
-	 * Immediately pushes a new overlay to the layer stack, Should not be called during a frame
-	 * @param layer
-	 */
-	void PushOverlay(Layer* layer);
-
-	/**
-	 * Immediately removes a layer from the layer stack, Should not be called during a frame
-	 * @param layer
-	 */
-	void PopLayer(Layer* layer);
-
-	/**
-	 * Immediately removes an overlay from the layer stack, Should not be called during a frame
-	 * @param layer
-	 */
-	void PopOverlay(Layer* layer);
 };
 
 // To be defined in CLIENT
-Application* CreateApplication();
+Ref<Application> CreateApplication();

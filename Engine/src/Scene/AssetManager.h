@@ -30,6 +30,12 @@ public:
 		AssetManager::Get().m_Assets.CleanUnused();
 	}
 
+	static void Shutdown()
+	{
+		AssetManager::Get().m_Assets.Clear();
+		AssetManager::Get().m_Textures.Clear();
+	}
+
 private:
 	AssetManager():m_Assets(Application::GetOpenDocumentDirectory()) {};
 	~AssetManager() = default;

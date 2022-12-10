@@ -110,22 +110,22 @@ void MainDockSpace::OnAttach()
 	m_ShowPlayPauseToolbar = Settings::GetBool("Toolbars", "PlayPause");
 	m_ShowSaveOpenToolbar = Settings::GetBool("Toolbars", "SaveOpen");
 
-	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
+	m_ContentExplorer = CreateRef<ContentExplorerPanel>(&m_ShowContentExplorer);
 
-	TilemapEditor* tilemapEditor = new TilemapEditor(&m_ShowTilemapEditor);
+	Ref<TilemapEditor> tilemapEditor = CreateRef<TilemapEditor>(&m_ShowTilemapEditor);
 
-	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
-	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
-	Application::Get().AddOverlay(m_ContentExplorer);
-	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
-	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	HierarchyPanel* hierarchyPanel = new HierarchyPanel(&m_ShowHierarchy);
-	Application::Get().AddOverlay(hierarchyPanel);
-	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel, tilemapEditor));
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel, tilemapEditor));
-	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
+	Application::GetLayerStack().AddOverlay(CreateRef<EditorPreferencesPanel>(&m_ShowEditorPreferences));
+	Application::GetLayerStack().AddOverlay(CreateRef<ProjectSettingsPanel>(&m_ShowProjectSettings));
+	Application::GetLayerStack().AddOverlay(m_ContentExplorer);
+	Application::GetLayerStack().AddOverlay(CreateRef<ConsolePanel>(&m_ShowConsole));
+	Application::GetLayerStack().AddOverlay(CreateRef<JoystickInfoPanel>(&m_ShowJoystickInfo));
+	Ref<HierarchyPanel> hierarchyPanel = CreateRef<HierarchyPanel>(&m_ShowHierarchy);
+	Application::GetLayerStack().AddOverlay(hierarchyPanel);
+	Application::GetLayerStack().AddOverlay(CreateRef<ViewportPanel>(&m_ShowViewport, hierarchyPanel, tilemapEditor));
+	Application::GetLayerStack().AddOverlay(CreateRef<PropertiesPanel>(&m_ShowProperties, hierarchyPanel, tilemapEditor));
+	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
 
-	Application::Get().AddOverlay(tilemapEditor);
+	Application::GetLayerStack().AddOverlay(tilemapEditor);
 
 	if (!Application::GetOpenDocument().empty())
 	{
@@ -176,6 +176,7 @@ void MainDockSpace::OnEvent(Event& event)
 
 void MainDockSpace::OnUpdate(float deltaTime)
 {
+	RenderCommand::Clear();
 }
 
 void MainDockSpace::OnImGuiRender()
@@ -240,7 +241,7 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N"))
 			{
-				Application::Get().AddOverlay(new ProjectsStartScreen(true));
+				Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
@@ -448,7 +449,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 			if (iSave->NeedsSaving())
 				iSave->Save();
 		}
-		else if(SceneManager::IsSceneLoaded())
+		else if (SceneManager::IsSceneLoaded())
 			SceneManager::CurrentScene()->Save(false);
 	}
 	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
@@ -462,7 +463,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	}
 	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
 	{
-		Application::Get().AddOverlay(new ProjectsStartScreen(true));
+		Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O)))
 	{

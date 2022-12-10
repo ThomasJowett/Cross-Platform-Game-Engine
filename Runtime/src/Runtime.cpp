@@ -1,5 +1,6 @@
 #include "Runtime.h"
 #include "Scene/SceneManager.h"
+#include "RuntimeLayer.h"
 #include "Engine.h"
 
 Runtime::Runtime(const WindowProps& props)
@@ -23,10 +24,6 @@ Runtime::Runtime(const WindowProps& props)
 	file.close();
 
 	SceneManager::ChangeScene(std::filesystem::path(startupScene));
-}
 
-void Runtime::OnUpdate()
-{
-	RenderCommand::Clear();
-	SceneManager::CurrentScene()->Render(nullptr);
+	m_LayerStack.PushLayer(CreateRef<RuntimeLayer>());
 }

@@ -85,7 +85,7 @@ void ProjectsStartScreen::OnImGuiRender()
 				if (ImGui::Button(ICON_FA_XMARK" Cancel"))
 				{
 					ImGui::CloseCurrentPopup();
-					Application::Get().RemoveOverlay(this);
+					Application::GetLayerStack().RemoveOverlay(shared_from_this());
 					ImGui::EndPopup();
 					return;
 				}
@@ -170,5 +170,5 @@ void ProjectsStartScreen::OpenProject(const std::filesystem::path& projectPath)
 {
 	Application::SetOpenDocument(projectPath);
 	ImGui::CloseCurrentPopup();
-	Application::Get().RemoveOverlay(this);
+	Application::GetLayerStack().RemoveOverlay(shared_from_this());
 }

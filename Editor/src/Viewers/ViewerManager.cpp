@@ -11,7 +11,7 @@
 #include "PhysicsMaterialView.h"
 #include "Scene/SceneManager.h"
 
-std::map<std::filesystem::path, std::pair<View*, bool*>> s_AssetViewers;
+std::map<std::filesystem::path, std::pair<Ref<View>, bool*>> s_AssetViewers;
 Ref<FileWatcher> s_FileWatcher = nullptr;
 
 static const char* TextExtensions[] =
@@ -46,9 +46,9 @@ template<typename T>
 void OpenAssetViewer(const std::filesystem::path& assetPath)
 {
 	bool* show = new bool(true);
-	View* layer = new T(show, assetPath);
+	Ref<View> layer = CreateRef<T>(show, assetPath);
 	s_AssetViewers[assetPath] = std::make_pair(layer, show);
-	Application::Get().AddOverlay(layer);
+	Application::GetLayerStack().AddOverlay(layer);
 }
 
 void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
@@ -76,7 +76,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 		{
 			if (!*iter->second.second)
 			{
-				Application::Get().RemoveOverlay(iter->second.first);
+				Application::GetLayerStack().RemoveOverlay(iter->second.first);
 				iter = s_AssetViewers.erase(iter);
 			}
 			else
@@ -115,7 +115,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 
 void ViewerManager::CloseViewer(const std::filesystem::path& assetPath)
 {
-	Application::Get().RemoveOverlay(s_AssetViewers.at(assetPath).first);
+	Application::GetLayerStack().RemoveOverlay(s_AssetViewers.at(assetPath).first);
 	s_AssetViewers.erase(assetPath);
 }
 
@@ -290,7 +290,7 @@ void ViewerManager::SaveAll()
 {
 	for (auto&& [path, viewer] : s_AssetViewers)
 	{
-		if (ISaveable* saveableView = dynamic_cast<ISaveable*>(viewer.first))
+		if (Ref<ISaveable> saveableView = std::dynamic_pointer_cast<ISaveable>(viewer.first))
 			if (saveableView->NeedsSaving())
 				saveableView->Save();
 	}

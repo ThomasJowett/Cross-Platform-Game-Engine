@@ -181,8 +181,6 @@ void SpriteSheetView::OnImGuiRender()
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
 
-					static char inputBuffer[1024] = "";
-
 					static int activeIndex = -1;
 
 					std::string deletedAnimation;
@@ -246,16 +244,16 @@ void SpriteSheetView::OnImGuiRender()
 						std::string radioBtnId = "##selected" + std::to_string(index);
 						if (ImGui::RadioButton(radioBtnId.c_str(), &m_SelectedAnimation, index))
 							m_LocalSpriteSheet->SelectAnimation(name);
-						memset(inputBuffer, 0, sizeof(inputBuffer));
+						memset(m_InputBuffer, 0, sizeof(m_InputBuffer));
 						for (int i = 0; i < name.length(); i++)
 						{
-							inputBuffer[i] = name[i];
+							m_InputBuffer[i] = name[i];
 						}
 						ImGui::TableSetColumnIndex(1);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
 						std::string nameStr = "##name" + std::to_string(index);
 
-						ImGui::InputText(nameStr.c_str(), inputBuffer, sizeof(inputBuffer),
+						ImGui::InputText(nameStr.c_str(), m_InputBuffer, sizeof(m_InputBuffer),
 							ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
 
 						if (ImGui::IsItemActive())
@@ -265,9 +263,9 @@ void SpriteSheetView::OnImGuiRender()
 
 						if (activeIndex == index && !ImGui::IsItemActive())
 						{
-							m_LocalSpriteSheet->RenameAnimation(name, inputBuffer);
+							m_LocalSpriteSheet->RenameAnimation(name, m_InputBuffer);
 							GetListOfAnimations();
-							name = inputBuffer;
+							name = m_InputBuffer;
 							m_Dirty = true;
 							activeIndex = -1;
 						}

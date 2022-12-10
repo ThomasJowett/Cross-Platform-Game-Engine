@@ -42,4 +42,6 @@ private:
 	std::vector<std::vector<bool>> m_SelectedFrames;
 	int m_SelectedAnimation = 0;
 	std::vector<std::pair<std::string, Animation*>> m_AnimationsSorted;
+
+	char m_InputBuffer[1024] = "";
 };

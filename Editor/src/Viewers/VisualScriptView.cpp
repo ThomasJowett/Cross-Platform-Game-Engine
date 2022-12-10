@@ -116,30 +116,28 @@ void VisualSriptView::OnImGuiRender()
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
 
-					static char inputBuffer[1024] = "";
-
 					std::map<std::string, Variable>::iterator it = m_Variables.begin();
 					while (it != m_Variables.end())
 					{
-						memset(inputBuffer, 0, sizeof(inputBuffer));
+						memset(m_InputBuffer, 0, sizeof(m_InputBuffer));
 						for (int i = 0; i < it->first.length(); i++)
 						{
-							inputBuffer[i] = it->first[i];
+							m_InputBuffer[i] = it->first[i];
 						}
 						ImGui::TableNextRow();
 						ImGui::TableSetColumnIndex(0);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
-						if (ImGui::InputText(std::string("##" + it->first).c_str(), inputBuffer, sizeof(inputBuffer),
+						if (ImGui::InputText(std::string("##" + it->first).c_str(), m_InputBuffer, sizeof(m_InputBuffer),
 							ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue
 							| ImGuiInputTextFlags_CharsNoBlank))
 						{
-							if (m_Variables.find(inputBuffer) == m_Variables.end())
+							if (m_Variables.find(m_InputBuffer) == m_Variables.end())
 							{
 								auto node = m_Variables.extract(it->first);
-								std::string newName = inputBuffer;
+								std::string newName = m_InputBuffer;
 								if (!node.empty())
 								{
-									if (isdigit(inputBuffer[0]))
+									if (isdigit(m_InputBuffer[0]))
 									{
 										newName.insert(0, "_");
 										node.key() = newName;

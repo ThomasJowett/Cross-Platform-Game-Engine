@@ -74,34 +74,7 @@ Application::~Application()
 	Renderer::Shutdown();
 	LuaManager::Shutdown();
 	Font::Shutdown();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::AddLayer(Layer* layer)
-{
-	m_WaitingLayers.push_back(layer);
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::AddOverlay(Layer* layer)
-{
-	m_WaitingOverlays.push_back(layer);
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::RemoveLayer(Layer* layer)
-{
-	m_DeadLayers.push_back(layer);
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::RemoveOverlay(Layer* layer)
-{
-	m_DeadOverlays.push_back(layer);
+	AssetManager::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -132,9 +105,7 @@ void Application::Run()
 
 			if (!m_Minimized)
 			{
-				OnFixedUpdate();
-
-				for (Layer* layer : m_LayerStack)
+				for (Ref<Layer> layer : m_LayerStack)
 				{
 					layer->OnFixedUpdate();
 				}
@@ -148,13 +119,11 @@ void Application::Run()
 
 		// On Update
 		{
-			OnUpdate();
-
 			PROFILE_SCOPE("Layer Stack Update");
 
 			if (!m_Minimized)
 			{
-				for (Layer* layer : m_LayerStack)
+				for (Ref<Layer> layer : m_LayerStack)
 				{
 					layer->OnUpdate((float)frameTime);
 				}
@@ -167,41 +136,14 @@ void Application::Run()
 		if (m_ImGuiManager->IsUsing())
 		{
 			m_ImGuiManager->Begin();
-			for (Layer* layer : m_LayerStack)
+			for (Ref<Layer> layer : m_LayerStack)
 			{
 				layer->OnImGuiRender();
 			}
 			m_ImGuiManager->End();
 		}
 
-
-		// Push any layers that were created during the update to the stack
-		for (Layer* layer : m_WaitingLayers)
-		{
-			PushLayer(layer);
-		}
-
-		for (Layer* overlay : m_WaitingOverlays)
-		{
-			PushOverlay(overlay);
-		}
-
-		m_WaitingLayers.clear();
-		m_WaitingOverlays.clear();
-
-		// Remove any layers that were deleted during the update
-		for (Layer* layer : m_DeadLayers)
-		{
-			PopLayer(layer);
-		}
-
-		for (Layer* layer : m_DeadOverlays)
-		{
-			PopOverlay(layer);
-		}
-
-		m_DeadLayers.clear();
-		m_DeadOverlays.clear();
+		m_LayerStack.PushPop();
 
 		Input::ClearInputData();
 	}
@@ -242,49 +184,6 @@ void Application::OnEvent(Event& e)
 			break;
 		(*it)->OnEvent(e);
 	}
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::PushLayer(Layer* layer)
-{
-	PROFILE_FUNCTION();
-
-	m_LayerStack.PushLayer(layer);
-	layer->OnAttach();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::PushOverlay(Layer* layer)
-{
-	PROFILE_FUNCTION();
-
-	m_LayerStack.PushOverlay(layer);
-	layer->OnAttach();
-}
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::PopLayer(Layer* layer)
-{
-	PROFILE_FUNCTION();
-
-	if (m_LayerStack.PopLayer(layer))
-		layer->OnDetach();
-	if (layer)
-		delete layer;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Application::PopOverlay(Layer* layer)
-{
-	PROFILE_FUNCTION();
-
-	if (m_LayerStack.PopOverlay(layer))
-		layer->OnDetach();
-	if (layer)
-		delete layer;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

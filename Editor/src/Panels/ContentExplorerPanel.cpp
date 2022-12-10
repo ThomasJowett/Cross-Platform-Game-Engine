@@ -153,12 +153,10 @@ bool ContentExplorerPanel::HasSelection() const
 
 bool ContentExplorerPanel::Rename()
 {
-	static char inputBuffer[1024] = "";
-
-	memset(inputBuffer, 0, sizeof(inputBuffer));
+	memset(m_RenameInputBuffer, 0, sizeof(m_RenameInputBuffer));
 	for (int i = 0; i < m_CurrentSelectedPath.filename().string().length(); i++)
 	{
-		inputBuffer[i] = m_CurrentSelectedPath.filename().string()[i];
+		m_RenameInputBuffer[i] = m_CurrentSelectedPath.filename().string()[i];
 	}
 	static bool hasFocus = false;
 	static bool once = false;
@@ -169,12 +167,12 @@ bool ContentExplorerPanel::Rename()
 		hasFocus = true;
 	}
 
-	if (ImGui::InputText("##RenameBox", inputBuffer, sizeof(inputBuffer),
+	if (ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
 		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
 	{
-		if (!std::filesystem::exists(m_CurrentPath / inputBuffer))
+		if (!std::filesystem::exists(m_CurrentPath / m_RenameInputBuffer))
 		{
-			std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / inputBuffer);
+			std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / m_RenameInputBuffer);
 			m_ForceRescan = true;
 		}
 		else
@@ -643,6 +641,10 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_TextFilter = new ImGuiTextFilter();
 }
 
+ContentExplorerPanel::~ContentExplorerPanel()
+{
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void ContentExplorerPanel::OnAttach()
@@ -678,8 +680,6 @@ void ContentExplorerPanel::OnImGuiRender()
 		return;
 	}
 
-	static char inputBuffer[1024] = "";
-
 	static std::string filter(m_TextFilter->InputBuf);
 	static FileType typeFilter = m_TypeFilter;
 
@@ -701,10 +701,10 @@ void ContentExplorerPanel::OnImGuiRender()
 		}
 
 		//set the input buffer as the current path
-		memset(inputBuffer, 0, sizeof(inputBuffer));
+		memset(m_CurrentPathInputBuffer, 0, sizeof(m_CurrentPathInputBuffer));
 		for (int i = 0; i < m_CurrentPath.string().length(); i++)
 		{
-			inputBuffer[i] = m_CurrentPath.string()[i];
+			m_CurrentPathInputBuffer[i] = m_CurrentPath.string()[i];
 		}
 
 		if (m_TextFilter->IsActive() || m_TypeFilter != FileType::UNKNOWN)
@@ -909,7 +909,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		if (m_EditLocationCheckButtonPressed)
 		{
 			ImGui::SameLine();
-			editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", inputBuffer, sizeof(inputBuffer),
+			editlocationInputTextReturnPressed = ImGui::InputText("##EditLocationInputText", m_CurrentPathInputBuffer, sizeof(m_CurrentPathInputBuffer),
 				ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_CharsNoBlank);
 
 			static bool once = false;
@@ -924,9 +924,9 @@ void ContentExplorerPanel::OnImGuiRender()
 				once = false;
 				try
 				{
-					if (std::filesystem::exists(inputBuffer))
+					if (std::filesystem::exists(m_CurrentPathInputBuffer))
 					{
-						SwitchTo(inputBuffer);
+						SwitchTo(m_CurrentPathInputBuffer);
 					}
 					else
 					{

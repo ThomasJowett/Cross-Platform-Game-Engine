@@ -98,7 +98,7 @@ class ContentExplorerPanel
 
 public:
 	explicit ContentExplorerPanel(bool* show);
-	~ContentExplorerPanel() = default;
+	~ContentExplorerPanel();
 
 	void OnAttach() override;
 	void OnDetach() override;
@@ -176,4 +176,7 @@ private:
 	FileType m_TypeFilter = FileType::UNKNOWN;
 
 	FileWatcher m_FileWatcher;
+
+	char m_CurrentPathInputBuffer[1024] = "";
+	char m_RenameInputBuffer[1024] = "";
 };

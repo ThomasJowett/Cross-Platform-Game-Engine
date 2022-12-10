@@ -73,4 +73,6 @@ private:
 	LuaNodeEditor m_LuaNodeEditor;
 
 	std::map<std::string, Variable> m_Variables;
+
+	char m_InputBuffer[1024] = "";
 };

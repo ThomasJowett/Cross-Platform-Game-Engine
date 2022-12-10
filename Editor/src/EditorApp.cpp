@@ -11,16 +11,11 @@ Editor::Editor(const WindowProps& props)
 
 	if (Application::GetOpenDocument().empty())
 	{
-		PushOverlay(new ProjectsStartScreen());
+		m_LayerStack.PushOverlay(CreateRef<ProjectsStartScreen>());
 		CLIENT_INFO("No project has been opened");
 	}
 
-	PushOverlay(new MainDockSpace());
+	m_LayerStack.PushOverlay(CreateRef<MainDockSpace>());
 
 	Application::GetWindow().SetIcon(GetWorkingDirectory() / "resources" / "Icons" / "Logo.png");
-}
-
-void Editor::OnUpdate()
-{
-	RenderCommand::Clear();
 }

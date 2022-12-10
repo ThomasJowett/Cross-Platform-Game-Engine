@@ -11,23 +11,43 @@ public:
 	LayerStack();
 	~LayerStack();
 
-	void PushLayer(Layer* layer);
-	void PushOverlay(Layer* overlay);
-	bool PopLayer(Layer* layer);
-	bool PopOverlay(Layer* overlay);
+	// Add a layer to the layer stack
+	void AddLayer(Ref<Layer> layer);
 
-	std::vector<Layer*>::iterator begin() { return m_Layers.begin(); }
-	std::vector<Layer*>::iterator end() { return m_Layers.end(); }
-	std::vector<Layer*>::reverse_iterator rbegin() { return m_Layers.rbegin(); }
-	std::vector<Layer*>::reverse_iterator rend() { return m_Layers.rend(); }
+	// Add an overlay to the  layer stack
+	void AddOverlay(Ref<Layer> layer);
 
-	std::vector<Layer*>::const_iterator begin() const { return m_Layers.begin(); }
-	std::vector<Layer*>::const_iterator end() const { return m_Layers.end(); }
-	std::vector<Layer*>::const_reverse_iterator rbegin() const { return m_Layers.rbegin(); }
-	std::vector<Layer*>::const_reverse_iterator rend() const { return m_Layers.rend(); }
+	// Removes a layer from the layer stack
+	void RemoveLayer(Ref<Layer> layer);
+
+	// Removes an overlay from the layer stack
+	void RemoveOverlay(Ref<Layer> layer);
+
+	void PushLayer(Ref<Layer> layer);
+	void PushOverlay(Ref<Layer> overlay);
+	bool PopLayer(Ref<Layer> layer);
+	bool PopOverlay(Ref<Layer> overlay);
+
+	void PushPop();
+
+	std::vector<Ref<Layer>>::iterator begin() { return m_Layers.begin(); }
+	std::vector<Ref<Layer>>::iterator end() { return m_Layers.end(); }
+	std::vector<Ref<Layer>>::reverse_iterator rbegin() { return m_Layers.rbegin(); }
+	std::vector<Ref<Layer>>::reverse_iterator rend() { return m_Layers.rend(); }
+
+	std::vector<Ref<Layer>>::const_iterator begin() const { return m_Layers.begin(); }
+	std::vector<Ref<Layer>>::const_iterator end() const { return m_Layers.end(); }
+	std::vector<Ref<Layer>>::const_reverse_iterator rbegin() const { return m_Layers.rbegin(); }
+	std::vector<Ref<Layer>>::const_reverse_iterator rend() const { return m_Layers.rend(); }
 
 private:
-	std::vector<Layer*> m_Layers;
+	std::vector<Ref<Layer>> m_Layers;
 	uint32_t m_LayerInsert = 0;
+
+	std::vector<Ref<Layer>> m_WaitingLayers;
+	std::vector<Ref<Layer>> m_WaitingOverlays;
+
+	std::vector<Ref<Layer>> m_DeadLayers;
+	std::vector<Ref<Layer>> m_DeadOverlays;
 };
 

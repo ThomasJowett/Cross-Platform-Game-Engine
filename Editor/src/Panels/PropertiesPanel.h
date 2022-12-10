@@ -12,7 +12,7 @@ class PropertiesPanel :
 	public Layer
 {
 public:
-	explicit PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor);
+	explicit PropertiesPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
@@ -68,8 +68,8 @@ private:
 private:
 	bool* m_Show;
 
-	HierarchyPanel* m_HierarchyPanel;
-	TilemapEditor* m_TilemapEditor;
+	Ref<HierarchyPanel> m_HierarchyPanel;
+	Ref<TilemapEditor> m_TilemapEditor;
 
 	Ref<Material> m_DefaultMaterial;
 	Ref<PhysicsMaterial> m_DefaultPhysMaterial;

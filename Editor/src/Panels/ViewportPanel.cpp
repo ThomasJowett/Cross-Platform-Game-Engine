@@ -18,7 +18,7 @@
 #include "ImGui/ImGuizmo.h"
 #include "Utilities/MathUtils.h"
 
-ViewportPanel::ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor)
+ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor),
 	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
 {

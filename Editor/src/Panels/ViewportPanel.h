@@ -32,7 +32,7 @@ class ViewportPanel
 	};
 
 public:
-	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor);
+	explicit ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
@@ -84,12 +84,12 @@ private:
 	bool m_ShowLighting = true;
 	bool m_ShowReflections = true;
 
-	HierarchyPanel* m_HierarchyPanel;
+	Ref<HierarchyPanel> m_HierarchyPanel;
 	Entity m_HoveredEntity;
 
 	int m_PixelData;
 
-	TilemapEditor* m_TilemapEditor;
+	Ref<TilemapEditor> m_TilemapEditor;
 	bool m_RightClickMenuOpen = false;
 
 	Ref<Mesh> m_GridMesh;

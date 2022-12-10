@@ -61,7 +61,7 @@ private:
 
 	static Layer* s_CurrentlyFocusedPanel;
 
-	ContentExplorerPanel* m_ContentExplorer;
+	Ref<ContentExplorerPanel> m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
 

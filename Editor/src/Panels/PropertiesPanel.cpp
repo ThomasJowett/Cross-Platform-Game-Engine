@@ -19,7 +19,7 @@
 
 #define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
 
-PropertiesPanel::PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel, TilemapEditor* tilemapEditor)
+PropertiesPanel::PropertiesPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor)
 {
 }
@@ -279,13 +279,16 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			{
 				static std::filesystem::file_time_type currentFileTime;
 
-				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
-
-				if (lastWrittenTime != currentFileTime)
+				if (std::filesystem::exists(tilemap.tileset->GetFilepath()))
 				{
-					tilemap.tileset->Reload();
-					tilemap.Rebuild();
-					currentFileTime = lastWrittenTime;
+					std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(tilemap.tileset->GetFilepath());
+
+					if (lastWrittenTime != currentFileTime)
+					{
+						tilemap.tileset->Reload();
+						tilemap.Rebuild();
+						currentFileTime = lastWrittenTime;
+					}
 				}
 			}
 
