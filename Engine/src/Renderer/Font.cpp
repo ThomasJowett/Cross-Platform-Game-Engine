@@ -22,7 +22,7 @@ Ref<Font> Font::s_DefaultFont;
 void Font::Init()
 {
 	PROFILE_FUNCTION();
-	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Roboto-Medium.tff");
+	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Manrope-Medium.tff");
 }
 
 void Font::Shutdown()
@@ -38,11 +38,18 @@ bool Font::Load(const std::filesystem::path& filepath)
 		return false;
 	}
 
-	m_Filepath = filepath;
-
 	msdfgen::FreetypeHandle* ftHandle = msdfgen::initializeFreetype();
 	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(ftHandle, m_Filepath.string().c_str());
 
+	if (!ftHandle || !fontHandle)
+	{
+		ENGINE_ERROR("Could not load font: {0}", filepath);
+		msdfgen::destroyFont(fontHandle);
+		msdfgen::deinitializeFreetype(ftHandle);
+		return false;
+	}	
+
+	m_Filepath = filepath;
 	msdf_atlas::Charset charset;
 
 	static const uint32_t charsetRanges[] =
