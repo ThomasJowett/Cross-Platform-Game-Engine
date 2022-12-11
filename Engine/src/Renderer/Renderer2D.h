@@ -24,6 +24,7 @@ public:
 	static void FlushCircles();
 	static void FlushLines();
 	static void FlushHairLines();
+	static void FlushText();
 
 	//primitives
 

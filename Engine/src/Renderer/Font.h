@@ -11,6 +11,7 @@ class Font : public Asset
 public:
 	Font();
 	Font(const std::filesystem::path& filepath);
+	~Font();
 
 	// Inherited via Asset
 	virtual bool Load(const std::filesystem::path& filepath) override;
@@ -24,7 +25,7 @@ public:
 	static Ref<Font> GetDefaultFont() { return s_DefaultFont; }
 private:
 	Ref<Texture2D> m_TextureAtlas;
-	MSDFData* m_MSDFData;
+	MSDFData* m_MSDFData = nullptr;
 
 	static Ref<Font> s_DefaultFont;
 };

@@ -344,6 +344,7 @@ void Renderer2D::EndScene()
 	FlushCircles();
 	FlushLines();
 	FlushHairLines();
+	FlushText();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -401,6 +402,25 @@ void Renderer2D::FlushHairLines()
 	s_Data.hairLineVertexBuffer->Bind();
 	s_Data.hairLineShader->Bind();
 	RenderCommand::DrawLines(s_Data.hairLineVertexArray, s_Data.hairLineVertexCount);
+	s_Data.statistics.drawCalls++;
+}
+
+void Renderer2D::FlushText()
+{
+	if (s_Data.textIndexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.textVertexBufferPtr - (uint8_t*)s_Data.textVertexBufferBase);
+	s_Data.textVertexBuffer->SetData(s_Data.textVertexBufferBase, dataSize);
+
+	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
+	{
+		if (s_Data.fontAtlasSlots[i])
+			s_Data.fontAtlasSlots[i]->Bind(i);
+	}
+
+	s_Data.textVertexBuffer->Bind();
+	s_Data.textShader->Bind();
+	RenderCommand::DrawIndexed(s_Data.textVertexArray, s_Data.textIndexCount);
 	s_Data.statistics.drawCalls++;
 }
 
@@ -918,13 +938,14 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	//TODO: draw text
-	if (text.empty())
+	if (text.empty() || font == nullptr)
 		return;
 
 	float textureIndex = 0.0f;
 
 	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
 	ASSERT(fontAtlas, "Font atlas cannot be null");
+	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");
 
 	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
 	{

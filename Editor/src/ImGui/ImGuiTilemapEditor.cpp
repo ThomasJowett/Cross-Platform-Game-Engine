@@ -319,7 +319,7 @@ bool TilemapEditor::IsHovered() const
 {
 	return *m_Show
 		&& m_HoveredCoords[0] >= 0
-		&& m_HoveredCoords[0] < m_TilemapComp->tilesWide
+		&& m_HoveredCoords[0] < (int)m_TilemapComp->tilesWide
 		&& m_HoveredCoords[1] >= 0
-		&& m_HoveredCoords[1] < m_TilemapComp->tilesHigh;
+		&& m_HoveredCoords[1] < (int)m_TilemapComp->tilesHigh;
 }
