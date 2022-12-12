@@ -40,7 +40,6 @@ Application::Application(const WindowProps& props)
 	Random::Init();
 	LuaManager::Init();
 	Input::Init();
-	Font::Init();
 
 	SetDefaultSettings(props);
 
@@ -61,6 +60,8 @@ Application::Application(const WindowProps& props)
 		m_Window->MaximizeWindow();
 		Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
 	}
+
+	Font::Init();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

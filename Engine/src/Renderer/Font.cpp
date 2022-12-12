@@ -22,7 +22,7 @@ Ref<Font> Font::s_DefaultFont;
 void Font::Init()
 {
 	PROFILE_FUNCTION();
-	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Manrope-Medium.tff");
+	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Manrope-Medium.ttf");
 }
 
 void Font::Shutdown()
@@ -39,7 +39,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	}
 
 	msdfgen::FreetypeHandle* ftHandle = msdfgen::initializeFreetype();
-	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(ftHandle, m_Filepath.string().c_str());
+	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(ftHandle, filepath.string().c_str());
 
 	if (!ftHandle || !fontHandle)
 	{
@@ -94,7 +94,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 
 	atlasPacker.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
 	atlasPacker.setPadding(0);
-	atlasPacker.setMinimumScale(0);
+	atlasPacker.setScale(40);
 	atlasPacker.setPixelRange(pixelRange);
 	atlasPacker.setMiterLimit(1.0);
 	if (int remaining = atlasPacker.pack(m_MSDFData->glyphs.data(), (int)m_MSDFData->glyphs.size()))

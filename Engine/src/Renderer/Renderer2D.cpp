@@ -129,7 +129,7 @@ struct Renderer2DData
 	std::array<Ref<Texture>, maxTexturesSlots> textureSlots;
 	uint32_t textureSlotIndex = 1;
 
-	std::array<Ref<Texture2D>, maxTexturesSlots> fontAtlasSlots;
+	std::array<Ref<Texture>, maxTexturesSlots> fontAtlasSlots;
 	uint32_t fontAtlasSlotIndex = 1;
 
 	Vector3f quadVertexPositions[4];
@@ -306,6 +306,8 @@ bool Renderer2D::Init()
 	s_Data.quadVertexPositions[1] = {  0.5f, -0.5f, 0.0f };
 	s_Data.quadVertexPositions[2] = {  0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
+
+	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
 
 	return s_Data.quadShader == nullptr;
 }
@@ -944,6 +946,9 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 	float textureIndex = 0.0f;
 
 	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
+
+	//DrawQuad(transform, fontAtlas);
+
 	ASSERT(fontAtlas, "Font atlas cannot be null");
 	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");
 

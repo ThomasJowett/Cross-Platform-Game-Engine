@@ -326,7 +326,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : textGroup)
 	{
 		auto&& [transformComp, textComp] = textGroup.get(entity);
-		//Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
+		Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
 	}
 
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
