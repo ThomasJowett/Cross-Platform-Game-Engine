@@ -17,29 +17,21 @@ void PlayPauseToolbar::Render()
 	switch (SceneManager::GetSceneState())
 	{
 	case SceneState::Edit:
-	{
 		PlayButton();
 		SimulateButton();
 		break;
-	}
-	[[fallthrough]];
 	case SceneState::Pause:
 	case SceneState::SimulatePause:
-	{
 		PlayButton();
 		StopButton();
 		RestartButton();
 		break;
-	}
-	[[fallthrough]];
 	case SceneState::Play:
 	case SceneState::Simulate:
-	{
 		PauseButton();
 		StopButton();
 		RestartButton();
 		break;
-	}
 	default:
 		break;
 	}

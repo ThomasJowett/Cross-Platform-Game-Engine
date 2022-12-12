@@ -96,7 +96,6 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::SCENE:			SceneManager::ChangeScene(assetPath);				return;
 	case FileType::IMAGE:			OpenAssetViewer<TextureView>(assetPath);			return;
 	case FileType::MESH:			OpenAssetViewer<StaticMeshView>(assetPath);			return;
-	[[fallthrough]];
 	case FileType::SCRIPT:
 	case FileType::TEXT:			OpenAssetViewer<ScriptView>(assetPath);				return;
 	case FileType::MATERIAL:		OpenAssetViewer<MaterialView>(assetPath);			return;

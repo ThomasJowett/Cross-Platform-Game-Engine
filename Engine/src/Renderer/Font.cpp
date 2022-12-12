@@ -108,14 +108,11 @@ bool Font::Load(const std::filesystem::path& filepath)
 	ASSERT(width > 0 && height > 0, "Area of font atlas cannot be zero");
 	ENGINE_TRACE("Atlas dimensions: {0} x {1}", width, height);
 
-	double atlasScale = atlasPacker.getScale();
-	pixelRange = atlasPacker.getPixelRange();
-
 	uint64_t glyphSeed = Random::Int64();
 
 	for (msdf_atlas::GlyphGeometry& glyph : m_MSDFData->glyphs)
 	{
-		glyphSeed *= 6364136223846793005ull;
+		glyphSeed *= 6364136223846793005uLL;
 		glyph.edgeColoring(msdfgen::edgeColoringInkTrap, 3.0, glyphSeed);
 	}
 
@@ -130,7 +127,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	generator.setThreadCount(8);
 	generator.generate(m_MSDFData->glyphs.data(), (int)m_MSDFData->glyphs.size());
 
-	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>) generator.atlasStorage();
+	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();
 
 	m_TextureAtlas = Texture2D::Create(bitmap.width, bitmap.height);
 	m_TextureAtlas->SetData((void*)bitmap.pixels, bitmap.width * bitmap.height * bytes);

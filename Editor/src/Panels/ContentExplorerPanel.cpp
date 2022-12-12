@@ -276,22 +276,34 @@ void ContentExplorerPanel::CreateNewLuaScript()
 	m_CurrentSelectedPath = newLuaScriptFilepath;
 }
 
-void ContentExplorerPanel::CreateNewTileset()
+void ContentExplorerPanel::CreateNewTileset(const std::filesystem::path* path)
 {
 	std::filesystem::path newTilesetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Tileset", ".tileset");
 
 	Tileset tileset;
+	if (path)
+	{
+		tileset.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+	}
 
 	tileset.SaveAs(newTilesetPath);
 	m_ForceRescan = true;
 	m_CurrentSelectedPath = newTilesetPath;
 }
 
-void ContentExplorerPanel::CreateNewSpriteSheet()
+void ContentExplorerPanel::CreateNewSpriteSheet(const std::filesystem::path* path)
 {
-	std::filesystem::path newSpriteSheetPath = Directory::GetNextNewFileName(m_CurrentPath, "New Sprite Sheet", ".spritesheet");
+	std::string filename = "New Sprite Sheet";
+	if (path)
+		filename = path->filename().string();
+	std::filesystem::path newSpriteSheetPath = Directory::GetNextNewFileName(m_CurrentPath, filename, ".spritesheet");
 
 	SpriteSheet spritesheet;
+
+	if (path)
+	{
+		spritesheet.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+	}
 	spritesheet.SaveAs(newSpriteSheetPath);
 	m_ForceRescan = true;
 	m_CurrentSelectedPath = newSpriteSheetPath;
@@ -537,6 +549,21 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 				m_NumberSelected = 1;
 			}
 			m_CurrentSelectedPath = m_Files[index];
+
+			for (const auto& extension : ViewerManager::GetExtensions(FileType::IMAGE))
+			{
+				if (m_CurrentSelectedPath.extension() == extension)
+				{
+					if (ImGui::Selectable("Create Tileset"))
+					{
+						CreateNewTileset(&m_CurrentSelectedPath);
+					}
+					if (ImGui::Selectable("Create SpriteSheet"))
+					{
+						CreateNewSpriteSheet(&m_CurrentSelectedPath);
+					}
+				}
+			}
 		}
 
 		m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
@@ -560,7 +587,7 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 			Cut();
 		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 			Copy();
-		if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
+		if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, !m_CopiedPaths.empty()))
 			Paste();
 		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 			Duplicate();
@@ -611,6 +638,10 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		return ICON_FA_PHOTO_FILM;
 	case FileType::PHYSICSMATERIAL:
 		return ICON_FA_VOLLEYBALL;
+	case FileType::FONT:
+		return ICON_FA_FONT;
+	case FileType::UNKNOWN:
+		break;
 	}
 	return ICON_FA_FILE;
 }
@@ -630,7 +661,7 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
-	: m_Show(show), Layer("ContentExplorer"),
+	: Layer("ContentExplorer"), m_Show(show), 
 	m_FileWatcher(std::chrono::seconds(1))
 {
 	m_TotalNumBrowsingEntries = 0;
@@ -643,6 +674,7 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 
 ContentExplorerPanel::~ContentExplorerPanel()
 {
+	delete m_TextFilter;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -654,7 +686,7 @@ void ContentExplorerPanel::OnAttach()
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 
-	m_FileWatcher.Start([&](std::string path, FileStatus status) -> void
+	m_FileWatcher.Start([this](std::string path, FileStatus status)
 		{
 			m_ForceRescan = true;
 		});
@@ -1043,7 +1075,9 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_FILE_AUDIO "\tAudio\0"
 			ICON_FA_BOWLING_BALL "\tMaterial\0"
 			ICON_FA_GRIP "\tTileset\0"
-			ICON_FA_VOLLEYBALL "\tPhysics Material\0"))
+			ICON_FA_PHOTO_FILM "\tSprite Sheet\0"
+			ICON_FA_VOLLEYBALL "\tPhysics Material\0"
+			ICON_FA_FONT "\tFont\0"))
 		{
 		}
 

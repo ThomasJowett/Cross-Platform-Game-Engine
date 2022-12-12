@@ -266,7 +266,12 @@ void BindEntity(sol::state& state)
 	rigidBody2D_type.set_function("SetAngularVelocity", &RigidBody2DComponent::SetAngularVelocity);
 
 	auto physicsMaterial_type = state.new_usertype<PhysicsMaterial>("PhysicsMaterial");
-	physicsMaterial_type["Density"] = &PhysicsMaterial::GetDensity;
+	physicsMaterial_type.set_function("GetDensity", &PhysicsMaterial::GetDensity);
+	physicsMaterial_type.set_function("SetDensity", &PhysicsMaterial::SetDensity);
+	physicsMaterial_type.set_function("GetFriction", &PhysicsMaterial::GetFriction);
+	physicsMaterial_type.set_function("SetFriction", &PhysicsMaterial::SetFriction);
+	physicsMaterial_type.set_function("GetRestitution", &PhysicsMaterial::GetRestitution);
+	physicsMaterial_type.set_function("SetRestitution", &PhysicsMaterial::SetRestitution);
 
 	auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
 	boxCollider2D_type["Offset"] = &BoxCollider2DComponent::offset;

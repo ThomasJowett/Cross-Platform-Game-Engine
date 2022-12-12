@@ -120,8 +120,8 @@ public:
 	void CreateNewScene();
 	void CreateNewMaterial();
 	void CreateNewLuaScript();
-	void CreateNewTileset();
-	void CreateNewSpriteSheet();
+	void CreateNewTileset(const std::filesystem::path* path = nullptr);
+	void CreateNewSpriteSheet(const std::filesystem::path* path = nullptr);
 	void CreateNewPhysicsMaterial();
 
 private:

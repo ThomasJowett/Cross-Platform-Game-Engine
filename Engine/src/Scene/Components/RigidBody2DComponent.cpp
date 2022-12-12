@@ -181,24 +181,20 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 				fixture = body->CreateFixture(&bottomCircleFixtureDef);
 
 				if (luaScriptComponent)
-				{
 					luaScriptComponent->m_Fixtures.push_back(fixture);
 
-					b2PolygonShape rectShape;
-					rectShape.SetAsBox(scaledRadius, halfHeight - scaledRadius,
-						b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
+				b2PolygonShape rectShape;
+				rectShape.SetAsBox(scaledRadius, halfHeight - scaledRadius,
+					b2Vec2(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y), 0.0f);
 
-					b2FixtureDef rectFixtureDef;
-					rectFixtureDef.shape = &rectShape;
-					rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
-					SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
-					fixture = body->CreateFixture(&rectFixtureDef);
+				b2FixtureDef rectFixtureDef;
+				rectFixtureDef.shape = &rectShape;
+				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
+				fixture = body->CreateFixture(&rectFixtureDef);
 
-					if (luaScriptComponent)
-					{
-						luaScriptComponent->m_Fixtures.push_back(fixture);
-					}
-				}
+				if (luaScriptComponent)
+					luaScriptComponent->m_Fixtures.push_back(fixture);
 			}
 		}
 		else
@@ -254,13 +250,13 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 		}
 	}
 
-	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
+	if (const TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
 	{
 		float tileWidth = transformComp.scale.x;
 		float tileHieght = transformComp.scale.y;
 
 		uint32_t i = 0;
-		for (auto& row : tilemapComp->tiles)
+		for (const auto& row : tilemapComp->tiles)
 		{
 			uint32_t j = 0;
 			for (uint32_t index: row)

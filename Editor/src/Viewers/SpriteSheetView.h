@@ -9,7 +9,7 @@ class SpriteSheetView :
 {
 public:
 	SpriteSheetView(bool* show, std::filesystem::path filepath);
-	~SpriteSheetView() = default;
+	~SpriteSheetView() final = default;
 
 	virtual void OnAttach() override;
 	virtual void OnUpdate(float deltaTime) override;
