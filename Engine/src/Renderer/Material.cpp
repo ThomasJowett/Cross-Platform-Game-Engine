@@ -168,7 +168,7 @@ Ref<Material> Material::GetDefaultMaterial()
 		}
 
 		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize);
-		texture->SetData(&textureData, sizeof(uint32_t) * textureSize * textureSize);
+		texture->SetData(&textureData);
 
 		s_DefaultMaterial->AddTexture(texture, 0);
 	}

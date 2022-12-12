@@ -9,6 +9,34 @@
 class Texture : public Asset
 {
 public:
+	enum class Format
+	{
+		None = 0,
+		RED8UN,
+		RED8UI,
+		RED16UI,
+		RED32UI,
+		RED32F,
+		RG8,
+		RG16F,
+		RG32F,
+		RGB,
+		RGBA,
+		RGBA16F,
+		RGBA32F,
+
+		B10R11G11UF,
+
+		SRGB,
+
+		DEPTH32FSTENCIL8UINT,
+		DEPTH32F,
+		DEPTH24STENCIL8,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8,
+	};
+
 	enum class FilterMethod
 	{
 		Linear,
@@ -26,7 +54,7 @@ public:
 	virtual uint32_t GetWidth() const = 0;
 	virtual uint32_t GetHeight() const = 0;
 
-	virtual void SetData(void* data, uint32_t size) = 0;
+	virtual void SetData(void* data) = 0;
 
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
@@ -52,7 +80,7 @@ class Texture2D :public Texture
 {
 public:
 	virtual bool Load(const std::filesystem::path& filepath) override;
-	static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+	static Ref<Texture2D> Create(uint32_t width, uint32_t height, Format format = Format::RGBA);
 	static Ref<Texture2D> Create(const std::filesystem::path& filepath);
 };
 

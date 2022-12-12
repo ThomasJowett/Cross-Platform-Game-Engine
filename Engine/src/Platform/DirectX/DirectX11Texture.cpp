@@ -8,7 +8,7 @@
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 
-DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height)
+DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height, Format format)
 	:m_Width(width), m_Height(height)
 {
 	m_Filepath = "NO DATA";
@@ -43,7 +43,7 @@ DirectX11Texture2D::~DirectX11Texture2D()
 	if (m_ShaderResourceView) m_ShaderResourceView->Release();
 }
 
-void DirectX11Texture2D::SetData(void* data, uint32_t size)
+void DirectX11Texture2D::SetData(void* data)
 {
 	m_Filepath = "";
 }
@@ -89,7 +89,7 @@ void DirectX11Texture2D::NullTexture()
 		}
 	}
 
-	SetData(&textureData, sizeof(uint32_t) * 4 * 4);
+	SetData(&textureData);
 }
 
 bool DirectX11Texture2D::LoadTextureFromFile()

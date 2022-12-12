@@ -292,7 +292,7 @@ bool Renderer2D::Init()
 
 	s_Data.whiteTexture = Texture2D::Create(1, 1);
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_Data.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+	s_Data.whiteTexture->SetData(&whiteTextureData);
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
@@ -947,7 +947,7 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
 
-	//DrawQuad(transform, fontAtlas);
+	DrawQuad(transform, fontAtlas);
 
 	ASSERT(fontAtlas, "Font atlas cannot be null");
 	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");

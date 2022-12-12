@@ -108,7 +108,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	ASSERT(width > 0 && height > 0, "Area of font atlas cannot be zero");
 	ENGINE_TRACE("Atlas dimensions: {0} x {1}", width, height);
 
-	uint64_t glyphSeed = Random::Int64();
+	uint64_t glyphSeed = 0;
 
 	for (msdf_atlas::GlyphGeometry& glyph : m_MSDFData->glyphs)
 	{
@@ -129,8 +129,8 @@ bool Font::Load(const std::filesystem::path& filepath)
 
 	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();
 
-	m_TextureAtlas = Texture2D::Create(bitmap.width, bitmap.height);
-	m_TextureAtlas->SetData((void*)bitmap.pixels, bitmap.width * bitmap.height * bytes);
+	m_TextureAtlas = Texture2D::Create(bitmap.width, bitmap.height, Texture::Format::RGBA32F);
+	m_TextureAtlas->SetData((void*)bitmap.pixels);
 
 	msdfgen::destroyFont(fontHandle);
 	msdfgen::deinitializeFreetype(ftHandle);

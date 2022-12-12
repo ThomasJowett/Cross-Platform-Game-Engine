@@ -40,14 +40,31 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	}
 }
 
-OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format)
 	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
 
 	m_Filepath = "NO DATA";
 
-	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+	switch (format)
+	{
+	case Texture::Format::RED8UN:	m_InternalFormat = GL_R8;		m_DataFormat = GL_RED;	break;
+	case Texture::Format::RED8UI:	m_InternalFormat = GL_R8UI;		m_DataFormat = GL_RED;	break;
+	case Texture::Format::RED16UI:	m_InternalFormat = GL_R16UI;	m_DataFormat = GL_RED;	break;
+	case Texture::Format::RED32UI:	m_InternalFormat = GL_R32UI;	m_DataFormat = GL_RED;	break;
+	case Texture::Format::RED32F:	m_InternalFormat = GL_R32F;		m_DataFormat = GL_RED;	break;
+	case Texture::Format::RG8:		m_InternalFormat = GL_RG8;		m_DataFormat = GL_RG;	break;
+	case Texture::Format::RG16F:	m_InternalFormat = GL_RG16F;	m_DataFormat = GL_RG;	break;
+	case Texture::Format::RG32F:	m_InternalFormat = GL_RG32F;	m_DataFormat = GL_RG;	break;
+	case Texture::Format::RGB:		m_InternalFormat = GL_RGB8;		m_DataFormat = GL_RGB;	break;
+	case Texture::Format::RGBA:		m_InternalFormat = GL_RGBA8;	m_DataFormat = GL_RGBA;	break;
+	case Texture::Format::RGBA16F:	m_InternalFormat = GL_RGBA16F;	m_DataFormat = GL_RGBA;	break;
+	case Texture::Format::RGBA32F:	m_InternalFormat = GL_RGBA32F;	m_DataFormat = GL_RGBA;	break;
+	default: m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;	break;
+	}
+
+	//m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -84,18 +101,11 @@ OpenGLTexture2D::~OpenGLTexture2D()
 		glDeleteTextures(1, &m_RendererID);
 }
 
-void OpenGLTexture2D::SetData(void* data, uint32_t size)
+void OpenGLTexture2D::SetData(void* data)
 {
 	PROFILE_FUNCTION();
 
 	m_Filepath = "";
-
-	uint32_t bytePerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
-
-	bool isValid = size == m_Width * m_Height * bytePerPixel;
-	CORE_ASSERT(isValid, "Data must be entire texture");
-	if (!isValid)
-		NullTexture();
 
 	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
 }
@@ -167,7 +177,7 @@ void OpenGLTexture2D::NullTexture()
 		}
 	}
 
-	SetData(&textureData, sizeof(uint32_t) * 4 * 4);
+	SetData(&textureData);
 }
 
 bool OpenGLTexture2D::LoadTextureFromFile()
