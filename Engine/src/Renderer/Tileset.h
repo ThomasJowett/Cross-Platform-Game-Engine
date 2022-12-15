@@ -4,13 +4,13 @@
 #include "Animation/Animation.h"
 #include "Core/Asset.h"
 
-#include <map>
+#include <set>
 #include <filesystem>
 
 class Tile
 {
 public:
-	enum CollisionShape
+	enum class CollisionShape
 	{
 		None,
 		Rect,
@@ -30,7 +30,14 @@ private:
 class Tileset : public Asset
 {
 public:
+	enum class Bitmask
+	{
+		TwoByTwo,
+		ThreeByThree
+	};
+
 	Tileset();
+
 	Tileset(const std::filesystem::path& filepath);
 	virtual bool Load(const std::filesystem::path& filepath) override;
 	bool Save() const;
@@ -48,9 +55,16 @@ public:
 	const Tile& GetTile(uint32_t index) { ASSERT(index < m_Tiles.size(), "Index out of range!"); return m_Tiles[index]; }
 	const Tile& GetTile(uint32_t x, uint32_t y) const { return m_Tiles[CoordsToIndex(x, y)]; }
 	Tile& GetTile(uint32_t x, uint32_t y) { return m_Tiles[CoordsToIndex(x, y)]; }
+
+	const std::set<Tile*>* GetTilesForBitmask(uint32_t bitmask) const;
+	int GetBitmaskForTile(const Tile* tile) const;
+	void AddBitmask(Bitmask type);
+	void SetTileBitmask(Tile* tile, uint16_t bitmask);
+
 private:
 	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
 	Ref<SubTexture2D> m_Texture;
 
 	std::vector<Tile> m_Tiles;
+	std::vector<std::set<Tile*>> m_BitmaskMap;
 };

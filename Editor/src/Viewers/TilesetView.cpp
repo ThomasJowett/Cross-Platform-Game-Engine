@@ -151,14 +151,15 @@ void TilesetView::OnImGuiRender()
 
 			ImGui::Separator();
 
+			Tile& selectedTile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
+
 			ImGui::Button(ICON_FA_DRAW_POLYGON"##Add Polygon Collider");
 			ImGui::Tooltip("Add Polygon Collider");
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_VECTOR_SQUARE"##Add Box Collider"))
 			{
 				m_Dirty = true;
-				Tile& tile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
-				tile.SetCollisionShape(Tile::CollisionShape::Rect);
+				selectedTile.SetCollisionShape(Tile::CollisionShape::Rect);
 			}
 			ImGui::Tooltip("Add Box Collider");
 			ImGui::SameLine();
@@ -168,8 +169,7 @@ void TilesetView::OnImGuiRender()
 			if (ImGui::Button(ICON_FA_TRASH"##Delete Collider"))
 			{
 				m_Dirty = true;
-				Tile& tile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
-				tile.SetCollisionShape(Tile::CollisionShape::None);
+				selectedTile.SetCollisionShape(Tile::CollisionShape::None);
 			}
 			ImGui::Tooltip("Remove Collider");
 
@@ -188,15 +188,33 @@ void TilesetView::OnImGuiRender()
 				ImGui::GetWindowDrawList()->AddRectFilled(previewPos, bottomRight, ImColor(ImVec4(0.3f, 0.3f, 0.5f, 0.5f)));
 			}
 
-			float probability = (float)m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord).GetProbability();
-			if (ImGui::SliderFloat("Probability", &probability, 0.0f, 1.0f, "%.2f"))
+			if (float probability = (float)selectedTile.GetProbability();
+				ImGui::SliderFloat("Probability", &probability, 0.0f, 1.0f, "%.2f"))
 			{
-				m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord).SetProbability((double)probability);
+				selectedTile.SetProbability((double)probability);
+			}
+
+			if (m_LocalTileset->GetTilesForBitmask(1))
+			{
+				if (int bitmask = m_LocalTileset->GetBitmaskForTile(&selectedTile);
+					ImGui::InputInt("Bitmask", &bitmask))
+				{
+					m_LocalTileset->SetTileBitmask(&selectedTile, (uint16_t)bitmask);
+				}
 			}
 
 			ImGui::TableSetColumnIndex(1);
 
 			ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 4.0f, "%.2f");
+
+			if (ImGui::BeginCombo("## Add auto tile", ICON_FA_PLUS" Add Auto Tile", ImGuiComboFlags_NoArrowButton))
+			{
+				if (ImGui::Selectable("2X2"))
+					m_LocalTileset->AddBitmask(Tileset::Bitmask::TwoByTwo);
+				if (ImGui::Selectable("3x3"))
+					m_LocalTileset->AddBitmask(Tileset::Bitmask::ThreeByThree);
+				ImGui::EndCombo();
+			}
 
 			if (m_LocalTileset->GetSubTexture()->GetTexture())
 			{

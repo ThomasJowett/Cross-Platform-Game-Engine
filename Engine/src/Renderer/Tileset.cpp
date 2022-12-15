@@ -154,11 +154,61 @@ void Tileset::SetTileProbability(size_t tile, double probability)
 void Tileset::SetSubTexture(Ref<SubTexture2D> subTexture)
 {
 	m_Texture = subTexture;
-	if (m_Texture)
+	if (m_Texture && m_Tiles.size() != m_Texture->GetNumberOfCells())
 	{
-		if (m_Tiles.size() != m_Texture->GetNumberOfCells())
 			m_Tiles.resize(m_Texture->GetNumberOfCells());
 	}
+}
+
+const std::set<Tile*>* Tileset::GetTilesForBitmask(uint32_t bitmask) const
+{
+	if (bitmask > m_BitmaskMap.size() - 1 || m_BitmaskMap.empty())
+		return nullptr;
+	return &m_BitmaskMap.at(bitmask);
+}
+
+int Tileset::GetBitmaskForTile(const Tile* tile) const
+{
+	for (size_t i = 0; i < m_BitmaskMap.size(); ++i)
+	{
+		for (auto& tileBitmask : m_BitmaskMap[i])
+		{
+			if (tileBitmask == tile)
+				return (int)i;
+		}
+	}
+	return 0;
+}
+
+void Tileset::AddBitmask(Bitmask type)
+{
+	if (type == Bitmask::TwoByTwo && m_BitmaskMap.size() != 16)
+	{
+		m_BitmaskMap.clear();
+		m_BitmaskMap.resize(16);
+	}
+	else if( type == Bitmask::ThreeByThree && m_BitmaskMap.size() != 48)
+	{
+		m_BitmaskMap.clear();
+		m_BitmaskMap.resize(48);
+	}
+}
+
+void Tileset::SetTileBitmask(Tile* tile, uint16_t bitmask)
+{
+	for (auto& tiles : m_BitmaskMap)
+	{
+		for (auto i = tiles.begin(); i != tiles.end();)
+		{
+			if (*i == tile)
+			{
+				i = tiles.erase(i);
+			}
+			else
+				++i;
+		}
+	}
+	m_BitmaskMap.at(bitmask).insert(tile);
 }
 
 uint32_t Tileset::CoordsToIndex(uint32_t x, uint32_t y) const
