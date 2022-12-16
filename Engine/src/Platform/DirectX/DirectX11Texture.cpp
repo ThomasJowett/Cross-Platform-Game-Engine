@@ -43,7 +43,7 @@ DirectX11Texture2D::~DirectX11Texture2D()
 	if (m_ShaderResourceView) m_ShaderResourceView->Release();
 }
 
-void DirectX11Texture2D::SetData(void* data)
+void DirectX11Texture2D::SetData(const void* data)
 {
 	m_Filepath = "";
 }

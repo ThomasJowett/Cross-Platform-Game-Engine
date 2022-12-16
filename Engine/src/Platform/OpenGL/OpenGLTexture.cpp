@@ -40,12 +40,15 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	}
 }
 
-OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format)
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
 	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
 
-	m_Filepath = "NO DATA";
+	if (!pixels)
+		m_Filepath = "NO DATA";
+
+	m_Type = GL_UNSIGNED_BYTE;
 
 	switch (format)
 	{
@@ -55,19 +58,19 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format)
 	case Texture::Format::RED32UI:	m_InternalFormat = GL_R32UI;	m_DataFormat = GL_RED;	break;
 	case Texture::Format::RED32F:	m_InternalFormat = GL_R32F;		m_DataFormat = GL_RED;	break;
 	case Texture::Format::RG8:		m_InternalFormat = GL_RG8;		m_DataFormat = GL_RG;	break;
-	case Texture::Format::RG16F:	m_InternalFormat = GL_RG16F;	m_DataFormat = GL_RG;	break;
-	case Texture::Format::RG32F:	m_InternalFormat = GL_RG32F;	m_DataFormat = GL_RG;	break;
+	case Texture::Format::RG16F:	m_InternalFormat = GL_RG16F;	m_DataFormat = GL_RG;	m_Type = GL_FLOAT; break;
+	case Texture::Format::RG32F:	m_InternalFormat = GL_RG32F;	m_DataFormat = GL_RG;	m_Type = GL_FLOAT; break;
 	case Texture::Format::RGB:		m_InternalFormat = GL_RGB8;		m_DataFormat = GL_RGB;	break;
 	case Texture::Format::RGBA:		m_InternalFormat = GL_RGBA8;	m_DataFormat = GL_RGBA;	break;
-	case Texture::Format::RGBA16F:	m_InternalFormat = GL_RGBA16F;	m_DataFormat = GL_RGBA;	break;
-	case Texture::Format::RGBA32F:	m_InternalFormat = GL_RGBA32F;	m_DataFormat = GL_RGBA;	break;
-	default: m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;	break;
+	case Texture::Format::RGBA16F:	m_InternalFormat = GL_RGBA16F;	m_DataFormat = GL_RGBA;	m_Type = GL_FLOAT; break;
+	case Texture::Format::RGBA32F:	m_InternalFormat = GL_RGBA32F;	m_DataFormat = GL_RGBA;	m_Type = GL_FLOAT; break;
+	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
-
-	//m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+	if (pixels)
+		SetData(pixels);
 
 	SetFilteringAndWrappingMethod();
 }
@@ -101,13 +104,13 @@ OpenGLTexture2D::~OpenGLTexture2D()
 		glDeleteTextures(1, &m_RendererID);
 }
 
-void OpenGLTexture2D::SetData(void* data)
+void OpenGLTexture2D::SetData(const void* data)
 {
 	PROFILE_FUNCTION();
 
 	m_Filepath = "";
 
-	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
 }
 
 void OpenGLTexture2D::Bind(uint32_t slot) const
@@ -158,14 +161,14 @@ void OpenGLTexture2D::NullTexture()
 	m_Width = m_Height = 4;
 
 	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+	m_Type = GL_UNSIGNED_BYTE;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	m_FilterMethod = FilterMethod::Nearest;
+	m_WrapMethod = WrapMethod::Repeat;
+	SetFilteringAndWrappingMethod();
 
 	uint32_t textureData[4][4];
 
@@ -226,6 +229,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 
 	m_InternalFormat = internalFormat;
 	m_DataFormat = dataFormat;
+	m_Type = GL_UNSIGNED_BYTE;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -241,7 +245,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	else
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
 
 	stbi_image_free(data);
 

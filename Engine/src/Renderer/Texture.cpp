@@ -7,14 +7,14 @@
 #include "Platform/DirectX/DirectX11Texture.h"
 #endif // __WINDOWS__
 
-Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format)
+Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, const void* pixels)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLTexture2D>(width, height, format);
+		return CreateRef<OpenGLTexture2D>(width, height, format, pixels);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		return CreateRef<DirectX11Texture2D>(width, height, format);

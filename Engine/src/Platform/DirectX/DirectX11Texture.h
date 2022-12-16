@@ -12,7 +12,7 @@ public:
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 
-	virtual void SetData(void* data) override;
+	virtual void SetData(const void* data) override;
 
 	virtual void Bind(uint32_t slot) const override;
 

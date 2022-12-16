@@ -6,14 +6,14 @@
 class OpenGLTexture2D : public Texture2D
 {
 public:
-	OpenGLTexture2D(uint32_t width, uint32_t height, Format format);
+	OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels);
 	OpenGLTexture2D(const std::filesystem::path& filepath);
 	virtual ~OpenGLTexture2D();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
 
-	virtual void SetData(void* data) override;
+	virtual void SetData(const void* data) override;
 
 	virtual void Bind(uint32_t slot) const override;
 
@@ -38,5 +38,5 @@ private:
 
 	uint32_t m_RendererID;
 
-	GLenum m_InternalFormat, m_DataFormat;
+	GLenum m_InternalFormat, m_DataFormat, m_Type;
 };

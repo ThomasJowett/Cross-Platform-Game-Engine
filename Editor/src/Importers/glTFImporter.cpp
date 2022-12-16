@@ -31,19 +31,18 @@ struct Node
 
 void GetNodeProps(const tinygltf::Node& node, const tinygltf::Model& model, size_t& vertexCount, size_t& indexCount)
 {
-	if (node.children.size() > 0)
+	if (!node.children.empty())
 	{
-		for (size_t i = 0; i < node.children.size(); i++)
+		for (auto& child : node.children)
 		{
-			GetNodeProps(model.nodes[node.children[i]], model, vertexCount, indexCount);
+			GetNodeProps(model.nodes[child], model, vertexCount, indexCount);
 		}
 	}
 	if (node.mesh > -1)
 	{
 		const tinygltf::Mesh mesh = model.meshes[node.mesh];
-		for (size_t i = 0; i < mesh.primitives.size(); i++)
+		for (auto& primitive : mesh.primitives)
 		{
-			auto primitive = mesh.primitives[i];
 			vertexCount += model.accessors[primitive.attributes.find("POSITION")->second].count;
 			if (primitive.indices > -1)
 			{
@@ -224,6 +223,16 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 				Ref<Mesh> newPrimitive = CreateRef<Mesh>();
 				newPrimitive->SetBounds(BoundingBox(posMin, posMax));
 
+				Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(&loaderInfo.vertexBuffer->position[0], vertexCount);
+
+				Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(loaderInfo.indexBuffer + vertexStart, indexCount);
+
+				Ref<VertexArray> vertexArray = VertexArray::Create();
+				vertexArray->AddVertexBuffer(vertexBuffer);
+				vertexArray->SetIndexBuffer(indexBuffer);
+
+				newPrimitive->LoadModel(vertexArray);
+
 				newMesh->AddMesh(newPrimitive);
 			}
 			for (auto& p : newMesh->GetMeshes())
@@ -269,10 +278,11 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 	{
 		const tinygltf::Scene& scene = gltfModel.scenes[gltfModel.defaultScene > -1 ? gltfModel.defaultScene : 0];
 
-		for (size_t i = 0; i < scene.nodes.size(); i++)
+		for (const int& node : scene.nodes)
 		{
-			GetNodeProps(gltfModel.nodes[scene.nodes[i]], gltfModel, vertexCount, indexCount);
+			GetNodeProps(gltfModel.nodes[node], gltfModel, vertexCount, indexCount);
 		}
+
 		loaderInfo.vertexBuffer = new Vertex[vertexCount];
 		loaderInfo.indexBuffer = new uint32_t[indexCount];
 
@@ -294,6 +304,9 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 		{
 
 		}*/
+
+		delete[] loaderInfo.vertexBuffer;
+		delete[] loaderInfo.indexBuffer;
 	}
 	else
 	{

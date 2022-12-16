@@ -20,7 +20,8 @@ private:
 	{
 		archive(text, maxWidth, colour);
 		std::string relativePath;
-		relativePath = FileUtils::RelativePath(font->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		if(font != Font::GetDefaultFont())
+			relativePath = FileUtils::RelativePath(font->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		archive(relativePath);
 	}
 
