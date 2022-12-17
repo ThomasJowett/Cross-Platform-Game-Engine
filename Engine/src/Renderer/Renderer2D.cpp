@@ -252,6 +252,7 @@ bool Renderer2D::Init()
 		});
 
 	s_Data.textVertexArray->AddVertexBuffer(s_Data.textVertexBuffer);
+	s_Data.textVertexBufferBase = new TextVertex[s_Data.maxVertices];
 
 	uint32_t* textIndices = new uint32_t[s_Data.maxIndices];
 	offset = 0;
@@ -298,6 +299,7 @@ bool Renderer2D::Init()
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
 	s_Data.lineShader = Shader::Create("Renderer2D_Line");
 	s_Data.hairLineShader = Shader::Create("Renderer2D_HairLine");
+	s_Data.textShader = Shader::Create("Renderer2D_Text");
 
 	// set the texture slot at [0] to white texture
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
@@ -333,6 +335,7 @@ void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& project
 	StartQuadsBatch();
 	StartCirclesBatch();
 	StartLinesBatch();
+	StartTextBatch();
 	StartHairLinesBatch();
 }
 
@@ -448,6 +451,12 @@ void Renderer2D::StartLinesBatch()
 	s_Data.lineVertexBufferPtr = s_Data.lineVertexBufferBase;
 }
 
+void Renderer2D::StartTextBatch()
+{
+	s_Data.textIndexCount = 0;
+	s_Data.textVertexBufferPtr = s_Data.textVertexBufferBase;
+}
+
 void Renderer2D::StartHairLinesBatch()
 {
 	s_Data.hairLineVertexCount = 0;
@@ -472,6 +481,12 @@ void Renderer2D::NextLinesBatch()
 {
 	FlushLines();
 	StartLinesBatch();
+}
+
+void Renderer2D::NextTextBatch()
+{
+	FlushText();
+	StartTextBatch();
 }
 
 void Renderer2D::NextHairLinesBatch()
@@ -943,16 +958,21 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 	if (text.empty() || font == nullptr)
 		return;
 
+	if (s_Data.textIndexCount >= s_Data.maxIndices)
+	{
+		NextTextBatch();
+	}
+
 	float textureIndex = 0.0f;
 
 	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
 
-	DrawQuad(transform, fontAtlas);
+	//DrawQuad(transform, fontAtlas, colour, 1.0f, entityId);
 
 	ASSERT(fontAtlas, "Font atlas cannot be null");
 	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");
 
-	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
+	for (uint32_t i = 1; i < s_Data.fontAtlasSlotIndex; i++)
 	{
 		if (*s_Data.fontAtlasSlots[i].get() == *fontAtlas.get())
 		{
@@ -1033,7 +1053,68 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 	y = 0.0;
 	for (int i = 0; i < utf32string.size(); i++)
 	{
+		char32_t character = utf32string[i];
 
+		if (character == '\n' || std::any_of(nextLines.begin(), nextLines.end(), [&i](int line) { return i == line; }))
+		{
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+		auto glyph = fontGeometry.getGlyph(character);
+		if (!glyph)
+			glyph = fontGeometry.getGlyph('?');
+		if (!glyph)
+			continue;
+
+		double l, b, r, t;
+		glyph->getQuadAtlasBounds(l, b, r, t);
+
+		double pl, pb, pr, pt;
+		glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+		pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+		pl += x, pb += y, pr += x, pt += y;
+
+		double texelWidth = 1.0 / fontAtlas->GetWidth();
+		double texelHeight = 1.0 / fontAtlas->GetHeight();
+		l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pl, (float)pb, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)l, (float)b);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pr, (float)pb, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)r, (float)b);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pr, (float)pt, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)r, (float)t);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pl, (float)pt, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)l, (float)t);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textIndexCount += 6;
+
+		double advance = glyph->getAdvance();
+		fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+		x += fsScale * advance;
+
+		s_Data.statistics.quadCount++;
 	}
 }
 

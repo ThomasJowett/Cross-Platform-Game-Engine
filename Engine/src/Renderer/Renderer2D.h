@@ -97,9 +97,11 @@ private:
 	static void StartQuadsBatch();
 	static void StartCirclesBatch();
 	static void StartLinesBatch();
+	static void StartTextBatch();
 	static void StartHairLinesBatch();
 	static void NextQuadsBatch();
 	static void NextCirclesBatch();
 	static void NextLinesBatch();
+	static void NextTextBatch();
 	static void NextHairLinesBatch();
 };
