@@ -223,11 +223,11 @@ private:
 			torusOuterRadius, torusInnerRadius, torusSliceCount);
 
 		std::string relativePath;
-		if (material && !material->GetFilepath().empty())
+		if (material && !material->GetFilepath().empty() && material != Material::GetDefaultMaterial())
 		{
 			relativePath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		}
-		archive(cereal::make_nvp("Material", relativePath));
+		archive(relativePath);
 	}
 
 	template<typename Archive>
@@ -242,10 +242,14 @@ private:
 			torusOuterRadius, torusInnerRadius, torusSliceCount);
 		std::string relativePath;
 
-		archive(cereal::make_nvp("Material", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 		{
 			material = AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		}
+		else
+		{
+			material = Material::GetDefaultMaterial();
 		}
 		SetType(type);
 	}

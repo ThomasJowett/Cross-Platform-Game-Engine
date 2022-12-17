@@ -54,8 +54,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Position", position));
-		archive(cereal::make_nvp("Rotation", rotation));
-		archive(cereal::make_nvp("Scale", scale));
+		archive(position, rotation, scale);
 	}
 };

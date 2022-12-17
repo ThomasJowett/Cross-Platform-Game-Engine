@@ -49,26 +49,20 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Tint", tint));
-		archive(cereal::make_nvp("Tiles Wide", tilesWide));
-		archive(cereal::make_nvp("Tiles High", tilesHigh));
-		archive(cereal::make_nvp("Tiles", tiles));
+		archive(tint, tilesWide, tilesHigh, tiles);
 
 		std::string relativePath;
 		if (tileset && !tileset->GetFilepath().empty())
 			relativePath = FileUtils::RelativePath(tileset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(relativePath);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(cereal::make_nvp("Tint", tint));
-		archive(cereal::make_nvp("Tiles Wide", tilesWide));
-		archive(cereal::make_nvp("Tiles High", tilesHigh));
-		archive(cereal::make_nvp("Tiles", tiles));
+		archive(tint, tilesWide, tilesHigh, tiles);
 		std::string relativePath;
-		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 		{
 			tileset = AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));

@@ -55,10 +55,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("BodyType", type));
-		archive(cereal::make_nvp("FixedRotation", fixedRotation));
-		archive(cereal::make_nvp("GravityScale", gravityScale));
-		archive(cereal::make_nvp("AngularDamping", angularDamping));
-		archive(cereal::make_nvp("LinearDamping", linearDamping));
+		archive(type, fixedRotation, gravityScale, angularDamping, linearDamping);
 	}
 };

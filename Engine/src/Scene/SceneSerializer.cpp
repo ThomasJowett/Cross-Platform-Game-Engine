@@ -118,20 +118,20 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pCameraElement = pElement->InsertNewChildElement("Camera");
 
-		pCameraElement->SetAttribute("Primary", component.Primary);
-		pCameraElement->SetAttribute("FixedAspectRatio", component.FixedAspectRatio);
+		pCameraElement->SetAttribute("Primary", component.primary);
+		pCameraElement->SetAttribute("FixedAspectRatio", component.fixedAspectRatio);
 
 		tinyxml2::XMLElement* pSceneCameraElement = pCameraElement->InsertNewChildElement("SceneCamera");
 
-		pSceneCameraElement->SetAttribute("ProjectionType", (int)component.Camera.GetProjectionType());
-		pSceneCameraElement->SetAttribute("OrthoSize", component.Camera.GetOrthoSize());
-		pSceneCameraElement->SetAttribute("OrthoNear", component.Camera.GetOrthoNear());
-		pSceneCameraElement->SetAttribute("OrthoFar", component.Camera.GetOrthoFar());
-		pSceneCameraElement->SetAttribute("PerspectiveNear", component.Camera.GetPerspectiveNear());
-		pSceneCameraElement->SetAttribute("PerspectiveFar", component.Camera.GetPerspectiveFar());
-		pSceneCameraElement->SetAttribute("FOV", component.Camera.GetVerticalFov());
-		if(component.FixedAspectRatio)
-			pSceneCameraElement->SetAttribute("AspectRatio", component.Camera.GetAspectRatio());
+		pSceneCameraElement->SetAttribute("ProjectionType", (int)component.camera.GetProjectionType());
+		pSceneCameraElement->SetAttribute("OrthoSize", component.camera.GetOrthoSize());
+		pSceneCameraElement->SetAttribute("OrthoNear", component.camera.GetOrthoNear());
+		pSceneCameraElement->SetAttribute("OrthoFar", component.camera.GetOrthoFar());
+		pSceneCameraElement->SetAttribute("PerspectiveNear", component.camera.GetPerspectiveNear());
+		pSceneCameraElement->SetAttribute("PerspectiveFar", component.camera.GetPerspectiveFar());
+		pSceneCameraElement->SetAttribute("FOV", component.camera.GetVerticalFov());
+		if(component.fixedAspectRatio)
+			pSceneCameraElement->SetAttribute("AspectRatio", component.camera.GetAspectRatio());
 	}
 
 	if (entity.HasComponent<SpriteComponent>())
@@ -517,8 +517,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		CameraComponent& component = entity.AddComponent<CameraComponent>();
 
-		pCameraComponentElement->QueryBoolAttribute("Primary", &component.Primary);
-		pCameraComponentElement->QueryBoolAttribute("FixedAspectRatio", &component.FixedAspectRatio);
+		pCameraComponentElement->QueryBoolAttribute("Primary", &component.primary);
+		pCameraComponentElement->QueryBoolAttribute("FixedAspectRatio", &component.fixedAspectRatio);
 
 		SceneCamera sceneCamera;
 
@@ -533,13 +533,13 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveNear", &sceneCamera.m_PerspectiveNear);
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveFar", &sceneCamera.m_PerspectiveFar);
 			pSceneCameraElement->QueryFloatAttribute("FOV", &sceneCamera.m_Fov);
-			if(component.FixedAspectRatio)
+			if(component.fixedAspectRatio)
 				pSceneCameraElement->QueryFloatAttribute("AspectRatio", &sceneCamera.m_AspectRatio);
 
 			sceneCamera.SetProjection(projectionType);
 		}
 
-		component.Camera = sceneCamera;
+		component.camera = sceneCamera;
 	}
 
 	// Sprite -------------------------------------------------------------------------------------------------------------

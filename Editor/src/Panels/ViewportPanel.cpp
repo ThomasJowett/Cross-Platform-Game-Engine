@@ -156,7 +156,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 			CameraComponent& cameraComp = selectedEntity.GetComponent<CameraComponent>();
 			Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
-			Matrix4x4 projection = cameraComp.Camera.GetProjectionMatrix();
+			Matrix4x4 projection = cameraComp.camera.GetProjectionMatrix();
 			m_CameraPreview->Bind();
 			RenderCommand::Clear();
 			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
@@ -348,7 +348,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			[](const auto entity, auto& transformComp, auto& cameraComp)
 			{
 				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
-				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.Camera.GetProjectionMatrix());
+				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.camera.GetProjectionMatrix());
 				Vector3f frontTopLeft = Vector3f(-1.0f, 1.0f, -1.0f) * projection * view;
 				Vector3f frontTopRight = Vector3f(1.0f, 1.0f, -1.0f) * projection * view;
 				Vector3f frontBottomLeft = Vector3f(-1.0f, -1.0f, -1.0f) * projection * view;
@@ -431,7 +431,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		{
 			auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
 			view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-			projection = cameraComp.Camera.GetProjectionMatrix();
+			projection = cameraComp.camera.GetProjectionMatrix();
 		}
 
 		Renderer2D::BeginScene(view, projection);

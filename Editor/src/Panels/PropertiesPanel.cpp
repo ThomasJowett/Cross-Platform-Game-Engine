@@ -408,10 +408,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Camera------------------------------------------------------------------------------------------------------------
 	DrawComponent<CameraComponent>(ICON_FA_VIDEO" Camera", entity, [](auto& cameraComp)
 		{
-			auto& camera = cameraComp.Camera;
+			auto& camera = cameraComp.camera;
 
-			Dirty(ImGui::Checkbox("Primary", &cameraComp.Primary));
-			Dirty(ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.FixedAspectRatio));
+			Dirty(ImGui::Checkbox("Primary", &cameraComp.primary));
+			Dirty(ImGui::Checkbox("Fixed Aspect Ratio", &cameraComp.fixedAspectRatio));
 
 			SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
 			if (ImGui::Combo("Projection", (int*)&projectionType,

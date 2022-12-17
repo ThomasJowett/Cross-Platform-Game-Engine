@@ -46,14 +46,14 @@ private:
 		std::string relativePath;
 		if (!absoluteFilepath.empty())
 			relativePath = FileUtils::RelativePath(absoluteFilepath, Application::GetOpenDocumentDirectory()).string();
-		archive(cereal::make_nvp("Script", relativePath));
+		archive(relativePath);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		std::string relativePath;
-		archive(cereal::make_nvp("Script", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 	}

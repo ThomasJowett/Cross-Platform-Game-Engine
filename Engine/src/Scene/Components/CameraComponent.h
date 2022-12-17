@@ -6,22 +6,20 @@
 
 struct CameraComponent
 {
-	SceneCamera Camera;
-	bool Primary = true;
-	bool FixedAspectRatio = false;
+	SceneCamera camera;
+	bool primary = true;
+	bool fixedAspectRatio = false;
 
 	CameraComponent() = default;
 	CameraComponent(const CameraComponent&) = default;
 
-	operator SceneCamera& () { return Camera; }
-	operator const SceneCamera& () const { return Camera; }
+	operator SceneCamera& () { return camera; }
+	operator const SceneCamera& () const { return camera; }
 private:
 	friend cereal::access;
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("SceneCamera", Camera));
-		archive(cereal::make_nvp("Primary", Primary));
-		archive(cereal::make_nvp("FixedAspectRatio", FixedAspectRatio));
+		archive(camera, primary, fixedAspectRatio);
 	}
 };

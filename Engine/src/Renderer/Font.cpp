@@ -130,6 +130,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();
 
 	m_TextureAtlas = Texture2D::Create(bitmap.width, bitmap.height, Texture::Format::RGBA32F, (void*)bitmap.pixels);
+	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
 
 	msdfgen::destroyFont(fontHandle);
 	msdfgen::deinitializeFreetype(ftHandle);

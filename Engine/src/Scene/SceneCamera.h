@@ -40,14 +40,13 @@ public:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("ProjectionType", m_ProjectionType));
-		archive(cereal::make_nvp("OrthoSize", m_OrthographicSize));
-		archive(cereal::make_nvp("OrthoNear", m_OrthoGraphicNear));
-		archive(cereal::make_nvp("OrthoFar", m_OrthoGraphicFar));
-		archive(cereal::make_nvp("PerspectiveNear", m_PerspectiveNear));
-		archive(cereal::make_nvp("PerspectiveFar", m_PerspectiveFar));
-		archive(cereal::make_nvp("FOV", m_Fov));
-		archive(cereal::make_nvp("AspectRatio", m_AspectRatio));
+		archive(m_ProjectionType,
+			m_OrthographicSize,
+			m_OrthoGraphicNear,
+			m_OrthoGraphicFar,
+			m_PerspectiveNear,
+			m_PerspectiveFar,
+			m_Fov, m_AspectRatio);
 
 		RecalculateProjection();
 	}

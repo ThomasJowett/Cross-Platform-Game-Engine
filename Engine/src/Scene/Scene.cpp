@@ -13,7 +13,6 @@
 #include "Utilities/Box2DDebugDraw.h"
 
 #include "cereal/archives/binary.hpp"
-#include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
 #include "Events/SceneEvent.h"
@@ -184,7 +183,7 @@ void Scene::OnRuntimeStart()
 		Save();
 
 	std::stringstream().swap(m_Snapshot);
-	cereal::JSONOutputArchive output(m_Snapshot);
+	cereal::BinaryOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
 	m_Box2DWorld = new b2World(b2Vec2(m_Gravity.x, m_Gravity.y));
@@ -253,7 +252,7 @@ void Scene::OnRuntimeStop()
 	{
 		ENGINE_DEBUG("Runtime End");
 		m_Registry = entt::registry();
-		cereal::JSONInputArchive input(m_Snapshot);
+		cereal::BinaryInputArchive input(m_Snapshot);
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
 	std::stringstream().swap(m_Snapshot);
@@ -391,7 +390,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 	{
 		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
 		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-		projection = cameraComp.Camera.GetProjectionMatrix();
+		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
 	Render(renderTarget, view, projection);
@@ -527,9 +526,9 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	m_Registry.view<CameraComponent>().each(
 		[=]([[maybe_unused]] const auto cameraEntity, auto& cameraComp)
 		{
-			if (!cameraComp.FixedAspectRatio)
+			if (!cameraComp.fixedAspectRatio)
 			{
-				cameraComp.Camera.SetAspectRatio((float)width / (float)height);
+				cameraComp.camera.SetAspectRatio((float)width / (float)height);
 			}
 		});
 }
@@ -660,7 +659,7 @@ Entity Scene::GetPrimaryCameraEntity()
 	for (auto entity : view)
 	{
 		CameraComponent const& cameraComp = view.get<CameraComponent>(entity);
-		if (cameraComp.Primary)
+		if (cameraComp.primary)
 			return Entity{ entity, this };
 	}
 	return Entity();

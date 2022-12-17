@@ -227,9 +227,9 @@ void BindEntity(sol::state& state)
 	sceneCamera_type.set_function("GetFov", &SceneCamera::GetVerticalFov);
 
 	auto camera_type = state["CameraComponent"].get_or_create<sol::usertype<CameraComponent>>();
-	camera_type["Camera"] = &CameraComponent::Camera;
-	camera_type["Primary"] = &CameraComponent::Primary;
-	camera_type["FixedAspectRatio"] = &CameraComponent::FixedAspectRatio;
+	camera_type["Camera"] = &CameraComponent::camera;
+	camera_type["Primary"] = &CameraComponent::primary;
+	camera_type["FixedAspectRatio"] = &CameraComponent::fixedAspectRatio;
 
 	auto sprite_type = state["SpriteComponent"].get_or_create<sol::usertype<SpriteComponent>>();
 	sprite_type["Tint"] = &SpriteComponent::tint;
@@ -335,6 +335,12 @@ void BindEntity(sol::state& state)
 	primitive_type.set_function("SetCone", &PrimitiveComponent::SetCone);
 	primitive_type.set_function("SetTorus", &PrimitiveComponent::SetTorus);
 	primitive_type.set_function("SetType", &PrimitiveComponent::SetType);
+
+	auto text_type = state["TextComponent"].get_or_create<sol::usertype<TextComponent>>();
+	text_type["Text"] = &TextComponent::text;
+	text_type["MaxWidth"] = &TextComponent::maxWidth;
+	text_type["Colour"] = &TextComponent::colour;
+	text_type["Font"] = &TextComponent::font;
 }
 
 //--------------------------------------------------------------------------------------------------------------

@@ -967,8 +967,6 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
 
-	//DrawQuad(transform, fontAtlas, colour, 1.0f, entityId);
-
 	ASSERT(fontAtlas, "Font atlas cannot be null");
 	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");
 
@@ -1017,7 +1015,7 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 		if (!glyph)
 			continue;
 
-		if (character != ' ')
+		if (character != ' ' && character != '\t')
 		{
 			double pl, pb, pr, pt;
 			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
@@ -1059,6 +1057,12 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 		{
 			x = 0;
 			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+		if (character == '\t')
+		{
+			double advance = fontGeometry.getGlyph(' ')->getAdvance();
+			x += fsScale * (advance * 4);
 			continue;
 		}
 		auto glyph = fontGeometry.getGlyph(character);

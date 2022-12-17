@@ -32,8 +32,8 @@ private:
 		std::string relativePath;
 		if (spriteSheet && !spriteSheet->GetFilepath().empty())
 			relativePath = FileUtils::RelativePath(spriteSheet->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(cereal::make_nvp("Filepath", relativePath));
-		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
+		archive(relativePath);
+		archive(m_CurrentAnimation);
 	}
 
 	template<typename Archive>
@@ -41,7 +41,7 @@ private:
 	{
 		archive(tint);
 		std::string relativePath;
-		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 		{
 			spriteSheet = AssetManager::GetAsset<SpriteSheet>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
@@ -50,7 +50,7 @@ private:
 		{
 			spriteSheet.reset();
 		}
-		archive(cereal::make_nvp("Current Animation", m_CurrentAnimation));
+		archive(m_CurrentAnimation);
 		if (spriteSheet)
 			spriteSheet->SelectAnimation(m_CurrentAnimation);
 	}
