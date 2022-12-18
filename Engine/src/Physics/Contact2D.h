@@ -60,7 +60,7 @@ public:
 
 	void RemoveOld()
 	{
-		if (m_Contacts.size() > 0)
+		if (!m_Contacts.empty())
 			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](Contact2D c) {return c.old; }), m_Contacts.end());
 	}
 };

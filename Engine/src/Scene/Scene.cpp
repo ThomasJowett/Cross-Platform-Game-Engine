@@ -124,17 +124,11 @@ bool Scene::RemoveEntity(Entity& entity)
 {
 	if (entity.BelongsToScene(this))
 	{
-		if (entity.HasComponent<HierarchyComponent>())
-		{
-			SceneGraph::Remove(entity, m_Registry);
-		}
+		if (m_IsUpdating)
+			m_DestroyedEntities.emplace(entity);
 		else
-		{
-			ENGINE_DEBUG("Removed {0}", entity.GetName());
-			m_Registry.destroy(entity);
-			m_Dirty = true;
-			return true;
-		}
+			SceneGraph::Remove(entity, m_Registry);
+		return true;
 	}
 	return false;
 }
@@ -428,6 +422,14 @@ void Scene::OnUpdate(float deltaTime)
 		});
 
 	m_IsUpdating = false;
+
+	for (const entt::entity& entity : m_DestroyedEntities)
+	{
+		if (RigidBody2DComponent* rigidBodyComp = m_Registry.try_get<RigidBody2DComponent>(entity))
+			m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
+		m_Registry.destroy(entity);
+	}
+	m_DestroyedEntities.clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -475,7 +477,7 @@ void Scene::OnFixedUpdate()
 				luaScriptComp.created = true;
 			}
 			luaScriptComp.OnFixedUpdate();
-			if (luaScriptComp.IsContactListener() && m_ContactListener->m_Contacts.size() > 0)
+			if (luaScriptComp.IsContactListener() && !m_ContactListener->m_Contacts.empty())
 			{
 				for (auto fixture : luaScriptComp.GetFixtures())
 				{
@@ -511,6 +513,14 @@ void Scene::OnFixedUpdate()
 				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
+
+	for (const entt::entity& entity: m_DestroyedEntities)
+	{
+		if (RigidBody2DComponent* rigidBodyComp = m_Registry.try_get<RigidBody2DComponent>(entity))
+			m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
+		m_Registry.destroy(entity);
+	}
+	m_DestroyedEntities.clear();
 
 	m_IsUpdating = false;
 }
@@ -699,12 +709,6 @@ Entity Scene::GetEntityByPath(const std::string& path)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DestroyBody(b2Body* body)
-{
-	if (m_Box2DWorld)
-		m_Box2DWorld->DestroyBody(body);
-}
-
 void Scene::SetShowDebug(bool show)
 {
 	if (show && !m_Box2DDraw)
@@ -721,6 +725,8 @@ void Scene::SetShowDebug(bool show)
 	}
 }
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 HitResult2D Scene::RayCast2D(Vector2f begin, Vector2f end)
 {
 	HitResult2D callback;
@@ -736,6 +742,8 @@ HitResult2D Scene::RayCast2D(Vector2f begin, Vector2f end)
 	}
 	return callback;
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 {

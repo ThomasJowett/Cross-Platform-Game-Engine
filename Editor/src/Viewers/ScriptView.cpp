@@ -211,16 +211,16 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 void ScriptView::ParseLuaScript()
 {
 	Scene testScene("");
-
+	
 	Entity entity = testScene.CreateEntity("lua script");
-
+	
 	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
 	auto results = luaComp.ParseScript(entity);
-
+	
 	TextEditor::ErrorMarkers errorMarkers;
 	if (results.has_value())
 	{
-		errorMarkers.insert({ results.value().first, results.value().second });
+		errorMarkers.emplace(results.value().first, results.value().second);
 	}
 	m_TextEditor.SetErrorMarkers(errorMarkers);
 }

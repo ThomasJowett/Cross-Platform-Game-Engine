@@ -70,7 +70,6 @@ public:
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
 
-	void DestroyBody(b2Body* body);
 	void SetShowDebug(bool show);
 
 	Vector2f& GetGravity() { return m_Gravity; }
@@ -101,6 +100,8 @@ private:
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 
 	std::stringstream m_Snapshot;
+
+	std::set<entt::entity> m_DestroyedEntities;
 
 	friend class Entity;
 	friend class SceneSerializer;

@@ -41,12 +41,6 @@ uint32_t RigidBody2DComponent::GetRigidBodyBox2DType(RigidBody2DComponent::BodyT
 	return b2BodyType::b2_staticBody;
 }
 
-RigidBody2DComponent::~RigidBody2DComponent()
-{
-	if (runtimeBody)
-		SceneManager::CurrentScene()->DestroyBody(runtimeBody);
-}
-
 void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 {
 	TransformComponent& transformComp = entity.GetTransform();
@@ -292,32 +286,38 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 void RigidBody2DComponent::ApplyImpulse(Vector2f impulse)
 {
-	runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), runtimeBody->GetWorldCenter(), true);
+	if (runtimeBody)
+		runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), runtimeBody->GetWorldCenter(), true);
 }
 
 void RigidBody2DComponent::ApplyImpulseAtPoint(Vector2f impulse, Vector2f center)
 {
-	runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(center.x, center.y), true);
+	if (runtimeBody)
+		runtimeBody->ApplyLinearImpulse(b2Vec2(impulse.x, impulse.y), b2Vec2(center.x, center.y), true);
 }
 
 void RigidBody2DComponent::ApplyForce(Vector2f force)
 {
-	runtimeBody->ApplyForce(b2Vec2(force.x, force.y), runtimeBody->GetWorldCenter(), true);
+	if (runtimeBody)
+		runtimeBody->ApplyForce(b2Vec2(force.x, force.y), runtimeBody->GetWorldCenter(), true);
 }
 
 void RigidBody2DComponent::ApplyForceAtPoint(Vector2f force, Vector2f center)
 {
-	runtimeBody->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(center.x, center.y), true);
+	if (runtimeBody)
+		runtimeBody->ApplyForce(b2Vec2(force.x, force.y), b2Vec2(center.x, center.y), true);
 }
 
 void RigidBody2DComponent::ApplyTorque(float torque)
 {
-	runtimeBody->ApplyTorque(torque, true);
+	if (runtimeBody)
+		runtimeBody->ApplyTorque(torque, true);
 }
 
 void RigidBody2DComponent::SetLinearVelocity(Vector2f velocity)
 {
-	runtimeBody->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
+	if (runtimeBody)
+		runtimeBody->SetLinearVelocity(b2Vec2(velocity.x, velocity.y));
 }
 
 Vector2f RigidBody2DComponent::GetLinearVelocity()
@@ -328,7 +328,8 @@ Vector2f RigidBody2DComponent::GetLinearVelocity()
 
 void RigidBody2DComponent::SetAngularVelocity(float velocity)
 {
-	runtimeBody->SetAngularVelocity(velocity);
+	if (runtimeBody)
+		runtimeBody->SetAngularVelocity(velocity);
 }
 
 float RigidBody2DComponent::GetAngularVelocity()
