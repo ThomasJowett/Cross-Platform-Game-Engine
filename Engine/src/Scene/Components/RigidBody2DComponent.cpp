@@ -269,6 +269,10 @@ void RigidBody2DComponent::Init(Entity& entity, b2World* b2World)
 
 							b2FixtureDef rectFixtureDef;
 							rectFixtureDef.shape = &rectShape;
+							Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
+							rectFixtureDef.density = defaultPhysicsMaterial->GetDensity();
+							rectFixtureDef.friction = defaultPhysicsMaterial->GetFriction();
+							rectFixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
 							rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 							b2Fixture* fixture = body->CreateFixture(&rectFixtureDef);
 
