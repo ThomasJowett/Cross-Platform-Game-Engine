@@ -32,6 +32,7 @@ void Font::Shutdown()
 
 bool Font::Load(const std::filesystem::path& filepath)
 {
+	PROFILE_FUNCTION();
 	if (!std::filesystem::exists(filepath))
 	{
 		ENGINE_ERROR("Font does not exist: {0}", filepath);
@@ -109,7 +110,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	generatorAttributes.config.overlapSupport = true;
 	generatorAttributes.scanlinePass = true;
 	generator.setAttributes(generatorAttributes);
-	generator.setThreadCount(4);
+	generator.setThreadCount(8);
 	generator.generate(m_MSDFData->glyphs.data(), (int)m_MSDFData->glyphs.size());
 
 	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();

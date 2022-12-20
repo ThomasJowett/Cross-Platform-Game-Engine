@@ -675,7 +675,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				inputBuffer[i] = text.text[i];
 			}
 
-			if (ImGui::InputTextMultiline("Text", inputBuffer, sizeof(inputBuffer)))
+			if (ImGui::InputTextMultiline("Text", inputBuffer, sizeof(inputBuffer), ImVec2(0, 0), ImGuiInputTextFlags_AllowTabInput))
 			{
 				text.text = inputBuffer;
 				SceneManager::CurrentScene()->MakeDirty();
