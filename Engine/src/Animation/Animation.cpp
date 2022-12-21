@@ -16,7 +16,7 @@ void Animation::Start()
 void Animation::Update(float deltaTime, Ref<SubTexture2D> texture)
 {
 	m_CurrentFrameTime += deltaTime;
-	while (m_CurrentFrameTime >= m_HoldTime)
+	while (m_CurrentFrameTime >= m_HoldTime && m_HoldTime > 0.0f)
 	{
 		Advance(texture);
 		m_CurrentFrameTime -= m_HoldTime;
