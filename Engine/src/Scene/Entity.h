@@ -117,6 +117,7 @@ public:
 	template<typename T>
 	T* TryGetComponent()
 	{
+		ASSERT(IsValid(), "Invalid Entity!")
 		return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 	}
 
