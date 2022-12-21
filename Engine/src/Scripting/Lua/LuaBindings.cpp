@@ -15,6 +15,14 @@
 #include "Renderer/Renderer2D.h"
 #include "Physics/HitResult2D.h"
 #include "Core/Settings.h"
+#include "LuaManager.h"
+
+template<typename T, typename... Args>
+void SetFunction(T& type, const std::string& name, const std::string& description, Args&&... args)
+{
+	type.set_function(name, std::forward<Args>(args)...);
+	LuaManager::AddIdentifier(name, description);
+}
 
 template<typename Component>
 void RegisterComponent(sol::state& state)
@@ -24,11 +32,11 @@ void RegisterComponent(sol::state& state)
 	name = SplitString(name, '\n')[0];
 	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
-	entity_Type.set_function("Add" + name, static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
-	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
-	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
-	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
-	entity_Type.set_function("Get" + name, &Entity::TryGetComponent<Component>);
+	SetFunction(entity_Type, "Add" + name, "Add " + name + " to entity", static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
+	SetFunction(entity_Type, "Remove" + name, "Remove " + name + " from entity", &Entity::RemoveComponent<Component>);
+	SetFunction(entity_Type, "Has" + name, "Has entity got a " + name, &Entity::HasComponent<Component>);
+	SetFunction(entity_Type, "GetOrAdd" + name, "Get or Add " + name , &Entity::GetOrAddComponent<Component>);
+	SetFunction(entity_Type, "Get" + name, "Get " + name, &Entity::TryGetComponent<Component>);
 }
 
 template<typename... Component>
@@ -44,13 +52,14 @@ void BindLogging(sol::state& state)
 	PROFILE_FUNCTION();
 
 	sol::table log = state.create_table("Log");
+	LuaManager::AddIdentifier("Log", "Print to the log");
 
-	log.set_function("Trace", [](std::string_view message) { CLIENT_TRACE(message); });
-	log.set_function("Info", [](std::string_view message) { CLIENT_INFO(message); });
-	log.set_function("Debug", [](std::string_view message) { CLIENT_DEBUG(message); });
-	log.set_function("Warn", [](std::string_view message) { CLIENT_WARN(message); });
-	log.set_function("Error", [](std::string_view message) { CLIENT_ERROR(message); });
-	log.set_function("Critical", [](std::string_view message) { CLIENT_CRITICAL(message); });
+	SetFunction(log, "Trace", "Print very fine detailed Diagnostic information", [](std::string_view message) { CLIENT_TRACE(message); });
+	SetFunction(log, "Info", "Normal application behaviour", [](std::string_view message) { CLIENT_INFO(message); });
+	SetFunction(log, "Debug", "Diagnostic information to help the understand the flow of scripts", [](std::string_view message) { CLIENT_DEBUG(message); });
+	SetFunction(log, "Warn", "Indicates you may have a problem or unusual situation", [](std::string_view message) { CLIENT_WARN(message); });
+	SetFunction(log, "Error", "Serious issue and a failure of something important", [](std::string_view message) { CLIENT_ERROR(message); });
+	SetFunction(log, "Critical", "Fatal error only to be called when the application is about to crash", [](std::string_view message) { CLIENT_CRITICAL(message); });
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -68,6 +77,7 @@ void BindApp(sol::state& state)
 	state.new_enum("WindowMode", windowModes);
 
 	sol::table application = state.create_table("App");
+	LuaManager::AddIdentifier("App", "Application");
 
 	application.set_function("ShowImGui", &Application::ShowImGui);
 	application.set_function("ToggleImGui", &Application::ToggleImGui);
@@ -86,34 +96,35 @@ void BindApp(sol::state& state)
 		{ return Application::GetOpenDocumentDirectory().string(); });
 
 	sol::table settings = state.create_table("Settings");
+	LuaManager::AddIdentifier("Settings", "Application settings");
 
-	settings.set_function("SetValue", &Settings::SetValue);
-	settings.set_function("SetBool", &Settings::SetBool);
-	settings.set_function("SetDouble", &Settings::SetDouble);
-	settings.set_function("SetInt", &Settings::SetInt);
-	settings.set_function("SetVec2", &Settings::SetVector2f);
-	settings.set_function("SetVec3", &Settings::SetVector3f);
+	SetFunction(settings, "SetValue", "Set a value", & Settings::SetValue);
+	SetFunction(settings, "SetBool", "Set a boolean", & Settings::SetBool);
+	SetFunction(settings, "SetDouble", "Set a double", & Settings::SetDouble);
+	SetFunction(settings, "SetInt", "Set an integer", & Settings::SetInt);
+	SetFunction(settings, "SetVec2", "Set a vector2", & Settings::SetVector2f);
+	SetFunction(settings, "SetVec3", "Set a vector3", & Settings::SetVector3f);
 
-	settings.set_function("GetValue", &Settings::GetValue);
-	settings.set_function("GetBool", &Settings::GetBool);
-	settings.set_function("GetDouble", &Settings::GetDouble);
-	settings.set_function("GetInt", &Settings::GetInt);
-	settings.set_function("GetVec2", &Settings::GetVector2f);
-	settings.set_function("GetVec3", &Settings::GetVector3f);
+	SetFunction(settings, "GetValue", "Get a value", & Settings::GetValue);
+	SetFunction(settings, "GetBool", "Get a boolean", & Settings::GetBool);
+	SetFunction(settings, "GetDouble", "Get a double", & Settings::GetDouble);
+	SetFunction(settings, "GetInt", "Get an integer", & Settings::GetInt);
+	SetFunction(settings, "GetVec2", "Get a vector2", & Settings::GetVector2f);
+	SetFunction(settings, "GetVec3", "Get a vector3", & Settings::GetVector3f);
 
-	settings.set_function("SetDefaultValue", &Settings::SetDefaultValue);
-	settings.set_function("SetDefaultBool", &Settings::SetDefaultBool);
-	settings.set_function("SetDefaultDouble", &Settings::SetDefaultDouble);
-	settings.set_function("SetDefaultInt", &Settings::SetDefaultInt);
-	settings.set_function("SetDefaultVec2", &Settings::SetDefaultVector2f);
-	settings.set_function("SetDefaultVec3", &Settings::SetDefaultVector3f);
+	SetFunction(settings, "SetDefaultValue", "Set default value", & Settings::SetDefaultValue);
+	SetFunction(settings, "SetDefaultBool", "Set default boolean", &Settings::SetDefaultBool);
+	SetFunction(settings, "SetDefaultDouble", "Set default double", &Settings::SetDefaultDouble);
+	SetFunction(settings, "SetDefaultInt", "Set default integer", &Settings::SetDefaultInt);
+	SetFunction(settings, "SetDefaultVec2", "Set default vector2", &Settings::SetDefaultVector2f);
+	SetFunction(settings, "SetDefaultVec3", "Set default vector3", &Settings::SetDefaultVector3f);
 
-	settings.set_function("GetDefaultValue", &Settings::GetDefaultValue);
-	settings.set_function("GetDefaultBool", &Settings::GetDefaultBool);
-	settings.set_function("GetDefaultDouble", &Settings::GetDefaultDouble);
-	settings.set_function("GetDefaultInt", &Settings::GetDefaultInt);
-	settings.set_function("GetDefaultVec2", &Settings::GetDefaultVector2f);
-	settings.set_function("GetDefaultVec3", &Settings::GetDefaultVector3f);
+	SetFunction(settings, "GetDefaultValue", "Get default value", &Settings::GetDefaultValue);
+	SetFunction(settings, "GetDefaultBool", "Get default boolean", &Settings::GetDefaultBool);
+	SetFunction(settings, "GetDefaultDouble", "Get default double", &Settings::GetDefaultDouble);
+	SetFunction(settings, "GetDefaultInt", "Get default integer", &Settings::GetDefaultInt);
+	SetFunction(settings, "GetDefaultVec2", "Get default vector2", &Settings::GetDefaultVector2f);
+	SetFunction(settings, "GetDefaultVec3", "Get default vector3", &Settings::GetDefaultVector3f);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -134,8 +145,8 @@ void BindScene(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
-	state.set_function("ChangeScene", &ChangeScene);
-	state.set_function("LoadScene", &LoadScene);
+	SetFunction(state, "ChangeScene", "Load and change to scene", & ChangeScene);
+	SetFunction(state, "LoadScene", "Load a scene", & LoadScene);
 
 	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
@@ -192,14 +203,14 @@ void BindEntity(sol::state& state)
 
 	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
 		sol::constructors<sol::types<entt::entity, Scene*>>());
-	entity_type.set_function("IsValid", &Entity::IsValid);
-	entity_type.set_function("GetName", &Entity::GetName);
-	entity_type.set_function("SetName", &Entity::SetName);
-	entity_type.set_function("AddChild", &Entity::AddChild);
-	entity_type.set_function("Destroy", &Entity::Destroy);
-	entity_type.set_function("GetParent", &Entity::GetParent);
-	entity_type.set_function("GetSibling", &Entity::GetSibling);
-	entity_type.set_function("GetChild", &Entity::GetChild);
+	SetFunction(entity_type, "IsValid", "Is Valid", & Entity::IsValid);
+	SetFunction(entity_type, "GetName", "Get Name", & Entity::GetName);
+	SetFunction(entity_type, "SetName", "Set Name", & Entity::SetName);
+	SetFunction(entity_type, "AddChild", "Add Child", & Entity::AddChild);
+	SetFunction(entity_type, "Destroy", "Destroy", & Entity::Destroy);
+	SetFunction(entity_type, "GetParent", "Get Parent", & Entity::GetParent);
+	SetFunction(entity_type, "GetSibling", "Get Sibling", & Entity::GetSibling);
+	SetFunction(entity_type, "GetChild", "Get first Child", & Entity::GetChild);
 
 	RegisterAllComponents<COMPONENTS>(state);
 
@@ -350,13 +361,14 @@ void BindInput(sol::state& state)
 	PROFILE_FUNCTION();
 
 	sol::table input = state.create_table("Input");
+	LuaManager::AddIdentifier("Input", "Input");
 
-	input.set_function("IsKeyPressed", [](char c)
+	SetFunction(input, "IsKeyPressed", "Is key pressed", [](char c)
 		{
 			return Input::IsKeyPressed((int)c);
 		});
-	input.set_function("IsMouseButtonPressed", &Input::IsMouseButtonPressed);
-	input.set_function("GetMousePos", &Input::GetMousePos);
+	SetFunction(input, "IsMouseButtonPressed", "Is the mouse button pressed", &Input::IsMouseButtonPressed);
+	SetFunction(input, "GetMousePos", "Get mouse position", &Input::GetMousePos);
 
 	std::initializer_list<std::pair<sol::string_view, int>> mouseItems = {
 		{ "Left", MOUSE_BUTTON_LEFT },

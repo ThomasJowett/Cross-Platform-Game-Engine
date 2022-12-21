@@ -6,6 +6,7 @@
 #include "FileSystem/FileDialog.h"
 #include "Core/Settings.h"
 #include "ViewerManager.h"
+#include "Scripting/Lua/LuaManager.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -23,6 +24,16 @@ void ScriptView::OnAttach()
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();
+
+	if (lang.mName == "Lua")
+	{
+		auto& identifiers = LuaManager::GetIdentifiers();
+		for (auto& [keyword, definition] : identifiers) {
+			TextEditor::Identifier id;
+			id.mDeclaration = definition;
+			lang.mIdentifiers.insert(std::make_pair(keyword, id));
+		}
+	}
 
 	m_TextEditor.SetLanguageDefinition(lang);
 

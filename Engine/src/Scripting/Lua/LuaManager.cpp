@@ -10,6 +10,11 @@ static std::vector<std::string> s_Modules;
 
 static sol::function s_UnrequireFunction;
 
+std::vector<std::pair<std::string, std::string>> LuaManager::s_Identifiers = {
+	std::make_pair("CurrentEntity", "Get the entity this script is attached to"),
+	std::make_pair("CurrentScene", "Get the currently loaded scene")
+};
+
 int LoadFileRequire(lua_State* L) {
 
 	// use sol2 stack API to pull
@@ -114,4 +119,9 @@ sol::state& LuaManager::GetState()
 bool LuaManager::IsValid()
 {
 	return (bool)s_State;
+}
+
+void LuaManager::AddIdentifier(const std::string& keyword, const std::string& description)
+{
+	s_Identifiers.push_back(std::make_pair(keyword, description));
 }
