@@ -412,7 +412,7 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
 	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" New"))
 	{
-		if (ImGui::Selectable("Folder"))
+		if (ImGui::Selectable(ICON_FA_FOLDER"\tFolder"))
 		{
 			std::string newFolderName = (m_CurrentPath / "New folder").string();
 			int suffix = 1;
@@ -435,12 +435,12 @@ void ContentExplorerPanel::RightClickMenu()
 
 			m_CurrentSelectedPath = newFolderName;
 		}
-		if (ImGui::Selectable("Scene"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
 		{
 			CreateNewScene();
 			ImGui::OpenPopup("Rename");
 		}
-		if (ImGui::Selectable("Material"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
 		{
 			CreateNewMaterial();
 			ImGui::OpenPopup("Rename");
@@ -449,25 +449,25 @@ void ContentExplorerPanel::RightClickMenu()
 		{
 			CLIENT_DEBUG("new prefab");
 		}
-		if (ImGui::Selectable("Lua Script"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
 		{
 			CreateNewLuaScript();
 			ImGui::OpenPopup("Rename");
 		}
 
-		if (ImGui::Selectable("Tileset"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
 		{
 			CreateNewTileset();
 			ImGui::OpenPopup("Rename");
 		}
 
-		if (ImGui::Selectable("Sprite Sheet"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
 		{
 			CreateNewSpriteSheet();
 			ImGui::OpenPopup("Rename");
 		}
 
-		if (ImGui::Selectable("Physics Material"))
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
 		{
 			CreateNewPhysicsMaterial();
 			ImGui::OpenPopup("Rename");
@@ -479,10 +479,10 @@ void ContentExplorerPanel::RightClickMenu()
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
 			L"Any File\0*.*\0"
-			"Film Box (.fbx)\0*.fbx\0"
-			"Wavefront OBJ (.obj)\0*.obj\0"
-			"Tiled Tilemap(.tmx)\0*.tmx\0"
-			"Tiled Tileset(.tsx)\0*.tsx");
+			L"Film Box (.fbx)\0*.fbx\0"
+			L"Wavefront OBJ (.obj)\0*.obj\0"
+			L"Tiled Tilemap(.tmx)\0*.tmx\0"
+			L"Tiled Tileset(.tsx)\0*.tsx");
 
 		if (assetPaths)
 		{
@@ -612,9 +612,9 @@ void ContentExplorerPanel::ClearSelected()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::path& assetPath)
+std::string ContentExplorerPanel::GetFileIconForFileType(FileType type) const
 {
-	switch (ViewerManager::GetFileType(assetPath))
+	switch (type)
 	{
 	case FileType::TEXT:
 		return ICON_FA_FILE_LINES;
@@ -644,6 +644,11 @@ const std::string ContentExplorerPanel::GetFileIconForFileType(std::filesystem::
 		break;
 	}
 	return ICON_FA_FILE;
+}
+
+std::string ContentExplorerPanel::GetFileIconForFileType(const std::filesystem::path& assetPath) const
+{
+	return GetFileIconForFileType(ViewerManager::GetFileType(assetPath));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

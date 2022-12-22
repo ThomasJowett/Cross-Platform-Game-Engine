@@ -32,16 +32,16 @@ public:
 	bool SaveMaterial(const std::filesystem::path& filepath) const;
 	bool SaveMaterial() const;
 
-	bool IsTwoSided() { return m_TwoSided; }
+	bool IsTwoSided() const { return m_TwoSided; }
 	void SetTwoSided(bool twoSided) { m_TwoSided = twoSided; }
 
-	bool IsTransparent() { return m_Transparent; }
+	bool IsTransparent() const { return m_Transparent; }
 	void SetTransparency(bool transparent) { m_Transparent = transparent; }
 
-	bool CastsShadows() { return m_CastShadows; }
+	bool CastsShadows() const { return m_CastShadows; }
 	void SetCastShadows(bool castShadows) { m_CastShadows = castShadows; }
 
-	float GetTilingFactor() { return m_TilingFactor; }
+	float GetTilingFactor() const { return m_TilingFactor; }
 	void SetTilingFactor(float tilingFactor) { m_TilingFactor = tilingFactor; }
 
 	Vector2f GetTextureOffset() { return m_TextureOffset; }
