@@ -39,6 +39,7 @@ public:
 	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
+	void OnEvent(Event& event) override;
 
 	virtual void Copy() override;
 	virtual void Cut() override;

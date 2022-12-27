@@ -6,14 +6,11 @@
 #include "EnTT/entt.hpp"
 #include "Core/UUID.h"
 #include "math/Vector2f.h"
+#include "Physics/PhysicsEngine2D.h"
 
-class ContactListener2D;
 class Entity;
 class FrameBuffer;
 class Camera;
-class b2World;
-class b2Body;
-class b2Draw;
 class Matrix4x4;
 struct HitResult2D;
 
@@ -73,7 +70,7 @@ public:
 	void SetShowDebug(bool show);
 
 	Vector2f& GetGravity() { return m_Gravity; }
-	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; }
+	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; if (m_PhysicsEngine2D) m_PhysicsEngine2D->SetGravity(gravity); }
 
 	HitResult2D RayCast2D(Vector2f begin, Vector2f end);
 
@@ -92,10 +89,7 @@ private:
 	bool m_IsUpdating = false;
 	bool m_IsSaving = false;
 
-	b2World* m_Box2DWorld = nullptr;
-	b2Draw* m_Box2DDraw = nullptr;
-
-	Scope<ContactListener2D> m_ContactListener;
+	Ref<PhysicsEngine2D> m_PhysicsEngine2D;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 
@@ -105,4 +99,7 @@ private:
 
 	friend class Entity;
 	friend class SceneSerializer;
+
+	//Debug info
+	bool m_DrawDebug = false;
 };

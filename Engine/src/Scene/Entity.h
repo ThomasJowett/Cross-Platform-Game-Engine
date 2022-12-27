@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Scene.h"
-
 #include "EnTT/entt.hpp"
 
 #include "Components/TransformComponent.h"

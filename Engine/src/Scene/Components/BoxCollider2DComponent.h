@@ -10,6 +10,8 @@ struct BoxCollider2DComponent
 	Vector2f offset = { 0.0f, 0.0f };
 	Vector2f size = { 0.5f, 0.5f };
 
+	bool isTrigger = false;
+
 	Ref<PhysicsMaterial> physicsMaterial;
 
 	void* runtimeFixture = nullptr;
@@ -21,7 +23,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(offset, size);
+		archive(offset, size, isTrigger);
 		
 		std::string relativePath;
 		if (physicsMaterial)
@@ -34,7 +36,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(offset, size);
+		archive(offset, size, isTrigger);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())

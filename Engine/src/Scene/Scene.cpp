@@ -17,7 +17,7 @@
 
 #include "Events/SceneEvent.h"
 
-#include "box2d/box2d.h"
+
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
@@ -50,8 +50,6 @@ Scene::Scene(const std::filesystem::path& filepath)
 Scene::~Scene()
 {
 	LuaManager::CleanUp();
-	if (m_Box2DWorld) delete m_Box2DWorld;
-	if (m_Box2DDraw) delete m_Box2DDraw;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -101,13 +99,7 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	newEntity.GetTransform().position += position;
 
-	if (m_Box2DWorld)
-	{
-		if (RigidBody2DComponent* rigidBodyComponent = newEntity.TryGetComponent<RigidBody2DComponent>())
-		{
-			rigidBodyComponent->Init(newEntity, m_Box2DWorld);
-		}
-	}
+	m_PhysicsEngine2D->InitializeEntity(newEntity);
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
 	{
@@ -180,12 +172,10 @@ void Scene::OnRuntimeStart()
 	cereal::BinaryOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_Box2DWorld = new b2World(b2Vec2(m_Gravity.x, m_Gravity.y));
-	if (m_Box2DDraw)
-		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
+	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
 
-	m_ContactListener = CreateScope<ContactListener2D>();
-	m_Box2DWorld->SetContactListener(m_ContactListener.get());
+	if(m_DrawDebug)
+		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
 
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
@@ -220,7 +210,7 @@ void Scene::OnRuntimeStart()
 				//transformComp.scale = scale;
 			}
 
-			rigidBody2DComp.Init(entity, m_Box2DWorld);
+			m_PhysicsEngine2D->InitializeEntity(entity);
 		});
 }
 
@@ -236,9 +226,7 @@ void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
 
-	if (m_Box2DWorld) delete m_Box2DWorld;
-	m_Box2DWorld = nullptr;
-	m_ContactListener = nullptr;
+	m_PhysicsEngine2D.reset();
 
 	LuaManager::CleanUp();
 
@@ -358,10 +346,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 		}
 	}
 
-	if (m_Box2DDraw && m_Box2DWorld)
-	{
-		m_Box2DWorld->DebugDraw();
-	}
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->OnRender();
 
 	Renderer::EndScene();
 
@@ -423,10 +409,10 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_IsUpdating = false;
 
-	for (const entt::entity& entity : m_DestroyedEntities)
+	for (const auto& entity : m_DestroyedEntities)
 	{
-		if (RigidBody2DComponent* rigidBodyComp = m_Registry.try_get<RigidBody2DComponent>(entity))
-			m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
+		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
+		
 		m_Registry.destroy(entity);
 	}
 	m_DestroyedEntities.clear();
@@ -441,33 +427,7 @@ void Scene::OnFixedUpdate()
 	m_IsUpdating = true;
 
 	// Physics
-	const int32_t velocityIterations = 6;
-	const int32_t positionIterations = 2;
-	if (m_Box2DWorld != nullptr)
-	{
-		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), velocityIterations, positionIterations);
-
-		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
-			{
-				if (rigidBodyComp.runtimeBody == nullptr
-					|| rigidBodyComp.runtimeBody->GetType() != RigidBody2DComponent::GetRigidBodyBox2DType(rigidBodyComp.type))
-				{
-					Entity e(entity, this);
-					rigidBodyComp.Init(e, m_Box2DWorld);
-				}
-				else if (rigidBodyComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
-				{
-					rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
-					rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
-					rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
-					rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
-				}
-				const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
-				transformComp.position.x = position.x;
-				transformComp.position.y = position.y;
-				transformComp.rotation.z = (float)rigidBodyComp.runtimeBody->GetAngle();
-			});
-	}
+	m_PhysicsEngine2D->OnFixedUpdate();
 
 	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
 		{
@@ -477,11 +437,11 @@ void Scene::OnFixedUpdate()
 				luaScriptComp.created = true;
 			}
 			luaScriptComp.OnFixedUpdate();
-			if (luaScriptComp.IsContactListener() && !m_ContactListener->m_Contacts.empty())
+			if (luaScriptComp.IsContactListener() && !m_PhysicsEngine2D->GetContactListener()->m_Contacts.empty())
 			{
 				for (auto fixture : luaScriptComp.GetFixtures())
 				{
-					for (Contact2D& contact : m_ContactListener->m_Contacts)
+					for (Contact2D& contact : m_PhysicsEngine2D->GetContactListener()->m_Contacts)
 					{
 						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
 						{
@@ -504,20 +464,18 @@ void Scene::OnFixedUpdate()
 			}
 		});
 
-	m_ContactListener->RemoveOld();
-
-	if (m_Box2DWorld != nullptr)
+	if (m_PhysicsEngine2D != nullptr)
 	{
+		m_PhysicsEngine2D->RemoveOldContacts();
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
 				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
 
-	for (const entt::entity& entity: m_DestroyedEntities)
+	for (const auto& entity: m_DestroyedEntities)
 	{
-		if (RigidBody2DComponent* rigidBodyComp = m_Registry.try_get<RigidBody2DComponent>(entity))
-			m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
+		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
 		m_Registry.destroy(entity);
 	}
 	m_DestroyedEntities.clear();
@@ -711,46 +669,27 @@ Entity Scene::GetEntityByPath(const std::string& path)
 
 void Scene::SetShowDebug(bool show)
 {
-	if (show && !m_Box2DDraw)
-	{
-		m_Box2DDraw = new Box2DDebugDraw();
-		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
-		if (m_Box2DWorld)
-			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
-	}
-	else if (!show)
-	{
-		if (m_Box2DDraw) delete m_Box2DDraw;
-		m_Box2DDraw = nullptr;
-	}
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->ShowDebugDraw(show);
+	m_DrawDebug = show;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 HitResult2D Scene::RayCast2D(Vector2f begin, Vector2f end)
 {
-	HitResult2D callback;
-	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
-
-	if (callback.hit)
-	{
-		Renderer2D::DrawHairLine(Vector3f(begin.x, begin.y, 0.0f), Vector3f(callback.hitPoint.x, callback.hitPoint.y, 0.0f), Colours::LIME_GREEN);
-	}
-	else
-	{
-		Renderer2D::DrawHairLine(Vector3f(begin.x, begin.y, 0.0f), Vector3f(end.x, end.y, 0.0f), Colours::RED);
-	}
-	return callback;
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->RayCast(begin, end);
+	return HitResult2D();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 {
-	RayCastMultipleCallback callback;
-	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
-
-	return callback.GetHitResults();
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->MultiRayCast2D(begin, end);
+	return std::vector<HitResult2D>();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

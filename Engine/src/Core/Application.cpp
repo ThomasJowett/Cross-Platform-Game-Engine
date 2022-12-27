@@ -283,6 +283,8 @@ double Application::GetTime() const
 
 void Application::SetOpenDocument(const std::filesystem::path& filepath)
 {
+	SceneManager::ChangeSceneState(SceneState::Edit);
+
 	if (std::filesystem::exists(filepath))
 	{
 		s_OpenDocument = filepath;

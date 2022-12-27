@@ -9,7 +9,7 @@
 #include "Utilities/FileUtils.h"
 
 class Entity;
-struct RigidBody2DComponent;
+class PhysicsEngine2D;
 class b2Fixture;
 
 struct LuaScriptComponent
@@ -58,7 +58,7 @@ private:
 			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 	}
 
-	friend RigidBody2DComponent;
+	friend PhysicsEngine2D;
 
 	std::vector<b2Fixture*> m_Fixtures;
 

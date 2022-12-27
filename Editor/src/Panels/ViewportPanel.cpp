@@ -18,6 +18,8 @@
 #include "ImGui/ImGuizmo.h"
 #include "Utilities/MathUtils.h"
 
+#include "Events/SceneEvent.h"
+
 ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:m_Show(show), Layer("Viewport"), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor),
 	m_Operation(OperationMode::Select), m_Translation(TranslationMode::Local)
@@ -139,8 +141,6 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				m_Framebuffer->UnBind();
 			}
 		}
-
-		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 
 		Entity selectedEntity;
 
@@ -566,7 +566,8 @@ void ViewportPanel::OnImGuiRender()
 
 			if (ImGui::BeginMenu("Show"))
 			{
-				ImGui::MenuItem("Collision", "", &m_ShowCollision);
+				if(ImGui::MenuItem("Collision", "", &m_ShowCollision))
+					SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
 				ImGui::MenuItem("Statistics", "", &m_ShowStats);
 				ImGui::MenuItem("Grid", "", &m_ShowGrid);
@@ -958,6 +959,17 @@ void ViewportPanel::OnImGuiRender()
 	if (!shown)
 		ImGui::PopStyleVar();
 	ImGui::End();
+}
+
+void ViewportPanel::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<SceneChanged>([&](SceneChanged& event) {
+		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
+
+		m_CameraController.SetPosition(Vector3f());
+		return false;
+		});
 }
 
 void ViewportPanel::Copy()
