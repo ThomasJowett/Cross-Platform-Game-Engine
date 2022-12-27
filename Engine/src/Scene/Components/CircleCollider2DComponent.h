@@ -5,15 +5,19 @@
 #include "math/Vector2f.h"
 #include "Physics/PhysicsMaterial.h"
 
+class b2Body;
+
 struct CircleCollider2DComponent
 {
   Vector2f offset = { 0.0f,0.0f };
 
   float radius = 0.5f;
 
+  bool isTrigger = false;
+
   Ref<PhysicsMaterial> physicsMaterial;
 
-  void* runtimeFixture = nullptr;
+  b2Body* runtimeBody = nullptr;
 
   CircleCollider2DComponent() = default;
   CircleCollider2DComponent(const CircleCollider2DComponent&) = default;
@@ -22,7 +26,7 @@ private:
   template<typename Archive>
   void save(Archive& archive) const
   {
-    archive(offset, radius);
+    archive(offset, radius, isTrigger);
 
     std::string relativePath;
     if (physicsMaterial)
@@ -35,7 +39,7 @@ private:
   template<typename Archive>
   void load(Archive& archive)
   {
-    archive(offset, radius);
+    archive(offset, radius, isTrigger);
     std::string relativePath;
     archive(relativePath);
     if (!relativePath.empty())

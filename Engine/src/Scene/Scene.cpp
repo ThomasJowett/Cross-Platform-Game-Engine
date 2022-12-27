@@ -16,7 +16,7 @@
 #include "cereal/types/string.hpp"
 
 #include "Events/SceneEvent.h"
-
+#include "TinyXml2/tinyxml2.h"
 
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
@@ -172,11 +172,6 @@ void Scene::OnRuntimeStart()
 	cereal::BinaryOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
-
-	if(m_DrawDebug)
-		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
-
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
 		{
@@ -192,26 +187,10 @@ void Scene::OnRuntimeStart()
 			}
 		});
 
-	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
-		[this]([[maybe_unused]] const auto physicsEntity, auto& transformComp, auto& rigidBody2DComp)
-		{
-			Entity entity = { physicsEntity, this };
+	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
 
-			// if an entity has physics it must not have a parent for the physics position to work correctly
-			if (entity.HasComponent<HierarchyComponent>())
-			{
-				Vector3f position;
-				Vector3f rotation;
-				Vector3f scale;
-				transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
-				//SceneGraph::Unparent(entity, m_Registry);
-				//transformComp.position = position;
-				//transformComp.rotation = rotation;
-				//transformComp.scale = scale;
-			}
-
-			m_PhysicsEngine2D->InitializeEntity(entity);
-		});
+	if(m_DrawDebug)
+		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -445,16 +424,18 @@ void Scene::OnFixedUpdate()
 					{
 						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
 						{
-							if (!contact.triggeredA || !contact.triggeredB)
+							if (fixture == contact.fixtureB && !contact.triggeredA)
 							{
-								luaScriptComp.OnBeginContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA,
-									contact.localNormal, contact.localPoint);
-								if (contact.fixtureA == fixture)
-									contact.triggeredA = true;
-								else
-									contact.triggeredB = true;
+								luaScriptComp.OnBeginContact(contact.fixtureA, contact.localNormal, contact.localPoint);
+								contact.triggeredA = true;
 							}
-							else if (contact.old)
+							else if (fixture == contact.fixtureA && !contact.triggeredB)
+							{
+								luaScriptComp.OnBeginContact(contact.fixtureB, contact.localNormal, contact.localPoint);
+								contact.triggeredB = true;
+							}
+
+							if (contact.old)
 							{
 								luaScriptComp.OnEndContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
 							}
@@ -470,6 +451,31 @@ void Scene::OnFixedUpdate()
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
 				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, BoxCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, CircleCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, PolygonCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+		
+		m_Registry.view<TransformComponent, CapsuleCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, TilemapComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
 

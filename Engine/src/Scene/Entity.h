@@ -147,10 +147,10 @@ public:
 	 * @return true Entity has this component
 	 * @return false Entity does not have this component
 	 */
-	template<typename T>
+	template<typename... T>
 	bool HasComponent() const
 	{
-		return m_Scene->m_Registry.any_of<T>(m_EntityHandle);
+		return m_Scene->m_Registry.any_of<T...>(m_EntityHandle);
 	}
 
 	/**

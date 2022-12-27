@@ -14,7 +14,7 @@ struct BoxCollider2DComponent
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	void* runtimeFixture = nullptr;
+	b2Body* runtimeBody = nullptr;
 
 	BoxCollider2DComponent() = default;
 	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;

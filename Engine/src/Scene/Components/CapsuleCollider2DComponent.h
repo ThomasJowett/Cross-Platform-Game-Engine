@@ -6,6 +6,8 @@
 
 #include "Physics/PhysicsMaterial.h"
 
+class b2Body;
+
 struct CapsuleCollider2DComponent
 {
 	enum class Direction
@@ -19,9 +21,11 @@ struct CapsuleCollider2DComponent
 	float radius = 0.5f;
 	float height = 2.0f;
 
+	bool isTrigger = false;
+
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	void* runtimeFixture = nullptr;
+	b2Body* runtimeBody = nullptr;
 
 	CapsuleCollider2DComponent() = default;
 	CapsuleCollider2DComponent(const CapsuleCollider2DComponent&) = default;
@@ -30,7 +34,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(offset, radius, height, direction);
+		archive(offset, radius, height, direction, isTrigger);
 
 		std::string relativePath;
 		if (physicsMaterial)
@@ -43,7 +47,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(offset, radius, height, direction);
+		archive(offset, radius, height, direction, isTrigger);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())

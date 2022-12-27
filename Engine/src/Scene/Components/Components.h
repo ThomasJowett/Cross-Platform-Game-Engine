@@ -39,7 +39,7 @@ RigidBody2DComponent,		\
 BoxCollider2DComponent,		\
 CircleCollider2DComponent,	\
 PolygonCollider2DComponent,	\
-CapsuleCollider2DComponent, \
+CapsuleCollider2DComponent,	\
 CircleRendererComponent,	\
 HierarchyComponent,			\
 LuaScriptComponent,			\
@@ -50,4 +50,10 @@ CanvasComponent,			\
 TextComponent,				\
 PointLightComponent			\
 
+#define COLLIDER_COMPONENTS	\
+BoxCollider2DComponent,		\
+CircleCollider2DComponent,	\
+PolygonCollider2DComponent,	\
+CapsuleCollider2DComponent,	\
+TilemapComponent			\
 

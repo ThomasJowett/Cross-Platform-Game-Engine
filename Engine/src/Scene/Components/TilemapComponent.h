@@ -8,6 +8,8 @@
 #include "Renderer/VertexArray.h"
 #include "Renderer/Material.h"
 
+class b2Body;
+
 struct TilemapComponent
 {
 	enum class Orientation
@@ -27,8 +29,12 @@ struct TilemapComponent
 
 	Orientation orientation = Orientation::orthogonal;
 
+	bool isTrigger = false;
+
 	Ref<VertexArray> vertexArray;
 	Ref<Material> material;
+
+	b2Body* runtimeBody = nullptr;
 
 	TilemapComponent() = default;
 	TilemapComponent(const TilemapComponent&) = default;

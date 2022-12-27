@@ -8,6 +8,8 @@
 
 #include <vector>
 
+class b2Body;
+
 struct PolygonCollider2DComponent
 {
 	std::vector<Vector2f> vertices = 
@@ -20,10 +22,11 @@ struct PolygonCollider2DComponent
 	};
 
 	Vector2f offset;
+	bool isTrigger;
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	void* runtimeFixture = nullptr;
+	b2Body* runtimeBody = nullptr;
 
 	PolygonCollider2DComponent() = default;
 	PolygonCollider2DComponent(const PolygonCollider2DComponent&) = default;
@@ -32,7 +35,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(offset, vertices);
+		archive(offset, vertices, isTrigger);
 
 		std::string relativePath;
 		if (physicsMaterial)
@@ -45,7 +48,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(offset, vertices);
+		archive(offset, vertices, isTrigger);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())

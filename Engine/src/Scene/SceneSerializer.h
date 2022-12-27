@@ -3,7 +3,10 @@
 #include "Scene.h"
 #include "Core/core.h"
 
-#include "TinyXml2/tinyxml2.h"
+namespace tinyxml2
+{
+class XMLElement;
+}
 
 class SceneSerializer
 {

@@ -8,6 +8,8 @@
 #include "Utilities/SerializationUtils.h"
 #include "AssetManager.h"
 
+#include "TinyXml2/tinyxml2.h"
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 SceneSerializer::SceneSerializer(Scene* scene)
@@ -285,6 +287,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			break;
 		}
 
+		pTilemapElement->SetAttribute("IsTrigger", component.isTrigger);
+
 		std::stringstream csv;
 
 		csv << std::endl;
@@ -343,6 +347,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.size);
+
+		pBoxColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
@@ -357,6 +363,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		pCircleColliderElement->SetAttribute("Radius", component.radius);
 		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
+		pCircleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<PolygonCollider2DComponent>())
@@ -374,6 +381,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		{
 			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Vertex"), vertex);
 		}
+
+		pPolygonColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<CapsuleCollider2DComponent>())
@@ -390,6 +399,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCapsuleColliderElement->SetAttribute("Height", component.height);
 
 		SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("Offset"), component.offset);
+		pCapsuleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<CircleRendererComponent>())
@@ -742,6 +752,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				component.orientation = TilemapComponent::Orientation::hexagonal;
 		}
 
+		component.isTrigger = pTilemapComponentElement->BoolAttribute("IsTrigger", false);
+
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
 
@@ -796,6 +808,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Offset"), component.offset);
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.size);
+
+		component.isTrigger = pBoxColliderComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	// CircleCollider2D -----------------------------------------------------------------------------------------------
@@ -814,6 +828,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		pCircleCollider2DComponentElement->QueryFloatAttribute("Radius", &component.radius);
 		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
+		component.isTrigger = pCircleCollider2DComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	// PolygonCollider2D --------------------------------------------------------------------------------------------
@@ -842,6 +857,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			component.vertices.push_back(vertex);
 			pVertexElement = pVertexElement->NextSiblingElement("Vertex");
 		}
+
+		component.isTrigger = pPolygonCollider2DComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	if (tinyxml2::XMLElement* pCapsuleColliderComponentElement = pEntityElement->FirstChildElement("CapsuleCollider2D"))
@@ -862,6 +879,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCapsuleColliderComponentElement->QueryFloatAttribute("Height", &component.height);
 
 		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
+
+		component.isTrigger = pCapsuleColliderComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------

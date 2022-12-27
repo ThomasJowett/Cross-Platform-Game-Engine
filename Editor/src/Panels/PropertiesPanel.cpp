@@ -379,6 +379,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 			}
 
+			Dirty(ImGui::Checkbox("Is Trigger", &tilemap.isTrigger));
+
 			if (ImGui::Button("Edit Tilemap"))
 				m_TilemapEditor->Show();
 		});
@@ -712,6 +714,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			Dirty(ImGui::Vector("Offset", boxCollider2D.offset));
 			Dirty(ImGui::Vector("Size", boxCollider2D.size));
+			Dirty(ImGui::Checkbox("Is Trigger", &boxCollider2D.isTrigger));
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
@@ -720,6 +723,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			Dirty(ImGui::Vector("Offset", circleCollider2D.offset));
 			Dirty(ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f));
+			Dirty(ImGui::Checkbox("Is Trigger", &circleCollider2D.isTrigger));
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
@@ -753,6 +757,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 				ImGui::TreePop();
 			}
+			Dirty(ImGui::Checkbox("Is Trigger", &polygonCollider2D.isTrigger));
 
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 
@@ -775,6 +780,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::Combo("Direction", (int*)&capsuleCollider2D.direction,
 				"Vertical\0"
 				"Horizontal\0"));
+
+			Dirty(ImGui::Checkbox("Is Trigger", &capsuleCollider2D.isTrigger));
 
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
