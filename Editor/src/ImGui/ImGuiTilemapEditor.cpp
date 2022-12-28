@@ -229,14 +229,30 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 		return;
 
 	Vector3f localPosition = mousePosition * Matrix4x4::Inverse(m_TransformComp->GetWorldMatrix());
+	Matrix4x4 tileTransform;
 
-	m_HoveredCoords[0] = (int)std::floor(localPosition.x);
-	m_HoveredCoords[1] = (int)std::floor(-localPosition.y);
+	if (m_TilemapComp->orientation == TilemapComponent::Orientation::orthogonal)
+	{
+		m_HoveredCoords[0] = (int)std::floor(localPosition.x);
+		m_HoveredCoords[1] = (int)std::floor(-localPosition.y);
 
-	Matrix4x4 tileTransform = m_TransformComp->GetWorldMatrix()
-		* Matrix4x4::Translate(Vector3f((float)m_HoveredCoords[0] + 0.5f, -(float)m_HoveredCoords[1] - 0.5f, 0.01f));
+		tileTransform = m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f((float)m_HoveredCoords[0] + 0.5f, -(float)m_HoveredCoords[1] - 0.5f, 0.01f));
+	}
+	else if (m_TilemapComp->orientation == TilemapComponent::Orientation::isometric)
+	{
+		Vector2f coords = m_TilemapComp->WorldToIso(Vector2f(localPosition.x, localPosition.y));
+		m_HoveredCoords[0] = (int)std::floor(coords.x);
+		m_HoveredCoords[1] = (int)std::floor(coords.y);
+
+		Vector2f isoPosition = m_TilemapComp->IsoToWorld(m_HoveredCoords[0], m_HoveredCoords[1]);
+
+		tileTransform = m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f(isoPosition.x, isoPosition.y, 0.01f));
+	}
 
 	uint32_t temp = 0;
+
 
 	if (IsHovered())
 	{

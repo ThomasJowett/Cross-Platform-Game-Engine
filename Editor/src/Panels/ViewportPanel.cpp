@@ -270,6 +270,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
 
+				Colour gridLineColour(0.2f, 0.2f, 0.2f, 0.5f);
 				switch (tilemapComp.orientation)
 				{
 				case TilemapComponent::Orientation::orthogonal:
@@ -282,7 +283,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						start = transformComp.GetWorldMatrix() * start;
 						end = transformComp.GetWorldMatrix() * end;
 
-						Renderer2D::DrawHairLine(start, end, Colour(0.2f, 0.2f, 0.2f, 0.5f), selectedEntity);
+						Renderer2D::DrawHairLine(start, end, gridLineColour, selectedEntity);
 					}
 					for (size_t i = 0; i < tilemapComp.tilesWide + 1; i++)
 					{
@@ -292,10 +293,34 @@ void ViewportPanel::OnUpdate(float deltaTime)
 						start = transformComp.GetWorldMatrix() * start;
 						end = transformComp.GetWorldMatrix() * end;
 
-						Renderer2D::DrawHairLine(start, end, Colour(0.2f, 0.2f, 0.2f, 0.5f), selectedEntity);
+						Renderer2D::DrawHairLine(start, end, gridLineColour, selectedEntity);
 					}
 					break;
 				case TilemapComponent::Orientation::isometric:
+					for (uint32_t i = 0; i < tilemapComp.tilesHigh + 1; i++)
+					{
+						Vector2f startIso = tilemapComp.IsoToWorld(0, i);
+						Vector2f endIso = tilemapComp.IsoToWorld(tilemapComp.tilesWide, i);
+						Vector3f start(startIso.x, startIso.y, 0.001f);
+						Vector3f end(endIso.x, endIso.y, 0.001f);
+
+						start = transformComp.GetWorldMatrix() * start;
+						end = transformComp.GetWorldMatrix() * end;
+
+						Renderer2D::DrawHairLine(start, end, gridLineColour, selectedEntity);
+					}
+					for (uint32_t i = 0; i < tilemapComp.tilesWide + 1; i++)
+					{
+						Vector2f startIso = tilemapComp.IsoToWorld(i, 0);
+						Vector2f endIso = tilemapComp.IsoToWorld(i, tilemapComp.tilesHigh);
+						Vector3f start(startIso.x, startIso.y, 0.001f);
+						Vector3f end(endIso.x, endIso.y, 0.001f);
+
+						start = transformComp.GetWorldMatrix() * start;
+						end = transformComp.GetWorldMatrix() * end;
+
+						Renderer2D::DrawHairLine(start, end, gridLineColour, selectedEntity);
+					}
 					break;
 				case TilemapComponent::Orientation::hexagonal:
 					break;

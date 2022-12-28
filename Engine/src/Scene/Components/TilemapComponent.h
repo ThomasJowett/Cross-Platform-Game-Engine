@@ -50,6 +50,9 @@ struct TilemapComponent
 
 	void Rebuild();
 
+	Vector2f IsoToWorld(uint32_t x, uint32_t y) const;
+	Vector2f WorldToIso(Vector2f v) const;
+
 private:
 	friend cereal::access;
 	template<typename Archive>

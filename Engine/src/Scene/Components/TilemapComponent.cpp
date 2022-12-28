@@ -1,58 +1,113 @@
 #include "stdafx.h"
 #include "TilemapComponent.h"
 
+Vector2f TilemapComponent::IsoToWorld(uint32_t x, uint32_t y) const
+{
+	return Vector2f((float)((int)x - (int)y) / 2.0f, -(float)(x + y) / 4.0f);
+}
+
+Vector2f TilemapComponent::WorldToIso(Vector2f v) const
+{
+	return Vector2f((v.x - v.y * 2.0f), -(v.x + v.y * 2.0f));
+}
+
 void TilemapComponent::Rebuild()
 {
 	vertexArray.reset();
 	material.reset();
 
-	if (!tileset)
+	if (!tileset || !tileset->GetSubTexture())
 		return;
 
 	std::vector<float> verticesList;
 	std::vector<uint32_t> indicesList;
 
 	Vector2f positions[4] = {
-				{ 0.0f, 1.0f },
-				{ 1.0f, 1.0f },
-				{ 1.0f, 0.0f },
-				{ 0.0f, 0.0f }
+					{ 0.0f, 1.0f },
+					{ 1.0f, 1.0f },
+					{ 1.0f, 0.0f },
+					{ 0.0f, 0.0f }
 	};
 
-	uint32_t index = 0;
-
-	for (size_t i = 0; i < tilesHigh; i++)
+	if (orientation == Orientation::orthogonal)
 	{
-		for (size_t j = 0; j < tilesWide; j++)
+		// 0,0________ X
+		//   |_|_|_|_|
+		//   |_|_|_|_|
+		//   |_|_|_|_|
+		//   |_|_|_|_|
+		//  Y
+
+		for (size_t i = 0; i < tilesHigh; i++)
 		{
-			if (tiles[i][j] == 0)
-				continue;
-
-			tileset->SetCurrentTile(tiles[i][j] - 1);
-			const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
-
-			for (size_t v = 0; v < 4; v++)
+			for (size_t j = 0; j < tilesWide; j++)
 			{
-				// Position
-				verticesList.push_back((float)(j) + positions[v].x);
-				verticesList.push_back(-(float)(i) - positions[v].y);
-				verticesList.push_back(0.0f);
+				if (tiles[i][j] == 0)
+					continue;
 
-				// TexCoord
-				verticesList.push_back(texCoords[v].x);
-				verticesList.push_back(texCoords[v].y);
+				tileset->SetCurrentTile(tiles[i][j] - 1);
+				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
+
+				for (size_t v = 0; v < 4; v++)
+				{
+					// Position
+					verticesList.push_back((float)(j)+positions[v].x);
+					verticesList.push_back(-(float)(i)-positions[v].y);
+					verticesList.push_back(0.0f);
+
+					// TexCoord
+					verticesList.push_back(texCoords[v].x);
+					verticesList.push_back(texCoords[v].y);
+				}
+
+
 			}
+		}
+	}
+	else if (orientation == Orientation::isometric)
+	{
+		//   0,0
+		//    /\
+		//   /\/\
+		// Y/\/\/\ X
+		//  \/\/\/
+		//   \/\/
+		//    \/
 
-			
+		for (uint32_t i = 0; i < tilesHigh; i++)
+		{
+			for (uint32_t j = 0; j < tilesWide; j++)
+			{
+				if (tiles[i][j] == 0)
+					continue;
+
+				tileset->SetCurrentTile(tiles[i][j] - 1);
+				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
+
+				for (uint32_t v = 0; v < 4; v++)
+				{
+					Vector2f isoCoords = IsoToWorld(j, i);
+
+					verticesList.push_back(isoCoords.x + positions[3 - v].x - 0.5f);
+					verticesList.push_back(isoCoords.y + positions[3 - v].y - 0.5f);
+					verticesList.push_back((i + j) * 0.0001f);
+
+					// TexCoord
+					verticesList.push_back(texCoords[v].x);
+					verticesList.push_back(texCoords[v].y);
+				}
+			}
 		}
 	}
 
 	if (verticesList.size() == 0)
 		return;
 
-	for (size_t i = 0; i < tilesHigh - 1; i++)
+	uint32_t index = 0;
+
+	for (size_t i = 0; i < tilesHigh; i++)
 	{
-		for (size_t j = 0; j < tilesWide - 1; j++)
+		for (size_t j = 0; j < tilesWide; j++)
 		{
 			indicesList.push_back(index);
 			indicesList.push_back(index + 1);

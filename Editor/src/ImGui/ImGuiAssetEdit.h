@@ -28,13 +28,13 @@ IMGUI_API bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, 
 		}
 		else
 		{
-			std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(asset->GetFilepath());
-
-			if (lastWrittenTime != s_AssetFileTime)
-			{
-				asset->Reload();
-				s_AssetFileTime = lastWrittenTime;
-			}
+			//std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(asset->GetFilepath());
+			//
+			//if (lastWrittenTime != s_AssetFileTime)
+			//{
+			//	asset->Reload();
+			//	s_AssetFileTime = lastWrittenTime;
+			//}
 		}
 	}
 
