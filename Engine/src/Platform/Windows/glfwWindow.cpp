@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "glfwWindow.h"
 
-
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
@@ -131,7 +130,6 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 
 	GLFWmonitor* monitor = nullptr;
 
-
 	if (m_Data.mode == WindowMode::WINDOWED)
 	{
 		m_OldWindowedParams.width = m_Data.width;
@@ -249,7 +247,7 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
-		
+
 		else if (api == RendererAPI::API::Directx11)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
@@ -495,5 +493,4 @@ void glfwWindow::Shutdown()
 		ENGINE_INFO("Terminating GLFW");
 		glfwTerminate();
 	}
-
 }

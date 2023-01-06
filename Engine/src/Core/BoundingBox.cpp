@@ -22,7 +22,7 @@ void BoundingBox::EnclosePoints(const float* vertices, uint32_t vertexCount, int
 
 	Invalidate();
 
-	for (uint32_t i = 0; i < vertexCount; i += stride)
+	for (uint32_t i = 0; i < vertexCount * stride; i += stride)
 	{
 		Merge(Vector3f(vertices[i], vertices[i + 1], vertices[i + 2]));
 	}
@@ -71,9 +71,9 @@ void BoundingBox::Invalidate()
 	m_Min.y = FLT_MAX;
 	m_Min.z = FLT_MAX;
 
-	m_Max.x = FLT_MIN;
-	m_Max.y = FLT_MIN;
-	m_Max.z = FLT_MIN;
+	m_Max.x = -FLT_MAX;
+	m_Max.y = -FLT_MAX;
+	m_Max.z = -FLT_MAX;
 }
 
 bool BoundingBox::IsValid() const

@@ -85,6 +85,8 @@ private:
 	bool m_ShowLighting = true;
 	bool m_ShowReflections = true;
 
+	int m_SelectedViewportShading = 0;
+
 	Ref<HierarchyPanel> m_HierarchyPanel;
 	Entity m_HoveredEntity;
 

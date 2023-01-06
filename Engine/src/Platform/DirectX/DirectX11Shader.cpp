@@ -150,7 +150,6 @@ HRESULT DirectX11Shader::CompileShaders(const std::filesystem::path& filename)
 	{
 		hr = g_D3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
 
-
 		if (SUCCEEDED(hr))
 			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_DomainReflector);
 	}

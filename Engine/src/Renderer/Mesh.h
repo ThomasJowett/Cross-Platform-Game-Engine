@@ -1,9 +1,6 @@
 #pragma once
 
-#include "VertexArray.h"
-
-#include "cereal/cereal.hpp"
-#include "cereal/access.hpp"
+#include "Buffer.h"
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
 #include "Core/Asset.h"
@@ -55,22 +52,49 @@ static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float2, "a_TexCoord"}
 };
 
+struct Submesh
+{
+	uint32_t firstIndex;
+	uint32_t vertexOffset;
+	uint32_t indexCount;
+	uint32_t vertexCount;
+
+	uint32_t materialIndex;
+
+	Matrix4x4 transform;
+	Matrix4x4 localTransform;
+
+	BoundingBox boundingBox;
+	void SetBoundingBox(Vector3f min, Vector3f max);
+};
+
 class Mesh
 {
 public:
 	Mesh() = default;
-	explicit Mesh(Ref<VertexArray> vertexArray);
-	explicit Mesh(Ref<VertexArray> vertexArray, Ref<Material> material);
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material);
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials);
 	virtual ~Mesh() = default;
-	void LoadModel(Ref<VertexArray> vertexArray);
 
-	Ref<VertexArray> GetVertexArray() const { return m_VertexArray; }
+	Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
+	Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
+
+	const std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
+
 	const BoundingBox& GetBounds() const { return m_Bounds; }
 	void SetBounds(const BoundingBox& bb) { m_Bounds = bb; }
-	void SetMaterial(Ref<Material> material) { m_Material = material; }
-	Ref<Material> GetMaterial() const { return m_Material; }
+	void SetMaterials(const std::vector<Ref<Material>> materials) { m_Materials = materials; }
+	std::vector<Ref<Material>> GetMaterials() const { return m_Materials; }
+
+	uint32_t GetIndexCount() { return (uint32_t)m_Indices.size(); }
 private:
-	Ref<VertexArray> m_VertexArray;
+	Ref<VertexBuffer> m_VertexBuffer;
+	Ref<IndexBuffer> m_IndexBuffer;
+	std::vector<Submesh> m_Submeshes;
+	std::vector<Ref<Material>> m_Materials;
+
+	std::vector<Vertex> m_Vertices;
+	std::vector<uint32_t> m_Indices;
+
 	BoundingBox m_Bounds;
-	Ref<Material> m_Material;
 };

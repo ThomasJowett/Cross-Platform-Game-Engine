@@ -5,7 +5,7 @@
 
 struct PrimitiveComponent
 {
-	Ref<VertexArray> mesh;
+	Ref<Mesh> mesh;
 	Ref<Material> material;
 
 	enum class Shape
@@ -105,8 +105,6 @@ struct PrimitiveComponent
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCube(cubeWidth, cubeHeight, cubeDepth);
 		if (!material) material = Material::GetDefaultMaterial();
-
-		m_Bounds = BoundingBox(Vector3f(-width * .5f, -height * .5f, -depth * .5f), Vector3f(width * .5f, height * .5f, depth * .5f));
 	}
 
 	void SetSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
@@ -118,8 +116,6 @@ struct PrimitiveComponent
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateSphere(radius, longitudeLines, latitudeLines);
 		if (!material) material = Material::GetDefaultMaterial();
-
-		m_Bounds = BoundingBox(Vector3f(-radius, -radius, -radius), Vector3f(radius, radius, radius));
 	}
 
 	void SetPlane(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
@@ -134,8 +130,6 @@ struct PrimitiveComponent
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateGrid(width, length, widthLines, lengthLines, tileU, tileV);
 		if (!material) material = Material::GetDefaultMaterial();
-
-		m_Bounds = BoundingBox(Vector3f(-width * .5f, -0.0f, -length * .5f), Vector3f(width * .5f, 0.0f, length * .5f));
 	}
 
 	void SetCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
@@ -150,7 +144,6 @@ struct PrimitiveComponent
 		mesh = GeometryGenerator::CreateCylinder(bottomRadius, topRadius, height, sliceCount, stackCount);
 		if (!material) material = Material::GetDefaultMaterial();
 		float maxRadius = std::max(bottomRadius, topRadius);
-		m_Bounds = BoundingBox(Vector3f(-maxRadius, -height * 0.5f, -maxRadius), Vector3f(maxRadius, height * 0.5f, maxRadius));
 	}
 
 	void SetCone(float bottomRadius, float height, uint32_t sliceCount, uint32_t stackCount)
@@ -163,7 +156,6 @@ struct PrimitiveComponent
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCylinder(bottomRadius, 0, height, sliceCount, stackCount);
 		if (!material) material = Material::GetDefaultMaterial();
-		m_Bounds = BoundingBox(Vector3f(-bottomRadius, -height * 0.5f, -bottomRadius), Vector3f(bottomRadius, height * 0.5f, bottomRadius));
 	}
 
 	void SetTorus(float outerRadius, float innerRadius, uint32_t sliceCount)
@@ -174,8 +166,7 @@ struct PrimitiveComponent
 		type = Shape::Torus;
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateTorus(outerRadius, innerRadius, sliceCount);
-		if(!material) material = Material::GetDefaultMaterial();
-		m_Bounds = BoundingBox(Vector3f(-(outerRadius + innerRadius) * .5f, -innerRadius * .5f, -(outerRadius + innerRadius) * .5f), Vector3f((outerRadius + innerRadius) * .5f, innerRadius * .5f, (outerRadius + innerRadius) * .5f));
+		if (!material) material = Material::GetDefaultMaterial();
 	}
 
 	void SetType(Shape type)
@@ -203,12 +194,9 @@ struct PrimitiveComponent
 		}
 	}
 
-	const BoundingBox& GetBounds() { return m_Bounds; }
-
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
 private:
-	BoundingBox m_Bounds;
 	friend cereal::access;
 
 	template<typename Archive>

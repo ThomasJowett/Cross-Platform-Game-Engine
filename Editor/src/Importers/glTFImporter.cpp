@@ -77,7 +77,7 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 	}
 	if (node.matrix.size() == 16)
 	{
-		newNode->matrix  = Matrix4x4(
+		newNode->matrix = Matrix4x4(
 			(float)node.matrix[0], (float)node.matrix[4], (float)node.matrix[8], (float)node.matrix[12],
 			(float)node.matrix[1], (float)node.matrix[5], (float)node.matrix[9], (float)node.matrix[13],
 			(float)node.matrix[2], (float)node.matrix[6], (float)node.matrix[10], (float)node.matrix[14],
@@ -220,31 +220,31 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 						break;
 					}
 				}
-				Ref<Mesh> newPrimitive = CreateRef<Mesh>();
-				newPrimitive->SetBounds(BoundingBox(posMin, posMax));
-
-				Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(&loaderInfo.vertexBuffer->position[0], vertexCount);
-
-				Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(loaderInfo.indexBuffer + vertexStart, indexCount);
-
-				Ref<VertexArray> vertexArray = VertexArray::Create();
-				vertexArray->AddVertexBuffer(vertexBuffer);
-				vertexArray->SetIndexBuffer(indexBuffer);
-
-				newPrimitive->LoadModel(vertexArray);
-
-				newMesh->AddMesh(newPrimitive);
+				//Ref<Mesh> newPrimitive = CreateRef<Mesh>();
+				//newPrimitive->SetBounds(BoundingBox(posMin, posMax));
+				//
+				//Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(&loaderInfo.vertexBuffer->position[0], vertexCount);
+				//
+				//Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(loaderInfo.indexBuffer + vertexStart, indexCount);
+				//
+				//Ref<VertexArray> vertexArray = VertexArray::Create();
+				//vertexArray->AddVertexBuffer(vertexBuffer);
+				//vertexArray->SetIndexBuffer(indexBuffer);
+				//
+				//newPrimitive->LoadModel(vertexArray);
+				//
+				//newMesh->AddMesh(newPrimitive);
 			}
-			for (auto& p : newMesh->GetMeshes())
-			{
-				if (p->GetBounds().IsValid() && !newMesh->GetBounds().IsValid())
-				{
-					newMesh->SetBounds(p->GetBounds());
-				}
-				BoundingBox bounds = newMesh->GetBounds();
-				bounds.Merge(p->GetBounds());
-				newMesh->SetBounds(bounds);
-			}
+			//for (auto& p : newMesh->GetMeshes())
+			//{
+			//	if (p->GetBounds().IsValid() && !newMesh->GetBounds().IsValid())
+			//	{
+			//		newMesh->SetBounds(p->GetBounds());
+			//	}
+			//	BoundingBox bounds = newMesh->GetBounds();
+			//	bounds.Merge(p->GetBounds());
+			//	newMesh->SetBounds(bounds);
+			//}
 			//newNode->mesh = newMesh;
 		}
 	}
@@ -302,7 +302,6 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 
 		/*for (auto node : linearNodes)
 		{
-
 		}*/
 
 		delete[] loaderInfo.vertexBuffer;
@@ -312,5 +311,4 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 	{
 		CLIENT_ERROR("Could not load gltf file: {0}", error);
 	}
-
 }

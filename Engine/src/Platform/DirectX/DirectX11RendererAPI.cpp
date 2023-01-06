@@ -71,10 +71,8 @@ void DirectX11RendererAPI::Clear()
 	}
 }
 
-void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, bool backFaceCull, DrawMode drawMode)
+void DirectX11RendererAPI::DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
-	vertexArray->Bind();
-
 	if (!backFaceCull)
 	{
 		g_ImmediateContext->RSSetState(m_RSCullNone);
@@ -98,10 +96,9 @@ void DirectX11RendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint
 	}
 
 	g_ImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-	g_ImmediateContext->DrawIndexed(count, 0, 0);
+	g_ImmediateContext->DrawIndexed(indexCount, startIndex, vertexOffset);
 }
 
-void DirectX11RendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount)
+void DirectX11RendererAPI::DrawLines(uint32_t vertexCount)
 {
 }

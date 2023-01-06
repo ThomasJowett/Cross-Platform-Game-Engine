@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Renderer2D.h"
 
-#include "VertexArray.h"
+#include "Buffer.h"
 #include "Shader.h"
 
 #include "RenderCommand.h"
@@ -85,24 +85,22 @@ struct Renderer2DData
 	const uint32_t maxLineVertices = maxLines * 4;
 	const uint32_t maxLineIndices = maxLines * 6;
 
-	Ref<VertexArray> quadVertexArray;
 	Ref<VertexBuffer> quadVertexBuffer;
+	Ref<IndexBuffer> quadIndexBuffer;
 	Ref<Shader> quadShader;
 	Ref<Texture> whiteTexture;
 
-	Ref<VertexArray> circleVertexArray;
 	Ref<VertexBuffer> circleVertexBuffer;
 	Ref<Shader> circleShader;
 
-	Ref<VertexArray> lineVertexArray;
 	Ref<VertexBuffer> lineVertexBuffer;
+	Ref<IndexBuffer> lineIndexBuffer;
 	Ref<Shader> lineShader;
 
-	Ref<VertexArray> textVertexArray;
 	Ref<VertexBuffer> textVertexBuffer;
+	Ref<IndexBuffer> textIndexBuffer;
 	Ref<Shader> textShader;
 
-	Ref<VertexArray> hairLineVertexArray;
 	Ref<VertexBuffer> hairLineVertexBuffer;
 	Ref<Shader> hairLineShader;
 
@@ -149,8 +147,6 @@ bool Renderer2D::Init()
 
 	// Quads --------------------------------------------------------------------------------------------
 
-	s_Data.quadVertexArray = VertexArray::Create();
-
 	s_Data.quadVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(QuadVertex));
 
 	s_Data.quadVertexBuffer->SetLayout({
@@ -160,8 +156,6 @@ bool Renderer2D::Init()
 			{ShaderDataType::Float, "a_TexIndex"},
 			{ShaderDataType::Int, "a_EntityId"}
 		});
-
-	s_Data.quadVertexArray->AddVertexBuffer(s_Data.quadVertexBuffer);
 
 	s_Data.quadVertexBufferBase = new QuadVertex[s_Data.maxVertices];
 
@@ -181,13 +175,10 @@ bool Renderer2D::Init()
 		offset += 4;
 	}
 
-	Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.maxIndices);
-	s_Data.quadVertexArray->SetIndexBuffer(quadIndexBuffer);
+	s_Data.quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.maxIndices);
 	delete[] quadIndices;
 
 	// Circles ------------------------------------------------------------------------------------------
-
-	s_Data.circleVertexArray = VertexArray::Create();
 
 	s_Data.circleVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(CircleVertex));
 
@@ -200,14 +191,10 @@ bool Renderer2D::Init()
 			{ShaderDataType::Int, "a_EntityId"}
 		});
 
-	s_Data.circleVertexArray->AddVertexBuffer(s_Data.circleVertexBuffer);
-
 	s_Data.circleVertexBufferBase = new CircleVertex[s_Data.maxVertices];
-	s_Data.circleVertexArray->SetIndexBuffer(quadIndexBuffer); // Index buffer the same as quad
 
 	// Lines --------------------------------------------------------------------------------------------
 
-	s_Data.lineVertexArray = VertexArray::Create();
 	s_Data.lineVertexBuffer = VertexBuffer::Create(s_Data.maxLineVertices * sizeof(LineVertex));
 
 	s_Data.lineVertexBuffer->SetLayout({
@@ -217,7 +204,6 @@ bool Renderer2D::Init()
 		{ShaderDataType::Float, "a_width"},
 		{ShaderDataType::Float, "a_height"}
 		});
-	s_Data.lineVertexArray->AddVertexBuffer(s_Data.lineVertexBuffer);
 	s_Data.lineVertexBufferBase = new LineVertex[s_Data.maxLineVertices];
 
 	uint32_t* lineIndices = new uint32_t[s_Data.maxLineIndices];
@@ -235,12 +221,10 @@ bool Renderer2D::Init()
 		offset += 4;
 	}
 
-	Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.maxLineIndices);
-	s_Data.lineVertexArray->SetIndexBuffer(lineIndexBuffer);
+	s_Data.lineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.maxLineIndices);
 	delete[] lineIndices;
 
 	// Text ------------------------------------------------------------------------------------------
-	s_Data.textVertexArray = VertexArray::Create();
 	s_Data.textVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(TextVertex));
 
 	s_Data.textVertexBuffer->SetLayout({
@@ -250,8 +234,6 @@ bool Renderer2D::Init()
 		{ShaderDataType::Float, "a_texIndex"},
 		{ShaderDataType::Int, "a_EntityId"}
 		});
-
-	s_Data.textVertexArray->AddVertexBuffer(s_Data.textVertexBuffer);
 	s_Data.textVertexBufferBase = new TextVertex[s_Data.maxVertices];
 
 	uint32_t* textIndices = new uint32_t[s_Data.maxIndices];
@@ -269,13 +251,10 @@ bool Renderer2D::Init()
 		offset += 4;
 	}
 
-	Ref<IndexBuffer> textIndexBuffer = IndexBuffer::Create(textIndices, s_Data.maxIndices);
-	s_Data.textVertexArray->SetIndexBuffer(textIndexBuffer);
+	s_Data.textIndexBuffer = IndexBuffer::Create(textIndices, s_Data.maxIndices);
 	delete[] textIndices;
 
 	// Hair Lines ------------------------------------------------------------------------------------
-
-	s_Data.hairLineVertexArray = VertexArray::Create();
 
 	s_Data.hairLineVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(HairLineVertex));
 
@@ -284,8 +263,6 @@ bool Renderer2D::Init()
 			{ShaderDataType::Float4, "a_Colour"},
 			{ShaderDataType::Int, "a_EntityId"}
 		});
-
-	s_Data.hairLineVertexArray->AddVertexBuffer(s_Data.hairLineVertexBuffer);
 
 	s_Data.hairLineVertexBufferBase = new HairLineVertex[s_Data.maxVertices];
 
@@ -305,8 +282,8 @@ bool Renderer2D::Init()
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
 
 	s_Data.quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f };
-	s_Data.quadVertexPositions[1] = {  0.5f, -0.5f, 0.0f };
-	s_Data.quadVertexPositions[2] = {  0.5f,  0.5f, 0.0f };
+	s_Data.quadVertexPositions[1] = { 0.5f, -0.5f, 0.0f };
+	s_Data.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
 	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
@@ -366,8 +343,13 @@ void Renderer2D::FlushQuads()
 		s_Data.textureSlots[i]->Bind(i);
 	}
 	s_Data.quadVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.quadShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount, false);
+
+	RenderCommand::DrawIndexed(s_Data.quadIndexCount, 0U, 0U, false);
+
+	s_Data.quadVertexBuffer->UnBind();
+	s_Data.quadIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -379,8 +361,11 @@ void Renderer2D::FlushCircles()
 	s_Data.circleVertexBuffer->SetData(s_Data.circleVertexBufferBase, dataSize);
 
 	s_Data.circleVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.circleShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount, false);
+	RenderCommand::DrawIndexed(s_Data.circleIndexCount, 0U, 0U, false);
+	s_Data.quadIndexBuffer->UnBind();
+	s_Data.circleVertexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -392,8 +377,11 @@ void Renderer2D::FlushLines()
 	s_Data.lineVertexBuffer->SetData(s_Data.lineVertexBufferBase, dataSize);
 
 	s_Data.lineVertexBuffer->Bind();
+	s_Data.lineIndexBuffer->Bind();
 	s_Data.lineShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount, false);
+	RenderCommand::DrawIndexed(s_Data.lineIndexCount, 0U, 0U, false);
+	s_Data.lineVertexBuffer->UnBind();
+	s_Data.lineIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -405,8 +393,11 @@ void Renderer2D::FlushHairLines()
 	s_Data.hairLineVertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
 
 	s_Data.hairLineVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.hairLineShader->Bind();
-	RenderCommand::DrawLines(s_Data.hairLineVertexArray, s_Data.hairLineVertexCount);
+	RenderCommand::DrawLines(s_Data.hairLineVertexCount);
+	s_Data.hairLineVertexBuffer->UnBind();
+	s_Data.quadIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -424,8 +415,11 @@ void Renderer2D::FlushText()
 	}
 
 	s_Data.textVertexBuffer->Bind();
+	s_Data.textIndexBuffer->Bind();
 	s_Data.textShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.textVertexArray, s_Data.textIndexCount);
+	RenderCommand::DrawIndexed(s_Data.textIndexCount);
+	s_Data.textVertexBuffer->UnBind();
+	s_Data.textIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 

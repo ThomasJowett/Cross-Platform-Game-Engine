@@ -3,6 +3,7 @@
 #include "Events/SceneEvent.h"
 #include "Core/Application.h"
 #include "AssetManager.h"
+#include "Core/Settings.h"
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
@@ -120,6 +121,8 @@ bool SceneManager::FinalChangeScene()
 
 	SceneChanged event(s_NextFilepath);
 	Application::CallEvent(event);
+
+	s_CurrentScene->OnViewportResize(Settings::GetInt("Display", "Window_Width"), Settings::GetInt("Display", "Window_Height"));
 
 	s_NextFilepath.clear();
 

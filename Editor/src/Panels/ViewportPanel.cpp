@@ -38,7 +38,8 @@ ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
 
-	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f), gridMaterial);
+	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f);
+	m_GridMesh->SetMaterials({ gridMaterial });
 }
 
 void ViewportPanel::OnAttach()
@@ -591,7 +592,7 @@ void ViewportPanel::OnImGuiRender()
 
 			if (ImGui::BeginMenu("Show"))
 			{
-				if(ImGui::MenuItem("Collision", "", &m_ShowCollision))
+				if (ImGui::MenuItem("Collision", "", &m_ShowCollision))
 					SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
 				ImGui::MenuItem("Statistics", "", &m_ShowStats);
@@ -602,6 +603,7 @@ void ViewportPanel::OnImGuiRender()
 
 				ImGui::EndMenu();
 			}
+
 			ImGui::EndMenuBar();
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		}
@@ -698,7 +700,7 @@ void ViewportPanel::OnImGuiRender()
 							StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
 							staticMeshComp.mesh = AssetManager::GetAsset<StaticMesh>(*file);
-							staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMeshes().size());
+							staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMesh()->GetSubmeshes().size());
 						}
 					}
 					else if (file->extension() == ".tmx")
@@ -786,6 +788,7 @@ void ViewportPanel::OnImGuiRender()
 
 				float bounds[6];
 
+
 				if (selectedEntity.HasComponent<SpriteComponent>()
 					|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
 					|| selectedEntity.HasComponent<CircleRendererComponent>())
@@ -797,35 +800,34 @@ void ViewportPanel::OnImGuiRender()
 					bounds[4] = 0.5f;
 					bounds[5] = 0.0f;
 				}
-				else if (selectedEntity.HasComponent<StaticMeshComponent>())
+				else if (selectedEntity.HasComponent<StaticMeshComponent, PrimitiveComponent, TilemapComponent>())
 				{
-					//TODO: add a get bounds function method from mesh
-					bounds[0] = -0.5f;
-					bounds[1] = -0.5f;
-					bounds[2] = -0.5f;
-					bounds[3] = 0.5f;
-					bounds[4] = 0.5f;
-					bounds[5] = 0.5f;
-				}
-				else if (selectedEntity.HasComponent<PrimitiveComponent>())
-				{
-					const BoundingBox& box = selectedEntity.GetComponent<PrimitiveComponent>().GetBounds();
-					bounds[0] = box.Min().x;
-					bounds[1] = box.Min().y;
-					bounds[2] = box.Min().z;
-					bounds[3] = box.Max().x;
-					bounds[4] = box.Max().y;
-					bounds[5] = box.Max().z;
-				}
-				else if (selectedEntity.HasComponent<TilemapComponent>())
-				{
-					TilemapComponent& tilemapComp = selectedEntity.GetComponent<TilemapComponent>();
-					bounds[0] = 0.0f;
-					bounds[1] = -(float)tilemapComp.tilesHigh;
-					bounds[2] = 0.0f;
-					bounds[3] = (float)tilemapComp.tilesWide;
-					bounds[4] = 0.0f;
-					bounds[5] = 0.0f;
+					const BoundingBox* box = nullptr;
+					if (auto comp = selectedEntity.TryGetComponent<StaticMeshComponent>())
+					{
+						if (comp->mesh)
+							box = &comp->mesh->GetBounds();
+					}
+					else if (auto comp = selectedEntity.TryGetComponent<PrimitiveComponent>())
+					{
+						if (comp->mesh)
+							box = &comp->mesh->GetBounds();
+					}
+					else if (auto comp = selectedEntity.TryGetComponent<TilemapComponent>())
+					{
+						if (comp->mesh)
+							box = &comp->mesh->GetBounds();
+					}
+
+					if (box)
+					{
+						bounds[0] = box->Min().x;
+						bounds[1] = box->Min().y;
+						bounds[2] = box->Min().z;
+						bounds[3] = box->Max().x;
+						bounds[4] = box->Max().y;
+						bounds[5] = box->Max().z;
+					}
 				}
 				else if (selectedEntity.HasComponent<BoxCollider2DComponent>())
 				{

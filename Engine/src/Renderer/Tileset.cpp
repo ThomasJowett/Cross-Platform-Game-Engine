@@ -74,7 +74,10 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 				m_Tiles[tileId].SetProbability(atof(probability));
 			const char* shape = pTile->Attribute("Shape");
 			if (shape)
+			{
 				m_Tiles[tileId].SetCollisionShape((Tile::CollisionShape)atoi(shape));
+				m_HasCollision = true;
+			}
 
 			pTile = pTile->NextSiblingElement("Tile");
 		}

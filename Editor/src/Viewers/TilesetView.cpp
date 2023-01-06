@@ -160,6 +160,7 @@ void TilesetView::OnImGuiRender()
 			{
 				m_Dirty = true;
 				selectedTile.SetCollisionShape(Tile::CollisionShape::Rect);
+				m_LocalTileset->SetHasCollision(true);
 			}
 			ImGui::Tooltip("Add Box Collider");
 			ImGui::SameLine();
@@ -170,6 +171,17 @@ void TilesetView::OnImGuiRender()
 			{
 				m_Dirty = true;
 				selectedTile.SetCollisionShape(Tile::CollisionShape::None);
+
+				bool hasCollision = false;
+				for (uint32_t i = 0; i < cellsWide * cellsTall; ++i)
+				{
+					if (m_LocalTileset->GetTile(i).GetCollisionShape() != Tile::CollisionShape::None)
+					{
+						hasCollision = true;
+						break;
+					}
+				}
+				m_LocalTileset->SetHasCollision(hasCollision);
 			}
 			ImGui::Tooltip("Remove Collider");
 

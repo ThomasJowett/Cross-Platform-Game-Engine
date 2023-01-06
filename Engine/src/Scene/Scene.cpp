@@ -189,7 +189,7 @@ void Scene::OnRuntimeStart()
 
 	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
 
-	if(m_DrawDebug)
+	if (m_DrawDebug)
 		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
 }
 
@@ -295,16 +295,17 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
 		if (staticMeshComp.mesh)
 		{
-			const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
-			if (staticMeshComp.materialOverrides.size() != meshes.size())
-				staticMeshComp.materialOverrides.resize(meshes.size());
-			for (size_t i = 0; i < meshes.size(); i++)
-			{
-				if (!staticMeshComp.materialOverrides[i].empty())
-					Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-				else
-					Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-			}
+			Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
+			//const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
+			//if (staticMeshComp.materialOverrides.size() != meshes.size())
+			//	staticMeshComp.materialOverrides.resize(meshes.size());
+			//for (size_t i = 0; i < meshes.size(); i++)
+			//{
+			//	if (!staticMeshComp.materialOverrides[i].empty())
+			//		Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+			//	else
+			//		Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+			//}
 		}
 	}
 
@@ -312,16 +313,16 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : primitiveGroup)
 	{
 		auto&& [transformComp, primitiveComp] = primitiveGroup.get(entity);
-		Renderer::Submit(primitiveComp.material, primitiveComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
+		Renderer::Submit(primitiveComp.mesh, primitiveComp.material, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
 	for (auto entity : tilemapGroup)
 	{
 		auto&& [transformComp, tilemapComp] = tilemapGroup.get(entity);
-		if (tilemapComp.tileset && tilemapComp.vertexArray)
+		if (tilemapComp.tileset && tilemapComp.mesh)
 		{
-			Renderer::Submit(tilemapComp.material, tilemapComp.vertexArray, transformComp.GetWorldMatrix(), (int)entity);
+			Renderer::Submit(tilemapComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 		}
 	}
 
@@ -391,7 +392,7 @@ void Scene::OnUpdate(float deltaTime)
 	for (const auto& entity : m_DestroyedEntities)
 	{
 		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
-		
+
 		m_Registry.destroy(entity);
 	}
 	m_DestroyedEntities.clear();
@@ -453,33 +454,34 @@ void Scene::OnFixedUpdate()
 				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
-		m_Registry.view<TransformComponent, BoxCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+		m_Registry.view<TransformComponent, BoxCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
 				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
-		m_Registry.view<TransformComponent, CircleCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+		m_Registry.view<TransformComponent, CircleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
 				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
-		m_Registry.view<TransformComponent, PolygonCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
-			{
-				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
-			});
-		
-		m_Registry.view<TransformComponent, CapsuleCollider2DComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+		m_Registry.view<TransformComponent, PolygonCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
 				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
-		m_Registry.view<TransformComponent, TilemapComponent>().each([=](auto entity, auto& transformComp, auto& colliderComp)
+		m_Registry.view<TransformComponent, CapsuleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
 				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, TilemapComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				if(colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
 
-	for (const auto& entity: m_DestroyedEntities)
+	for (const auto& entity : m_DestroyedEntities)
 	{
 		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
 		m_Registry.destroy(entity);

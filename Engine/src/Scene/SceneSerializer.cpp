@@ -132,7 +132,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pSceneCameraElement->SetAttribute("PerspectiveNear", component.camera.GetPerspectiveNear());
 		pSceneCameraElement->SetAttribute("PerspectiveFar", component.camera.GetPerspectiveFar());
 		pSceneCameraElement->SetAttribute("FOV", component.camera.GetVerticalFov());
-		if(component.fixedAspectRatio)
+		if (component.fixedAspectRatio)
 			pSceneCameraElement->SetAttribute("AspectRatio", component.camera.GetAspectRatio());
 	}
 
@@ -173,8 +173,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		if (component.mesh)
 			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
-		for (const std::string& materialOverride : component.materialOverrides)
-			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), std::filesystem::path(materialOverride));
+		for (const auto& materialOverride : component.materialOverrides)
+			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
 	}
 
 	if (entity.HasComponent<PrimitiveComponent>())
@@ -183,7 +183,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pPrimitiveElement = pElement->InsertNewChildElement("Primitive");
 
-		if(component.material != Material::GetDefaultMaterial())
+		if (component.material != Material::GetDefaultMaterial())
 			SerializationUtils::Encode(pPrimitiveElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 
 		pPrimitiveElement->SetAttribute("Type", (int)component.type);
@@ -315,7 +315,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	{
 		tinyxml2::XMLElement* pTextElement = pElement->InsertNewChildElement("Text");
 		pTextElement->SetText(component->text.c_str());
-		if(component->font != Font::GetDefaultFont())
+		if (component->font != Font::GetDefaultFont())
 			SerializationUtils::Encode(pTextElement->InsertNewChildElement("Font"), component->font->GetFilepath());
 
 		pTextElement->SetAttribute("MaxWidth", component->maxWidth);
@@ -342,7 +342,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pBoxColliderElement = pElement->InsertNewChildElement("BoxCollider2D");
 
-		if(component.physicsMaterial)
+		if (component.physicsMaterial)
 			SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
 
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
@@ -359,7 +359,6 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		if (component.physicsMaterial)
 			SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
-
 
 		pCircleColliderElement->SetAttribute("Radius", component.radius);
 		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
@@ -543,7 +542,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveNear", &sceneCamera.m_PerspectiveNear);
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveFar", &sceneCamera.m_PerspectiveFar);
 			pSceneCameraElement->QueryFloatAttribute("FOV", &sceneCamera.m_Fov);
-			if(component.fixedAspectRatio)
+			if (component.fixedAspectRatio)
 				pSceneCameraElement->QueryFloatAttribute("AspectRatio", &sceneCamera.m_AspectRatio);
 
 			sceneCamera.SetProjection(projectionType);
@@ -607,12 +606,12 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			}
 		}
 
-		for(tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
+		for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
 			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
 		{
 			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
 			{
-				component.materialOverrides.push_back(SerializationUtils::AbsolutePath(materialFilepathChar).string());
+				component.materialOverrides.push_back(AssetManager::GetAsset<Material>(materialFilepathChar));
 			}
 		}
 	}
@@ -637,8 +636,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pCubeElement->QueryFloatAttribute("Width", &component.cubeWidth);
 				pCubeElement->QueryFloatAttribute("Height", &component.cubeHeight);
 				pCubeElement->QueryFloatAttribute("Depth", &component.cubeDepth);
-				
-				if(!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
 				component.SetCube(component.cubeWidth, component.cubeDepth, component.cubeHeight);
 			}
 			break;
@@ -953,7 +952,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		component.orientation = (BillboardComponent::Orientation)pBillboardComponentElement->IntAttribute("Orientation", (int)component.orientation);
 		component.position = (BillboardComponent::Position)pBillboardComponentElement->IntAttribute("Position", (int)component.position);
-		if(component.position == BillboardComponent::Position::Camera)
+		if (component.position == BillboardComponent::Position::Camera)
 			SerializationUtils::Decode(pBillboardComponentElement->FirstChildElement("ScreenPosition"), component.screenPosition);
 	}
 

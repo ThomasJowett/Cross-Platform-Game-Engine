@@ -11,7 +11,7 @@
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	:View("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
 {
-	m_Mesh = CreateRef<Mesh>(GeometryGenerator::CreateSphere(1.0f, 50, 50));
+	m_Mesh = GeometryGenerator::CreateSphere(1.0f, 50, 50);
 
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
 	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 , FrameBufferTextureFormat::Depth };
@@ -61,7 +61,6 @@ void MaterialView::OnImGuiRender()
 		}
 		return;
 	}
-
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar;
 
@@ -193,7 +192,7 @@ void MaterialView::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
 
-	Renderer::Submit(m_LocalMaterial, m_Mesh->GetVertexArray());
+	Renderer::Submit(m_Mesh, m_LocalMaterial);
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

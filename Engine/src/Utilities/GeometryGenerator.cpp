@@ -6,51 +6,49 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float depth)
+Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	float w2 = 0.5f * width;
 	float h2 = 0.5f * height;
 	float d2 = 0.5f * depth;
 
-	float vertices[] =
+	std::vector<Vertex> vertices =
 	{
 		// Front
-		-w2, -h2, d2, 0.0f, 0.0f, +1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		+w2, -h2, d2, 0.0f, 0.0f, +1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		+w2, +h2, d2, 0.0f, 0.0f, +1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-w2, +h2, d2, 0.0f, 0.0f, +1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		Vertex({ Vector3f(-w2, -h2, d2), Vector3f(0.0f, 0.0f, +1.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, -h2, d2), Vector3f(0.0f, 0.0f, +1.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, +h2, d2), Vector3f(0.0f, 0.0f, +1.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(-w2, +h2, d2), Vector3f(0.0f, 0.0f, +1.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.0f, 1.0f)}),
 		// Back
-		+w2, -h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		-w2, -h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		-w2, +h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		+w2, +h2, -d2, 0.0f, 0.0f, -1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		Vertex({ Vector3f(+w2, -h2, -d2), Vector3f(0.0f, 0.0f, -1.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(-w2, -h2, -d2), Vector3f(0.0f, 0.0f, -1.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(-w2, +h2, -d2), Vector3f(0.0f, 0.0f, -1.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(+w2, +h2, -d2), Vector3f(0.0f, 0.0f, -1.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(0.0f, 1.0f)}),
 		// Top
-		-w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		+w2, +h2, +d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		+w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-w2, +h2, -d2, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		Vertex({ Vector3f(-w2, +h2, +d2), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, +h2, +d2), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, +h2, -d2), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(-w2, +h2, -d2), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.0f, 1.0f)}),
 		// Bottom
-		-w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-		+w2, -h2, -d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
-		+w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-		-w2, -h2, +d2, 0.0f, -1.0f, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+		Vertex({ Vector3f(-w2, -h2, -d2), Vector3f(0.0f, -1.0f, 0.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, -h2, -d2), Vector3f(0.0f, -1.0f, 0.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, -h2, +d2), Vector3f(0.0f, -1.0f, 0.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(-w2, -h2, +d2), Vector3f(0.0f, -1.0f, 0.0f), Vector3f(-1.0f, 0.0f, 0.0f), Vector2f(0.0f, 1.0f)}),
 		// Left
-		-w2, -h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,
-		-w2, -h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,
-		-w2, +h2, +d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,
-		-w2, +h2, -d2, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,
+		Vertex({ Vector3f(-w2, -h2, -d2), Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, -1.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(-w2, -h2, +d2), Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, -1.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(-w2, +h2, +d2), Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, -1.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(-w2, +h2, -d2), Vector3f(-1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, -1.0f), Vector2f(0.0f, 1.0f)}),
 		// Right
-		+w2, -h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
-		+w2, -h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f,
-		+w2, +h2, -d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
-		+w2, +h2, +d2, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f
+		Vertex({ Vector3f(+w2, -h2, +d2), Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f), Vector2f(0.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, -h2, -d2), Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f), Vector2f(1.0f, 0.0f)}),
+		Vertex({ Vector3f(+w2, +h2, -d2), Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f), Vector2f(1.0f, 1.0f)}),
+		Vertex({ Vector3f(+w2, +h2, +d2), Vector3f(1.0f, 0.0f, 0.0f), Vector3f(0.0f, 0.0f, 1.0f), Vector2f(0.0f, 1.0f)})
 	};
 
-	uint32_t indices[] =
+	std::vector<uint32_t> indices =
 	{
 		0, 1, 2,
 		0, 2, 3,
@@ -71,33 +69,21 @@ Ref<VertexArray> GeometryGenerator::CreateCube(float width, float height, float 
 		20, 22, 23
 	};
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(vertices, sizeof(vertices));
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(indices, 36);
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
+Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (longitudeLines < 3)
 		longitudeLines = 3;
 	if (latitudeLines < 3)
 		latitudeLines = 3;
 
-	std::vector<float> verticesList;
+	std::vector<Vertex> vertices;
 
 	float phiStep = (float)PI / (latitudeLines - 1);
 	float thetaStep = 2.0f * (float)PI / longitudeLines;
@@ -112,43 +98,33 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 		{
 			float theta = j * thetaStep;
 
-			//positions
-			Vector3f position;
-			//spherical to cartesian
-			position.x = radius * sinf(phi) * cosf(theta);
-			position.y = radius * cosf(phi);
-			position.z = radius * sinf(phi) * sinf(theta);
+			Vertex vertex;
 
-			verticesList.push_back(position.x);
-			verticesList.push_back(position.y);
-			verticesList.push_back(position.z);
+			//positions
+			//spherical to cartesian
+			vertex.position.x = radius * sinf(phi) * cosf(theta);
+			vertex.position.y = radius * cosf(phi);
+			vertex.position.z = radius * sinf(phi) * sinf(theta);
 
 			//normal
-			Vector3f normal = position.GetNormalized();
-
-			verticesList.push_back(normal.x);
-			verticesList.push_back(normal.y);
-			verticesList.push_back(normal.z);
+			vertex.normal = vertex.position.GetNormalized();
 
 			//tangent
-			Vector3f tangent;
-			tangent.x = -radius * sinf(phi) * sinf(theta);
-			tangent.y = 0.0f;
-			tangent.z = radius * sinf(phi) * cosf(theta);
+			vertex.tangent.x = -radius * sinf(phi) * sinf(theta);
+			vertex.tangent.y = 0.0f;
+			vertex.tangent.z = radius * sinf(phi) * cosf(theta);
 
-			tangent.Normalize();
-
-			verticesList.push_back(tangent.x);
-			verticesList.push_back(tangent.y);
-			verticesList.push_back(tangent.z);
+			vertex.tangent.Normalize();
 
 			//TexCoords
-			verticesList.push_back((1 - (theta / (float)PI)) / 2);
-			verticesList.push_back((1 - (phi / (float)PI)));
+			vertex.texcoord.x = (1 - (theta / (float)PI)) / 2;
+			vertex.texcoord.y = 1 - (phi / (float)PI);
+
+			vertices.push_back(vertex);
 		}
 	}
 
-	std::vector<uint32_t> indicesList;
+	std::vector<uint32_t> indices;
 	uint32_t k1, k2;
 	for (uint32_t i = 0; i <= latitudeLines; i++)
 	{
@@ -159,47 +135,35 @@ Ref<VertexArray> GeometryGenerator::CreateSphere(float radius, uint32_t longitud
 		{
 			if (i != 0)
 			{
-				indicesList.push_back(k1 + 1);
-				indicesList.push_back(k2);
-				indicesList.push_back(k1);
+				indices.push_back(k1 + 1);
+				indices.push_back(k2);
+				indices.push_back(k1);
 			}
 
 			if (i != (latitudeLines - 2))
 			{
-				indicesList.push_back(k2 + 1);
-				indicesList.push_back(k2);
-				indicesList.push_back(k1 + 1);
+				indices.push_back(k2 + 1);
+				indices.push_back(k2);
+				indices.push_back(k1 + 1);
 			}
 		}
 	}
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(&verticesList[0], sizeof(float) * (uint32_t)verticesList.size());
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
+Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (widthLines < 2)
 		widthLines = 2;
 	if (lengthLines < 2)
 		lengthLines = 2;
 
-	uint32_t vertexCount = widthLines * lengthLines; // 11 float per vertex
+	uint32_t vertexCount = widthLines * lengthLines;
 	uint32_t facecount = (widthLines - 1) * (lengthLines - 1) * 2;
 
 	//
@@ -215,7 +179,8 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 	float du = tileU / (lengthLines - 1);
 	float dv = tileV / (widthLines - 1);
 
-	float* vertices = new float[vertexCount * 11];
+	std::vector<Vertex> vertices;
+	vertices.resize(vertexCount);
 
 	uint32_t k = 0;
 
@@ -228,28 +193,28 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 			float x = -halfWidth + j * dx;
 
 			// position
-			vertices[k] = x;
-			vertices[k + 1] = 0.0f;
-			vertices[k + 2] = z;
+			vertices[k].position.x = x;
+			vertices[k].position.y = 0.0f;
+			vertices[k].position.z = z;
 
 			// normal
-			vertices[k + 3] = 0.0f;
-			vertices[k + 4] = 1.0f;
-			vertices[k + 5] = 0.0f;
+			vertices[k].normal.x = 0.0f;
+			vertices[k].normal.y = 1.0f;
+			vertices[k].normal.z = 0.0f;
 
 			// tangent
-			vertices[k + 6] = 1.0f;
-			vertices[k + 7] = 0.0f;
-			vertices[k + 8] = 0.0f;
+			vertices[k].tangent.x = 1.0f;
+			vertices[k].tangent.y = 0.0f;
+			vertices[k].tangent.z = 0.0f;
 
-			vertices[k + 9] = j * du;
-			vertices[k + 10] = i * dv;
+			vertices[k].texcoord.x = j * du;
+			vertices[k].texcoord.y = i * dv;
 
-			k += 11;
+			k++;
 		}
 	}
 
-	uint32_t* indices = new uint32_t[facecount * 3];
+	std::vector<uint32_t> indices(facecount * 3);
 
 	k = 0;
 	for (uint32_t i = 0; i < widthLines - 1; ++i)
@@ -268,64 +233,36 @@ Ref<VertexArray> GeometryGenerator::CreateGrid(float width, float length, uint32
 		}
 	}
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(vertices, sizeof(float) * vertexCount * 11);
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(indices, (uint32_t)facecount * 3);
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	delete[] indices;
-	delete[] vertices;
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateFullScreenQuad()
+Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
 
-	Ref<VertexArray> returnModel = VertexArray::Create();
-
-	float vertices[] =
-	{
-		-1.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 1.0f,
-		-1.0f, +1.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, 0.0f,  0.0f, 0.0f,
-		+1.0f, +1.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 0.0f
-		+ 1.0f, -1.0f, 0.0f,  0.0f, 0.0f, -1.0f,  1.0f, 0.0f, 0.0f,  1.0f, 1.0f
+	std::vector<Vertex> vertices = {
+		Vertex({Vector3f(-1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 1.0f)}),
+		Vertex({Vector3f(-1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 0.0f)}),
+		Vertex({Vector3f(+1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 0.0f)}),
+		Vertex({Vector3f(+1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 1.0f)})
 	};
 
-	uint32_t indices[] =
+	std::vector<uint32_t> indices =
 	{
 		0,1,2,
 		0,2,3
 	};
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(vertices, sizeof(float) * 44);
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(indices, (uint32_t)6);
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (sliceCount < 3)
 		sliceCount = 3;
@@ -347,7 +284,7 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 
 	uint32_t ringCount = stackCount + 1;
 
-	std::vector<float> verticesList;
+	std::vector<Vertex> vertices;
 
 	//Compute the vertices for each stack ring starting at the bottom and moving up
 	for (uint32_t i = 0; i < ringCount; i++)
@@ -358,202 +295,123 @@ Ref<VertexArray> GeometryGenerator::CreateCylinder(float bottomRadius, float top
 		float dTheta = 2.0f * (float)PI / sliceCount;
 		for (uint32_t j = 0; j <= sliceCount; j++)
 		{
+			Vertex vertex;
 			float c = cosf(j * dTheta);
 			float s = sinf(j * dTheta);
 
 			//Position
-			verticesList.push_back(r * c);
-			verticesList.push_back(y);
-			verticesList.push_back(r * s);
+			vertex.position = Vector3f(r * c, y, r * s);
 
-			Vector3f tangent(-s, 0.0f, c);
+			vertex.tangent = Vector3f(-s, 0.0f, c);
 
 			float dr = bottomRadius - topRadius;
 			Vector3f biTangent(dr * c, -height, dr * s);
 
-			Vector3f normal = Vector3f::Cross(tangent, biTangent).GetNormalized();
-
-			//Normal
-			verticesList.push_back(normal.x);
-			verticesList.push_back(normal.y);
-			verticesList.push_back(normal.z);
-
-			//Tangent
-			verticesList.push_back(tangent.x);
-			verticesList.push_back(tangent.y);
-			verticesList.push_back(tangent.z);
+			vertex.normal = Vector3f::Cross(vertex.tangent, biTangent).GetNormalized();
 
 			//TexCoords
-			verticesList.push_back(1.0f - (float)j / sliceCount);
-			verticesList.push_back((float)i / stackCount);
+			vertex.texcoord = Vector2f(1.0f - (float)j / sliceCount, (float)i / stackCount);
+
+			vertices.push_back(vertex);
 		}
 	}
 
 	uint32_t ringVertexCount = sliceCount + 1;
 
-	std::vector<uint32_t> indicesList;
+	std::vector<uint32_t> indices;
 
 	//compute the indices for each stack
 	for (uint32_t i = 0; i < stackCount; i++)
 	{
 		for (uint32_t j = 0; j < sliceCount; j++)
 		{
-			indicesList.push_back(i * ringVertexCount + j);
-			indicesList.push_back((i + 1) * ringVertexCount + j);
-			indicesList.push_back((i + 1) * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j);
+			indices.push_back((i + 1) * ringVertexCount + j);
+			indices.push_back((i + 1) * ringVertexCount + j + 1);
 
-			indicesList.push_back(i * ringVertexCount + j);
-			indicesList.push_back((i + 1) * ringVertexCount + j + 1);
-			indicesList.push_back(i * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j);
+			indices.push_back((i + 1) * ringVertexCount + j + 1);
+			indices.push_back(i * ringVertexCount + j + 1);
 		}
 	}
 
 	//build top cap
-	uint32_t baseIndex = (uint32_t)(verticesList.size() / 11.0f);
+	uint32_t baseIndex = (uint32_t)(vertices.size());
 
 	float y = 0.5f * height;
 	float dTheta = 2.0f * (float)PI / sliceCount;
 
 	for (uint32_t i = 0; i <= sliceCount; i++)
 	{
+		Vertex vertex;
 		float x = topRadius * cosf(i * dTheta);
 		float z = topRadius * sinf(i * dTheta);
 
-		//Position
-		verticesList.push_back(x);
-		verticesList.push_back(y);
-		verticesList.push_back(z);
+		vertex.position = Vector3f(x, y, z);
+		vertex.normal = Vector3f(0.0f, 1.0f, 0.0f);
+		vertex.tangent = Vector3f(1.0f, 0.0f, 0.0f);
+		vertex.texcoord = Vector2f(x / height + 0.5f, 1.0f - (z / height + 0.5f));
 
-		//Normal
-		verticesList.push_back(0.0f);
-		verticesList.push_back(1.0f);
-		verticesList.push_back(0.0f);
-
-		//Tangent
-		verticesList.push_back(1.0f);
-		verticesList.push_back(0.0f);
-		verticesList.push_back(0.0f);
-
-		//TexCoords
-		verticesList.push_back((x / height + 0.5f));
-		verticesList.push_back(1.0f - (z / height + 0.5f));
+		vertices.push_back(vertex);
 	}
 
-	//Position
-	verticesList.push_back(0.0f);
-	verticesList.push_back(y);
-	verticesList.push_back(0.0f);
+	vertices.push_back(Vertex({ Vector3f(0.0f, y, 0.0f), Vector3f(0.0f, 1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.5f, 0.5f) }));
 
-	//Normal
-	verticesList.push_back(0.0f);
-	verticesList.push_back(1.0f);
-	verticesList.push_back(0.0f);
-
-	//Tangent
-	verticesList.push_back(1.0f);
-	verticesList.push_back(0.0f);
-	verticesList.push_back(0.0f);
-
-	//TexCoords
-	verticesList.push_back(0.5f);
-	verticesList.push_back(0.5f);
-
-	uint32_t centerIndex = (uint32_t)(verticesList.size() / 11.0f - 1);
+	uint32_t centerIndex = (uint32_t)(vertices.size() - 1);
 
 	for (uint32_t i = 0; i < sliceCount; i++)
 	{
-		indicesList.push_back(centerIndex);
-		indicesList.push_back(baseIndex + i + 1);
-		indicesList.push_back(baseIndex + i);
+		indices.push_back(centerIndex);
+		indices.push_back(baseIndex + i + 1);
+		indices.push_back(baseIndex + i);
 	}
 
 	//build bottom cap
-	baseIndex = (uint32_t)(verticesList.size() / 11.0f);
+	baseIndex = (uint32_t)(vertices.size());
 	y = -0.5f * height;
 
 	//vertices of ring
 	dTheta = 2.0f * (float)PI / sliceCount;
 	for (uint32_t i = 0; i <= sliceCount; i++)
 	{
+		Vertex vertex;
 		float x = bottomRadius * cosf(i * dTheta);
 		float z = bottomRadius * sinf(i * dTheta);
 
-		//Position
-		verticesList.push_back(x);
-		verticesList.push_back(y);
-		verticesList.push_back(z);
-
-		//Normal
-		verticesList.push_back(0.0f);
-		verticesList.push_back(-1.0f);
-		verticesList.push_back(0.0f);
-
-		//Tangent
-		verticesList.push_back(1.0f);
-		verticesList.push_back(0.0f);
-		verticesList.push_back(0.0f);
-
-		//TexCoords
-		verticesList.push_back(x / height + 0.5f);
-		verticesList.push_back(z / height + 0.5f);
+		vertex.position = Vector3f(x, y, z);
+		vertex.normal = Vector3f(0.0f, -1.0f, 0.0f);
+		vertex.tangent = Vector3f(1.0f, 0.0f, 0.0f);
+		vertex.texcoord = Vector2f(x / height + 0.5f, z / height + 0.5f);
+		vertices.push_back(vertex);
 	}
 
-	//Position
-	verticesList.push_back(0.0f);
-	verticesList.push_back(y);
-	verticesList.push_back(0.0f);
+	vertices.push_back(Vertex({ Vector3f(0.0f, y, 0.0f), Vector3f(0.0f, -1.0f, 0.0f), Vector3f(1.0f, 0.0f, 0.0f), Vector2f(0.5f, 0.5f) }));
 
-	//Normal
-	verticesList.push_back(0.0f);
-	verticesList.push_back(-1.0f);
-	verticesList.push_back(0.0f);
-
-	//Tangent
-	verticesList.push_back(1.0f);
-	verticesList.push_back(0.0f);
-	verticesList.push_back(0.0f);
-
-	//TexCoords
-	verticesList.push_back(0.5f);
-	verticesList.push_back(0.5f);
-
-	centerIndex = (uint32_t)(verticesList.size() / 11.0f - 1);
+	centerIndex = (uint32_t)(vertices.size() - 1);
 
 	for (uint32_t i = 0; i < sliceCount; i++)
 	{
-		indicesList.push_back(centerIndex);
-		indicesList.push_back(baseIndex + i);
-		indicesList.push_back(baseIndex + i + 1);
+		indices.push_back(centerIndex);
+		indices.push_back(baseIndex + i);
+		indices.push_back(baseIndex + i + 1);
 	}
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(&verticesList[0], sizeof(float) * (uint32_t)verticesList.size());
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
+Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32_t segments)
 {
 	PROFILE_FUNCTION();
-
-	Ref<VertexArray> returnModel = VertexArray::Create();
 
 	if (segments < 3)
 		segments = 3;
 
 	uint32_t stride = segments + 1;
 
-	std::vector<float> verticesList;
-	std::vector<uint32_t> indicesList;
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
 
 	for (uint32_t i = 0; i <= segments; i++)
 	{
@@ -564,62 +422,37 @@ Ref<VertexArray> GeometryGenerator::CreateTorus(float diameter, float thickness,
 
 		for (uint32_t j = 0; j <= segments; j++)
 		{
+			Vertex vertex;
 			float v = 1 - (float)(j) / segments;
 
 			float innerAngle = (float)(j * PI / segments + PI) * 2;
 			float dx = cos(innerAngle);
 			float dy = sin(innerAngle);
 
-			Vector3f normal(dx, dy, 0);
-			Vector3f tangent(dy, -dx, 0);
-			Vector3f position = normal * (thickness / 2.0f);
+			vertex.normal = Vector3f(dx, dy, 0);
+			vertex.tangent = Vector3f(dy, -dx, 0);
+			vertex.position = vertex.normal * (thickness / 2.0f);
 
-			position = transform * position;
-			normal = (transform * normal).GetNormalized();
-			tangent = (transform * tangent).GetNormalized();
+			vertex.position = transform * vertex.position;
+			vertex.normal = (transform * vertex.normal).GetNormalized();
+			vertex.tangent = (transform * vertex.tangent).GetNormalized();
+			vertex.texcoord = Vector2f(u, v);
 
-			//Position
-			verticesList.push_back(position.x);
-			verticesList.push_back(position.y);
-			verticesList.push_back(position.z);
-
-			//Normal
-			verticesList.push_back(normal.x);
-			verticesList.push_back(normal.y);
-			verticesList.push_back(normal.z);
-
-			//Tangent
-			verticesList.push_back(tangent.x);
-			verticesList.push_back(tangent.y);
-			verticesList.push_back(tangent.z);
-
-			//TexCoord
-			verticesList.push_back(u);
-			verticesList.push_back(v);
+			vertices.push_back(vertex);
 
 			//Indices
 			uint32_t nextI = (i + 1) % stride;
 			uint32_t nextJ = (j + 1) % stride;
 
-			indicesList.push_back(nextI * stride + j);
-			indicesList.push_back(i * stride + nextJ);
-			indicesList.push_back(i * stride + j);
+			indices.push_back(nextI * stride + j);
+			indices.push_back(i * stride + nextJ);
+			indices.push_back(i * stride + j);
 
-			indicesList.push_back(nextI * stride + j);
-			indicesList.push_back(nextI * stride + nextJ);
-			indicesList.push_back(i * stride + nextJ);
+			indices.push_back(nextI * stride + j);
+			indices.push_back(nextI * stride + nextJ);
+			indices.push_back(i * stride + nextJ);
 		}
 	}
 
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(&verticesList[0], sizeof(float) * (uint32_t)verticesList.size());
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
-
-	vertexBuffer->SetLayout(s_StaticMeshLayout);
-
-	returnModel->AddVertexBuffer(vertexBuffer);
-	returnModel->SetIndexBuffer(indexBuffer);
-
-	return returnModel;
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
 }

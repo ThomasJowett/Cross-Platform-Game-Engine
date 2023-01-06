@@ -13,13 +13,12 @@ Vector2f TilemapComponent::WorldToIso(Vector2f v) const
 
 void TilemapComponent::Rebuild()
 {
-	vertexArray.reset();
-	material.reset();
+	mesh.reset();
 
 	if (!tileset || !tileset->GetSubTexture())
 		return;
 
-	std::vector<float> verticesList;
+	std::vector<Vertex> verticesList;
 	std::vector<uint32_t> indicesList;
 
 	Vector2f positions[4] = {
@@ -50,17 +49,13 @@ void TilemapComponent::Rebuild()
 
 				for (size_t v = 0; v < 4; v++)
 				{
-					// Position
-					verticesList.push_back((float)(j)+positions[v].x);
-					verticesList.push_back(-(float)(i)-positions[v].y);
-					verticesList.push_back(0.0f);
-
-					// TexCoord
-					verticesList.push_back(texCoords[v].x);
-					verticesList.push_back(texCoords[v].y);
+					Vertex vertex;
+					vertex.position = Vector3f((float)(j)+positions[v].x, -(float)(i)-positions[v].y, 0.0f);
+					vertex.normal.z = 1.0f;
+					vertex.tangent.x = 1.0f;
+					vertex.texcoord = Vector2f(texCoords[v].x, texCoords[v].y);
+					verticesList.push_back(vertex);
 				}
-
-
 			}
 		}
 	}
@@ -86,15 +81,19 @@ void TilemapComponent::Rebuild()
 
 				for (uint32_t v = 0; v < 4; v++)
 				{
+					Vertex vertex;
 					Vector2f isoCoords = IsoToWorld(j, i);
 
-					verticesList.push_back(isoCoords.x + positions[3 - v].x - 0.5f);
-					verticesList.push_back(isoCoords.y + positions[3 - v].y - 0.5f);
-					verticesList.push_back((i + j) * 0.0001f);
+					vertex.position.x = isoCoords.x + positions[3 - v].x - 0.5f;
+					vertex.position.y = isoCoords.y + positions[3 - v].y - 0.5f;
+					vertex.position.z = (i + j) * 0.0001f;
 
-					// TexCoord
-					verticesList.push_back(texCoords[v].x);
-					verticesList.push_back(texCoords[v].y);
+					vertex.normal.z = 1.0f;
+					vertex.tangent.x = 1.0f;
+
+					vertex.texcoord = Vector2f(texCoords[v].x, texCoords[v].y);
+
+					verticesList.push_back(vertex);
 				}
 			}
 		}
@@ -121,22 +120,10 @@ void TilemapComponent::Rebuild()
 		}
 	}
 
-	vertexArray = VertexArray::Create();
-
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(&verticesList[0], sizeof(float) * (uint32_t)verticesList.size());
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(&indicesList[0], (uint32_t)indicesList.size());
-
-	vertexBuffer->SetLayout({
-		{ShaderDataType::Float3, "a_Position"},
-		{ShaderDataType::Float2, "a_Texcoord"},
-		});
-
-	vertexArray->AddVertexBuffer(vertexBuffer);
-	vertexArray->SetIndexBuffer(indexBuffer);
-
-	material = CreateRef<Material>("Renderer2D_Tilemap", tint);
+	Ref<Material> material = CreateRef<Material>("Standard", tint);
 	material->AddTexture(tileset->GetSubTexture()->GetTexture(), 0);
 	material->SetTwoSided(true);
+	material->SetTransparency(true);
+
+	mesh = CreateRef<Mesh>(verticesList, indicesList, material);
 }

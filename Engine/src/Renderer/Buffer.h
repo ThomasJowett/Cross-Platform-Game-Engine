@@ -77,14 +77,14 @@ class BufferLayout
 public:
 	/**
 	 * Construct a new Buffer Layout object
-	 * 
+	 *
 	 */
 	BufferLayout() = default;
 
 	/**
 	 * Construct a new Buffer Layout object from elements initializer list
-	 * 
-	 * @param elements 
+	 *
+	 * @param elements
 	 */
 	BufferLayout(const std::initializer_list<BufferElement>& elements)
 		:m_Elements(elements)
@@ -94,26 +94,26 @@ public:
 
 	/**
 	 * Get the Element list object
-	 * 
-	 * @return const std::vector<BufferElement>& 
+	 *
+	 * @return const std::vector<BufferElement>&
 	 */
 	inline const std::vector<BufferElement>& GetElements() const { return m_Elements; }
 
 	/**
 	 * Get the Stride
-	 * 
-	 * @return const uint32_t& 
+	 *
+	 * @return const uint32_t&
 	 */
 	inline const uint32_t& GetStride() const { return m_Stride; }
 
 	std::vector<BufferElement>::iterator begin() { return m_Elements.begin(); }
-	std::vector<BufferElement>::iterator end() { return m_Elements.end(); }	
+	std::vector<BufferElement>::iterator end() { return m_Elements.end(); }
 	std::vector<BufferElement>::const_iterator begin() const { return m_Elements.begin(); }
 	std::vector<BufferElement>::const_iterator end() const { return m_Elements.end(); }
 private:
 	void CalculateOffsetsAndStride()
 	{
-		size_t offset = 0; 
+		size_t offset = 0;
 		m_Stride = 0;
 		for (BufferElement& element : m_Elements)
 		{
@@ -136,7 +136,7 @@ public:
 	virtual ~VertexBuffer() = default;
 
 	virtual void SetLayout(const BufferLayout& layout) = 0;
-	virtual const BufferLayout& GetLayout() = 0;
+	virtual const BufferLayout& GetLayout() const = 0;
 
 	virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) = 0;
 	virtual void SetData(const void* data) = 0;
@@ -147,7 +147,7 @@ public:
 	virtual void UnBind() const = 0;
 
 	static Ref<VertexBuffer> Create(uint32_t size);
-	static Ref<VertexBuffer> Create(float* vertices, uint32_t size);
+	static Ref<VertexBuffer> Create(void* vertices, uint32_t size);
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */

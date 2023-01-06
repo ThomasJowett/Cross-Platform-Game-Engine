@@ -61,10 +61,15 @@ public:
 	void AddBitmask(Bitmask type);
 	void SetTileBitmask(Tile* tile, uint16_t bitmask);
 
+	void SetHasCollision(bool hasCollision) { m_HasCollision = hasCollision; };
+	bool HasCollision() { return m_HasCollision; }
+
 private:
 	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
 	Ref<SubTexture2D> m_Texture;
 
 	std::vector<Tile> m_Tiles;
 	std::vector<std::set<Tile*>> m_BitmaskMap;
+
+	bool m_HasCollision = false;
 };

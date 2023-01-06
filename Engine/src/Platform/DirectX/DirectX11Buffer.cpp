@@ -53,7 +53,7 @@ DirectX11VertexBuffer::DirectX11VertexBuffer(uint32_t size)
 	m_Offset = 0;
 }
 
-DirectX11VertexBuffer::DirectX11VertexBuffer(float* vertices, uint32_t size)
+DirectX11VertexBuffer::DirectX11VertexBuffer(void* vertices, uint32_t size)
 	:m_Size(size)
 {
 	D3D11_BUFFER_DESC bd;
@@ -63,9 +63,11 @@ DirectX11VertexBuffer::DirectX11VertexBuffer(float* vertices, uint32_t size)
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
+	float* verts = (float*)vertices;
+
 	D3D11_SUBRESOURCE_DATA initData;
 	ZeroMemory(&initData, sizeof(initData));
-	initData.pSysMem = &vertices[0];
+	initData.pSysMem = &verts[0];
 
 	g_D3dDevice->CreateBuffer(&bd, &initData, &m_VertexBuffer);
 

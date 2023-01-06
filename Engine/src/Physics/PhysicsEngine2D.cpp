@@ -345,7 +345,8 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		}
 	}
 
-	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>())
+	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>();
+		tilemapComp && tilemapComp->tileset && tilemapComp->tileset->HasCollision())
 	{
 		float tileWidth = transformComp.scale.x;
 		float tileHieght = transformComp.scale.y;

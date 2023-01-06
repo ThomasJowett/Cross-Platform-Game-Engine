@@ -253,7 +253,6 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 
 	uint32_t temp = 0;
 
-
 	if (IsHovered())
 	{
 		if (HasSelection())

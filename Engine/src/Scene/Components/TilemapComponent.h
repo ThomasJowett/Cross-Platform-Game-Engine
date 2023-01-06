@@ -5,8 +5,7 @@
 #include "Utilities/FileUtils.h"
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
-#include "Renderer/VertexArray.h"
-#include "Renderer/Material.h"
+#include "Renderer/Mesh.h"
 
 class b2Body;
 
@@ -31,8 +30,7 @@ struct TilemapComponent
 
 	bool isTrigger = false;
 
-	Ref<VertexArray> vertexArray;
-	Ref<Material> material;
+	Ref<Mesh> mesh;
 
 	b2Body* runtimeBody = nullptr;
 
@@ -58,7 +56,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(tint, tilesWide, tilesHigh, tiles);
+		archive(tint, tilesWide, tilesHigh, tiles, orientation, isTrigger);
 
 		std::string relativePath;
 		if (tileset && !tileset->GetFilepath().empty())
@@ -69,7 +67,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(tint, tilesWide, tilesHigh, tiles);
+		archive(tint, tilesWide, tilesHigh, tiles, orientation, isTrigger);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())
@@ -82,5 +80,6 @@ private:
 		}
 
 		Rebuild();
+		runtimeBody = nullptr;
 	}
 };

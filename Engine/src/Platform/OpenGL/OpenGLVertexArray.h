@@ -1,27 +1,26 @@
 #pragma once
 
-#include "Renderer/VertexArray.h"
+class VertexBuffer;
 
-class OpenGLVertexArray : public VertexArray
+class OpenGLVertexArray
 {
 public:
 	OpenGLVertexArray();
 	~OpenGLVertexArray();
 
-	virtual void Bind() const override;
-	virtual void UnBind() const override;
+	virtual void Bind() const;
+	virtual void UnBind() const;
 
-	virtual void AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)override;
-	virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)override;
+	virtual void AddVertexBuffer(const VertexBuffer* vertexBuffer);
+	//virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
-	virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const override;
-	virtual const Ref<IndexBuffer>& GetIndexBuffer() const override;
+	//virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const;
+	//virtual const Ref<IndexBuffer>& GetIndexBuffer() const;
 
 private:
-	std::vector<Ref<VertexBuffer>> m_VertexBuffers;
-	Ref<IndexBuffer> m_IndexBuffer;
+	//std::vector<Ref<VertexBuffer>> m_VertexBuffers;
+	//Ref<IndexBuffer> m_IndexBuffer;
 
 	uint32_t m_RendererID;
 	uint32_t m_VertexBufferIndex = 0;
-	
 };

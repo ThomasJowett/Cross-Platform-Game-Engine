@@ -8,7 +8,7 @@
 struct StaticMeshComponent
 {
 	Ref<StaticMesh> mesh;
-	std::vector<std::string> materialOverrides;
+	std::vector<Ref<Material>> materialOverrides;
 
 	StaticMeshComponent() = default;
 	StaticMeshComponent(const StaticMeshComponent&) = default;
@@ -26,15 +26,14 @@ private:
 			if (!mesh->GetFilepath().empty())
 				relativeMeshPath = FileUtils::RelativePath(mesh->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 			std::vector<std::string> relativeMaterials;
-			for (size_t i = 0; i < mesh->GetMeshes().size(); ++i)
+			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
-				relativeMaterials.push_back(FileUtils::RelativePath(materialOverrides[i], Application::GetOpenDocumentDirectory()).string());
+				relativeMaterials.push_back(FileUtils::RelativePath(materialOverrides[i]->GetFilepath(), Application::GetOpenDocumentDirectory()).string());
 			}
 			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 		}
 
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
-
 	}
 
 	template<typename Archive>
@@ -46,16 +45,15 @@ private:
 
 		if (!relativeMeshPath.empty())
 		{
-			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 			mesh = AssetManager::GetAsset<StaticMesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
-			materialOverrides.resize(mesh->GetMeshes().size());
-			for (size_t i = 0; i < mesh->GetMeshes().size(); ++i)
+			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
+			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
+			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
-
 				if (relativeMaterials[i].empty())
-					materialOverrides[i] = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / mesh->GetMeshes()[i]->GetMaterial()->GetFilepath()).string();
+					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
 				else
-					materialOverrides[i] = relativeMaterials[i];
+					materialOverrides[i] = AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterials[i]));
 			}
 		}
 		else

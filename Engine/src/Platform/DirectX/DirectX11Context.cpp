@@ -7,7 +7,7 @@
 
 #include <wrl.h>
 
-#pragma comment(lib, "d3d11.lib") 
+#pragma comment(lib, "d3d11.lib")
 
 extern ID3D11Device* g_D3dDevice = nullptr;
 extern ID3D11DeviceContext* g_ImmediateContext = nullptr;
@@ -169,10 +169,10 @@ void DirectX11Context::ResizeBuffers(uint32_t width, uint32_t height)
 	m_RenderTargetView = nullptr;
 	if (m_DepthStencilView) m_DepthStencilView->Release();
 	m_DepthStencilView = nullptr;
-	if(FAILED(m_SwapChain->ResizeBuffers(0, (UINT)width, (UINT)height, DXGI_FORMAT_UNKNOWN, 0)))
+	if (FAILED(m_SwapChain->ResizeBuffers(0, (UINT)width, (UINT)height, DXGI_FORMAT_UNKNOWN, 0)))
 		return;
 	ID3D11Texture2D* pBackBuffer;
-	if(FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer))))
+	if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer))))
 		return;
 	g_D3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &m_RenderTargetView);
 	g_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);

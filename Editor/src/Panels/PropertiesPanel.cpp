@@ -275,7 +275,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			//m_TilemapEditor->OnImGuiRender(tilemap);
 
-			if(tilemap.tileset)
+			if (tilemap.tileset)
 			{
 				static std::filesystem::file_time_type currentFileTime;
 
@@ -362,7 +362,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 							{
 								tilemap.tileset = AssetManager::GetAsset<Tileset>(*file);
-								tilemap.material->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
+								tilemap.mesh->GetMaterials()[0]->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 								SceneManager::CurrentScene()->MakeDirty();
 							}
 						}
@@ -399,11 +399,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
 			{
-				Ref<Material> material = AssetManager::GetAsset<Material>(
-					std::filesystem::absolute(Application::GetOpenDocumentDirectory() / staticMesh.materialOverrides[i]));
-
-				if (ImGui::AssetEdit<Material>(std::string("Material " + std::to_string(i)).c_str(), material, staticMesh.mesh->GetMeshes()[i]->GetMaterial(), FileType::MATERIAL))
-					staticMesh.materialOverrides[i] = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+				Dirty(ImGui::AssetEdit<Material>(std::string("Material " + std::to_string(i)).c_str(), staticMesh.materialOverrides[i],
+					staticMesh.mesh->GetMesh()->GetMaterials()[staticMesh.mesh->GetMesh()->GetSubmeshes()[i].materialIndex], FileType::MATERIAL));
 			}
 		});
 
@@ -817,7 +814,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::Combo("Position", (int*)&billboard.position,
 				"World\0"
 				"Camera\0"));
-			if(billboard.position == BillboardComponent::Position::Camera)
+			if (billboard.position == BillboardComponent::Position::Camera)
 				Dirty(ImGui::Vector("Screen Position", billboard.screenPosition, 0.0f));
 		});
 

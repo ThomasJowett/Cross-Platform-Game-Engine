@@ -7,7 +7,6 @@
 #include "Core/Layer.h"
 #include "Renderer/FrameBuffer.h"
 #include "Renderer/Mesh.h"
-#include "Renderer/Material.h"
 #include "Renderer/Camera.h"
 
 #include "Interfaces/ISaveable.h"

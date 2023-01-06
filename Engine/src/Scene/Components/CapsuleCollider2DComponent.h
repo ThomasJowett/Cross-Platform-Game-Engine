@@ -54,5 +54,7 @@ private:
 			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
 		else
 			physicsMaterial = nullptr;
+
+		runtimeBody = nullptr;
 	}
 };

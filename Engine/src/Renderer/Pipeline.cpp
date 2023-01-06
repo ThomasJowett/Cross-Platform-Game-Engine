@@ -1,24 +1,24 @@
 #include "stdafx.h"
-#include "VertexArray.h"
-
+#include "Pipeline.h"
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGLVertexArray.h"
+
+#include "Platform/OpenGL/OpenGLPipeline.h"
 #ifdef __WINDOWS__
-#include "Platform/DirectX/DirectX11VertexArray.h"
+#include "Platform/DirectX/DirectX11Pipeline.h"
 #endif // __WINDOWS__
 
-Ref<VertexArray> VertexArray::Create()
+Ref<Pipeline> Pipeline::Create(const Spec& spec)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLVertexArray>();
+		return CreateRef<OpenGLPipeline>(spec);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create Vertex Array: DirectX is not currently supported");
-			return	CreateRef<DirectX11VertexArray>();
+		return	CreateRef<DirectX11Pipeline>(spec);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

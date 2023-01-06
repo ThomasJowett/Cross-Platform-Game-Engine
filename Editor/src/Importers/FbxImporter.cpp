@@ -184,7 +184,7 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 		(float)transform.m[1], (float)transform.m[5], (float)transform.m[9], (float)transform.m[13],
 		(float)transform.m[2], (float)transform.m[6], (float)transform.m[10], (float)transform.m[14],
 		(float)transform.m[3], (float)transform.m[7], (float)transform.m[11], (float)transform.m[15]
-		);
+	);
 
 	for (int i = 0; i < vertexCount; i++)
 	{
@@ -200,7 +200,6 @@ ImportMesh LoadMesh(const ofbx::Mesh* fbxMesh, uint32_t triangleStart, uint32_t 
 			vertex.tangent = Vector3f((float)tangents[i].x, (float)tangents[i].y, (float)tangents[i].z).GetNormalized();
 		if (texcoords)
 			vertex.texcoord = Vector2f((float)texcoords[i].x, (float)texcoords[i].y);
-
 	}
 
 	// get the indices
@@ -307,7 +306,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 				if (rangeStartMaterial != materials[triangleIndex])
 				{
 					meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleIndex - 1));
-					
+
 					rangeStart = triangleIndex;
 					rangeStartMaterial = materials[triangleIndex];
 				}
@@ -315,7 +314,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 			meshes.push_back(LoadMesh(fbxMesh, rangeStart, triangleCount - 1));
 		}
 	}
-	
+
 	// gather animations
 	for (int i = 0, count = scene->getAnimationStackCount(); i < count; ++i)
 	{
@@ -371,14 +370,14 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 			{
 				// Copy the texture into the destination folder
 				tex.path = destination / tex.src.filename();
-				if(!std::filesystem::exists(tex.path))
+				if (!std::filesystem::exists(tex.path))
 					std::filesystem::copy_file(tex.src, tex.path);
 			}
 		}
 
 		materials.push_back(mat);
 	}
-	
+
 	std::vector<std::string> names;
 	for (ImportMaterial& mat : materials)
 	{
@@ -504,15 +503,15 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 	{
 		size_t numVertices = mesh.vertices.size();
 		size_t numIndices = mesh.indices.size();
-	
+
 		std::string materialName = mesh.materialSlot != -1 ? materialNameMap[mesh.fbx->getMaterial(mesh.materialSlot)] : "";
-	
+
 		outbin << materialName.size();
 		outbin << materialName;
-	
+
 		outbin.write((char*)&numVertices, sizeof(size_t));
 		outbin.write((char*)&numIndices, sizeof(size_t));
-	
+
 		outbin.write((char*)&mesh.vertices[0], sizeof(Vertex) * numVertices);
 		outbin.write((char*)&mesh.indices[0], sizeof(uint32_t) * numIndices);
 	}

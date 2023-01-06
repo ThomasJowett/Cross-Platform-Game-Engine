@@ -24,7 +24,8 @@ void StaticMeshView::OnAttach()
 	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
-	m_GridMesh = CreateRef<Mesh>(GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f), gridMaterial);
+	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 1, 1, 1.0f, 1.0f);
+	m_GridMesh->SetMaterials({ gridMaterial });
 
 	m_CameraController.SetPosition({ 0.0, 0.0, 0.0 });
 	m_CameraController.SwitchCamera(true);
@@ -137,12 +138,9 @@ void StaticMeshView::OnUpdate(float deltaTime)
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-	for (auto mesh : m_Mesh->GetMeshes())
-	{
-		Renderer::Submit(mesh->GetMaterial(), mesh->GetVertexArray());
-	}
+	Renderer::Submit(m_Mesh->GetMesh());
 
-	Renderer::Submit(m_GridMesh->GetMaterial(), m_GridMesh->GetVertexArray());
+	Renderer::Submit(m_GridMesh);
 
 	Renderer::EndScene();
 	m_Framebuffer->UnBind();

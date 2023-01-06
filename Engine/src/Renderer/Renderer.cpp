@@ -9,11 +9,24 @@
 
 #include "Core/core.h"
 
+struct Command
+{
+	Mesh* mesh = nullptr;
+	Material* material = nullptr;
+	uint32_t indexCount = 0;
+	uint32_t startIndex = 0;
+	uint32_t vertexOffset = 0;
+	Matrix4x4 transform;
+	int entityId = -1;
+};
+
 struct RendererData
 {
 	Ref<Texture> whiteTexture;
 	Ref<Texture> normalTexture;
 	Ref<Texture> mixMapTexture;
+
+	DrawMode drawMode = DrawMode::FILL;
 };
 
 struct SceneData
@@ -44,7 +57,10 @@ struct SceneData
 
 RendererData s_RendererData;
 SceneData s_SceneData;
-ShaderLibrary s_ShaderLibary;
+ShaderLibrary s_ShaderLibrary;
+
+std::vector<Command> s_OpaqueRenderQueue;
+std::vector<Command> s_TransparentRenderQueue;
 
 bool Renderer::Init()
 {
@@ -99,43 +115,133 @@ void Renderer::EndScene()
 {
 	Renderer2D::EndScene();
 	//TODO: frustum culling
-	//TODO: sort the opaque objects front to back
-	//TODO: sort the transparent objects back to front
+
+	// Sort the opqaue front to back to reduce over draw
+	std::sort(s_OpaqueRenderQueue.begin(), s_OpaqueRenderQueue.end(), [](Command& a, Command& b)
+		{
+			return Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, a.transform.ExtractTranslation()) <
+				Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, b.transform.ExtractTranslation());
+		});
+
+	// Sort the transparent back to front to render transparent correctly
+	std::sort(s_TransparentRenderQueue.begin(), s_TransparentRenderQueue.end(), [](Command& a, Command& b)
+		{
+			return Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, a.transform.ExtractTranslation()) <
+				Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, b.transform.ExtractTranslation());
+		});
+
+	for (const auto& command : s_OpaqueRenderQueue)
+	{
+		Ref<Shader> shader;
+		if (s_RendererData.drawMode == DrawMode::WIREFRAME)
+		{
+			//TODO write wireframe geometry shader
+			//shader = s_ShaderLibrary.Load("Wireframe");
+		}
+		else {
+			shader = s_ShaderLibrary.Load(command.material->GetShader());
+		}
+
+		if (!shader)
+			return;
+
+		shader->Bind();
+		s_SceneData.modelBuffer.modelMatrix = command.transform.GetTranspose();
+		s_SceneData.modelBuffer.colour = command.material->GetTint();
+		s_SceneData.modelBuffer.textureOffset = command.material->GetTextureOffset();
+		s_SceneData.modelBuffer.tilingFactor = command.material->GetTilingFactor();
+		s_SceneData.modelBuffer.entityId = command.entityId;
+		s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
+
+		s_RendererData.whiteTexture->Bind(0);
+		s_RendererData.normalTexture->Bind(1);
+		s_RendererData.mixMapTexture->Bind(2);
+
+		if (s_RendererData.drawMode == DrawMode::FILL)
+			command.material->BindTextures();
+
+		command.mesh->GetVertexBuffer()->Bind();
+		command.mesh->GetIndexBuffer()->Bind();
+		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, !command.material->IsTwoSided(), s_RendererData.drawMode);
+		command.mesh->GetIndexBuffer()->UnBind();
+		command.mesh->GetVertexBuffer()->UnBind();
+	}
+
+	for (const auto& command : s_TransparentRenderQueue)
+	{
+		Ref<Shader> shader = s_ShaderLibrary.Load(command.material->GetShader());
+
+		if (!shader)
+			return;
+
+		shader->Bind();
+		s_SceneData.modelBuffer.modelMatrix = command.transform.GetTranspose();
+		s_SceneData.modelBuffer.colour = command.material->GetTint();
+		s_SceneData.modelBuffer.textureOffset = command.material->GetTextureOffset();
+		s_SceneData.modelBuffer.tilingFactor = command.material->GetTilingFactor();
+		s_SceneData.modelBuffer.entityId = command.entityId;
+		s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
+
+		s_RendererData.whiteTexture->Bind(0);
+		s_RendererData.normalTexture->Bind(1);
+		s_RendererData.mixMapTexture->Bind(2);
+
+		if(s_RendererData.drawMode == DrawMode::FILL)
+			command.material->BindTextures();
+
+		command.mesh->GetVertexBuffer()->Bind();
+		command.mesh->GetIndexBuffer()->Bind();
+		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, !command.material->IsTwoSided(), s_RendererData.drawMode);
+		command.mesh->GetIndexBuffer()->UnBind();
+		command.mesh->GetVertexBuffer()->UnBind();
+	}
+
+	s_OpaqueRenderQueue.clear();
+	s_TransparentRenderQueue.clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Ref<Material>& material, const Ref<VertexArray>& vertexArray, const Matrix4x4& transform, int entityId)
+void Renderer::SetDrawMode(DrawMode drawMode)
 {
-	if (!material || !vertexArray)
-		return;
-
-	Ref<Shader> shader = s_ShaderLibary.Load(material->GetShader());
-
-	if (!shader)
-		return;
-
-	shader->Bind();
-	s_SceneData.modelBuffer.modelMatrix = transform.GetTranspose();
-	s_SceneData.modelBuffer.colour = material->GetTint();
-	//TODO: each texture should have it's own tiling factor
-	s_SceneData.modelBuffer.textureOffset = material->GetTextureOffset();
-	s_SceneData.modelBuffer.tilingFactor = material->GetTilingFactor();
-	s_SceneData.modelBuffer.entityId = entityId;
-	s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
-
-	s_RendererData.whiteTexture->Bind(0);
-	s_RendererData.normalTexture->Bind(1);
-	s_RendererData.mixMapTexture->Bind(2);
-
-	material->BindTextures();
-
-	CORE_ASSERT(vertexArray, "No data in vertex array");
-
-	RenderCommand::DrawIndexed(vertexArray, 0, !material->IsTwoSided());
+	s_RendererData.drawMode = drawMode;
 }
 
-void Renderer::Submit(const Ref<Mesh>& mesh, const Matrix4x4& transform, int entityId)
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform, int entityId, uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset)
 {
-	Submit(mesh->GetMaterial(), mesh->GetVertexArray(), transform, entityId);
+	Command command;
+	command.entityId = entityId;
+	command.indexCount = indexCount ? indexCount : mesh->GetIndexCount();
+	command.startIndex = startIndex;
+	command.vertexOffset = vertexOffset;
+	command.material = material.get();
+	command.mesh = mesh.get();
+	command.transform = transform;
+
+	if (material->IsTransparent())
+	{
+		s_TransparentRenderQueue.push_back(command);
+	}
+	else
+	{
+		s_OpaqueRenderQueue.push_back(command);
+	}
+}
+
+void Renderer::Submit(const Ref<Mesh> mesh, const Matrix4x4& transform, int entityId)
+{
+	for (const auto& submesh : mesh->GetSubmeshes())
+	{
+		Submit(mesh, mesh->GetMaterials()[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
+	}
+}
+
+void Renderer::Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& materials, const Matrix4x4& transform, int entityId)
+{
+	for (const auto& submesh : mesh->GetSubmeshes())
+	{
+		Submit(mesh, materials[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
+	}
 }
