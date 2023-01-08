@@ -4,6 +4,7 @@
 #include "Scene/SceneManager.h"
 #include "Scene/Entity.h"
 #include "box2d/box2d.h"
+#include "Logging/Instrumentor.h"
 
 LuaScriptComponent::~LuaScriptComponent()
 {

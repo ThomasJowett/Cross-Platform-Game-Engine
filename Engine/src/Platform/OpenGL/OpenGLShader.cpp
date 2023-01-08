@@ -1,8 +1,8 @@
 #include "stdafx.h"
 #include "OpenGLShader.h"
-
+#include "Logging/Instrumentor.h"
 #include "Core/core.h"
-#include"glad/glad.h"
+#include <glad/glad.h>
 
 #include <fstream>
 #include <filesystem>

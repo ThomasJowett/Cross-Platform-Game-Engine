@@ -9,7 +9,7 @@
 
 #include <filesystem>
 
-IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, ImVec2 size)
+bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVec2& size)
 {
 	bool edited = false;
 	ImGui::TextUnformatted(label);
@@ -34,9 +34,9 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		{
 			float aspectRatio = (float)textureWidth / (float)textureHeight;
 			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
-			SameLine();
+			ImGui::SameLine();
 			ImGui::Image(texture, ImVec2(aspectRatio * size.x, size.y));
-			SameLine();
+			ImGui::SameLine();
 			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
 		}
 		ImGui::EndGroup();

@@ -60,7 +60,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	return edited;
 }
 
-IMGUI_API bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileType filetype)
+bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileType filetype)
 {
 	std::string filename = filepath.filename().string();
 
@@ -91,7 +91,7 @@ IMGUI_API bool ImGui::FileSelect(const char* label, std::filesystem::path& filep
 	return edited;
 }
 
-IMGUI_API bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileType filetype)
+bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileType filetype)
 {
 	const wchar_t* filter;
 

@@ -2,6 +2,7 @@
 #include "ImGuiManager.h"
 
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 #include "Renderer/Texture.h"
 #include "Renderer/RendererAPI.h"
 

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RenderCommand.h"
 #include "Core/Settings.h"
+#include "Logging/Instrumentor.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 #ifdef __WINDOWS__

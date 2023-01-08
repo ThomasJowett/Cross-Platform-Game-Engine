@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "LayerStack.h"
-
+#include "Logging/Instrumentor.h"
 
 LayerStack::LayerStack()
 {

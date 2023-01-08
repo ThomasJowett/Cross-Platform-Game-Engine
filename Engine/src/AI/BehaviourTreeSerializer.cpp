@@ -3,6 +3,7 @@
 
 #include "TinyXml2/tinyxml2.h"
 #include "Core/Version.h"
+#include "Logging/Instrumentor.h"
 
 BehaviourTree::Serializer::Serializer(BehaviourTree* behaviourTree)
 	:m_BehaviourTree(behaviourTree)

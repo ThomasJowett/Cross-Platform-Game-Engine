@@ -7,6 +7,7 @@
 #include <utility>
 #include <vector>
 #include <array>
+#include <set>
 #include <string>
 #include <sstream>
 #include <functional>
@@ -17,6 +18,7 @@
 #include <float.h>
 #include <any>
 #include <filesystem>
+#include <numeric>
 
 #ifdef __WINDOWS__
 #define NOMINMAX
@@ -34,10 +36,6 @@
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
 #include "math/Vector4f.h"
-
-// Debug
-#include "Logging/Instrumentor.h"
-#include "Logging/Logger.h"
 
 // EnTT
 #include "EnTT/entt.hpp"

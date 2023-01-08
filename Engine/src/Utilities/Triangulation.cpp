@@ -1,8 +1,6 @@
 #include "stdafx.h"
 #include "Triangulation.h"
-
-#include <algorithm>
-#include <numeric>
+#include "Logging/Instrumentor.h"
 
 template<typename T>
 T GetItemLooped(const std::vector<T>& vector, int index)

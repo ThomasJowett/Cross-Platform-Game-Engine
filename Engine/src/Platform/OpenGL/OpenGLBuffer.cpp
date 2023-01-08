@@ -2,7 +2,7 @@
 #include "OpenGLBuffer.h"
 
 #include "Core/Application.h"
-
+#include "Logging/Instrumentor.h"
 #include <glad/glad.h>
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)

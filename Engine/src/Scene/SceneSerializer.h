@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Scene.h"
-#include "Core/core.h"
 
 namespace tinyxml2
 {

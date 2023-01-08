@@ -3,6 +3,7 @@
 
 #include "math/Quaternion.h"
 #include "Renderer/Mesh.h"
+#include "Logging/Instrumentor.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 

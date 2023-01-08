@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLTexture.h"
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 #include <stb/stb_image.h>
 #include <filesystem>

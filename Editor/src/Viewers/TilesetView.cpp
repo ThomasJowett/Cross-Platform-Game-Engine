@@ -173,7 +173,7 @@ void TilesetView::OnImGuiRender()
 				selectedTile.SetCollisionShape(Tile::CollisionShape::None);
 
 				bool hasCollision = false;
-				for (uint32_t i = 0; i < cellsWide * cellsTall; ++i)
+				for (uint32_t i = 0; i < (uint32_t)(cellsWide * cellsTall); ++i)
 				{
 					if (m_LocalTileset->GetTile(i).GetCollisionShape() != Tile::CollisionShape::None)
 					{

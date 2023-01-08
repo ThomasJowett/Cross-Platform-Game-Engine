@@ -2,6 +2,7 @@
 #include "DirectX11Texture.h"
 #include "DirectX11Context.h"
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 #include <stb/stb_image.h>
 

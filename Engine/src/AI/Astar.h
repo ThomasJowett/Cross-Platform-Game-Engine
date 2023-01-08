@@ -4,6 +4,7 @@
 #include <functional>
 #include <set>
 #include "math/Vector2f.h"
+#include "Core/core.h"
 
 namespace Astar
 {

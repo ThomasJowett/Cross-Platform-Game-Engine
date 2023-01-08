@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLContext.h"
-
+#include "Logging/Instrumentor.h"
 #include <glad/glad.h>
 
 #pragma comment(lib, "opengl32.lib")

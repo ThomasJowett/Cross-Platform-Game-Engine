@@ -23,6 +23,7 @@ project "GLFW"
 		"GLFW/src/null_monitor.c",
 		"GLFW/src/null_window.c"
 	}
+
 	filter "system:linux"
 		pic "On"
 
@@ -373,28 +374,38 @@ project "Box2D_Testbed"
 		"box2d/include",
 		"box2d/testbed",
 		"box2d/extern",
-		"box2d/extern/glad/include",
-		"box2d/extern/glfw/include",
-		"box2d/extern/imgui"
+		"GLFW/include",
+		"box2d/extern/imgui",
+		"box2d/extern/glad/include"
 	}
 
 	files
 	{
 		"box2d/testbed/**.h",
 		"box2d/testbed/**.cpp",
-		"box2d/extern/imgui/**.cpp"
+		"box2d/extern/imgui/**.cpp",
+		"box2d/extern/glad/src/glad.c"
 	}
 
 	links
 	{
 		"GLFW",
-		"GLAD",
-		"ImGui",
 		"Box2D"
 	}
 	
 	filter "system:windows"
 		systemversion "latest"
+		links
+		{
+			"gdi32"
+		}
+
+	filter "system:linux"
+		links
+		{
+			"dl",
+			"pthread"
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"

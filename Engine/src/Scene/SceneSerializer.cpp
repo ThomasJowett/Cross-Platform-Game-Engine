@@ -34,7 +34,7 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	m_Scene->m_Registry.each([this, &pRoot](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene };
+			Entity entity = { entityID, m_Scene};
 
 			if (!entity)
 				return;

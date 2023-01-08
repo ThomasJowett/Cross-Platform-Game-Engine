@@ -27,7 +27,7 @@ void ScriptView::OnAttach()
 
 	if (lang.mName == "Lua")
 	{
-		auto& identifiers = LuaManager::GetIdentifiers();
+		const auto& identifiers = LuaManager::GetIdentifiers();
 		for (auto& [keyword, definition] : identifiers) {
 			TextEditor::Identifier id;
 			id.mDeclaration = definition;

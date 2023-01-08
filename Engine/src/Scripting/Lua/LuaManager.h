@@ -2,6 +2,8 @@
 
 #include "sol/sol.hpp"
 
+#include "Core/core.h"
+
 class LuaManager
 {
 public:
@@ -14,7 +16,7 @@ public:
 	static bool IsValid();
 
 	static void AddIdentifier(const std::string& keyword, const std::string& description);
-	static std::vector<std::pair<std::string, std::string>> GetIdentifiers() { return s_Identifiers; }
+	static const std::vector<std::pair<std::string, std::string>>& GetIdentifiers() { return s_Identifiers; }
 
 private:
 	static Scope<sol::state> s_State;

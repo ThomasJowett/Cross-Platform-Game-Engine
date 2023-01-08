@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "LuaManager.h"
 #include "Core/Application.h"
-
+#include "Logging/Instrumentor.h"
 #include "LuaBindings.h"
 #include "sol/sol.hpp"
 

@@ -2,6 +2,7 @@
 #include "OpenGLVertexArray.h"
 #include "Renderer/Buffer.h"
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 #include <glad/glad.h>
 

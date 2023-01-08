@@ -6,6 +6,7 @@
 #include "Utilities/StringUtils.h"
 #include "Core/Application.h"
 #include "DirectX11Context.h"
+#include "Logging/Instrumentor.h"
 
 #pragma comment(lib, "dxguid.lib")
 

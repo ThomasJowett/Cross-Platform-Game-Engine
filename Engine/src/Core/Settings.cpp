@@ -6,6 +6,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 static CSimpleIniA* s_Ini = new CSimpleIniA();
 

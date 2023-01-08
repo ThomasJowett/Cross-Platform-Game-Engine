@@ -1,5 +1,3 @@
-#include "Core/core.h"
-#include "Scene/Scene.h"
 #include "ProjectData.h"
 
 #include <filesystem>

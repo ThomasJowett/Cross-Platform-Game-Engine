@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLFrameBuffer.h"
+#include "Logging/Instrumentor.h"
 
 #include <glad/glad.h>
 

@@ -10,9 +10,8 @@ static std::filesystem::file_time_type s_AssetFileTime;
 
 namespace ImGui
 {
-IMGUI_API bool MaterialEdit(const char* label, Ref<Material>& material, Ref<Material> defaultMaterial);
 template<typename T>
-IMGUI_API bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType type)
+bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType type)
 {
 	bool edited = false;
 	ImGui::TextUnformatted(label);

@@ -2,6 +2,7 @@
 #include "Font.h"
 
 #include "UI/MSDFData.h"
+#include "Logging/Instrumentor.h"
 
 Font::Font()
 {
