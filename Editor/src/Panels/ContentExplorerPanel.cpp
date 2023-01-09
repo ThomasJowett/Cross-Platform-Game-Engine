@@ -495,7 +495,7 @@ void ContentExplorerPanel::RightClickMenu()
 		Cut();
 	if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, m_NumberSelected > 0))
 		Copy();
-	if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, m_CopiedPaths.size() > 0))
+	if (ImGui::MenuItem(ICON_FA_PASTE" Paste", "Ctrl + V", nullptr, !m_CopiedPaths.empty()))
 		Paste();
 	if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, m_NumberSelected > 0))
 		Duplicate();

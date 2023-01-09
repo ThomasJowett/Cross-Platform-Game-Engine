@@ -123,7 +123,7 @@ void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 	}
 }
 
-Vector3f ViewportCameraController::GetPosition() const
+const Vector3f& ViewportCameraController::GetPosition() const
 {
 	if (m_Is3DCamera)
 		return m_3DCameraPosition;
@@ -139,7 +139,7 @@ void ViewportCameraController::SetAspectRatio(const float& aspectRatio)
 	m_2DCamera.SetProjection(-m_ZoomLevel * m_AspectRatio, m_ZoomLevel * m_AspectRatio, -m_ZoomLevel, m_ZoomLevel);
 }
 
-Matrix4x4 ViewportCameraController::GetTransformMatrix()
+Matrix4x4 ViewportCameraController::GetTransformMatrix() const
 {
 	if (m_Is3DCamera)
 		return Matrix4x4::Translate(m_3DCameraPosition) * Matrix4x4::Rotate({ m_3DCameraRotation });

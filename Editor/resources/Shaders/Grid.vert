@@ -16,6 +16,7 @@ layout(std140, binding = 1) uniform ModelBuffer
     uniform mat4 u_ModelMatrix;
     uniform vec4 u_Colour;
     uniform float u_Radius;
+    uniform float u_TilingFactor;
     uniform int u_EntityId;
 };
 

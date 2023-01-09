@@ -37,6 +37,7 @@ ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref
 	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
+	gridMaterial->SetTransparency(true);
 
 	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f);
 	m_GridMesh->SetMaterials({ gridMaterial });
