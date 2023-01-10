@@ -66,3 +66,13 @@ Makefile
 /Editor/Log.txt
 /Editor/styles/Editor.style
 Editor/Editor.args.json
+
+# xcode
+.DS_Store
+.Trashes
+*.swp
+*.plist
+*.pbxproj
+*.xcuserstate
+*.xcworkspacedata
+
