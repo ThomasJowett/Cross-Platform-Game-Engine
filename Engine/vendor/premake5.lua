@@ -197,7 +197,9 @@ project "TinyXml2"
 		"TinyXml2/tinyxml2.cpp"
 	}
 
-	systemversion "latest"
+	filter "system:windows"
+		systemversion "latest"
+		
 	staticruntime "off"
 
 	filter "configurations:Debug"
