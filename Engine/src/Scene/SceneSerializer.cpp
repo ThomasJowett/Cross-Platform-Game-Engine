@@ -266,6 +266,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		pTilemapElement->SetAttribute("TilesWide", component.tilesWide);
 		pTilemapElement->SetAttribute("TilesHigh", component.tilesHigh);
+		pTilemapElement->SetAttribute("TileWidth", component.tileWidth);
+		pTilemapElement->SetAttribute("TileHeight", component.tileHeight);
 
 		SerializationUtils::Encode(pTilemapElement->InsertNewChildElement("Tint"), component.tint);
 
@@ -755,6 +757,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
+		pTilemapComponentElement->QueryUnsignedAttribute("TileWidth", &component.tileWidth);
+		pTilemapComponentElement->QueryUnsignedAttribute("TileHeight", &component.tileHeight);
 
 		SerializationUtils::Decode(pTilemapComponentElement->FirstChildElement("Tint"), component.tint);
 

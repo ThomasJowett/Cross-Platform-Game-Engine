@@ -95,7 +95,18 @@ void PropertiesPanel::OnImGuiRender()
 		}
 		else if (SceneManager::IsSceneLoaded())
 		{
-			Dirty(ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x));
+			Vector2f gravity = SceneManager::CurrentScene()->GetGravity();
+			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
+			{
+				SceneManager::CurrentScene()->SetGravity(gravity);
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			int pixels = SceneManager::CurrentScene()->GetPixelsPerUnit();
+			if (ImGui::InputInt("Pixels per unit", &pixels, 1, 16, ImGuiInputTextFlags_CharsDecimal))
+			{
+				SceneManager::CurrentScene()->SetPixelsPerUnit(pixels);
+				SceneManager::CurrentScene()->MakeDirty();
+			}
 		}
 	}
 	ImGui::End();
@@ -146,8 +157,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (sprite.texture)
 					{
-						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth() / 16.0f;
-						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight() / 16.0f;
+						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
 					}
 					SceneManager::CurrentScene()->MakeDirty();
 				}
@@ -182,8 +193,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (sprite.spriteSheet)
 					{
-						entity.GetTransform().scale.x = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteWidth() / 16.0f;
-						entity.GetTransform().scale.y = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteHeight() / 16.0f;
+						entity.GetTransform().scale.x = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						entity.GetTransform().scale.y = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
 						SceneManager::CurrentScene()->MakeDirty();
 					}
 				}
@@ -328,6 +339,13 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 				tilemap.tilesHigh = tilesHigh;
 
+				tilemap.Rebuild();
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			int tileSize[2] = { tilemap.tileWidth, tilemap.tileHeight };
+			if (ImGui::InputInt2("Tile Size", tileSize)) {
+				tilemap.tileWidth = tileSize[0];
+				tilemap.tileHeight = tileSize[1];
 				tilemap.Rebuild();
 				SceneManager::CurrentScene()->MakeDirty();
 			}

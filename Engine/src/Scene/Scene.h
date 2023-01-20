@@ -72,6 +72,9 @@ public:
 	Vector2f& GetGravity() { return m_Gravity; }
 	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; if (m_PhysicsEngine2D) m_PhysicsEngine2D->SetGravity(gravity); }
 
+	uint32_t GetPixelsPerUnit()const { return m_PixelsPerUnit; }
+	void SetPixelsPerUnit(uint32_t pixels) { m_PixelsPerUnit = pixels; }
+
 	HitResult2D RayCast2D(Vector2f begin, Vector2f end);
 
 	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
@@ -92,6 +95,8 @@ private:
 	Ref<PhysicsEngine2D> m_PhysicsEngine2D;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
+
+	uint32_t m_PixelsPerUnit = 16;
 
 	std::stringstream m_Snapshot;
 

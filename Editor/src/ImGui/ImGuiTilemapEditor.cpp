@@ -145,7 +145,7 @@ void TilemapEditor::OnImGuiRender()
 					beginClickPosX = ImGui::GetMousePos().x - p.x;
 					beginClickPosY = ImGui::GetMousePos().y - p.y;
 					size_t cellX = (size_t)std::floor(beginClickPosX / spriteSize.x);
-					size_t cellY = (size_t)std::floor(beginClickPosY / spriteSize.x);
+					size_t cellY = (size_t)std::floor(beginClickPosY / spriteSize.y);
 					if (!ImGui::GetIO().KeyCtrl)
 					{
 						std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));

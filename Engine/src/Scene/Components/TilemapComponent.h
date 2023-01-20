@@ -26,6 +26,9 @@ struct TilemapComponent
 	uint32_t tilesWide = 0;
 	uint32_t tilesHigh = 0;
 
+	uint32_t tileWidth = 32;
+	uint32_t tileHeight = 32;
+
 	Orientation orientation = Orientation::orthogonal;
 
 	bool isTrigger = false;
@@ -56,7 +59,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(tint, tilesWide, tilesHigh, tiles, orientation, isTrigger);
+		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
 
 		std::string relativePath;
 		if (tileset && !tileset->GetFilepath().empty())
@@ -67,7 +70,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(tint, tilesWide, tilesHigh, tiles, orientation, isTrigger);
+		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
 		std::string relativePath;
 		archive(relativePath);
 		if (!relativePath.empty())

@@ -29,8 +29,8 @@ public:
 
 	virtual bool CanUndo() const override { return m_TextEditor.CanUndo(); };
 	virtual bool CanRedo() const override { return m_TextEditor.CanRedo(); };
-	virtual void Undo(int asteps = 1) { m_TextEditor.Undo(asteps); }
-	virtual void Redo(int asteps = 1) { m_TextEditor.Redo(asteps); }
+	virtual void Undo(int asteps = 1) override { m_TextEditor.Undo(asteps); }
+	virtual void Redo(int asteps = 1) override { m_TextEditor.Redo(asteps); }
 
 	virtual bool HasSelection() const override { return m_TextEditor.HasSelection(); }
 	virtual void SelectAll() override { m_TextEditor.SelectAll(); }

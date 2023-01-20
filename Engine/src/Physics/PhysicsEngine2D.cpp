@@ -349,7 +349,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		tilemapComp && tilemapComp->tileset && tilemapComp->tileset->HasCollision())
 	{
 		float tileWidth = transformComp.scale.x;
-		float tileHieght = transformComp.scale.y;
+		float tileHeight = transformComp.scale.y;
 
 		uint32_t i = 0;
 		for (const auto& row : tilemapComp->tiles)
@@ -367,9 +367,9 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 							// TODO: add a fixture for tilemaps
 							if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
 							{
-								b2Vec2 center = b2Vec2(j * tileWidth + (0.5f * tileWidth), -(i * tileHieght + (0.5f * tileHieght)));
+								b2Vec2 center = b2Vec2(j * tileWidth + (0.5f * tileWidth), -(i * tileHeight + (0.5f * tileHeight)));
 								b2PolygonShape rectShape;
-								rectShape.SetAsBox(tileWidth * 0.5f, tileHieght * 0.5f, center, 0.0f);
+								rectShape.SetAsBox(tileWidth * 0.5f, tileHeight * 0.5f, center, 0.0f);
 
 								b2FixtureDef rectFixtureDef;
 								rectFixtureDef.shape = &rectShape;

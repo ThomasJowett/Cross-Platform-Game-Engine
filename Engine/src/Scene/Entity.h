@@ -84,7 +84,7 @@ public:
 	template<typename T>
 	T& GetComponent()
 	{
-		CORE_ASSERT(IsValid(), "Entity not valid");
+		CORE_ASSERT(IsSceneValid(), "Entity not valid");
 		CORE_ASSERT(HasComponent<T>(), "Entity does not have component of type " + std::string(type_name<T>().data()));
 		return m_Scene->m_Registry.get<T>(m_EntityHandle);
 	}
@@ -116,7 +116,7 @@ public:
 	template<typename T>
 	T* TryGetComponent()
 	{
-		ASSERT(IsValid(), "Invalid Entity!")
+		ASSERT(IsSceneValid(), "Invalid Entity!")
 		return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 	}
 
@@ -175,12 +175,13 @@ public:
 	 */
 	bool BelongsToScene(Scene* scene) const
 	{
-		return scene == m_Scene;
+		return scene == m_Scene && IsSceneValid();
 	}
 
-	bool IsValid() const
+	// Is the scene reference that this entity has a valid reference
+	bool IsSceneValid() const
 	{
-		return this && m_Scene && m_Scene->m_Registry.valid(m_EntityHandle);
+		return m_Scene && m_Scene->m_Registry.valid(m_EntityHandle);
 	}
 
 	operator bool() const { return m_EntityHandle != entt::null; }

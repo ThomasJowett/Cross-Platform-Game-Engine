@@ -203,7 +203,7 @@ void BindEntity(sol::state& state)
 
 	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
 		sol::constructors<sol::types<entt::entity, Scene*>>());
-	SetFunction(entity_type, "IsValid", "Is Valid", & Entity::IsValid);
+	SetFunction(entity_type, "IsSceneValid", "Is Valid", & Entity::IsSceneValid);
 	SetFunction(entity_type, "GetName", "Get Name", & Entity::GetName);
 	SetFunction(entity_type, "SetName", "Set Name", & Entity::SetName);
 	SetFunction(entity_type, "AddChild", "Add Child", & Entity::AddChild);

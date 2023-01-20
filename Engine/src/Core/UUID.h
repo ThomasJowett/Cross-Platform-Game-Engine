@@ -45,8 +45,6 @@ private:
 
 namespace std 
 {
-	template <typename T> struct hash;
-
 	template<>
 	struct hash<Uuid>
 	{

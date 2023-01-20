@@ -187,7 +187,7 @@ void HierarchyPanel::OnImGuiRender()
 
 		if (SceneManager::IsSceneLoaded())
 		{
-			if (!m_SelectedEntity.IsValid())
+			if (m_SelectedEntity && !m_SelectedEntity.IsSceneValid())
 				m_SelectedEntity = Entity();
 
 			if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen
@@ -203,7 +203,7 @@ void HierarchyPanel::OnImGuiRender()
 						{
 							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-							if (entity.IsValid() && entity.HasComponent<PrimitiveComponent>())
+							if (entity.IsSceneValid() && entity.HasComponent<PrimitiveComponent>())
 							{
 								PrimitiveComponent& primitiveComp = entity.GetComponent<PrimitiveComponent>();
 
@@ -320,7 +320,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 				DrawNode(childEntity);
 
-				if (childEntity.IsValid())
+				if (childEntity.IsSceneValid())
 				{
 					HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
 

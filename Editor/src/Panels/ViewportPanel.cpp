@@ -146,7 +146,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		Entity selectedEntity;
 
-		if (m_HierarchyPanel->GetSelectedEntity().IsValid())
+		if (m_HierarchyPanel->GetSelectedEntity().IsSceneValid())
 		{
 			selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 		}
@@ -737,7 +737,7 @@ void ViewportPanel::OnImGuiRender()
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 			cameraViewMat.Transpose();
 
-			if (m_HierarchyPanel->GetSelectedEntity().IsValid())
+			if (m_HierarchyPanel->GetSelectedEntity().IsSceneValid())
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
 				TransformComponent& transformComp = selectedEntity.GetTransform();

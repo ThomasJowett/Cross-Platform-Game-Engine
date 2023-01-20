@@ -222,7 +222,6 @@ void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 	CORE_ASSERT(index < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");
 
 	FrameBufferTextureSpecification& spec = m_ColourAttachmentSpecifications[index];
-	spec.textureFormat;
 
 	GLenum textureFormat = TextureFormatToOpenGlTextureFormat(spec.textureFormat);
 

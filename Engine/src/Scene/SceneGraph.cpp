@@ -30,7 +30,7 @@ void SceneGraph::Reparent(Entity entity, Entity parent, entt::registry& registry
   Unparent(entity, registry);
 
   ASSERT(parent.GetHandle() != entt::null, "Parent must not be null");
-  ASSERT(entity.IsValid(), "Entity must be valid!");
+  ASSERT(entity.IsSceneValid(), "Entity must be valid!");
 
   //is the parent a child of this entity
   entt::entity parentCheck = parent.GetHandle();

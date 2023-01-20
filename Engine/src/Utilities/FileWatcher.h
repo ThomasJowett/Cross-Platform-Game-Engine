@@ -12,7 +12,7 @@ enum class FileStatus { Created, Modified, Erased };
 class FileWatcher
 {
 public:
-	FileWatcher(const FileWatcher&) = default;
+	FileWatcher(const FileWatcher&) = delete;
 	FileWatcher(std::chrono::duration<int, std::milli> delay)
 		:m_Delay(delay)
 	{

@@ -211,7 +211,7 @@ public:
 	bool IsOverwrite() const { return mOverwrite; }
 
 	void SetReadOnly(bool aValue);
-	bool IsReadOnly() const { return mReadOnly; }
+	bool IsReadOnly() const override { return mReadOnly; }
 	bool IsTextChanged() const { return mTextChanged; }
 	bool IsCursorPositionChanged() const { return mCursorPositionChanged; }
 
@@ -252,8 +252,8 @@ public:
 	void SetSelectionEnd(const Coordinates& aPosition);
 	void SetSelection(const Coordinates& aStart, const Coordinates& aEnd, SelectionMode aMode = SelectionMode::Normal);
 	void SelectWordUnderCursor();
-	void SelectAll();
-	bool HasSelection() const;
+	void SelectAll() override;
+	bool HasSelection() const override;
 
 	void Copy() override;
 	void Cut() override;
@@ -261,8 +261,8 @@ public:
 	void Duplicate() override;
 	void Delete() override;
 
-	bool CanUndo() const;
-	bool CanRedo() const;
+	bool CanUndo() const override;
+	bool CanRedo() const override;
 	void Undo(int aSteps = 1) override;
 	void Redo(int aSteps = 1) override;
 
