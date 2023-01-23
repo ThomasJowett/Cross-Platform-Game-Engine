@@ -385,6 +385,7 @@ project "Box2D_Testbed"
 	{
 		"box2d/testbed/**.h",
 		"box2d/testbed/**.cpp",
+		"box2d/extern/imgui/**.h",
 		"box2d/extern/imgui/**.cpp",
 		"box2d/extern/glad/src/glad.c"
 	}

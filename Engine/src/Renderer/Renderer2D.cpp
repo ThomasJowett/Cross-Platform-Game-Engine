@@ -948,7 +948,6 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour& colour, int entityId)
 {
-	//TODO: draw text
 	if (text.empty() || font == nullptr)
 		return;
 

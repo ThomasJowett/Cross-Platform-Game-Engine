@@ -24,6 +24,8 @@
 #include "Physics/HitResult2D.h"
 #include "Physics/Contact2D.h"
 
+struct DestroyMarker {};
+
 template<typename Component>
 static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
 {
@@ -117,7 +119,8 @@ bool Scene::RemoveEntity(Entity& entity)
 	if (entity.BelongsToScene(this))
 	{
 		if (m_IsUpdating)
-			m_DestroyedEntities.emplace(entity);
+			if(!m_Registry.any_of<DestroyMarker>(entity))
+				m_Registry.emplace<DestroyMarker>(entity.GetHandle());
 		else
 			SceneGraph::Remove(entity, m_Registry);
 		return true;
@@ -363,13 +366,13 @@ void Scene::OnUpdate(float deltaTime)
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
-	m_Registry.view<AnimatedSpriteComponent>().each([deltaTime](auto entity, auto& animatedSpriteComp)
+	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
 			if (animatedSpriteComp.spriteSheet)
 				animatedSpriteComp.spriteSheet->Animate(deltaTime);
 		});
 
-	m_Registry.view<LuaScriptComponent>().each([deltaTime](auto entity, auto& luaScriptComp)
+	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& luaScriptComp)
 		{
 			if (!luaScriptComp.created)
 			{
@@ -379,7 +382,7 @@ void Scene::OnUpdate(float deltaTime)
 			luaScriptComp.OnUpdate(deltaTime);
 		});
 
-	m_Registry.view<PrimitiveComponent>().each([](auto entity, auto& primitiveComponent)
+	m_Registry.view<PrimitiveComponent>(entt::exclude<DestroyMarker>).each([](auto entity, auto& primitiveComponent)
 		{
 			if (primitiveComponent.needsUpdating)
 			{
@@ -389,13 +392,14 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_IsUpdating = false;
 
-	for (const auto& entity : m_DestroyedEntities)
+	auto destroyView = m_Registry.view<DestroyMarker>();
+
+	for (auto entity : destroyView)
 	{
 		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
 
 		m_Registry.destroy(entity);
 	}
-	m_DestroyedEntities.clear();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -409,7 +413,7 @@ void Scene::OnFixedUpdate()
 	// Physics
 	m_PhysicsEngine2D->OnFixedUpdate();
 
-	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
+	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([=](auto entity, auto& luaScriptComp)
 		{
 			if (!luaScriptComp.created)
 			{
@@ -481,12 +485,14 @@ void Scene::OnFixedUpdate()
 			});
 	}
 
-	for (const auto& entity : m_DestroyedEntities)
+	auto destroyView = m_Registry.view<DestroyMarker>();
+
+	for (auto entity : destroyView)
 	{
 		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
+
 		m_Registry.destroy(entity);
 	}
-	m_DestroyedEntities.clear();
 
 	m_IsUpdating = false;
 }

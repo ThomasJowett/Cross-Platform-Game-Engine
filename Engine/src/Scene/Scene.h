@@ -100,8 +100,6 @@ private:
 
 	std::stringstream m_Snapshot;
 
-	std::set<entt::entity> m_DestroyedEntities;
-
 	friend class Entity;
 	friend class SceneSerializer;
 
