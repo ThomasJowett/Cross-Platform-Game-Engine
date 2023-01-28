@@ -480,7 +480,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
-			if (iUndo->CanUndo())
+			if (iUndo->CanRedo())
 				iUndo->Redo();
 	}
 	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))

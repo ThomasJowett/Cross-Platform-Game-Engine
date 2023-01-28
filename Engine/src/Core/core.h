@@ -37,8 +37,10 @@
 		#else
 			#define DEBUGBREAK() raise(SIGABRT)
 		#endif
+	#elif defined(__APPLE__)
+		#define DEBUGBREAK() __builtin_trap()
 	#else
-		DEBUGBREAK()
+		#define DEBUGBREAK()
 	#endif
 #else
 	#define DEBUGBREAK()

@@ -75,6 +75,31 @@ project "GLFW"
 			"_CRT_SECURE_NO_WARNINGS"
 		}
 
+	filter "system:macosx"
+		defines
+		{
+			"GLFW_COCOA",
+			"_GLFW_USE_RETINA"
+		}
+
+		files {
+			"glfw/src/cocoa_platform.h",
+			"glfw/src/cocoa_joystick.h",
+			"glfw/src/nsgl_context.h",
+			"glfw/src/cocoa_init.m",
+			"glfw/src/cocoa_joystick.m",
+			"glfw/src/cocoa_monitor.m",
+			"glfw/src/cocoa_window.m",
+			"glfw/src/cocoa_time.c",
+			"glfw/src/nsgl_context.m",
+			"glfw/src/posix_thread.h",
+			"glfw/src/posix_thread.c",
+			"glfw/src/egl_context.h",
+			"glfw/src/egl_context.c",
+			"glfw/src/osmesa_context.h",
+			"glfw/src/osmesa_context.c"
+		  }
+
 	filter "configurations:Debug"
 		runtime "Debug"
 		symbols "on"
@@ -156,6 +181,11 @@ project "GLAD"
 	}
 	
 	includedirs
+	{
+		"GLAD/include"
+	}
+
+	externalincludedirs
 	{
 		"GLAD/include"
 	}

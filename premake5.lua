@@ -140,6 +140,13 @@ project "Engine"
 			"__linux__"
 		}
 		
+	filter "system:macosx"
+		excludes
+		{
+			"%{prj.name}/src/Platform/DirectX**.h",
+			"%{prj.name}/src/Platform/DirectX**.cpp",
+			"%{prj.name}/src/ImGui/ImGuiBuildDirectX11.cpp"
+		}
 
 	filter "configurations:Debug"
 		defines 

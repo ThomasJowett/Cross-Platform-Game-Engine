@@ -342,7 +342,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				tilemap.Rebuild();
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			int tileSize[2] = { tilemap.tileWidth, tilemap.tileHeight };
+			int tileSize[2] = { (int)tilemap.tileWidth, (int)tilemap.tileHeight };
 			if (ImGui::InputInt2("Tile Size", tileSize)) {
 				tilemap.tileWidth = tileSize[0];
 				tilemap.tileHeight = tileSize[1];

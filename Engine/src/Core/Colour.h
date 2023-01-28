@@ -214,6 +214,11 @@ public:
 		return *this;
 	}
 
+	bool operator==(const Colour& rhs) const
+	{
+		return HexValue() == rhs.HexValue();
+	}
+
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{

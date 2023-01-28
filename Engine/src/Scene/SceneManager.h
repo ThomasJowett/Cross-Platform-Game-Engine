@@ -32,5 +32,4 @@ private:
 	static std::filesystem::path s_NextFilepath;
 	static SceneState s_SceneState;
 	static std::filesystem::path s_EditingScene;
-	static bool s_BinaryScene;
 };

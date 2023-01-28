@@ -53,18 +53,18 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format,
 
 	switch (format)
 	{
-	case Texture::Format::RED8UN:	m_InternalFormat = GL_R8;		m_DataFormat = GL_RED;	break;
-	case Texture::Format::RED8UI:	m_InternalFormat = GL_R8UI;		m_DataFormat = GL_RED;	break;
-	case Texture::Format::RED16UI:	m_InternalFormat = GL_R16UI;	m_DataFormat = GL_RED;	break;
-	case Texture::Format::RED32UI:	m_InternalFormat = GL_R32UI;	m_DataFormat = GL_RED;	break;
-	case Texture::Format::RED32F:	m_InternalFormat = GL_R32F;		m_DataFormat = GL_RED;	break;
-	case Texture::Format::RG8:		m_InternalFormat = GL_RG8;		m_DataFormat = GL_RG;	break;
-	case Texture::Format::RG16F:	m_InternalFormat = GL_RG16F;	m_DataFormat = GL_RG;	m_Type = GL_FLOAT; break;
-	case Texture::Format::RG32F:	m_InternalFormat = GL_RG32F;	m_DataFormat = GL_RG;	m_Type = GL_FLOAT; break;
-	case Texture::Format::RGB:		m_InternalFormat = GL_RGB8;		m_DataFormat = GL_RGB;	break;
-	case Texture::Format::RGBA:		m_InternalFormat = GL_RGBA8;	m_DataFormat = GL_RGBA;	break;
-	case Texture::Format::RGBA16F:	m_InternalFormat = GL_RGBA16F;	m_DataFormat = GL_RGBA;	m_Type = GL_FLOAT; break;
-	case Texture::Format::RGBA32F:	m_InternalFormat = GL_RGBA32F;	m_DataFormat = GL_RGBA;	m_Type = GL_FLOAT; break;
+	case Texture::Format::RED:      m_InternalFormat = GL_R8;       m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED8UI:   m_InternalFormat = GL_R8UI;     m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED16UI:  m_InternalFormat = GL_R16UI;    m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED32UI:  m_InternalFormat = GL_R32UI;    m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED32F:   m_InternalFormat = GL_R32F;     m_DataFormat = GL_RED;  break;
+	case Texture::Format::RG8:      m_InternalFormat = GL_RG8;      m_DataFormat = GL_RG;   break;
+	case Texture::Format::RG16F:    m_InternalFormat = GL_RG16F;    m_DataFormat = GL_RG;   m_Type = GL_FLOAT; break;
+	case Texture::Format::RG32F:    m_InternalFormat = GL_RG32F;    m_DataFormat = GL_RG;   m_Type = GL_FLOAT; break;
+	case Texture::Format::RGB:      m_InternalFormat = GL_RGB8;     m_DataFormat = GL_RGB;  break;
+	case Texture::Format::RGBA:     m_InternalFormat = GL_RGBA8;    m_DataFormat = GL_RGBA; break;
+	case Texture::Format::RGBA16F:  m_InternalFormat = GL_RGBA16F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
+	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
 	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
 

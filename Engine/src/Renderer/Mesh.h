@@ -79,6 +79,11 @@ public:
 	Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
 	Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
 
+	const std::vector<Vertex>& GetVertexList()const { return m_Vertices; }
+	const std::vector<uint32_t>& GetIndexList()const { return m_Indices; }
+	std::vector<Vertex>& GetVertexList() { return m_Vertices; }
+	std::vector<uint32_t>& GetIndexList() { return m_Indices; }
+
 	const std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 
 	const BoundingBox& GetBounds() const { return m_Bounds; }

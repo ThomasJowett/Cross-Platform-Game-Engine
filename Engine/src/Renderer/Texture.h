@@ -12,7 +12,7 @@ public:
 	enum class Format
 	{
 		None = 0,
-		RED8UN,
+		RED,
 		RED8UI,
 		RED16UI,
 		RED32UI,
