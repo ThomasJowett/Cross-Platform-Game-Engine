@@ -28,7 +28,7 @@ public:
 
 	bool RemoveEntity(Entity& entity);
 
-	void DuplicateEntity(Entity entity, Entity parent);
+	Entity DuplicateEntity(Entity entity, Entity parent);
 
 	void OnRuntimeStart();
 	void OnRuntimePause();

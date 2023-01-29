@@ -72,6 +72,11 @@ MainDockSpace::MainDockSpace()
 #endif // DEBUG
 }
 
+MainDockSpace::~MainDockSpace()
+{
+	HistoryManager::Reset();
+}
+
 void MainDockSpace::OnAttach()
 {
 	PROFILE_FUNCTION();
@@ -171,7 +176,8 @@ void MainDockSpace::OnDetach()
 void MainDockSpace::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
+	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent e) { HistoryManager::Reset(); return false; });
 }
 
 void MainDockSpace::OnUpdate(float deltaTime)
@@ -428,8 +434,9 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
 }
 
-bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)
+bool MainDockSpace::OnOpenProject(AppOpenDocumentChangedEvent& event)
 {
+	HistoryManager::Reset();
 	OpenProject(Application::Get().GetOpenDocument());
 
 	return false;

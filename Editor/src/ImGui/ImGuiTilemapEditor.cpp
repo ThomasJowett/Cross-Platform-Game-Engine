@@ -209,7 +209,7 @@ void TilemapEditor::OnImGuiRender()
 void TilemapEditor::OnEvent(Event& e)
 {
 	EventDispatcher dispatcher(e);
-	dispatcher.Dispatch<SceneChanged>([this](SceneChanged& event) {
+	dispatcher.Dispatch<SceneChangedEvent>([this](SceneChangedEvent& event) {
 		Hide();
 		return false;
 		});

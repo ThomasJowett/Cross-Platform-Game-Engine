@@ -11,6 +11,7 @@
 #include "FileSystem/FileDialog.h"
 #include "Viewers/ViewerManager.h"
 #include "Importers/ImportManager.h"
+#include "History/HistoryManager.h"
 
 #include "HierarchyPanel.h"
 #include "Scene/Components/Components.h"
@@ -992,7 +993,7 @@ void ViewportPanel::OnImGuiRender()
 void ViewportPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<SceneChanged>([&](SceneChanged& event) {
+	dispatcher.Dispatch<SceneChangedEvent>([&](SceneChangedEvent& event) {
 		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 
 		m_CameraController.SetPosition(Vector3f());
@@ -1037,18 +1038,19 @@ bool ViewportPanel::HasSelection() const
 
 bool ViewportPanel::CanUndo() const
 {
-	//TODO: viewport undo list
-	return false;
+	return HistoryManager::CanUndo();
 }
 
 bool ViewportPanel::CanRedo() const
 {
-	return false;
+	return HistoryManager::CanRedo();
 }
 
 void ViewportPanel::Undo(int astep)
 {
 	CLIENT_DEBUG("Undid");
+
+	HistoryManager::Undo(astep);
 
 	SceneManager::CurrentScene()->MakeDirty();
 }
@@ -1056,6 +1058,8 @@ void ViewportPanel::Undo(int astep)
 void ViewportPanel::Redo(int astep)
 {
 	CLIENT_DEBUG("Redid");
+
+	HistoryManager::Redo(astep);
 
 	SceneManager::CurrentScene()->MakeDirty();
 }

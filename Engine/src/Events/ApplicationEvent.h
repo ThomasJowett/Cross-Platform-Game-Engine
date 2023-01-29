@@ -121,10 +121,10 @@ public:
 	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
-class AppOpenDocumentChange : public Event
+class AppOpenDocumentChangedEvent : public Event
 {
 public:
-	AppOpenDocumentChange() {}
+	AppOpenDocumentChangedEvent() {}
 
 	EVENT_CLASS_TYPE(APP_OPEN_DOCUMENT_CHANGE);
 	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);

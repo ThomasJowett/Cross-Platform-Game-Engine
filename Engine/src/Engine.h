@@ -53,6 +53,14 @@
 #include "Scene/AssetManager.h"
 #include "Scene/SceneGraph.h"
 
+// Events
+#include "Events/ApplicationEvent.h"
+#include "Events/Event.h"
+#include "Events/JoystickEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+#include "Events/SceneEvent.h"
+
 // Third Party
 #include "EnTT/entt.hpp"
 #include "imgui/imgui.h"

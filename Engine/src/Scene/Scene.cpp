@@ -118,11 +118,12 @@ bool Scene::RemoveEntity(Entity& entity)
 {
 	if (entity.BelongsToScene(this))
 	{
-		if (m_IsUpdating)
-			if(!m_Registry.any_of<DestroyMarker>(entity))
+		if (m_IsUpdating) {
+			if (!m_Registry.any_of<DestroyMarker>(entity))
 				m_Registry.emplace<DestroyMarker>(entity.GetHandle());
+		}
 		else
-			SceneGraph::Remove(entity, m_Registry);
+			SceneGraph::Remove(entity);
 		return true;
 	}
 	return false;
@@ -130,7 +131,7 @@ bool Scene::RemoveEntity(Entity& entity)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DuplicateEntity(Entity entity, Entity parent)
+Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 {
 	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
@@ -149,7 +150,7 @@ void Scene::DuplicateEntity(Entity entity, Entity parent)
 		heirarchyComp.previousSibling = entt::null;
 	}
 
-	std::vector<Entity> children = SceneGraph::GetChildren(entity, m_Registry);
+	std::vector<Entity> children = SceneGraph::GetChildren(entity);
 
 	for (auto& child : children)
 	{
@@ -157,8 +158,10 @@ void Scene::DuplicateEntity(Entity entity, Entity parent)
 	}
 	if (parent)
 	{
-		SceneGraph::Reparent(newEntity, parent, m_Registry);
+		SceneGraph::Reparent(newEntity, parent);
 	}
+
+	return newEntity;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -396,9 +399,10 @@ void Scene::OnUpdate(float deltaTime)
 
 	for (auto entity : destroyView)
 	{
-		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
+		Entity e = Entity(entity, this);
+		m_PhysicsEngine2D->DestroyEntity(e);
 
-		m_Registry.destroy(entity);
+		SceneGraph::Remove(e);
 	}
 }
 
@@ -489,9 +493,10 @@ void Scene::OnFixedUpdate()
 
 	for (auto entity : destroyView)
 	{
-		m_PhysicsEngine2D->DestroyEntity(Entity(entity, this));
+		Entity e = Entity(entity, this);
+		m_PhysicsEngine2D->DestroyEntity(e);
 
-		m_Registry.destroy(entity);
+		SceneGraph::Remove(e);
 	}
 
 	m_IsUpdating = false;
@@ -566,7 +571,7 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	}
 
 	m_Dirty = false;
-	SceneSaved event(finalPath);
+	SceneSavedEvent event(finalPath);
 	Application::CallEvent(event);
 	m_IsSaving = false;
 }
@@ -609,7 +614,7 @@ bool Scene::Load(bool binary)
 	}
 
 	m_Dirty = false;
-	SceneLoaded event(filepath);
+	SceneLoadedEvent event(filepath);
 	Application::CallEvent(event);
 	return true;
 }

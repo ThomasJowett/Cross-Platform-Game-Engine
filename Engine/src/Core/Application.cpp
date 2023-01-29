@@ -172,7 +172,7 @@ void Application::OnEvent(Event& e)
 		ENGINE_INFO(event.to_string());
 		return false;
 		});
-	dispatcher.Dispatch<SceneChanged>([](SceneChanged& event) {
+	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent& event) {
 		ENGINE_INFO(event.to_string());
 		return false;
 		});
@@ -320,7 +320,7 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 
 		if (s_Instance)
 		{
-			AppOpenDocumentChange event;
+			AppOpenDocumentChangedEvent event;
 			s_EventCallback(event);
 		}
 	}

@@ -13,7 +13,7 @@ class MainDockSpace :
 {
 public:
 	MainDockSpace();
-	~MainDockSpace() = default;
+	~MainDockSpace();
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
@@ -26,7 +26,7 @@ public:
 
 private:
 	void OpenProject(const std::filesystem::path& filename);
-	bool OnOpenProject(AppOpenDocumentChange& event);
+	bool OnOpenProject(AppOpenDocumentChangedEvent& event);
 
 	void HandleKeyBoardInputs();
 private:

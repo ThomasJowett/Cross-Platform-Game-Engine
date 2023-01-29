@@ -3,13 +3,15 @@
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
 #include "Physics/PhysicsMaterial.h"
+#include "History/HistoryCommands.h"
+#include "Interfaces/IUndoable.h"
 
 #include "IconsFontAwesome6.h"
 
 #include "imgui/imgui.h"
 
 class PropertiesPanel :
-	public Layer
+	public Layer, public IUndoable
 {
 public:
 	explicit PropertiesPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
@@ -27,7 +29,9 @@ private:
 	{
 		if (ImGui::MenuItem(name, nullptr, nullptr, !entity.HasComponent<T>()))
 		{
+			Ref<AddComponentCommand<T>> addComponentCommand = CreateRef<AddComponentCommand<T>>(entity);
 			entity.AddComponent<T>();
+			HistoryManager::AddHistoryRecord(addComponentCommand);
 		}
 	}
 
@@ -60,10 +64,19 @@ private:
 				ImGui::TreePop();
 			}
 
-			if (deleteComponent)
+			if (deleteComponent) {
+				Ref<RemoveComponentCommand<T>> removeComponentCommand = CreateRef<RemoveComponentCommand<T>>(entity);
 				entity.RemoveComponent<T>();
+				HistoryManager::AddHistoryRecord(removeComponentCommand);
+			}
 		}
 	}
+
+	// Inherited via IUndoable
+	virtual void Undo(int asteps) override;
+	virtual void Redo(int asteps) override;
+	virtual bool CanUndo() const override;
+	virtual bool CanRedo() const override;
 
 private:
 	bool* m_Show;

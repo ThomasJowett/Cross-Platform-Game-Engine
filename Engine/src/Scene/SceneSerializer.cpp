@@ -985,3 +985,28 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 	return entity;
 }
+
+std::string SceneSerializer::SerializeEntity(Entity entity)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, entity);
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+	return printer.CStr();
+}
+
+Entity SceneSerializer::DeserializeEntity(Scene* scene, const std::string& prefab, bool resetUuid)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError error = doc.Parse(prefab.c_str());
+
+	if (error == tinyxml2::XMLError::XML_SUCCESS)
+	{
+		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
+		if (pEntityElement)
+			return SceneSerializer::DeserializeEntity(scene, pEntityElement, resetUuid);
+	}
+	return Entity();
+}

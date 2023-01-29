@@ -5,6 +5,7 @@
 #include "Fonts/IconsMaterialDesignIcons.h"
 #include "Fonts/Fonts.h"
 #include "MainDockSpace.h"
+#include "History/HistoryManager.h"
 
 #include "Engine.h"
 
@@ -125,14 +126,18 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 		if (ImGui::InputText("Entity Name##", buffer, sizeof(buffer)))
 		{
+			Ref<EditComponent<NameComponent>> editComponent = CreateRef<EditComponent<NameComponent>>(entity);
 			name = std::string(buffer);
 			SceneManager::CurrentScene()->MakeDirty();
+
+			HistoryManager::AddHistoryRecord(editComponent);
 		}
 	}
 
 	// Transform------------------------------------------------------------------------------------------------------------
 	DrawComponent<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity, [&](auto& transform)
 		{
+			Ref<EditComponent<TransformComponent>> editComponent = CreateRef<EditComponent<TransformComponent>>(entity);
 			if (ImGui::Transform(transform.position, transform.rotation, transform.scale))
 			{
 				if (entity.HasComponent<RigidBody2DComponent>())
@@ -140,6 +145,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					entity.GetComponent<RigidBody2DComponent>().SetTransform(transform.position, transform.rotation.z);
 				}
 				SceneManager::CurrentScene()->MakeDirty();
+				HistoryManager::AddHistoryRecord(editComponent);
 			}
 		}, false);
 
@@ -909,4 +915,24 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		}
 		ImGui::EndPopup();
 	}
+}
+
+void PropertiesPanel::Undo(int asteps)
+{
+	HistoryManager::Undo(asteps);
+}
+
+void PropertiesPanel::Redo(int asteps)
+{
+	HistoryManager::Redo(asteps);
+}
+
+bool PropertiesPanel::CanUndo() const
+{
+	return HistoryManager::CanUndo();
+}
+
+bool PropertiesPanel::CanRedo() const
+{
+	return HistoryManager::CanRedo();
 }

@@ -3,10 +3,10 @@
 #include "Event.h"
 #include <filesystem>
 
-class SceneChanged : public Event
+class SceneChangedEvent : public Event
 {
 public:
-	SceneChanged(const std::filesystem::path& filepath)
+	SceneChangedEvent(const std::filesystem::path& filepath)
 		:m_Filepath(filepath)
 	{}
 
@@ -27,10 +27,10 @@ private:
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-class SceneSaved : public Event
+class SceneSavedEvent : public Event
 {
 public:
-	SceneSaved(const std::filesystem::path& filepath)
+	SceneSavedEvent(const std::filesystem::path& filepath)
 		:m_Filepath(filepath)
 	{}
 
@@ -51,10 +51,10 @@ private:
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-class SceneLoaded : public Event
+class SceneLoadedEvent : public Event
 {
 public:
-	SceneLoaded(const std::filesystem::path& filepath)
+	SceneLoadedEvent(const std::filesystem::path& filepath)
 		:m_Filepath(filepath)
 	{}
 

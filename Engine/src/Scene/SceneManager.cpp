@@ -119,7 +119,7 @@ bool SceneManager::FinalChangeScene()
 	if (!s_CurrentScene->Load())
 		s_CurrentScene.reset();
 
-	SceneChanged event(s_NextFilepath);
+	SceneChangedEvent event(s_NextFilepath);
 	Application::CallEvent(event);
 
 	s_CurrentScene->OnViewportResize(Settings::GetInt("Display", "Window_Width"), Settings::GetInt("Display", "Window_Height"));

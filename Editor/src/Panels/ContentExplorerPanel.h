@@ -132,6 +132,7 @@ private:
 	bool Rename();
 
 	void OpenAllSelectedItems();
+	void OpenItem(int index);
 
 	void ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName);
 	void CreateDragDropSource(size_t index);

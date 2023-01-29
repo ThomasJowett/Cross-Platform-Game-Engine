@@ -10,6 +10,7 @@ struct PointLightComponent
 	float range = 10.0f;
 	float attenuation = 1.0f;
 	PointLightComponent() = default;
+	PointLightComponent(const PointLightComponent&) = default;
 
 private:
 	friend cereal::access;

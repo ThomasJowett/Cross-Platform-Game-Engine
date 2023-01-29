@@ -48,7 +48,7 @@ void ProjectSettingsPanel::OnDetach()
 void ProjectSettingsPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(ProjectSettingsPanel::OnOpenDocumentChanged));
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>(BIND_EVENT_FN(ProjectSettingsPanel::OnOpenDocumentChanged));
 }
 
 void ProjectSettingsPanel::ReadProjectFile()

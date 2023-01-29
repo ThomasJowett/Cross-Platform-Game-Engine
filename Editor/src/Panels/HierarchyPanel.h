@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Interfaces/ICopyable.h"
+#include "Interfaces/IUndoable.h"
 
 #include "TinyXml2/tinyxml2.h"
 #include "Core/Layer.h"
@@ -11,7 +12,7 @@
 struct ImGuiTextFilter;
 
 class HierarchyPanel :
-    public Layer, public ICopyable
+    public Layer, public ICopyable, public IUndoable
 {
 public:
     explicit HierarchyPanel(bool* show);
@@ -35,6 +36,12 @@ public:
     virtual bool HasSelection() const override;
     virtual void SelectAll() override;
     virtual bool IsReadOnly() const override;
+
+    // Inherited via IUndoable
+    virtual void Undo(int asteps) override;
+    virtual void Redo(int asteps) override;
+    virtual bool CanUndo() const override;
+    virtual bool CanRedo() const override;
 
     bool IsFocused() { return m_Focused; }
     void HasFocused() { m_Focused = false; }

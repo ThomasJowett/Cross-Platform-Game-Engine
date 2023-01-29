@@ -513,8 +513,23 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 	for (size_t i = 0; i < m_Files.size(); i++)
 	{
 		if (m_SelectedFiles[i])
-			ViewerManager::OpenViewer(m_Files[i]);
+			OpenItem(i);
 	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void ContentExplorerPanel::OpenItem(int index)
+{
+	if (m_Files[index].extension() == ".scene") {
+		if (SceneManager::CurrentScene()->IsDirty()) {
+			ImGui::OpenPopup("Save Scene?");
+		}
+		else
+			SceneManager::ChangeScene(m_Files[index]);
+	}
+	else
+		ViewerManager::OpenViewer(m_Files[index]);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -574,11 +589,6 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 		if (ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
 		{
 			ImGui::OpenPopup("Rename");
-		}
-		if (ImGui::BeginPopup("Rename"))
-		{
-			Rename();
-			ImGui::EndPopup();
 		}
 
 		ImGui::Separator();
@@ -797,6 +807,13 @@ void ContentExplorerPanel::OnImGuiRender()
 			Rename();
 			ImGui::EndPopup();
 		}
+
+		if (ImGui::BeginPopupModal("Save Scene?"))
+		{
+			//TODO Save scene before changing
+			ImGui::EndPopup();
+		}
+
 		const ImGuiStyle& style = ImGui::GetStyle();
 		ImVec4 dummyButtonColour(0.0f, 0.0f, 0.0f, 0.5f);
 
@@ -1230,7 +1247,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						{
 							if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 							{
-								ViewerManager::OpenViewer(m_Files[i]);
+								OpenItem(i);
 							}
 
 							ClearSelected();
@@ -1576,7 +1593,7 @@ void ContentExplorerPanel::OnImGuiRender()
 							{
 								if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 								{
-									ViewerManager::OpenViewer(m_Files[i]);
+									OpenItem(i);
 								}
 
 								ClearSelected();

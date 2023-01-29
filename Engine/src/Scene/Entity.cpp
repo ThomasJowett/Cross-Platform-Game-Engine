@@ -23,7 +23,7 @@ Entity::Entity(entt::entity handle, Scene* scene)
 
 void Entity::AddChild(Entity child)
 {
-	SceneGraph::Reparent(child, *this, m_Scene->GetRegistry());
+	SceneGraph::Reparent(child, *this);
 }
 
 void Entity::Destroy()
