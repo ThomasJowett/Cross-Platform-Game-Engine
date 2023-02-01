@@ -66,14 +66,11 @@ project "Boing Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
 
-	externalincludedirs
+		externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -92,14 +89,10 @@ project "Gears Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -118,14 +111,10 @@ project "Heightmap Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -144,14 +133,10 @@ project "Offscreen Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -170,14 +155,10 @@ project "Offscreen Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -196,14 +177,10 @@ project "Particles Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -224,14 +201,10 @@ project "Sharing Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -250,14 +223,10 @@ project "Split View Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -276,14 +245,10 @@ project "Triangle OpenGL"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -302,14 +267,10 @@ project "Wave Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -328,14 +289,10 @@ project "Wave Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -354,14 +311,10 @@ project "Windows Example"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -380,14 +333,10 @@ project "Triangle Vulkan"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -406,14 +355,10 @@ project "Allocator Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -432,14 +377,10 @@ project "Clipboard Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -459,14 +400,10 @@ project "Cursor Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -485,14 +422,10 @@ project "Empty Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -513,14 +446,10 @@ project "Events Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -540,14 +469,10 @@ project "Gamma Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -566,14 +491,10 @@ project "Info"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -593,14 +514,10 @@ project "Icon Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -619,14 +536,10 @@ project "Iconify Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -646,14 +559,10 @@ project "Input Lag Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -673,14 +582,10 @@ project "Joysticks Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -699,14 +604,10 @@ project "Monitors Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -726,14 +627,10 @@ project "MSAA Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -753,14 +650,10 @@ project "Reopen Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -779,14 +672,10 @@ project "Tearing Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -805,14 +694,10 @@ project "Threads Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -832,14 +717,10 @@ project "Timeout Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -858,14 +739,10 @@ project "Title Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
@@ -884,14 +761,10 @@ project "Window Test"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	includedirs
-	{
-		"GLFW/include"
-	}
-
 	externalincludedirs
 	{
-		"GLFW/deps"
+		"GLFW/deps",
+		"GLFW/include"
 	}
 
 	links
