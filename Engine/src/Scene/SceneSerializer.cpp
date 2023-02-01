@@ -2,7 +2,7 @@
 #include "SceneSerializer.h"
 
 #include "Scene/Entity.h"
-#include "Components/Components.h"
+#include "Components.h"
 #include "Core/Application.h"
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
@@ -161,7 +161,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
 
-		pAnimatedSpriteElement->SetAttribute("CurrentAnimation", component.GetCurrentAnimationName().c_str());
+		pAnimatedSpriteElement->SetAttribute("Animation", component.animation.c_str());
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
@@ -585,8 +585,17 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			}
 		}
 
-		if (const char* currentAnimation = pAnimatedSpriteComponentElement->Attribute("CurrentAnimation"))
-			component.SelectAnimation(currentAnimation);
+		const char* animation = pAnimatedSpriteComponentElement->Attribute("Animation");
+		if (animation)
+		{
+			component.animation = animation;
+			if (component.spriteSheet) {
+				Animation* animationRef = component.spriteSheet->GetAnimation(animation);
+				if(animationRef)
+					component.currentFrame = animationRef->GetStartFrame();
+
+			}
+		}
 	}
 
 	// Static Mesh -------------------------------------------------------------------------------------------------------

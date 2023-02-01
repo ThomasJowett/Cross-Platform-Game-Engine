@@ -17,6 +17,7 @@
 #include "Importers/ImportManager.h"
 
 #include "Scene/SceneManager.h"
+#include "History/HistoryManager.h"
 
 #include "Fonts/Fonts.h"
 
@@ -181,6 +182,7 @@ bool ContentExplorerPanel::Rename()
 		}
 
 		ImGui::CloseCurrentPopup();
+		m_Renaming = false;
 		hasFocus = false;
 		once = false;
 		return true;
@@ -191,6 +193,7 @@ bool ContentExplorerPanel::Rename()
 		if (once)
 		{
 			ImGui::CloseCurrentPopup();
+			m_Renaming = false;
 			hasFocus = false;
 			once = false;
 			return false;
@@ -221,13 +224,11 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void ContentExplorerPanel::CreateNewScene() //TODO: create a pop-up to name the scene before creating it
+void ContentExplorerPanel::CreateNewScene()
 {
 	std::filesystem::path newSceneFilepath = Directory::GetNextNewFileName(m_CurrentPath, "New Scene", ".scene");
 
 	SceneManager::CreateScene(newSceneFilepath);
-
-	SceneManager::ChangeScene(newSceneFilepath);
 
 	m_ForceRescan = true;
 
@@ -397,7 +398,7 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
 			SelectAll();
 		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)) && m_NumberSelected == 1)
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 	}
 }
 
@@ -430,20 +431,19 @@ void ContentExplorerPanel::RightClickMenu()
 			std::filesystem::create_directory(newFolderName);
 
 			m_ForceRescan = true;
-
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 
 			m_CurrentSelectedPath = newFolderName;
 		}
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
 		{
 			CreateNewScene();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
 		{
 			CreateNewMaterial();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 		if (ImGui::Selectable("Prefab"))
 		{
@@ -452,25 +452,25 @@ void ContentExplorerPanel::RightClickMenu()
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
 		{
 			CreateNewLuaScript();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
 		{
 			CreateNewTileset();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
 		{
 			CreateNewSpriteSheet();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
 		{
 			CreateNewPhysicsMaterial();
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 		ImGui::EndMenu();
 	}
@@ -519,11 +519,11 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void ContentExplorerPanel::OpenItem(int index)
+void ContentExplorerPanel::OpenItem(size_t index)
 {
 	if (m_Files[index].extension() == ".scene") {
 		if (SceneManager::CurrentScene()->IsDirty()) {
-			ImGui::OpenPopup("Save Scene?");
+			m_TryingToChangeScene = true;
 		}
 		else
 			SceneManager::ChangeScene(m_Files[index]);
@@ -581,14 +581,9 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 			}
 		}
 
-		m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
-
-		ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_None | ImGuiSelectableFlags_DontClosePopups;
-
-		static bool renameSelected = false;
-		if (ImGui::Selectable("Rename", renameSelected, selectable_flags) && m_NumberSelected == 1)
+		if (ImGui::Selectable("Rename") && m_NumberSelected == 1)
 		{
-			ImGui::OpenPopup("Rename");
+			m_Renaming = true;
 		}
 
 		ImGui::Separator();
@@ -676,7 +671,7 @@ void ContentExplorerPanel::CreateDragDropSource(size_t index)
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 ContentExplorerPanel::ContentExplorerPanel(bool* show)
-	: Layer("ContentExplorer"), m_Show(show), 
+	: Layer("ContentExplorer"), m_Show(show),
 	m_FileWatcher(std::chrono::seconds(1))
 {
 	m_TotalNumBrowsingEntries = 0;
@@ -778,7 +773,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		m_LastSelectedFile = -1;
 		m_LastSelectedDir = -1;
 
-		if(m_TextureLibrary.Size() > 100)
+		if (m_TextureLibrary.Size() > 100)
 			m_TextureLibrary.Clear();
 
 		m_FileWatcher.SetPathToWatch(m_CurrentPath);
@@ -798,19 +793,6 @@ void ContentExplorerPanel::OnImGuiRender()
 		if (ImGui::BeginPopupContextWindow("Right click menu"))
 		{
 			RightClickMenu();
-			ImGui::EndPopup();
-		}
-
-		//ImGui::SetNextWindowPos(m_CurrentSelectedPosition);
-		if (ImGui::BeginPopup("Rename"))
-		{
-			Rename();
-			ImGui::EndPopup();
-		}
-
-		if (ImGui::BeginPopupModal("Save Scene?"))
-		{
-			//TODO Save scene before changing
 			ImGui::EndPopup();
 		}
 
@@ -1256,7 +1238,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 							m_NumberSelected = 1;
 
-							m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 							m_CurrentSelectedPath = m_Files[i];
 						}
 						m_LastSelectedFile = i;
@@ -1414,7 +1395,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 								m_NumberSelected = 1;
 
-								m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 								m_CurrentSelectedPath = m_Files[i];
 							}
 							else
@@ -1440,7 +1420,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						}
 					}
 
-					if (ImGui::BeginPopupContextWindow("Right click menu", 
+					if (ImGui::BeginPopupContextWindow("Right click menu",
 						ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_MouseButtonRight))
 					{
 						RightClickMenu();
@@ -1602,7 +1582,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 								m_NumberSelected = 1;
 
-								m_CurrentSelectedPosition = ImVec2(ImGui::GetWindowPos().x + ImGui::GetCursorPos().x, ImGui::GetWindowPos().y + ImGui::GetCursorPos().y);
 								m_CurrentSelectedPath = m_Files[i];
 							}
 							else
@@ -1644,7 +1623,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::EndGroup();
 					}
 
-					if (ImGui::BeginPopupContextWindow("Right click menu", 
+					if (ImGui::BeginPopupContextWindow("Right click menu",
 						ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_MouseButtonRight))
 					{
 						RightClickMenu();
@@ -1660,6 +1639,54 @@ void ContentExplorerPanel::OnImGuiRender()
 			}
 
 			ImGui::PopID();
+		}
+
+		if (m_Renaming) {
+			ImGui::OpenPopup("Rename");
+		}
+
+		if (ImGui::BeginPopup("Rename"))
+		{
+			Rename();
+			ImGui::EndPopup();
+		}
+
+		if (m_TryingToChangeScene) {
+			if (SceneManager::CurrentScene()->IsDirty()) {
+				ImGui::OpenPopup("Save Scene?");
+			}
+			else {
+				SceneManager::ChangeScene(m_CurrentSelectedPath);
+				m_TryingToChangeScene = false;
+			}
+		}
+
+		if (ImGui::BeginPopupModal("Save Scene?"))
+		{
+			ImGui::TextUnformatted("Save unsaved changes in Scene?");
+			if (ImGui::Button("Save"))
+			{
+				SceneManager::CurrentScene()->Save();
+				OpenAllSelectedItems();
+				m_TryingToChangeScene = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Don't Save"))
+			{
+				//HistoryManager::Undo(HistoryManager::GetUndoSteps());
+				//HistoryManager::Reset();
+				OpenAllSelectedItems();
+				m_TryingToChangeScene = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				m_TryingToChangeScene = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
 		}
 	}
 	ImGui::End();

@@ -20,6 +20,8 @@ void SpriteSheetView::OnAttach()
 	m_LocalSpriteSheet = CreateRef<SpriteSheet>(*m_SpriteSheet);
 	m_LocalSpriteSheet->SetSubTexture(CreateRef<SubTexture2D>(*m_LocalSpriteSheet->GetSubTexture()));
 
+	m_PreviewSprite.spriteSheet = m_LocalSpriteSheet;
+
 	m_SelectedFrames.resize((size_t)(m_LocalSpriteSheet->GetSubTexture()->GetCellsTall()));
 	for (size_t i = 0; i < m_LocalSpriteSheet->GetSubTexture()->GetCellsTall(); i++)
 	{
@@ -31,15 +33,15 @@ void SpriteSheetView::OnAttach()
 	if (m_LocalSpriteSheet->GetSubTexture()->GetSpriteWidth() <= 16 || m_LocalSpriteSheet->GetSubTexture()->GetSpriteHeight() <= 16)
 		m_Zoom = 4.0f;
 
-	if(!m_LocalSpriteSheet->GetAnimations().empty())
-		m_LocalSpriteSheet->SelectAnimation(m_LocalSpriteSheet->GetAnimations().begin()->first);
+	if (!m_LocalSpriteSheet->GetAnimations().empty()) {
+		m_PreviewSprite.animation = m_LocalSpriteSheet->GetAnimations().begin()->first;
+	}
 	GetListOfAnimations();
-
 }
 
 void SpriteSheetView::OnUpdate(float deltaTime)
 {
-	m_LocalSpriteSheet->Animate(deltaTime);
+	m_PreviewSprite.Animate(deltaTime);
 }
 
 void SpriteSheetView::OnImGuiRender()
@@ -157,6 +159,7 @@ void SpriteSheetView::OnImGuiRender()
 
 			float ratio = ImGui::GetContentRegionAvail().x / spriteSize[0];
 
+			m_LocalSpriteSheet->GetSubTexture()->SetCurrentCell(m_PreviewSprite.currentFrame);
 			ImGui::Image(m_LocalSpriteSheet->GetSubTexture(),
 				ImVec2(ImGui::GetContentRegionAvail().x, spriteSize[1] * ratio));
 
@@ -167,6 +170,7 @@ void SpriteSheetView::OnImGuiRender()
 				{
 					m_LocalSpriteSheet->AddAnimation("New Animation", 0, 3, 0.1f);
 					GetListOfAnimations();
+					m_PreviewSprite.animation = "New Animation";
 					m_Dirty = true;
 				}
 				ImGui::Tooltip("Add animation");
@@ -230,7 +234,7 @@ void SpriteSheetView::OnImGuiRender()
 
 					for (int i = 0; i < m_AnimationsSorted.size(); ++i)
 					{
-						if (m_AnimationsSorted[i].first == m_LocalSpriteSheet->GetCurrentAnimation())
+						if (m_AnimationsSorted[i].first == m_PreviewSprite.animation)
 						{
 							m_SelectedAnimation = i;
 							break;
@@ -244,7 +248,7 @@ void SpriteSheetView::OnImGuiRender()
 						ImGui::TableSetColumnIndex(0);
 						std::string radioBtnId = "##selected" + std::to_string(index);
 						if (ImGui::RadioButton(radioBtnId.c_str(), &m_SelectedAnimation, index))
-							m_LocalSpriteSheet->SelectAnimation(name);
+							m_PreviewSprite.animation = name;
 						memset(m_InputBuffer, 0, sizeof(m_InputBuffer));
 						for (int i = 0; i < name.length(); i++)
 						{
@@ -264,9 +268,10 @@ void SpriteSheetView::OnImGuiRender()
 
 						if (activeIndex == index && !ImGui::IsItemActive() && ImGui::IsWindowFocused())
 						{
+							if (m_PreviewSprite.animation == name)
+								m_PreviewSprite.animation = m_InputBuffer;
 							m_LocalSpriteSheet->RenameAnimation(name, m_InputBuffer);
 							GetListOfAnimations();
-							name = m_InputBuffer;
 							m_Dirty = true;
 							activeIndex = -1;
 						}
@@ -320,6 +325,8 @@ void SpriteSheetView::OnImGuiRender()
 					{
 						m_LocalSpriteSheet->RemoveAnimation(deletedAnimation);
 						GetListOfAnimations();
+						if (m_PreviewSprite.animation == deletedAnimation)
+							m_PreviewSprite.animation = m_AnimationsSorted.empty() ? "" : m_AnimationsSorted[m_SelectedAnimation].first;
 						m_Dirty = true;
 					}
 				}
@@ -372,19 +379,20 @@ void SpriteSheetView::OnImGuiRender()
 					}
 				}
 
-				if (!m_LocalSpriteSheet->GetCurrentAnimation().empty())
+				if (!m_PreviewSprite.animation.empty())
 				{
-					Animation& currentAnimation = m_LocalSpriteSheet->GetAnimations().at(m_LocalSpriteSheet->GetCurrentAnimation());
-					uint32_t startFrame = currentAnimation.GetStartFrame();
-					for (int i = startFrame; i < (int)(startFrame + currentAnimation.GetFrameCount()); ++i)
-					{
-						div_t div = std::div(i, (int)m_LocalSpriteSheet->GetSubTexture()->GetCellsWide());
-						uint32_t cellX = div.rem;
-						uint32_t cellY = div.quot;
-						ImVec2 topLeft(cellX * tileSize.x + p.x, cellY * tileSize.y + p.y);
-						ImVec2 bottomRight(cellX * tileSize.x + p.x + tileSize.x, cellY * tileSize.y + p.y + tileSize.y);
-						draw_list->AddRectFilled(topLeft, bottomRight, selectionColour);
-						draw_list->AddRect(topLeft, bottomRight, selectionColourOutline);
+					Animation* currentAnimation = m_LocalSpriteSheet->GetAnimation(m_PreviewSprite.animation);
+					if (currentAnimation) {
+						for (int i = currentAnimation->GetStartFrame(); i < (int)(currentAnimation->GetEndFrame()); ++i)
+						{
+							div_t div = std::div(i, (int)m_LocalSpriteSheet->GetSubTexture()->GetCellsWide());
+							uint32_t cellX = div.rem;
+							uint32_t cellY = div.quot;
+							ImVec2 topLeft(cellX * tileSize.x + p.x, cellY * tileSize.y + p.y);
+							ImVec2 bottomRight(cellX * tileSize.x + p.x + tileSize.x, cellY * tileSize.y + p.y + tileSize.y);
+							draw_list->AddRectFilled(topLeft, bottomRight, selectionColour);
+							draw_list->AddRect(topLeft, bottomRight, selectionColourOutline);
+						}
 					}
 				}
 				ImGui::EndChild();
@@ -462,4 +470,6 @@ void SpriteSheetView::GetListOfAnimations()
 	{
 		m_AnimationsSorted.emplace_back(name, &animation);
 	}
+	while (m_SelectedAnimation >= m_AnimationsSorted.size() && m_SelectedAnimation > 0)
+		m_SelectedAnimation--;
 }

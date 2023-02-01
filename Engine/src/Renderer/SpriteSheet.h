@@ -19,18 +19,14 @@ public:
 	void AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime);
 	void RemoveAnimation(std::string name);
 	void RenameAnimation(const std::string& oldName, const std::string& newName);
-	void Animate(float deltaTime);
-
-	void SelectAnimation(const std::string& animationName);
 
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
 	std::unordered_map<std::string, Animation>& GetAnimations() { return m_Animations; }
-	const std::string GetCurrentAnimation() const { return m_CurrentAnimation; }
+	Animation* GetAnimation(const std::string& animationName);
 
 private:
 	Ref<SubTexture2D> m_Texture;
 	std::unordered_map<std::string, Animation> m_Animations;
-	std::string m_CurrentAnimation;
 };

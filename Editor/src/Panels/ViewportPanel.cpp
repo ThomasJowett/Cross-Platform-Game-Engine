@@ -11,10 +11,9 @@
 #include "FileSystem/FileDialog.h"
 #include "Viewers/ViewerManager.h"
 #include "Importers/ImportManager.h"
-#include "History/HistoryManager.h"
 
 #include "HierarchyPanel.h"
-#include "Scene/Components/Components.h"
+#include "Scene/Components.h"
 
 #include "ImGui/ImGuizmo.h"
 #include "Utilities/MathUtils.h"
@@ -790,7 +789,6 @@ void ViewportPanel::OnImGuiRender()
 
 				float bounds[6];
 
-
 				if (selectedEntity.HasComponent<SpriteComponent>()
 					|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
 					|| selectedEntity.HasComponent<CircleRendererComponent>())
@@ -894,6 +892,8 @@ void ViewportPanel::OnImGuiRender()
 
 				if (ImGuizmo::IsUsing())
 				{
+					if (!m_EditTransformCommand)
+						m_EditTransformCommand = CreateRef<EditComponentCommand<TransformComponent>>(selectedEntity);
 					transformMat.Transpose();
 					Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp.GetParentMatrix());
 					transformMat = parentMatrix * transformMat;
@@ -950,6 +950,12 @@ void ViewportPanel::OnImGuiRender()
 						}
 					}
 				}
+				else if (m_EditTransformCommand)
+				{
+					HistoryManager::AddHistoryRecord(m_EditTransformCommand);
+					m_EditTransformCommand = nullptr;
+				}
+
 			}
 		}
 

@@ -12,6 +12,7 @@
 
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
+#include "History/HistoryCommands.h"
 
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable
@@ -96,4 +97,6 @@ private:
 	bool m_RightClickMenuOpen = false;
 
 	Ref<Mesh> m_GridMesh;
+
+	Ref<EditComponentCommand<TransformComponent>> m_EditTransformCommand = nullptr;
 };

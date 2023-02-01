@@ -1,5 +1,27 @@
+newoption
+{
+	trigger = "arch",
+	value = "arch",
+	description = "Choose system architecture",
+	allowed = 
+	{
+		{"x86_64", "x64"},
+		{"arm64", "arm64"}
+	}
+}
+
+Arch = "x86_64"
+if _OPTIONS["arch"] then
+	Arch = _OPTIONS["arch"]
+end
+
 workspace "Cross Platform Game Engine"
-	architecture "x86_64"
+	if Arch == "arm64" then
+		architecture "arm64"
+	else
+		architecture "x86_64"
+	end
+
 	startproject "Editor"
 
 	configurations

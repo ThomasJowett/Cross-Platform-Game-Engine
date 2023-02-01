@@ -15,7 +15,6 @@
 	#elif TARGET_OS_MAC == 1
 		#define TARGET_OS_MAC == 1
 		#define PLATFORM_MACOS
-	#error "MACOS is not yet supported!"
 	#else
 		#error "Unkown Apple Platform!"
 #endif

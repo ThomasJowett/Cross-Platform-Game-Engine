@@ -11,19 +11,16 @@ struct AnimatedSpriteComponent
 {
 	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
 	Ref<SpriteSheet> spriteSheet;
+	std::string animation;
+	uint32_t currentFrame = 0;
 
 	AnimatedSpriteComponent() = default;
+	AnimatedSpriteComponent(const AnimatedSpriteComponent& other) = default;
 
-	void SelectAnimation(const std::string& animationName)
-	{
-		if (spriteSheet)
-			spriteSheet->SelectAnimation(animationName);
-		m_CurrentAnimation = animationName;
-	}
-
-	std::string GetCurrentAnimationName() const { return m_CurrentAnimation; }
+	void Animate(float deltaTime);
 private:
-	std::string m_CurrentAnimation;
+	float m_CurrentFrameTime = 0.0f;
+
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
@@ -33,7 +30,7 @@ private:
 		if (spriteSheet && !spriteSheet->GetFilepath().empty())
 			relativePath = FileUtils::RelativePath(spriteSheet->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
 		archive(relativePath);
-		archive(m_CurrentAnimation);
+		archive(animation);
 	}
 
 	template<typename Archive>
@@ -50,8 +47,11 @@ private:
 		{
 			spriteSheet.reset();
 		}
-		archive(m_CurrentAnimation);
-		if (spriteSheet)
-			spriteSheet->SelectAnimation(m_CurrentAnimation);
+		archive(animation);
+		if (spriteSheet && !animation.empty()) {
+			Animation* animationRef = spriteSheet->GetAnimation(animation);
+			if(animationRef)
+				currentFrame = animationRef->GetStartFrame();
+		}
 	}
 };

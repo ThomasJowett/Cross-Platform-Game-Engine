@@ -2,7 +2,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-#include "Components/Components.h"
+#include "Components.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
@@ -277,8 +277,10 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	for (auto entity : animatedSpriteGroup)
 	{
 		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
-		if (spriteComp.spriteSheet)
+		if (spriteComp.spriteSheet && spriteComp.spriteSheet->GetSubTexture()) {
+			spriteComp.spriteSheet->GetSubTexture()->SetCurrentCell(spriteComp.currentFrame);
 			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.spriteSheet->GetSubTexture(), spriteComp.tint, (int)entity);
+		}
 	}
 
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
@@ -372,7 +374,7 @@ void Scene::OnUpdate(float deltaTime)
 	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
 			if (animatedSpriteComp.spriteSheet)
-				animatedSpriteComp.spriteSheet->Animate(deltaTime);
+				animatedSpriteComp.Animate(deltaTime);
 		});
 
 	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& luaScriptComp)

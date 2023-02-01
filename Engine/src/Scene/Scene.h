@@ -56,6 +56,7 @@ public:
 
 	void MakeDirty() { m_Dirty = true; }
 	bool IsDirty() const { return m_Dirty; }
+	void MakeClean() { m_Dirty = false; }
 
 	bool IsSaving() const { return m_IsSaving; }
 	bool IsUpdating() const { return m_IsUpdating; }

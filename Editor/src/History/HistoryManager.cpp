@@ -22,6 +22,8 @@ void HistoryManager::Undo(int steps)
 
 	if (s_UndoIndex > 0)
 		SceneManager::CurrentScene()->MakeDirty();
+	else if (s_UndoIndex == 0)
+		SceneManager::CurrentScene()->MakeClean();
 }
 
 void HistoryManager::Redo(int steps)

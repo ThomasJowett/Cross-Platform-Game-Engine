@@ -102,14 +102,14 @@ private:
 };
 
 template<typename T>
-class EditComponent : public HistoryRecord
+class EditComponentCommand : public HistoryRecord
 {
 	Entity m_Entity;
 	T m_OldComponent;
 	T m_NewComponent;
 
 public:
-	EditComponent(Entity& entity)
+	EditComponentCommand(Entity& entity)
 		: m_Entity(entity)
 	{
 		// Store the original state of the component

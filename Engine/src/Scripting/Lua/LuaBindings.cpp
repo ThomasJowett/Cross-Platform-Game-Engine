@@ -10,7 +10,7 @@
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
 #include "Scene/SceneManager.h"
-#include "Scene/Components/Components.h"
+#include "Scene/Components.h"
 #include "Utilities/StringUtils.h"
 #include "Renderer/Renderer2D.h"
 #include "Physics/HitResult2D.h"
@@ -250,7 +250,7 @@ void BindEntity(sol::state& state)
 	auto animated_sprite_type = state["AnimatedSpriteComponent"].get_or_create<sol::usertype<AnimatedSpriteComponent>>();
 	animated_sprite_type["Tint"] = &AnimatedSpriteComponent::tint;
 	animated_sprite_type["SpriteSheet"] = &AnimatedSpriteComponent::spriteSheet;
-	animated_sprite_type.set_function("SelectAnimation", &AnimatedSpriteComponent::SelectAnimation);
+	animated_sprite_type["Animation"] = &AnimatedSpriteComponent::animation;
 
 	std::initializer_list<std::pair<sol::string_view, int>> rigidBodyTypesItems =
 	{

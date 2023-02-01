@@ -2,7 +2,7 @@
  <a href="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
 </h1>
 <p align="center">
- <img width="128" height="128" src="/Editor/resources/Icons/Logo.png">
+ <img width="128" height="128" src="Editor/resources/Icons/Logo.png">
 </p>
 
 <h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL.</h3>
@@ -14,9 +14,9 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 
 ## Project Generation
 ### Windows
-For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat`
+For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat` in the Scripts folder
 ### Mac
-For Xcode, run the shell script `Progen_Xcode.sh`
+For Xcode, run the shell script `Progen_Xcode.sh` in the Scripts folder
 ### Linux
 First install dependencies by opening a console window and running the following command:
 ```
@@ -25,11 +25,11 @@ sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl
 Then make the premake5 and shell script file executable by running 
 ```
 chmod +x vendor/bin/premake/premake5
-chmod +x Progen_gmake.sh
+chmod +x Scripts/Progen_gmake.sh
 ```
 Then run the shell script to generate the make files 
 ```
-./Progen_gmake.sh
+./Scripts/Progen_gmake.sh
 ```
 The engine can now be built by running `make`.
 ## Example Projects

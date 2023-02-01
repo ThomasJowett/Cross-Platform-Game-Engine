@@ -3,6 +3,7 @@
 #include "ViewerManager.h"
 #include "Renderer/SpriteSheet.h"
 #include "Interfaces/ISaveable.h"
+#include "Scene/Components/AnimatedSpriteComponent.h"
 
 class SpriteSheetView :
 	public View, public ISaveable
@@ -35,6 +36,7 @@ private:
 
 	Ref<SpriteSheet> m_SpriteSheet;
 	Ref<SpriteSheet> m_LocalSpriteSheet;
+	AnimatedSpriteComponent m_PreviewSprite;
 
 	float m_Zoom = 1.0f;
 	bool m_Dirty = false;

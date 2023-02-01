@@ -139,10 +139,6 @@ void SpriteSheet::AddAnimation(std::string name, uint32_t startFrame, uint32_t f
 void SpriteSheet::RemoveAnimation(std::string name)
 {
 	m_Animations.erase(name);
-	if (m_CurrentAnimation == name)
-	{
-		m_CurrentAnimation = m_Animations.begin()->first;
-	}
 }
 
 void SpriteSheet::RenameAnimation(const std::string& oldName, const std::string& newName)
@@ -155,36 +151,19 @@ void SpriteSheet::RenameAnimation(const std::string& oldName, const std::string&
 			node.key() = newName;
 			m_Animations.insert(std::move(node));
 		}
-		if (m_CurrentAnimation == oldName)
-			m_CurrentAnimation = newName;
-	}
-}
-
-void SpriteSheet::Animate(float deltaTime)
-{
-	if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
-	{
-		m_Animations[m_CurrentAnimation].Update(deltaTime, m_Texture);
-	}
-}
-
-void SpriteSheet::SelectAnimation(const std::string& animationName)
-{
-	if (m_Animations.find(animationName) != m_Animations.end())
-	{
-		if (m_Animations.at(animationName).GetStartFrame() + m_Animations.at(animationName).GetFrameCount()
-			<= m_Texture->GetNumberOfCells())
-		{
-			m_Texture->SetCurrentCell(m_Animations.at(animationName).GetStartFrame());
-			m_CurrentAnimation = animationName;
-		}
 	}
 }
 
 void SpriteSheet::SetSubTexture(Ref<SubTexture2D> subTexture)
 {
 	m_Texture = subTexture;
-	if (m_Animations.find(m_CurrentAnimation) != m_Animations.end())
-		if (m_Animations[m_CurrentAnimation].GetCurrentFame() > subTexture->GetNumberOfCells())
-			m_CurrentAnimation.clear();
+}
+
+Animation* SpriteSheet::GetAnimation(const std::string& animationName)
+{
+	if (auto animation = m_Animations.find(animationName); animation != m_Animations.end())
+	{
+		return &animation->second;
+	}
+	return nullptr;
 }

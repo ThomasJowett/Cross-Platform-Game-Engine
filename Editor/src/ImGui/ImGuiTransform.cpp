@@ -11,6 +11,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 {
 	bool edited = false;
 
+	ImGui::BeginGroup();
 	ImGui::TextUnformatted("Position");
 	float width = ImGui::GetContentRegionAvail().x;
 
@@ -200,6 +201,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 		rotation = { (float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z) };
 		SceneManager::CurrentScene()->MakeDirty();
 	}
+	ImGui::EndGroup();
 
 	return edited;
 }

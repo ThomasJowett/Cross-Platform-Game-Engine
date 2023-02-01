@@ -132,7 +132,7 @@ private:
 	bool Rename();
 
 	void OpenAllSelectedItems();
-	void OpenItem(int index);
+	void OpenItem(size_t index);
 
 	void ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName);
 	void CreateDragDropSource(size_t index);
@@ -157,7 +157,6 @@ private:
 	int m_LastSelectedFile = -1;
 
 	int m_NumberSelected;
-	ImVec2 m_CurrentSelectedPosition;
 	std::filesystem::path m_CurrentSelectedPath;
 
 	Sorting m_SortingMode = Sorting::ALPHABETIC;
@@ -181,4 +180,7 @@ private:
 
 	char m_CurrentPathInputBuffer[1024] = "";
 	char m_RenameInputBuffer[1024] = "";
+
+	bool m_TryingToChangeScene = false;
+	bool m_Renaming = false;
 };

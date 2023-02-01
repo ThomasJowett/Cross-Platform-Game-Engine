@@ -122,7 +122,7 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 		if (m_Tiles[i].GetProbability() != 1.0 || m_Tiles[i].GetCollisionShape() != Tile::CollisionShape::None)
 		{
 			tinyxml2::XMLElement* pTile = pRoot->InsertNewChildElement("Tile");
-			pTile->SetAttribute("Id", i);
+			pTile->SetAttribute("Id", (int64_t)i);
 			pTile->SetAttribute("Probability", m_Tiles[i].GetProbability());
 			pTile->SetAttribute("Shape", (int)m_Tiles[i].GetCollisionShape());
 		}

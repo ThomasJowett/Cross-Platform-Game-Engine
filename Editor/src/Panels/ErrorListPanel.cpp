@@ -4,7 +4,7 @@
 
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
-#include "Scene/Components/Components.h"
+#include "Scene/Components.h"
 #include "Logging/Instrumentor.h"
 
 #include "MainDockSpace.h"

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "SceneGraph.h"
-#include "Components/Components.h"
+#include "Components.h"
 
 void SceneGraph::Traverse(entt::registry& registry)
 {

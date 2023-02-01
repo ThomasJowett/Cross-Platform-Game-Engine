@@ -4,7 +4,7 @@
 #include "Contact2D.h"
 
 #include "Scene/Entity.h"
-#include "Scene/Components/Components.h"
+#include "Scene/Components.h"
 #include "Renderer/Renderer2D.h"
 #include "box2d/box2d.h"
 #include "Utilities/Box2DDebugDraw.h"
