@@ -10,6 +10,12 @@ newoption
 	}
 }
 
+newoption
+{
+	trigger = "tests",
+	description = "Add the test projects to the solution"
+}
+
 Arch = "x86_64"
 if _OPTIONS["arch"] then
 	Arch = _OPTIONS["arch"]
@@ -40,6 +46,9 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 group "Dependencies/Engine"
 	include "Engine/vendor"
+	if _OPTIONS["tests"] then
+		require("Engine/vendor/tests")
+	end
 group "Dependencies/Editor"
 	include "Editor/vendor"
 	

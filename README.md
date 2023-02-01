@@ -16,7 +16,15 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 ### Windows
 For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat` in the Scripts folder
 ### Mac
-For Xcode, run the shell script `Progen_Xcode.sh` in the Scripts folder
+Make the premake5 and shell scripts executable by running
+```
+chmod +x vendor/bin/premake/premake5_arm
+chmod +x Scripts/Progen_gmake_arm.sh
+chmod +x Scripts/Progen_Xcode_arm.sh
+```
+For Xcode, run the shell script `Progen_Xcode_arm.sh` in the Scripts folder.
+
+For gcc, run the shell script `Progen_gmake_arm.sh` in the Scripts folder.
 ### Linux
 First install dependencies by opening a console window and running the following command:
 ```
