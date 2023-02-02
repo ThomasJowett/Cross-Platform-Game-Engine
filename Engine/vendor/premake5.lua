@@ -10,15 +10,19 @@ project "GLFW"
 	{
 		"GLFW/include/GLFW/glfw3.h",
 		"GLFW/include/GLFW/glfw3native.h",
-		"GLFW/src/glfw_config.h",
 		"GLFW/src/context.c",
 		"GLFW/src/init.c",
 		"GLFW/src/input.c",
 		"GLFW/src/monitor.c",
 		"GLFW/src/vulkan.c",
 		"GLFW/src/window.c",
+		"GLFW/src/platform.h",
 		"GLFW/src/platform.c",
+		"GLFW/src/mappings.h",
+		"GLFW/src/osmesa_context.c",
+		"GLFW/src/null_platform.h",
 		"GLFW/src/null_init.c",
+		"GLFW/src/null_joystick.h",
 		"GLFW/src/null_joystick.c",
 		"GLFW/src/null_monitor.c",
 		"GLFW/src/null_window.c"
@@ -42,7 +46,7 @@ project "GLFW"
 			"GLFW/src/posix_module.c",
 			"GLFW/src/glx_context.c",
 			"GLFW/src/egl_context.c",
-			"GLFW/src/osmesa_context.c",
+			"GLFW/src/linux_joystick.h",
 			"GLFW/src/linux_joystick.c"
 		}
 
@@ -65,8 +69,7 @@ project "GLFW"
 			"GLFW/src/win32_window.c",
 			"GLFW/src/win32_module.c",
 			"GLFW/src/wgl_context.c",
-			"GLFW/src/egl_context.c",
-			"GLFW/src/osmesa_context.c"
+			"GLFW/src/egl_context.c"
 		}
 
 		defines 
@@ -82,23 +85,31 @@ project "GLFW"
 			"_GLFW_USE_RETINA"
 		}
 
-		files {
-			"glfw/src/cocoa_platform.h",
-			"glfw/src/cocoa_joystick.h",
-			"glfw/src/nsgl_context.h",
-			"glfw/src/cocoa_init.m",
-			"glfw/src/cocoa_joystick.m",
-			"glfw/src/cocoa_monitor.m",
-			"glfw/src/cocoa_window.m",
-			"glfw/src/cocoa_time.c",
-			"glfw/src/nsgl_context.m",
-			"glfw/src/posix_thread.h",
-			"glfw/src/posix_thread.c",
-			"glfw/src/egl_context.h",
-			"glfw/src/egl_context.c",
-			"glfw/src/osmesa_context.h",
-			"glfw/src/osmesa_context.c"
-		  }
+		files 
+		{
+			"GLFW/src/cocoa_platform.h",
+			"GLFW/src/cocoa_joystick.h",
+			"GLFW/src/nsgl_context.m",
+			"GLFW/src/cocoa_init.m",
+			"GLFW/src/cocoa_joystick.m",
+			"GLFW/src/cocoa_monitor.m",
+			"GLFW/src/cocoa_window.m",
+			"GLFW/src/cocoa_time.h",
+			"GLFW/src/cocoa_time.c",
+			"GLFW/src/nsgl_context.m",
+			"GLFW/src/posix_thread.h",
+			"GLFW/src/posix_thread.c",
+			"GLFW/src/posix_module.c",
+			"GLFW/src/glx_context.c",
+			"GLFW/src/egl_context.c"
+		}
+
+		links
+		{
+			"Cocoa.framework",
+        	"IOKit.framework",
+			"CoreFoundation.framework"
+		}
 
 	filter "configurations:Debug"
 		runtime "Debug"
