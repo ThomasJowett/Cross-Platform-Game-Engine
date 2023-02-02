@@ -179,6 +179,16 @@ project "Engine"
 			"%{prj.name}/src/ImGui/ImGuiBuildDirectX11.cpp"
 		}
 
+		linkoptions { "-rpath @executable_path/Frameworks" }
+		
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit",
+			"-framework CoreVideo"
+		}
+
 	filter "configurations:Debug"
 		defines 
 		{

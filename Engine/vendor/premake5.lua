@@ -82,7 +82,7 @@ project "GLFW"
 	filter "system:macosx"
 		defines
 		{
-			"GLFW_COCOA",
+			"_GLFW_COCOA",
 			"_GLFW_USE_RETINA"
 		}
 
@@ -109,7 +109,8 @@ project "GLFW"
 		{
 			"Cocoa.framework",
         	"IOKit.framework",
-			"CoreFoundation.framework"
+			"CoreFoundation.framework",
+			"CoreVideo.framework"
 		}
 
 	filter "configurations:Debug"
@@ -190,11 +191,6 @@ project "GLAD"
 		"GLAD/include/GLAD/glad.h",
 		"GLAD/include/KHR/khrplatform.h",
 		"GLAD/src/glad.c"
-	}
-	
-	includedirs
-	{
-		"GLAD/include"
 	}
 
 	externalincludedirs
