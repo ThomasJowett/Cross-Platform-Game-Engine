@@ -179,7 +179,8 @@ project "Engine"
 			"%{prj.name}/src/ImGui/ImGuiBuildDirectX11.cpp"
 		}
 
-		linkoptions { "-rpath @executable_path/Frameworks" }
+		buildoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
+		linkoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
 		
 		linkoptions
 		{
