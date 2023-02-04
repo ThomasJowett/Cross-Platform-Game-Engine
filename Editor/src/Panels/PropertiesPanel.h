@@ -4,6 +4,7 @@
 #include "ImGui/ImGuiTilemapEditor.h"
 #include "Physics/PhysicsMaterial.h"
 #include "History/HistoryCommands.h"
+#include "Scene/Components.h"
 #include "Interfaces/IUndoable.h"
 
 #include "IconsFontAwesome6.h"
@@ -86,4 +87,9 @@ private:
 
 	Ref<Material> m_DefaultMaterial;
 	Ref<PhysicsMaterial> m_DefaultPhysMaterial;
+
+	Ref<EditComponentCommand<NameComponent>> m_EditNameComponent;
+	std::pair<bool, Ref<EditComponentCommand<TransformComponent>>> m_EditTransformComponent;
+	std::pair<bool, Ref<EditComponentCommand<SpriteComponent>>> m_EditSpriteCommand;
+	std::pair<bool, Ref<EditComponentCommand<AnimatedSpriteComponent>>> m_EditAnimatedSpriteCommand;
 };
