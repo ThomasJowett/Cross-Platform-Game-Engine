@@ -143,7 +143,6 @@ struct PrimitiveComponent
 		needsUpdating = false;
 		mesh = GeometryGenerator::CreateCylinder(bottomRadius, topRadius, height, sliceCount, stackCount);
 		if (!material) material = Material::GetDefaultMaterial();
-		float maxRadius = std::max(bottomRadius, topRadius);
 	}
 
 	void SetCone(float bottomRadius, float height, uint32_t sliceCount, uint32_t stackCount)

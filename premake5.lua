@@ -93,6 +93,18 @@ project "Engine"
 		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
 		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen"
 	}
+
+	externalincludedirs
+	{
+		"%{prj.name}/vendor",
+		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/vendor/GLAD/include",
+		"%{prj.name}/vendor/lua",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen",
+		"%{prj.name}/vendor/box2d/include"
+	}
 	
 	links
 	{
@@ -186,9 +198,22 @@ project "Engine"
 		{
 			"-framework OpenGL",
 			"-framework Cocoa",
-			"-framework IOKit",
-			"-framework CoreVideo"
+			"-framework IOKit"
 		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
+
+		filter 'files:vendor/**.cpp'
+			flags  { 'NoPCH' }
+		filter 'files:vendor/**.c'
+			flags  { 'NoPCH' }
+		filter 'files:src/vendor/**.m'
+			flags  { 'NoPCH' }
+		filter 'files:src/vendor/**.mm'
+			flags  { 'NoPCH' }
 
 	filter "configurations:Debug"
 		defines 
@@ -226,8 +251,6 @@ project "Editor"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/IconFont/**.h",
-		"%{prj.name}/Editor.rc",
-		"%{prj.name}/resource.h",
 		"%{prj.name}/Icon.ico"
 	}
 
@@ -240,6 +263,16 @@ project "Editor"
 		"%{prj.name}/vendor/json",
 		"%{prj.name}/vendor/tinygltf",
 		"Engine/src",
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
+	}
+
+	externalincludedirs
+	{
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
@@ -263,7 +296,7 @@ project "Editor"
 
 	postbuildcommands
 	{
-		"{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources",
+		"{COPY} data/ ../bin/" .. outputdir .. "/%{prj.name}/data",
 		"{COPY} imgui.ini ../bin/" .. outputdir .. "/%{prj.name}"
 	}
 
@@ -279,6 +312,12 @@ project "Editor"
 		defines
 		{
 			"__WINDOWS__"
+		}
+
+		files
+		{
+			"%{prj.name}/resource.h",
+			"%{prj.name}/Editor.rc"
 		}
 		
 	filter "system:linux"
@@ -310,6 +349,20 @@ project "Editor"
 		{
 			"%{prj.name}/Editor.rc",
 			"%{prj.name}/resource.h"
+		}
+
+	filter "system:macosx"
+	linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+		
+		links
+		{
+			"Cocoa.framework",
+			"IOKit.framework"
 		}
 
 	filter "configurations:Debug"
@@ -354,6 +407,16 @@ project "Runtime"
 		"Engine/vendor/lua"
 	}
 
+	externalincludedirs
+	{
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
+	}
+
 	links
 	{
 		"Engine",
@@ -392,6 +455,13 @@ project "Runtime"
 		defines
 		{
 			"__linux__"
+		}
+
+	filter "system:macosx"
+		links
+		{
+			"Cocoa.framework",
+			"IOKit.framework"
 		}
 
 	filter "configurations:Debug"

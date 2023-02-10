@@ -10,6 +10,7 @@ project "GLFW"
 	{
 		"GLFW/include/GLFW/glfw3.h",
 		"GLFW/include/GLFW/glfw3native.h",
+		"GLFW/src/glfw_config.h",
 		"GLFW/src/context.c",
 		"GLFW/src/init.c",
 		"GLFW/src/input.c",
@@ -101,16 +102,9 @@ project "GLFW"
 			"GLFW/src/posix_thread.h",
 			"GLFW/src/posix_thread.c",
 			"GLFW/src/posix_module.c",
+			"GLFW/src/posix_poll.c",
 			"GLFW/src/glx_context.c",
 			"GLFW/src/egl_context.c"
-		}
-
-		links
-		{
-			"Cocoa.framework",
-        	"IOKit.framework",
-			"CoreFoundation.framework",
-			"CoreVideo.framework"
 		}
 
 	filter "configurations:Debug"
@@ -460,6 +454,11 @@ project "freetype"
 		"freetype/include"
 	}
 
+	externalincludedirs
+	{
+		"freetype/include"
+	}
+
 	defines
 	{
 		"FT2_BUILD_LIBRARY",
@@ -511,7 +510,8 @@ project "msdfgen"
 
 	externalincludedirs
 	{
-		"freetype/include"
+		"freetype/include",
+		"msdf-atlas-gen/msdfgen/include"
 	}
 
 	defines
@@ -563,6 +563,13 @@ project "msdf-atlas-gen"
 	includedirs
 	{
 		"msdf-atlas-gen/msdf-atlas-gen",
+		"msdf-atlas-gen/msdfgen",
+		"msdf-atlas-gen/msdfgen/include",
+		"msdf-atlas-gen/artery-font-format"
+	}
+
+	externalincludedirs
+	{
 		"msdf-atlas-gen/msdfgen",
 		"msdf-atlas-gen/msdfgen/include",
 		"msdf-atlas-gen/artery-font-format"

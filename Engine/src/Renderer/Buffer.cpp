@@ -87,7 +87,7 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		return CreateRef<DirectX11IndexBuffer>(indices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
-	case RendererAPI::Metal:
+        case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__

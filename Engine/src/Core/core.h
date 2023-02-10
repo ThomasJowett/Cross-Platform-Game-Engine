@@ -13,7 +13,6 @@
 		#define PLATFORM_IOS
 		#error "IOS is not yet supported!"
 	#elif TARGET_OS_MAC == 1
-		#define TARGET_OS_MAC == 1
 		#define PLATFORM_MACOS
 	#else
 		#error "Unkown Apple Platform!"

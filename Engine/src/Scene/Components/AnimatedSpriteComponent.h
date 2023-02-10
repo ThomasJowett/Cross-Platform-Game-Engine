@@ -6,6 +6,7 @@
 #include "Core/Colour.h"
 #include "Scene/AssetManager.h"
 #include "Core/Application.h"
+#include "Utilities/FileUtils.h"
 
 struct AnimatedSpriteComponent
 {

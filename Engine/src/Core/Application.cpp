@@ -252,6 +252,8 @@ void Application::SetDefaultSettings(const WindowProps& props)
 	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
 	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
+    
+    Settings::SetDefaultDouble(audio, "Master", 100.0);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -67,9 +67,8 @@ bool Renderer::Init()
 	s_SceneData.constantUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ConstantBuffer), 0);
 	s_SceneData.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
 
-	s_RendererData.whiteTexture = Texture2D::Create(1, 1);
-	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_RendererData.whiteTexture->SetData(&whiteTextureData);
+    uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
+    s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, &whiteTextureData);
 
 	s_RendererData.normalTexture = Texture2D::Create(1, 1);
 	uint32_t normalTextureData = Colour(0.5f, 0.5f, 1.0f, 1.0f).HexValue();
