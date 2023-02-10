@@ -6,9 +6,11 @@ layout(location = 1) out int entityId;
 struct VertexOutput
 {
 	vec3 PosW;
-	vec2 TexCoord;
+	vec2 TexCoord0;
+	vec2 TexCoord1;
 	vec3 Tangent;
 	vec3 Normal;
+	vec4 Colour;
 };
 
 layout(std140, binding = 1) uniform ModelBuffer
@@ -29,7 +31,7 @@ layout (location = 0) in VertexOutput Input;
 
 void main()
 {
-	frag_colour = texture(u_Albedo, (Input.TexCoord + u_TextureOffset) * u_TilingFactor) * u_Colour;
+	frag_colour = texture(u_Albedo, Input.TexCoord0) * u_Colour;
 	if(frag_colour.a <= 0.0001)
 		discard;
 	entityId = u_EntityId;

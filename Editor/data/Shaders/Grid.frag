@@ -1,5 +1,4 @@
-#version 450 core
-//#extension GL_OES_standard_derivitives : enable
+#version 410 core
 
 layout(location = 0) out vec4 frag_colour;
 layout(location = 1) out int entityId;
@@ -10,13 +9,13 @@ struct VertexOutput
     vec2 TexCoord;
 };
 
-layout(std140, binding = 0) uniform ConstantBuffer
+layout(std140) uniform ConstantBuffer
 {
 	uniform mat4 u_ViewProjection;
     uniform vec3 u_EyePosition;
 };
 
-layout(std140, binding = 1) uniform ModelBuffer
+layout(std140) uniform ModelBuffer
 {
     uniform mat4 u_ModelMatrix;
     uniform vec4 u_Colour;
