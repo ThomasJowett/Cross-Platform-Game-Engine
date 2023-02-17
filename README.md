@@ -2,7 +2,7 @@
  <a href="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
 </h1>
 <p align="center">
- <img width="128" height="128" src="Editor/resources/Icons/Logo.png">
+ <img width="128" height="128" src="Editor/data/Icons/Logo.png">
 </p>
 
 <h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL.</h3>
