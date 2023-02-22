@@ -73,8 +73,8 @@ void RuntimeExporter::ExportGame()
 	// TODO: create distributable binaries using SPIR-V Cross
 	try
 	{
-		std::filesystem::copy(Application::GetWorkingDirectory() / "resources",
-			m_ExportLocation / "resources",
+		std::filesystem::copy(Application::GetWorkingDirectory() / "data",
+			m_ExportLocation / "data",
 			std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing);
 	}
 	catch (std::exception& e)

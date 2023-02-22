@@ -23,7 +23,7 @@ Ref<Font> Font::s_DefaultFont;
 void Font::Init()
 {
 	PROFILE_FUNCTION();
-	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "resources" / "Fonts" / "Manrope-Medium.ttf");
+	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "data" / "Fonts" / "Manrope-Medium.ttf");
 }
 
 void Font::Shutdown()

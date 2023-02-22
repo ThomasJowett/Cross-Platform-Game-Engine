@@ -17,5 +17,5 @@ Editor::Editor(const WindowProps& props)
 
 	m_LayerStack.PushOverlay(CreateRef<MainDockSpace>());
 
-	Application::GetWindow().SetIcon(GetWorkingDirectory() / "resources" / "Icons" / "Logo.png");
+	Application::GetWindow().SetIcon(GetWorkingDirectory() / "data" / "Icons" / "Logo.png");
 }

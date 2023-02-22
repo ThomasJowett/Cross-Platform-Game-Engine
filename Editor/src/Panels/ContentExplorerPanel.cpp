@@ -21,7 +21,7 @@
 
 #include "Fonts/Fonts.h"
 
-static std::filesystem::path s_IconDirectory = Application::GetWorkingDirectory() / "resources" / "Icons";
+static std::filesystem::path s_IconDirectory = Application::GetWorkingDirectory() / "data" / "Icons";
 
 template <typename TP>
 std::time_t to_time_t(TP tp)
