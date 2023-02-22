@@ -101,7 +101,8 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	newEntity.GetTransform().position += position;
 
-	m_PhysicsEngine2D->InitializeEntity(newEntity);
+	if(m_PhysicsEngine2D)
+		m_PhysicsEngine2D->InitializeEntity(newEntity);
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
 	{

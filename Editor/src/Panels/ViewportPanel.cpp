@@ -721,7 +721,7 @@ void ViewportPanel::OnImGuiRender()
 						}
 					}
 
-					CLIENT_DEBUG(file->string());
+					CLIENT_DEBUG("Dragging over viewport: {0}", file->string());
 				}
 				ImGui::EndDragDropTarget();
 			}
