@@ -6,6 +6,60 @@
 #include <commdlg.h>
 #include <cderr.h>
 
+void LogError(DWORD errorCode)
+{
+	switch (errorCode)
+	{
+	case CDERR_DIALOGFAILURE:
+		ENGINE_ERROR("Failed to create the dialog box.");
+		break;
+	case CDERR_FINDRESFAILURE:
+		ENGINE_ERROR("Failed to find the specified resource.");
+		break;
+	case CDERR_INITIALIZATION:
+		ENGINE_ERROR("Failed to initialize the dialog box.");
+		break;
+	case CDERR_LOADRESFAILURE:
+		ENGINE_ERROR("Failed to load the specified resource.");
+		break;
+	case CDERR_LOADSTRFAILURE:
+		ENGINE_ERROR("Failed to load the specified string.");
+		break;
+	case CDERR_LOCKRESFAILURE:
+		ENGINE_ERROR("Failed to lock the specified resource.");
+		break;
+	case CDERR_MEMALLOCFAILURE:
+		ENGINE_ERROR("Failed to allocate memory for the dialog box.");
+		break;
+	case CDERR_MEMLOCKFAILURE:
+		ENGINE_ERROR("Failed to lock memory for the dialog box.");
+		break;
+	case CDERR_NOHINSTANCE:
+		ENGINE_ERROR("Failed to find the application instance handle.");
+		break;
+	case CDERR_NOHOOK:
+		ENGINE_ERROR("Failed to install a hook procedure.");
+		break;
+	case CDERR_NOTEMPLATE:
+		ENGINE_ERROR("Failed to find the specified template.");
+		break;
+	case CDERR_STRUCTSIZE:
+		ENGINE_ERROR("Invalid structure size.");
+		break;
+	case FNERR_BUFFERTOOSMALL:
+		ENGINE_ERROR("The buffer is too small to hold the selected file name.");
+		break;
+	case FNERR_INVALIDFILENAME:
+		ENGINE_ERROR("The selected file name is invalid.");
+		break;
+	case FNERR_SUBCLASSFAILURE:
+		ENGINE_ERROR("Failed to subclass the list box.");
+		break;
+	default:
+		ENGINE_INFO("File open cancelled.");
+	}
+}
+
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
 {
 	wchar_t filename[MAX_PATH];
@@ -24,56 +78,7 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 
 	if (!GetOpenFileName(&ofn))
 	{
-		switch (CommDlgExtendedError())
-		{
-		case CDERR_DIALOGFAILURE:
-			ENGINE_ERROR("CDERR_DIALOGFAILURE");
-			break;
-		case CDERR_FINDRESFAILURE:
-			ENGINE_ERROR("CDERR_FINDRESFAILURE");
-			break;
-		case CDERR_INITIALIZATION:
-			ENGINE_ERROR("CDERR_INITIALIZATION");
-			break;
-		case CDERR_LOADRESFAILURE:
-			ENGINE_ERROR("CDERR_LOADRESFAILURE");
-			break;
-		case CDERR_LOADSTRFAILURE:
-			ENGINE_ERROR("CDERR_LOADSTRFAILURE");
-			break;
-		case CDERR_LOCKRESFAILURE:
-			ENGINE_ERROR("CDERR_LOCKRESFAILURE");
-			break;
-		case CDERR_MEMALLOCFAILURE:
-			ENGINE_ERROR("CDERR_MEMALLOCFAILURE");
-			break;
-		case CDERR_MEMLOCKFAILURE:
-			ENGINE_ERROR("CDERR_MEMLOCKFAILURE");
-			break;
-		case CDERR_NOHINSTANCE:
-			ENGINE_ERROR("CDERR_NOHINSTANCE");
-			break;
-		case CDERR_NOHOOK:
-			ENGINE_ERROR("CDERR_NOHOOK");
-			break;
-		case CDERR_NOTEMPLATE:
-			ENGINE_ERROR("CDERR_NOTEMPLATE");
-			break;
-		case CDERR_STRUCTSIZE:
-			ENGINE_ERROR("CDERR_STRUCTSIZE");
-			break;
-		case FNERR_BUFFERTOOSMALL:
-			ENGINE_ERROR("FNERR_BUFFERTOOSMALL");
-			break;
-		case FNERR_INVALIDFILENAME:
-			ENGINE_ERROR("FNERR_INVALIDFILENAME");
-			break;
-		case FNERR_SUBCLASSFAILURE:
-			ENGINE_ERROR("FNERR_SUBCLASSFAILURE");
-			break;
-		default:
-			ENGINE_INFO("File open cancelled.");
-		}
+		LogError(CommDlgExtendedError());
 
 		return std::nullopt;
 	}
@@ -98,56 +103,7 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 
 	if (!GetOpenFileName(&ofn))
 	{
-		switch (CommDlgExtendedError())
-		{
-		case CDERR_DIALOGFAILURE:
-			ENGINE_ERROR("CDERR_DIALOGFAILURE");
-			break;
-		case CDERR_FINDRESFAILURE:
-			ENGINE_ERROR("CDERR_FINDRESFAILURE");
-			break;
-		case CDERR_INITIALIZATION:
-			ENGINE_ERROR("CDERR_INITIALIZATION");
-			break;
-		case CDERR_LOADRESFAILURE:
-			ENGINE_ERROR("CDERR_LOADRESFAILURE");
-			break;
-		case CDERR_LOADSTRFAILURE:
-			ENGINE_ERROR("CDERR_LOADSTRFAILURE");
-			break;
-		case CDERR_LOCKRESFAILURE:
-			ENGINE_ERROR("CDERR_LOCKRESFAILURE");
-			break;
-		case CDERR_MEMALLOCFAILURE:
-			ENGINE_ERROR("CDERR_MEMALLOCFAILURE");
-			break;
-		case CDERR_MEMLOCKFAILURE:
-			ENGINE_ERROR("CDERR_MEMLOCKFAILURE");
-			break;
-		case CDERR_NOHINSTANCE:
-			ENGINE_ERROR("CDERR_NOHINSTANCE");
-			break;
-		case CDERR_NOHOOK:
-			ENGINE_ERROR("CDERR_NOHOOK");
-			break;
-		case CDERR_NOTEMPLATE:
-			ENGINE_ERROR("CDERR_NOTEMPLATE");
-			break;
-		case CDERR_STRUCTSIZE:
-			ENGINE_ERROR("CDERR_STRUCTSIZE");
-			break;
-		case FNERR_BUFFERTOOSMALL:
-			ENGINE_ERROR("FNERR_BUFFERTOOSMALL");
-			break;
-		case FNERR_INVALIDFILENAME:
-			ENGINE_ERROR("FNERR_INVALIDFILENAME");
-			break;
-		case FNERR_SUBCLASSFAILURE:
-			ENGINE_ERROR("FNERR_SUBCLASSFAILURE");
-			break;
-		default:
-			ENGINE_INFO("File open cancelled.");
-		}
+		LogError(CommDlgExtendedError());
 
 		return std::nullopt;
 	}
@@ -190,56 +146,8 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 
 	if (!GetSaveFileName(&ofn))
 	{
-		switch (CommDlgExtendedError())
-		{
-		case CDERR_DIALOGFAILURE:
-			ENGINE_ERROR("CDERR_DIALOGFAILURE");
-			break;
-		case CDERR_FINDRESFAILURE:
-			ENGINE_ERROR("CDERR_FINDRESFAILURE");
-			break;
-		case CDERR_INITIALIZATION:
-			ENGINE_ERROR("CDERR_INITIALIZATION");
-			break;
-		case CDERR_LOADRESFAILURE:
-			ENGINE_ERROR("CDERR_LOADRESFAILURE");
-			break;
-		case CDERR_LOADSTRFAILURE:
-			ENGINE_ERROR("CDERR_LOADSTRFAILURE");
-			break;
-		case CDERR_LOCKRESFAILURE:
-			ENGINE_ERROR("CDERR_LOCKRESFAILURE");
-			break;
-		case CDERR_MEMALLOCFAILURE:
-			ENGINE_ERROR("CDERR_MEMALLOCFAILURE");
-			break;
-		case CDERR_MEMLOCKFAILURE:
-			ENGINE_ERROR("CDERR_MEMLOCKFAILURE");
-			break;
-		case CDERR_NOHINSTANCE:
-			ENGINE_ERROR("CDERR_NOHINSTANCE");
-			break;
-		case CDERR_NOHOOK:
-			ENGINE_ERROR("CDERR_NOHOOK");
-			break;
-		case CDERR_NOTEMPLATE:
-			ENGINE_ERROR("CDERR_NOTEMPLATE");
-			break;
-		case CDERR_STRUCTSIZE:
-			ENGINE_ERROR("CDERR_STRUCTSIZE");
-			break;
-		case FNERR_BUFFERTOOSMALL:
-			ENGINE_ERROR("FNERR_BUFFERTOOSMALL");
-			break;
-		case FNERR_INVALIDFILENAME:
-			ENGINE_ERROR("FNERR_INVALIDFILENAME");
-			break;
-		case FNERR_SUBCLASSFAILURE:
-			ENGINE_ERROR("FNERR_SUBCLASSFAILURE");
-			break;
-		default:
-			ENGINE_INFO("Save as cancelled.");
-		}
+		LogError(CommDlgExtendedError());
+
 		return std::nullopt;
 	}
 
