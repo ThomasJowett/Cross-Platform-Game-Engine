@@ -2,13 +2,13 @@
 #include "SceneManager.h"
 #include "Events/SceneEvent.h"
 #include "Core/Application.h"
+#include "AssetManager.h"
+#include "Core/Settings.h"
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
-std::string SceneManager::s_NextSceneName;
 SceneState SceneManager::s_SceneState = SceneState::Play;
 std::filesystem::path SceneManager::s_EditingScene;
-bool SceneManager::s_BinaryScene;
 
 Scene* SceneManager::CurrentScene()
 {
@@ -17,10 +17,9 @@ Scene* SceneManager::CurrentScene()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool SceneManager::ChangeScene(std::filesystem::path filepath, bool binary)
+bool SceneManager::ChangeScene(std::filesystem::path filepath)
 {
 	std::filesystem::path finalpath = filepath;
-	s_BinaryScene = binary;
 	if (finalpath.is_relative())
 	{
 		if (!Application::GetOpenDocument().empty())
@@ -54,34 +53,6 @@ bool SceneManager::ChangeScene(std::filesystem::path filepath, bool binary)
 	}
 	s_NextFilepath = finalpath;
 	return FinalChangeScene();
-	//s_CurrentScene = CreateScope<Scene>(finalpath);
-	//if (!s_CurrentScene->Load(s_BinaryScene))
-	//	s_CurrentScene = nullptr;
-	//
-	//return IsSceneLoaded();
-}
-
-bool SceneManager::ChangeScene(std::string name)
-{
-	if (IsSceneLoaded())
-	{
-		if (!s_CurrentScene->GetFilepath().empty())
-		{
-			if (s_CurrentScene->IsUpdating())
-			{
-				s_NextSceneName = name;
-			}
-			else
-			{
-				return FinalChangeScene();
-			}
-		}
-	}
-	s_NextSceneName = name;
-	return FinalChangeScene();
-	//s_CurrentScene = CreateScope<Scene>(name);
-	//
-	//return IsSceneLoaded();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -101,7 +72,7 @@ bool SceneManager::Update(float deltaTime)
 		s_CurrentScene->OnUpdate(deltaTime);
 	}
 
-	if (!s_NextFilepath.empty() || !s_NextSceneName.empty())
+	if (!s_NextFilepath.empty())
 	{
 		FinalChangeScene();
 	}
@@ -136,7 +107,7 @@ bool SceneManager::FinalChangeScene()
 			s_EditingScene = s_CurrentScene->GetFilepath();
 		}
 
-		if (s_SceneState != SceneState::Edit || s_SceneState != SceneState::Pause)
+		if (s_SceneState != SceneState::Edit && s_SceneState != SceneState::Pause)
 		{
 			s_CurrentScene->OnRuntimeStop();
 		}
@@ -144,20 +115,21 @@ bool SceneManager::FinalChangeScene()
 
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
-	else if (!s_NextSceneName.empty())
-		s_CurrentScene = CreateScope<Scene>(s_NextSceneName);
 
-	if (!s_CurrentScene->Load(s_BinaryScene))
-		s_CurrentScene = nullptr;
+	if (!s_CurrentScene->Load())
+		s_CurrentScene.reset();
 
-	SceneChanged event(s_NextFilepath);
+	SceneChangedEvent event(s_NextFilepath);
 	Application::CallEvent(event);
 
+	s_CurrentScene->OnViewportResize(Settings::GetInt("Display", "Window_Width"), Settings::GetInt("Display", "Window_Height"));
+
 	s_NextFilepath.clear();
-	s_NextSceneName.clear();
 
 	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate && IsSceneLoaded())
 		s_CurrentScene->OnRuntimeStart();
+
+	AssetManager::CleanUp();
 
 	return IsSceneLoaded();
 }
@@ -233,6 +205,5 @@ void SceneManager::Shutdown()
 
 	s_CurrentScene.reset();
 	s_NextFilepath.clear();
-	s_NextSceneName.clear();
 	s_EditingScene.clear();
 }

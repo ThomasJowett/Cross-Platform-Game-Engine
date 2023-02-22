@@ -6,6 +6,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 static CSimpleIniA* s_Ini = new CSimpleIniA();
 
@@ -15,6 +16,7 @@ static std::string s_Filename;
 
 void Settings::Init()
 {
+	PROFILE_FUNCTION();
 	s_Filename = (Application::GetWorkingDirectory() / "Settings.ini").string();
 
 	s_Ini->SetUnicode();
@@ -160,9 +162,9 @@ int Settings::GetInt(const char* section, const char* key)
 	if (s_DefaultValues.find({ section, key }) == s_DefaultValues.end())
 	{
 		ENGINE_WARN("No default setting for [{0}] {1}", section, key);
-		return s_Ini->GetLongValue(section, key);
+		return (int)s_Ini->GetLongValue(section, key);
 	}
-	return s_Ini->GetLongValue(section, key, atoi(s_DefaultValues.at({ section, key }).c_str()));
+	return (int)s_Ini->GetLongValue(section, key, atoi(s_DefaultValues.at({ section, key }).c_str()));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

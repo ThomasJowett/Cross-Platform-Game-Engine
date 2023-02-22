@@ -7,17 +7,17 @@
 #include "Platform/DirectX/DirectX11Texture.h"
 #endif // __WINDOWS__
 
-Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height)
+Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, const void* pixels)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLTexture2D>(width, height);
+		return CreateRef<OpenGLTexture2D>(width, height, format, pixels);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11Texture2D>(width, height);
+		return CreateRef<DirectX11Texture2D>(width, height, format);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -63,6 +63,13 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 
 	CORE_ASSERT(true, "Could not create Texture: Invalid Renderer API")
 		return nullptr;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Texture2D::Load(const std::filesystem::path& filepath)
+{
+	return (Texture2D::Create(filepath) == nullptr);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

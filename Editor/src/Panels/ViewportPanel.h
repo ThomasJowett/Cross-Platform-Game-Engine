@@ -11,9 +11,11 @@
 #include "Renderer/Shader.h"
 
 #include "HierarchyPanel.h"
+#include "ImGui/ImGuiTilemapEditor.h"
+#include "History/HistoryCommands.h"
 
 class ViewportPanel
-	:public Layer, public ICopyable, public IUndoable, public ISaveable
+	:public Layer, public ICopyable, public IUndoable
 {
 	enum class OperationMode
 	{
@@ -31,14 +33,14 @@ class ViewportPanel
 	};
 
 public:
-	explicit ViewportPanel(bool* show, HierarchyPanel* hierarchyPanel);
+	explicit ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~ViewportPanel() = default;
 
 	void OnAttach() override;
 	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
-	void OnFixedUpdate() override;
 	void OnImGuiRender() override;
+	void OnEvent(Event& event) override;
 
 	virtual void Copy() override;
 	virtual void Cut() override;
@@ -54,8 +56,6 @@ public:
 	virtual void Undo(int astep = 1) override;
 	virtual void Redo(int astep = 1) override;
 
-	virtual void Save() override;
-	virtual void SaveAs() override;
 private:
 	void HandleKeyboardInputs();
 
@@ -63,13 +63,14 @@ private:
 	bool* m_Show;
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
+	bool m_ViewportHovered = false;
 	bool m_CursorDisabled = false;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
 	Ref<FrameBuffer> m_CameraPreview;
 	Vector2f m_RelativeMousePosition;
+	Vector2f m_MousePositionBeginClick;
 
-	ShaderLibrary m_ShaderLibrary;
 	ViewportCameraController m_CameraController;
 
 	OperationMode m_Operation;
@@ -85,8 +86,17 @@ private:
 	bool m_ShowLighting = true;
 	bool m_ShowReflections = true;
 
-	HierarchyPanel* m_HierarchyPanel;
+	int m_SelectedViewportShading = 0;
+
+	Ref<HierarchyPanel> m_HierarchyPanel;
 	Entity m_HoveredEntity;
 
 	int m_PixelData;
+
+	Ref<TilemapEditor> m_TilemapEditor;
+	bool m_RightClickMenuOpen = false;
+
+	Ref<Mesh> m_GridMesh;
+
+	Ref<EditComponentCommand<TransformComponent>> m_EditTransformCommand = nullptr;
 };

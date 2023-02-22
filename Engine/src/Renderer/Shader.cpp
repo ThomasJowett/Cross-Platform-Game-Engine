@@ -7,7 +7,6 @@
 #include "Platform/DirectX/DirectX11Shader.h"
 #endif // __WINDOWS__
 
-
 Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& fileDirectory)
 {
 	switch (Renderer::GetAPI())

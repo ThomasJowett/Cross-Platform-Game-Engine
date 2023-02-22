@@ -1,6 +1,6 @@
 #include "PlayPauseToolbar.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "Viewers/ViewerManager.h"
 
 #include "ImGui/ImGuiUtilites.h"
@@ -17,29 +17,21 @@ void PlayPauseToolbar::Render()
 	switch (SceneManager::GetSceneState())
 	{
 	case SceneState::Edit:
-	{
 		PlayButton();
 		SimulateButton();
 		break;
-	}
-	[[fallthrough]];
 	case SceneState::Pause:
 	case SceneState::SimulatePause:
-	{
 		PlayButton();
 		StopButton();
 		RestartButton();
 		break;
-	}
-	[[fallthrough]];
 	case SceneState::Play:
 	case SceneState::Simulate:
-	{
 		PauseButton();
 		StopButton();
 		RestartButton();
 		break;
-	}
 	default:
 		break;
 	}
@@ -66,7 +58,7 @@ void PlayPauseToolbar::PlayButton()
 
 void PlayPauseToolbar::SimulateButton()
 {
-	if (ImGui::Button(ICON_FA_PLAY_CIRCLE "##Simulate"))
+	if (ImGui::Button(ICON_FA_CIRCLE_PLAY "##Simulate"))
 	{
 		if (SceneManager::GetSceneState() == SceneState::Edit)
 			ViewerManager::SaveAll();
@@ -101,7 +93,7 @@ void PlayPauseToolbar::StopButton()
 
 void PlayPauseToolbar::RestartButton()
 {
-	if (ImGui::Button(ICON_FA_UNDO_ALT "##Restart"))
+	if (ImGui::Button(ICON_FA_ARROWS_ROTATE "##Restart"))
 	{
 		SceneManager::Restart();
 	}

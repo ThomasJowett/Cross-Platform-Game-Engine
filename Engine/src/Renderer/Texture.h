@@ -4,13 +4,39 @@
 #include <filesystem>
 
 #include "Core/core.h"
+#include "Core/Asset.h"
 
-#include "cereal/cereal.hpp"
-#include "cereal/access.hpp"
-
-class Texture
+class Texture : public Asset
 {
 public:
+	enum class Format
+	{
+		None = 0,
+		RED,
+		RED8UI,
+		RED16UI,
+		RED32UI,
+		RED32F,
+		RG8,
+		RG16F,
+		RG32F,
+		RGB,
+		RGBA,
+		RGBA16F,
+		RGBA32F,
+
+		B10R11G11UF,
+
+		SRGB,
+
+		DEPTH32FSTENCIL8UINT,
+		DEPTH32F,
+		DEPTH24STENCIL8,
+
+		// Defaults
+		Depth = DEPTH24STENCIL8,
+	};
+
 	enum class FilterMethod
 	{
 		Linear,
@@ -28,22 +54,21 @@ public:
 	virtual uint32_t GetWidth() const = 0;
 	virtual uint32_t GetHeight() const = 0;
 
-	virtual void SetData(void* data, uint32_t size) = 0;
+	virtual void SetData(const void* data) = 0;
 
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
 	virtual std::string GetName() const = 0;
-	virtual const std::filesystem::path& GetFilepath() const = 0;
 
 	virtual uint32_t GetRendererID() const = 0;
 
 	virtual void Reload() = 0;
 
-	FilterMethod GetFilterMethod() { return m_FilterMethod; }
-	void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }	
-	
-	WrapMethod GetWrapMethod() { return m_WrapMethod; }
-	void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
+	FilterMethod GetFilterMethod() const { return m_FilterMethod; }
+	virtual void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }
+
+	WrapMethod GetWrapMethod() const { return m_WrapMethod; }
+	virtual void SetWrapMethod(WrapMethod wrapMethod) { m_WrapMethod = wrapMethod; }
 
 	virtual bool operator==(const Texture& other) const = 0;
 
@@ -54,7 +79,8 @@ public:
 class Texture2D :public Texture
 {
 public:
-	static Ref<Texture2D> Create(uint32_t width, uint32_t height);
+	virtual bool Load(const std::filesystem::path& filepath) override;
+	static Ref<Texture2D> Create(uint32_t width, uint32_t height, Format format = Format::RGBA, const void* pixels = nullptr);
 	static Ref<Texture2D> Create(const std::filesystem::path& filepath);
 };
 
@@ -65,8 +91,9 @@ public:
 	Ref<Texture2D> Load(const std::filesystem::path& path);
 	Ref<Texture2D> Get(const std::string& name);
 	void Clear();
-
+	size_t Size() const { return m_Textures.size(); }
 	bool Exists(const std::string& name) const;
 private:
 	std::unordered_map<std::string, Ref<Texture2D>> m_Textures;
 };
+

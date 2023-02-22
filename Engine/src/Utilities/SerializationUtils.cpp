@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "SerializationUtils.h"
 #include "FileUtils.h"
+#include "Scene/AssetManager.h"
 
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector2f& vec2)
 {
@@ -8,7 +9,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector2f& 
 	pElement->SetAttribute("Y", vec2.y);
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Vector2f& vec2)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Vector2f& vec2)
 {
 	if (pElement)
 	{
@@ -26,7 +27,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Vector3f& 
 	pElement->SetAttribute("Z", vec3.z);
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Vector3f& vec3)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Vector3f& vec3)
 {
 	if (pElement)
 	{
@@ -44,10 +45,9 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Colour& co
 	pElement->SetAttribute("G", colour.g);
 	pElement->SetAttribute("B", colour.b);
 	pElement->SetAttribute("A", colour.a);
-
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Colour& colour)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Colour& colour)
 {
 	if (pElement)
 	{
@@ -60,48 +60,15 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Colour& colour)
 		ENGINE_WARN("Could not find Colour element");
 }
 
-void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Material& material)
-{
-	if (std::filesystem::exists(material.GetFilepath()))
-	{
-		std::string relativePath = FileUtils::RelativePath(material.GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		pElement->SetAttribute("Filepath", relativePath.c_str());
-		pElement->SetAttribute("Shader", material.GetShader().c_str());
-		material.SaveMaterial();
-	}
-}
-
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, Material& material)
-{
-	if (pElement)
-	{
-		const char* materialFilepathChar = pElement->Attribute("Filepath");
-
-		if (materialFilepathChar)
-		{
-			std::string materialFilepathStr(materialFilepathChar);
-
-			if (!materialFilepathStr.empty())
-			{
-				std::filesystem::path materailfilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / materialFilepathStr);
-				material.LoadMaterial(materailfilepath);
-			}
-		}
-	}
-	else
-		ENGINE_WARN("Could not find Material node");
-}
-
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepath)
 {
 	if (!filepath.empty())
 	{
-		std::string relativePath = RelativePath(filepath);
-		pElement->SetAttribute("Filepath", relativePath.c_str());
+		pElement->SetAttribute("Filepath", RelativePath(filepath).c_str());
 	}
 }
 
-void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, std::filesystem::path& filepath)
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, std::filesystem::path& filepath)
 {
 	if (pElement)
 	{
@@ -113,9 +80,39 @@ void SerializationUtils::Decode(tinyxml2::XMLElement* pElement, std::filesystem:
 	}
 }
 
+void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture)
+{
+	if (pElement)
+	{
+		Encode(pElement, texture->GetFilepath());
+		pElement->SetAttribute("FilterMethod", (int)texture->GetFilterMethod());
+		pElement->SetAttribute("WrapMethod", (int)texture->GetWrapMethod());
+	}
+}
+
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture)
+{
+	if (pElement)
+	{
+		std::filesystem::path filepath;
+		Decode(pElement, filepath);
+		texture = AssetManager::GetTexture(filepath);
+		if (texture)
+		{
+			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Linear);
+			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
+
+			int wrapMethod = pElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);
+			texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
+		}
+	}
+}
+
 std::string SerializationUtils::RelativePath(const std::filesystem::path& path)
 {
-	return FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).string();
+	std::string relativePath = FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).make_preferred().string();
+	std::replace(relativePath.begin(), relativePath.end(), '\\', '/');
+	return relativePath;
 }
 
 std::filesystem::path SerializationUtils::AbsolutePath(const char* path)

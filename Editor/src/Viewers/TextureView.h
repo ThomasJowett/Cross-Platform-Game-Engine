@@ -1,9 +1,12 @@
 #pragma once
-#include "Engine.h"
 #include <filesystem>
 
+#include "Core/Layer.h"
+#include "Renderer/Texture.h"
+#include "ViewerManager.h"
+
 class TextureView :
-	public Layer
+	public View
 {
 public :
 	TextureView(bool* show, const std::filesystem::path& filepath);
@@ -11,6 +14,8 @@ public :
 
 	virtual void OnAttach() override;
 	virtual void OnImGuiRender() override;
+
+	const std::string& GetWindowName() { return m_WindowName; }
 
 private:
 	static const char* GetWrapMethodName(Texture::WrapMethod wrappingMethod);
@@ -22,8 +27,6 @@ private:
 	std::filesystem::path m_FilePath;
 
 	Ref<Texture2D> m_Texture;
-
-	std::string m_WindowName;
 
 	float m_Zoom = 1.0f;
 };

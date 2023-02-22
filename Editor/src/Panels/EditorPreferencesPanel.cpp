@@ -10,7 +10,8 @@
 
 #include "Panels/ConsolePanel.h"
 
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
+#include "MainDockSpace.h"
 
 EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	:m_Show(show), Layer("Editor Preferences")
@@ -30,8 +31,13 @@ void EditorPreferencesPanel::OnImGuiRender()
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
-	if (ImGui::Begin(ICON_FA_COG" Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
+	if (ImGui::Begin(ICON_FA_GEAR" Editor Preferences", m_Show, ImGuiWindowFlags_MenuBar))
 	{
+		if (ImGui::IsWindowFocused())
+		{
+			MainDockSpace::SetFocussedWindow(this);
+		}
+
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
@@ -123,7 +129,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 	{
 		if (ImGui::BeginTabItem("Sizes"))
 		{
-			ImGui::Text("Main");
+			ImGui::TextUnformatted("Main");
 			ImGui::SliderFloat2("WindowPadding", (float*)&style.WindowPadding, 0.0f, 20.0f, "%.0f");
 			ImGui::SliderFloat2("FramePadding", (float*)&style.FramePadding, 0.0f, 20.0f, "%.0f");
 			ImGui::SliderFloat2("ItemSpacing", (float*)&style.ItemSpacing, 0.0f, 20.0f, "%.0f");
@@ -132,13 +138,13 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			ImGui::SliderFloat("IndentSpacing", &style.IndentSpacing, 0.0f, 30.0f, "%.0f");
 			ImGui::SliderFloat("ScrollbarSize", &style.ScrollbarSize, 1.0f, 20.0f, "%.0f");
 			ImGui::SliderFloat("GrabMinSize", &style.GrabMinSize, 1.0f, 20.0f, "%.0f");
-			ImGui::Text("Borders");
+			ImGui::TextUnformatted("Borders");
 			ImGui::SliderFloat("WindowBorderSize", &style.WindowBorderSize, 0.0f, 1.0f, "%.0f");
 			ImGui::SliderFloat("ChildBorderSize", &style.ChildBorderSize, 0.0f, 1.0f, "%.0f");
 			ImGui::SliderFloat("PopupBorderSize", &style.PopupBorderSize, 0.0f, 1.0f, "%.0f");
 			ImGui::SliderFloat("FrameBorderSize", &style.FrameBorderSize, 0.0f, 1.0f, "%.0f");
 			ImGui::SliderFloat("TabBorderSize", &style.TabBorderSize, 0.0f, 1.0f, "%.0f");
-			ImGui::Text("Rounding");
+			ImGui::TextUnformatted("Rounding");
 			ImGui::SliderFloat("WindowRounding", &style.WindowRounding, 0.0f, 12.0f, "%.0f");
 			ImGui::SliderFloat("ChildRounding", &style.ChildRounding, 0.0f, 12.0f, "%.0f");
 			ImGui::SliderFloat("FrameRounding", &style.FrameRounding, 0.0f, 12.0f, "%.0f");
@@ -146,7 +152,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			ImGui::SliderFloat("ScrollbarRounding", &style.ScrollbarRounding, 0.0f, 12.0f, "%.0f");
 			ImGui::SliderFloat("GrabRounding", &style.GrabRounding, 0.0f, 12.0f, "%.0f");
 			ImGui::SliderFloat("TabRounding", &style.TabRounding, 0.0f, 12.0f, "%.0f");
-			ImGui::Text("Alignment");
+			ImGui::TextUnformatted("Alignment");
 			ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
 			int window_menu_button_position = style.WindowMenuButtonPosition + 1;
 			if (ImGui::Combo("WindowMenuButtonPosition", (int*)&window_menu_button_position, "None\0Left\0Right\0"))
@@ -156,7 +162,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			//ImGui::SameLine(); HelpMarker("Alignment applies when a button is larger than its text content.");
 			ImGui::SliderFloat2("SelectableTextAlign", (float*)&style.SelectableTextAlign, 0.0f, 1.0f, "%.2f");
 			//ImGui::SameLine(); HelpMarker("Alignment applies when a selectable is larger than its text content.");
-			ImGui::Text("Safe Area Padding");
+			ImGui::TextUnformatted("Safe Area Padding");
 			//ImGui::SameLine(); HelpMarker("Adjust if you cannot see the edges of your screen (e.g. on a TV where scaling has not been configured).");
 			ImGui::SliderFloat2("DisplaySafeAreaPadding", (float*)&style.DisplaySafeAreaPadding, 0.0f, 30.0f, "%.0f");
 			ImGui::EndTabItem();

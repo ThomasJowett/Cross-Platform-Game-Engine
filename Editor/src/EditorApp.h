@@ -9,7 +9,7 @@ public:
 };
 
 /*Entry point*/
-Application* CreateApplication()
+Ref<Application> CreateApplication()
 {
-	return new Editor(WindowProps("Editor", 1920, 1080, 100, 100));
+	return CreateRef<Editor>(WindowProps("Editor", 1920, 1080, 100, 100));
 }

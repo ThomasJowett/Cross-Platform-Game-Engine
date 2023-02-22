@@ -1,91 +1,49 @@
 #include "stdafx.h"
 #include "Mesh.h"
-
-static BufferLayout staticMeshLayout = {
-		{ShaderDataType::Float3, "a_Position"},
-		{ShaderDataType::Float3, "a_Normal"},
-		{ShaderDataType::Float3, "a_Tangent"},
-		{ShaderDataType::Float2, "a_TexCoord"}
-};
+#include "Scene/AssetManager.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Mesh::Mesh(const std::filesystem::path& filepath)
-	:m_Filepath(filepath)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material)
+	:m_Vertices(vertices), m_Indices(indices)
 {
-	LoadModel(filepath);
+	const float* v = (float*)m_Vertices.data();
+	// Generate the bounding box
+	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size(), 11);
+
+	Submesh submesh;
+	submesh.firstIndex = 0;
+	submesh.vertexOffset = 0;
+	submesh.indexCount = (uint32_t)indices.size();
+	submesh.boundingBox = m_Bounds;
+	submesh.materialIndex = 0;
+	submesh.localTransform = Matrix4x4();
+	submesh.transform = Matrix4x4();
+	m_Submeshes.push_back(submesh);
+
+	m_Materials.push_back(material);
+
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex)));
+	m_VertexBuffer->SetLayout(s_StaticMeshLayout);
+
+	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
+}
+
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials)
+	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials)
+{
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)indices.size());
+	m_VertexBuffer->SetLayout(s_StaticMeshLayout);
+	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)indices.size());
+
+	m_Bounds.EnclosePoints((float*)m_Vertices.data(), (uint32_t)m_Vertices.size(), 11);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Mesh::Mesh(Ref<VertexArray> vertexArray, std::string name)
+void Submesh::SetBoundingBox(Vector3f min, Vector3f max)
 {
-	LoadModel(vertexArray, name);
-}
+	boundingBox = BoundingBox(min, max);
 
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Mesh::LoadModel(Ref<VertexArray> vertexArray, std::string name)
-{
-	m_Name = name;
-	m_VertexArray = vertexArray;
-	m_Filepath.clear();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Mesh::LoadModel(const std::filesystem::path& filepath)
-{
-	PROFILE_FUNCTION();
-
-	m_Filepath = filepath;
-
-	uint32_t numVertices;
-	uint32_t numIndices;
-
-	std::ifstream file;
-	file.open(filepath, std::ios::in | std::ios::binary);
-
-	if (!file.good())
-		return;
-
-	m_Name = filepath.filename().string();
-	m_Name = m_Name.substr(0, m_Name.find_last_of('.'));
-
-	m_VertexArray = VertexArray::Create();
-
-	//Read in the array sizes
-	file.read((char*)&numVertices, sizeof(uint32_t));
-	file.read((char*)&numIndices, sizeof(uint32_t));
-
-	numVertices *= 11;
-
-	//Read in the data
-	float* vertices = new float[numVertices];
-	uint32_t* indices = new uint32_t[numIndices];
-
-	file.read((char*)vertices, sizeof(float) * numVertices);
-	file.read((char*)indices, sizeof(uint32_t) * numIndices);
-
-	Ref<VertexBuffer> vertexBuffer;
-	vertexBuffer = VertexBuffer::Create(vertices, sizeof(float) * numVertices);
-	Ref<IndexBuffer> indexBuffer;
-	indexBuffer = IndexBuffer::Create(indices, numIndices);
-
-	vertexBuffer->SetLayout(staticMeshLayout);
-
-	m_VertexArray->AddVertexBuffer(vertexBuffer);
-	m_VertexArray->SetIndexBuffer(indexBuffer);
-
-	delete[] indices;
-	delete[] vertices;
-
-	//TODO: load in information to do with the default materials of the mesh and the material Ids
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Mesh::LoadModel()
-{
-	LoadModel(m_Filepath);
+	ASSERT(boundingBox.IsValid(), "Bounding box must be valid!");
 }

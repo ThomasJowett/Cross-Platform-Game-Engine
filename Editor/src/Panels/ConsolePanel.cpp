@@ -4,7 +4,8 @@
 #include "ImGui/ImGuiUtilites.h"
 #include "imgui/imgui.h"
 #include "Fonts/Fonts.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
+#include "MainDockSpace.h"
 
 bool ConsolePanel::s_DarkTheme = false;
 
@@ -28,6 +29,11 @@ void ConsolePanel::OnImGuiRender()
 		ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
 		ImGui::Begin(ICON_FA_TERMINAL" Console", m_Show);
 		{
+			if (ImGui::IsWindowFocused())
+			{
+				MainDockSpace::SetFocussedWindow(this);
+			}
+
 			ImGuiRenderHeader();
 			ImGui::Separator();
 			ImGui::PushFont(Fonts::Consolas);
@@ -126,7 +132,7 @@ void ConsolePanel::ImGuiRenderSettings()
 	const float spacing = ImGui::GetStyle().ItemInnerSpacing.x + ImGui::CalcTextSize(" ").x;
 
 	// checkbox for scrolling lock
-	ImGui::Text("Scroll to bottom");
+	ImGui::TextUnformatted("Scroll to bottom");
 	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Scroll to bottom").x);
 	ImGui::Checkbox("##ScrollToBottom", &m_AllowScrollingToBottom);
 
@@ -138,7 +144,7 @@ void ConsolePanel::ImGuiRenderSettings()
 		Clear();
 
 	// Slider for font scale
-	ImGui::Text("Display scale");
+	ImGui::TextUnformatted("Display scale");
 	ImGui::SameLine(0.0f, spacing + maxWidth - ImGui::CalcTextSize("Display Scale").x);
 	ImGui::PushItemWidth(maxWidth * 1.25f / 1.1f);
 	ImGui::SliderFloat("##DisplayScale", &m_DisplayScale, 0.5f, 4.0f, "%.1f");
@@ -159,7 +165,7 @@ void ConsolePanel::ImGuiRenderMessages()
 			for (auto message = InternalConsole::s_MessageBuffer.begin(); message != messageStart; message++)
 				RenderMessage(*message);
 
-		if (m_AllowScrollingToBottom && m_LastBufferSize < InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
+		if (m_AllowScrollingToBottom && m_LastBufferSize <= InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
 		{
 			ImGui::SetScrollY(ImGui::GetScrollMaxY());
 			m_LastBufferSize = InternalConsole::s_MessageBufferSize;

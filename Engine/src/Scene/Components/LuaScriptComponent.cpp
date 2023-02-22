@@ -3,6 +3,8 @@
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Entity.h"
+#include "box2d/box2d.h"
+#include "Logging/Instrumentor.h"
 
 LuaScriptComponent::~LuaScriptComponent()
 {
@@ -18,6 +20,11 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 	if (absoluteFilepath.empty())
 	{
 		return std::make_pair(0, "No file loaded");
+	}
+
+	if (!std::filesystem::exists(absoluteFilepath))
+	{
+		return std::make_pair(0, "File does not exist");
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
@@ -41,7 +48,7 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 	}
 
 	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
-	(*m_SolEnvironment)["Entity"] = entity;
+	(*m_SolEnvironment)["CurrentEntity"] = entity;
 
 	m_OnCreateFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnCreate"]);
 	if (!m_OnCreateFunc->valid())
@@ -59,12 +66,25 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 	if (!m_OnFixedUpdateFunc->valid())
 		m_OnFixedUpdateFunc.reset();
 
+	m_OnDebugRenderFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnDebugRender"]);
+	if (!m_OnDebugRenderFunc->valid())
+		m_OnDebugRenderFunc.reset();
+
+	m_OnBeginContactFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnBeginContact"]);
+	if (!m_OnBeginContactFunc->valid())
+		m_OnBeginContactFunc.reset();
+
+	m_OnEndContactFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnEndContact"]);
+	if (!m_OnEndContactFunc->valid())
+		m_OnEndContactFunc.reset();
+
 	LuaManager::GetState().collect_garbage();
 	return std::nullopt;
 }
 
 void LuaScriptComponent::OnCreate()
 {
+	PROFILE_FUNCTION();
 	if (m_OnCreateFunc)
 	{
 		sol::protected_function_result result = m_OnCreateFunc->call();
@@ -78,6 +98,7 @@ void LuaScriptComponent::OnCreate()
 
 void LuaScriptComponent::OnDestroy()
 {
+	PROFILE_FUNCTION();
 	if (m_OnDestroyFunc)
 	{
 		sol::protected_function_result result = m_OnDestroyFunc->call();
@@ -91,6 +112,7 @@ void LuaScriptComponent::OnDestroy()
 
 void LuaScriptComponent::OnUpdate(float deltaTime)
 {
+	PROFILE_FUNCTION();
 	if (m_OnUpdateFunc)
 	{
 		sol::protected_function_result result = m_OnUpdateFunc->call(deltaTime);
@@ -104,6 +126,7 @@ void LuaScriptComponent::OnUpdate(float deltaTime)
 
 void LuaScriptComponent::OnFixedUpdate()
 {
+	PROFILE_FUNCTION();
 	if (m_OnFixedUpdateFunc)
 	{
 		sol::protected_function_result result = m_OnFixedUpdateFunc->call();
@@ -113,4 +136,57 @@ void LuaScriptComponent::OnFixedUpdate()
 			CLIENT_ERROR("Failed to execute lua script 'OnFixedUpdate': {0}", error.what());
 		}
 	}
+}
+
+void LuaScriptComponent::OnDebugRender()
+{
+	PROFILE_FUNCTION();
+	if (m_OnDebugRenderFunc)
+	{
+		sol::protected_function_result result = m_OnDebugRenderFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnDebugRender': {0}", error.what());
+		}
+	}
+}
+
+void LuaScriptComponent::OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point)
+{
+	PROFILE_FUNCTION();
+	ASSERT(std::find(m_Fixtures.begin(), m_Fixtures.end(), fixture) == m_Fixtures.end(), "Should not have a begin contact event for own fixtures");
+
+	if (m_OnBeginContactFunc)
+	{
+		Entity entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene());
+		sol::protected_function_result result = m_OnBeginContactFunc->call(entity, normal, point);
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnBeginContact': {0}", error.what());
+		}
+	}
+}
+
+void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
+{
+	PROFILE_FUNCTION();
+	ASSERT(std::find(m_Fixtures.begin(), m_Fixtures.end(), fixture) == m_Fixtures.end(), "Should not have an end contact event for own fixtures");
+
+	if (m_OnEndContactFunc)
+	{
+		Entity entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene());
+		sol::protected_function_result result = m_OnEndContactFunc->call(entity);
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnEndContact': {0}", error.what());
+		}
+	}
+}
+
+bool LuaScriptComponent::IsContactListener()
+{
+	return m_OnBeginContactFunc || m_OnEndContactFunc;
 }

@@ -1,11 +1,9 @@
 #pragma once
-#include <d3d11_1.h>
+#include <d3d11.h>
 
 #include "Core/core.h"
 
 #include "Renderer/GraphicsContext.h"
-
-#include "GLFW/glfw3.h"
 
 class DirectX11Context : public GraphicsContext
 {
@@ -14,6 +12,7 @@ public:
 	~DirectX11Context();
 	virtual void Init()override;
 	virtual void SwapBuffers()override;
+	virtual void ResizeBuffers(uint32_t width, uint32_t height) override;
 
 	virtual void SetSwapInterval(uint32_t interval)override;
 

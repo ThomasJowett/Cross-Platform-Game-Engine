@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Core/Layer.h"
-#include "Engine.h"
 
 #include "Toolbars/PlayPauseToolbar.h"
 #include "Toolbars/SaveOpenToolbar.h"
+#include "ImGui/ImGuiTilemapEditor.h"
 
 class ContentExplorerPanel;
 
@@ -13,7 +13,7 @@ class MainDockSpace :
 {
 public:
 	MainDockSpace();
-	~MainDockSpace() = default;
+	~MainDockSpace();
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
@@ -26,7 +26,7 @@ public:
 
 private:
 	void OpenProject(const std::filesystem::path& filename);
-	bool OnOpenProject(AppOpenDocumentChange& event);
+	bool OnOpenProject(AppOpenDocumentChangedEvent& event);
 
 	void HandleKeyBoardInputs();
 private:
@@ -43,6 +43,7 @@ private:
 	bool m_ShowHierarchy;
 	bool m_ShowContentExplorer;
 	bool m_ShowJoystickInfo;
+	bool m_ShowTilemapEditor;
 
 #ifdef DEBUG
 	bool m_ShowImGuiDemo;
@@ -60,7 +61,7 @@ private:
 
 	static Layer* s_CurrentlyFocusedPanel;
 
-	ContentExplorerPanel* m_ContentExplorer;
+	Ref<ContentExplorerPanel> m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
 

@@ -11,10 +11,9 @@
 #include "Core/MouseButtonCodes.h"
 #include "Core/Colour.h"
 #include "Core/Settings.h"
-
-// Misc
-#include "OrthoGrpahicCameraController.h"
-#include "PerspectiveCameraController.h"
+#include "Core/Asset.h"
+#include "Core/Version.h"
+#include "Core/BoundingBox.h"
 
 // Logging
 #include "Logging/Logger.h"
@@ -28,7 +27,6 @@
 // Renderer
 #include "Renderer/Camera.h"
 #include "Renderer/Shader.h"
-#include "Renderer/VertexArray.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/RenderCommand.h"
@@ -44,13 +42,24 @@
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Random.h"
 #include "Utilities/StringUtils.h"
+#include "Utilities/FileWatcher.h"
 
 // Scene
 #include "Scene/Scene.h"
 #include "Scene/Entity.h"
-#include "Scene/ScriptableEntity.h"
-#include "Scene/Components/Components.h"
+#include "Scene/Components.h"
 #include "Scene/SceneManager.h"
+#include "Scene/SceneSerializer.h"
+#include "Scene/AssetManager.h"
+#include "Scene/SceneGraph.h"
+
+// Events
+#include "Events/ApplicationEvent.h"
+#include "Events/Event.h"
+#include "Events/JoystickEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
+#include "Events/SceneEvent.h"
 
 // Third Party
 #include "EnTT/entt.hpp"

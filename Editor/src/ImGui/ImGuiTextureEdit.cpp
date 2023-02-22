@@ -4,13 +4,16 @@
 #include "Core/Application.h"
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
+#include "IconsFontAwesome6.h"
+#include "Scene/AssetManager.h"
 
 #include <filesystem>
 
-IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, ImVec2 size)
+bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVec2& size)
 {
 	bool edited = false;
-	ImGui::Text(label);
+	ImGui::TextUnformatted(label);
+	ImGui::BeginGroup();
 	if (texture)
 	{
 		ImGui::BeginGroup();
@@ -23,28 +26,28 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		else if (textureHeight < textureWidth)
 		{
 			float aspectRatio = (float)textureHeight / (float)textureWidth;
-			ImGui::Dummy({ 0,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
+			ImGui::Dummy({ 0.0f,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
 			ImGui::Image(texture, ImVec2(size.x, aspectRatio * size.y));
-			ImGui::Dummy({ 0,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
+			ImGui::Dummy({ 0.0f,((1.0f - aspectRatio) * size.y / 2.0f) - 0.5f * (textureWidth / size.y) });
 		}
 		else
 		{
 			float aspectRatio = (float)textureWidth / (float)textureHeight;
-			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0 });
-			SameLine();
+			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
+			ImGui::SameLine();
 			ImGui::Image(texture, ImVec2(aspectRatio * size.x, size.y));
-			SameLine();
-			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0 });
+			ImGui::SameLine();
+			ImGui::Dummy({ ((1.0f - aspectRatio) * size.x / 2.0f) - 0.5f * ((float)textureHeight / size.x), 0.0f });
 		}
 		ImGui::EndGroup();
 
 		if (ImGui::IsItemHovered())
 		{
-			const uint32_t maxSize = 256;
+			const float maxSize = size.x * 4.0f;
 			ImVec2 tooltipSize;
 			if (textureHeight == textureWidth && textureWidth > maxSize)
 			{
-				tooltipSize = ImVec2(128, 128);
+				tooltipSize = ImVec2(maxSize, maxSize);
 			}
 			else if (textureHeight > textureWidth && textureHeight > maxSize)
 			{
@@ -66,26 +69,88 @@ IMGUI_API bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, 
 		}
 	}
 	else
-		ImGui::Button("##nulltexture", ImVec2(64.0f, 64.0f));
+		ImGui::Button("##nullTexture", size);
 	ImGui::SameLine();
 
 	std::string textureName;
 	if (texture)
 		textureName = texture->GetName();
 
-	if (ImGui::BeginCombo("##textureEdit", textureName.c_str()))
+	ImGui::BeginGroup();
+	std::string comboLabel = "##textureEdit" + std::string(label);
+	if (ImGui::BeginCombo(comboLabel.c_str(), textureName.c_str()))
 	{
 		for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::IMAGE)))
 		{
 			const bool is_selected = false;
 			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 			{
-				texture = Texture2D::Create(file);
+				texture = AssetManager::GetTexture(file);
 				edited = true;
 				break;
 			}
 		}
 		ImGui::EndCombo();
+	}
+
+	if (texture)
+	{
+		ImGui::SameLine();
+		if (ImGui::Button(std::string(std::string(ICON_FA_ARROW_ROTATE_LEFT"##reset") + std::string(label)).c_str()))
+		{
+			texture.reset();
+			edited = true;
+		}
+		ImGui::Tooltip("Reset texture");
+	}
+
+	if (texture)
+	{
+		ImGui::SetNextItemWidth(150);
+		Texture::FilterMethod filter = texture->GetFilterMethod();
+		std::string filterlabel = "Filter Method##" + std::string(label);
+		if (ImGui::Combo(filterlabel.c_str(), (int*)&filter,
+			"Linear\0"
+			"Nearest\0"))
+		{
+			texture->SetFilterMethod(filter);
+			edited = true;
+		}
+
+		ImGui::Tooltip("Filter Method");
+
+		ImGui::SetNextItemWidth(150);
+		Texture::WrapMethod wrap = texture->GetWrapMethod();
+		std::string wraplabel = "Wrap Method##" + std::string(label);
+		if (ImGui::Combo(wraplabel.c_str(), (int*)&wrap,
+			"Clamp\0"
+			"Mirror\0"
+			"Repeat\0"))
+		{
+			texture->SetWrapMethod(wrap);
+			edited = true;
+		}
+
+		ImGui::Tooltip("Wrapping Method");
+	}
+	ImGui::EndGroup();
+	ImGui::EndGroup();
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+
+			for (std::string& ext : ViewerManager::GetExtensions(FileType::IMAGE))
+			{
+				if (file->extension().string() == ext)
+				{
+					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+						texture = AssetManager::GetTexture(*file);
+				}
+			}
+		}
+		ImGui::EndDragDropTarget();
 	}
 
 	return edited;

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "OpenGLRendererAPI.h"
+#include "Logging/Instrumentor.h"
 
 #include <glad/glad.h>
 
@@ -49,12 +50,14 @@ void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint
 
 void OpenGLRendererAPI::Clear()
 {
-	glClear(GL_COLOR_BUFFER_BIT |GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount, DrawMode drawMode)
+void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
-	vertexArray->Bind();
+	if (!backFaceCull)
+		glDisable(GL_CULL_FACE);
+
 	GLuint mode;
 	switch (drawMode)
 	{
@@ -64,13 +67,12 @@ void OpenGLRendererAPI::DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_
 	default: mode = GL_TRIANGLES; break;
 	}
 
-	uint32_t count = indexCount ? indexCount : vertexArray->GetIndexBuffer()->GetCount();
-
-	glDrawElements(mode, count, GL_UNSIGNED_INT, nullptr);
+	glDrawRangeElementsBaseVertex(mode, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
+	if (!backFaceCull)
+		glEnable(GL_CULL_FACE);
 }
 
-void OpenGLRendererAPI::DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount)
+void OpenGLRendererAPI::DrawLines(uint32_t vertexCount)
 {
-	vertexArray->Bind();
 	glDrawArrays(GL_LINES, 0, vertexCount);
 }

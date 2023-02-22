@@ -9,15 +9,25 @@ struct IDComponent
 	Uuid ID;
 
 	IDComponent() = default;
-	IDComponent(const IDComponent&)
-		:ID() {} // Id components must be unique so cannot be copied
+	IDComponent(const IDComponent& other)
+		:ID(other.ID) {}
 	IDComponent(Uuid id)
 		:ID(id) {}
 private:
 	friend cereal::access;
-	template<typename Archive>
-	void serialize(Archive& archive)
-	{
-		archive(cereal::make_nvp("ID", (uint64_t)ID));
-	}
+		template <typename Archive>
+		void save(Archive& archive) const
+		{
+				std::string uuid = ID.to_string();
+				archive(uuid);
+		}
+
+		template <typename Archive>
+		void load(Archive& archive)
+		{
+				std::string uuid;
+				archive(uuid);
+
+				ID = Uuid(uuid);
+		}
 };

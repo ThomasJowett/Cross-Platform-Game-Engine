@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "SubTexture2D.h"
 #include "Core/Colour.h"
+#include "Renderer/Font.h"
 
 #include "Scene/Components/SpriteComponent.h"
 #include "Scene/Components/CircleRendererComponent.h"
@@ -23,6 +24,7 @@ public:
 	static void FlushCircles();
 	static void FlushLines();
 	static void FlushHairLines();
+	static void FlushText();
 
 	//primitives
 
@@ -62,11 +64,20 @@ public:
 
 	// Hair Lines
 	static void DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour = Colours::WHITE, int entityId = -1);
-	static void DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineRect(const Vector3f& position, const Vector2f& size, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineRect(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineCircle(const Vector3f& position, float radius, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineArc(const Vector3f& position, float radius, float start, float end, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawHairLineArc(const Matrix4x4& transform, float start, float end, uint32_t segments = 60, const Colour& colour = Colours::WHITE, int entityId = -1);
+
+	// Text
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const float& rotation, const Colour & = Colours::WHITE, int entityId = -1);
+	static void DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour & = Colours::WHITE, int entityId = -1);
 
 	struct Stats
 	{
@@ -86,9 +97,11 @@ private:
 	static void StartQuadsBatch();
 	static void StartCirclesBatch();
 	static void StartLinesBatch();
+	static void StartTextBatch();
 	static void StartHairLinesBatch();
 	static void NextQuadsBatch();
 	static void NextCirclesBatch();
 	static void NextLinesBatch();
+	static void NextTextBatch();
 	static void NextHairLinesBatch();
 };

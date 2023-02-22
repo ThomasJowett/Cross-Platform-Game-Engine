@@ -1,8 +1,14 @@
 #include "ErrorListPanel.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
+#include "imgui/imgui.h"
+
+#include "Scripting/Lua/LuaManager.h"
+#include "Scene/SceneManager.h"
+#include "Scene/Components.h"
+#include "Logging/Instrumentor.h"
+
 #include "MainDockSpace.h"
 #include "Viewers/ViewerManager.h"
-#include "Scripting/Lua/LuaManager.h"
 
 ErrorListPanel::ErrorListPanel(bool* show)
 	: m_Show(show), Layer("ErrorList")
@@ -16,7 +22,7 @@ void ErrorListPanel::OnAttach()
 void ErrorListPanel::OnUpdate(float deltaTime)
 {
 	m_CurrentTime += deltaTime;
-	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit)
+	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit && SceneManager::IsSceneLoaded())
 	{
 		m_ErrorList.clear();
 		auto view = SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>();
@@ -45,7 +51,7 @@ void ErrorListPanel::OnImGuiRender()
 	ImGui::SetNextWindowSize(ImVec2(600, 600), ImGuiCond_FirstUseEver);
 	ImGui::SetNextWindowPos(ImVec2(70, 50), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(ICON_FA_TIMES_CIRCLE" Error List", m_Show))
+	if (ImGui::Begin(ICON_FA_CIRCLE_XMARK" Error List", m_Show))
 	{
 		if (ImGui::IsWindowFocused())
 		{
@@ -70,7 +76,7 @@ void ErrorListPanel::OnImGuiRender()
 			ImGui::TableHeadersRow();
 
 			for (size_t i = 0; i < m_ErrorList.size(); i++)
-			for(auto& [error, selected] : m_ErrorList)
+			for(auto&& [error, selected] : m_ErrorList)
 			{
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
@@ -84,7 +90,7 @@ void ErrorListPanel::OnImGuiRender()
 							ViewerManager::OpenViewer(error.filepath);
 						}
 
-						for (auto& [_, s] : m_ErrorList)
+						for (auto&& [_, s] : m_ErrorList)
 						{
 							s = false;
 						}
@@ -100,7 +106,7 @@ void ErrorListPanel::OnImGuiRender()
 
 						if (ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
 						{
-							for (auto& [e, s] : m_ErrorList)
+							for (auto&& [e, s] : m_ErrorList)
 							{
 								if (s)
 									ViewerManager::OpenViewer(e.filepath);
@@ -110,9 +116,9 @@ void ErrorListPanel::OnImGuiRender()
 				}
 
 				ImGui::TableSetColumnIndex(1);
-				ImGui::Text("%s", error.filepath.filename().string().c_str());
+				ImGui::TextUnformatted(error.filepath.filename().string().c_str());
 				ImGui::TableSetColumnIndex(2);
-				ImGui::Text("%i",error.lineNumber);
+				ImGui::Text("%i", error.lineNumber);
 			}
 			ImGui::EndTable();
 		}

@@ -9,6 +9,8 @@
 #include "Utilities/FileUtils.h"
 
 class Entity;
+class PhysicsEngine2D;
+class b2Fixture;
 
 struct LuaScriptComponent
 {
@@ -27,6 +29,13 @@ struct LuaScriptComponent
 	void OnDestroy();
 	void OnUpdate(float deltaTime);
 	void OnFixedUpdate();
+	void OnDebugRender();
+	void OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point);
+	void OnEndContact(b2Fixture* fixture);
+	bool IsContactListener();
+
+	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }
+	//const std::vector<b2Fixture*>& GetContacts() const { return m_Contacts; }
 
 private:
 	friend cereal::access;
@@ -37,21 +46,28 @@ private:
 		std::string relativePath;
 		if (!absoluteFilepath.empty())
 			relativePath = FileUtils::RelativePath(absoluteFilepath, Application::GetOpenDocumentDirectory()).string();
-		archive(cereal::make_nvp("Script", relativePath));
+		archive(relativePath);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		std::string relativePath;
-		archive(cereal::make_nvp("Script", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
 	}
+
+	friend PhysicsEngine2D;
+
+	std::vector<b2Fixture*> m_Fixtures;
 
 	Ref<sol::environment> m_SolEnvironment;
 	Ref<sol::protected_function> m_OnCreateFunc;
 	Ref<sol::protected_function> m_OnDestroyFunc;
 	Ref<sol::protected_function> m_OnUpdateFunc;
 	Ref<sol::protected_function> m_OnFixedUpdateFunc;
+	Ref<sol::protected_function> m_OnDebugRenderFunc;
+	Ref<sol::protected_function> m_OnBeginContactFunc;
+	Ref<sol::protected_function> m_OnEndContactFunc;
 };

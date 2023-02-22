@@ -1,6 +1,9 @@
 #pragma once
 
-#include "Engine.h"
+#include <vector>
+#include <filesystem>
+
+#include "Core/Layer.h"
 
 class ProjectsStartScreen
 	:public Layer

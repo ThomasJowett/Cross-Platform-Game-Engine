@@ -1,15 +1,15 @@
 #include "HierarchyPanel.h"
 
-#include "IconsFontAwesome5.h"
+#include "imgui/imgui.h"
+#include "IconsFontAwesome6.h"
+#include "History/HistoryCommands.h"
+
+#include "Engine.h"
+
 #include "MainDockSpace.h"
 
-#include "Utilities/GeometryGenerator.h"
-#include "Scene/SceneSerializer.h"
-#include "Scene/SceneGraph.h"
-#include "Events/ApplicationEvent.h"
-
 HierarchyPanel::HierarchyPanel(bool* show)
-	:m_Show(show), Layer("Hierarchy")
+	:Layer("Hierarchy"), m_Show(show)
 {
 	m_TextFilter = new ImGuiTextFilter();
 }
@@ -22,7 +22,6 @@ HierarchyPanel::~HierarchyPanel()
 
 void HierarchyPanel::OnAttach()
 {
-	
 }
 
 void HierarchyPanel::OnDetach()
@@ -64,79 +63,56 @@ void HierarchyPanel::OnImGuiRender()
 		}
 
 		// right click on a blank space
-		if (ImGui::BeginPopupContextWindow(0, 1, false))
+		if (ImGui::BeginPopupContextWindow())
 		{
 			if (ImGui::MenuItem("Create Empty Entity"))
 			{
 				m_SelectedEntity = SceneManager::CurrentScene()->CreateEntity("New Entity");//TODO: make all the entities have a unique name
+				HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 			}
 			if (ImGui::BeginMenu("3D Object"))
 			{
 				if (ImGui::MenuItem("Cube"))
 				{
 					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
-
-					Mesh mesh(GeometryGenerator::CreateCube(1.0f, 1.0f, 1.0f), "Cube");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
-					cubeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 					m_SelectedEntity = cubeEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Sphere"))
 				{
 					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
-
-					Mesh mesh(GeometryGenerator::CreateSphere(0.5f, 16, 32), "Sphere");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png").string()), 0);
-					sphereEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 					m_SelectedEntity = sphereEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Plane"))
 				{
 					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
-
-					Mesh mesh(GeometryGenerator::CreateGrid(1.0f, 1.0f, 2, 2, 1, 1), "Plane");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
-					planeEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 					m_SelectedEntity = planeEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Cylinder"))
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
-
-					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.5f, 1.0f, 32, 5), "Cylinder");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
-					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 					m_SelectedEntity = cylinderEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Cone"))
 				{
 					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
-
-					Mesh mesh(GeometryGenerator::CreateCylinder(0.5f, 0.00001f, 1.0f, 32, 5), "Cone");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
-					cylinderEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 					m_SelectedEntity = cylinderEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Torus"))
 				{
 					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
-
-					Mesh mesh(GeometryGenerator::CreateTorus(1.0f, 0.4f, 32), "Torus");
-					Material material("Standard", Colours::RANDOM);
-					material.AddTexture(Texture2D::Create(std::filesystem::path(Application::GetWorkingDirectory() / "resources" / "UVChecker.png")), 0);
-					torusEntity.AddComponent<StaticMeshComponent>(mesh, material);
 					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 					m_SelectedEntity = torusEntity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Terrain", "", nullptr, false))
 				{
@@ -151,24 +127,28 @@ void HierarchyPanel::OnImGuiRender()
 					Entity entity = SceneManager::CurrentScene()->CreateEntity("Sprite");
 					entity.AddComponent<SpriteComponent>();
 					m_SelectedEntity = entity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Animated Sprite"))
 				{
 					Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
 					entity.AddComponent<AnimatedSpriteComponent>();
 					m_SelectedEntity = entity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Circle"))
 				{
 					Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
 					entity.AddComponent<CircleRendererComponent>();
 					m_SelectedEntity = entity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Tilemap"))
 				{
 					Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
 					entity.AddComponent<TilemapComponent>();
 					m_SelectedEntity = entity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				ImGui::EndMenu();
 			}
@@ -182,9 +162,12 @@ void HierarchyPanel::OnImGuiRender()
 			}
 			if (ImGui::BeginMenu("Light"))
 			{
-				if (ImGui::MenuItem("Point Light", "", nullptr, false))
+				if (ImGui::MenuItem("Point Light"))
 				{
-					//TODO: Create point light
+					Entity entity = SceneManager::CurrentScene()->CreateEntity("Point Light");
+					entity.AddComponent<PointLightComponent>();
+					m_SelectedEntity = entity;
+					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 				}
 				if (ImGui::MenuItem("Directional Light", "", nullptr, false))
 				{
@@ -206,18 +189,22 @@ void HierarchyPanel::OnImGuiRender()
 				Entity entity = SceneManager::CurrentScene()->CreateEntity("Camera");
 				entity.AddComponent<CameraComponent>();
 				m_SelectedEntity = entity;
+				HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 			}
 			ImGui::EndPopup();
 		}
 
-		ImGui::Text(ICON_FA_SEARCH);
+		ImGui::TextUnformatted(ICON_FA_MAGNIFYING_GLASS);
 		ImGui::SameLine();
 		m_TextFilter->Draw("##Search", ImGui::GetContentRegionAvail().x);
 		ImGui::Tooltip("Filter (\"incl,-excl\")");
 
 		if (SceneManager::IsSceneLoaded())
 		{
-			if (ImGui::TreeNodeEx(SceneManager::CurrentScene()->GetSceneName().c_str(), ImGuiTreeNodeFlags_DefaultOpen
+			if (m_SelectedEntity && !m_SelectedEntity.IsSceneValid())
+				m_SelectedEntity = Entity();
+
+			if (ImGui::TreeNodeEx("Scene", ImGuiTreeNodeFlags_DefaultOpen
 				| ImGuiTreeNodeFlags_SpanAvailWidth
 				| ImGuiTreeNodeFlags_Bullet
 				| ImGuiTreeNodeFlags_OpenOnDoubleClick))
@@ -225,25 +212,33 @@ void HierarchyPanel::OnImGuiRender()
 				DragDropTarget(Entity());
 
 				SceneManager::CurrentScene()->GetRegistry().each([&](auto entityID)
-				{
-					if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
 					{
-						Entity entity{ entityID, SceneManager::CurrentScene() };
+						if (SceneManager::CurrentScene()->GetRegistry().valid(entityID))
+						{
+							Entity entity{ entityID, SceneManager::CurrentScene() };
 
-						// Only draw a node for root entites, children are drawn recursively
-						HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
-						if (!hierarchyComp || hierarchyComp->parent == entt::null 
-							|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
-							DrawNode(entity);
-					}
-				});
+							if (entity.IsSceneValid() && entity.HasComponent<PrimitiveComponent>())
+							{
+								PrimitiveComponent& primitiveComp = entity.GetComponent<PrimitiveComponent>();
+
+								if (primitiveComp.needsUpdating)
+								{
+									primitiveComp.SetType(primitiveComp.type);
+								}
+							}
+							// Only draw a node for root entities, children are drawn recursively
+							HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+							if (!hierarchyComp || hierarchyComp->parent == entt::null
+								|| (m_TextFilter->IsActive() && m_TextFilter->PassFilter(entity.GetName().c_str())))
+								DrawNode(entity);
+						}
+					});
 				ImGui::TreePop();
 			}
 
 			ImVec2 available = ImGui::GetContentRegionAvail();
 			ImGui::Dummy(available);
 			DragDropTarget(Entity());
-			
 		}
 	}
 	ImGui::End();
@@ -254,15 +249,20 @@ void HierarchyPanel::OnImGuiRender()
 void HierarchyPanel::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<AppOpenDocumentChange>([=](AppOpenDocumentChange&)
-	{
-		// Clear the selected entity when project changes
-		m_SelectedEntity = Entity();
-		return false;
-	});
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>([=](AppOpenDocumentChangedEvent&)
+		{
+			// Clear the selected entity when project changes
+			m_SelectedEntity = Entity();
+			return false;
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity HierarchyPanel::GetSelectedEntity()
+{
+	return m_SelectedEntity;
+}
 
 void HierarchyPanel::SetSelectedEntity(Entity entity)
 {
@@ -273,7 +273,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 {
 	std::string& name = entity.GetName();
 
-	if(m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
+	if (m_TextFilter->IsActive() && !m_TextFilter->PassFilter(name.c_str()))
 		return;
 
 	bool hasChildren = false;
@@ -282,16 +282,16 @@ void HierarchyPanel::DrawNode(Entity entity)
 	if (hierarchyComp != nullptr && hierarchyComp->firstChild != entt::null)
 		hasChildren = true;
 
-	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth
+	ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_SpanAvailWidth | ImGuiTreeNodeFlags_DefaultOpen
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
-	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, name.c_str());
+	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name.c_str());
 
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
 	{
 		ImGui::SetDragDropPayload("Entity", &entity, sizeof(Entity));
-		ImGui::Text(name.c_str());
+		ImGui::TextUnformatted(name.c_str());
 		ImGui::EndDragDropSource();
 	}
 	DragDropTarget(entity);
@@ -308,7 +308,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
-		if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, HasSelection()))
+		if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, HasSelection()))
 			Cut();
 		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
 			Copy();
@@ -316,7 +316,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 			Paste();
 		if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, HasSelection()))
 			Duplicate();
-		if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, HasSelection()))
+		if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, HasSelection()))
 		{
 			entityDeleted = true;
 		}
@@ -325,7 +325,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 	if (opened)
 	{
-		if (hasChildren  && !m_TextFilter->IsActive() )
+		if (hasChildren && !m_TextFilter->IsActive())
 		{
 			entt::entity child = entity.TryGetComponent<HierarchyComponent>()->firstChild;
 			while (child != entt::null)
@@ -334,7 +334,7 @@ void HierarchyPanel::DrawNode(Entity entity)
 
 				DrawNode(childEntity);
 
-				if (childEntity.IsValid())
+				if (childEntity.IsSceneValid())
 				{
 					HierarchyComponent* childHierarchyComp = childEntity.TryGetComponent<HierarchyComponent>();
 
@@ -369,27 +369,44 @@ void HierarchyPanel::DragDropTarget(Entity parent)
 			Entity* childEntity = (Entity*)payload->Data;
 			ASSERT(payload->DataSize == sizeof(Entity), "Drag-drop entity data not the correct size");
 
+			Ref<ReparentEntityCommand> reparentCommand = CreateRef<ReparentEntityCommand>(*childEntity, parent);
+
 			if (parent)
-				SceneGraph::Reparent(*childEntity, parent, SceneManager::CurrentScene()->GetRegistry());
+				SceneGraph::Reparent(*childEntity, parent);
 			else
-				SceneGraph::Unparent(*childEntity, SceneManager::CurrentScene()->GetRegistry());
+				SceneGraph::Unparent(*childEntity);
+
+			HistoryManager::AddHistoryRecord(reparentCommand);
 			SceneManager::CurrentScene()->MakeDirty();
 		}
 		ImGui::EndDragDropTarget();
 	}
 }
 
+void HierarchyPanel::Undo(int asteps)
+{
+	HistoryManager::Undo(asteps);
+}
+
+void HierarchyPanel::Redo(int asteps)
+{
+	HistoryManager::Redo(asteps);
+}
+
+bool HierarchyPanel::CanUndo() const
+{
+	return HistoryManager::CanUndo();
+}
+
+bool HierarchyPanel::CanRedo() const
+{
+	return HistoryManager::CanRedo();
+}
+
 void HierarchyPanel::Copy()
 {
 	CLIENT_DEBUG("Copied");
-	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
-	doc.InsertFirstChild(pEntityElement);
-	SceneSerializer::SerializeEntity(pEntityElement, m_SelectedEntity);
-	pEntityElement->SetAttribute("ID", Uuid());
-	tinyxml2::XMLPrinter printer;
-	doc.Accept(&printer);
-	ImGui::SetClipboardText(printer.CStr());
+	ImGui::SetClipboardText(SceneSerializer::SerializeEntity(m_SelectedEntity).c_str());
 }
 
 void HierarchyPanel::Cut()
@@ -400,29 +417,22 @@ void HierarchyPanel::Cut()
 
 void HierarchyPanel::Paste()
 {
-	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLError error = doc.Parse(ImGui::GetClipboardText());
-
-	if (error == tinyxml2::XMLError::XML_SUCCESS)
-	{
-		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
-		if (pEntityElement)
-		{
-			SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), pEntityElement);
-			SceneManager::CurrentScene()->MakeDirty();
-		}
-	}
+	m_SelectedEntity = SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), ImGui::GetClipboardText(), true);
+	HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 }
 
 void HierarchyPanel::Duplicate()
 {
 	CLIENT_DEBUG("Duplicated");
-	SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity);
+	m_SelectedEntity = SceneManager::CurrentScene()->DuplicateEntity(m_SelectedEntity, Entity());
+	m_SelectedEntity.GetName() += "_copy";
+	HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 }
 
 void HierarchyPanel::Delete()
 {
-	SceneManager::CurrentScene()->RemoveEntity(m_SelectedEntity);
+	HistoryManager::AddHistoryRecord(CreateRef<RemoveEntityCommand>(m_SelectedEntity));
+	m_SelectedEntity.Destroy();
 	m_SelectedEntity = {};
 }
 
@@ -433,7 +443,7 @@ bool HierarchyPanel::HasSelection() const
 
 void HierarchyPanel::SelectAll()
 {
-	CLIENT_ERROR("Multi select entites not implemented yet!");
+	CLIENT_ERROR("Multi select entities not implemented yet!");
 }
 
 bool HierarchyPanel::IsReadOnly() const

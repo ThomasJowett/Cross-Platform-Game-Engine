@@ -1,7 +1,10 @@
 #include "ImGuiFileEdit.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
+
+#include "Engine.h"
 
 bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const wchar_t* filter)
 {
@@ -15,7 +18,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	}
 
 	ImGui::BeginGroup();
-	ImGui::Text("%s", label);
+	ImGui::TextUnformatted(label);
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 32);
 	if (ImGui::InputText(("##Filepath" + std::string(label)).c_str(), inputBuffer, sizeof(inputBuffer),
@@ -37,7 +40,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	ImGui::EndGroup();
 	if (ImGui::BeginDragDropTarget())
 	{
-		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
 		{
 			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
@@ -45,8 +48,11 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 
 			if (filterStr.find(ConvertToWideChar(file->extension().string())) != std::string::npos)
 			{
-				filepath = *file;
-				edited = true;
+				if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+				{
+					filepath = *file;
+					edited = true;
+				}
 			}
 		}
 		ImGui::EndDragDropTarget();
@@ -54,7 +60,38 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	return edited;
 }
 
-IMGUI_API bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileType filetype)
+bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileType filetype)
+{
+	std::string filename = filepath.filename().string();
+
+	bool edited = false;
+
+	if(ImGui::BeginCombo(label, filename.c_str()))
+	{
+		for(std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(filetype)))
+		{
+			if(ImGui::Selectable(file.filename().string().c_str()))
+			{
+				filepath = file;
+				edited = true;
+			}
+			ImGui::Tooltip(file.string().c_str());
+		}
+		ImGui::EndCombo();
+	}
+	if(std::filesystem::exists(filepath))
+	{
+		ImGui::SameLine();
+
+		if(ImGui::Button(ICON_FA_PEN_TO_SQUARE"##editfile"))
+		{
+			ViewerManager::OpenViewer(filepath);
+		}
+	}
+	return edited;
+}
+
+bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileType filetype)
 {
 	const wchar_t* filter;
 
@@ -77,6 +114,9 @@ IMGUI_API bool ImGui::FileEdit(const char* label, std::filesystem::path& filepat
 		break;
 	case FileType::MATERIAL:
 		filter = L"Material (.material)\0*.material\0";
+		break;
+	case FileType::FONT:
+		filter = L"TrueType (.ttf)\0*.ttf\0";
 		break;
 	default:
 		filter = L"Any\0*.*\0";

@@ -7,6 +7,7 @@
 
 #include "Renderer/Texture.h"
 #include "Renderer/Material.h"
+#include "Scene/AssetManager.h"
 
 struct SpriteComponent
 {
@@ -24,26 +25,41 @@ private:
 	{
 		std::string relativePath;
 		if (texture && !texture->GetFilepath().empty())
+		{
 			relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(cereal::make_nvp("Filepath", relativePath));
-		archive(cereal::make_nvp("Tint", tint));
-		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
+		}
+		archive(relativePath);
+		if (!relativePath.empty())
+		{
+			archive((int)texture->GetFilterMethod());
+			archive((int)texture->GetWrapMethod());
+		}
+		archive(tint);
+		archive(tilingFactor);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		std::string relativePath;
-		archive(cereal::make_nvp("Filepath", relativePath));
+		archive(relativePath);
 		if (!relativePath.empty())
 		{
-			texture = Texture2D::Create(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			texture = AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			int filterMethod, wrapMethod;
+			archive(filterMethod);
+			archive(wrapMethod);
+			if (texture)
+			{
+				texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
+				texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
+			}
 		}
 		else
 		{
-			texture = nullptr;
+			texture.reset();
 		}
-		archive(cereal::make_nvp("Tint", tint));
-		archive(cereal::make_nvp("Tiling Factor", tilingFactor));
+		archive(tint);
+		archive(tilingFactor);
 	}
 };

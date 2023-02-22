@@ -1,12 +1,14 @@
 #include "stdafx.h"
 #include "SceneSerializer.h"
 
-#include "TinyXml2/tinyxml2.h"
 #include "Scene/Entity.h"
-#include "Components/Components.h"
+#include "Components.h"
 #include "Core/Application.h"
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
+#include "AssetManager.h"
+
+#include "TinyXml2/tinyxml2.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -19,29 +21,28 @@ SceneSerializer::SceneSerializer(Scene* scene)
 
 bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 {
+	PROFILE_FUNCTION();
+
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pRoot = doc.NewElement("Scene");
 
-	pRoot->SetAttribute("Name", m_Scene->GetSceneName().c_str());
-
 	pRoot->SetAttribute("EngineVersion", VERSION);
+
+	SerializationUtils::Encode(pRoot->InsertNewChildElement("Gravity"), m_Scene->GetGravity());
 
 	doc.InsertFirstChild(pRoot);
 
-	m_Scene->m_Registry.each([&](auto entityID)
+	m_Scene->m_Registry.each([this, &pRoot](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene };
+			Entity entity = { entityID, m_Scene};
 
 			if (!entity)
 				return;
 
-			HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+			if (HierarchyComponent const* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+				hierarchyComp != nullptr && hierarchyComp->parent != entt::null)
+				return;
 
-			if (hierarchyComp != nullptr)
-			{
-				if (hierarchyComp->parent != entt::null)
-					return;
-			}
 			SerializeEntity(pRoot->InsertNewChildElement("Entity"), entity, pRoot);
 			return;
 		});
@@ -54,6 +55,8 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 {
+	PROFILE_FUNCTION();
+
 	tinyxml2::XMLDocument doc;
 
 	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
@@ -68,17 +71,14 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 			return false;
 		}
 
-		const char* sceneName = pRoot->Attribute("Name");
-
-		if (sceneName)
-			m_Scene->SetSceneName(sceneName);
+		Vector2f gravity = m_Scene->GetGravity();
+		SerializationUtils::Decode(pRoot->FirstChildElement("Gravity"), gravity);
+		m_Scene->SetGravity(gravity);
 
 		// Version
-		const char* version = pRoot->Attribute("EngineVersion");
 
-		if (version)
-			if (atoi(version) != VERSION)
-				ENGINE_WARN("Loading scene created with a different version of the engine");
+		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
+			ENGINE_WARN("Loading scene created with a different version of the engine");
 
 		// Entities
 		tinyxml2::XMLElement* pEntityElement = pRoot->LastChildElement("Entity");
@@ -102,10 +102,12 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity, tinyxml2::XMLElement* pParentNode)
 {
-	pElement->SetAttribute("Name", entity.GetName().c_str());
-	pElement->SetAttribute("ID", entity.GetID());
+	PROFILE_FUNCTION();
 
-	TransformComponent& transformcomp = entity.GetTransform();
+	pElement->SetAttribute("Name", entity.GetName().c_str());
+	pElement->SetAttribute("ID", entity.GetID().to_string().c_str());
+
+	TransformComponent const& transformcomp = entity.GetTransform();
 
 	tinyxml2::XMLElement* pTransformElement = pElement->InsertNewChildElement("Transform");
 	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp.position);
@@ -114,92 +116,75 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 	if (entity.HasComponent<CameraComponent>())
 	{
-		CameraComponent& component = entity.GetComponent<CameraComponent>();
+		CameraComponent const& component = entity.GetComponent<CameraComponent>();
 
 		tinyxml2::XMLElement* pCameraElement = pElement->InsertNewChildElement("Camera");
 
-		pCameraElement->SetAttribute("Primary", component.Primary);
-		pCameraElement->SetAttribute("FixedAspectRatio", component.FixedAspectRatio);
+		pCameraElement->SetAttribute("Primary", component.primary);
+		pCameraElement->SetAttribute("FixedAspectRatio", component.fixedAspectRatio);
 
 		tinyxml2::XMLElement* pSceneCameraElement = pCameraElement->InsertNewChildElement("SceneCamera");
 
-		pSceneCameraElement->SetAttribute("ProjectionType", (int)component.Camera.GetProjectionType());
-		pSceneCameraElement->SetAttribute("OrthoSize", component.Camera.GetOrthoSize());
-		pSceneCameraElement->SetAttribute("OrthoNear", component.Camera.GetOrthoNear());
-		pSceneCameraElement->SetAttribute("OrthoFar", component.Camera.GetOrthoFar());
-		pSceneCameraElement->SetAttribute("PerspectiveNear", component.Camera.GetPerspectiveNear());
-		pSceneCameraElement->SetAttribute("PerspectiveFar", component.Camera.GetPerspectiveFar());
-		pSceneCameraElement->SetAttribute("FOV", component.Camera.GetVerticalFov());
-		pSceneCameraElement->SetAttribute("AspectRatio", component.Camera.GetAspectRatio());
+		pSceneCameraElement->SetAttribute("ProjectionType", (int)component.camera.GetProjectionType());
+		pSceneCameraElement->SetAttribute("OrthoSize", component.camera.GetOrthoSize());
+		pSceneCameraElement->SetAttribute("OrthoNear", component.camera.GetOrthoNear());
+		pSceneCameraElement->SetAttribute("OrthoFar", component.camera.GetOrthoFar());
+		pSceneCameraElement->SetAttribute("PerspectiveNear", component.camera.GetPerspectiveNear());
+		pSceneCameraElement->SetAttribute("PerspectiveFar", component.camera.GetPerspectiveFar());
+		pSceneCameraElement->SetAttribute("FOV", component.camera.GetVerticalFov());
+		if (component.fixedAspectRatio)
+			pSceneCameraElement->SetAttribute("AspectRatio", component.camera.GetAspectRatio());
 	}
 
 	if (entity.HasComponent<SpriteComponent>())
 	{
-		SpriteComponent& component = entity.GetComponent<SpriteComponent>();
+		SpriteComponent const& component = entity.GetComponent<SpriteComponent>();
 
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
 		if (component.texture)
-			pSpriteElement->SetAttribute("Texture", SerializationUtils::RelativePath(component.texture->GetFilepath()).c_str());
+		{
+			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texture);
+		}
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
 
 	if (entity.HasComponent<AnimatedSpriteComponent>())
 	{
-		AnimatedSpriteComponent& component = entity.GetComponent<AnimatedSpriteComponent>();
+		AnimatedSpriteComponent const& component = entity.GetComponent<AnimatedSpriteComponent>();
 
 		tinyxml2::XMLElement* pAnimatedSpriteElement = pElement->InsertNewChildElement("AnimatedSprite");
-		tinyxml2::XMLElement* pAnimatorElement = pAnimatedSpriteElement->InsertNewChildElement("Animator");
 
-		if (component.animator.GetSpriteSheet()->GetTexture())
-			pAnimatorElement->SetAttribute("Texture",
-				SerializationUtils::RelativePath(component.animator.GetSpriteSheet()->GetTexture()->GetFilepath()).c_str());
-
-		pAnimatorElement->SetAttribute("SpriteWidth", component.animator.GetSpriteSheet()->GetSpriteWidth());
-		pAnimatorElement->SetAttribute("SpriteHeight", component.animator.GetSpriteSheet()->GetSpriteHeight());
-
-		for (Animation& animation : component.animator.GetAnimations())
-		{
-			tinyxml2::XMLElement* pAnimationElement = pAnimatorElement->InsertNewChildElement("Animation");
-			pAnimationElement->SetAttribute("Name", animation.GetName().c_str());
-			pAnimationElement->SetAttribute("StartFrame", animation.GetStartFrame());
-			pAnimationElement->SetAttribute("FrameCount", animation.GetFrameCount());
-			pAnimationElement->SetAttribute("FrameTime", animation.GetFrameTime());
-		}
+		if (component.spriteSheet)
+			SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("SpriteSheet"), component.spriteSheet->GetFilepath());
 
 		SerializationUtils::Encode(pAnimatedSpriteElement->InsertNewChildElement("Tint"), component.tint);
+
+		pAnimatedSpriteElement->SetAttribute("Animation", component.animation.c_str());
 	}
 
 	if (entity.HasComponent<StaticMeshComponent>())
 	{
-		StaticMeshComponent& component = entity.GetComponent<StaticMeshComponent>();
+		StaticMeshComponent const& component = entity.GetComponent<StaticMeshComponent>();
 
 		tinyxml2::XMLElement* pStaticMeshElement = pElement->InsertNewChildElement("StaticMesh");
-		std::filesystem::path relativepath;
-		if (!component.mesh.GetFilepath().empty())
-		{
-			relativepath = FileUtils::RelativePath(component.mesh.GetFilepath(), Application::GetOpenDocumentDirectory());
-		}
-		pStaticMeshElement->InsertNewChildElement("Mesh")->SetAttribute("Filepath", relativepath.string().c_str());
 
-		SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("Material"), component.material);
-	}
+		if (component.mesh)
+			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
-	if (entity.HasComponent<NativeScriptComponent>())
-	{
-		NativeScriptComponent& component = entity.GetComponent<NativeScriptComponent>();
-
-		tinyxml2::XMLElement* pNativeScriptElement = pElement->InsertNewChildElement("NativeScript");
-
-		pNativeScriptElement->SetAttribute("Name", component.Name.c_str());
+		for (const auto& materialOverride : component.materialOverrides)
+			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
 	}
 
 	if (entity.HasComponent<PrimitiveComponent>())
 	{
-		PrimitiveComponent& component = entity.GetComponent<PrimitiveComponent>();
+		PrimitiveComponent const& component = entity.GetComponent<PrimitiveComponent>();
 
 		tinyxml2::XMLElement* pPrimitiveElement = pElement->InsertNewChildElement("Primitive");
+
+		if (component.material != Material::GetDefaultMaterial())
+			SerializationUtils::Encode(pPrimitiveElement->InsertNewChildElement("Material"), component.material->GetFilepath());
 
 		pPrimitiveElement->SetAttribute("Type", (int)component.type);
 
@@ -276,14 +261,73 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pTilemapElement = pElement->InsertNewChildElement("Tilemap");
 
-		SerializationUtils::Encode(pTilemapElement, component.tilemap.GetFilepath());
+		if (component.tileset)
+			SerializationUtils::Encode(pTilemapElement, component.tileset->GetFilepath());
 
-		component.tilemap.Save();
+		pTilemapElement->SetAttribute("TilesWide", component.tilesWide);
+		pTilemapElement->SetAttribute("TilesHigh", component.tilesHigh);
+		pTilemapElement->SetAttribute("TileWidth", component.tileWidth);
+		pTilemapElement->SetAttribute("TileHeight", component.tileHeight);
+
+		SerializationUtils::Encode(pTilemapElement->InsertNewChildElement("Tint"), component.tint);
+
+		switch (component.orientation)
+		{
+		case TilemapComponent::Orientation::orthogonal:
+			pTilemapElement->SetAttribute("Orientation", "Orthogonal");
+			break;
+		case TilemapComponent::Orientation::isometric:
+			pTilemapElement->SetAttribute("Orientation", "Isometric");
+			break;
+		case TilemapComponent::Orientation::staggered:
+			pTilemapElement->SetAttribute("Orientation", "Staggered");
+			break;
+		case TilemapComponent::Orientation::hexagonal:
+			pTilemapElement->SetAttribute("Orientation", "Hexagonal");
+			break;
+		default:
+			break;
+		}
+
+		pTilemapElement->SetAttribute("IsTrigger", component.isTrigger);
+
+		std::stringstream csv;
+
+		csv << std::endl;
+
+		for (size_t y = 0; y < component.tilesHigh; y++)
+		{
+			for (size_t x = 0; x < component.tilesWide; x++)
+			{
+				csv << component.tiles[y][x] << ',';
+			}
+
+			if (y == component.tilesHigh - 1)
+			{
+				csv.seekp(-1, std::stringstream::cur);
+				csv << "\0";
+			}
+			csv << std::endl;
+		}
+
+		pTilemapElement->SetText(csv.str().c_str());
+	}
+
+	if (TextComponent* component = entity.TryGetComponent<TextComponent>())
+	{
+		tinyxml2::XMLElement* pTextElement = pElement->InsertNewChildElement("Text");
+		pTextElement->SetText(component->text.c_str());
+		if (component->font != Font::GetDefaultFont())
+			SerializationUtils::Encode(pTextElement->InsertNewChildElement("Font"), component->font->GetFilepath());
+
+		pTextElement->SetAttribute("MaxWidth", component->maxWidth);
+
+		SerializationUtils::Encode(pTextElement->InsertNewChildElement("Colour"), component->colour);
 	}
 
 	if (entity.HasComponent<RigidBody2DComponent>())
 	{
-		RigidBody2DComponent& component = entity.GetComponent<RigidBody2DComponent>();
+		RigidBody2DComponent const& component = entity.GetComponent<RigidBody2DComponent>();
 
 		tinyxml2::XMLElement* pRigidBody2DElement = pElement->InsertNewChildElement("RigidBody2D");
 
@@ -296,59 +340,131 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 	if (entity.HasComponent<BoxCollider2DComponent>())
 	{
-		BoxCollider2DComponent& component = entity.GetComponent<BoxCollider2DComponent>();
+		BoxCollider2DComponent const& component = entity.GetComponent<BoxCollider2DComponent>();
 
 		tinyxml2::XMLElement* pBoxColliderElement = pElement->InsertNewChildElement("BoxCollider2D");
 
-		pBoxColliderElement->SetAttribute("Density", component.Density);
-		pBoxColliderElement->SetAttribute("Friction", component.Friction);
-		pBoxColliderElement->SetAttribute("Restitution", component.Restitution);
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
 
-		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.Offset);
-		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.Size);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Offset"), component.offset);
+		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.size);
+
+		pBoxColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
 	{
-		CircleCollider2DComponent& component = entity.GetComponent<CircleCollider2DComponent>();
+		CircleCollider2DComponent const& component = entity.GetComponent<CircleCollider2DComponent>();
 
 		tinyxml2::XMLElement* pCircleColliderElement = pElement->InsertNewChildElement("CircleCollider2D");
 
-		pCircleColliderElement->SetAttribute("Density", component.Density);
-		pCircleColliderElement->SetAttribute("Friction", component.Friction);
-		pCircleColliderElement->SetAttribute("Restitution", component.Restitution);
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
 
-		pCircleColliderElement->SetAttribute("Radius", component.Radius);
-		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.Offset);
+		pCircleColliderElement->SetAttribute("Radius", component.radius);
+		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
+		pCircleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+	}
+
+	if (entity.HasComponent<PolygonCollider2DComponent>())
+	{
+		PolygonCollider2DComponent const& component = entity.GetComponent<PolygonCollider2DComponent>();
+
+		tinyxml2::XMLElement* pPolygonColliderElement = pElement->InsertNewChildElement("PolygonCollider2D");
+
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
+
+		SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Offset"), component.offset);
+
+		for (Vector2f const& vertex : component.vertices)
+		{
+			SerializationUtils::Encode(pPolygonColliderElement->InsertNewChildElement("Vertex"), vertex);
+		}
+
+		pPolygonColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+	}
+
+	if (entity.HasComponent<CapsuleCollider2DComponent>())
+	{
+		CapsuleCollider2DComponent const& component = entity.GetComponent<CapsuleCollider2DComponent>();
+
+		tinyxml2::XMLElement* pCapsuleColliderElement = pElement->InsertNewChildElement("CapsuleCollider2D");
+
+		if (component.physicsMaterial)
+			SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("PhysicsMaterial"), component.physicsMaterial->GetFilepath());
+
+		pCapsuleColliderElement->SetAttribute("Direction", (int)component.direction);
+		pCapsuleColliderElement->SetAttribute("Radius", component.radius);
+		pCapsuleColliderElement->SetAttribute("Height", component.height);
+
+		SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("Offset"), component.offset);
+		pCapsuleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
 	if (entity.HasComponent<CircleRendererComponent>())
 	{
-		CircleRendererComponent& component = entity.GetComponent<CircleRendererComponent>();
+		CircleRendererComponent const& component = entity.GetComponent<CircleRendererComponent>();
 
 		tinyxml2::XMLElement* pCircleRendererElement = pElement->InsertNewChildElement("CircleRenderer");
 
-		pCircleRendererElement->SetAttribute("Radius", component.Radius);
-		pCircleRendererElement->SetAttribute("Thickness", component.Thickness);
-		pCircleRendererElement->SetAttribute("Fade", component.Fade);
+		pCircleRendererElement->SetAttribute("Radius", component.radius);
+		pCircleRendererElement->SetAttribute("Thickness", component.thickness);
+		pCircleRendererElement->SetAttribute("Fade", component.fade);
 
 		SerializationUtils::Encode(pCircleRendererElement->InsertNewChildElement("Colour"), component.colour);
 	}
 
+	if (entity.HasComponent<BehaviourTreeComponent>())
+	{
+		BehaviourTreeComponent const& component = entity.GetComponent<BehaviourTreeComponent>();
+
+		tinyxml2::XMLElement* pBehaviourTreeElement = pElement->InsertNewChildElement("BehaviourTree");
+	}
+
+	if (entity.HasComponent<StateMachineComponent>())
+	{
+		StateMachineComponent const& component = entity.GetComponent<StateMachineComponent>();
+		tinyxml2::XMLElement* pStateMachineElement = pElement->InsertNewChildElement("StateMachine");
+	}
+
 	if (entity.HasComponent<LuaScriptComponent>())
 	{
-		LuaScriptComponent& component = entity.GetComponent<LuaScriptComponent>();
+		LuaScriptComponent const& component = entity.GetComponent<LuaScriptComponent>();
 
 		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
 
 		SerializationUtils::Encode(pLuaScriptElement, component.absoluteFilepath);
 	}
 
+	if (entity.HasComponent<PointLightComponent>())
+	{
+		PointLightComponent const& component = entity.GetComponent<PointLightComponent>();
+
+		tinyxml2::XMLElement* pPointLightElement = pElement->InsertNewChildElement("PointLight");
+
+		pPointLightElement->SetAttribute("Range", component.range);
+		pPointLightElement->SetAttribute("Attenuation", component.attenuation);
+		pPointLightElement->SetAttribute("CastShadows", component.castsShadows);
+
+		SerializationUtils::Encode(pPointLightElement->InsertNewChildElement("Colour"), component.colour);
+	}
+
+	if (BillboardComponent* component = entity.TryGetComponent<BillboardComponent>())
+	{
+		tinyxml2::XMLElement* pBillboardElement = pElement->InsertNewChildElement("Billboard");
+
+		pBillboardElement->SetAttribute("Orientation", (int)component->orientation);
+		pBillboardElement->SetAttribute("Position", (int)component->position);
+		if (component->position == BillboardComponent::Position::Camera)
+			SerializationUtils::Encode(pBillboardElement->InsertNewChildElement("ScreenPosition"), component->screenPosition);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
-		HierarchyComponent& component = entity.GetComponent<HierarchyComponent>();
-
-		if (component.firstChild != entt::null)
+		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
+			component.firstChild != entt::null)
 		{
 			Entity child = { component.firstChild, entity.GetScene() };
 
@@ -368,18 +484,24 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	}
 }
 
-Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement)
+Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pEntityElement, bool resetUuid)
 {
+	PROFILE_FUNCTION();
+
 	Entity entity;
 	if (!pEntityElement)
 		return entity;
 	const char* entityName = pEntityElement->Attribute("Name");
-	const char* uuidChar = pEntityElement->Attribute("ID");
 
-	if (uuidChar && entityName)
+	if (const char* uuidChar = pEntityElement->Attribute("ID");
+		uuidChar && entityName && !resetUuid)
 	{
-		Uuid uuid(std::stoull(uuidChar));
+		Uuid uuid(uuidChar);
 		entity = scene->CreateEntity(uuid, entityName);
+	}
+	else if (entityName && resetUuid)
+	{
+		entity = scene->CreateEntity(Uuid(), entityName);
 	}
 	else if (entityName)
 	{
@@ -393,30 +515,25 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	}
 
 	// Transform ----------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pTransformElement = pEntityElement->FirstChildElement("Transform");
-
-	if (pTransformElement)
+	if (tinyxml2::XMLElement* pTransformComponentElement = pEntityElement->FirstChildElement("Transform"))
 	{
 		TransformComponent& transformComp = entity.GetTransform();
-		SerializationUtils::Decode(pTransformElement->FirstChildElement("Position"), transformComp.position);
-		SerializationUtils::Decode(pTransformElement->FirstChildElement("Rotation"), transformComp.rotation);
-		SerializationUtils::Decode(pTransformElement->FirstChildElement("Scale"), transformComp.scale);
+		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Position"), transformComp.position);
+		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Rotation"), transformComp.rotation);
+		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Scale"), transformComp.scale);
 	}
 
 	// Camera -------------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pCamera = pEntityElement->FirstChildElement("Camera");
-
-	if (pCamera)
+	if (tinyxml2::XMLElement* pCameraComponentElement = pEntityElement->FirstChildElement("Camera"))
 	{
 		CameraComponent& component = entity.AddComponent<CameraComponent>();
 
-		pCamera->QueryBoolAttribute("Primary", &component.Primary);
-		pCamera->QueryBoolAttribute("FixedAspectRatio", &component.FixedAspectRatio);
+		pCameraComponentElement->QueryBoolAttribute("Primary", &component.primary);
+		pCameraComponentElement->QueryBoolAttribute("FixedAspectRatio", &component.fixedAspectRatio);
 
 		SceneCamera sceneCamera;
-		tinyxml2::XMLElement* pSceneCameraElement = pCamera->FirstChildElement("SceneCamera");
 
-		if (pSceneCameraElement)
+		if (tinyxml2::XMLElement const* pSceneCameraElement = pCameraComponentElement->FirstChildElement("SceneCamera"))
 		{
 			SceneCamera::ProjectionType projectionType =
 				(SceneCamera::ProjectionType)pSceneCameraElement->IntAttribute("ProjectionType", (int)sceneCamera.GetProjectionType());
@@ -427,112 +544,134 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveNear", &sceneCamera.m_PerspectiveNear);
 			pSceneCameraElement->QueryFloatAttribute("PerspectiveFar", &sceneCamera.m_PerspectiveFar);
 			pSceneCameraElement->QueryFloatAttribute("FOV", &sceneCamera.m_Fov);
-			pSceneCameraElement->QueryFloatAttribute("AspectRatio", &sceneCamera.m_AspectRatio);
+			if (component.fixedAspectRatio)
+				pSceneCameraElement->QueryFloatAttribute("AspectRatio", &sceneCamera.m_AspectRatio);
 
 			sceneCamera.SetProjection(projectionType);
 		}
 
-		component.Camera = sceneCamera;
+		component.camera = sceneCamera;
 	}
 
 	// Sprite -------------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pSpriteElement = pEntityElement->FirstChildElement("Sprite");
-
-	if (pSpriteElement)
+	if (tinyxml2::XMLElement* pSpriteComponentElement = pEntityElement->FirstChildElement("Sprite"))
 	{
 		SpriteComponent& component = entity.AddComponent<SpriteComponent>();
 
-		SerializationUtils::Decode(pSpriteElement->FirstChildElement("Tint"), component.tint);
-		pSpriteElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
+		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Tint"), component.tint);
+		pSpriteComponentElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
 
-		const char* textureRelativePath = pSpriteElement->Attribute("Texture");
-		if (textureRelativePath != nullptr)
-			component.texture = Texture2D::Create(SerializationUtils::AbsolutePath(textureRelativePath));
+		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Texture"), component.texture);
+	}
+
+	// Animated Sprite ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement* pAnimatedSpriteComponentElement = pEntityElement->FirstChildElement("AnimatedSprite"))
+	{
+		AnimatedSpriteComponent& component = entity.AddComponent<AnimatedSpriteComponent>();
+
+		SerializationUtils::Decode(pAnimatedSpriteComponentElement->FirstChildElement("Tint"), component.tint);
+
+		if (tinyxml2::XMLElement const* pTilesetElement = pAnimatedSpriteComponentElement->FirstChildElement("SpriteSheet"))
+		{
+			const char* tilesetChar = pTilesetElement->Attribute("Filepath");
+
+			if (tilesetChar)
+			{
+				if (std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
+					!tilesetFilepath.empty())
+				{
+					component.spriteSheet = AssetManager::GetAsset<SpriteSheet>(tilesetFilepath);
+				}
+			}
+		}
+
+		const char* animation = pAnimatedSpriteComponentElement->Attribute("Animation");
+		if (animation)
+		{
+			component.animation = animation;
+			if (component.spriteSheet) {
+				Animation* animationRef = component.spriteSheet->GetAnimation(animation);
+				if(animationRef)
+					component.currentFrame = animationRef->GetStartFrame();
+
+			}
+		}
 	}
 
 	// Static Mesh -------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pStaticMeshElement = pEntityElement->FirstChildElement("StaticMesh");
-
-	if (pStaticMeshElement)
+	if (tinyxml2::XMLElement* pStaticMeshComponentElement = pEntityElement->FirstChildElement("StaticMesh"))
 	{
-		tinyxml2::XMLElement* pMeshElement = pStaticMeshElement->FirstChildElement("Mesh");
-		Mesh mesh;
-		Material material;
+		StaticMeshComponent& component = entity.AddComponent<StaticMeshComponent>();
 
-		if (pMeshElement)
+		if (tinyxml2::XMLElement const* pMeshElement = pStaticMeshComponentElement->FirstChildElement("StaticMesh"))
 		{
 			const char* meshFilepathChar = pMeshElement->Attribute("Filepath");
 
 			if (meshFilepathChar)
 			{
-				std::filesystem::path meshfilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
-				if (!meshfilepath.empty())
+				if (std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+					!meshFilepath.empty())
 				{
-					mesh.LoadModel(meshfilepath);
+					component.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
 				}
 			}
 		}
 
-		SerializationUtils::Decode(pStaticMeshElement->FirstChildElement("Material"), material);
-
-		entity.AddComponent<StaticMeshComponent>(mesh, material);
-	}
-
-	// Native Script -----------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pNativeScriptElement = pEntityElement->FirstChildElement("NativeScript");
-
-	if (pNativeScriptElement)
-	{
-		const char* nativeScriptName = pNativeScriptElement->Attribute("Name");
-		if (nativeScriptName)
-			entity.AddComponent<NativeScriptComponent>(nativeScriptName);
+		for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
+			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+		{
+			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
+			{
+				component.materialOverrides.push_back(AssetManager::GetAsset<Material>(materialFilepathChar));
+			}
+		}
 	}
 
 	// Primitive -------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pPrimitiveElement = pEntityElement->FirstChildElement("Primitive");
-
-	if (pPrimitiveElement)
+	if (tinyxml2::XMLElement const* pPrimitiveComponentElement = pEntityElement->FirstChildElement("Primitive"))
 	{
 		PrimitiveComponent::Shape type =
-			(PrimitiveComponent::Shape)pPrimitiveElement->IntAttribute("Type", (int)PrimitiveComponent::Shape::Cube);
+			(PrimitiveComponent::Shape)pPrimitiveComponentElement->IntAttribute("Type", (int)PrimitiveComponent::Shape::Cube);
+
+		std::filesystem::path materialPath;
+		SerializationUtils::Decode(pPrimitiveComponentElement->FirstChildElement("Material"), materialPath);
 
 		switch (type)
 		{
 		case PrimitiveComponent::Shape::Cube:
 		{
-			tinyxml2::XMLElement* pCubeElement = pPrimitiveElement->FirstChildElement("Cube");
-
-			if (pCubeElement)
+			if (tinyxml2::XMLElement const* pCubeElement = pPrimitiveComponentElement->FirstChildElement("Cube"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pCubeElement->QueryFloatAttribute("Width", &component.cubeWidth);
 				pCubeElement->QueryFloatAttribute("Height", &component.cubeHeight);
 				pCubeElement->QueryFloatAttribute("Depth", &component.cubeDepth);
+
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetCube(component.cubeWidth, component.cubeDepth, component.cubeHeight);
 			}
 			break;
 		}
 		case PrimitiveComponent::Shape::Sphere:
 		{
-			tinyxml2::XMLElement* pSphereElement = pPrimitiveElement->FirstChildElement("Sphere");
-
-			if (pSphereElement)
+			if (tinyxml2::XMLElement const* pSphereElement = pPrimitiveComponentElement->FirstChildElement("Sphere"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pSphereElement->QueryFloatAttribute("Radius", &component.sphereRadius);
 				pSphereElement->QueryUnsignedAttribute("LongitudeLines", &component.sphereLongitudeLines);
 				pSphereElement->QueryUnsignedAttribute("LatitudeLines", &component.sphereLatitudeLines);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetSphere(component.sphereRadius, component.sphereLongitudeLines, component.sphereLatitudeLines);
 			}
 			break;
 		}
 		case PrimitiveComponent::Shape::Plane:
 		{
-			tinyxml2::XMLElement* pPlaneElement = pPrimitiveElement->FirstChildElement("Plane");
-
-			if (pPlaneElement)
+			if (tinyxml2::XMLElement const* pPlaneElement = pPrimitiveComponentElement->FirstChildElement("Plane"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pPlaneElement->QueryFloatAttribute("Width", &component.planeWidth);
 				pPlaneElement->QueryFloatAttribute("Length", &component.planeLength);
@@ -540,51 +679,53 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				pPlaneElement->QueryUnsignedAttribute("LengthLines", &component.planeLengthLines);
 				pPlaneElement->QueryFloatAttribute("TileU", &component.planeTileU);
 				pPlaneElement->QueryFloatAttribute("TileV", &component.planeTileV);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetPlane(component.planeWidth, component.planeLength, component.planeWidthLines, component.planeLengthLines, component.planeTileU, component.planeTileV);
 			}
 			break;
 		}
 		case PrimitiveComponent::Shape::Cylinder:
 		{
-			tinyxml2::XMLElement* pCylinderElement = pPrimitiveElement->FirstChildElement("Cylinder");
-
-			if (pCylinderElement)
+			if (tinyxml2::XMLElement const* pCylinderElement = pPrimitiveComponentElement->FirstChildElement("Cylinder"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pCylinderElement->QueryFloatAttribute("BottomRadius", &component.cylinderBottomRadius);
 				pCylinderElement->QueryFloatAttribute("TopRadius", &component.cylinderTopRadius);
 				pCylinderElement->QueryFloatAttribute("Height", &component.cylinderHeight);
 				pCylinderElement->QueryUnsignedAttribute("SliceCount", &component.cylinderSliceCount);
 				pCylinderElement->QueryUnsignedAttribute("StackCount", &component.cylinderStackCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetCylinder(component.cylinderBottomRadius, component.cylinderTopRadius, component.cylinderHeight, component.cylinderSliceCount, component.cylinderStackCount);
 			}
 			break;
 		}
 		case PrimitiveComponent::Shape::Cone:
 		{
-			tinyxml2::XMLElement* pConeElement = pPrimitiveElement->FirstChildElement("Cone");
-
-			if (pConeElement)
+			if (tinyxml2::XMLElement const* pConeElement = pPrimitiveComponentElement->FirstChildElement("Cone"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pConeElement->QueryFloatAttribute("BottomRadius", &component.coneBottomRadius);
 				pConeElement->QueryFloatAttribute("Height", &component.coneHeight);
 				pConeElement->QueryUnsignedAttribute("SliceCount", &component.coneSliceCount);
 				pConeElement->QueryUnsignedAttribute("StackCount", &component.coneStackCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetCone(component.coneBottomRadius, component.coneHeight, component.coneSliceCount, component.coneStackCount);
 			}
 			break;
 		}
 		case PrimitiveComponent::Shape::Torus:
 		{
-			tinyxml2::XMLElement* pTorusElement = pPrimitiveElement->FirstChildElement("Torus");
-
-			if (pTorusElement)
+			if (tinyxml2::XMLElement const* pTorusElement = pPrimitiveComponentElement->FirstChildElement("Torus"))
 			{
-				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
+				PrimitiveComponent& component = entity.AddComponent<PrimitiveComponent>();
 
 				pTorusElement->QueryFloatAttribute("OuterRadius", &component.torusOuterRadius);
 				pTorusElement->QueryFloatAttribute("InnerRadius", &component.torusInnerRadius);
 				pTorusElement->QueryUnsignedAttribute("SliceCount", &component.torusSliceCount);
+				if (!materialPath.empty()) component.material = AssetManager::GetAsset<Material>(materialPath);
+				component.SetTorus(component.torusOuterRadius, component.torusInnerRadius, component.torusSliceCount);
 			}
 			break;
 		}
@@ -594,94 +735,242 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	}
 
 	// Tilemap ------------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pTilemapElement = pEntityElement->FirstChildElement("Tilemap");
-
-	if (pTilemapElement)
+	if (tinyxml2::XMLElement const* pTilemapComponentElement = pEntityElement->FirstChildElement("Tilemap"))
 	{
-		Tilemap tilemap;
-		const char* tilemapChar = pTilemapElement->Attribute("Filepath");
+		TilemapComponent& component = entity.AddComponent<TilemapComponent>();
 
-		if (tilemapChar)
+		if (const char* tilesetChar = pTilemapComponentElement->Attribute("Filepath"))
 		{
-			std::filesystem::path tilemapfilepath = SerializationUtils::AbsolutePath(tilemapChar);
-			if (!tilemapfilepath.empty())
+			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
+			if (!tilesetfilepath.empty())
 			{
-				tilemap.Load(tilemapfilepath);
+				component.tileset = AssetManager::GetAsset<Tileset>(tilesetfilepath);
 			}
 		}
-		entity.AddComponent<TilemapComponent>(tilemap);
+
+		if (const char* orientationchar = pTilemapComponentElement->Attribute("Orientation"); orientationchar != nullptr)
+		{
+			std::string orientation(orientationchar);
+
+			if (orientation == "Orthogonal")
+				component.orientation = TilemapComponent::Orientation::orthogonal;
+			else if (orientation == "Isometric")
+				component.orientation = TilemapComponent::Orientation::isometric;
+			else if (orientation == "Staggered")
+				component.orientation = TilemapComponent::Orientation::staggered;
+			else if (orientation == "Hexagonal")
+				component.orientation = TilemapComponent::Orientation::hexagonal;
+		}
+
+		component.isTrigger = pTilemapComponentElement->BoolAttribute("IsTrigger", false);
+
+		pTilemapComponentElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
+		pTilemapComponentElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
+		pTilemapComponentElement->QueryUnsignedAttribute("TileWidth", &component.tileWidth);
+		pTilemapComponentElement->QueryUnsignedAttribute("TileHeight", &component.tileHeight);
+
+		SerializationUtils::Decode(pTilemapComponentElement->FirstChildElement("Tint"), component.tint);
+
+		if (const char* text = pTilemapComponentElement->GetText())
+		{
+			std::vector<std::string> seperatedData = SplitString(text, ',');
+
+			ASSERT((uint32_t)seperatedData.size() == component.tilesWide * component.tilesHigh, "Data not the correct length");
+			component.tiles.resize(component.tilesHigh);
+
+			for (uint32_t i = 0; i < component.tilesHigh; i++)
+			{
+				component.tiles[i].resize(component.tilesWide);
+				for (uint32_t j = 0; j < component.tilesWide; j++)
+				{
+					component.tiles[i][j] = (uint32_t)atoi(seperatedData[(i * (static_cast<size_t>(component.tilesWide))) + j].c_str());
+				}
+			}
+		}
+
+		component.Rebuild();
 	}
 
-	// RigidBody2D -----------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pRigidBody2DElement = pEntityElement->FirstChildElement("RigidBody2D");
-
-	if (pRigidBody2DElement)
+	// RigidBody2D ------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pRigidBody2DComponentElement = pEntityElement->FirstChildElement("RigidBody2D"))
 	{
 		RigidBody2DComponent& component = entity.AddComponent<RigidBody2DComponent>();
 
-		component.type = (RigidBody2DComponent::BodyType)pRigidBody2DElement->IntAttribute("BodyType", (int)component.type);
-		pRigidBody2DElement->QueryBoolAttribute("FixedRotation", &component.fixedRotation);
-		pRigidBody2DElement->QueryFloatAttribute("GravityScale", &component.gravityScale);
-		pRigidBody2DElement->QueryFloatAttribute("AngularDamping", &component.angularDamping);
-		pRigidBody2DElement->QueryFloatAttribute("LinearDamping", &component.linearDamping);
+		component.type = (RigidBody2DComponent::BodyType)pRigidBody2DComponentElement->IntAttribute("BodyType", (int)component.type);
+		pRigidBody2DComponentElement->QueryBoolAttribute("FixedRotation", &component.fixedRotation);
+		pRigidBody2DComponentElement->QueryFloatAttribute("GravityScale", &component.gravityScale);
+		pRigidBody2DComponentElement->QueryFloatAttribute("AngularDamping", &component.angularDamping);
+		pRigidBody2DComponentElement->QueryFloatAttribute("LinearDamping", &component.linearDamping);
 	}
 
 	// BoxCollider2D -----------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pBoxCollider2DElement = pEntityElement->FirstChildElement("BoxCollider2D");
-
-	if (pBoxCollider2DElement)
+	if (tinyxml2::XMLElement const* pBoxColliderComponentElement = pEntityElement->FirstChildElement("BoxCollider2D"))
 	{
 		BoxCollider2DComponent& component = entity.AddComponent<BoxCollider2DComponent>();
 
-		pBoxCollider2DElement->QueryFloatAttribute("Density", &component.Density);
-		pBoxCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
-		pBoxCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
 
-		SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Offset"), component.Offset);
-		SerializationUtils::Decode(pBoxCollider2DElement->FirstChildElement("Size"), component.Size);
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
+
+		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Offset"), component.offset);
+		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.size);
+
+		component.isTrigger = pBoxColliderComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	// CircleCollider2D -----------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pCircleCollider2DElement = pEntityElement->FirstChildElement("CircleCollider2D");
-
-	if (pCircleCollider2DElement)
+	if (tinyxml2::XMLElement const* pCircleCollider2DComponentElement = pEntityElement->FirstChildElement("CircleCollider2D"))
 	{
 		CircleCollider2DComponent& component = entity.AddComponent<CircleCollider2DComponent>();
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
 
-		pCircleCollider2DElement->QueryFloatAttribute("Density", &component.Density);
-		pCircleCollider2DElement->QueryFloatAttribute("Friction", &component.Friction);
-		pCircleCollider2DElement->QueryFloatAttribute("Restitution", &component.Restitution);
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
 
-		SerializationUtils::Decode(pCircleCollider2DElement->FirstChildElement("Offset"), component.Offset);
+		pCircleCollider2DComponentElement->QueryFloatAttribute("Radius", &component.radius);
+		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
+		component.isTrigger = pCircleCollider2DComponentElement->BoolAttribute("IsTrigger", false);
+	}
+
+	// PolygonCollider2D --------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement* pPolygonCollider2DComponentElement = pEntityElement->FirstChildElement("PolygonCollider2D"))
+	{
+		PolygonCollider2DComponent& component = entity.AddComponent<PolygonCollider2DComponent>();
+
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pPolygonCollider2DComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
+
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
+		SerializationUtils::Decode(pPolygonCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
+
+		tinyxml2::XMLElement* pVertexElement = pPolygonCollider2DComponentElement->FirstChildElement("Vertex");
+
+		component.vertices.clear();
+		while (pVertexElement)
+		{
+			Vector2f vertex;
+			SerializationUtils::Decode(pVertexElement, vertex);
+			component.vertices.push_back(vertex);
+			pVertexElement = pVertexElement->NextSiblingElement("Vertex");
+		}
+
+		component.isTrigger = pPolygonCollider2DComponentElement->BoolAttribute("IsTrigger", false);
+	}
+
+	if (tinyxml2::XMLElement* pCapsuleColliderComponentElement = pEntityElement->FirstChildElement("CapsuleCollider2D"))
+	{
+		CapsuleCollider2DComponent& component = entity.AddComponent<CapsuleCollider2DComponent>();
+
+		std::filesystem::path physicsMaterial;
+		SerializationUtils::Decode(pCapsuleColliderComponentElement->FirstChildElement("PhysicsMaterial"), physicsMaterial);
+
+		if (!physicsMaterial.empty())
+		{
+			component.physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(physicsMaterial);
+		}
+		else
+			component.physicsMaterial = nullptr;
+		SerializationUtils::Decode(pCapsuleColliderComponentElement->FirstChildElement("Offset"), component.offset);
+		pCapsuleColliderComponentElement->QueryFloatAttribute("Radius", &component.radius);
+		pCapsuleColliderComponentElement->QueryFloatAttribute("Height", &component.height);
+
+		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
+
+		component.isTrigger = pCapsuleColliderComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pCircleRendererElement = pEntityElement->FirstChildElement("CircleRenderer");
-
-	if (pCircleRendererElement)
+	if (tinyxml2::XMLElement const* pCircleRendererComponentElement = pEntityElement->FirstChildElement("CircleRenderer"))
 	{
 		CircleRendererComponent& component = entity.AddComponent<CircleRendererComponent>();
 
-		pCircleRendererElement->QueryFloatAttribute("Radius", &component.Radius);
-		pCircleRendererElement->QueryFloatAttribute("Thickness", &component.Thickness);
-		pCircleRendererElement->QueryFloatAttribute("Fade", &component.Fade);
+		pCircleRendererComponentElement->QueryFloatAttribute("Radius", &component.radius);
+		pCircleRendererComponentElement->QueryFloatAttribute("Thickness", &component.thickness);
+		pCircleRendererComponentElement->QueryFloatAttribute("Fade", &component.fade);
 
-		SerializationUtils::Decode(pCircleRendererElement->FirstChildElement("Colour"), component.colour);
+		SerializationUtils::Decode(pCircleRendererComponentElement->FirstChildElement("Colour"), component.colour);
 	}
 
-	// LuaScript -----------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pLuaScriptElement = pEntityElement->FirstChildElement("LuaScript");
+	// Text --------------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pTextComponentElement = pEntityElement->FirstChildElement("Text"))
+	{
+		TextComponent& component = entity.AddComponent<TextComponent>();
 
-	if (pLuaScriptElement)
+		if (const char* text = pTextComponentElement->GetText())
+		{
+			component.text = text;
+		}
+		pTextComponentElement->QueryFloatAttribute("MaxWidth", &component.maxWidth);
+		std::filesystem::path fontPath;
+		SerializationUtils::Decode(pTextComponentElement->FirstChildElement("Font"), fontPath);
+		if (!fontPath.empty())
+			component.font = AssetManager::GetAsset<Font>(fontPath);
+		else
+			component.font = Font::GetDefaultFont();
+		SerializationUtils::Decode(pTextComponentElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// Behaviour Tree ----------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pBehaviourTreeComponentElement = pEntityElement->FirstChildElement("BehaviourTree"))
+	{
+		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
+	}
+
+	// State Machine -----------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pStateMachineComponentElement = pEntityElement->FirstChildElement("StateMachine"))
+	{
+		StateMachineComponent& component = entity.AddComponent<StateMachineComponent>();
+	}
+
+	// LuaScript ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pLuaScriptComponentElement = pEntityElement->FirstChildElement("LuaScript"))
 	{
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
 
-		SerializationUtils::Decode(pLuaScriptElement, component.absoluteFilepath);
+		SerializationUtils::Decode(pLuaScriptComponentElement, component.absoluteFilepath);
 	}
 
-	// Hierarachy ---------------------------------------------------------------------------------------------------
-	tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity");
-	if (pChildElement)
+	// Point Light --------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pPointLightComponentElement = pEntityElement->FirstChildElement("PointLight"))
+	{
+		PointLightComponent& component = entity.AddComponent<PointLightComponent>();
+
+		pPointLightComponentElement->QueryFloatAttribute("Range", &component.range);
+		pPointLightComponentElement->QueryFloatAttribute("Attenuation", &component.attenuation);
+		pPointLightComponentElement->QueryBoolAttribute("CastShadows", &component.castsShadows);
+
+		SerializationUtils::Decode(pPointLightComponentElement->FirstChildElement("Colour"), component.colour);
+	}
+
+	// Billboard ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pBillboardComponentElement = pEntityElement->FirstChildElement("Billboard"))
+	{
+		BillboardComponent& component = entity.AddComponent<BillboardComponent>();
+
+		component.orientation = (BillboardComponent::Orientation)pBillboardComponentElement->IntAttribute("Orientation", (int)component.orientation);
+		component.position = (BillboardComponent::Position)pBillboardComponentElement->IntAttribute("Position", (int)component.position);
+		if (component.position == BillboardComponent::Position::Camera)
+			SerializationUtils::Decode(pBillboardComponentElement->FirstChildElement("ScreenPosition"), component.screenPosition);
+	}
+
+	// Hierarchy --------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement* pChildElement = pEntityElement->LastChildElement("Entity"))
 	{
 		entity.AddComponent<HierarchyComponent>();
 
@@ -689,7 +978,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		while (pChildElement)
 		{
-			Entity childEntity = DeserializeEntity(scene, pChildElement);
+			Entity childEntity = DeserializeEntity(scene, pChildElement, resetUuid);
 			HierarchyComponent& childHierarchyComp = childEntity.GetOrAddComponent<HierarchyComponent>();
 			childHierarchyComp.parent = entity.GetHandle();
 
@@ -704,4 +993,29 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	}
 
 	return entity;
+}
+
+std::string SceneSerializer::SerializeEntity(Entity entity)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, entity);
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+	return printer.CStr();
+}
+
+Entity SceneSerializer::DeserializeEntity(Scene* scene, const std::string& prefab, bool resetUuid)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLError error = doc.Parse(prefab.c_str());
+
+	if (error == tinyxml2::XMLError::XML_SUCCESS)
+	{
+		tinyxml2::XMLElement* pEntityElement = doc.FirstChildElement("Entity");
+		if (pEntityElement)
+			return SceneSerializer::DeserializeEntity(scene, pEntityElement, resetUuid);
+	}
+	return Entity();
 }

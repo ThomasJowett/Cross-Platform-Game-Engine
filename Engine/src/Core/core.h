@@ -13,9 +13,7 @@
 		#define PLATFORM_IOS
 		#error "IOS is not yet supported!"
 	#elif TARGET_OS_MAC == 1
-		#define TARGET_OS_MAC == 1
 		#define PLATFORM_MACOS
-	#error "MACOS is not yet supported!"
 	#else
 		#error "Unkown Apple Platform!"
 #endif
@@ -37,8 +35,10 @@
 		#else
 			#define DEBUGBREAK() raise(SIGABRT)
 		#endif
+	#elif defined(__APPLE__)
+		#define DEBUGBREAK() __builtin_trap()
 	#else
-		DEBUGBREAK()
+		#define DEBUGBREAK()
 	#endif
 #else
 	#define DEBUGBREAK()

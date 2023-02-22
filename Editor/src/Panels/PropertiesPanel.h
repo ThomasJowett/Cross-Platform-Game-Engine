@@ -1,14 +1,21 @@
 #pragma once
 
 #include "HierarchyPanel.h"
+#include "ImGui/ImGuiTilemapEditor.h"
+#include "Physics/PhysicsMaterial.h"
+#include "History/HistoryCommands.h"
+#include "Scene/Components.h"
+#include "Interfaces/IUndoable.h"
 
-#include "Engine.h"
+#include "IconsFontAwesome6.h"
+
+#include "imgui/imgui.h"
 
 class PropertiesPanel :
-	public Layer
+	public Layer, public IUndoable
 {
 public:
-	explicit PropertiesPanel(bool* show, HierarchyPanel* hierarchyPanel);
+	explicit PropertiesPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor);
 	~PropertiesPanel() = default;
 
 	void OnAttach() override;
@@ -23,7 +30,9 @@ private:
 	{
 		if (ImGui::MenuItem(name, nullptr, nullptr, !entity.HasComponent<T>()))
 		{
+			Ref<AddComponentCommand<T>> addComponentCommand = CreateRef<AddComponentCommand<T>>(entity);
 			entity.AddComponent<T>();
+			HistoryManager::AddHistoryRecord(addComponentCommand);
 		}
 	}
 
@@ -40,7 +49,7 @@ private:
 				{
 					if (ImGui::BeginPopupContextItem())
 					{
-						if (ImGui::MenuItem("Delete"))
+						if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete"))
 						{
 							deleteComponent = true;
 						}
@@ -56,13 +65,31 @@ private:
 				ImGui::TreePop();
 			}
 
-			if (deleteComponent)
+			if (deleteComponent) {
+				Ref<RemoveComponentCommand<T>> removeComponentCommand = CreateRef<RemoveComponentCommand<T>>(entity);
 				entity.RemoveComponent<T>();
+				HistoryManager::AddHistoryRecord(removeComponentCommand);
+			}
 		}
 	}
+
+	// Inherited via IUndoable
+	virtual void Undo(int asteps) override;
+	virtual void Redo(int asteps) override;
+	virtual bool CanUndo() const override;
+	virtual bool CanRedo() const override;
 
 private:
 	bool* m_Show;
 
-	HierarchyPanel* m_HierarchyPanel;
+	Ref<HierarchyPanel> m_HierarchyPanel;
+	Ref<TilemapEditor> m_TilemapEditor;
+
+	Ref<Material> m_DefaultMaterial;
+	Ref<PhysicsMaterial> m_DefaultPhysMaterial;
+
+	Ref<EditComponentCommand<NameComponent>> m_EditNameComponent;
+	std::pair<bool, Ref<EditComponentCommand<TransformComponent>>> m_EditTransformComponent;
+	std::pair<bool, Ref<EditComponentCommand<SpriteComponent>>> m_EditSpriteCommand;
+	std::pair<bool, Ref<EditComponentCommand<AnimatedSpriteComponent>>> m_EditAnimatedSpriteCommand;
 };

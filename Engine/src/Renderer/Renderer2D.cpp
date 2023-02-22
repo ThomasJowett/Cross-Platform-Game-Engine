@@ -1,11 +1,14 @@
 #include "stdafx.h"
 #include "Renderer2D.h"
 
-#include "VertexArray.h"
+#include "Buffer.h"
 #include "Shader.h"
 
 #include "RenderCommand.h"
 #include "UniformBuffer.h"
+#include "Core/Asset.h"
+
+#include "Renderer/UI/MSDFData.h"
 
 struct QuadVertex
 {
@@ -46,6 +49,20 @@ struct LineVertex
 	int EntityId;
 };
 
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+struct TextVertex
+{
+	Vector3f position;
+	Colour colour;
+	Vector2f texCoords;
+	float texIndex;
+
+	int EntityId;
+};
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 struct HairLineVertex
 {
 	Vector3f position;
@@ -68,20 +85,22 @@ struct Renderer2DData
 	const uint32_t maxLineVertices = maxLines * 4;
 	const uint32_t maxLineIndices = maxLines * 6;
 
-	Ref<VertexArray> quadVertexArray;
 	Ref<VertexBuffer> quadVertexBuffer;
+	Ref<IndexBuffer> quadIndexBuffer;
 	Ref<Shader> quadShader;
 	Ref<Texture> whiteTexture;
 
-	Ref<VertexArray> circleVertexArray;
 	Ref<VertexBuffer> circleVertexBuffer;
 	Ref<Shader> circleShader;
 
-	Ref<VertexArray> lineVertexArray;
 	Ref<VertexBuffer> lineVertexBuffer;
+	Ref<IndexBuffer> lineIndexBuffer;
 	Ref<Shader> lineShader;
 
-	Ref<VertexArray> hairLineVertexArray;
+	Ref<VertexBuffer> textVertexBuffer;
+	Ref<IndexBuffer> textIndexBuffer;
+	Ref<Shader> textShader;
+
 	Ref<VertexBuffer> hairLineVertexBuffer;
 	Ref<Shader> hairLineShader;
 
@@ -97,6 +116,10 @@ struct Renderer2DData
 	LineVertex* lineVertexBufferBase = nullptr;
 	LineVertex* lineVertexBufferPtr = nullptr;
 
+	uint32_t textIndexCount = 0;
+	TextVertex* textVertexBufferBase = nullptr;
+	TextVertex* textVertexBufferPtr = nullptr;
+
 	uint32_t hairLineVertexCount = 0;
 	HairLineVertex* hairLineVertexBufferBase = nullptr;
 	HairLineVertex* hairLineVertexBufferPtr = nullptr;
@@ -104,18 +127,14 @@ struct Renderer2DData
 	std::array<Ref<Texture>, maxTexturesSlots> textureSlots;
 	uint32_t textureSlotIndex = 1;
 
+	std::array<Ref<Texture>, maxTexturesSlots> fontAtlasSlots;
+	uint32_t fontAtlasSlotIndex = 1;
+
 	Vector3f quadVertexPositions[4];
 
 	uint32_t screenWidth = 1920, screenHeight = 1080;
 
 	Renderer2D::Stats statistics;
-
-	ALIGNED_TYPE(struct, 16)
-	{
-		Matrix4x4 viewProjectionMatrix;
-	}CameraData;
-	CameraData cameraBuffer;
-	Ref<UniformBuffer> cameraUniformBuffer;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -128,8 +147,6 @@ bool Renderer2D::Init()
 
 	// Quads --------------------------------------------------------------------------------------------
 
-	s_Data.quadVertexArray = VertexArray::Create();
-
 	s_Data.quadVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(QuadVertex));
 
 	s_Data.quadVertexBuffer->SetLayout({
@@ -139,8 +156,6 @@ bool Renderer2D::Init()
 			{ShaderDataType::Float, "a_TexIndex"},
 			{ShaderDataType::Int, "a_EntityId"}
 		});
-
-	s_Data.quadVertexArray->AddVertexBuffer(s_Data.quadVertexBuffer);
 
 	s_Data.quadVertexBufferBase = new QuadVertex[s_Data.maxVertices];
 
@@ -160,13 +175,10 @@ bool Renderer2D::Init()
 		offset += 4;
 	}
 
-	Ref<IndexBuffer> quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.maxIndices);
-	s_Data.quadVertexArray->SetIndexBuffer(quadIndexBuffer);
+	s_Data.quadIndexBuffer = IndexBuffer::Create(quadIndices, s_Data.maxIndices);
 	delete[] quadIndices;
 
 	// Circles ------------------------------------------------------------------------------------------
-
-	s_Data.circleVertexArray = VertexArray::Create();
 
 	s_Data.circleVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(CircleVertex));
 
@@ -179,14 +191,10 @@ bool Renderer2D::Init()
 			{ShaderDataType::Int, "a_EntityId"}
 		});
 
-	s_Data.circleVertexArray->AddVertexBuffer(s_Data.circleVertexBuffer);
-
 	s_Data.circleVertexBufferBase = new CircleVertex[s_Data.maxVertices];
-	s_Data.circleVertexArray->SetIndexBuffer(quadIndexBuffer); // Index buffer the same as quad
 
 	// Lines --------------------------------------------------------------------------------------------
 
-	s_Data.lineVertexArray = VertexArray::Create();
 	s_Data.lineVertexBuffer = VertexBuffer::Create(s_Data.maxLineVertices * sizeof(LineVertex));
 
 	s_Data.lineVertexBuffer->SetLayout({
@@ -196,7 +204,6 @@ bool Renderer2D::Init()
 		{ShaderDataType::Float, "a_width"},
 		{ShaderDataType::Float, "a_height"}
 		});
-	s_Data.lineVertexArray->AddVertexBuffer(s_Data.lineVertexBuffer);
 	s_Data.lineVertexBufferBase = new LineVertex[s_Data.maxLineVertices];
 
 	uint32_t* lineIndices = new uint32_t[s_Data.maxLineIndices];
@@ -214,13 +221,40 @@ bool Renderer2D::Init()
 		offset += 4;
 	}
 
-	Ref<IndexBuffer> lineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.maxLineIndices);
-	s_Data.lineVertexArray->SetIndexBuffer(lineIndexBuffer);
+	s_Data.lineIndexBuffer = IndexBuffer::Create(lineIndices, s_Data.maxLineIndices);
 	delete[] lineIndices;
 
-	// Hair Lines ------------------------------------------------------------------------------------
+	// Text ------------------------------------------------------------------------------------------
+	s_Data.textVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(TextVertex));
 
-	s_Data.hairLineVertexArray = VertexArray::Create();
+	s_Data.textVertexBuffer->SetLayout({
+		{ShaderDataType::Float3, "a_position"},
+		{ShaderDataType::Float4, "a_colour"},
+		{ShaderDataType::Float2, "a_texcoord"},
+		{ShaderDataType::Float, "a_texIndex"},
+		{ShaderDataType::Int, "a_EntityId"}
+		});
+	s_Data.textVertexBufferBase = new TextVertex[s_Data.maxVertices];
+
+	uint32_t* textIndices = new uint32_t[s_Data.maxIndices];
+	offset = 0;
+	for (uint32_t i = 0; i < s_Data.maxIndices; i += 6)
+	{
+		textIndices[i + 0] = offset + 0;
+		textIndices[i + 1] = offset + 1;
+		textIndices[i + 2] = offset + 2;
+
+		textIndices[i + 3] = offset + 2;
+		textIndices[i + 4] = offset + 3;
+		textIndices[i + 5] = offset + 0;
+
+		offset += 4;
+	}
+
+	s_Data.textIndexBuffer = IndexBuffer::Create(textIndices, s_Data.maxIndices);
+	delete[] textIndices;
+
+	// Hair Lines ------------------------------------------------------------------------------------
 
 	s_Data.hairLineVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(HairLineVertex));
 
@@ -230,20 +264,19 @@ bool Renderer2D::Init()
 			{ShaderDataType::Int, "a_EntityId"}
 		});
 
-	s_Data.hairLineVertexArray->AddVertexBuffer(s_Data.hairLineVertexBuffer);
-
 	s_Data.hairLineVertexBufferBase = new HairLineVertex[s_Data.maxVertices];
 
 	// Textures & Shaders -------------------------------------------------------------------------------
 
 	s_Data.whiteTexture = Texture2D::Create(1, 1);
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_Data.whiteTexture->SetData(&whiteTextureData, sizeof(uint32_t));
+	s_Data.whiteTexture->SetData(&whiteTextureData);
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
 	s_Data.lineShader = Shader::Create("Renderer2D_Line");
 	s_Data.hairLineShader = Shader::Create("Renderer2D_HairLine");
+	s_Data.textShader = Shader::Create("Renderer2D_Text");
 
 	// set the texture slot at [0] to white texture
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
@@ -253,7 +286,8 @@ bool Renderer2D::Init()
 	s_Data.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
-	s_Data.cameraUniformBuffer = UniformBuffer::Create(sizeof(Renderer2DData::CameraData), 0);
+	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
+
 	return s_Data.quadShader == nullptr;
 }
 
@@ -274,13 +308,11 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
-	s_Data.cameraBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
-
-	s_Data.cameraUniformBuffer->SetData(&s_Data.cameraBuffer, sizeof(Renderer2DData::CameraData));
 
 	StartQuadsBatch();
 	StartCirclesBatch();
 	StartLinesBatch();
+	StartTextBatch();
 	StartHairLinesBatch();
 }
 
@@ -294,6 +326,7 @@ void Renderer2D::EndScene()
 	FlushCircles();
 	FlushLines();
 	FlushHairLines();
+	FlushText();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -310,8 +343,13 @@ void Renderer2D::FlushQuads()
 		s_Data.textureSlots[i]->Bind(i);
 	}
 	s_Data.quadVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.quadShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.quadVertexArray, s_Data.quadIndexCount);
+
+	RenderCommand::DrawIndexed(s_Data.quadIndexCount, 0U, 0U, false);
+
+	s_Data.quadVertexBuffer->UnBind();
+	s_Data.quadIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -323,8 +361,11 @@ void Renderer2D::FlushCircles()
 	s_Data.circleVertexBuffer->SetData(s_Data.circleVertexBufferBase, dataSize);
 
 	s_Data.circleVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.circleShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.circleVertexArray, s_Data.circleIndexCount);
+	RenderCommand::DrawIndexed(s_Data.circleIndexCount, 0U, 0U, false);
+	s_Data.quadIndexBuffer->UnBind();
+	s_Data.circleVertexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -336,8 +377,11 @@ void Renderer2D::FlushLines()
 	s_Data.lineVertexBuffer->SetData(s_Data.lineVertexBufferBase, dataSize);
 
 	s_Data.lineVertexBuffer->Bind();
+	s_Data.lineIndexBuffer->Bind();
 	s_Data.lineShader->Bind();
-	RenderCommand::DrawIndexed(s_Data.lineVertexArray, s_Data.lineIndexCount);
+	RenderCommand::DrawIndexed(s_Data.lineIndexCount, 0U, 0U, false);
+	s_Data.lineVertexBuffer->UnBind();
+	s_Data.lineIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -349,8 +393,33 @@ void Renderer2D::FlushHairLines()
 	s_Data.hairLineVertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
 
 	s_Data.hairLineVertexBuffer->Bind();
+	s_Data.quadIndexBuffer->Bind();
 	s_Data.hairLineShader->Bind();
-	RenderCommand::DrawLines(s_Data.hairLineVertexArray, s_Data.hairLineVertexCount);
+	RenderCommand::DrawLines(s_Data.hairLineVertexCount);
+	s_Data.hairLineVertexBuffer->UnBind();
+	s_Data.quadIndexBuffer->UnBind();
+	s_Data.statistics.drawCalls++;
+}
+
+void Renderer2D::FlushText()
+{
+	if (s_Data.textIndexCount == 0)
+		return;
+	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.textVertexBufferPtr - (uint8_t*)s_Data.textVertexBufferBase);
+	s_Data.textVertexBuffer->SetData(s_Data.textVertexBufferBase, dataSize);
+
+	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
+	{
+		if (s_Data.fontAtlasSlots[i])
+			s_Data.fontAtlasSlots[i]->Bind(i);
+	}
+
+	s_Data.textVertexBuffer->Bind();
+	s_Data.textIndexBuffer->Bind();
+	s_Data.textShader->Bind();
+	RenderCommand::DrawIndexed(s_Data.textIndexCount);
+	s_Data.textVertexBuffer->UnBind();
+	s_Data.textIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -374,6 +443,12 @@ void Renderer2D::StartLinesBatch()
 {
 	s_Data.lineIndexCount = 0;
 	s_Data.lineVertexBufferPtr = s_Data.lineVertexBufferBase;
+}
+
+void Renderer2D::StartTextBatch()
+{
+	s_Data.textIndexCount = 0;
+	s_Data.textVertexBufferPtr = s_Data.textVertexBufferBase;
 }
 
 void Renderer2D::StartHairLinesBatch()
@@ -400,6 +475,12 @@ void Renderer2D::NextLinesBatch()
 {
 	FlushLines();
 	StartLinesBatch();
+}
+
+void Renderer2D::NextTextBatch()
+{
+	FlushText();
+	StartTextBatch();
 }
 
 void Renderer2D::NextHairLinesBatch()
@@ -574,6 +655,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 {
 	PROFILE_FUNCTION();
 
+	if (!subtexture)
+		return;
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 	{
 		NextQuadsBatch();
@@ -662,7 +746,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 
 void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComponent& circleComp, int entityId)
 {
-	DrawCircle(transform, circleComp.colour, circleComp.Thickness, circleComp.Fade, entityId);
+	DrawCircle(transform, circleComp.colour, circleComp.thickness, circleComp.fade, entityId);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -672,9 +756,9 @@ void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const floa
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
 		NextLinesBatch();
 
-	//world to clip
-	Vector3f clipI = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
-	Vector3f clipJ = s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
+	////world to clip
+	Vector3f clipI;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
+	Vector3f clipJ;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
 
 	//clip to pixel
 	Vector2f pixelStart, pixelEnd;
@@ -766,7 +850,7 @@ void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const 
 	s_Data.statistics.hairLineCount++;
 }
 
-void Renderer2D::DrawHairLineRect(const Vector3f& position, Vector2f& size, const Colour& colour, int entityId)
+void Renderer2D::DrawHairLineRect(const Vector3f& position, const Vector2f& size, const Colour& colour, int entityId)
 {
 	Vector3f p0 = Vector3f(position.x - size.x * 0.5f, position.y - size.y * 0.5f, position.z);
 	Vector3f p1 = Vector3f(position.x + size.x * 0.5f, position.y - size.y * 0.5f, position.z);
@@ -799,23 +883,7 @@ void Renderer2D::DrawHairLineCircle(const Vector3f& position, float radius, uint
 
 void Renderer2D::DrawHairLineCircle(const Matrix4x4& transform, uint32_t segments, const Colour& colour, int entityId)
 {
-	Vector3f previousPoint ( 1.0f, 0.0f, 0.0f);
-	Vector3f currentPoint;
-
-	previousPoint = transform * previousPoint;
-
-	float step = (float)(2 * PI) / segments;
-
-	for (float angle = step; angle <= 2 * PI; angle += step)
-	{
-		currentPoint.x = cos(angle);
-		currentPoint.y = sin(angle);
-		currentPoint.z = 0.0f;
-		currentPoint = transform * currentPoint;
-
-		DrawHairLine(previousPoint, currentPoint, colour, entityId);
-		previousPoint = currentPoint;
-	}
+	DrawHairLineArc(transform, 0, 2 * (float)PI, segments, colour, entityId);
 }
 
 void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const Colour& colour, int entityId)
@@ -825,6 +893,226 @@ void Renderer2D::DrawHairLinePolygon(const std::vector<Vector3f> vertices, const
 		DrawHairLine(vertices[i], vertices[i + 1], colour, entityId);
 	}
 	DrawHairLine(vertices[vertices.size() - 1], vertices[0], colour, entityId);
+}
+
+void Renderer2D::DrawHairLineArc(const Vector3f& position, float radius, float start, float end, uint32_t segments, const Colour& colour, int entityId)
+{
+	Matrix4x4 transform = Matrix4x4::Translate(position) * Matrix4x4::Scale(Vector3f(radius, radius, 1.0f));
+	DrawHairLineArc(transform, start, end, segments, colour, entityId);
+}
+
+void Renderer2D::DrawHairLineArc(const Matrix4x4& transform, float start, float end, uint32_t segments, const Colour& colour, int entityId)
+{
+	if (segments < 3)
+		return;
+	Vector3f previousPoint(sin(start), cos(start), 0.0f);
+	Vector3f currentPoint;
+
+	previousPoint = transform * previousPoint;
+
+	float step = abs(end - start) / segments;
+	float angle = start;
+
+	for (uint32_t i = 0; i <= segments; ++i)
+	{
+		currentPoint.x = sin(angle);
+		currentPoint.y = cos(angle);
+		currentPoint.z = 0.0f;
+		currentPoint = transform * currentPoint;
+
+		DrawHairLine(previousPoint, currentPoint, colour, entityId);
+		previousPoint = currentPoint;
+		angle += step;
+	}
+}
+
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const Colour& colour, int entityId)
+{
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)), colour, entityId);
+}
+
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const Colour& colour, int entityId)
+{
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(position), colour, entityId);
+}
+
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector2f& position, const float& rotation, const Colour& colour, int entityId)
+{
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(Vector3f(position.x, position.y, 0.0f)) * Matrix4x4::RotateZ(rotation), colour, entityId);
+}
+
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Vector3f& position, const float& rotation, const Colour& colour, int entityId)
+{
+	DrawString(text, font, maxWidth, Matrix4x4::Translate(position) * Matrix4x4::RotateZ(rotation), colour, entityId);
+}
+
+void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour& colour, int entityId)
+{
+	if (text.empty() || font == nullptr)
+		return;
+
+	if (s_Data.textIndexCount >= s_Data.maxIndices)
+	{
+		NextTextBatch();
+	}
+
+	float textureIndex = 0.0f;
+
+	Ref<Texture2D> fontAtlas = font->GetFontAtlas();
+
+	ASSERT(fontAtlas, "Font atlas cannot be null");
+	ASSERT(font->GetMSDFData(), "MSDF Data  cannot be null");
+
+	for (uint32_t i = 1; i < s_Data.fontAtlasSlotIndex; i++)
+	{
+		if (*s_Data.fontAtlasSlots[i].get() == *fontAtlas.get())
+		{
+			textureIndex = (float)i;
+			break;
+		}
+	}
+
+	if (textureIndex == 0.0f)
+	{
+		textureIndex = (float)s_Data.fontAtlasSlotIndex;
+		s_Data.fontAtlasSlots[s_Data.fontAtlasSlotIndex] = fontAtlas;
+		s_Data.fontAtlasSlotIndex++;
+	}
+
+	const msdf_atlas::FontGeometry& fontGeometry = font->GetMSDFData()->fontGeometry;
+	const msdfgen::FontMetrics& metrics = fontGeometry.getMetrics();
+
+	std::vector<int> nextLines;
+	double x = 0.0;
+	double fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+	double y = -fsScale * metrics.ascenderY;
+	int lastSpace = -1;
+
+	std::u32string utf32string;
+	utf32string.resize(text.size());
+	std::transform(text.begin(), text.end(), utf32string.begin(), [](char c) -> unsigned char {return c; });
+
+	for (int i = 0; i < utf32string.size(); i++)
+	{
+		char32_t character = utf32string[i];
+		if (character == '\n')
+		{
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+
+		auto glyph = fontGeometry.getGlyph(character);
+		if (!glyph)
+			glyph = fontGeometry.getGlyph('?');
+		if (!glyph)
+			continue;
+
+		if (character != ' ' && character != '\t')
+		{
+			double pl, pb, pr, pt;
+			glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+			Vector2f quadMin((float)pl, (float)pb);
+			Vector2f quadMax((float)pr, (float)pt);
+
+			quadMin = quadMin * (float)fsScale;
+			quadMax = quadMax * (float)fsScale;
+			quadMin += Vector2f((float)x, (float)y);
+			quadMax += Vector2f((float)x, (float)y);
+
+			if (quadMax.x > maxWidth && lastSpace != -1)
+			{
+				i = lastSpace;
+				nextLines.emplace_back(lastSpace);
+				lastSpace = -1;
+				x = 0;
+				y -= fsScale * metrics.lineHeight;
+			}
+		}
+		else
+		{
+			lastSpace = i;
+		}
+
+		double advance = glyph->getAdvance();
+		fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+		x += fsScale * advance;
+	}
+
+	x = 0.0;
+	fsScale = 1 / (metrics.ascenderY - metrics.descenderY);
+	y = 0.0;
+	for (int i = 0; i < utf32string.size(); i++)
+	{
+		char32_t character = utf32string[i];
+
+		if (character == '\n' || std::any_of(nextLines.begin(), nextLines.end(), [&i](int line) { return i == line; }))
+		{
+			x = 0;
+			y -= fsScale * metrics.lineHeight;
+			continue;
+		}
+		if (character == '\t')
+		{
+			double advance = fontGeometry.getGlyph(' ')->getAdvance();
+			x += fsScale * (advance * 4);
+			continue;
+		}
+		auto glyph = fontGeometry.getGlyph(character);
+		if (!glyph)
+			glyph = fontGeometry.getGlyph('?');
+		if (!glyph)
+			continue;
+
+		double l, b, r, t;
+		glyph->getQuadAtlasBounds(l, b, r, t);
+
+		double pl, pb, pr, pt;
+		glyph->getQuadPlaneBounds(pl, pb, pr, pt);
+
+		pl *= fsScale, pb *= fsScale, pr *= fsScale, pt *= fsScale;
+		pl += x, pb += y, pr += x, pt += y;
+
+		double texelWidth = 1.0 / fontAtlas->GetWidth();
+		double texelHeight = 1.0 / fontAtlas->GetHeight();
+		l *= texelWidth, b *= texelHeight, r *= texelWidth, t *= texelHeight;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pl, (float)pb, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)l, (float)b);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pr, (float)pb, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)r, (float)b);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pr, (float)pt, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)r, (float)t);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textVertexBufferPtr->position = transform * Vector3f((float)pl, (float)pt, 0.0f);
+		s_Data.textVertexBufferPtr->colour = colour;
+		s_Data.textVertexBufferPtr->texCoords = Vector2f((float)l, (float)t);
+		s_Data.textVertexBufferPtr->texIndex = textureIndex;
+		s_Data.textVertexBufferPtr->EntityId = entityId;
+		s_Data.textVertexBufferPtr++;
+
+		s_Data.textIndexCount += 6;
+
+		double advance = glyph->getAdvance();
+		fontGeometry.getAdvance(advance, character, utf32string[i + 1]);
+		x += fsScale * advance;
+
+		s_Data.statistics.quadCount++;
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -68,11 +68,6 @@ namespace Debug
 		OutputDebugString(buffer);
 	}
 
-#else
-	#define DBG_OUTPUT(...)
-	#define OUTPUT(...)
-#endif // DEBUG
-
 #define HR(x)																\
 	{																		\
 		HRESULT hr = (x);													\
@@ -81,4 +76,10 @@ namespace Debug
 			Debug::Output(__FILE__, (DWORD)__LINE__, L"HRESULT ERROR\n");	\
 		}																	\
 	}
+#else
+	#define DBG_OUTPUT(...)
+	#define OUTPUT(...)
+	#define HR(x)
+#endif // DEBUG
+
 };

@@ -2,7 +2,6 @@
 
 #include "RendererAPI.h"
 
-
 class RenderCommand
 {
 public:
@@ -23,7 +22,7 @@ public:
 
 	/**
 	 * Sets the clear colour of the screen or currently bound frame buffer
-	 * @param colour 
+	 * @param colour
 	 */
 	inline static void SetClearColour(const Colour& colour)
 	{
@@ -32,10 +31,10 @@ public:
 
 	/**
 	 * Sets the area of the screen that will be rendered to
-	 * @param x 
-	 * @param y 
-	 * @param width 
-	 * @param height 
+	 * @param x
+	 * @param y
+	 * @param width
+	 * @param height
 	 */
 	inline static void SetViewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height)
 	{
@@ -49,23 +48,21 @@ public:
 	{
 		s_RendererAPI->Clear();
 	}
-	
+
 	/**
 	 * Draws primitives from the vertex array
-	 * @param vertexArray 
-	 * @param indexCount 
-	 * @param drawMode 
+	 * @param vertexArray
+	 * @param indexCount
+	 * @param drawMode
 	 */
-	inline static void DrawIndexed(const Ref<VertexArray>& vertexArray, uint32_t indexCount = 0, DrawMode drawMode = DrawMode::FILL)
+	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL)
 	{
-		vertexArray->Bind();
-		s_RendererAPI->DrawIndexed(vertexArray, indexCount, drawMode);
+		s_RendererAPI->DrawIndexed(indexCount, startIndex, vertexOffset, backFaceCull, drawMode);
 	}
 
-	inline static void DrawLines(const Ref<VertexArray>& vertexArray, uint32_t vertexCount = 0)
+	inline static void DrawLines(uint32_t vertexCount = 0)
 	{
-		vertexArray->Bind();
-		s_RendererAPI->DrawLines(vertexArray, vertexCount);
+		s_RendererAPI->DrawLines(vertexCount);
 	}
 private:
 	static Scope<RendererAPI> s_RendererAPI;

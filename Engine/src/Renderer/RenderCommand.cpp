@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "RenderCommand.h"
 #include "Core/Settings.h"
+#include "Logging/Instrumentor.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 #ifdef __WINDOWS__
@@ -11,6 +12,7 @@ Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
 void RenderCommand::CreateRendererAPI()
 {
+	PROFILE_FUNCTION();
 	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
 
 	std::string api = Settings::GetValue("Renderer", "API");
@@ -24,7 +26,7 @@ void RenderCommand::CreateRendererAPI()
 	else if(api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
-		s_RendererAPI = CreateScope <DirectX11RendererAPI>();
+		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
 		return;
 	}
 #endif // __WINDOWS__

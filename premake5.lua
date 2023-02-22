@@ -1,5 +1,33 @@
+newoption
+{
+	trigger = "arch",
+	value = "arch",
+	description = "Choose system architecture",
+	allowed = 
+	{
+		{"x86_64", "x64"},
+		{"arm64", "arm64"}
+	}
+}
+
+newoption
+{
+	trigger = "tests",
+	description = "Add the test projects to the solution"
+}
+
+Arch = "x86_64"
+if _OPTIONS["arch"] then
+	Arch = _OPTIONS["arch"]
+end
+
 workspace "Cross Platform Game Engine"
-	architecture "x86_64"
+	if Arch == "arm64" then
+		architecture "arm64"
+	else
+		architecture "x86_64"
+	end
+
 	startproject "Editor"
 
 	configurations
@@ -18,6 +46,9 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}"
 
 group "Dependencies/Engine"
 	include "Engine/vendor"
+	if _OPTIONS["tests"] then
+		require("Engine/vendor/tests")
+	end
 group "Dependencies/Editor"
 	include "Editor/vendor"
 	
@@ -57,8 +88,22 @@ project "Engine"
 		"%{prj.name}/vendor/simpleini",
 		"%{prj.name}/vendor/EnTT",
 		"%{prj.name}/vendor/cereal/include",
-		"%{prj.name}/vendor/LiquidFun/liquidfun/Box2D",
-		"%{prj.name}/vendor/lua"
+		"%{prj.name}/vendor/box2d/include",
+		"%{prj.name}/vendor/lua",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen"
+	}
+
+	externalincludedirs
+	{
+		"%{prj.name}/vendor",
+		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/vendor/GLAD/include",
+		"%{prj.name}/vendor/lua",
+		"%{prj.name}/vendor/spdlog/include",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
+		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen",
+		"%{prj.name}/vendor/box2d/include"
 	}
 	
 	links
@@ -67,14 +112,17 @@ project "Engine"
 		"GLAD",
 		"ImGui",
 		"TinyXml2",
-		"LiquidFun",
+		"Box2D",
 		"SPIRV-Cross",
-		"lua"
+		"lua",
+		"msdf-atlas-gen",
+		"freetype"
 	}
 	
 	defines
 	{
-		"GLFW_INCLUDE_NONE"
+		"GLFW_INCLUDE_NONE",
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	filter "system:windows"
@@ -84,13 +132,6 @@ project "Engine"
 		defines
 		{
 			"__WINDOWS__"
-		}
-		
-		links
-		{
-			"opengl32.lib",
-			"d3d11.lib",
-			"d3dcompiler.lib"
 		}
 		
 		excludes
@@ -134,10 +175,6 @@ project "Engine"
 			"%{prj.name}/src/Platform/iOS**.cpp",
 			"%{prj.name}/src/Platform/Mac OS**.h",
 			"%{prj.name}/src/Platform/Mac OS**.cpp",
-			"%{prj.name}/src/Platform/Windows/Win32Input.h",
-			"%{prj.name}/src/Platform/Windows/Win32Input.cpp",
-			"%{prj.name}/src/Platform/Windows/Win32Window.h",
-			"%{prj.name}/src/Platform/Windows/Win32Window.cpp",
 			"%{prj.name}/src/ImGui/ImGuiBuildDirectX11.cpp"
 		}
 		
@@ -146,95 +183,37 @@ project "Engine"
 			"__linux__"
 		}
 		
-
-	filter "configurations:Debug"
-		defines 
+	filter "system:macosx"
+		excludes
 		{
-			"DEBUG",
-			"ENABLE_ASSERTS"
+			"%{prj.name}/src/Platform/DirectX**.h",
+			"%{prj.name}/src/Platform/DirectX**.cpp",
+			"%{prj.name}/src/ImGui/ImGuiBuildDirectX11.cpp"
 		}
+
+		buildoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
+		linkoptions {"-F /Library/Frameworks", "-F ~/Library/Frameworks"}
 		
-		runtime "Debug"
-		symbols "On"
-
-	filter "configurations:Release"
-		defines "RELEASE"
-		runtime "Release"
-		optimize "On"
-		symbols "Off"
-
-	filter "configurations:Distribution"
-		defines "DIST"
-		runtime "Release"
-		optimize "On"
-
-project "ExampleGame"
-	location "%{prj.name}"
-	kind "ConsoleApp"
-	cppdialect "C++17"
-
-	language "C++"
-
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-
-	files
-	{
-		"%{prj.name}/src/**.h",
-		"%{prj.name}/src/**.cpp"
-	}
-
-	includedirs
-	{
-		"ExampleGame/src",
-		"Engine/src",
-		"Engine/vendor",
-		"Engine/vendor/spdlog/include",
-		"Engine/vendor/cereal/include",
-		"Engine/vendor/lua"
-	}
-	
-	links
-	{
-		"Engine",
-		"lua"
-	}
-
-	postbuildcommands
-	{
-		("{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources")
-	}
-
-	filter "system:windows"
-		staticruntime "Off"
-		systemversion "latest"
-
-		defines
+		linkoptions
 		{
-			"__WINDOWS__"
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
 		}
-		
-	filter "system:linux"
+
 		links
 		{
-			"GLFW",
-			"GLAD",
-			"ImGui",
-			"TinyXml2",
-			"LiquidFun",
-			"Xrandr",
-			"Xi",
-			"GL",
-			"X11",
-			"dl",
-			"pthread",
-			"stdc++fs"
+			"Cocoa.framework"
 		}
-		
-		defines
-		{
-			"__linux__"
-		}
+
+		filter 'files:vendor/**.cpp'
+			flags  { 'NoPCH' }
+		filter 'files:vendor/**.c'
+			flags  { 'NoPCH' }
+		filter 'files:src/vendor/**.m'
+			flags  { 'NoPCH' }
+		filter 'files:src/vendor/**.mm'
+			flags  { 'NoPCH' }
 
 	filter "configurations:Debug"
 		defines 
@@ -242,6 +221,7 @@ project "ExampleGame"
 			"DEBUG",
 			"ENABLE_ASSERTS"
 		}
+		
 		runtime "Debug"
 		symbols "On"
 
@@ -272,8 +252,6 @@ project "Editor"
 		"%{prj.name}/src/**.h",
 		"%{prj.name}/src/**.cpp",
 		"%{prj.name}/vendor/IconFont/**.h",
-		"%{prj.name}/Editor.rc",
-		"%{prj.name}/resource.h",
 		"%{prj.name}/Icon.ico"
 	}
 
@@ -283,11 +261,25 @@ project "Editor"
 		"%{prj.name}/vendor",
 		"%{prj.name}/vendor/IconFont",
 		"%{prj.name}/vendor/OpenFBX/src",
+		"%{prj.name}/vendor/json",
+		"%{prj.name}/vendor/tinygltf",
 		"Engine/src",
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
-		"Engine/vendor/lua"
+		"Engine/vendor/box2d/include",
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
+	}
+
+	externalincludedirs
+	{
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
 	}
 	
 	links
@@ -299,12 +291,13 @@ project "Editor"
 
 	defines
 	{
-		"ENABLE_ASSERTS"
+		"ENABLE_ASSERTS",
+		"_CRT_SECURE_NO_WARNINGS"
 	}
 
 	postbuildcommands
 	{
-		"{COPY} resources/ ../bin/" .. outputdir .. "/%{prj.name}/resources",
+		"{COPY} data/ ../bin/" .. outputdir .. "/%{prj.name}/data",
 		"{COPY} imgui.ini ../bin/" .. outputdir .. "/%{prj.name}"
 	}
 
@@ -321,6 +314,12 @@ project "Editor"
 		{
 			"__WINDOWS__"
 		}
+
+		files
+		{
+			"%{prj.name}/resource.h",
+			"%{prj.name}/Editor.rc"
+		}
 		
 	filter "system:linux"
 		links
@@ -329,14 +328,17 @@ project "Editor"
 			"GLAD",
 			"ImGui",
 			"TinyXml2",
-			"LiquidFun",
+			"Box2D",
 			"Xrandr",
 			"Xi",
 			"GL",
 			"X11",
 			"dl",
 			"pthread",
-			"stdc++fs"
+			"stdc++fs",
+			"msdf-atlas-gen",
+			"msdfgen",
+			"freetype"
 		}
 		
 		defines
@@ -348,6 +350,20 @@ project "Editor"
 		{
 			"%{prj.name}/Editor.rc",
 			"%{prj.name}/resource.h"
+		}
+
+	filter "system:macosx"
+	linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+		
+		links
+		{
+			"Cocoa.framework",
+			"IOKit.framework"
 		}
 
 	filter "configurations:Debug"
@@ -388,7 +404,18 @@ project "Runtime"
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
 		"Engine/vendor/lua"
+	}
+
+	externalincludedirs
+	{
+		"Engine/vendor",
+		"Engine/vendor/spdlog/include",
+		"Engine/vendor/cereal/include",
+		"Engine/vendor/box2d/include",
+		"Engine/vendor/lua",
+		"Engine/vendor/stb"
 	}
 
 	links
@@ -413,19 +440,29 @@ project "Runtime"
 			"GLAD",
 			"ImGui",
 			"TinyXml2",
-			"LiquidFun",
+			"Box2D",
 			"Xrandr",
 			"Xi",
 			"GL",
 			"X11",
 			"dl",
 			"pthread",
-			"stdc++fs"
+			"stdc++fs",
+			"msdf-atlas-gen",
+			"msdfgen",
+			"freetype"
 		}
 		
 		defines
 		{
 			"__linux__"
+		}
+
+	filter "system:macosx"
+		links
+		{
+			"Cocoa.framework",
+			"IOKit.framework"
 		}
 
 	filter "configurations:Debug"
@@ -516,7 +553,8 @@ project "EngineDLL"
 		"Engine/vendor",
 		"Engine/vendor/spdlog/include",
 		"Engine/vendor/cereal/include",
-		"Engine/vendor/lua"
+		"Engine/vendor/lua",
+		"Engine/vendor/box2d/include"
 	}
 
 	postbuildcommands

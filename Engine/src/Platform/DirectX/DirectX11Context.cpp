@@ -5,6 +5,10 @@
 #include "Renderer/RenderCommand.h"
 #include "Core/Settings.h"
 
+#include <wrl.h>
+
+#pragma comment(lib, "d3d11.lib")
+
 extern ID3D11Device* g_D3dDevice = nullptr;
 extern ID3D11DeviceContext* g_ImmediateContext = nullptr;
 
@@ -20,20 +24,29 @@ DirectX11Context::DirectX11Context(HWND windowHandle)
 	m_DriverType = D3D_DRIVER_TYPE_NULL;
 	m_FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
+	m_SyncInterval = 1;
+
 	CORE_ASSERT(windowHandle, "Window Handle is null")
 }
 
 DirectX11Context::~DirectX11Context()
 {
-	if (m_SwapChain) m_SwapChain->Release();
-	if (g_D3dDevice) g_D3dDevice->Release();
-	if (g_ImmediateContext) g_ImmediateContext->Release();
+	Microsoft::WRL::ComPtr<ID3D11Debug>  debug;
+	g_D3dDevice->QueryInterface(IID_PPV_ARGS(&debug));
+
+	if (m_RenderTargetView) { m_RenderTargetView->Release(); m_RenderTargetView = nullptr; }
+	if (m_DepthStencilView) { m_DepthStencilView->Release(); m_DepthStencilBuffer = nullptr; }
+
+	if (m_SwapChain) { m_SwapChain->Release(); m_SwapChain = nullptr; }
+	if (g_ImmediateContext) { g_ImmediateContext->Release(); g_ImmediateContext = nullptr; }
+	debug->ReportLiveDeviceObjects(D3D11_RLDO_DETAIL);
+	if (g_D3dDevice) { g_D3dDevice->Release(); g_D3dDevice = nullptr; }
 }
 
 void DirectX11Context::Init()
 {
-	int renderWidth = Settings::GetInt("Display", "Screen_Width");
-	int renderHeight = Settings::GetInt("Display", "Screen_Height");
+	int renderWidth = Settings::GetInt("Display", "Window_Width");
+	int renderHeight = Settings::GetInt("Display", "Window_Height");
 
 	m_SyncInterval = (Settings::GetBool("Display", "V-Sync")) ? 1 : 0;
 
@@ -72,19 +85,20 @@ void DirectX11Context::Init()
 	sd.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	sd.BufferDesc.RefreshRate.Numerator = 60;
 	sd.BufferDesc.RefreshRate.Denominator = 1;
+	sd.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
 	sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 	sd.OutputWindow = m_WindowHandle;
 	sd.SampleDesc.Count = sampleCount;
 	sd.SampleDesc.Quality = 0;
 	sd.Windowed = TRUE;
-
+	sd.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 	for (UINT driverTypeIndex = 0; driverTypeIndex < numDriverTypes; driverTypeIndex++)
 	{
 		m_DriverType = driverTypes[driverTypeIndex];
 		hr = D3D11CreateDeviceAndSwapChain(nullptr, m_DriverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
 			D3D11_SDK_VERSION, &sd, &m_SwapChain, &g_D3dDevice, &m_FeatureLevel, &g_ImmediateContext);
-	
+
 		if (SUCCEEDED(hr))
 			break;
 	}
@@ -97,7 +111,7 @@ void DirectX11Context::Init()
 
 	// Create the render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = m_SwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&pBackBuffer);
+	hr = m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer));
 
 	if (FAILED(hr))
 	{
@@ -144,7 +158,23 @@ void DirectX11Context::SwapBuffers()
 	m_SwapChain->Present(m_SyncInterval, 0);
 }
 
-void DirectX11Context::SetSwapInterval(uint32_t interval) 
+void DirectX11Context::SetSwapInterval(uint32_t interval)
 {
 	m_SyncInterval = (UINT)interval;
+}
+
+void DirectX11Context::ResizeBuffers(uint32_t width, uint32_t height)
+{
+	if (m_RenderTargetView) m_RenderTargetView->Release();
+	m_RenderTargetView = nullptr;
+	if (m_DepthStencilView) m_DepthStencilView->Release();
+	m_DepthStencilView = nullptr;
+	if (FAILED(m_SwapChain->ResizeBuffers(0, (UINT)width, (UINT)height, DXGI_FORMAT_UNKNOWN, 0)))
+		return;
+	ID3D11Texture2D* pBackBuffer;
+	if (FAILED(m_SwapChain->GetBuffer(0, IID_PPV_ARGS(&pBackBuffer))))
+		return;
+	g_D3dDevice->CreateRenderTargetView(pBackBuffer, NULL, &m_RenderTargetView);
+	g_D3dDevice->CreateDepthStencilView(m_DepthStencilBuffer, nullptr, &m_DepthStencilView);
+	pBackBuffer->Release();
 }

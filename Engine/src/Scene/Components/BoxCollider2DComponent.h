@@ -3,30 +3,47 @@
 #include "cereal/cereal.hpp"
 
 #include "math/Vector2f.h"
+#include "Physics/PhysicsMaterial.h"
 
 struct BoxCollider2DComponent
 {
-	Vector2f Offset = { 0.0f, 0.0f };
-	Vector2f Size = { 0.5f, 0.5f };
+	Vector2f offset = { 0.0f, 0.0f };
+	Vector2f size = { 0.5f, 0.5f };
 
-	//TODO: create physics material
-	float Density = 1.0f;
-	float Friction = 0.5f;
-	float Restitution = 0.0f;
+	bool isTrigger = false;
 
-	void* RuntimeFixture = nullptr;
+	Ref<PhysicsMaterial> physicsMaterial;
+
+	b2Body* runtimeBody = nullptr;
 
 	BoxCollider2DComponent() = default;
 	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 private:
 	friend cereal::access;
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Offset", Offset));
-		archive(cereal::make_nvp("Size", Size));
-		archive(cereal::make_nvp("Density", Density));
-		archive(cereal::make_nvp("Friction", Friction));
-		archive(cereal::make_nvp("Restitution", Restitution));
+		archive(offset, size, isTrigger);
+		
+		std::string relativePath;
+		if (physicsMaterial)
+		{
+			relativePath = FileUtils::RelativePath(physicsMaterial->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(relativePath);
+	}
+
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(offset, size, isTrigger);
+		std::string relativePath;
+		archive(relativePath);
+		if (!relativePath.empty())
+			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		else
+			physicsMaterial.reset();
+
+		runtimeBody = nullptr;
 	}
 };

@@ -6,12 +6,12 @@
 
 #include "Core/Application.h"
 
-#define SHADER_DIRECTORY Application::GetWorkingDirectory() / "resources" / "Shaders"
+#define SHADER_DIRECTORY Application::GetWorkingDirectory() / "data" / "Shaders"
 
 class Shader
 {
 public:
-	~Shader() = default;
+	virtual ~Shader() = default;
 
 	virtual void Bind() const = 0;
 	virtual void UnBind() const = 0;

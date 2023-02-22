@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Engine.h"
+#include "Renderer/Camera.h"
 
 class ViewportCameraController
 {
@@ -8,23 +8,21 @@ public:
 	ViewportCameraController();
 	~ViewportCameraController();
 
-	void OnUpdate(float deltaTime);
+	void OnUpdate(float deltaTime, bool hoveredViewport);
 
 	void SetPosition(const Vector3f& position) { m_3DCameraPosition = position; m_2DCameraPosition = position; }
-	Vector3f GetPosition() const;
-	const Vector3f GetUp() const { return m_Up; }
-	const Vector3f GetForward() const { return m_Forward; }
-	const Vector3f GetRight() const { return m_Right; }
+	const Vector3f& GetPosition() const;
+	const Vector3f& GetUp() const { return m_Up; }
+	const Vector3f& GetForward() const { return m_Forward; }
+	const Vector3f& GetRight() const { return m_Right; }
 
 	void SetAspectRatio(const float& aspectRatio);
 	void SetViewPortSize(const Vector2f& viewportSize) { m_ViewPortSize = viewportSize; }
 
 	Camera* GetCamera() const { return m_CurrentCamera; }
 
-	Matrix4x4 GetTransformMatrix();
+	Matrix4x4 GetTransformMatrix() const;
 
-	void OnMouseMotion(Vector2f mousePosition);
-	void OnMouseWheel(float mouseWheel);
 	void SwitchCamera(bool is3D);
 
 	void LookAt(Vector3f focalPoint, float distance);
@@ -48,10 +46,10 @@ private:
 	Camera* m_CurrentCamera;
 	bool m_Is3DCamera;
 
-	float m_AspectRatio = 16.0f/9.0f;
+	float m_AspectRatio = 16.0f / 9.0f;
 	float m_TranslationSpeed = 1.0f;
 
-	float m_FovY = (float)PI / 2;
+	float m_FovY = (float)PI / 4;
 	float m_PerspectiveNearDepth = 1.0f;
 	float m_PerspectiveFarDepth = 1000.0f;
 
@@ -65,7 +63,7 @@ private:
 
 	Vector2f m_MouseRelativeVelocity;
 	Vector2f m_MouseLastPosition;
-	float m_Sensitivity = 0.03f;
+	float m_Sensitivity = 0.003f;
 
 	OrthographicCamera m_2DCamera;
 	PerspectiveCamera m_3DCamera;

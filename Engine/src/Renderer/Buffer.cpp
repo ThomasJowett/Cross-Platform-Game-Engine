@@ -21,7 +21,7 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
-			return CreateRef<DirectX11VertexBuffer>(size);
+		return CreateRef<DirectX11VertexBuffer>(size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
@@ -41,13 +41,13 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
+Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 {
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
 		CORE_ASSERT(false, "Could not create vertex buffer: None Renderer API is not supported")
-		return nullptr;
+			return nullptr;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLVertexBuffer>(vertices, size);
 #ifdef __WINDOWS__
@@ -58,17 +58,17 @@ Ref<VertexBuffer> VertexBuffer::Create(float * vertices, uint32_t size)
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported")
-		return nullptr;
+			return nullptr;
 #endif // __APPLE__
 	case RendererAPI::API::Vulkan:
 		CORE_ASSERT(false, "Could not create vertex buffer: Vulkan is not currently supported")
-		return nullptr;
+			return nullptr;
 	default:
 		break;
 	}
 
 	CORE_ASSERT(false, "Could not create vertex buffer: Invalid Renderer API")
-	return nullptr;
+		return nullptr;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -84,10 +84,10 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create index buffer: DirectX is not currently supported");
-			return CreateRef<DirectX11IndexBuffer>(indices, size);
+		return CreateRef<DirectX11IndexBuffer>(indices, size);
 #endif // __WINDOWS__
 #ifdef __APPLE__
-	case RendererAPI::Metal:
+        case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__

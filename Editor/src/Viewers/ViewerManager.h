@@ -1,6 +1,10 @@
 #pragma once
 
-#define MAX_ASSET_VIEWERS 2
+#ifdef DEBUG
+#define MAX_ASSET_VIEWERS 0
+#else
+#define MAX_ASSET_VIEWERS 10
+#endif
 
 #include <map>
 #include <filesystem>
@@ -15,22 +19,37 @@ enum class FileType
 	MESH,
 	SCENE,
 	SCRIPT,
+	VISUALSCRIPT,
 	AUDIO,
-	MATERIAL
+	MATERIAL,
+	TILESET,
+	SPRITESHEET,
+	PHYSICSMATERIAL,
+	FONT
+};
+
+class View : public Layer
+{
+public:
+	View(std::string name)
+		:Layer(name) {}
+	virtual ~View() = default;
+	const std::string& GetWindowName() { return m_WindowName; }
+protected:
+	std::string m_WindowName;
 };
 
 class ViewerManager
 {
 public:
-	
+
 	static void OpenViewer(const std::filesystem::path& assetPath);
+	static void CloseViewer(const std::filesystem::path& assetPath);
 
 	static FileType GetFileType(const std::filesystem::path& assetPath);
 
 	static std::vector<std::string> GetExtensions(FileType fileType);
 
 	static void SaveAll();
-
-private:
-	static std::map<std::filesystem::path, std::pair<Layer*, bool*>> s_AssetViewers;
 };
+

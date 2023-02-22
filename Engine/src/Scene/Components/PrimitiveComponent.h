@@ -1,7 +1,13 @@
 #pragma once
+#include "Utilities/GeometryGenerator.h"
+#include "Core/BoundingBox.h"
+#include "Scene/AssetManager.h"
 
 struct PrimitiveComponent
 {
+	Ref<Mesh> mesh;
+	Ref<Material> material;
+
 	enum class Shape
 	{
 		Cube,
@@ -48,102 +54,190 @@ struct PrimitiveComponent
 
 	PrimitiveComponent() = default;
 	PrimitiveComponent(Shape shape)
-		:type(shape) {}
+		:type(shape) {
+		SetType(shape);
+	}
 
 	// Cube
 	PrimitiveComponent(float cubeWidth, float cubeHeight, float cubeDepth)
-		:type(Shape::Cube),
-		cubeWidth(cubeWidth),
-		cubeHeight(cubeHeight),
-		cubeDepth(cubeDepth)
-	{}
+	{
+		SetCube(cubeWidth, cubeHeight, cubeDepth);
+	}
 
 	//Sphere
 	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLines, uint32_t sphereLatitudeLines)
-		:type(Shape::Sphere),
-		sphereRadius(shpereRadius),
-		sphereLongitudeLines(sphereLongitudeLines),
-		sphereLatitudeLines(sphereLatitudeLines)
-	{}
+	{
+		SetSphere(shpereRadius, sphereLongitudeLines, sphereLatitudeLines);
+	}
 
 	// Plane
 	PrimitiveComponent(float planeWidth, float planeLength, uint32_t planeWidthLines, uint32_t planeLengthLines, float planeTileU, float planeTileV)
-		:type(Shape::Plane),
-		planeWidth(planeWidth),
-		planeLength(planeLength),
-		planeWidthLines(planeWidthLines),
-		planeLengthLines(planeLengthLines),
-		planeTileU(planeTileU),
-		planeTileV(planeTileV)
-	{}
+	{
+		SetPlane(planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV);
+	}
 
 	// Cylinder
 	PrimitiveComponent(float cylinderBottomRadius, float cylinderTopRadius, float cylinderHeight, uint32_t cylinderSliceCount, uint32_t cylinderStackCount)
-		:type(Shape::Cylinder),
-		cylinderBottomRadius(cylinderBottomRadius),
-		cylinderTopRadius(cylinderTopRadius),
-		cylinderHeight(cylinderHeight),
-		cylinderSliceCount(cylinderSliceCount),
-		cylinderStackCount(cylinderStackCount)
-	{}
+	{
+		SetCylinder(cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount);
+	}
 
 	//Cone
 	PrimitiveComponent(float coneBottomRadius, float coneHeight, uint32_t coneSliceCount, uint32_t coneStackCount)
-		:type(Shape::Cone),
-		coneBottomRadius(coneBottomRadius),
-		coneHeight(coneHeight),
-		coneSliceCount(coneSliceCount),
-		coneStackCount(coneStackCount)
-	{}
+	{
+		SetCone(coneBottomRadius, coneHeight, coneSliceCount, coneStackCount);
+	}
 
 	//Torus
 	PrimitiveComponent(float torusOuterRadius, float torusInnerRadius, uint32_t torusSliceCount)
-		:type(Shape::Torus),
-		torusOuterRadius(torusOuterRadius),
-		torusInnerRadius(torusInnerRadius),
-		torusSliceCount(torusSliceCount)
-	{}
+	{
+		SetTorus(torusOuterRadius, torusInnerRadius, torusSliceCount);
+	}
 
 	PrimitiveComponent(const PrimitiveComponent&) = default;
+
+	void SetCube(float width, float depth, float height)
+	{
+		cubeWidth = width;
+		cubeDepth = depth;
+		cubeHeight = height;
+		type = Shape::Cube;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCube(cubeWidth, cubeHeight, cubeDepth);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetSphere(float radius, uint32_t longitudeLines, uint32_t latitudeLines)
+	{
+		sphereRadius = radius;
+		sphereLongitudeLines = longitudeLines;
+		sphereLatitudeLines = latitudeLines;
+		type = Shape::Sphere;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateSphere(radius, longitudeLines, latitudeLines);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetPlane(float width, float length, uint32_t widthLines, uint32_t lengthLines, float tileU, float tileV)
+	{
+		planeWidth = width;
+		planeLength = length;
+		planeWidthLines = widthLines;
+		planeLengthLines = lengthLines;
+		planeTileU = tileU;
+		planeTileV = tileV;
+		type = Shape::Plane;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateGrid(width, length, widthLines, lengthLines, tileU, tileV);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetCylinder(float bottomRadius, float topRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+	{
+		cylinderBottomRadius = bottomRadius;
+		cylinderTopRadius = topRadius;
+		cylinderHeight = height;
+		cylinderSliceCount = sliceCount;
+		cylinderStackCount = stackCount;
+		type = Shape::Cylinder;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCylinder(bottomRadius, topRadius, height, sliceCount, stackCount);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetCone(float bottomRadius, float height, uint32_t sliceCount, uint32_t stackCount)
+	{
+		coneBottomRadius = bottomRadius;
+		coneHeight = height;
+		coneSliceCount = sliceCount;
+		coneStackCount = stackCount;
+		type = Shape::Cone;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateCylinder(bottomRadius, 0, height, sliceCount, stackCount);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetTorus(float outerRadius, float innerRadius, uint32_t sliceCount)
+	{
+		torusOuterRadius = outerRadius;
+		torusInnerRadius = innerRadius;
+		torusSliceCount = sliceCount;
+		type = Shape::Torus;
+		needsUpdating = false;
+		mesh = GeometryGenerator::CreateTorus(outerRadius, innerRadius, sliceCount);
+		if (!material) material = Material::GetDefaultMaterial();
+	}
+
+	void SetType(Shape type)
+	{
+		switch (type)
+		{
+		case PrimitiveComponent::Shape::Cube:
+			SetCube(cubeWidth, cubeDepth, cubeHeight);
+			return;
+		case PrimitiveComponent::Shape::Sphere:
+			SetSphere(sphereRadius, sphereLongitudeLines, sphereLatitudeLines);
+			return;
+		case PrimitiveComponent::Shape::Plane:
+			SetPlane(planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV);
+			return;
+		case PrimitiveComponent::Shape::Cylinder:
+			SetCylinder(cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount);
+			return;
+		case PrimitiveComponent::Shape::Cone:
+			SetCone(coneBottomRadius, coneHeight, coneSliceCount, coneStackCount);
+			return;
+		case PrimitiveComponent::Shape::Torus:
+			SetTorus(torusOuterRadius, torusInnerRadius, torusSliceCount);
+			return;
+		}
+	}
 
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
 private:
 	friend cereal::access;
+
 	template<typename Archive>
-	void serialize(Archive& archive)
+	void save(Archive& archive) const
 	{
-		archive(cereal::make_nvp("Primitive Shape", type));
+		archive(type,
+			cubeWidth, cubeHeight, cubeDepth,
+			sphereRadius, sphereLongitudeLines, sphereLatitudeLines,
+			planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV,
+			cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount,
+			coneBottomRadius, coneHeight, coneSliceCount, coneStackCount,
+			torusOuterRadius, torusInnerRadius, torusSliceCount);
 
-		archive(cereal::make_nvp("Cube Width", cubeWidth));
-		archive(cereal::make_nvp("Cube Height", cubeHeight));
-		archive(cereal::make_nvp("Cube Depth", cubeDepth));
+		std::string relativePath;
+		if (material && !material->GetFilepath().empty() && material != Material::GetDefaultMaterial())
+		{
+			relativePath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(relativePath);
+	}
 
-		archive(cereal::make_nvp("Sphere Radius", sphereRadius));
-		archive(cereal::make_nvp("Sphere Longitude Lines", sphereLongitudeLines));
-		archive(cereal::make_nvp("Sphere Latitude Lines", sphereLatitudeLines));
+	template<typename Archive>
+	void load(Archive& archive)
+	{
+		archive(type,
+			cubeWidth, cubeHeight, cubeDepth,
+			sphereRadius, sphereLongitudeLines, sphereLatitudeLines,
+			planeWidth, planeLength, planeWidthLines, planeLengthLines, planeTileU, planeTileV,
+			cylinderBottomRadius, cylinderTopRadius, cylinderHeight, cylinderSliceCount, cylinderStackCount,
+			coneBottomRadius, coneHeight, coneSliceCount, coneStackCount,
+			torusOuterRadius, torusInnerRadius, torusSliceCount);
+		std::string relativePath;
 
-
-		archive(cereal::make_nvp("Plane Width", planeWidth));
-		archive(cereal::make_nvp("Plane Length", planeLength));
-		archive(cereal::make_nvp("Plane Width Lines", planeWidthLines));
-		archive(cereal::make_nvp("Plane Length Lines", planeLengthLines));
-		archive(cereal::make_nvp("Plane Tile U", planeTileU));
-		archive(cereal::make_nvp("Plane Tile V", planeTileV));
-
-		archive(cereal::make_nvp("Cylinder Bottom Radius", cylinderBottomRadius));
-		archive(cereal::make_nvp("Cylinder Top Radius", cylinderTopRadius));
-		archive(cereal::make_nvp("Cylinder Height", cylinderHeight));
-		archive(cereal::make_nvp("Cylinder Slice Count", cylinderSliceCount));
-		archive(cereal::make_nvp("Cylinder Stack Count", cylinderStackCount));
-
-		archive(cereal::make_nvp("Cone Bottom Radius", coneBottomRadius));
-		archive(cereal::make_nvp("Cone Height", coneHeight));
-		archive(cereal::make_nvp("Cone Slice Count", coneSliceCount));
-		archive(cereal::make_nvp("Cone Stack Count", coneStackCount));
-
-		archive(cereal::make_nvp("Torus Outer Radius", torusOuterRadius));
-		archive(cereal::make_nvp("Torus Inner Radius", torusInnerRadius));
-		archive(cereal::make_nvp("Torus Slice Count", torusSliceCount));
+		archive(relativePath);
+		if (!relativePath.empty())
+		{
+			material = AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		}
+		else
+		{
+			material = Material::GetDefaultMaterial();
+		}
+		SetType(type);
 	}
 };

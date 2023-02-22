@@ -2,25 +2,16 @@
 #include "Input.h"
 #include "Renderer/RendererAPI.h"
 #include "Platform/Windows/glfwInput.h"
-#ifdef __WINDOWS__
-#include "Platform/Windows/Win32Input.h"
-#endif
 
 Scope<Input> Input::s_Instance = nullptr;
 
-void Input::SetInput(RendererAPI::API api)
+void Input::Init()
 {
-	switch (api)
-	{
-#ifdef __WINDOWS__
-	case RendererAPI::API::Directx11:
-		s_Instance = CreateScope<Win32Input>();
-		break;
-#endif
-	case RendererAPI::API::OpenGL:
-		s_Instance = CreateScope<glfwInput>();
-		break;
-	default:
-		break;
-	}
+	s_Instance = CreateScope<glfwInput>();
 }
+
+void Input::SetMouseWheel(double X, double Y)
+{
+	s_Instance->m_MouseWheelX += X; 
+	s_Instance->m_MouseWheelY += Y;
+};

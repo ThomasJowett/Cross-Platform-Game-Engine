@@ -17,12 +17,18 @@ project "GLFW"
 		"GLFW/src/monitor.c",
 		"GLFW/src/vulkan.c",
 		"GLFW/src/window.c",
+		"GLFW/src/platform.h",
 		"GLFW/src/platform.c",
+		"GLFW/src/mappings.h",
+		"GLFW/src/osmesa_context.c",
+		"GLFW/src/null_platform.h",
 		"GLFW/src/null_init.c",
+		"GLFW/src/null_joystick.h",
 		"GLFW/src/null_joystick.c",
 		"GLFW/src/null_monitor.c",
 		"GLFW/src/null_window.c"
 	}
+
 	filter "system:linux"
 		pic "On"
 
@@ -42,6 +48,7 @@ project "GLFW"
 			"GLFW/src/glx_context.c",
 			"GLFW/src/egl_context.c",
 			"GLFW/src/osmesa_context.c",
+			"GLFW/src/linux_joystick.h",
 			"GLFW/src/linux_joystick.c"
 		}
 
@@ -64,14 +71,40 @@ project "GLFW"
 			"GLFW/src/win32_window.c",
 			"GLFW/src/win32_module.c",
 			"GLFW/src/wgl_context.c",
-			"GLFW/src/egl_context.c",
-			"GLFW/src/osmesa_context.c"
+			"GLFW/src/egl_context.c"
 		}
 
 		defines 
 		{ 
 			"_GLFW_WIN32",
 			"_CRT_SECURE_NO_WARNINGS"
+		}
+
+	filter "system:macosx"
+		defines
+		{
+			"_GLFW_COCOA",
+			"_GLFW_USE_RETINA"
+		}
+
+		files 
+		{
+			"GLFW/src/cocoa_platform.h",
+			"GLFW/src/cocoa_joystick.h",
+			"GLFW/src/nsgl_context.m",
+			"GLFW/src/cocoa_init.m",
+			"GLFW/src/cocoa_joystick.m",
+			"GLFW/src/cocoa_monitor.m",
+			"GLFW/src/cocoa_window.m",
+			"GLFW/src/cocoa_time.h",
+			"GLFW/src/cocoa_time.c",
+			"GLFW/src/nsgl_context.m",
+			"GLFW/src/posix_thread.h",
+			"GLFW/src/posix_thread.c",
+			"GLFW/src/posix_module.c",
+			"GLFW/src/posix_poll.c",
+			"GLFW/src/glx_context.c",
+			"GLFW/src/egl_context.c"
 		}
 
 	filter "configurations:Debug"
@@ -153,8 +186,8 @@ project "GLAD"
 		"GLAD/include/KHR/khrplatform.h",
 		"GLAD/src/glad.c"
 	}
-	
-	includedirs
+
+	externalincludedirs
 	{
 		"GLAD/include"
 	}
@@ -196,7 +229,9 @@ project "TinyXml2"
 		"TinyXml2/tinyxml2.cpp"
 	}
 
-	systemversion "latest"
+	filter "system:windows"
+		systemversion "latest"
+		
 	staticruntime "off"
 
 	filter "configurations:Debug"
@@ -212,7 +247,7 @@ project "TinyXml2"
 		runtime "Release"
 		optimize "On"
 
-project "LiquidFun"
+project "Box2D"
 	kind "StaticLib"
 	language "C++"
 	cppdialect "C++17"
@@ -222,13 +257,14 @@ project "LiquidFun"
 
 	files
 	{
-		"LiquidFun/liquidfun/Box2D/Box2D/**.h",
-		"LiquidFun/liquidfun/Box2D/Box2D/**.cpp"
+		"box2d/include/box2d/**.h",
+		"box2d/src/**.h",
+		"box2d/src/**.cpp"
 	}
 
 	includedirs
 	{
-		"LiquidFun/liquidfun/Box2D"
+		"box2d/include/"
 	}
 
 	filter "system:windows"
@@ -254,6 +290,11 @@ project "SPIRV-Cross"
 
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
 
 	files
 	{
@@ -349,3 +390,213 @@ project "lua"
 		defines "DIST"
 		runtime "Release"
 		optimize "On"
+
+project "freetype"
+	kind "StaticLib"
+	language "C"
+    staticruntime "off"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"freetype/include/ft2build.h",
+		"freetype/include/freetype/*.h",
+		"freetype/include/freetype/config/*.h",
+		"freetype/include/freetype/internal/*.h",
+
+		"freetype/src/autofit/autofit.c",
+		"freetype/src/base/ftbase.c",
+		"freetype/src/base/ftbbox.c",
+		"freetype/src/base/ftbdf.c",
+		"freetype/src/base/ftbitmap.c",
+		"freetype/src/base/ftcid.c",
+		"freetype/src/base/ftdebug.c",
+		"freetype/src/base/ftfstype.c",
+		"freetype/src/base/ftgasp.c",
+		"freetype/src/base/ftglyph.c",
+		"freetype/src/base/ftgxval.c",
+		"freetype/src/base/ftinit.c",
+		"freetype/src/base/ftmm.c",
+		"freetype/src/base/ftotval.c",
+		"freetype/src/base/ftpatent.c",
+		"freetype/src/base/ftpfr.c",
+		"freetype/src/base/ftstroke.c",
+		"freetype/src/base/ftsynth.c",
+		"freetype/src/base/ftsystem.c",
+		"freetype/src/base/fttype1.c",
+		"freetype/src/base/ftwinfnt.c",
+		"freetype/src/bdf/bdf.c",
+		"freetype/src/bzip2/ftbzip2.c",
+		"freetype/src/cache/ftcache.c",
+		"freetype/src/cff/cff.c",
+		"freetype/src/cid/type1cid.c",
+		"freetype/src/gzip/ftgzip.c",
+		"freetype/src/lzw/ftlzw.c",
+		"freetype/src/pcf/pcf.c",
+		"freetype/src/pfr/pfr.c",
+		"freetype/src/psaux/psaux.c",
+		"freetype/src/pshinter/pshinter.c",
+		"freetype/src/psnames/psnames.c",
+		"freetype/src/raster/raster.c",
+		"freetype/src/sdf/sdf.c",
+		"freetype/src/sfnt/sfnt.c",
+		"freetype/src/smooth/smooth.c",
+		"freetype/src/truetype/truetype.c",
+		"freetype/src/type1/type1.c",
+		"freetype/src/type42/type42.c",
+		"freetype/src/winfonts/winfnt.c"
+	}
+
+	includedirs
+	{
+		"freetype/include"
+	}
+
+	externalincludedirs
+	{
+		"freetype/include"
+	}
+
+	defines
+	{
+		"FT2_BUILD_LIBRARY",
+		"_CRT_SECURE_NO_WARNINGS",
+		"_CRT_NONSTDC_NO_WARNINGS",
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+		symbols "off"
+
+project "msdfgen"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"msdf-atlas-gen/msdfgen/core/**.h",
+		"msdf-atlas-gen/msdfgen/core/**.hpp",
+		"msdf-atlas-gen/msdfgen/core/**.cpp",
+		"msdf-atlas-gen/msdfgen/ext/**.h",
+		"msdf-atlas-gen/msdfgen/ext/**.hpp",
+		"msdf-atlas-gen/msdfgen/ext/**.cpp",
+		"msdf-atlas-gen/msdfgen/lib/**.cpp",
+		"msdf-atlas-gen/msdfgen/include/**.h"
+	}
+
+	includedirs
+	{
+		"msdf-atlas-gen/msdfgen/include"
+	}
+
+	externalincludedirs
+	{
+		"freetype/include",
+		"msdf-atlas-gen/msdfgen/include"
+	}
+
+	defines
+	{
+		"MSDFGEN_USE_CPP11"
+	}
+
+	links
+	{
+		"freetype"
+	}
+
+	defines
+	{
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+		symbols "off"
+
+project "msdf-atlas-gen"
+	kind "StaticLib"
+	language "C++"
+	cppdialect "C++17"
+	staticruntime "off"
+
+	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+
+	files
+	{
+		"msdf-atlas-gen/msdf-atlas-gen/**.h",
+		"msdf-atlas-gen/msdf-atlas-gen/**.hpp",
+		"msdf-atlas-gen/msdf-atlas-gen/**.cpp"
+	}
+
+	includedirs
+	{
+		"msdf-atlas-gen/msdf-atlas-gen",
+		"msdf-atlas-gen/msdfgen",
+		"msdf-atlas-gen/msdfgen/include",
+		"msdf-atlas-gen/artery-font-format"
+	}
+
+	externalincludedirs
+	{
+		"msdf-atlas-gen/msdfgen",
+		"msdf-atlas-gen/msdfgen/include",
+		"msdf-atlas-gen/artery-font-format"
+	}
+
+	defines
+	{
+		"_CRT_SECURE_NO_WARNINGS"
+	}
+
+	links
+	{
+		"msdfgen"
+	}
+
+	filter "system:windows"
+		systemversion "latest"
+
+	filter "configurations:Debug"
+		runtime "Debug"
+		symbols "on"
+
+	filter "configurations:Release"
+		runtime "Release"
+		optimize "on"
+
+	filter "configurations:Dist"
+		runtime "Release"
+		optimize "on"
+		symbols "off"

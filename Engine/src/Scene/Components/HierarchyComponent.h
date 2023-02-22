@@ -14,9 +14,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Parent", parent));
-		archive(cereal::make_nvp("First Child", firstChild));
-		archive(cereal::make_nvp("Previous Sibling", previousSibling));
-		archive(cereal::make_nvp("Next Sibling", nextSibling));
+		archive(parent, firstChild, previousSibling, nextSibling);
 	}
 };

@@ -9,15 +9,25 @@
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
 
-extern Application* CreateApplication();
+#if defined(_WIN32)
+#include <crtdbg.h>
+#endif
+
+extern Ref<Application> CreateApplication();
 
 bool AnotherInstance();
 
 int main(int argc, char* argv[])
 {
+#if defined(_WIN32)
+	// Enable memory-leak reports
+	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
+#endif
 	InputParser input(argc, argv);
 
 	Application::s_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+
+	std::filesystem::current_path(Application::s_WorkingDirectory);
 
 	Logger::Init();
 
@@ -57,21 +67,20 @@ int main(int argc, char* argv[])
 
 	std::string file;
 	bool hasFile = input.File(file);
-	if(hasFile)
+	if (hasFile)
 		Application::SetOpenDocument(file);
 
 	if (!input.HasFoundAllArguments() && !hasFile)
 	{
-		{
-			ENGINE_ERROR("Not a valid input parameter");
-			return EXIT_FAILURE;
-		}
+		ENGINE_ERROR("Not a valid input parameter");
+		return EXIT_FAILURE;
 	}
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
-	Application* app = CreateApplication();
-	
+	Ref<Application> app = CreateApplication();
+	//Application* app = CreateApplication();
+
 	CORE_ASSERT(app != nullptr, "Failed to create application\r\n");
 	ENGINE_INFO("Engine Initialised");
 	PROFILE_END_SESSION("Startup");
@@ -81,7 +90,7 @@ int main(int argc, char* argv[])
 	PROFILE_END_SESSION("Runtime");
 
 	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
-	delete app;
+	app.reset();
 	PROFILE_END_SESSION("Shutdown");
 	return EXIT_SUCCESS;
 }

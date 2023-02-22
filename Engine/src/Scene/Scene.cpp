@@ -2,7 +2,7 @@
 #include "Scene.h"
 #include "Entity.h"
 
-#include "Components/Components.h"
+#include "Components.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
@@ -13,36 +13,25 @@
 #include "Utilities/Box2DDebugDraw.h"
 
 #include "cereal/archives/binary.hpp"
-#include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
 #include "Events/SceneEvent.h"
+#include "TinyXml2/tinyxml2.h"
 
-#include "Box2D/Box2D.h"
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
+#include "Physics/HitResult2D.h"
+#include "Physics/Contact2D.h"
 
-b2BodyType GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
-{
-	switch (type)
-	{
-	case RigidBody2DComponent::BodyType::STATIC:
-		return b2BodyType::b2_staticBody;
-	case RigidBody2DComponent::BodyType::KINEMATIC:
-		return b2BodyType::b2_kinematicBody;
-	case RigidBody2DComponent::BodyType::DYNAMIC:
-		return b2BodyType::b2_dynamicBody;
-	}
-	return b2BodyType::b2_staticBody;
-}
+struct DestroyMarker {};
 
 template<typename Component>
 static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
 {
 	if (registry.any_of<Component>(src))
 	{
-		auto& srcComponent = registry.get<Component>(src);
+		Component& srcComponent = registry.get<Component>(src);
 		registry.emplace_or_replace<Component>(dst, srcComponent);
 	}
 }
@@ -53,17 +42,8 @@ static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& regis
 	(CopyComponentIfExists<Component>(dst, src, registry), ...);
 }
 
-Scene::Scene(std::filesystem::path filepath)
+Scene::Scene(const std::filesystem::path& filepath)
 	:m_Filepath(filepath)
-{
-	m_SceneName = filepath.filename().string();
-	m_SceneName = m_SceneName.substr(0, m_SceneName.find_last_of('.'));
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-Scene::Scene(std::string name)
-	:m_SceneName(name)
 {
 }
 
@@ -93,34 +73,95 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	return entity;
 }
 
+void Scene::InstantiateScene(const Ref<Scene> prefab, const Vector3f& position)
+{
+	PROFILE_FUNCTION();
+	prefab->GetRegistry().each([=](const entt::entity entity) {
+		Entity prefabEntity(entity, prefab.get());
+		if (HierarchyComponent* hierarchyComp = prefabEntity.TryGetComponent<HierarchyComponent>())
+			if (hierarchyComp->parent != entt::null)
+				return;
+
+		InstantiateEntity(prefabEntity, position);
+		});
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
+{
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, prefab);
+	tinyxml2::XMLPrinter printer;
+	doc.Accept(&printer);
+
+	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
+
+	newEntity.GetTransform().position += position;
+
+	m_PhysicsEngine2D->InitializeEntity(newEntity);
+
+	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
+	{
+		std::optional<std::pair<int, std::string>> result = scriptComponent->ParseScript(newEntity);
+		if (result.has_value())
+		{
+			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->absoluteFilepath, result.value().first, result.value().second);
+		}
+	}
+	return Entity();
+}
 
 bool Scene::RemoveEntity(Entity& entity)
 {
 	if (entity.BelongsToScene(this))
 	{
-		if (entity.HasComponent<HierarchyComponent>())
-		{
-			SceneGraph::Remove(entity, m_Registry);
+		if (m_IsUpdating) {
+			if (!m_Registry.any_of<DestroyMarker>(entity))
+				m_Registry.emplace<DestroyMarker>(entity.GetHandle());
 		}
 		else
-		{
-			ENGINE_DEBUG("Removed {0}", entity.GetName());
-			m_Registry.destroy(entity);
-		}
+			SceneGraph::Remove(entity);
+		return true;
 	}
-	m_Dirty = true;
 	return false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DuplicateEntity(Entity entity)
+Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 {
 	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
 
 	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
+	if (newEntity.HasComponent<HierarchyComponent>())
+	{
+		HierarchyComponent& heirarchyComp = newEntity.GetComponent<HierarchyComponent>();
+
+		if (!parent && heirarchyComp.parent != entt::null)
+			parent = Entity(heirarchyComp.parent, this);
+
+		heirarchyComp.firstChild = entt::null;
+		heirarchyComp.parent = entt::null;
+		heirarchyComp.nextSibling = entt::null;
+		heirarchyComp.previousSibling = entt::null;
+	}
+
+	std::vector<Entity> children = SceneGraph::GetChildren(entity);
+
+	for (auto& child : children)
+	{
+		DuplicateEntity(child, newEntity);
+	}
+	if (parent)
+	{
+		SceneGraph::Reparent(newEntity, parent);
+	}
+
+	return newEntity;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -128,84 +169,34 @@ void Scene::DuplicateEntity(Entity entity)
 void Scene::OnRuntimeStart()
 {
 	PROFILE_FUNCTION();
+
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
 
 	std::stringstream().swap(m_Snapshot);
-	cereal::JSONOutputArchive output(m_Snapshot);
+	cereal::BinaryOutputArchive output(m_Snapshot);
 	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
 
-	m_Box2DWorld = new b2World({ 0.0f, -9.81f });
-	if (m_Box2DDraw)
-		m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
-
-	m_Registry.view<TransformComponent, RigidBody2DComponent>().each(
-		[&]([[maybe_unused]] const auto physicsEntity, const auto& transformComp, auto& rigidBody2DComp)
-	{
-		b2BodyDef bodyDef;
-		bodyDef.type = GetRigidBodyBox2DType(rigidBody2DComp.type);
-		bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
-		bodyDef.angle = (float32)transformComp.rotation.z;
-
-		if (rigidBody2DComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
-		{
-			bodyDef.fixedRotation = rigidBody2DComp.fixedRotation;
-			bodyDef.angularDamping = rigidBody2DComp.angularDamping;
-			bodyDef.linearDamping = rigidBody2DComp.linearDamping;
-			bodyDef.gravityScale = rigidBody2DComp.gravityScale;
-		}
-
-		b2Body* body = m_Box2DWorld->CreateBody(&bodyDef);
-
-		rigidBody2DComp.RuntimeBody = body;
-
-		Entity entity = { physicsEntity, this };
-		if (entity.HasComponent<BoxCollider2DComponent>())
-		{
-			auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
-
-			b2PolygonShape boxShape;
-			boxShape.SetAsBox(boxColliderComp.Size.x * transformComp.scale.x, boxColliderComp.Size.y * transformComp.scale.y,
-				b2Vec2(boxColliderComp.Offset.x, boxColliderComp.Offset.y),
-				0.0f);
-
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &boxShape;
-			fixtureDef.density = boxColliderComp.Density;
-			fixtureDef.friction = boxColliderComp.Friction;
-			fixtureDef.restitution = boxColliderComp.Restitution;
-
-			body->CreateFixture(&fixtureDef);
-		}
-
-		if (entity.HasComponent<CircleCollider2DComponent>())
-		{
-			auto& circleColliderComp = entity.GetComponent<CircleCollider2DComponent>();
-
-			b2CircleShape circleShape;
-			circleShape.m_radius = circleColliderComp.Radius * std::max(transformComp.scale.x, transformComp.scale.y);
-			circleShape.m_p.Set(circleColliderComp.Offset.x, circleColliderComp.Offset.y);
-
-			b2FixtureDef fixtureDef;
-			fixtureDef.shape = &circleShape;
-			fixtureDef.density = circleColliderComp.Density;
-			fixtureDef.friction = circleColliderComp.Friction;
-			fixtureDef.restitution = circleColliderComp.Restitution;
-
-			body->CreateFixture(&fixtureDef);
-		}
-	});
-
 	m_Registry.view<LuaScriptComponent>().each(
-		[=](const auto entity, auto& scriptComponent)
-	{
-		std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
-		if (result.has_value())
+		[this](const auto entity, auto& scriptComponent)
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
-		}
-	});
+			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
+			if (result.has_value())
+			{
+				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
+			}
+			else
+			{
+				scriptComponent.OnCreate();
+				scriptComponent.created = true;
+			}
+		});
+
+	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
+
+	if (m_DrawDebug)
+		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -219,20 +210,21 @@ void Scene::OnRuntimePause()
 void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
+
+	m_PhysicsEngine2D.reset();
+
+	LuaManager::CleanUp();
+
 	if (m_Snapshot.rdbuf()->in_avail() != 0)
 	{
 		ENGINE_DEBUG("Runtime End");
 		m_Registry = entt::registry();
-		cereal::JSONInputArchive input(m_Snapshot);
+		cereal::BinaryInputArchive input(m_Snapshot);
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
-
-	LuaManager::CleanUp();
-
-	if (m_Box2DWorld != nullptr) delete m_Box2DWorld;
-	m_Box2DWorld = nullptr;
+	AssetManager::CleanUp();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -240,6 +232,34 @@ void Scene::OnRuntimeStop()
 void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
+
+	auto billboardView = m_Registry.view<TransformComponent, BillboardComponent>();
+	for (auto entity : billboardView)
+	{
+		auto&& [transformComp, billboardComp] = billboardView.get(entity);
+		Matrix4x4 transform = Matrix4x4();
+
+		Vector3f cameraRight = Vector3f(cameraTransform(0, 0), cameraTransform(1, 0), cameraTransform(2, 0));
+		Vector3f billboardRight = Vector3f(1.0f, 0.0f, 0.0f);
+
+		float angleY = acos(Vector3f::Dot(cameraRight, billboardRight));
+		if (Vector3f::Cross(cameraRight, billboardRight).y > 0.0f)
+			angleY = -angleY;
+		transform = Matrix4x4::RotateY(angleY);
+
+		if (billboardComp.orientation == BillboardComponent::Orientation::Camera)
+		{
+			Vector3f cameraUp = Vector3f(cameraTransform(0, 1), cameraTransform(1, 1), cameraTransform(2, 1));
+			Vector3f billboardUp = Vector3f(0.0f, 1.0f, 0.0f);
+			float angleX = acos(Vector3f::Dot(cameraUp, billboardUp));
+			if ((Vector3f::Cross(cameraUp, billboardUp).x > 0.0f) != (angleY > PIDIV2 || angleY < -PIDIV2))
+				angleX = -angleX;
+			transform = transform * Matrix4x4::RotateX(angleX);
+		}
+		Quaternion rot = transform.ExtractRotation();
+		transformComp.rotation = rot.EulerAngles();
+	}
+
 	SceneGraph::Traverse(m_Registry);
 	if (renderTarget != nullptr)
 		renderTarget->Bind();
@@ -249,33 +269,73 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	auto spriteGroup = m_Registry.view<TransformComponent, SpriteComponent>();
 	for (auto entity : spriteGroup)
 	{
-		auto [transformComp, spriteComp] = spriteGroup.get(entity);
+		auto&& [transformComp, spriteComp] = spriteGroup.get(entity);
 		Renderer2D::DrawSprite(transformComp.GetWorldMatrix(), spriteComp, (int)entity);
 	}
 
 	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
 	for (auto entity : animatedSpriteGroup)
 	{
-		auto [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
-		Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.animator.GetSpriteSheet(), spriteComp.tint, (int)entity);
+		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
+		if (spriteComp.spriteSheet && spriteComp.spriteSheet->GetSubTexture()) {
+			spriteComp.spriteSheet->GetSubTexture()->SetCurrentCell(spriteComp.currentFrame);
+			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.spriteSheet->GetSubTexture(), spriteComp.tint, (int)entity);
+		}
 	}
 
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
 	for (auto entity : circleGroup)
 	{
-		auto [transformComp, circleComp] = circleGroup.get(entity);
+		auto&& [transformComp, circleComp] = circleGroup.get(entity);
 		Renderer2D::DrawCircle(transformComp.GetWorldMatrix(), circleComp, (int)entity);
+	}
+
+	auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
+	for (auto entity : textGroup)
+	{
+		auto&& [transformComp, textComp] = textGroup.get(entity);
+		Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
 	}
 
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 	for (auto entity : staticMeshGroup)
 	{
-		auto [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
-		Renderer::Submit(staticMeshComp.material, staticMeshComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
+		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
+		if (staticMeshComp.mesh)
+		{
+			Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
+			//const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
+			//if (staticMeshComp.materialOverrides.size() != meshes.size())
+			//	staticMeshComp.materialOverrides.resize(meshes.size());
+			//for (size_t i = 0; i < meshes.size(); i++)
+			//{
+			//	if (!staticMeshComp.materialOverrides[i].empty())
+			//		Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+			//	else
+			//		Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
+			//}
+		}
 	}
 
-	if (m_Box2DDraw && m_Box2DWorld)
-		m_Box2DWorld->DrawDebugData();
+	auto primitiveGroup = m_Registry.view<TransformComponent, PrimitiveComponent>();
+	for (auto entity : primitiveGroup)
+	{
+		auto&& [transformComp, primitiveComp] = primitiveGroup.get(entity);
+		Renderer::Submit(primitiveComp.mesh, primitiveComp.material, transformComp.GetWorldMatrix(), (int)entity);
+	}
+
+	auto tilemapGroup = m_Registry.view<TransformComponent, TilemapComponent>();
+	for (auto entity : tilemapGroup)
+	{
+		auto&& [transformComp, tilemapComp] = tilemapGroup.get(entity);
+		if (tilemapComp.tileset && tilemapComp.mesh)
+		{
+			Renderer::Submit(tilemapComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
+		}
+	}
+
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->OnRender();
 
 	Renderer::EndScene();
 
@@ -287,7 +347,8 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 void Scene::Render(Ref<FrameBuffer> renderTarget)
 {
-	SceneGraph::Traverse(m_Registry);
+	PROFILE_FUNCTION();
+
 	Matrix4x4 view;
 	Matrix4x4 projection;
 
@@ -297,7 +358,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 	{
 		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
 		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-		projection = cameraComp.Camera.GetProjectionMatrix();
+		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
 	Render(renderTarget, view, projection);
@@ -307,121 +368,137 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 
 void Scene::OnUpdate(float deltaTime)
 {
+	PROFILE_FUNCTION();
+
 	m_IsUpdating = true;
-	m_Registry.view<AnimatedSpriteComponent>().each([=](auto entity, auto& animatedSpriteComp)
-	{
-		animatedSpriteComp.animator.Animate(deltaTime);
-	});
-
-	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-	{
-		if (nsc.InstantiateScript != nullptr)
+	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
-			if (!nsc.Instance)
+			if (animatedSpriteComp.spriteSheet)
+				animatedSpriteComp.Animate(deltaTime);
+		});
+
+	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& luaScriptComp)
+		{
+			if (!luaScriptComp.created)
 			{
-				nsc.Instance = nsc.InstantiateScript(nsc.Name);
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
 			}
+			luaScriptComp.OnUpdate(deltaTime);
+		});
 
-			nsc.Instance->OnUpdate(deltaTime);
-		}
-		else
-			ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-	});
-
-	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
-	{
-		if (!luaScriptComp.created)
+	m_Registry.view<PrimitiveComponent>(entt::exclude<DestroyMarker>).each([](auto entity, auto& primitiveComponent)
 		{
-			luaScriptComp.OnCreate();
-			luaScriptComp.created = true;
-		}
-		luaScriptComp.OnUpdate(deltaTime);
-	});
-
-	m_Registry.view<PrimitiveComponent, StaticMeshComponent>().each([=](auto entity, auto& primitiveComponent, auto& staticMeshComponent)
-	{
-		if (primitiveComponent.needsUpdating)
-		{
-			switch (primitiveComponent.type)
+			if (primitiveComponent.needsUpdating)
 			{
-			case PrimitiveComponent::Shape::Cube:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCube(primitiveComponent.cubeWidth, primitiveComponent.cubeHeight, primitiveComponent.cubeDepth), "Cube");
-				break;
-			case PrimitiveComponent::Shape::Sphere:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateSphere(primitiveComponent.sphereRadius, primitiveComponent.sphereLongitudeLines, primitiveComponent.sphereLatitudeLines), "Sphere");
-				break;
-			case PrimitiveComponent::Shape::Plane:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateGrid(primitiveComponent.planeWidth, primitiveComponent.planeLength, primitiveComponent.planeLengthLines, primitiveComponent.planeWidthLines, primitiveComponent.planeTileU, primitiveComponent.planeTileV), "Plane");
-				break;
-			case PrimitiveComponent::Shape::Cylinder:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.cylinderBottomRadius, primitiveComponent.cylinderTopRadius, primitiveComponent.cylinderHeight, primitiveComponent.cylinderSliceCount, primitiveComponent.cylinderStackCount), "Cylinder");
-				break;
-			case PrimitiveComponent::Shape::Cone:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateCylinder(primitiveComponent.coneBottomRadius, 0.00001f, primitiveComponent.coneHeight, primitiveComponent.coneSliceCount, primitiveComponent.coneStackCount), "Cone");
-				break;
-			case PrimitiveComponent::Shape::Torus:
-				staticMeshComponent.mesh.LoadModel(GeometryGenerator::CreateTorus(primitiveComponent.torusOuterRadius, primitiveComponent.torusInnerRadius, primitiveComponent.torusSliceCount), "Torus");
-				break;
-			default:
-				break;
+				primitiveComponent.SetType(primitiveComponent.type);
 			}
-			primitiveComponent.needsUpdating = false;
-		}
-	});
+		});
 
 	m_IsUpdating = false;
+
+	auto destroyView = m_Registry.view<DestroyMarker>();
+
+	for (auto entity : destroyView)
+	{
+		Entity e = Entity(entity, this);
+		m_PhysicsEngine2D->DestroyEntity(e);
+
+		SceneGraph::Remove(e);
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnFixedUpdate()
 {
+	PROFILE_FUNCTION();
+
 	m_IsUpdating = true;
 
-	m_Registry.view<NativeScriptComponent>().each([=](auto entity, auto& nsc)
-	{
-		if (nsc.InstantiateScript != nullptr)
-		{
-			if (!nsc.Instance)
-			{
-				nsc.Instance = nsc.InstantiateScript(nsc.Name);
-				nsc.Instance->m_Entity = Entity{ entity, this };
-				nsc.Instance->OnCreate();
-			}
-
-			nsc.Instance->OnFixedUpdate();
-		}
-		else
-			ENGINE_ERROR("Native Script component was added but no scriptable entity was bound");
-	});
-
-	m_Registry.view<LuaScriptComponent>().each([=](auto entity, auto& luaScriptComp)
-	{
-		if (!luaScriptComp.created)
-		{
-			luaScriptComp.OnCreate();
-			luaScriptComp.created = true;
-		}
-		luaScriptComp.OnFixedUpdate();
-	});
-
 	// Physics
-	const int32_t velocityIterations = 6;
-	const int32_t positionIterations = 2;
-	if (m_Box2DWorld != nullptr)
-	{
-		m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), 6, 2);
+	m_PhysicsEngine2D->OnFixedUpdate();
 
-		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([=](auto entity, auto& luaScriptComp)
 		{
-			b2Body* body = (b2Body*)rigidBodyComp.RuntimeBody;
-			const b2Vec2& position = body->GetPosition();
-			transformComp.position.x = position.x;
-			transformComp.position.y = position.y;
-			transformComp.rotation.z = (float)body->GetAngle();
+			if (!luaScriptComp.created)
+			{
+				luaScriptComp.OnCreate();
+				luaScriptComp.created = true;
+			}
+			luaScriptComp.OnFixedUpdate();
+			if (luaScriptComp.IsContactListener() && !m_PhysicsEngine2D->GetContactListener()->m_Contacts.empty())
+			{
+				for (auto fixture : luaScriptComp.GetFixtures())
+				{
+					for (Contact2D& contact : m_PhysicsEngine2D->GetContactListener()->m_Contacts)
+					{
+						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
+						{
+							if (fixture == contact.fixtureB && !contact.triggeredA)
+							{
+								luaScriptComp.OnBeginContact(contact.fixtureA, contact.localNormal, contact.localPoint);
+								contact.triggeredA = true;
+							}
+							else if (fixture == contact.fixtureA && !contact.triggeredB)
+							{
+								luaScriptComp.OnBeginContact(contact.fixtureB, contact.localNormal, contact.localPoint);
+								contact.triggeredB = true;
+							}
+
+							if (contact.old)
+							{
+								luaScriptComp.OnEndContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
+							}
+						}
+					}
+				}
+			}
 		});
+
+	if (m_PhysicsEngine2D != nullptr)
+	{
+		m_PhysicsEngine2D->RemoveOldContacts();
+		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
+			{
+				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, BoxCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, CircleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, PolygonCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, CapsuleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+
+		m_Registry.view<TransformComponent, TilemapComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
+			{
+				if(colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+			});
+	}
+
+	auto destroyView = m_Registry.view<DestroyMarker>();
+
+	for (auto entity : destroyView)
+	{
+		Entity e = Entity(entity, this);
+		m_PhysicsEngine2D->DestroyEntity(e);
+
+		SceneGraph::Remove(e);
 	}
 
 	m_IsUpdating = false;
@@ -437,12 +514,12 @@ void Scene::OnViewportResize(uint32_t width, uint32_t height)
 	// Resize non fixed aspect ratio cameras
 	m_Registry.view<CameraComponent>().each(
 		[=]([[maybe_unused]] const auto cameraEntity, auto& cameraComp)
-	{
-		if (!cameraComp.FixedAspectRatio)
 		{
-			cameraComp.Camera.SetAspectRatio((float)width / (float)height);
-		}
-	});
+			if (!cameraComp.fixedAspectRatio)
+			{
+				cameraComp.camera.SetAspectRatio((float)width / (float)height);
+			}
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -459,7 +536,7 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	std::filesystem::path finalPath = filepath;
 	finalPath.replace_extension(".scene");
 
-	ENGINE_INFO("Saving Scene {0} to {1}", m_SceneName, finalPath.string());
+	ENGINE_INFO("Saving Scene to {0}", finalPath.string());
 
 	if (!std::filesystem::exists(finalPath))
 	{
@@ -496,7 +573,7 @@ void Scene::Save(std::filesystem::path filepath, bool binary)
 	}
 
 	m_Dirty = false;
-	SceneSaved event(finalPath);
+	SceneSavedEvent event(finalPath);
 	Application::CallEvent(event);
 	m_IsSaving = false;
 }
@@ -513,6 +590,8 @@ void Scene::Save(bool binary)
 
 bool Scene::Load(bool binary)
 {
+	PROFILE_FUNCTION();
+
 	std::filesystem::path filepath = m_Filepath;
 
 	if (!std::filesystem::exists(filepath))
@@ -537,7 +616,7 @@ bool Scene::Load(bool binary)
 	}
 
 	m_Dirty = false;
-	SceneLoaded event(filepath);
+	SceneLoadedEvent event(filepath);
 	Application::CallEvent(event);
 	return true;
 }
@@ -568,8 +647,8 @@ Entity Scene::GetPrimaryCameraEntity()
 	auto view = m_Registry.view<CameraComponent>();
 	for (auto entity : view)
 	{
-		auto& cameraComp = view.get<CameraComponent>(entity);
-		if (cameraComp.Primary)
+		CameraComponent const& cameraComp = view.get<CameraComponent>(entity);
+		if (cameraComp.primary)
 			return Entity{ entity, this };
 	}
 	return Entity();
@@ -577,26 +656,61 @@ Entity Scene::GetPrimaryCameraEntity()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::DestroyBody(b2Body* body)
+Entity Scene::GetEntityByName(const std::string& name)
 {
-	if (m_Box2DWorld)
-		m_Box2DWorld->DestroyBody(body);
+	auto view = m_Registry.view<NameComponent>();
+	for (auto entity : view)
+	{
+		auto [nameComp] = view.get(entity);
+		if (name == nameComp.name)
+			return Entity(entity, this);
+	}
+	return Entity();
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::GetEntityByPath(const std::string& path)
+{
+	std::vector<std::string> splitPath = SplitString(path, '/');
+
+	if (splitPath.size() == 1)
+		return GetEntityByName(splitPath[0]);
+	else
+	{
+		entt::entity entity = SceneGraph::FindEntity(splitPath, m_Registry);
+		if (entity != entt::null)
+			return Entity(entity, this);
+		else
+			return Entity();
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::SetShowDebug(bool show)
 {
-	if (show && !m_Box2DDraw)
-	{
-		m_Box2DDraw = new Box2DDebugDraw();
-		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
-		if (m_Box2DWorld)
-			m_Box2DWorld->SetDebugDraw(m_Box2DDraw);
-	}
-	else if (!show)
-	{
-		delete m_Box2DDraw;
-		m_Box2DDraw = nullptr;
-	}
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->ShowDebugDraw(show);
+	m_DrawDebug = show;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+HitResult2D Scene::RayCast2D(Vector2f begin, Vector2f end)
+{
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->RayCast(begin, end);
+	return HitResult2D();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
+{
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->MultiRayCast2D(begin, end);
+	return std::vector<HitResult2D>();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

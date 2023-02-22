@@ -30,10 +30,6 @@
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v1.x
-[submodule "Engine/vendor/LiquidFun"]
-	path = Engine/vendor/LiquidFun
-	url = https://github.com/google/liquidfun
-	branch = master
 [submodule "Engine/vendor/SPIRV-Cross"]
 	path = Engine/vendor/SPIRV-Cross
 	url = https://github.com/KhronosGroup/SPIRV-Cross
@@ -42,3 +38,9 @@
 	path = Engine/vendor/lua
 	url = https://github.com/lua/lua
 	branch = master
+[submodule "Engine/vendor/box2d"]
+	path = Engine/vendor/box2d
+	url = https://github.com/ThomasJowett/box2d-particles
+[submodule "Engine/vendor/msdf-atlas-gen"]
+	path = Engine/vendor/msdf-atlas-gen
+	url = https://github.com/Chlumsky/msdf-atlas-gen.git

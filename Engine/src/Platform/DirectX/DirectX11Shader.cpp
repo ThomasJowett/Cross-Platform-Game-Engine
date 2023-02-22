@@ -6,6 +6,7 @@
 #include "Utilities/StringUtils.h"
 #include "Core/Application.h"
 #include "DirectX11Context.h"
+#include "Logging/Instrumentor.h"
 
 #pragma comment(lib, "dxguid.lib")
 
@@ -149,7 +150,6 @@ HRESULT DirectX11Shader::CompileShaders(const std::filesystem::path& filename)
 	if (SUCCEEDED(hr))
 	{
 		hr = g_D3dDevice->CreateDomainShader(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), nullptr, &m_DomainShader);
-
 
 		if (SUCCEEDED(hr))
 			D3DReflect(pBlob->GetBufferPointer(), pBlob->GetBufferSize(), IID_ID3D11ShaderReflection, (void**)&m_DomainReflector);

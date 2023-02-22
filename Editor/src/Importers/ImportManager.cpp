@@ -1,7 +1,9 @@
 #include "ImportManager.h"
 
 #include "FbxImporter.h"
+#include "glTFImporter.h"
 #include "OBJImporter.h"
+#include "TiledImporter.h"
 
 #include <algorithm>
 
@@ -11,8 +13,6 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 
 	std::transform(extString.begin(), extString.end(), extString.begin(), ::tolower);
 
-	const char* ext = extString.c_str();
-
 	if (extString == ".fbx")
 	{
 		FbxImporter::ImportAssets(asset, destination);
@@ -20,6 +20,18 @@ void ImportManager::ImportAsset(const std::filesystem::path& asset, const std::f
 	else if (extString == ".obj")
 	{
 		OBJImporter::ImportAssets(asset, destination);
+	}
+	else if (extString == ".tmx")
+	{
+		TiledImporter::ImportTilemap(asset, destination);
+	}
+	else if (extString == ".tsx")
+	{
+		TiledImporter::ImportTileset(asset, destination);
+	}
+	else if (extString == ".gltf" || extString == ".glb")
+	{
+		glTFImporter::ImportAssets(asset, destination);
 	}
 }
 

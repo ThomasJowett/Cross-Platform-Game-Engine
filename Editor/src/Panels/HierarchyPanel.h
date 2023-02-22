@@ -1,12 +1,18 @@
 #pragma once
 
-#include "Engine.h"
 #include "Interfaces/ICopyable.h"
+#include "Interfaces/IUndoable.h"
 
 #include "TinyXml2/tinyxml2.h"
+#include "Core/Layer.h"
+#include "Scene/Entity.h"
+#include "Renderer/Mesh.h"
+#include "Renderer/Material.h"
+
+struct ImGuiTextFilter;
 
 class HierarchyPanel :
-    public Layer, public ICopyable
+    public Layer, public ICopyable, public IUndoable
 {
 public:
     explicit HierarchyPanel(bool* show);
@@ -18,7 +24,7 @@ public:
     void OnImGuiRender() override;
     virtual void OnEvent(Event& event) override;
 
-    Entity GetSelectedEntity() { return m_SelectedEntity; }
+    Entity GetSelectedEntity();
     void SetSelectedEntity(Entity entity);
 
     // Inherited via ICopyable
@@ -30,6 +36,12 @@ public:
     virtual bool HasSelection() const override;
     virtual void SelectAll() override;
     virtual bool IsReadOnly() const override;
+
+    // Inherited via IUndoable
+    virtual void Undo(int asteps) override;
+    virtual void Redo(int asteps) override;
+    virtual bool CanUndo() const override;
+    virtual bool CanRedo() const override;
 
     bool IsFocused() { return m_Focused; }
     void HasFocused() { m_Focused = false; }

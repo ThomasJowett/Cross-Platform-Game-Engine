@@ -1,6 +1,7 @@
 #pragma once
 
 #include "math/Vector3f.h"
+#include "math/Matrix.h"
 
 #include "cereal/cereal.hpp"
 
@@ -17,7 +18,7 @@ struct TransformComponent
 	TransformComponent(const Vector3f& position, const Vector3f& rotation, const Vector3f& scale)
 		:position(position), rotation(rotation), scale(scale) {}
 
-	Matrix4x4 GetWorldMatrix()
+	const Matrix4x4& GetWorldMatrix() const
 	{
 		return m_WorldMatrix;
 	}
@@ -27,12 +28,17 @@ struct TransformComponent
 		return m_ParentMatrix * position;
 	}
 
-	Matrix4x4 GetLocalMatrix()
+	const Vector3f GetWorldRotation() const
+	{
+		return m_ParentMatrix.ExtractRotation().EulerAngles() + rotation;
+	}
+
+	Matrix4x4 GetLocalMatrix() const
 	{
 		return Matrix4x4::Translate(position) * Matrix4x4::Rotate(Quaternion(rotation)) * Matrix4x4::Scale(scale);
 	}
 
-	void SetWorldMatrix(Matrix4x4 parentMatrix) 
+	void SetWorldMatrix(Matrix4x4 parentMatrix)
 	{ 
 		m_ParentMatrix = parentMatrix;
 		m_WorldMatrix = parentMatrix * GetLocalMatrix();
@@ -48,8 +54,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(cereal::make_nvp("Position", position));
-		archive(cereal::make_nvp("Rotation", rotation));
-		archive(cereal::make_nvp("Scale", scale));
+		archive(position, rotation, scale);
 	}
 };

@@ -4,10 +4,8 @@
 #include <shellapi.h>
 #endif // __WINDOWS__
 
-#include "imgui/imgui.h"
-#include "Core/Version.h"
 #include "Fonts/Fonts.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
 #include "FileSystem/Webpage.h"
@@ -30,13 +28,13 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-#include "Scene/SceneManager.h"
-
 #include "ProjectData.h"
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
 #include "RuntimeExporter.h"
+
+#include "Engine.h"
 
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
@@ -56,6 +54,8 @@ MainDockSpace::MainDockSpace()
 	m_ShowContentExplorer = true;
 	m_ShowJoystickInfo = true;
 
+	m_ShowTilemapEditor = false;
+
 	m_ShowPlayPauseToolbar = true;
 	m_ShowLightsToolbar = false;
 	m_ShowVolumesToolbar = false;
@@ -70,6 +70,11 @@ MainDockSpace::MainDockSpace()
 #ifdef DEBUG
 	m_ShowImGuiDemo = true;
 #endif // DEBUG
+}
+
+MainDockSpace::~MainDockSpace()
+{
+	HistoryManager::Reset();
 }
 
 void MainDockSpace::OnAttach()
@@ -110,18 +115,22 @@ void MainDockSpace::OnAttach()
 	m_ShowPlayPauseToolbar = Settings::GetBool("Toolbars", "PlayPause");
 	m_ShowSaveOpenToolbar = Settings::GetBool("Toolbars", "SaveOpen");
 
-	m_ContentExplorer = new ContentExplorerPanel(&m_ShowContentExplorer);
+	m_ContentExplorer = CreateRef<ContentExplorerPanel>(&m_ShowContentExplorer);
 
-	Application::Get().AddOverlay(new EditorPreferencesPanel(&m_ShowEditorPreferences));
-	Application::Get().AddOverlay(new ProjectSettingsPanel(&m_ShowProjectSettings));
-	Application::Get().AddOverlay(m_ContentExplorer);
-	Application::Get().AddOverlay(new ConsolePanel(&m_ShowConsole));
-	Application::Get().AddOverlay(new JoystickInfoPanel(&m_ShowJoystickInfo));
-	HierarchyPanel* hierarchyPanel = new HierarchyPanel(&m_ShowHierarchy);
-	Application::Get().AddOverlay(hierarchyPanel);
-	Application::Get().AddOverlay(new ViewportPanel(&m_ShowViewport, hierarchyPanel));
-	Application::Get().AddOverlay(new PropertiesPanel(&m_ShowProperties, hierarchyPanel));
-	Application::Get().AddOverlay(new ErrorListPanel(&m_ShowErrorList));
+	Ref<TilemapEditor> tilemapEditor = CreateRef<TilemapEditor>(&m_ShowTilemapEditor);
+
+	Application::GetLayerStack().AddOverlay(CreateRef<EditorPreferencesPanel>(&m_ShowEditorPreferences));
+	Application::GetLayerStack().AddOverlay(CreateRef<ProjectSettingsPanel>(&m_ShowProjectSettings));
+	Application::GetLayerStack().AddOverlay(m_ContentExplorer);
+	Application::GetLayerStack().AddOverlay(CreateRef<ConsolePanel>(&m_ShowConsole));
+	Application::GetLayerStack().AddOverlay(CreateRef<JoystickInfoPanel>(&m_ShowJoystickInfo));
+	Ref<HierarchyPanel> hierarchyPanel = CreateRef<HierarchyPanel>(&m_ShowHierarchy);
+	Application::GetLayerStack().AddOverlay(hierarchyPanel);
+	Application::GetLayerStack().AddOverlay(CreateRef<ViewportPanel>(&m_ShowViewport, hierarchyPanel, tilemapEditor));
+	Application::GetLayerStack().AddOverlay(CreateRef<PropertiesPanel>(&m_ShowProperties, hierarchyPanel, tilemapEditor));
+	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
+
+	Application::GetLayerStack().AddOverlay(tilemapEditor);
 
 	if (!Application::GetOpenDocument().empty())
 	{
@@ -167,17 +176,19 @@ void MainDockSpace::OnDetach()
 void MainDockSpace::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
-	dispatcher.Dispatch<AppOpenDocumentChange>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
+	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent e) { HistoryManager::Reset(); return false; });
 }
 
 void MainDockSpace::OnUpdate(float deltaTime)
 {
+	RenderCommand::Clear();
 }
 
 void MainDockSpace::OnImGuiRender()
 {
 #ifdef DEBUG
-	if(m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
+	if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 #endif // DEBUG
 
 	static bool opt_fullscreen_persistant = true;
@@ -236,7 +247,7 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N"))
 			{
-				Application::Get().AddOverlay(new ProjectsStartScreen(true));
+				Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
@@ -255,7 +266,7 @@ void MainDockSpace::OnImGuiRender()
 				}
 				ImGui::EndMenu();
 			}
-			if (ImGui::MenuItem(ICON_FA_SAVE" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
+			if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save Scene", "Ctrl + S", nullptr, SceneManager::IsSceneLoaded()))
 			{
 				SceneManager::CurrentScene()->Save(false);
 			}
@@ -270,7 +281,7 @@ void MainDockSpace::OnImGuiRender()
 					exporter.ExportGame();
 				}
 			}
-			if (ImGui::MenuItem(ICON_FA_SIGN_OUT_ALT" Exit", "Alt + F4")) Application::Get().Close();
+			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
 
@@ -292,12 +303,12 @@ void MainDockSpace::OnImGuiRender()
 				redoable = iUndo->CanRedo();
 			}
 
-			if (ImGui::MenuItem(ICON_FA_UNDO" Undo", "Ctrl + Z", nullptr, undoable))
+			if (ImGui::MenuItem(ICON_FA_ROTATE_LEFT" Undo", "Ctrl + Z", nullptr, undoable))
 				iUndo->Undo();
-			if (ImGui::MenuItem(ICON_FA_REDO" Redo", "Ctrl + Y", nullptr, redoable))
+			if (ImGui::MenuItem(ICON_FA_ROTATE_RIGHT" Redo", "Ctrl + Y", nullptr, redoable))
 				iUndo->Redo();
 			ImGui::Separator();//-----------------------------------------------
-			if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl + X", nullptr, copyable && iCopy->HasSelection()))
+			if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Cut();
 			if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Copy();
@@ -305,26 +316,26 @@ void MainDockSpace::OnImGuiRender()
 				iCopy->Paste();
 			if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl + D", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Duplicate();
-			if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
+			if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, copyable && iCopy->HasSelection()))
 				iCopy->Delete();
 			ImGui::Separator();//-----------------------------------------------
-			if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER" Select All", "Ctrl + A", nullptr, copyable))
+			if (ImGui::MenuItem(ICON_FA_ARROW_POINTER" Select All", "Ctrl + A", nullptr, copyable))
 				iCopy->SelectAll();
 			ImGui::Separator();//-----------------------------------------------
-			ImGui::MenuItem(ICON_FA_COG" Preferences", "", &m_ShowEditorPreferences);
-			ImGui::MenuItem(ICON_FA_COGS" Project Settings", "", &m_ShowProjectSettings);
+			ImGui::MenuItem(ICON_FA_GEAR" Preferences", "", &m_ShowEditorPreferences);
+			ImGui::MenuItem(ICON_FA_GEARS" Project Settings", "", &m_ShowProjectSettings);
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Window"))
 		{
-			ImGui::MenuItem(ICON_FA_TOOLS" Properties", "", &m_ShowProperties);
+			ImGui::MenuItem(ICON_FA_SCREWDRIVER_WRENCH" Properties", "", &m_ShowProperties);
 			ImGui::MenuItem(ICON_FA_SITEMAP" Hierarchy", "", &m_ShowHierarchy);
 			ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Content Explorer", "", &m_ShowContentExplorer);
 			ImGui::MenuItem(ICON_FA_BORDER_ALL" Viewport", "", &m_ShowViewport);
 			ImGui::MenuItem(ICON_FA_TERMINAL" Console", "", &m_ShowConsole);
-			ImGui::MenuItem(ICON_FA_TIMES_CIRCLE" Error List", "", &m_ShowErrorList);
-			ImGui::MenuItem(ICON_FA_TASKS" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
+			ImGui::MenuItem(ICON_FA_CIRCLE_XMARK" Error List", "", &m_ShowErrorList);
+			ImGui::MenuItem(ICON_FA_CLIPBOARD_LIST" Task List", "", &m_ShowTaskList, false);//TODO: Create Task List ImguiPanel
 			ImGui::MenuItem(ICON_FA_GAMEPAD" Joystick Info", "", &m_ShowJoystickInfo);
 #ifdef DEBUG
 			ImGui::MenuItem("ImGui Demo", "", &m_ShowImGuiDemo);
@@ -341,14 +352,14 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_MOUNTAIN" Landscape", "", &m_ShowLandscapeToolbar, false); //TODO: create landscape tool
 			ImGui::MenuItem(ICON_FA_SEEDLING" Foliage", "", &m_ShowFoliageToolbar, false); //TODO: create a foliage tool
 			ImGui::MenuItem(ICON_FA_NETWORK_WIRED" Multiplayer", "", &m_ShowMultiplayerToolbar, false); //TODO: Create multiplayer tool
-			ImGui::MenuItem(ICON_FA_SAVE" Save/Open", "", &m_ShowSaveOpenToolbar); //TODO: Create Save/openTool
+			ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save/Open", "", &m_ShowSaveOpenToolbar); //TODO: Create Save/openTool
 			ImGui::MenuItem(ICON_FA_STEAM" Target Platform", "", &m_ShowTargetPlatformToolbar, false); //TODO: Create target Platform tool
 			ImGui::EndMenu();
 		}
 
 		if (ImGui::BeginMenu("Help"))
 		{
-			ImGui::MenuItem(ICON_FA_INFO_CIRCLE" About", "", &about);
+			ImGui::MenuItem(ICON_FA_CIRCLE_INFO" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
 				Webpage::OpenWebpage(L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
@@ -394,12 +405,11 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::Text("Dear ImGui version: %s", ImGui::GetVersion());
 		ImGui::Text("spd log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
 		ImGui::Text("cereal version: %i.%i.%i", CEREAL_VERSION_MAJOR, CEREAL_VERSION_MINOR, CEREAL_VERSION_PATCH);
-		ImGui::Text("Simple ini version: 4.17");
-		ImGui::Text("entt version: 3.9.0");
+		ImGui::Text("Simple ini version: %i.%i", 4, 17);
+		ImGui::Text("entt version: %i.%i.%i", 3, 9, 0);
 		ImGui::Text("SPIR-V Cross version: %i", SPV_VERSION);
 		ImGui::Text("lua version: %s.%s.%s", LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE);
 		ImGui::Text("Box2D version: %i.%i.%i", b2_version.major, b2_version.minor, b2_version.revision);
-		ImGui::Text("liquidfun version: %i.%i.%i", b2_liquidFunVersion.major, b2_liquidFunVersion.minor, b2_liquidFunVersion.revision);
 		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 		ImGui::EndPopup();
 	}
@@ -424,8 +434,9 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
 }
 
-bool MainDockSpace::OnOpenProject(AppOpenDocumentChange& event)
+bool MainDockSpace::OnOpenProject(AppOpenDocumentChangedEvent& event)
 {
+	HistoryManager::Reset();
 	OpenProject(Application::Get().GetOpenDocument());
 
 	return false;
@@ -438,22 +449,82 @@ void MainDockSpace::HandleKeyBoardInputs()
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ctrl && !shift && !alt && ImGui::IsKeyPressed('S'))
+	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)))
 	{
-		SceneManager::CurrentScene()->Save(false);
+		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
+		{
+			if (iSave->NeedsSaving())
+				iSave->Save();
+		}
+		else if (SceneManager::IsSceneLoaded())
+			SceneManager::CurrentScene()->Save(false);
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('N'))
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
+	{
+		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
+			iSave->SaveAs();
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
 	{
 		m_ContentExplorer->CreateNewScene();
 	}
-	else if (ctrl && shift && !alt && ImGui::IsKeyPressed('N'))
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
 	{
-		Application::Get().AddOverlay(new ProjectsStartScreen(true));
+		Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('O'))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O)))
 	{
 		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
 		if (fileToOpen)
 			Application::Get().SetOpenDocument(fileToOpen.value());
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+	{
+		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
+			if (iUndo->CanUndo())
+				iUndo->Undo();
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
+	{
+		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
+			if (iUndo->CanRedo())
+				iUndo->Redo();
+	}
+	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+			if (iCopy->HasSelection())
+				iCopy->Delete();
+	}
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
+		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+			if (iCopy->HasSelection())
+				iCopy->Copy();
+	}
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
+		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+				iCopy->Paste();
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+			if (iCopy->HasSelection())
+				iCopy->Cut();
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+			if (iCopy->HasSelection())
+				iCopy->Duplicate();
+	}
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+	{
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+			if (iCopy->HasSelection())
+				iCopy->SelectAll();
 	}
 }

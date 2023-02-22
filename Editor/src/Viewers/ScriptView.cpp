@@ -1,22 +1,39 @@
 #include "ScriptView.h"
 #include "Fonts/Fonts.h"
 #include "MainDockSpace.h"
-#include "IconsFontAwesome5.h"
+#include "IconsFontAwesome6.h"
 
-#include "Scripting/Lua/LuaManager.h"
 #include "FileSystem/FileDialog.h"
 #include "Core/Settings.h"
+#include "ViewerManager.h"
+#include "Scripting/Lua/LuaManager.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
-	:Layer("ScriptView"), m_Show(show), m_FilePath(filepath)
+	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
 {
 }
 
 void ScriptView::OnAttach()
 {
+	if (!std::filesystem::exists(m_FilePath))
+	{
+		ViewerManager::CloseViewer(m_FilePath);
+		return;
+	}
+
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();
+
+	if (lang.mName == "Lua")
+	{
+		const auto& identifiers = LuaManager::GetIdentifiers();
+		for (auto& [keyword, definition] : identifiers) {
+			TextEditor::Identifier id;
+			id.mDeclaration = definition;
+			lang.mIdentifiers.insert(std::make_pair(keyword, id));
+		}
+	}
 
 	m_TextEditor.SetLanguageDefinition(lang);
 
@@ -38,6 +55,10 @@ void ScriptView::OnAttach()
 	}
 }
 
+void ScriptView::OnDetach()
+{
+}
+
 void ScriptView::OnImGuiRender()
 {
 	if (!*m_Show)
@@ -49,7 +70,7 @@ void ScriptView::OnImGuiRender()
 
 		if (ImGui::BeginPopupModal("Save Prompt"))
 		{
-			ImGui::Text("Save unsaved changes?");
+			ImGui::TextUnformatted("Save unsaved changes?");
 			if (ImGui::Button("Save"))
 			{
 				m_TextEditor.SaveTextToFile(m_FilePath);
@@ -89,27 +110,26 @@ void ScriptView::OnImGuiRender()
 
 		bool readOnly = m_TextEditor.IsReadOnly();
 
-
 		if (ImGui::BeginMenuBar())
 		{
 			if (ImGui::BeginMenu("File"))
 			{
-				if (ImGui::MenuItem(ICON_FA_SAVE" Save", "Ctrl-S", nullptr, !readOnly))
+				if (ImGui::MenuItem(ICON_FA_FLOPPY_DISK" Save", "Ctrl + S", nullptr, !readOnly))
 					Save();
-				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl-Shift-S"))
+				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl + Shift + S"))
 					SaveAs();
 				ImGui::EndMenu();
 			}
 
 			if (ImGui::BeginMenu("Edit"))
 			{
-				if (ImGui::MenuItem(ICON_FA_UNDO" Undo", "Ctrl-Z", nullptr, !readOnly && m_TextEditor.CanUndo()))
+				if (ImGui::MenuItem(ICON_FA_ARROW_ROTATE_LEFT" Undo", "Ctrl-Z", nullptr, !readOnly && m_TextEditor.CanUndo()))
 					m_TextEditor.Undo();
-				if (ImGui::MenuItem(ICON_FA_REDO" Redo", "Ctrl-Y", nullptr, !readOnly && m_TextEditor.CanRedo()))
+				if (ImGui::MenuItem(ICON_FA_ARROW_ROTATE_RIGHT" Redo", "Ctrl-Y", nullptr, !readOnly && m_TextEditor.CanRedo()))
 					m_TextEditor.Redo();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem(ICON_FA_CUT" Cut", "Ctrl-X", nullptr, m_TextEditor.HasSelection() && !readOnly))
+				if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl-X", nullptr, m_TextEditor.HasSelection() && !readOnly))
 					m_TextEditor.Cut();
 				if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl-C", nullptr, m_TextEditor.HasSelection()))
 					m_TextEditor.Copy();
@@ -117,11 +137,11 @@ void ScriptView::OnImGuiRender()
 					m_TextEditor.Paste();
 				if (ImGui::MenuItem(ICON_FA_CLONE" Duplicate", "Ctrl-D", nullptr, !readOnly))
 					m_TextEditor.Duplicate();
-				if (ImGui::MenuItem(ICON_FA_TRASH_ALT" Delete", "Del", nullptr, m_TextEditor.HasSelection() && !readOnly))
+				if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, m_TextEditor.HasSelection() && !readOnly))
 					m_TextEditor.Delete();
 				ImGui::Separator();//---------------------------------------------------------------
 
-				if (ImGui::MenuItem(ICON_FA_MOUSE_POINTER" Select all", "Ctrl-A", nullptr))
+				if (ImGui::MenuItem(ICON_FA_ARROW_POINTER" Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
 				ImGui::EndMenu();
 			}
@@ -168,9 +188,9 @@ void ScriptView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
 	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
-	if(dialogPath)
+	if (dialogPath)
 	{
-		m_FilePath =  dialogPath.value();
+		m_FilePath = dialogPath.value();
 		if (!m_FilePath.has_extension())
 			m_FilePath.replace_extension(ext);
 		Save();
@@ -201,27 +221,17 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 
 void ScriptView::ParseLuaScript()
 {
-	Ref<sol::environment> m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
-	sol::protected_function_result result = LuaManager::GetState().script_file(m_FilePath.string(), *m_SolEnvironment, sol::script_pass_on_error);
-
+	Scene testScene("");
+	
+	Entity entity = testScene.CreateEntity("lua script");
+	
+	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
+	auto results = luaComp.ParseScript(entity);
+	
 	TextEditor::ErrorMarkers errorMarkers;
-	if (!result.valid())
+	if (results.has_value())
 	{
-		sol::error error = result;
-		std::string errorStr = error.what();
-		int line = 1;
-		auto linepos = errorStr.find(".lua:");
-		std::string errorLine = errorStr.substr(linepos + 5); //+4 .lua: + 1
-		auto lineposEnd = errorLine.find(":");
-		errorLine = errorLine.substr(0, lineposEnd);
-		line = std::stoi(errorLine);
-		errorStr = errorStr.substr(linepos + errorLine.size() + lineposEnd + 4); //+4 .lua:
-
-		errorMarkers.insert({ line, errorStr });
-		m_TextEditor.SetErrorMarkers(errorMarkers);
+		errorMarkers.emplace(results.value().first, results.value().second);
 	}
-	else
-	{
-		m_TextEditor.SetErrorMarkers(errorMarkers);
-	}
+	m_TextEditor.SetErrorMarkers(errorMarkers);
 }

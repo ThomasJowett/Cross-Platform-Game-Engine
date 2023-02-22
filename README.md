@@ -2,7 +2,7 @@
  <a href="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/">Cross Platform Game Engine</a>
 </h1>
 <p align="center">
- <img width="128" height="128" src="/Editor/resources/Icons/Logo.png">
+ <img width="128" height="128" src="Editor/data/Icons/Logo.png">
 </p>
 
 <h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL.</h3>
@@ -14,12 +14,17 @@ To clone this repository run: `git clone --recursive https://github.com/ThomasJo
 
 ## Project Generation
 ### Windows
-For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat`
-
-_(A bug in premake5 means you may need to edit the .sln file and change the version to 17 if you want it to open in Visual Studio 2022)_
-
+For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat` in the Scripts folder
 ### Mac
-For Xcode, run the shell script `Progen_Xcode.sh`
+Make the premake5 and shell scripts executable by running
+```
+chmod +x vendor/bin/premake/premake5_arm
+chmod +x Scripts/Progen_gmake_arm.sh
+chmod +x Scripts/Progen_Xcode_arm.sh
+```
+For Xcode, run the shell script `Progen_Xcode_arm.sh` in the Scripts folder.
+
+For gcc, run the shell script `Progen_gmake_arm.sh` in the Scripts folder.
 ### Linux
 First install dependencies by opening a console window and running the following command:
 ```
@@ -28,13 +33,15 @@ sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl
 Then make the premake5 and shell script file executable by running 
 ```
 chmod +x vendor/bin/premake/premake5
-chmod +x Progen_gmake.sh
+chmod +x Scripts/Progen_gmake.sh
 ```
 Then run the shell script to generate the make files 
 ```
-./Progen_gmake.sh
+./Scripts/Progen_gmake.sh
 ```
 The engine can now be built by running `make`.
+## Example Projects
+If you would like to check out some example projects they can be downloaded from [here](https://github.com/ThomasJowett/ExampleGameProjects)
 ## Dependencies
 * [imgui](https://github.com/ocornut/imgui) : Dear ImGui: Bloat-free Immediate Mode Graphical User interface for C++ with minimal dependencies.
 * [Entt](https://github.com/skypjack/entt) : Fast and reliable entity-component system (ECS) 
@@ -50,3 +57,4 @@ The engine can now be built by running `make`.
 * [lua](https://github.com/lua/lua) : A powerful, efficient, lightweight, embeddable scripting language.
 * [sol2](https://github.com/ThePhD/sol2) : A C++ single header library binding to Lua.
 * [SPIR-V Cross](https://github.com/KhronosGroup/SPIRV-Cross) : A tool designed for parsing and converting SPIR-V to other shader languages.
+* [msdf atlas](https://github.com/Chlumsky/msdf-atlas-gen) : A utility for generating compact font atlases. 

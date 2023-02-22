@@ -1,5 +1,7 @@
 #include "FileDialog.h"
 
+#include "Engine.h"
+
 #ifdef __WINDOWS__
 #include <commdlg.h>
 #include <cderr.h>

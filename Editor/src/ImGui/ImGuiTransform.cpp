@@ -1,13 +1,18 @@
 #include "ImGuiTransform.h"
 
+#include "imgui/imgui.h"
+
 #include  "IconsFontAwesome5.h"
 #include "Scene/SceneManager.h"
+
+#include "math/Matrix.h"
 
 bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 {
 	bool edited = false;
 
-	ImGui::Text("Position");
+	ImGui::BeginGroup();
+	ImGui::TextUnformatted("Position");
 	float width = ImGui::GetContentRegionAvail().x;
 
 	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
@@ -51,7 +56,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	//--------------------------------------
 
 	Vector3f rotationDegrees((float)RadToDeg(rotation.x), (float)RadToDeg(rotation.y), (float)RadToDeg(rotation.z));
-	ImGui::Text("Rotation");
+	ImGui::TextUnformatted("Rotation");
 	ImGui::TextColored({ 245,0,0,255 }, "X");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);
@@ -88,7 +93,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	}
 
 	//--------------------------------------
-	ImGui::Text("Scale");
+	ImGui::TextUnformatted("Scale");
 	ImGui::SameLine();
 	static bool locked = true;
 	Vector3f lockedScale = scale;
@@ -196,6 +201,7 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 		rotation = { (float)DegToRad(rotationDegrees.x), (float)DegToRad(rotationDegrees.y), (float)DegToRad(rotationDegrees.z) };
 		SceneManager::CurrentScene()->MakeDirty();
 	}
+	ImGui::EndGroup();
 
-	return bool();
+	return edited;
 }

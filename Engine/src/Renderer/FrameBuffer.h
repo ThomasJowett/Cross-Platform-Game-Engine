@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/core.h"
+
 enum class FrameBufferTextureFormat
 {
 	None = 0,

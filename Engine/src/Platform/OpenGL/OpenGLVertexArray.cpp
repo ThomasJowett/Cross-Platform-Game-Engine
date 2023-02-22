@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "OpenGLVertexArray.h"
+#include "Renderer/Buffer.h"
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 #include <glad/glad.h>
 
@@ -53,7 +55,7 @@ void OpenGLVertexArray::UnBind() const
 	glBindVertexArray(0);
 }
 
-void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
+void OpenGLVertexArray::AddVertexBuffer(const VertexBuffer* vertexBuffer)
 {
 	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
@@ -119,24 +121,24 @@ void OpenGLVertexArray::AddVertexBuffer(const Ref<VertexBuffer>& vertexBuffer)
 		}
 	}
 
-	m_VertexBuffers.push_back(vertexBuffer);
+	//m_VertexBuffers.push_back(vertexBuffer);
 }
 
-void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
-{
-	PROFILE_FUNCTION();
-	glBindVertexArray(m_RendererID);
-	indexBuffer->Bind();
+//void OpenGLVertexArray::SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer)
+//{
+//	PROFILE_FUNCTION();
+//	glBindVertexArray(m_RendererID);
+//	indexBuffer->Bind();
+//
+//	m_IndexBuffer = indexBuffer;
+//}
 
-	m_IndexBuffer = indexBuffer;
-}
+//const std::vector<Ref<VertexBuffer>>& OpenGLVertexArray::GetVertexBuffers() const
+//{
+//	return m_VertexBuffers;
+//}
 
-const std::vector<Ref<VertexBuffer>>& OpenGLVertexArray::GetVertexBuffers() const
-{
-	return m_VertexBuffers;
-}
-
-const Ref<IndexBuffer>& OpenGLVertexArray::GetIndexBuffer() const
-{
-	return m_IndexBuffer;
-}
+//const Ref<IndexBuffer>& OpenGLVertexArray::GetIndexBuffer() const
+//{
+//	return m_IndexBuffer;
+//}

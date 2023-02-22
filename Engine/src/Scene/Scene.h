@@ -4,29 +4,31 @@
 #include <sstream>
 
 #include "EnTT/entt.hpp"
-#include "math/Matrix.h"
 #include "Core/UUID.h"
+#include "math/Vector2f.h"
+#include "Physics/PhysicsEngine2D.h"
 
 class Entity;
 class FrameBuffer;
 class Camera;
-class b2World;
-class b2Body;
-class b2Draw;
+class Matrix4x4;
+struct HitResult2D;
 
 class Scene
 {
 public:
-	Scene(std::filesystem::path filepath);
-	Scene(std::string name);
+	explicit Scene(const std::filesystem::path& filepath);
 	~Scene();
 
 	Entity CreateEntity(const std::string& name = "");
 	Entity CreateEntity(Uuid id, const std::string& name = "");
 
+	void InstantiateScene(const Ref<Scene> prefab, const Vector3f& position);
+	Entity InstantiateEntity(const Entity prefab, const Vector3f& position);
+
 	bool RemoveEntity(Entity& entity);
 
-	void DuplicateEntity(Entity entity);
+	Entity DuplicateEntity(Entity entity, Entity parent);
 
 	void OnRuntimeStart();
 	void OnRuntimePause();
@@ -47,32 +49,40 @@ public:
 	void OnViewportResize(uint32_t width, uint32_t height);
 
 	entt::registry& GetRegistry() { return m_Registry; }
-	const std::string& GetSceneName() const { return m_SceneName; }
-	void SetSceneName(std::string name) { m_SceneName = name; MakeDirty(); }
 
-	virtual void Save(bool binary = false);
-	virtual void Save(std::filesystem::path filepath, bool binary = false);
-	virtual bool Load(bool binary = false);
+	void Save(bool binary = false);
+	void Save(std::filesystem::path filepath, bool binary = false);
+	bool Load(bool binary = false);
 
 	void MakeDirty() { m_Dirty = true; }
-	bool IsDirty() { return m_Dirty; }
+	bool IsDirty() const { return m_Dirty; }
+	void MakeClean() { m_Dirty = false; }
 
-	bool IsSaving() { return m_IsSaving; }
-	bool IsUpdating() { return m_IsUpdating; }
+	bool IsSaving() const { return m_IsSaving; }
+	bool IsUpdating() const { return m_IsUpdating; }
 
-	const std::filesystem::path GetFilepath() const { return m_Filepath; }
+	std::filesystem::path GetFilepath() const { return m_Filepath; }
 	void SetFilepath(std::filesystem::path filepath);
 
 	Entity GetPrimaryCameraEntity();
+	Entity GetEntityByName(const std::string& name);
+	Entity GetEntityByPath(const std::string& path);
 
-	void DestroyBody(b2Body* body);
 	void SetShowDebug(bool show);
+
+	Vector2f& GetGravity() { return m_Gravity; }
+	void SetGravity(const Vector2f& gravity) { m_Gravity = gravity; if (m_PhysicsEngine2D) m_PhysicsEngine2D->SetGravity(gravity); }
+
+	uint32_t GetPixelsPerUnit()const { return m_PixelsPerUnit; }
+	void SetPixelsPerUnit(uint32_t pixels) { m_PixelsPerUnit = pixels; }
+
+	HitResult2D RayCast2D(Vector2f begin, Vector2f end);
+
+	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
 
 private:
 	entt::registry m_Registry;
 
-protected:
-	std::string m_SceneName;
 	std::filesystem::path m_Filepath;
 
 	uint32_t m_ViewportWidth = 0;
@@ -83,11 +93,17 @@ protected:
 	bool m_IsUpdating = false;
 	bool m_IsSaving = false;
 
-	b2World* m_Box2DWorld = nullptr;
-	b2Draw* m_Box2DDraw = nullptr;
+	Ref<PhysicsEngine2D> m_PhysicsEngine2D;
+
+	Vector2f m_Gravity = { 0.0f, -9.81f };
+
+	uint32_t m_PixelsPerUnit = 16;
 
 	std::stringstream m_Snapshot;
 
 	friend class Entity;
 	friend class SceneSerializer;
+
+	//Debug info
+	bool m_DrawDebug = false;
 };

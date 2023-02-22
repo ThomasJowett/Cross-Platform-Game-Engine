@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "OpenGLTexture.h"
 #include "Core/Application.h"
+#include "Logging/Instrumentor.h"
 
 #include <stb/stb_image.h>
 #include <filesystem>
@@ -40,23 +41,47 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	}
 }
 
-OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height)
-	:m_Width(width), m_Height(height), m_Path("NO DATA")
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
+	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
 
-	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+	if (!pixels)
+		m_Filepath = "NO DATA";
+
+	m_Type = GL_UNSIGNED_BYTE;
+
+	switch (format)
+	{
+	case Texture::Format::RED:      m_InternalFormat = GL_R8;       m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED8UI:   m_InternalFormat = GL_R8UI;     m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED16UI:  m_InternalFormat = GL_R16UI;    m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED32UI:  m_InternalFormat = GL_R32UI;    m_DataFormat = GL_RED;  break;
+	case Texture::Format::RED32F:   m_InternalFormat = GL_R32F;     m_DataFormat = GL_RED;  break;
+	case Texture::Format::RG8:      m_InternalFormat = GL_RG8;      m_DataFormat = GL_RG;   break;
+	case Texture::Format::RG16F:    m_InternalFormat = GL_RG16F;    m_DataFormat = GL_RG;   m_Type = GL_FLOAT; break;
+	case Texture::Format::RG32F:    m_InternalFormat = GL_RG32F;    m_DataFormat = GL_RG;   m_Type = GL_FLOAT; break;
+	case Texture::Format::RGB:      m_InternalFormat = GL_RGB8;     m_DataFormat = GL_RGB;  break;
+	case Texture::Format::RGBA:     m_InternalFormat = GL_RGBA8;    m_DataFormat = GL_RGBA; break;
+	case Texture::Format::RGBA16F:  m_InternalFormat = GL_RGBA16F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
+	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
+	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
+	}
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+	if (pixels)
+		SetData(pixels);
 
 	SetFilteringAndWrappingMethod();
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
-	:m_Path(path), m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
+	:m_InternalFormat(GL_FALSE), m_DataFormat(GL_FALSE), m_Height(0), m_Width(0)
 {
 	PROFILE_FUNCTION();
+
+	m_Filepath = path;
 
 	bool isValid = std::filesystem::exists(path);
 
@@ -80,20 +105,13 @@ OpenGLTexture2D::~OpenGLTexture2D()
 		glDeleteTextures(1, &m_RendererID);
 }
 
-void OpenGLTexture2D::SetData(void* data, uint32_t size)
+void OpenGLTexture2D::SetData(const void* data)
 {
 	PROFILE_FUNCTION();
 
-	m_Path = "";
+	m_Filepath = "";
 
-	uint32_t bytePerPixel = m_DataFormat == GL_RGBA ? 4 : 3;
-
-	bool isValid = size == m_Width * m_Height * bytePerPixel;
-	CORE_ASSERT(isValid, "Data must be entire texture");
-	if (!isValid)
-		NullTexture();
-
-	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
 }
 
 void OpenGLTexture2D::Bind(uint32_t slot) const
@@ -104,12 +122,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 
 std::string OpenGLTexture2D::GetName() const
 {
-	return m_Path.filename().string();
-}
-
-const std::filesystem::path& OpenGLTexture2D::GetFilepath() const
-{
-	return m_Path;
+	return m_Filepath.filename().string();
 }
 
 uint32_t OpenGLTexture2D::GetRendererID() const
@@ -119,7 +132,7 @@ uint32_t OpenGLTexture2D::GetRendererID() const
 
 void OpenGLTexture2D::Reload()
 {
-	if (!m_Path.empty() || m_Path != "NO DATA")
+	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 	{
 		glDeleteTextures(1, &m_RendererID);
 		LoadTextureFromFile();
@@ -131,20 +144,32 @@ bool OpenGLTexture2D::operator==(const Texture& other) const
 	return m_RendererID == ((OpenGLTexture2D&)other).GetRendererID();
 }
 
+void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
+{
+	m_FilterMethod = filterMethod;
+	SetFilteringAndWrappingMethod();
+}
+
+void OpenGLTexture2D::SetWrapMethod(WrapMethod wrapMethod)
+{ 
+	m_WrapMethod = wrapMethod; 
+	SetFilteringAndWrappingMethod();
+}
+
 void OpenGLTexture2D::NullTexture()
 {
-	m_Path = "NULL";
+	m_Filepath = "NULL";
 	m_Width = m_Height = 4;
 
 	m_InternalFormat = GL_RGBA8, m_DataFormat = GL_RGBA;
+	m_Type = GL_UNSIGNED_BYTE;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTextureParameteri(m_RendererID, GL_TEXTURE_WRAP_T, GL_REPEAT);
+	m_FilterMethod = FilterMethod::Nearest;
+	m_WrapMethod = WrapMethod::Repeat;
+	SetFilteringAndWrappingMethod();
 
 	uint32_t textureData[4][4];
 
@@ -156,7 +181,7 @@ void OpenGLTexture2D::NullTexture()
 		}
 	}
 
-	SetData(&textureData, sizeof(uint32_t) * 4 * 4);
+	SetData(&textureData);
 }
 
 bool OpenGLTexture2D::LoadTextureFromFile()
@@ -168,10 +193,10 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::string&)");
-		data = stbi_load(m_Path.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image! " + m_Path.string());
+	CORE_ASSERT(data, "Failed to load image! " + m_Filepath.string());
 
 	if (!data)
 	{
@@ -205,6 +230,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 
 	m_InternalFormat = internalFormat;
 	m_DataFormat = dataFormat;
+	m_Type = GL_UNSIGNED_BYTE;
 
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
@@ -220,7 +246,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	else
 		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, GL_UNSIGNED_BYTE, data);
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
 
 	stbi_image_free(data);
 
