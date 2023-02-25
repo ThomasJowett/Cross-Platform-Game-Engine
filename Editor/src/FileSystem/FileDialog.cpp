@@ -172,15 +172,17 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 	if (f)
 	{
 		char outpLine[PATH_MAX];
-		//while (!feof(f))
-		//{
+		while (!feof(f))
+		{
 			if(fgets(outpLine, PATH_MAX, f) != NULL)
 			{
 				outputString += outpLine;
 
 				rtrim(outputString);
 			}
-		//}
+		}
+
+		ENGINE_DEBUG(outputString);
 
 		if(!outputString.empty())
 			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);

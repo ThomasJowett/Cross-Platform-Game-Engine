@@ -252,7 +252,7 @@ void MainDockSpace::OnImGuiRender()
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
 				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
-				if (fileToOpen)
+				if (fileToOpen.has_value())
 					Application::Get().SetOpenDocument(fileToOpen.value());
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))

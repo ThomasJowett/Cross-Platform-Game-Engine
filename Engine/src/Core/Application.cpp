@@ -283,7 +283,7 @@ double Application::GetTime() const
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::SetOpenDocument(const std::filesystem::path& filepath)
+bool Application::SetOpenDocument(const std::filesystem::path& filepath)
 {
 	SceneManager::ChangeSceneState(SceneState::Edit);
 
@@ -325,7 +325,10 @@ void Application::SetOpenDocument(const std::filesystem::path& filepath)
 			AppOpenDocumentChangedEvent event;
 			s_EventCallback(event);
 		}
+
+		return true;
 	}
+	return false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

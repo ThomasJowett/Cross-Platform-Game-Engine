@@ -9,6 +9,7 @@
 #include "SpriteSheetView.h"
 #include "VisualScriptView.h"
 #include "PhysicsMaterialView.h"
+#include "FontView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Ref<View>, bool*>> s_AssetViewers;
@@ -108,6 +109,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::SPRITESHEET:		OpenAssetViewer<SpriteSheetView>(assetPath);		return;
 	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualSriptView>(assetPath);		return;
 	case FileType::PHYSICSMATERIAL:	OpenAssetViewer<PhysicsMaterialView>(assetPath);	return;
+	case FileType::FONT:			OpenAssetViewer<FontView>(assetPath);				return;
 	default: return;
 	}
 }

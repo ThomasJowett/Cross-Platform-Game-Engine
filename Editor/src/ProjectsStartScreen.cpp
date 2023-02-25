@@ -64,7 +64,7 @@ void ProjectsStartScreen::OnImGuiRender()
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
 				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0");
-				if (fileToOpen)
+				if (fileToOpen.has_value())
 					OpenProject(fileToOpen.value());
 			}
 		}
@@ -168,7 +168,8 @@ void ProjectsStartScreen::OnDetach()
 
 void ProjectsStartScreen::OpenProject(const std::filesystem::path& projectPath)
 {
-	Application::SetOpenDocument(projectPath);
-	ImGui::CloseCurrentPopup();
-	Application::GetLayerStack().RemoveOverlay(shared_from_this());
+	if(Application::SetOpenDocument(projectPath)){
+		ImGui::CloseCurrentPopup();
+		Application::GetLayerStack().RemoveOverlay(shared_from_this());
+	}
 }

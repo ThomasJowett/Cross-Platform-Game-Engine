@@ -42,8 +42,8 @@ public:
 	// fixed update delta time. Default of 10ms seconds (100 times a second)
 	float GetFixedUpdateInterval() { return m_FixedUpdateInterval; }
 
-	// Sets the main document that the application has open
-	static void SetOpenDocument(const std::filesystem::path& filepath);
+	// Sets the main document that the application has open, returns if successful
+	static bool SetOpenDocument(const std::filesystem::path& filepath);
 
 	// Gets the document that the application has open
 	static const std::filesystem::path& GetOpenDocument();
