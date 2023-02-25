@@ -21,7 +21,11 @@
 #include <numeric>
 
 #ifdef __WINDOWS__
-#define NOMINMAX
+#ifdef __MINGW32__
+	#define WIN32_LEAN_AND_MEAN
+#else
+	#define NOMINMAX
+#endif
 #include <Windows.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>

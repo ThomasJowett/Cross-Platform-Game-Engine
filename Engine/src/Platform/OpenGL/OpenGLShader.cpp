@@ -132,6 +132,12 @@ void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::st
 	GLuint program = glCreateProgram();
 	CORE_ASSERT(shaderSources.size() <= 6, "There can only be 6 shaders in a shader program");
 
+	if (shaderSources.empty())
+	{
+		ENGINE_CRITICAL("Could not find required shader");
+		return;
+	}
+
 	std::array<GLenum, 6> GLShaderIDs;
 	int glShaderIndex = 0;
 	for (auto&& [key, value] : shaderSources)

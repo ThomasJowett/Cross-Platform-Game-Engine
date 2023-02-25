@@ -122,7 +122,8 @@ project "Engine"
 	defines
 	{
 		"GLFW_INCLUDE_NONE",
-		"_CRT_SECURE_NO_WARNINGS"
+		"_CRT_SECURE_NO_WARNINGS",
+		"UNICODE"
 	}
 
 	filter "system:windows"
@@ -146,6 +147,7 @@ project "Engine"
 			"%{prj.name}/src/Platform/Mac OS**.cpp"
 		}
 
+	filter "action:vs*"
 		buildoptions
 		{
 			"/bigobj"
