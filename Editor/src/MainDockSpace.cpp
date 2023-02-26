@@ -122,13 +122,13 @@ void MainDockSpace::OnAttach()
 	Application::GetLayerStack().AddOverlay(CreateRef<EditorPreferencesPanel>(&m_ShowEditorPreferences));
 	Application::GetLayerStack().AddOverlay(CreateRef<ProjectSettingsPanel>(&m_ShowProjectSettings));
 	Application::GetLayerStack().AddOverlay(m_ContentExplorer);
-	Application::GetLayerStack().AddOverlay(CreateRef<ConsolePanel>(&m_ShowConsole));
 	Application::GetLayerStack().AddOverlay(CreateRef<JoystickInfoPanel>(&m_ShowJoystickInfo));
+	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
+	Application::GetLayerStack().AddOverlay(CreateRef<ConsolePanel>(&m_ShowConsole));
 	Ref<HierarchyPanel> hierarchyPanel = CreateRef<HierarchyPanel>(&m_ShowHierarchy);
 	Application::GetLayerStack().AddOverlay(hierarchyPanel);
 	Application::GetLayerStack().AddOverlay(CreateRef<ViewportPanel>(&m_ShowViewport, hierarchyPanel, tilemapEditor));
 	Application::GetLayerStack().AddOverlay(CreateRef<PropertiesPanel>(&m_ShowProperties, hierarchyPanel, tilemapEditor));
-	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
 
 	Application::GetLayerStack().AddOverlay(tilemapEditor);
 
