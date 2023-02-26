@@ -76,3 +76,4 @@ Editor/Editor.args.json
 *.xcuserstate
 *.xcworkspacedata
 
+Editor/data/Fonts/Manrope-Medium.png

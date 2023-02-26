@@ -440,7 +440,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	{
 		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
-		Renderer2D::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+		Renderer2D::BeginScene();
 		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
 			{
 				luaScriptComp.OnDebugRender();
@@ -461,7 +461,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			projection = cameraComp.camera.GetProjectionMatrix();
 		}
 
-		Renderer2D::BeginScene(view, projection);
+		Renderer2D::BeginScene();
 		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
 			{
 				luaScriptComp.OnDebugRender();

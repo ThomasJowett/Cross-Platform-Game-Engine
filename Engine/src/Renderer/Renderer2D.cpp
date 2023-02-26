@@ -305,7 +305,7 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer2D::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
+void Renderer2D::BeginScene()
 {
 	PROFILE_FUNCTION();
 

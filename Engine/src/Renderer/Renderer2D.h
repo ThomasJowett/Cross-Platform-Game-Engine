@@ -17,7 +17,7 @@ public:
 	static void Shutdown();
 
 	static void OnWindowResize(uint32_t width, uint32_t height);
-	static void BeginScene(const Matrix4x4& transform, const Matrix4x4& projection);
+	static void BeginScene();
 	static void EndScene();
 
 	static void FlushQuads();

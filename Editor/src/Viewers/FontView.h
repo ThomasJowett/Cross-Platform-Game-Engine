@@ -2,9 +2,11 @@
 
 #include "ViewerManager.h"
 
-#include "Renderer/FrameBuffer.h"
-
 #include <filesystem>
+
+class Font;
+class FrameBuffer;
+class OrthographicCamera;
 
 class FontView :
     public View
@@ -21,5 +23,11 @@ private:
 
     std::filesystem::path m_Filepath;
 
+    Ref<Font> m_Font;
+
     Ref<FrameBuffer> m_Framebuffer;
+
+    Ref<OrthographicCamera> m_Camera;
+
+    std::string m_String;
 };

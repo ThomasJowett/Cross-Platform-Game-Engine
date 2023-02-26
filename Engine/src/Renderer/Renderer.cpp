@@ -105,7 +105,7 @@ void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projectio
 	s_SceneData.constantBuffer.eyePosition = transform.ExtractTranslation();
 
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
-	Renderer2D::BeginScene(transform, projection);
+	Renderer2D::BeginScene();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
