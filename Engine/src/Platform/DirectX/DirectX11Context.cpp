@@ -9,8 +9,8 @@
 
 #pragma comment(lib, "d3d11.lib")
 
-extern ID3D11Device* g_D3dDevice = nullptr;
-extern ID3D11DeviceContext* g_ImmediateContext = nullptr;
+ID3D11Device* g_D3dDevice = nullptr;
+ID3D11DeviceContext* g_ImmediateContext = nullptr;
 
 DirectX11Context::DirectX11Context(HWND windowHandle)
 	:m_WindowHandle(windowHandle)
