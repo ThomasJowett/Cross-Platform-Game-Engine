@@ -126,7 +126,7 @@ bool SceneManager::FinalChangeScene()
 
 	s_NextFilepath.clear();
 
-	if (s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate && IsSceneLoaded())
+	if ((s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate) && IsSceneLoaded())
 		s_CurrentScene->OnRuntimeStart();
 
 	AssetManager::CleanUp();

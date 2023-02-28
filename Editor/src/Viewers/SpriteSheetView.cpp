@@ -186,14 +186,9 @@ void SpriteSheetView::OnImGuiRender()
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
 
-					static int activeIndex = -1;
+					m_ActiveIndex = -1;
 
 					std::string deletedAnimation;
-
-					ImGuiSelectableFlags selectable_flags = ImGuiSelectableFlags_SpanAllColumns
-						| ImGuiSelectableFlags_AllowItemOverlap
-						| ImGuiSelectableFlags_AllowDoubleClick;
-
 
 					if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
 					{
@@ -263,17 +258,17 @@ void SpriteSheetView::OnImGuiRender()
 
 						if (ImGui::IsItemActive() && ImGui::IsWindowFocused())
 						{
-							activeIndex = index;
+							m_ActiveIndex = index;
 						}
 
-						if (activeIndex == index && !ImGui::IsItemActive() && ImGui::IsWindowFocused())
+						if (m_ActiveIndex == index && !ImGui::IsItemActive() && ImGui::IsWindowFocused())
 						{
 							if (m_PreviewSprite.animation == name)
 								m_PreviewSprite.animation = m_InputBuffer;
 							m_LocalSpriteSheet->RenameAnimation(name, m_InputBuffer);
 							GetListOfAnimations();
 							m_Dirty = true;
-							activeIndex = -1;
+							m_ActiveIndex = -1;
 						}
 
 						int frameStart = (int)animation->GetStartFrame();

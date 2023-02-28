@@ -43,6 +43,7 @@ private:
 
 	std::vector<std::vector<bool>> m_SelectedFrames;
 	int m_SelectedAnimation = 0;
+    int m_ActiveIndex = -1; // Used for determining if the input buffer is active
 	std::vector<std::pair<std::string, Animation*>> m_AnimationsSorted;
 
 	char m_InputBuffer[1024] = "";

@@ -57,7 +57,7 @@ void HierarchyPanel::OnImGuiRender()
 			MainDockSpace::SetFocussedWindow(this);
 		}
 
-		if (ImGui::IsMouseClicked(0) && ImGui::IsWindowHovered() || !m_SelectedEntity.BelongsToScene(SceneManager::CurrentScene()))
+		if ((ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) || !m_SelectedEntity.BelongsToScene(SceneManager::CurrentScene()))
 		{
 			m_SelectedEntity = {};
 		}

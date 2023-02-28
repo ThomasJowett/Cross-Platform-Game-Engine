@@ -170,9 +170,6 @@ void EditorPreferencesPanel::ShowStyleEditor()
 
 		if (ImGui::BeginTabItem("Colours"))
 		{
-			static int output_dest = 0;
-			static bool output_only_modified = true;
-			
 			static ImGuiTextFilter filter;
 			filter.Draw("Filter colours", ImGui::GetFontSize() * 16);
 
