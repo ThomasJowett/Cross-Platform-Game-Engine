@@ -63,8 +63,7 @@ project "Engine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-	pchheader "stdafx.h"
-	pchsource "Engine/src/stdafx.cpp"
+
 
 	files
 	{
@@ -152,12 +151,18 @@ project "Engine"
 		{
 			"/bigobj"
 		}
+
+		pchheader "stdafx.h"
+		pchsource "Engine/src/stdafx.cpp"
 	
 	filter "system:linux"
 		pic "on"
 		cppdialect "C++17"
 		staticruntime "Off"
 		systemversion "latest"
+
+		pchheader "stdafx.h"
+		pchsource "Engine/src/stdafx.cpp"
 		
 		links
 		{
@@ -186,6 +191,10 @@ project "Engine"
 		}
 		
 	filter "system:macosx"
+
+		pchheader "src/stdafx.h"
+		pchsource "Engine/src/stdafx.cpp"
+		
 		excludes
 		{
 			"%{prj.name}/src/Platform/DirectX**.h",
