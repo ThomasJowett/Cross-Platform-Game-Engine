@@ -208,7 +208,7 @@ void glfwWindow::SetCursorPosition(double xpos, double ypos)
 	glfwSetCursorPos(m_Window, xpos, ypos);
 }
 
-void glfwWindow::Init(const WindowProps& props)
+bool glfwWindow::Init(const WindowProps& props)
 {
 	PROFILE_FUNCTION();
 
@@ -248,25 +248,35 @@ void glfwWindow::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
-		else if (api == RendererAPI::API::Directx11)
+		else if (api == RendererAPI::API::Directx11 || api == RendererAPI::API::Vulkan)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.width, (int)m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
-		++s_GLFWWindowCount;
+        if(m_Window)
+            ++s_GLFWWindowCount;
+        else
+        {
+            ENGINE_CRITICAL("Could not create a window with graphics API {0}", Settings::GetValue("Renderer", "API"));
+            return false;
+        }
 	}
 
-	if (Renderer::GetAPI() == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		m_Context = CreateRef<OpenGLContext>(m_Window);
 	}
-	else if (Renderer::GetAPI() == RendererAPI::API::Directx11)
+	else if (api == RendererAPI::API::Directx11)
 	{
 #ifdef __WINDOWS__
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 #endif
 	}
+    else if (api == RendererAPI::API::Vulkan)
+    {
+        
+    }
 
 	m_Context->Init();
 

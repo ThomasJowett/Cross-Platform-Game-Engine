@@ -10,6 +10,8 @@ class glfwWindow : public Window
 public:
 	glfwWindow(const WindowProps& props);
 	virtual ~glfwWindow();
+    
+    bool Init(const WindowProps& props);
 
 	void OnUpdate() override;
 
@@ -40,7 +42,6 @@ public:
 	virtual void SetCursorPosition(double xpos, double ypos) override;
 
 private:
-	void Init(const WindowProps& props);
 	void Shutdown();
 private:
 
