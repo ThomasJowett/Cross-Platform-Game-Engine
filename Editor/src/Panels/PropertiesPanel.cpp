@@ -871,7 +871,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
 	DrawComponent<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity, [](auto& behaviourTree)
 		{
-			//ImGui::FileSelect("Behaviour Tree", ai.)
+			if (ImGui::FileSelect("Behaviour Tree", behaviourTree.filepath, FileType::BEHAVIOURTREE))
+			{
+				BehaviourTree::Serializer serializer(&behaviourTree.behaviourTree);
+				serializer.Deserialize(behaviourTree.filepath);
+			}
 		});
 
 	// State Machine ------------------------------------------------------------------------------------------------------------------

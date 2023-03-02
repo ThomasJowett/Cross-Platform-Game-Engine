@@ -126,14 +126,14 @@ void StaticMeshView::OnUpdate(float deltaTime)
 
 	if (m_WindowHovered && rightMouseDown && !m_CursorDisabled)
 	{
-		Application::GetWindow().DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
+		Application::GetWindow()->DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
 		m_CursorDisabled = true;
 	}
 
 	if (m_CursorDisabled && !rightMouseDown)
 	{
 		m_CursorDisabled = false;
-		Application::GetWindow().EnableCursor();
+		Application::GetWindow()->EnableCursor();
 	}
 
 	Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());

@@ -28,7 +28,7 @@ void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 
 	if (Input::IsMouseButtonPressed(MOUSE_BUTTON_MIDDLE) && hoveredViewport)
 	{
-		Application::GetWindow().SetCursor(Cursors::ResizeAll);
+		Application::GetWindow()->SetCursor(Cursors::ResizeAll);
 		if (m_Is3DCamera)
 		{
 			Strafe(-m_MouseRelativeVelocity.x * 5.0f / (m_ViewPortSize.x * 0.5f / m_AspectRatio));

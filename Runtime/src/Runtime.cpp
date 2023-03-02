@@ -3,8 +3,7 @@
 #include "RuntimeLayer.h"
 #include "Engine.h"
 
-Runtime::Runtime(const WindowProps& props)
-	:Application(props)
+Runtime::Runtime()
 {
 	Application::SetOpenDocument(Application::GetWorkingDirectory() / "Startup");
 
@@ -22,6 +21,11 @@ Runtime::Runtime(const WindowProps& props)
 	startupScene.resize(size);
 	file.read((char*)&startupScene[0], size);
 	file.close();
+
+	if (!Application::CreateDesktopWindow(WindowProps(gameName, 1920, 1080, 100, 100)))
+	{
+		return;
+	}
 
 	SceneManager::ChangeScene(std::filesystem::path(startupScene));
 

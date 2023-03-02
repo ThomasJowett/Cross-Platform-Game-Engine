@@ -45,8 +45,9 @@ DirectX11Context::~DirectX11Context()
 
 void DirectX11Context::Init()
 {
-	int renderWidth = Settings::GetInt("Display", "Window_Width");
-	int renderHeight = Settings::GetInt("Display", "Window_Height");
+	const char* windowTitle = Application::GetWindow()->GetTitle();
+	int renderWidth = Settings::GetInt(windowTitle, "Window_Width");
+	int renderHeight = Settings::GetInt(windowTitle, "Window_Height");
 
 	m_SyncInterval = (Settings::GetBool("Display", "V-Sync")) ? 1 : 0;
 
@@ -161,6 +162,12 @@ void DirectX11Context::SwapBuffers()
 void DirectX11Context::SetSwapInterval(uint32_t interval)
 {
 	m_SyncInterval = (UINT)interval;
+}
+
+void DirectX11Context::MakeCurrent()
+{
+	g_ImmediateContext->OMSetRenderTargets(1, &m_RenderTargetView, nullptr);
+	g_ImmediateContext->OMSetRenderTargets(1, &m_RenderTargetView, m_DepthStencilView);
 }
 
 void DirectX11Context::ResizeBuffers(uint32_t width, uint32_t height)

@@ -10,6 +10,7 @@
 #include "VisualScriptView.h"
 #include "PhysicsMaterialView.h"
 #include "FontView.h"
+#include "BehaviourTreeView.h"
 #include "Scene/SceneManager.h"
 
 std::map<std::filesystem::path, std::pair<Ref<View>, bool*>> s_AssetViewers;
@@ -110,6 +111,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualSriptView>(assetPath);		return;
 	case FileType::PHYSICSMATERIAL:	OpenAssetViewer<PhysicsMaterialView>(assetPath);	return;
 	case FileType::FONT:			OpenAssetViewer<FontView>(assetPath);				return;
+	case FileType::BEHAVIOURTREE:	OpenAssetViewer<BehaviourTreeView>(assetPath);			return;
 	default: return;
 	}
 }
@@ -202,6 +204,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 			return FileType::FONT;
 		}
 	}
+
+	if (strcmp(ext, ".behaviourtree") == 0)
+	{
+		return FileType::BEHAVIOURTREE;
+	}
 	return FileType::UNKNOWN;
 }
 
@@ -283,6 +290,11 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 			extensions.push_back(ext);
 		}
 		break;
+	case FileType::BEHAVIOURTREE:
+	{
+		extensions.push_back(".behaviourtree");
+		break;
+	}
 	}
 	return extensions;
 }

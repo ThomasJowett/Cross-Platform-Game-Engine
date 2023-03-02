@@ -15,15 +15,17 @@ class Application
 	using EventCallbackFn = std::function<void(Event&)>;
 
 public:
-	Application(const WindowProps& props);
+	Application();
 	Application(const Application&) = delete;
 	virtual ~Application();
 
 	// Gets the static instance of the application
 	static inline Application& Get() { return *s_Instance; }
 
+	static Window* CreateDesktopWindow(const WindowProps& props) { return Get().CreateDesktopWindowImpl(props); }
+
 	// Get the applications Window object
-	static Window& GetWindow() { return Get().GetWindowImpl(); }
+	static Window* GetWindow() { return Get().GetWindowImpl(); }
 
 	// Set whether to show Dear ImGui
 	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
@@ -57,9 +59,9 @@ public:
 	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
 
-	LayerStack m_LayerStack;
 private:
-	inline Window& GetWindowImpl() { return *m_Window; }
+	inline Window* GetWindowImpl() { return m_Window.get(); }
+	Window* CreateDesktopWindowImpl(const WindowProps& props);
 	void Run();
 	void OnEvent(Event& e);
 	bool OnWindowClose(WindowCloseEvent& e);
@@ -67,10 +69,12 @@ private:
 	bool OnWindowMove(WindowMoveEvent& e);
 	bool OnMaximize(WindowMaximizedEvent& e);
 
-	void SetDefaultSettings(const WindowProps& props);
+	void SetDefaultSettings();
 
 	double GetTime() const;
 
+protected:
+	LayerStack m_LayerStack;
 private:
 	Scope<Window> m_Window;
 	Scope<ImGuiManager> m_ImGuiManager;

@@ -30,10 +30,9 @@ static void	GLFWErrorCallback(int error, const char* description)
 	ENGINE_ERROR("GLFW Error {0} {1}", error, description);
 }
 
-glfwWindow::glfwWindow(const WindowProps& props)
+glfwWindow::glfwWindow()
 {
 	PROFILE_FUNCTION();
-	Init(props);
 }
 
 glfwWindow::~glfwWindow()
@@ -121,6 +120,11 @@ void glfwWindow::SetTitle(const char* title)
 	glfwSetWindowTitle(m_Window, title);
 }
 
+const char* glfwWindow::GetTitle()
+{
+	return m_Data.title.c_str();
+}
+
 void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
@@ -165,7 +169,7 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 			width = m_OldWindowedParams.width;
 			height = m_OldWindowedParams.Height;
 		}
-		mode = (WindowMode)Settings::GetDefaultInt("Display", "Window_Mode");
+		mode = (WindowMode)Settings::GetDefaultInt(m_Data.title.c_str(), "Window_Mode");
 	}
 
 	m_Data.width = width;
@@ -177,7 +181,7 @@ void glfwWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int
 		m_Data.eventCallback(event);
 	}
 
-	Settings::SetInt("Display", "Window_Mode", (int)mode);
+	Settings::SetInt(m_Data.title.c_str(), "Window_Mode", (int)mode);
 	m_Data.mode = mode;
 
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.xPos, m_OldWindowedParams.yPos, width, height, m_BaseVideoMode.refreshRate);
@@ -213,10 +217,10 @@ bool glfwWindow::Init(const WindowProps& props)
 	PROFILE_FUNCTION();
 
 	m_Data.title = props.title;
-	m_Data.width = Settings::GetInt("Display", "Window_Width");
-	m_Data.height = Settings::GetInt("Display", "Window_Height");
-	m_Data.posX = Settings::GetInt("Display", "Window_Position_X");
-	m_Data.posY = Settings::GetInt("Display", "Window_Position_Y");
+	m_Data.width = Settings::GetInt(props.title.c_str(), "Window_Width");
+	m_Data.height = Settings::GetInt(props.title.c_str(), "Window_Height");
+	m_Data.posX = Settings::GetInt(props.title.c_str(), "Window_Position_X");
+	m_Data.posY = Settings::GetInt(props.title.c_str(), "Window_Position_Y");
 	m_Data.mode = WindowMode::WINDOWED;
 
 	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.title, m_Data.width, m_Data.height);
@@ -290,7 +294,7 @@ bool glfwWindow::Init(const WindowProps& props)
 		glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 
 	SetVSync(Settings::GetBool("Display", "V-Sync"));
-	SetWindowMode((WindowMode)Settings::GetInt("Display", "Window_Mode"));
+	SetWindowMode((WindowMode)Settings::GetInt(m_Data.title.c_str(), "Window_Mode"));
 
 	{
 		PROFILE_SCOPE("Window callbacks");
@@ -303,7 +307,7 @@ bool glfwWindow::Init(const WindowProps& props)
 
 				WindowResizeEvent event(width, height);
 				data.eventCallback(event);
-				Application::GetWindow().GetContext()->ResizeBuffers(width, height);
+				Application::GetWindow()->GetContext()->ResizeBuffers(width, height);
 			});
 
 		glfwSetWindowMaximizeCallback(m_Window, [](GLFWwindow* window, int maximized)
@@ -484,6 +488,7 @@ bool glfwWindow::Init(const WindowProps& props)
 				data.eventCallback(event);
 			});
 	}
+	return true;
 }
 
 void glfwWindow::Shutdown()

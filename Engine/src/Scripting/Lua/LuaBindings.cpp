@@ -16,6 +16,7 @@
 #include "Physics/HitResult2D.h"
 #include "Core/Settings.h"
 #include "LuaManager.h"
+#include "AI/BehaviorTree.h"
 
 template<typename T, typename... Args>
 void SetFunction(T& type, const std::string& name, const std::string& description, Args&&... args)
@@ -86,11 +87,11 @@ void BindApp(sol::state& state)
 		{ return Application::Get().GetFixedUpdateInterval(); });
 
 	application.set_function("MaximizeWindow", [](sol::this_state s)
-		{ return Application::GetWindow().MaximizeWindow(); });
+		{ return Application::GetWindow()->MaximizeWindow(); });
 	application.set_function("RestoreWindow", [](sol::this_state s)
-		{ return Application::GetWindow().RestoreWindow(); });
+		{ return Application::GetWindow()->RestoreWindow(); });
 	application.set_function("SetWindowMode", [](sol::this_state s, WindowMode windowMode)
-		{ return Application::GetWindow().SetWindowMode(windowMode); });
+		{ return Application::GetWindow()->SetWindowMode(windowMode); });
 
 	application.set_function("GetDocumentDirectory", []()
 		{ return Application::GetOpenDocumentDirectory().string(); });
@@ -522,6 +523,29 @@ void BindCommonTypes(sol::state& state)
 	state.new_enum("Colours", coloursItems);
 
 	colour_type.set_function("SetColour", static_cast<void(Colour::*)(Colours)>(&Colour::SetColour));
+
+	sol::usertype<BehaviourTree::Blackboard> blackboard_type = state.new_usertype<BehaviourTree::Blackboard>(
+		"Blackboard",
+		"SetBool", &BehaviourTree::Blackboard::setBool,
+		"SetInt", &BehaviourTree::Blackboard::setInt,
+		"SetFloat", &BehaviourTree::Blackboard::setFloat,
+		"SetDouble", &BehaviourTree::Blackboard::setDouble,
+		"SetString", &BehaviourTree::Blackboard::setString,
+		"SetVec2", &BehaviourTree::Blackboard::setVector2,
+		"SetVec3", &BehaviourTree::Blackboard::setVector3,
+		"GetBool", &BehaviourTree::Blackboard::getBool,
+		"GetInt", &BehaviourTree::Blackboard::getInt,
+		"GetFloat", &BehaviourTree::Blackboard::getFloat,
+		"GetDouble", &BehaviourTree::Blackboard::getDouble,
+		"GetString", &BehaviourTree::Blackboard::getString,
+		"GetVec2", &BehaviourTree::Blackboard::getVector2,
+		"GetVec3", &BehaviourTree::Blackboard::getVector3
+		);
+
+	sol::usertype<BehaviourTree::BehaviourTree> behaviourTree_type = state.new_usertype<BehaviourTree::BehaviourTree>(
+		"BehaviourTree",
+		"GetBlackboard", &BehaviourTree::BehaviourTree::getBlackboard
+		);
 }
 
 void BindDebug(sol::state& state)

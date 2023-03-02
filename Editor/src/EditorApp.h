@@ -4,12 +4,16 @@
 class Editor : public Application
 {
 public:
-	explicit Editor(const WindowProps& props);
+	explicit Editor();
 	~Editor() = default;
 };
 
 /*Entry point*/
 Ref<Application> CreateApplication()
 {
-	return CreateRef<Editor>(WindowProps("Editor", 1920, 1080, 100, 100));
+	auto editor = CreateRef<Editor>();
+	if (editor->GetWindow())
+		return editor;
+	else 
+		return nullptr;
 }

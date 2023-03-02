@@ -19,16 +19,16 @@ void ProjectsStartScreen::OnImGuiRender()
 {
 	ImGui::OpenPopup("##StartScreen");
 
-	int windowSizeX = Application::GetWindow().GetWidth();
-	int windowSizeY = Application::GetWindow().GetHeight();
+	int windowSizeX = Application::GetWindow()->GetWidth();
+	int windowSizeY = Application::GetWindow()->GetHeight();
 
 	float popupSizeX = (float)std::min(windowSizeX - 20, 600);
 	float popupSizeY = (float)std::min(windowSizeY - 20, 600);
 
 	ImGui::SetNextWindowSize(ImVec2(popupSizeX, popupSizeY));
 
-	int windowPosX = Application::GetWindow().GetPosX();
-	int windowPosY = Application::GetWindow().GetPosY();
+	int windowPosX = Application::GetWindow()->GetPosX();
+	int windowPosY = Application::GetWindow()->GetPosY();
 
 	// Find the middle of the screen
 	ImGui::SetNextWindowPos(ImVec2(

@@ -8,7 +8,7 @@ namespace BehaviourTree
 	{
 	public:
 		BlackboardBool(Ref<Blackboard> blackboard, std::string const& blackboardkey, bool isSet)
-			:Decorator(blackboard), mBlackboardKey(blackboardkey), mIsSet(isSet) {}
+			:m_Blackboard(blackboard), mBlackboardKey(blackboardkey), mIsSet(isSet) {}
 
 		Status update(float deltaTime) override
 		{
@@ -18,6 +18,7 @@ namespace BehaviourTree
 			return Status::Failure;
 		}
 	private:
+		Ref<Blackboard> m_Blackboard = nullptr;
 		std::string mBlackboardKey;
 		bool mIsSet;
 	};
@@ -29,7 +30,7 @@ namespace BehaviourTree
 	{
 	public:
 		BlackboardCompare(Ref<Blackboard> blackboard, std::string const& blackboardkey_1, std::string const& blackboardkey_2, bool isEqual)
-			:Decorator(blackboard), mBBKey_1(blackboardkey_1), mBBKey_2(blackboardkey_2), mIsEqual(isEqual) {}
+			:m_Blackboard(blackboard), mBBKey_1(blackboardkey_1), mBBKey_2(blackboardkey_2), mIsEqual(isEqual) {}
 
 		Status update(float deltaTime) override
 		{
@@ -39,6 +40,7 @@ namespace BehaviourTree
 			return Status::Failure;
 		}
 	private:
+		Ref<Blackboard> m_Blackboard = nullptr;
 		std::string mBBKey_1;
 		std::string mBBKey_2;
 		bool mIsEqual;

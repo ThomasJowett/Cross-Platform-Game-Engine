@@ -25,7 +25,9 @@ enum class FileType
 	TILESET,
 	SPRITESHEET,
 	PHYSICSMATERIAL,
-	FONT
+	FONT,
+	BEHAVIOURTREE,
+	STATEMACHINE
 };
 
 class View : public Layer

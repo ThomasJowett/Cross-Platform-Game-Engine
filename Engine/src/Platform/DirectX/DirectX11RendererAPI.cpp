@@ -60,7 +60,7 @@ void DirectX11RendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, u
 
 void DirectX11RendererAPI::Clear()
 {
-	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow().GetContext().get());
+	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow()->GetContext().get());
 	auto renderTarget = context->GetRenderTargetView();
 
 	if (renderTarget)

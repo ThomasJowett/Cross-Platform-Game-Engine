@@ -123,6 +123,7 @@ public:
 	void CreateNewTileset(const std::filesystem::path* path = nullptr);
 	void CreateNewSpriteSheet(const std::filesystem::path* path = nullptr);
 	void CreateNewPhysicsMaterial();
+	void CreateNewBehaviourTree();
 
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);

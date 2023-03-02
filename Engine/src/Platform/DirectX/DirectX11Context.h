@@ -15,6 +15,7 @@ public:
 	virtual void ResizeBuffers(uint32_t width, uint32_t height) override;
 
 	virtual void SetSwapInterval(uint32_t interval)override;
+	virtual void MakeCurrent() override;
 
 	ID3D11RenderTargetView* GetRenderTargetView() { return m_RenderTargetView; }
 	ID3D11DepthStencilView* GetDepthStencilView() { return m_DepthStencilView; }

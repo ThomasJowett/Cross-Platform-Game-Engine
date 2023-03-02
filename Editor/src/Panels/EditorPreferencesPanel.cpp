@@ -76,7 +76,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 			if (ImGui::Checkbox("V-Sync", &m_VSnyc))
 			{
 				Settings::SetBool("Display", "V-Sync", m_VSnyc);
-				Application::GetWindow().SetVSync(m_VSnyc);
+				Application::GetWindow()->SetVSync(m_VSnyc);
 			}
 			ImGui::TreePop();
 		}

@@ -421,6 +421,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		BehaviourTreeComponent const& component = entity.GetComponent<BehaviourTreeComponent>();
 
 		tinyxml2::XMLElement* pBehaviourTreeElement = pElement->InsertNewChildElement("BehaviourTree");
+		SerializationUtils::Encode(pBehaviourTreeElement, component.filepath);
 	}
 
 	if (entity.HasComponent<StateMachineComponent>())

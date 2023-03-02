@@ -396,6 +396,11 @@ void Scene::OnUpdate(float deltaTime)
 			}
 		});
 
+	m_Registry.view<BehaviourTreeComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& behaviourTreeComponent)
+		{
+			behaviourTreeComponent.behaviourTree.update(deltaTime);
+		});
+
 	m_IsUpdating = false;
 
 	auto destroyView = m_Registry.view<DestroyMarker>();

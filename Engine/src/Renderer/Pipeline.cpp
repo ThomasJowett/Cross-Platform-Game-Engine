@@ -17,21 +17,21 @@ Ref<Pipeline> Pipeline::Create(const Spec& spec)
 		return CreateRef<OpenGLPipeline>(spec);
 #ifdef __WINDOWS__
 	case RendererAPI::API::Directx11:
-		ENGINE_WARN("Could not create Vertex Array: DirectX is not currently supported");
+		ENGINE_WARN("Could not create pipeline: DirectX is not currently supported");
 		return	CreateRef<DirectX11Pipeline>(spec);
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Vertex Array: Metal is not currently supported")
+		CORE_ASSERT(false, "Could not create pipeline: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__
 	case RendererAPI::API::Vulkan:
-		CORE_ASSERT(false, "Could not create Vertex Array: Vulkan is not currently supported")
+		CORE_ASSERT(false, "Could not create pipeline: Vulkan is not currently supported")
 			return nullptr;
 	default:
 		break;
 	}
 
-	CORE_ASSERT(true, "Could not create Vertex Array: Invalid Renderer API")
+	CORE_ASSERT(true, "Could not create pipeline: Invalid Renderer API")
 		return nullptr;
 }

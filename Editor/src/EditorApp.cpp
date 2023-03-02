@@ -4,9 +4,12 @@
 #include "ProjectsStartScreen.h"
 #include "Renderer/RenderCommand.h"
 
-Editor::Editor(const WindowProps& props)
-	:Application(props)
+Editor::Editor()
 {
+	Window* window = Application::CreateDesktopWindow(WindowProps("Editor", 1920, 1080, 100, 100));
+
+	if (!window)
+		return;
 	RenderCommand::SetClearColour(Colours::GREY);
 
 	if (Application::GetOpenDocument().empty())
@@ -17,5 +20,5 @@ Editor::Editor(const WindowProps& props)
 
 	m_LayerStack.PushOverlay(CreateRef<MainDockSpace>());
 
-	Application::GetWindow().SetIcon(GetWorkingDirectory() / "data" / "Icons" / "Logo.png");
+	window->SetIcon(GetWorkingDirectory() / "data" / "Icons" / "Logo.png");
 }

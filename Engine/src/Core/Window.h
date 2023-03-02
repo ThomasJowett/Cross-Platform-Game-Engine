@@ -25,11 +25,17 @@ struct WindowProps
 	unsigned int posX;
 	unsigned int posY;
 
+	WindowMode windowMode;
+
+	bool maximized;
+
 	WindowProps(const std::string& title = "Example Game",
 		unsigned int width = 1920,
 		unsigned int height = 1080,
 		unsigned int posX = 20,
-		unsigned int posY = 50)
+		unsigned int posY = 50,
+		WindowMode windowMode = WindowMode::WINDOWED,
+		bool maximized = false)
 		:title(title), width(width), height(height),
 		posX(posX), posY(posY)
 	{
@@ -60,6 +66,7 @@ public:
 	virtual void SetIcon(const std::filesystem::path& path) = 0;
 	virtual void SetCursor(Cursors cursorType) = 0;
 	virtual void SetTitle(const char* title) = 0;
+	virtual const char* GetTitle() = 0;
 
 	virtual void DisableCursor() = 0;
 	virtual void EnableCursor() = 0;

@@ -90,23 +90,28 @@ project "Boing Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
 	files
 	{
 		"GLFW/examples/boing.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Gears Example"
 	kind "ConsoleApp"
@@ -120,23 +125,29 @@ project "Gears Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
 	files
 	{
 		"GLFW/examples/gears.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+	linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Heightmap Example"
 	kind "ConsoleApp"
@@ -150,24 +161,30 @@ project "Heightmap Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
 	files
 	{
 		"GLFW/examples/Heightmap.c"
 	}
 
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
+
 project "Offscreen Example"
 	kind "ConsoleApp"
 	language "C"
@@ -180,23 +197,29 @@ project "Offscreen Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
 
 	files
 	{
 		"GLFW/examples/offscreen.c"
 	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Offscreen Example"
 	kind "ConsoleApp"
@@ -210,23 +233,29 @@ project "Offscreen Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
-
+	
 	files
 	{
 		"GLFW/examples/offscreen.c"
 	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Particles Example"
 	kind "ConsoleApp"
@@ -240,17 +269,9 @@ project "Particles Example"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
 
 	files
@@ -259,6 +280,20 @@ project "Particles Example"
 		"GLFW/deps/getopt.c",
 		"GLFW/deps/tinycthread.c"
 	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Sharing Example"
 	kind "ConsoleApp"
@@ -271,24 +306,30 @@ project "Sharing Example"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
+	
+		files
+		{
+			"GLFW/examples/sharing.c"
+		}
 
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
 
-	files
-	{
-		"GLFW/examples/sharing.c"
-	}
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Split View Example"
 	kind "ConsoleApp"
@@ -301,24 +342,30 @@ project "Split View Example"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/examples/splitview.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Triangle OpenGL"
 	kind "ConsoleApp"
@@ -331,25 +378,31 @@ project "Triangle OpenGL"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/examples/triangle-opengl.c"
 	}
 
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
+
 project "Wave Example"
 	kind "ConsoleApp"
 	language "C"
@@ -361,54 +414,29 @@ project "Wave Example"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/examples/wave.c"
 	}
 
-project "Wave Example"
-	kind "ConsoleApp"
-	language "C"
-
-	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
-	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
-	externalincludedirs
-	{
-		"GLFW/deps",
-		"GLFW/include"
-	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
 
-	files
-	{
-		"GLFW/examples/wave.c"
-	}
+	filter "system:macosx"
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 	
 project "Windows Example"
 	kind "ConsoleApp"
@@ -421,24 +449,30 @@ project "Windows Example"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/examples/windows.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Triangle Vulkan"
 	kind "ConsoleApp"
@@ -452,23 +486,28 @@ project "Triangle Vulkan"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
 	files
 	{
 		"GLFW/tests/triangle-vulkan.c"
 	}
+
+	links
+		{
+			"GLFW"
+		}
+
+	filter "system:macosx"
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Allocator Test"
 	kind "ConsoleApp"
@@ -481,24 +520,30 @@ project "Allocator Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/allocator.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Clipboard Test"
 	kind "ConsoleApp"
@@ -511,25 +556,31 @@ project "Clipboard Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/clipboard.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Cursor Test"
 	kind "ConsoleApp"
@@ -542,24 +593,30 @@ project "Cursor Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/cursor.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Empty Test"
 	kind "ConsoleApp"
@@ -572,26 +629,32 @@ project "Empty Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
+	
+	files
 	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
+			"GLFW/tests/empty.c",
+			"GLFW/deps/getopt.c",
+			"GLFW/deps/tinycthread.c"
 	}
 
 	links
 	{
-		"GLFW",
-		"Cocoa.framework"
+		"GLFW"
 	}
 
-	files
-	{
-		"GLFW/tests/empty.c",
-		"GLFW/deps/getopt.c",
-		"GLFW/deps/tinycthread.c"
-	}
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Events Test"
 	kind "ConsoleApp"
@@ -605,24 +668,31 @@ project "Events Test"
 		"GLFW/include"
 	}
 
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/events.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Gamma Test"
 	kind "ConsoleApp"
@@ -635,24 +705,30 @@ project "Gamma Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/gamma.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Info"
 	kind "ConsoleApp"
@@ -665,25 +741,31 @@ project "Info"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/glfwinfo.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Icon Test"
 	kind "ConsoleApp"
@@ -696,24 +778,30 @@ project "Icon Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/icon.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Iconify Test"
 	kind "ConsoleApp"
@@ -726,25 +814,31 @@ project "Iconify Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/iconify.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Input Lag Test"
 	kind "ConsoleApp"
@@ -757,25 +851,31 @@ project "Input Lag Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/inputlag.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Joysticks Test"
 	kind "ConsoleApp"
@@ -788,24 +888,30 @@ project "Joysticks Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/joysticks.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Monitors Test"
 	kind "ConsoleApp"
@@ -818,25 +924,31 @@ project "Monitors Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/monitors.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "MSAA Test"
 	kind "ConsoleApp"
@@ -849,25 +961,31 @@ project "MSAA Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/msaa.c",
 		"GLFW/deps/getopt.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Reopen Test"
 	kind "ConsoleApp"
@@ -880,24 +998,30 @@ project "Reopen Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/reopen.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Tearing Test"
 	kind "ConsoleApp"
@@ -910,24 +1034,30 @@ project "Tearing Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/tearing.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Threads Test"
 	kind "ConsoleApp"
@@ -940,25 +1070,31 @@ project "Threads Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/threads.c",
 		"GLFW/deps/tinycthread.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Timeout Test"
 	kind "ConsoleApp"
@@ -971,24 +1107,30 @@ project "Timeout Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/timeout.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Title Test"
 	kind "ConsoleApp"
@@ -1001,24 +1143,30 @@ project "Title Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/title.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}
 
 project "Window Test"
 	kind "ConsoleApp"
@@ -1031,21 +1179,27 @@ project "Window Test"
 		"GLFW/deps",
 		"GLFW/include"
 	}
-
-	linkoptions
-	{
-		"-framework OpenGL",
-		"-framework Cocoa",
-		"-framework IOKit"
-	}
-
-	links
-	{
-		"GLFW",
-		"Cocoa.framework"
-	}
-
+	
 	files
 	{
 		"GLFW/tests/window.c"
 	}
+
+	links
+	{
+		"GLFW"
+	}
+
+	filter "system:macosx"
+
+		linkoptions
+		{
+			"-framework OpenGL",
+			"-framework Cocoa",
+			"-framework IOKit"
+		}
+
+		links
+		{
+			"Cocoa.framework"
+		}

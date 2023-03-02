@@ -10,6 +10,8 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 
+//#include "imgui/backends/imgui_impl_vulkan.h"
+
 #include "GLFW/glfw3.h"
 
 #ifdef __WINDOWS__
@@ -52,7 +54,7 @@ void ImGuiManager::Init()
 	if (api == RendererAPI::API::Directx11)
 	{
 #ifdef __WINDOWS__
-		if(ImGui_ImplGlfw_InitForOther(std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow()), true))
+		if(ImGui_ImplGlfw_InitForOther(std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow()), true))
 		{
 			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
 		}
@@ -60,7 +62,7 @@ void ImGuiManager::Init()
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
-		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow().GetNativeWindow());
+		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow());
 		
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
@@ -114,6 +116,10 @@ void ImGuiManager::Begin()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 	}
+	else if (api == RendererAPI::API::Vulkan)
+	{
+		//ImGui_ImplVulkan_NewFrame();
+	}
 	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
@@ -124,7 +130,7 @@ void ImGuiManager::End()
 	PROFILE_FUNCTION();
 	ImGuiIO& io = ImGui::GetIO();
 	Application& app = Application::Get();
-	io.DisplaySize = ImVec2((float)app.GetWindow().GetWidth(), (float)app.GetWindow().GetHeight());
+	io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
 
 	//Rendering
 	ImGui::Render();
@@ -139,6 +145,10 @@ void ImGuiManager::End()
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	}
+	else if (api == RendererAPI::API::Vulkan)
+	{
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

@@ -321,6 +321,19 @@ void ContentExplorerPanel::CreateNewPhysicsMaterial()
 	m_CurrentSelectedPath = newPhysicsMaterial;
 }
 
+void ContentExplorerPanel::CreateNewBehaviourTree()
+{
+	std::filesystem::path newBehaviourTree = Directory::GetNextNewFileName(m_CurrentPath, "New Behaviour Tree", ".behaviourtree");
+
+	BehaviourTree::BehaviourTree behaviourTree;
+
+	BehaviourTree::Serializer serializer(&behaviourTree);
+
+	serializer.Serialize(newBehaviourTree);
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newBehaviourTree;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
@@ -470,6 +483,12 @@ void ContentExplorerPanel::RightClickMenu()
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
 		{
 			CreateNewPhysicsMaterial();
+			m_Renaming = true;
+		}
+
+		if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
+		{
+			CreateNewBehaviourTree();
 			m_Renaming = true;
 		}
 		ImGui::EndMenu();

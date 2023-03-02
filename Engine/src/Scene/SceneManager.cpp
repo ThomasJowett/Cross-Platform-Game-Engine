@@ -122,7 +122,9 @@ bool SceneManager::FinalChangeScene()
 	SceneChangedEvent event(s_NextFilepath);
 	Application::CallEvent(event);
 
-	s_CurrentScene->OnViewportResize(Settings::GetInt("Display", "Window_Width"), Settings::GetInt("Display", "Window_Height"));
+	const char* title = Application::GetWindow()->GetTitle();
+
+	s_CurrentScene->OnViewportResize(Settings::GetInt(title, "Window_Width"), Settings::GetInt(title, "Window_Height"));
 
 	s_NextFilepath.clear();
 

@@ -45,3 +45,8 @@ int OpenGLContext::GetVersion()
 {
     return s_Version;
 }
+
+void OpenGLContext::MakeCurrent()
+{
+	glfwMakeContextCurrent(m_windowHandle);
+}

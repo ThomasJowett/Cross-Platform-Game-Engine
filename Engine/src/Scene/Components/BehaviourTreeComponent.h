@@ -3,6 +3,7 @@
 #include "cereal/access.hpp"
 
 #include "AI/BehaviorTree.h"
+#include "AI/BehaviourTreeSerializer.h"
 
 struct BehaviourTreeComponent
 {
@@ -17,12 +18,25 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-
+		std::string relativePath;
+		if (!filepath.empty())
+		{
+			relativePath = FileUtils::RelativePath(filepath, Application::GetOpenDocumentDirectory()).string();
+		}
+		archive(relativePath);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
+		std::string relativePath;
+		archive(relativePath);
 
+		if (!relativePath.empty())
+		{
+			filepath = std::filesystem::absolute((Application::GetOpenDocumentDirectory() / relativePath));
+			auto serializer = BehaviourTree::Serializer(&behaviourTree);
+			serializer.Deserialize(filepath);
+		}
 	}
 };

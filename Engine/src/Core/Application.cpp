@@ -30,7 +30,7 @@ Application::EventCallbackFn Application::s_EventCallback;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Application::Application(const WindowProps& props)
+Application::Application()
 {
 	PROFILE_FUNCTION();
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
@@ -41,27 +41,11 @@ Application::Application(const WindowProps& props)
 	LuaManager::Init();
 	Input::Init();
 
-	SetDefaultSettings(props);
+	SetDefaultSettings();
 
 	RenderCommand::CreateRendererAPI();
 
-	m_Window = Scope<Window>(Window::Create(props));
-	m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-
-	Renderer::Init();
-
 	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
-
-	m_ImGuiManager = CreateScope<ImGuiManager>();
-	m_ImGuiManager->Init();
-
-	if (Settings::GetBool("Display", "Maximized"))
-	{
-		m_Window->MaximizeWindow();
-		Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
-	}
-
-	Font::Init();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -70,15 +54,51 @@ Application::~Application()
 {
 	PROFILE_FUNCTION();
 	SceneManager::Shutdown();
-	m_ImGuiManager->Shutdown();
 	Settings::SaveSettings();
-	Renderer::Shutdown();
+	if (m_Window) {
+		if(m_ImGuiManager) m_ImGuiManager->Shutdown();
+		Renderer::Shutdown();
+		Font::Shutdown();
+	}
 	LuaManager::Shutdown();
-	Font::Shutdown();
 	AssetManager::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
+{
+	const char* windowStr = props.title.c_str();
+	Settings::SetDefaultInt(windowStr, "Window_Width", props.width);
+	Settings::SetDefaultInt(windowStr, "Window_Height", props.height);
+	Settings::SetDefaultInt(windowStr, "Window_Position_X", props.posX);
+	Settings::SetDefaultInt(windowStr, "Window_Position_Y", props.posY);
+	Settings::SetDefaultInt(windowStr, "Window_Mode", (int)props.windowMode);
+	Settings::SetDefaultBool(windowStr, "Window_Maximized", props.maximized);
+
+	m_Window = Window::Create(props);
+	if (m_Window) {
+		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
+		
+		if (Settings::GetBool(windowStr, "Window_Maximized"))
+		{
+			m_Window->MaximizeWindow();
+			Renderer::OnWindowResize(m_Window->GetWidth(), m_Window->GetHeight());
+		}
+
+		Renderer::Init();
+		Font::Init();
+
+		if (!m_ImGuiManager) {
+			m_ImGuiManager = CreateScope<ImGuiManager>();
+			m_ImGuiManager->Init();
+		}
+		return m_Window.get();
+	}
+	else
+		ENGINE_ERROR("Could not create window");
+	return nullptr;
+}
 
 void Application::Run()
 {
@@ -116,6 +136,7 @@ void Application::Run()
 			accumulator -= m_FixedUpdateInterval;
 		}
 
+		m_Window->GetContext()->MakeCurrent();
 		m_Window->OnUpdate();
 
 		// On Update
@@ -208,10 +229,10 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 	}
 	m_Minimized = false;
 
-	if (!Settings::GetBool("Display", "Maximized"))
+	if (!Settings::GetBool(m_Window->GetTitle(), "Window_Maximized"))
 	{
-		Settings::SetInt("Display", "Window_Width", e.GetWidth());
-		Settings::SetInt("Display", "Window_Height", e.GetHeight());
+		Settings::SetInt(m_Window->GetTitle(), "Window_Width", e.GetWidth());
+		Settings::SetInt(m_Window->GetTitle(), "Window_Height", e.GetHeight());
 	}
 
 	Renderer::OnWindowResize(e.GetWidth(), e.GetHeight());
@@ -222,10 +243,10 @@ bool Application::OnWindowResize(WindowResizeEvent& e)
 
 bool Application::OnWindowMove(WindowMoveEvent& e)
 {
-	if (!Settings::GetBool("Display", "Maximized"))
+	if (!Settings::GetBool(m_Window->GetTitle(), "Window_Maximized"))
 	{
-		Settings::SetInt("Display", "Window_Position_X", e.GetTopLeftX());
-		Settings::SetInt("Display", "Window_Position_Y", e.GetTopLeftY());
+		Settings::SetInt(m_Window->GetTitle(), "Window_Position_X", e.GetTopLeftX());
+		Settings::SetInt(m_Window->GetTitle(), "Window_Position_Y", e.GetTopLeftY());
 	}
 	return false;
 }
@@ -234,23 +255,17 @@ bool Application::OnWindowMove(WindowMoveEvent& e)
 
 bool Application::OnMaximize(WindowMaximizedEvent& e)
 {
-	Settings::SetBool("Display", "Maximized", e.IsMaximized());
+	Settings::SetBool(m_Window->GetTitle(), "Window_Maximized", e.IsMaximized());
 	return false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::SetDefaultSettings(const WindowProps& props)
+void Application::SetDefaultSettings()
 {
 	const char* display = "Display";
 	const char* audio = "Audio";
 
-	Settings::SetDefaultInt(display, "Window_Width", props.width);
-	Settings::SetDefaultInt(display, "Window_Height", props.height);
-	Settings::SetDefaultInt(display, "Window_Position_X", props.posX);
-	Settings::SetDefaultInt(display, "Window_Position_Y", props.posY);
-	Settings::SetDefaultInt(display, "Window_Mode", (int)WindowMode::WINDOWED);
-	Settings::SetDefaultBool(display, "Maximized", true);
 	Settings::SetDefaultBool(display, "V-Sync", true);
     
     Settings::SetDefaultDouble(audio, "Master", 100.0);

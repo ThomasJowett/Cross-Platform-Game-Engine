@@ -36,28 +36,30 @@ public:
 
 	Status tick(float deltaTime)
 	{
-		if (status != Status::Running) {
+		if (m_Status != Status::Running) {
 			initialize();
 		}
 
-		status = update(deltaTime);
+		m_Status = update(deltaTime);
 
-		if (status != Status::Running) {
-			terminate(status);
+		if (m_Status != Status::Running) {
+			terminate(m_Status);
 		}
 
-		return status;
+		return m_Status;
 	}
 
-	bool isSuccess() const { return status == Status::Success; }
-	bool isFailure() const { return status == Status::Failure; }
-	bool isRunning() const { return status == Status::Running; }
+	bool isSuccess() const { return m_Status == Status::Success; }
+	bool isFailure() const { return m_Status == Status::Failure; }
+	bool isRunning() const { return m_Status == Status::Running; }
 	bool isTerminated() const { return isSuccess() || isFailure(); }
 
-	void reset() { status = Status::Invalid; }
+	void reset() { m_Status = Status::Invalid; }
 
 private:
-	Status status = Status::Invalid;
+	Status m_Status = Status::Invalid;
+
+	Vector2f m_Position;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -146,8 +148,8 @@ public:
 	bool hasString(std::string const& key) const { return m_Strings.find(key) != m_Strings.end(); }
 
 	//VECTOR2D
-	void setVector2D(std::string const& key, Vector2f value) { m_Vector2s[key] = value; }
-	Vector2f getVector2D(std::string const& key)
+	void setVector2(std::string const& key, Vector2f value) { m_Vector2s[key] = value; }
+	Vector2f getVector2(std::string const& key)
 	{
 		if (m_Vector2s.find(key) == m_Vector2s.end()) {
 			m_Vector2s[key] = Vector2f();
@@ -167,6 +169,27 @@ public:
 	}
 	bool hasVector3(std::string const& key) const { return m_Vector3fs.find(key) != m_Vector3fs.end(); }
 
+	std::unordered_map<std::string, bool>::iterator getBoolsBegin() { return m_Bools.begin(); }
+	std::unordered_map<std::string, bool>::iterator getBoolsEnd() { return m_Bools.end(); }
+
+	std::unordered_map<std::string, int>::iterator getIntsBegin() { return m_Ints.begin(); }
+	std::unordered_map<std::string, int>::iterator getIntsEnd() { return m_Ints.end(); }
+
+	std::unordered_map<std::string, float>::iterator getFloatsBegin() { return m_Floats.begin(); }
+	std::unordered_map<std::string, float>::iterator getFloatsEnd() { return m_Floats.end(); }
+
+	std::unordered_map<std::string, double>::iterator getDoublesBegin() { return m_Doubles.begin(); }
+	std::unordered_map<std::string, double>::iterator getDoublesEnd() { return m_Doubles.end(); }
+
+	std::unordered_map<std::string, std::string>::iterator getStringsBegin() { return m_Strings.begin(); }
+	std::unordered_map<std::string, std::string>::iterator getStringsEnd() { return m_Strings.end(); }
+
+	std::unordered_map<std::string, Vector2f>::iterator getVector2sBegin() { return m_Vector2s.begin(); }
+	std::unordered_map<std::string, Vector2f>::iterator getVector2sEnd() { return m_Vector2s.end(); }
+
+	std::unordered_map<std::string, Vector3f>::iterator getVector3sBegin() { return m_Vector3fs.begin(); }
+	std::unordered_map<std::string, Vector3f>::iterator getVector3sEnd() { return m_Vector3fs.end(); }
+
 private:
 	std::unordered_map<std::string, bool> m_Bools;
 	std::unordered_map<std::string, int> m_Ints;
@@ -182,31 +205,15 @@ private:
 class Decorator : public Node
 {
 public:
-	explicit Decorator(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
 	Decorator() = default;
 	~Decorator() override = default;
 
 	void setChild(Ref<Node> node) { m_Child = node; }
+	const Ref<Node> getChild() const { return m_Child; }
 	bool hasChild() const { return m_Child != nullptr; }
 
 protected:
 	Ref<Node> m_Child = nullptr;
-	Ref<Blackboard> m_Blackboard = nullptr;
-};
-
-//--------------------------------------------------------------------------------------------------------------------
-
-class Leaf : public Node
-{
-public:
-	Leaf() = default;
-	~Leaf() override = default;
-	explicit Leaf(Ref<Blackboard> blackboard) : m_Blackboard(blackboard) {}
-
-	Status update(float deltaTime) override = 0;
-
-protected:
-	Ref<Blackboard> m_Blackboard;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -219,27 +226,36 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		Status status = m_Root->tick(deltaTime);
-
-		m_NodeRunning = (status == Status::Running);
-
-		if (m_NodeRunning == true)
-		{
-			//std::cout << "node Running" << std::endl;
-			return  status;
-		}
-		return status;
+		if (m_Entry)
+			return m_Entry->tick(deltaTime);
+		return m_Root->tick(deltaTime);
 	}
 
 	Ref<Blackboard> getBlackboard() const { return m_Blackboard; }
 
-	void setRoot(const Ref<Node>& node) { m_Root = node; }
+	void setRoot(const Ref<Node> node) { m_Root = node; }
+	const Ref<Node> getRoot() { return m_Root; }
+
+	void setEntry(Node* node) { m_Entry = node; }
 
 private:
 	Ref<Node> m_Root = nullptr;
+	Node* m_Entry = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
+};
 
-	bool m_NodeRunning = false;
+//--------------------------------------------------------------------------------------------------------------------
+
+class Leaf : public Node
+{
+public:
+	~Leaf() override = default;
+	explicit Leaf(BehaviourTree* behaviourTree) : m_BehaviourTree(behaviourTree) {}
+
+	Status update(float deltaTime) override = 0;
+
+protected:
+	BehaviourTree* m_BehaviourTree;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
