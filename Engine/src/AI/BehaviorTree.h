@@ -56,10 +56,12 @@ public:
 
 	void reset() { m_Status = Status::Invalid; }
 
+	Vector2f GetEditorPosition() { return m_EditorPosition; }
+	void SetEditorPosition(Vector2f editorPosition) { m_EditorPosition = editorPosition; }
 private:
 	Status m_Status = Status::Invalid;
 
-	Vector2f m_Position;
+	Vector2f m_EditorPosition;
 };
 
 //--------------------------------------------------------------------------------------------------------------------
@@ -228,7 +230,9 @@ public:
 	{
 		if (m_Entry)
 			return m_Entry->tick(deltaTime);
-		return m_Root->tick(deltaTime);
+		else if (m_Root)
+			return m_Root->tick(deltaTime);
+		return Status::Invalid;
 	}
 
 	Ref<Blackboard> getBlackboard() const { return m_Blackboard; }

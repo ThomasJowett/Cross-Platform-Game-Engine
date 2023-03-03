@@ -5,6 +5,12 @@
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/ISaveable.h"
 #include "Interfaces/IUndoable.h"
+#include "ImGui/Node Editor/imgui_node_editor.h"
+
+namespace BehaviourTree
+{
+class BehaviourTree;
+}
 
 class BehaviourTreeView
 	:public View, public ICopyable, public ISaveable, public IUndoable
@@ -45,5 +51,9 @@ private:
 
 	bool m_Dirty = false;
 
+	NodeEditor::EditorContext* m_NodeEditorContext = nullptr;
+
+	Ref<BehaviourTree::BehaviourTree> m_BehaviourTree;
+	Ref<BehaviourTree::BehaviourTree> m_LocalBehaviourTree;
 
 };

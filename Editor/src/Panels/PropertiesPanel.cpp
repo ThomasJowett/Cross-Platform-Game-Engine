@@ -873,8 +873,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		{
 			if (ImGui::FileSelect("Behaviour Tree", behaviourTree.filepath, FileType::BEHAVIOURTREE))
 			{
-				BehaviourTree::Serializer serializer(&behaviourTree.behaviourTree);
-				serializer.Deserialize(behaviourTree.filepath);
+				behaviourTree.behaviourTree = BehaviourTree::Serializer::Deserialize(behaviourTree.filepath);
 			}
 		});
 

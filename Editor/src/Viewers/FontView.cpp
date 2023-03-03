@@ -32,8 +32,10 @@ void FontView::OnAttach()
 
 void FontView::OnImGuiRender()
 {
-	if(!*m_Show)
+	if (!*m_Show) {
+		ViewerManager::CloseViewer(m_Filepath);
 		return;
+	}
 
 	if(ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{

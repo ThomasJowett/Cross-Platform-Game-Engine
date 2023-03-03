@@ -12,6 +12,7 @@
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
+#include "Platform/Vulkan/VulkanContext.h"
 #ifdef __WINDOWS__
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"   // for glfwGetWin32Window
@@ -279,7 +280,7 @@ bool glfwWindow::Init(const WindowProps& props)
 	}
     else if (api == RendererAPI::API::Vulkan)
     {
-        
+		m_Context = CreateRef<VulkanContext>();
     }
 
 	m_Context->Init();

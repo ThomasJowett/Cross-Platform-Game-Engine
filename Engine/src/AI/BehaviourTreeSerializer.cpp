@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "BehaviourTreeSerializer.h"
 
+#include "BehaviorTree.h"
 #include "Decorators.h"
 #include "Tasks.h"
 
@@ -8,188 +9,14 @@
 #include "Core/Version.h"
 #include "Logging/Instrumentor.h"
 
-BehaviourTree::Serializer::Serializer(BehaviourTree* behaviourTree)
-	:m_BehaviourTree(behaviourTree)
+namespace BehaviourTree
 {
-}
-
-bool BehaviourTree::Serializer::Serialize(const std::filesystem::path& filepath) const
+void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> node)
 {
-	PROFILE_FUNCTION();
+	Vector2f editorPosition = node->GetEditorPosition();
+	pElement->SetAttribute("x", editorPosition.x);
+	pElement->SetAttribute("y", editorPosition.y);
 
-	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement* pRoot = doc.NewElement("BehaviourTree");
-
-	pRoot->SetAttribute("EngineVersion", VERSION);
-
-	doc.InsertFirstChild(pRoot);
-
-	tinyxml2::XMLElement* pBlackboard = pRoot->InsertNewChildElement("Blackboard");
-
-	Ref<Blackboard> blackboard = m_BehaviourTree->getBlackboard();
-
-
-	for (auto iter = blackboard->getBoolsBegin(); iter != blackboard->getBoolsEnd(); ++iter) {
-		auto pBool = pBlackboard->InsertNewChildElement("Bool");
-		pBool->SetAttribute("Key", iter->first.c_str());
-		pBool->SetAttribute("Value", iter->second);
-	}
-
-	for (auto iter = blackboard->getIntsBegin(); iter != blackboard->getIntsEnd(); ++iter) {
-		auto pInt = pBlackboard->InsertNewChildElement("Int");
-		pInt->SetAttribute("Key", iter->first.c_str());
-		pInt->SetAttribute("Value", iter->second);
-	}
-
-	for (auto iter = blackboard->getFloatsBegin(); iter != blackboard->getFloatsEnd(); ++iter) {
-		auto pFloat = pBlackboard->InsertNewChildElement("Float");
-		pFloat->SetAttribute("Key", iter->first.c_str());
-		pFloat->SetAttribute("Value", iter->second);
-	}
-
-	for (auto iter = blackboard->getDoublesBegin(); iter != blackboard->getDoublesEnd(); ++iter) {
-		auto pDouble = pBlackboard->InsertNewChildElement("Doubles");
-		pDouble->SetAttribute("Key", iter->first.c_str());
-		pDouble->SetAttribute("Value", iter->second);
-	}
-
-	for (auto iter = blackboard->getStringsBegin(); iter != blackboard->getStringsEnd(); ++iter) {
-		auto pString = pBlackboard->InsertNewChildElement("String");
-		pString->SetAttribute("Key", iter->first.c_str());
-		pString->SetAttribute("Value", iter->second.c_str());
-	}
-
-	for (auto iter = blackboard->getVector2sBegin(); iter != blackboard->getVector2sEnd(); ++iter) {
-		auto pVec2 = pBlackboard->InsertNewChildElement("Vec2");
-		pVec2->SetAttribute("Key", iter->first.c_str());
-		pVec2->SetAttribute("Value", iter->second);
-	}
-
-	for (auto iter = blackboard->getVector3sBegin(); iter != blackboard->getVector3sEnd(); ++iter) {
-		auto pVec3 = pBlackboard->InsertNewChildElement("Vec3");
-		pVec3->SetAttribute("Key", iter->first.c_str());
-		pVec3->SetAttribute("Value", iter->second);
-	}
-
-	tinyxml2::XMLElement* pEntry = pRoot->InsertNewChildElement("Root");
-
-	const Ref<Node> rootNode = m_BehaviourTree->getRoot();
-
-	if (rootNode) {
-		SerializeNode(pEntry, rootNode);
-	}
-
-	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
-
-	return error == tinyxml2::XML_SUCCESS;
-}
-
-bool BehaviourTree::Serializer::Deserialize(const std::filesystem::path& filepath)
-{
-	PROFILE_FUNCTION();
-
-	tinyxml2::XMLDocument doc;
-
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
-	{
-		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("BehaviourTree");
-
-		// Version
-		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
-			ENGINE_WARN("Loading behaviour tree created with a different version of the engine");
-
-		// Blackboard
-		tinyxml2::XMLElement* pBlackboardElement = pRoot->FirstChildElement("Blackboard");
-
-		if (pBlackboardElement) {
-			Ref<Blackboard> blackboard = m_BehaviourTree->getBlackboard();
-
-			tinyxml2::XMLElement* pBool = pBlackboardElement->FirstChildElement("Bool");
-			while (pBool)
-			{
-				const char* key = pBool->Attribute("Key");
-				bool value = pBool->BoolAttribute("Value");
-				blackboard->setBool(key, value);
-				pBool = pBool->NextSiblingElement("Bool");
-			}
-
-			tinyxml2::XMLElement* pInt = pBlackboardElement->FirstChildElement("Int");
-			while (pInt)
-			{
-				const char* key = pInt->Attribute("Key");
-				int value = pInt->IntAttribute("Value");
-				blackboard->setInt(key, value);
-				pInt = pInt->NextSiblingElement("Int");
-			}
-
-			tinyxml2::XMLElement* pFloat = pBlackboardElement->FirstChildElement("Float");
-			while (pFloat)
-			{
-				const char* key = pFloat->Attribute("Key");
-				float value = pFloat->FloatAttribute("Value");
-				blackboard->setFloat(key, value);
-				pFloat = pFloat->NextSiblingElement("Float");
-			}
-
-			tinyxml2::XMLElement* pDouble = pBlackboardElement->FirstChildElement("Double");
-			while (pDouble) {
-				const char* key = pDouble->Attribute("Key");
-				double value = pDouble->DoubleAttribute("Value");
-				blackboard->setDouble(key, value);
-				pDouble = pDouble->NextSiblingElement("Double");
-			}
-
-			tinyxml2::XMLElement* pString = pBlackboardElement->FirstChildElement("String");
-			while (pString) {
-				const char* key = pString->Attribute("Key");
-				std::string value = pString->Attribute("Value");
-				blackboard->setString(key, value);
-				pString = pString->NextSiblingElement("String");
-			}
-
-			tinyxml2::XMLElement* pVec2 = pBlackboardElement->FirstChildElement("Vec2");
-			while (pVec2) {
-				const char* key = pString->Attribute("Key");
-				float x = pVec2->FloatAttribute("x");
-				float y = pVec2->FloatAttribute("y");
-				blackboard->setVector2(key, Vector2f(x, y));
-				pVec2 = pVec2->NextSiblingElement("Vec2");
-			}
-
-			tinyxml2::XMLElement* pVec3 = pBlackboardElement->FirstChildElement("Vec3");
-			while (pVec3) {
-				const char* key = pString->Attribute("Key");
-				float x = pVec3->FloatAttribute("x");
-				float y = pVec3->FloatAttribute("y");
-				float z = pVec3->FloatAttribute("z");
-				blackboard->setVector3(key, Vector3f(x, y, z));
-				pVec3 = pVec3->NextSiblingElement("Vec3");
-			}
-		}
-
-		// Root Node
-		tinyxml2::XMLElement* pRootElement = pRoot->FirstChildElement("Root");
-
-		if (pRootElement) {
-			// Nodes are recursively deserialized
-			Ref<Node> firstNode = DeserializeNode(pRootElement->FirstChildElement());
-			if (firstNode)
-				m_BehaviourTree->setRoot(firstNode);
-			else {
-				ENGINE_ERROR("Behaviour tree must have a root node!");
-				return false;
-			}
-		}
-
-		return true;
-	}
-
-	ENGINE_ERROR("could not load behaviour tree {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
-	return false;
-}
-
-void BehaviourTree::Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> node) const
-{
 	auto SerializeCompositeNode = [&](tinyxml2::XMLElement* pElement, Ref<Composite> composite)
 	{
 		for (const auto child : *composite)
@@ -260,8 +87,7 @@ void BehaviourTree::Serializer::SerializeNode(tinyxml2::XMLElement* pElement, co
 		pWait->SetAttribute("WaitTime", wait->getWaitTime());
 	}
 }
-
-Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XMLElement* pElement)
+Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourTree* behaviourTree)
 {
 	Vector2f position;
 
@@ -270,17 +96,19 @@ Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XM
 
 	auto DeserializeCompositeNode = [&](tinyxml2::XMLElement* pElement, Ref<Composite> composite)
 	{
+		composite->SetEditorPosition(position);
 		tinyxml2::XMLElement* pChildElement = pElement->FirstChildElement();
 		while (pChildElement) {
-			composite->addChild(DeserializeNode(pChildElement));
+			composite->addChild(DeserializeNode(pChildElement, behaviourTree));
 		}
 	};
 
 	auto DeserializeDecorator = [&](tinyxml2::XMLElement* pElement, Ref<Decorator> decorator)
 	{
+		decorator->SetEditorPosition(position);
 		tinyxml2::XMLElement* child = pElement->FirstChildElement();
 		if (child)
-			decorator->setChild(DeserializeNode(child));
+			decorator->setChild(DeserializeNode(child, behaviourTree));
 		else
 			ENGINE_ERROR("Decorator must have child node!");
 
@@ -325,7 +153,7 @@ Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XM
 		const char* key = pElement->Attribute("Key");
 		bool isSet = pElement->BoolAttribute("IsSet", false);
 
-		Ref<BlackboardBool> decorator = CreateRef<BlackboardBool>(m_BehaviourTree->getBlackboard(), key, isSet);
+		Ref<BlackboardBool> decorator = CreateRef<BlackboardBool>(behaviourTree->getBlackboard(), key, isSet);
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
@@ -334,7 +162,7 @@ Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XM
 		const char* key1 = pElement->Attribute("Key1");
 		const char* key2 = pElement->Attribute("Key2");
 		bool isEqual = pElement->BoolAttribute("IsEqual", true);
-		Ref<BlackboardCompare> decorator = CreateRef<BlackboardCompare>(m_BehaviourTree->getBlackboard(), key1, key2, isEqual);
+		Ref<BlackboardCompare> decorator = CreateRef<BlackboardCompare>(behaviourTree->getBlackboard(), key1, key2, isEqual);
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
@@ -378,7 +206,8 @@ Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XM
 	else if (pElement->Name() == "Wait")
 	{
 		float waitTime = pElement->FloatAttribute("WaitTime", 1.0f);
-		Ref<Wait> wait = CreateRef<Wait>(m_BehaviourTree, waitTime);
+		Ref<Wait> wait = CreateRef<Wait>(behaviourTree, waitTime);
+		wait->SetEditorPosition(position);
 		return wait;
 	}
 
@@ -389,4 +218,184 @@ Ref<BehaviourTree::Node> BehaviourTree::Serializer::DeserializeNode(tinyxml2::XM
 
 	return nullptr;
 }
+
+bool Serializer::Serialize(const std::filesystem::path& filepath, BehaviourTree* behaviourTree)
+{
+	PROFILE_FUNCTION();
+
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pRoot = doc.NewElement("BehaviourTree");
+
+	pRoot->SetAttribute("EngineVersion", VERSION);
+
+	doc.InsertFirstChild(pRoot);
+
+	tinyxml2::XMLElement* pBlackboard = pRoot->InsertNewChildElement("Blackboard");
+
+	Ref<Blackboard> blackboard = behaviourTree->getBlackboard();
+
+
+	for (auto iter = blackboard->getBoolsBegin(); iter != blackboard->getBoolsEnd(); ++iter) {
+		auto pBool = pBlackboard->InsertNewChildElement("Bool");
+		pBool->SetAttribute("Key", iter->first.c_str());
+		pBool->SetAttribute("Value", iter->second);
+	}
+
+	for (auto iter = blackboard->getIntsBegin(); iter != blackboard->getIntsEnd(); ++iter) {
+		auto pInt = pBlackboard->InsertNewChildElement("Int");
+		pInt->SetAttribute("Key", iter->first.c_str());
+		pInt->SetAttribute("Value", iter->second);
+	}
+
+	for (auto iter = blackboard->getFloatsBegin(); iter != blackboard->getFloatsEnd(); ++iter) {
+		auto pFloat = pBlackboard->InsertNewChildElement("Float");
+		pFloat->SetAttribute("Key", iter->first.c_str());
+		pFloat->SetAttribute("Value", iter->second);
+	}
+
+	for (auto iter = blackboard->getDoublesBegin(); iter != blackboard->getDoublesEnd(); ++iter) {
+		auto pDouble = pBlackboard->InsertNewChildElement("Doubles");
+		pDouble->SetAttribute("Key", iter->first.c_str());
+		pDouble->SetAttribute("Value", iter->second);
+	}
+
+	for (auto iter = blackboard->getStringsBegin(); iter != blackboard->getStringsEnd(); ++iter) {
+		auto pString = pBlackboard->InsertNewChildElement("String");
+		pString->SetAttribute("Key", iter->first.c_str());
+		pString->SetAttribute("Value", iter->second.c_str());
+	}
+
+	for (auto iter = blackboard->getVector2sBegin(); iter != blackboard->getVector2sEnd(); ++iter) {
+		auto pVec2 = pBlackboard->InsertNewChildElement("Vec2");
+		pVec2->SetAttribute("Key", iter->first.c_str());
+		pVec2->SetAttribute("Value", iter->second);
+	}
+
+	for (auto iter = blackboard->getVector3sBegin(); iter != blackboard->getVector3sEnd(); ++iter) {
+		auto pVec3 = pBlackboard->InsertNewChildElement("Vec3");
+		pVec3->SetAttribute("Key", iter->first.c_str());
+		pVec3->SetAttribute("Value", iter->second);
+	}
+
+	tinyxml2::XMLElement* pEntry = pRoot->InsertNewChildElement("Root");
+
+	const Ref<Node> rootNode = behaviourTree->getRoot();
+
+	if (rootNode) {
+		SerializeNode(pEntry, rootNode);
+	}
+
+	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+
+	return error == tinyxml2::XML_SUCCESS;
+}
+
+Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath)
+{
+	PROFILE_FUNCTION();
+
+	tinyxml2::XMLDocument doc;
+
+	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	{
+		Ref<BehaviourTree> behaviourTree = CreateRef<BehaviourTree>();
+		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("BehaviourTree");
+
+		// Version
+		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
+			ENGINE_WARN("Loading behaviour tree created with a different version of the engine");
+
+		// Blackboard
+		tinyxml2::XMLElement* pBlackboardElement = pRoot->FirstChildElement("Blackboard");
+
+		if (pBlackboardElement) {
+			Ref<Blackboard> blackboard = behaviourTree->getBlackboard();
+
+			tinyxml2::XMLElement* pBool = pBlackboardElement->FirstChildElement("Bool");
+			while (pBool)
+			{
+				const char* key = pBool->Attribute("Key");
+				bool value = pBool->BoolAttribute("Value");
+				blackboard->setBool(key, value);
+				pBool = pBool->NextSiblingElement("Bool");
+			}
+
+			tinyxml2::XMLElement* pInt = pBlackboardElement->FirstChildElement("Int");
+			while (pInt)
+			{
+				const char* key = pInt->Attribute("Key");
+				int value = pInt->IntAttribute("Value");
+				blackboard->setInt(key, value);
+				pInt = pInt->NextSiblingElement("Int");
+			}
+
+			tinyxml2::XMLElement* pFloat = pBlackboardElement->FirstChildElement("Float");
+			while (pFloat)
+			{
+				const char* key = pFloat->Attribute("Key");
+				float value = pFloat->FloatAttribute("Value");
+				blackboard->setFloat(key, value);
+				pFloat = pFloat->NextSiblingElement("Float");
+			}
+
+			tinyxml2::XMLElement* pDouble = pBlackboardElement->FirstChildElement("Double");
+			while (pDouble) {
+				const char* key = pDouble->Attribute("Key");
+				double value = pDouble->DoubleAttribute("Value");
+				blackboard->setDouble(key, value);
+				pDouble = pDouble->NextSiblingElement("Double");
+			}
+
+			tinyxml2::XMLElement* pString = pBlackboardElement->FirstChildElement("String");
+			while (pString) {
+				const char* key = pString->Attribute("Key");
+				std::string value = pString->Attribute("Value");
+				blackboard->setString(key, value);
+				pString = pString->NextSiblingElement("String");
+			}
+
+			tinyxml2::XMLElement* pVec2 = pBlackboardElement->FirstChildElement("Vec2");
+			while (pVec2) {
+				const char* key = pString->Attribute("Key");
+				float x = pVec2->FloatAttribute("x");
+				float y = pVec2->FloatAttribute("y");
+				blackboard->setVector2(key, Vector2f(x, y));
+				pVec2 = pVec2->NextSiblingElement("Vec2");
+			}
+
+			tinyxml2::XMLElement* pVec3 = pBlackboardElement->FirstChildElement("Vec3");
+			while (pVec3) {
+				const char* key = pString->Attribute("Key");
+				float x = pVec3->FloatAttribute("x");
+				float y = pVec3->FloatAttribute("y");
+				float z = pVec3->FloatAttribute("z");
+				blackboard->setVector3(key, Vector3f(x, y, z));
+				pVec3 = pVec3->NextSiblingElement("Vec3");
+			}
+		}
+
+		// Root Node
+		tinyxml2::XMLElement* pRootElement = pRoot->FirstChildElement("Root");
+
+		if (pRootElement) {
+			tinyxml2::XMLElement* pEntryElement = pRootElement->FirstChildElement();
+			if (pEntryElement) {
+				// Nodes are recursively deserialized
+				Ref<Node> firstNode = DeserializeNode(pEntryElement, behaviourTree.get());
+				if (firstNode)
+					behaviourTree->setRoot(firstNode);
+			}
+		}
+		else {
+			ENGINE_ERROR("Behaviour tree must have a root node!");
+			return nullptr;
+		}
+		return behaviourTree;
+	}
+
+	ENGINE_ERROR("could not load behaviour tree {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+	return nullptr;
+}
+}
+
 

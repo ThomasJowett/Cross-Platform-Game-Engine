@@ -1,6 +1,6 @@
 #pragma once
 
-#include "AI/BehaviorTree.h"
+#include "core/core.h"
 
 #include <filesystem>
 
@@ -11,17 +11,15 @@ class XMLElement;
 
 namespace BehaviourTree
 {
-	class Serializer
-	{
-	public:
-		Serializer(BehaviourTree* behaviourTree);
-
-		bool Serialize(const std::filesystem::path& filepath) const;
-		bool Deserialize(const std::filesystem::path& filepath);
-
-		void SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> node) const;
-		Ref<Node> DeserializeNode(tinyxml2::XMLElement* pElement);
-	private:
-		BehaviourTree* m_BehaviourTree;
-	};
+class BehaviourTree;
+class Node;
+class Serializer
+{
+public:
+	Serializer() = delete;
+	static bool Serialize(const std::filesystem::path& filepath, BehaviourTree* behaviourTree);
+	static Ref<BehaviourTree> Deserialize(const std::filesystem::path& filepath);
+	static void SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> node);
+	static Ref<Node> DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourTree* behaviourTree);
+};
 }

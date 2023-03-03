@@ -9,7 +9,7 @@ struct BehaviourTreeComponent
 {
 	BehaviourTreeComponent() = default;
 	BehaviourTreeComponent(const BehaviourTreeComponent&) = default;
-	BehaviourTree::BehaviourTree behaviourTree;
+	Ref<BehaviourTree::BehaviourTree> behaviourTree;
 
 	std::filesystem::path filepath;
 
@@ -35,8 +35,7 @@ private:
 		if (!relativePath.empty())
 		{
 			filepath = std::filesystem::absolute((Application::GetOpenDocumentDirectory() / relativePath));
-			auto serializer = BehaviourTree::Serializer(&behaviourTree);
-			serializer.Deserialize(filepath);
+			behaviourTree = BehaviourTree::Serializer::Deserialize(filepath);
 		}
 	}
 };

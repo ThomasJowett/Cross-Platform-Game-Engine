@@ -327,9 +327,8 @@ void ContentExplorerPanel::CreateNewBehaviourTree()
 
 	BehaviourTree::BehaviourTree behaviourTree;
 
-	BehaviourTree::Serializer serializer(&behaviourTree);
+	BehaviourTree::Serializer::Serialize(newBehaviourTree, &behaviourTree);
 
-	serializer.Serialize(newBehaviourTree);
 	m_ForceRescan = true;
 	m_CurrentSelectedPath = newBehaviourTree;
 }
