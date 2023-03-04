@@ -1,2 +1,2 @@
 cd ..
-./vendor/bin/premake/premake5 gmake2 -os macosx -arch="arm64"
+./vendor/bin/premake/premake5_arm gmake2 -os macosx -arch="arm64"
