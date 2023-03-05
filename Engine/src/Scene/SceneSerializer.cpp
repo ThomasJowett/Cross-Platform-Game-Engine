@@ -931,6 +931,10 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pBehaviourTreeComponentElement = pEntityElement->FirstChildElement("BehaviourTree"))
 	{
 		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
+
+		SerializationUtils::Decode(pBehaviourTreeComponentElement, component.filepath);
+		if(!component.filepath.empty())
+			component.behaviourTree = BehaviourTree::Serializer::Deserialize(component.filepath);
 	}
 
 	// State Machine -----------------------------------------------------------------------------------------------

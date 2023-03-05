@@ -100,6 +100,7 @@ Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourT
 		tinyxml2::XMLElement* pChildElement = pElement->FirstChildElement();
 		while (pChildElement) {
 			composite->addChild(DeserializeNode(pChildElement, behaviourTree));
+			pChildElement = pChildElement->NextSiblingElement();
 		}
 	};
 
@@ -116,94 +117,96 @@ Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourT
 			ENGINE_ERROR("Decorator can only have one child!");
 	};
 
+	std::string name = pElement->Name();
+
 	// Composites -----------------------------------------
-	if (pElement->Name() == "Sequence")
+	if (name == "Sequence")
 	{
 		Ref<Sequence> sequence = CreateRef<Sequence>();
 		DeserializeCompositeNode(pElement, sequence);
 		return sequence;
 	}
-	else if (pElement->Name() == "Selector")
+	else if (name == "Selector")
 	{
 		Ref<Selector> selector = CreateRef<Selector>();
 		DeserializeCompositeNode(pElement, selector);
 		return selector;
 	}
-	else if (pElement->Name() == "StatefulSelector")
+	else if (name == "StatefulSelector")
 	{
 		Ref<StatefulSelector> selector = CreateRef<StatefulSelector>();
 		DeserializeCompositeNode(pElement, selector);
 		return selector;
 	}
-	if (pElement->Name() == "MemSequence")
+	if (name == "MemSequence")
 	{
 		Ref<MemSequence> sequence = CreateRef<MemSequence>();
 		DeserializeCompositeNode(pElement, sequence);
 		return sequence;
 	}
-	if (pElement->Name() == "ParallelSequence")
+	if (name == "ParallelSequence")
 	{
 		Ref<ParallelSequence> sequence = CreateRef<ParallelSequence>();
 		DeserializeCompositeNode(pElement, sequence);
 		return sequence;
 	}
 	// Decorators -----------------------------------------
-	else if (pElement->Name() == "BlackboardBoolDecorator")
+	else if (name == "BlackboardBoolDecorator")
 	{
 		const char* key = pElement->Attribute("Key");
-		bool isSet = pElement->BoolAttribute("IsSet", false);
+		bool isSet = pElement->BoolAttribute("IsSet", true);
 
-		Ref<BlackboardBool> decorator = CreateRef<BlackboardBool>(behaviourTree->getBlackboard(), key, isSet);
+		Ref<BlackboardBool> decorator = CreateRef<BlackboardBool>(behaviourTree->getBlackboard(), key ? key : "key", isSet);
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "BlackboardCompareDecorator")
+	else if (name == "BlackboardCompareDecorator")
 	{
 		const char* key1 = pElement->Attribute("Key1");
 		const char* key2 = pElement->Attribute("Key2");
 		bool isEqual = pElement->BoolAttribute("IsEqual", true);
-		Ref<BlackboardCompare> decorator = CreateRef<BlackboardCompare>(behaviourTree->getBlackboard(), key1, key2, isEqual);
+		Ref<BlackboardCompare> decorator = CreateRef<BlackboardCompare>(behaviourTree->getBlackboard(), key1 ? key1 : "key1", key2 ? key2 : "key2", isEqual);
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "SucceederDecorator")
+	else if (name == "SucceederDecorator")
 	{
 		Ref<Succeeder> decorator = CreateRef<Succeeder>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "FailerDecorator")
+	else if (name == "FailerDecorator")
 	{
 		Ref<Failer> decorator = CreateRef<Failer>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "InverterDecorator")
+	else if (name == "InverterDecorator")
 	{
 		Ref<Inverter> decorator = CreateRef<Inverter>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "InverterDecorator")
+	else if (name == "InverterDecorator")
 	{
 		Ref<Repeater> decorator = CreateRef<Repeater>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "UntilSuccessDecorator")
+	else if (name == "UntilSuccessDecorator")
 	{
 		Ref<UntilSuccess> decorator = CreateRef<UntilSuccess>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
-	else if (pElement->Name() == "UntilFailureDecorator")
+	else if (name == "UntilFailureDecorator")
 	{
 		Ref<UntilFailure> decorator = CreateRef<UntilFailure>();
 		DeserializeDecorator(pElement, decorator);
 		return decorator;
 	}
 	// Tasks -----------------------------------------
-	else if (pElement->Name() == "Wait")
+	else if (name == "Wait")
 	{
 		float waitTime = pElement->FloatAttribute("WaitTime", 1.0f);
 		Ref<Wait> wait = CreateRef<Wait>(behaviourTree, waitTime);
@@ -316,7 +319,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 			{
 				const char* key = pBool->Attribute("Key");
 				bool value = pBool->BoolAttribute("Value");
-				blackboard->setBool(key, value);
+				if(key) blackboard->setBool(key, value);
 				pBool = pBool->NextSiblingElement("Bool");
 			}
 
@@ -325,7 +328,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 			{
 				const char* key = pInt->Attribute("Key");
 				int value = pInt->IntAttribute("Value");
-				blackboard->setInt(key, value);
+				if (key) blackboard->setInt(key, value);
 				pInt = pInt->NextSiblingElement("Int");
 			}
 
@@ -334,7 +337,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 			{
 				const char* key = pFloat->Attribute("Key");
 				float value = pFloat->FloatAttribute("Value");
-				blackboard->setFloat(key, value);
+				if (key) blackboard->setFloat(key, value);
 				pFloat = pFloat->NextSiblingElement("Float");
 			}
 
@@ -342,7 +345,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 			while (pDouble) {
 				const char* key = pDouble->Attribute("Key");
 				double value = pDouble->DoubleAttribute("Value");
-				blackboard->setDouble(key, value);
+				if (key) blackboard->setDouble(key, value);
 				pDouble = pDouble->NextSiblingElement("Double");
 			}
 
@@ -350,7 +353,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 			while (pString) {
 				const char* key = pString->Attribute("Key");
 				std::string value = pString->Attribute("Value");
-				blackboard->setString(key, value);
+				if (key) blackboard->setString(key, value);
 				pString = pString->NextSiblingElement("String");
 			}
 
@@ -359,7 +362,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 				const char* key = pString->Attribute("Key");
 				float x = pVec2->FloatAttribute("x");
 				float y = pVec2->FloatAttribute("y");
-				blackboard->setVector2(key, Vector2f(x, y));
+				if (key) blackboard->setVector2(key, Vector2f(x, y));
 				pVec2 = pVec2->NextSiblingElement("Vec2");
 			}
 
@@ -369,7 +372,7 @@ Ref<BehaviourTree> Serializer::Deserialize(const std::filesystem::path& filepath
 				float x = pVec3->FloatAttribute("x");
 				float y = pVec3->FloatAttribute("y");
 				float z = pVec3->FloatAttribute("z");
-				blackboard->setVector3(key, Vector3f(x, y, z));
+				if (key) blackboard->setVector3(key, Vector3f(x, y, z));
 				pVec3 = pVec3->NextSiblingElement("Vec3");
 			}
 		}

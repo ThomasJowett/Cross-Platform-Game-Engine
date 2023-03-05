@@ -4,11 +4,25 @@
 #include "Contact2D.h"
 
 #include "Scene/Entity.h"
-#include "Scene/Components.h"
+#include "Scene/Components/RigidBody2DComponent.h"
+#include "Scene/Components/BoxCollider2DComponent.h"
+#include "Scene/Components/CircleCollider2DComponent.h"
+#include "Scene/Components/PolygonCollider2DComponent.h"
+#include "Scene/Components/CapsuleCollider2DComponent.h"
+#include "Scene/Components/TilemapComponent.h"
+#include "Scene/Components/LuaScriptComponent.h"
+#include "Scene/Components/HierarchyComponent.h"
 #include "Renderer/Renderer2D.h"
 #include "box2d/box2d.h"
 #include "Utilities/Box2DDebugDraw.h"
 #include "Utilities/Triangulation.h"
+
+#define COLLIDER_COMPONENTS	\
+BoxCollider2DComponent,		\
+CircleCollider2DComponent,	\
+PolygonCollider2DComponent,	\
+CapsuleCollider2DComponent,	\
+TilemapComponent			\
 
 uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {

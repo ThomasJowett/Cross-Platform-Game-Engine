@@ -228,9 +228,7 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		if (m_Entry)
-			return m_Entry->tick(deltaTime);
-		else if (m_Root)
+		if (m_Root)
 			return m_Root->tick(deltaTime);
 		return Status::Invalid;
 	}
@@ -240,11 +238,8 @@ public:
 	void setRoot(const Ref<Node> node) { m_Root = node; }
 	const Ref<Node> getRoot() { return m_Root; }
 
-	void setEntry(Node* node) { m_Entry = node; }
-
 private:
 	Ref<Node> m_Root = nullptr;
-	Node* m_Entry = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
 };
 
@@ -451,6 +446,11 @@ public:
 class StatefulSelector : public Composite
 {
 public:
+	void initialize() override
+	{
+		it = m_Children.begin();
+	}
+
 	Status update(float deltaTime) override
 	{
 		ASSERT(hasChildren(), "Composite has no children");
@@ -481,6 +481,11 @@ private:
 class MemSequence : public Composite
 {
 public:
+	void initialize() override
+	{
+		it = m_Children.begin();
+	}
+
 	Status update(float deltaTime) override
 	{
 		ASSERT(hasChildren(), "Composite has no children");

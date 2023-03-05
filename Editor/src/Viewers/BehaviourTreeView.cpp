@@ -3,7 +3,15 @@
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
 #include "AI/BehaviorTree.h"
+#include "AI/Decorators.h"
+#include "AI/Tasks.h"
 #include "AI/BehaviourTreeSerializer.h"
+
+#include "imgui/imgui_internal.h"
+
+ImVec2 ToImVec2(Vector2f vec) { return ImVec2(vec.x, vec.y); }
+
+ImRect ImGui_GetItemRect() { return ImRect(ImGui::GetItemRectMin(), ImGui::GetItemRectMax()); }
 
 BehaviourTreeView::BehaviourTreeView(bool* show, const std::filesystem::path& filepath)
 	:View("BehaviourTreeView"), m_Show(show), m_Filepath(filepath)
@@ -22,6 +30,8 @@ void BehaviourTreeView::OnAttach()
 		m_LocalBehaviourTree = CreateRef<BehaviourTree::BehaviourTree>(*m_BehaviourTree);
 	else
 		ViewerManager::CloseViewer(m_Filepath);
+
+	BuildNodeList();
 }
 
 void BehaviourTreeView::OnDetach()
@@ -119,7 +129,48 @@ void BehaviourTreeView::OnImGuiRender()
 
 		NodeEditor::SetCurrentEditor(m_NodeEditorContext);
 		NodeEditor::Begin("Node Editor");
+		NodeEditor::PushStyleVar(NodeEditor::StyleVar_SourceDirection, ImVec2(0.0f, 1.0f)); 
+		NodeEditor::PushStyleVar(NodeEditor::StyleVar_TargetDirection, ImVec2(0.0f, -1.0f));
+		for (auto& node : m_Nodes)
+		{
+			NodeEditor::BeginNode(node.id);
+			if(node.btNodeRef)
+				NodeEditor::SetNodePosition(node.id, ToImVec2(node.btNodeRef->GetEditorPosition()));
+			if (node.input) {
+				ImRect inputRect;
+				ImGui::Dummy(ImVec2(64.0f, ImGui::GetTextLineHeightWithSpacing()));
+				inputRect = ImGui_GetItemRect();
+				NodeEditor::BeginPin(node.input->id, NodeEditor::PinKind::Input);
+				NodeEditor::PinPivotRect(inputRect.GetTL(), inputRect.GetBR());
+				NodeEditor::PinRect(inputRect.GetTL(), inputRect.GetBR());
+				NodeEditor::EndPin();
+			}
+			ImGui::TextUnformatted(node.name.c_str());
 
+			for (auto& decorator : node.decorators)
+			{
+				ImGui::TextUnformatted(decorator.c_str());
+			}
+
+			if (node.output) {
+				ImRect outputRect;
+				ImGui::Dummy(ImVec2(64.0f, ImGui::GetTextLineHeightWithSpacing()));
+				outputRect = ImGui_GetItemRect();
+				NodeEditor::BeginPin(node.output->id, NodeEditor::PinKind::Output);
+				NodeEditor::PinPivotRect(outputRect.GetTL(), outputRect.GetBR());
+				NodeEditor::PinRect(outputRect.GetTL(), outputRect.GetBR());
+				NodeEditor::EndPin();
+			}
+			NodeEditor::EndNode();
+		}
+
+		for (auto& link : m_Links)
+		{
+			NodeEditor::Link(link.id, link.startPinId, link.endPinId);
+		}
+
+		//DrawNode(m_LocalBehaviourTree->getRoot());
+		NodeEditor::PopStyleVar(2);
 		NodeEditor::End();
 		NodeEditor::SetCurrentEditor(nullptr);
 	}
@@ -194,4 +245,101 @@ bool BehaviourTreeView::CanUndo() const
 bool BehaviourTreeView::CanRedo() const
 {
 	return false;
+}
+
+
+void BehaviourTreeView::DrawNode(Ref<BehaviourTree::Node> node)
+{
+	
+}
+
+void BehaviourTreeView::BuildNodeList()
+{
+	m_Nodes.emplace_back(GetNextId(), "Root", nullptr);
+	m_Nodes[0].output = CreateRef<Pin>(GetNextId(), &m_Nodes[0], PinKind::Output);
+	Ref<BehaviourTree::Node> btNode = m_LocalBehaviourTree->getRoot();
+
+	auto node = BuildNode(btNode);
+
+	m_Links.emplace_back(Link(GetNextId(), node->input->id, m_Nodes[0].output->id));
+}
+
+BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> btNode)
+{
+	auto CreateCompositeNode = [&](Ref<BehaviourTree::Composite> composite, const std::string_view name)
+	{
+		m_Nodes.emplace_back(GetNextId(), name, btNode);
+		size_t pos = m_Nodes.size() - 1;
+		m_Nodes[pos].input = CreateRef<Pin>(GetNextId(), &m_Nodes[pos], PinKind::Input);
+		m_Nodes[pos].output = CreateRef<Pin>(GetNextId(), &m_Nodes[pos], PinKind::Output);
+
+		for (auto& child : *composite)
+		{
+			auto childNode = BuildNode(child);
+			m_Links.emplace_back(Link(GetNextId(), m_Nodes[pos].output->id, childNode->input->id));
+		}
+		return &m_Nodes[pos];
+	};
+
+	auto CreateDecorator = [&](Ref<BehaviourTree::Decorator> decorator, const std::string_view name)
+	{
+		auto node = BuildNode(decorator->getChild());
+		node->decorators.emplace_back(name);
+		return node;
+	};
+
+	// Composites -----------------------------------------
+	if (auto composite = std::dynamic_pointer_cast<BehaviourTree::StatefulSelector>(btNode)) {
+		return CreateCompositeNode(composite, "Stateful Selector");
+	}
+	else if (auto composite = std::dynamic_pointer_cast<BehaviourTree::MemSequence>(btNode)) {
+		return CreateCompositeNode(composite, "Mem Sequence");
+	}
+	else if (auto composite = std::dynamic_pointer_cast<BehaviourTree::ParallelSequence>(btNode)) {
+		return CreateCompositeNode(composite, "Parallel Sequence");
+	}
+	else if (auto composite = std::dynamic_pointer_cast<BehaviourTree::Sequence>(btNode)) {
+		return CreateCompositeNode(composite, "Sequence");
+	}
+	else if (auto composite = std::dynamic_pointer_cast<BehaviourTree::Selector>(btNode)) {
+		return CreateCompositeNode(composite, "Selector");
+	}
+
+	// Decorators -----------------------------------------
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::BlackboardBool>(btNode)) {
+		return CreateDecorator(decorator, "Blackboard Bool");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::BlackboardCompare>(btNode)) {
+		return CreateDecorator(decorator, "Blackboard Compare");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::Succeeder>(btNode)) {
+		return CreateDecorator(decorator, "Succeeder");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::Failer>(btNode)) {
+		return CreateDecorator(decorator, "Failer");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::Inverter>(btNode)) {
+		return CreateDecorator(decorator, "Inverter");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::Repeater>(btNode)) {
+		return CreateDecorator(decorator, "Repeater");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::UntilSuccess>(btNode)) {
+		return CreateDecorator(decorator, "Until Success");
+	}
+	else if (auto decorator = std::dynamic_pointer_cast<BehaviourTree::UntilFailure>(btNode)) {
+		return CreateDecorator(decorator, "Until Failure");
+	}
+
+	// Tasks -----------------------------------------
+	else if (auto task = std::dynamic_pointer_cast<BehaviourTree::Wait>(btNode)) {
+		m_Nodes.emplace_back(GetNextId(), "Wait", btNode);
+		size_t pos = m_Nodes.size() - 1;
+		m_Nodes[pos].input = CreateRef<Pin>(GetNextId(), &(m_Nodes[pos]), PinKind::Input);
+		m_Nodes[pos].output = nullptr;
+		return &m_Nodes[pos];
+	}
+
+	ENGINE_ERROR("Unknown behaviour tree node!");
+	return nullptr;
 }
