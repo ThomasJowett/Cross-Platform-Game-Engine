@@ -339,6 +339,13 @@ BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> b
 		m_Nodes[pos].output = nullptr;
 		return &m_Nodes[pos];
 	}
+	else if (auto task = std::dynamic_pointer_cast<BehaviourTree::CustomTask>(btNode)) {
+		m_Nodes.emplace_back(GetNextId(), task->getFilePath().filename().string(), btNode);
+		size_t pos = m_Nodes.size() - 1;
+		m_Nodes[pos].input = CreateRef<Pin>(GetNextId(), &(m_Nodes[pos]), PinKind::Input);
+		m_Nodes[pos].output = nullptr;
+		return &m_Nodes[pos];
+	}
 
 	ENGINE_ERROR("Unknown behaviour tree node!");
 	return nullptr;

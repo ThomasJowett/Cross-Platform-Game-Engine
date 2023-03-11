@@ -48,6 +48,8 @@ public:
 private:
     void DrawNode(Entity entity);
     void DragDropTarget(Entity parent);
+
+    void CreateMenu();
 private:
     bool* m_Show;
 

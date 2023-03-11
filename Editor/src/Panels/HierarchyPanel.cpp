@@ -65,132 +65,8 @@ void HierarchyPanel::OnImGuiRender()
 		// right click on a blank space
 		if (ImGui::BeginPopupContextWindow())
 		{
-			if (ImGui::MenuItem("Create Empty Entity"))
-			{
-				m_SelectedEntity = SceneManager::CurrentScene()->CreateEntity("New Entity");//TODO: make all the entities have a unique name
-				HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-			}
-			if (ImGui::BeginMenu("3D Object"))
-			{
-				if (ImGui::MenuItem("Cube"))
-				{
-					Entity cubeEntity = SceneManager::CurrentScene()->CreateEntity("Cube");
-					cubeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
-					m_SelectedEntity = cubeEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Sphere"))
-				{
-					Entity sphereEntity = SceneManager::CurrentScene()->CreateEntity("Sphere");
-					sphereEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
-					m_SelectedEntity = sphereEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Plane"))
-				{
-					Entity planeEntity = SceneManager::CurrentScene()->CreateEntity("Plane");
-					planeEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
-					m_SelectedEntity = planeEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Cylinder"))
-				{
-					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
-					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
-					m_SelectedEntity = cylinderEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Cone"))
-				{
-					Entity cylinderEntity = SceneManager::CurrentScene()->CreateEntity("Cone");
-					cylinderEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
-					m_SelectedEntity = cylinderEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Torus"))
-				{
-					Entity torusEntity = SceneManager::CurrentScene()->CreateEntity("Torus");
-					torusEntity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
-					m_SelectedEntity = torusEntity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Terrain", "", nullptr, false))
-				{
-					//TODO: Create terrain
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("2D Object"))
-			{
-				if (ImGui::MenuItem("Sprite"))
-				{
-					Entity entity = SceneManager::CurrentScene()->CreateEntity("Sprite");
-					entity.AddComponent<SpriteComponent>();
-					m_SelectedEntity = entity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Animated Sprite"))
-				{
-					Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
-					entity.AddComponent<AnimatedSpriteComponent>();
-					m_SelectedEntity = entity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Circle"))
-				{
-					Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
-					entity.AddComponent<CircleRendererComponent>();
-					m_SelectedEntity = entity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Tilemap"))
-				{
-					Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
-					entity.AddComponent<TilemapComponent>();
-					m_SelectedEntity = entity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Audio"))
-			{
-				if (ImGui::MenuItem("Audio Source", "", nullptr, false))
-				{
-					//TODO: create an audio source component
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::BeginMenu("Light"))
-			{
-				if (ImGui::MenuItem("Point Light"))
-				{
-					Entity entity = SceneManager::CurrentScene()->CreateEntity("Point Light");
-					entity.AddComponent<PointLightComponent>();
-					m_SelectedEntity = entity;
-					HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-				}
-				if (ImGui::MenuItem("Directional Light", "", nullptr, false))
-				{
-					//TODO: Create Directional light
-				}
-
-				if (ImGui::MenuItem("Spot Light", "", nullptr, false))
-				{
-					//TODO: Create Spot light
-				}
-				ImGui::EndMenu();
-			}
-			if (ImGui::MenuItem("Particle Emitter", "", nullptr, false))
-			{
-				//TODO: create a particle emitter component
-			}
-			if (ImGui::MenuItem("Camera"))
-			{
-				Entity entity = SceneManager::CurrentScene()->CreateEntity("Camera");
-				entity.AddComponent<CameraComponent>();
-				m_SelectedEntity = entity;
-				HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
-			}
+			m_SelectedEntity = {};
+			CreateMenu();
 			ImGui::EndPopup();
 		}
 
@@ -308,6 +184,11 @@ void HierarchyPanel::DrawNode(Entity entity)
 	bool entityDeleted = false;
 	if (ImGui::BeginPopupContextItem(std::string(name.c_str() + std::to_string((uint32_t)entity)).c_str()))
 	{
+		m_SelectedEntity = entity;
+		if (ImGui::BeginMenu("Create")) {
+			CreateMenu();
+			ImGui::EndMenu();
+		}
 		if (ImGui::MenuItem(ICON_FA_SCISSORS" Cut", "Ctrl + X", nullptr, HasSelection()))
 			Cut();
 		if (ImGui::MenuItem(ICON_FA_COPY" Copy", "Ctrl + C", nullptr, HasSelection()))
@@ -380,6 +261,199 @@ void HierarchyPanel::DragDropTarget(Entity parent)
 			SceneManager::CurrentScene()->MakeDirty();
 		}
 		ImGui::EndDragDropTarget();
+	}
+}
+
+void HierarchyPanel::CreateMenu()
+{
+	if (ImGui::MenuItem("Create Empty Entity"))
+	{
+		Entity entity = SceneManager::CurrentScene()->CreateEntity("New Entity");//TODO: make all the entities have a unique name
+		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+		if (m_SelectedEntity) {
+			m_SelectedEntity.AddChild(entity);
+		}
+		m_SelectedEntity = entity;
+	}
+	if (ImGui::BeginMenu("3D Object"))
+	{
+		if (ImGui::MenuItem("Cube"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Sphere"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Plane"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Plane");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Cylinder"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Cone"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cone");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Torus"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Torus");
+			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Terrain", "", nullptr, false))
+		{
+			//TODO: Create terrain
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginMenu("2D Object"))
+	{
+		if (ImGui::MenuItem("Sprite"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Sprite");
+			entity.AddComponent<SpriteComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Animated Sprite"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
+			entity.AddComponent<AnimatedSpriteComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Circle"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
+			entity.AddComponent<CircleRendererComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Tilemap"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
+			entity.AddComponent<TilemapComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginMenu("Audio"))
+	{
+		if (ImGui::MenuItem("Audio Source", "", nullptr, false))
+		{
+			//TODO: create an audio source component
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::BeginMenu("Light"))
+	{
+		if (ImGui::MenuItem("Point Light"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Point Light");
+			entity.AddComponent<PointLightComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Directional Light", "", nullptr, false))
+		{
+			//TODO: Create Directional light
+		}
+
+		if (ImGui::MenuItem("Spot Light", "", nullptr, false))
+		{
+			//TODO: Create Spot light
+		}
+		ImGui::EndMenu();
+	}
+	if (ImGui::MenuItem("Particle Emitter", "", nullptr, false))
+	{
+		//TODO: create a particle emitter component
+	}
+	if (ImGui::MenuItem("Camera"))
+	{
+		Entity entity = SceneManager::CurrentScene()->CreateEntity("Camera");
+		entity.AddComponent<CameraComponent>();
+		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+		if (m_SelectedEntity) {
+			m_SelectedEntity.AddChild(entity);
+		}
+		m_SelectedEntity = entity;
+	}
+	if (ImGui::MenuItem("UI"))
+	{
+		if (ImGui::MenuItem("Canvas"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Canvas");
+			entity.AddComponent<CanvasComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Button"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Button");
+			//entity.AddComponent<UIButtonComponent>
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "TinyXml2/tinyxml2.h"
 #include "Core/Version.h"
 #include "Logging/Instrumentor.h"
+#include "Utilities/SerializationUtils.h"
 
 namespace BehaviourTree
 {
@@ -86,6 +87,11 @@ void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> n
 		tinyxml2::XMLElement* pWait = pElement->InsertNewChildElement("Wait");
 		pWait->SetAttribute("WaitTime", wait->getWaitTime());
 	}
+	else if (Ref<CustomTask> customTask = std::dynamic_pointer_cast<CustomTask>(node)) {
+		tinyxml2::XMLElement* pCustomTask = pElement->InsertNewChildElement("CustomTask");
+		SerializationUtils::Encode(pElement, customTask->getFilePath());
+	}
+
 }
 Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourTree* behaviourTree)
 {
@@ -212,6 +218,14 @@ Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourT
 		Ref<Wait> wait = CreateRef<Wait>(behaviourTree, waitTime);
 		wait->SetEditorPosition(position);
 		return wait;
+	}
+	else if (name == "CustomTask")
+	{
+		std::filesystem::path filepath;
+		SerializationUtils::Decode(pElement, filepath);
+		Ref<CustomTask> customTask = CreateRef<CustomTask>(behaviourTree, filepath);
+		customTask->SetEditorPosition(position);
+		return customTask;
 	}
 
 	else

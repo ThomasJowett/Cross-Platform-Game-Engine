@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BehaviorTree.h"
+#include "sol/sol.hpp"
 
 namespace BehaviourTree
 {
@@ -44,5 +45,26 @@ public:
 private:
 	float m_WaitTime;
 	float m_CurrentTime;
+};
+
+class CustomTask : public Leaf
+{
+public:
+	CustomTask(BehaviourTree* behaviourTree, const std::filesystem::path& filepath);
+	~CustomTask();
+
+	void initialize() final;
+	Status update(float deltaTime) final;
+	void terminate(Status s) final;
+
+	const std::filesystem::path& getFilePath() { return m_AbsoluteFilepath; }
+
+private:
+	std::filesystem::path m_AbsoluteFilepath;
+
+	Ref<sol::environment> m_SolEnvironment;
+	Ref<sol::protected_function> m_OnStateEntryFunc;
+	Ref<sol::protected_function> m_OnStateUpdateFunc;
+	Ref<sol::protected_function> m_OnStateExitFunc;
 };
 }

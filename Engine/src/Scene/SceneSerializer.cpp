@@ -462,6 +462,13 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			SerializationUtils::Encode(pBillboardElement->InsertNewChildElement("ScreenPosition"), component->screenPosition);
 	}
 
+	if (CanvasComponent* component = entity.TryGetComponent<CanvasComponent>())
+	{
+		tinyxml2::XMLElement* pCanvasElement = pElement->InsertNewChildElement("Canvas");
+
+		pCanvasElement->SetAttribute("PixelPerUnit", component->pixelPerUnit);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
 		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
@@ -972,6 +979,14 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.position = (BillboardComponent::Position)pBillboardComponentElement->IntAttribute("Position", (int)component.position);
 		if (component.position == BillboardComponent::Position::Camera)
 			SerializationUtils::Decode(pBillboardComponentElement->FirstChildElement("ScreenPosition"), component.screenPosition);
+	}
+
+	// Canvas ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pCanvasComponent = pEntityElement->FirstChildElement("Canvas"))
+	{
+		CanvasComponent& component = entity.AddComponent<CanvasComponent>();
+
+		component.pixelPerUnit = pCanvasComponent->FloatAttribute("PixelPerUnit", 1.0f);
 	}
 
 	// Hierarchy --------------------------------------------------------------------------------------------------
