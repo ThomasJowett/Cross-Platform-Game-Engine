@@ -101,6 +101,8 @@ private:
 
 	void BuildNodeList();
 	BehaviourTreeView::Node* BuildNode(Ref<BehaviourTree::Node> btNode);
+	Pin* FindPin(NodeEditor::PinId id);
+
 	bool* m_Show;
 
 	std::filesystem::path m_Filepath;
@@ -119,4 +121,6 @@ private:
 
 	Pin* m_NewLinkPin = nullptr;
 	Pin* m_NewNodeLinkPin = nullptr;
+
+	bool m_CreateNewNode = false;
 };

@@ -7,6 +7,7 @@
 #include "AI/Tasks.h"
 #include "AI/BehaviourTreeSerializer.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui_internal.h"
 
 ImVec2 ToImVec2(Vector2f vec) { return ImVec2(vec.x, vec.y); }
@@ -81,6 +82,8 @@ void BehaviourTreeView::OnImGuiRender()
 
 	if (m_Dirty)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
+
+	ImGui::SetNextWindowSize(ImVec2(600, 600), ImGuiCond_FirstUseEver);
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
@@ -169,6 +172,80 @@ void BehaviourTreeView::OnImGuiRender()
 			NodeEditor::Link(link.id, link.startPinId, link.endPinId);
 		}
 
+		if (!m_CreateNewNode)
+		{
+			if (NodeEditor::BeginCreate(ImColor(255, 255, 255), 2.0f))
+			{
+				auto showLabel = [](const char* label, ImColor colour)
+				{
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() - ImGui::GetTextLineHeight());
+					ImVec2 size = ImGui::CalcTextSize(label);
+
+					ImGuiStyle& style = ImGui::GetStyle();
+
+					ImGui::SetCursorPos(ImGui::GetCursorPos() + ImVec2(style.ItemSpacing.x, -style.ItemSpacing.y));
+
+					auto test = ImGui::GetCursorScreenPos();
+
+					if (!std::isnan(test.x)) {
+
+						ImVec2 rectMin = ImGui::GetCursorScreenPos() - style.FramePadding;
+						ImVec2 rectMax = ImGui::GetCursorScreenPos() + size + style.FramePadding;
+
+						ImGui::GetWindowDrawList()->AddRectFilled(rectMin, rectMax, colour, size.y * 0.15f);
+						ImGui::TextUnformatted(label);
+					}
+				};
+
+				NodeEditor::PinId startPinId = 0, endPinId = 0;
+				if (NodeEditor::QueryNewLink(&startPinId, &endPinId))
+				{
+					Pin* startPin = FindPin(startPinId);
+					Pin* endPin = FindPin(endPinId);
+
+					m_NewLinkPin = startPin ? startPin : endPin;
+
+					if (startPin && startPin->kind == PinKind::Input)
+					{
+						std::swap(startPin, endPin);
+						std::swap(startPinId, endPinId);
+					}
+
+					if (startPin && endPin)
+					{
+						if (endPin == startPin)
+						{
+							NodeEditor::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+						}
+						else if (endPin->kind == startPin->kind)
+						{
+							showLabel(ICON_FA_XMARK, ImColor(45, 32, 32, 180));
+							NodeEditor::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+						}
+						else 
+						{
+							showLabel(ICON_FA_PLUS, ImColor(32, 45, 32, 180));
+							if (NodeEditor::AcceptNewItem(ImColor(128, 255, 128), 4.0f))
+							{
+								for (std::vector<Link>::iterator iter = m_Links.begin(); iter != m_Links.end(); iter++)
+								{
+									if (iter->endPinId == endPinId) {
+										m_Links.erase(iter);
+										break;
+									}
+								}
+								m_Links.emplace_back(Link(GetNextId(), startPinId, endPinId));
+							}
+						}
+					}
+				}
+			}
+			else
+				m_NewLinkPin = nullptr;
+
+			NodeEditor::EndCreate();
+		}
+
 		//DrawNode(m_LocalBehaviourTree->getRoot());
 		NodeEditor::PopStyleVar(2);
 		NodeEditor::End();
@@ -200,11 +277,16 @@ void BehaviourTreeView::Delete()
 
 bool BehaviourTreeView::HasSelection() const
 {
-	return false;
+	return NodeEditor::GetSelectedObjectCount() > 0;
 }
 
 void BehaviourTreeView::SelectAll()
 {
+	for (Node& node : m_Nodes)
+		NodeEditor::SelectNode(node.id, true);
+
+	for (Link& link : m_Links)
+		NodeEditor::SelectLink(link.id, true);
 }
 
 bool BehaviourTreeView::IsReadOnly() const
@@ -226,7 +308,7 @@ void BehaviourTreeView::SaveAs()
 
 bool BehaviourTreeView::NeedsSaving()
 {
-	return false;
+	return m_Dirty;
 }
 
 void BehaviourTreeView::Undo(int asteps)
@@ -257,11 +339,13 @@ void BehaviourTreeView::BuildNodeList()
 {
 	m_Nodes.emplace_back(GetNextId(), "Root", nullptr);
 	m_Nodes[0].output = CreateRef<Pin>(GetNextId(), &m_Nodes[0], PinKind::Output);
-	Ref<BehaviourTree::Node> btNode = m_LocalBehaviourTree->getRoot();
 
-	auto node = BuildNode(btNode);
+	
+	if (Ref<BehaviourTree::Node> btNode = m_LocalBehaviourTree->getRoot()) {
+		auto node = BuildNode(btNode);
 
-	m_Links.emplace_back(Link(GetNextId(), node->input->id, m_Nodes[0].output->id));
+		m_Links.emplace_back(Link(GetNextId(), node->input->id, m_Nodes[0].output->id));
+	}
 }
 
 BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> btNode)
@@ -347,6 +431,19 @@ BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> b
 		return &m_Nodes[pos];
 	}
 
-	ENGINE_ERROR("Unknown behaviour tree node!");
+	ASSERT(false, "Unknown behaviour tree node");
+	return nullptr;
+}
+
+BehaviourTreeView::Pin* BehaviourTreeView::FindPin(NodeEditor::PinId id)
+{
+	for (Node& node : m_Nodes)
+	{
+		if (node.input && node.input->id == id)
+			return node.input.get();
+
+		if (node.output && node.output->id == id)
+			return node.output.get();
+	}
 	return nullptr;
 }
