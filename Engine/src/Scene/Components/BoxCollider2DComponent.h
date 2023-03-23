@@ -5,6 +5,10 @@
 #include "math/Vector2f.h"
 #include "Physics/PhysicsMaterial.h"
 
+#include "Utilities/FileUtils.h"
+#include "Core/Application.h"
+#include "Scene/AssetManager.h"
+
 struct BoxCollider2DComponent
 {
 	Vector2f offset = { 0.0f, 0.0f };
