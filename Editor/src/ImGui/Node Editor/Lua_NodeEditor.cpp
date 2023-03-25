@@ -1,7 +1,6 @@
 #include "Lua_NodeEditor.h"
 #include "IconsFontAwesome6.h"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include <imgui/imgui_internal.h>
 #include <fstream>
 
@@ -694,19 +693,19 @@ void LuaNodeEditor::DrawPin(const Pin& pin, bool connected, int alpha)
       const auto tip_bottom = ImVec2(canvas_x + canvas_w * 0.5f, bottom);
 
       drawList->PathLineTo(ImVec2(left, top) + ImVec2(0, rounding));
-      drawList->PathBezierCurveTo(
+      drawList->PathBezierCubicCurveTo(
         ImVec2(left, top),
         ImVec2(left, top),
         ImVec2(left, top) + ImVec2(rounding, 0));
       drawList->PathLineTo(tip_top);
       drawList->PathLineTo(tip_top + (tip_right - tip_top) * tip_round);
-      drawList->PathBezierCurveTo(
+      drawList->PathBezierCubicCurveTo(
         tip_right,
         tip_right,
         tip_bottom + (tip_right - tip_bottom) * tip_round);
       drawList->PathLineTo(tip_bottom);
       drawList->PathLineTo(ImVec2(left, bottom) + ImVec2(rounding, 0));
-      drawList->PathBezierCurveTo(
+      drawList->PathBezierCubicCurveTo(
         ImVec2(left, bottom),
         ImVec2(left, bottom),
         ImVec2(left, bottom) - ImVec2(0, rounding));

@@ -7,6 +7,7 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
+# define IMGUI_DEFINE_MATH_OPERATORS
 # include "imgui_node_editor_internal.h"
 # include <cstdio> // snprintf
 # include <string>
@@ -437,7 +438,7 @@ static void ImDrawList_AddBezierWithArrows(ImDrawList* drawList, const ImCubicBe
 
 	if (fill)
 	{
-		drawList->AddBezierCurve(curve.P0, curve.P1, curve.P2, curve.P3, color, thickness);
+		drawList->AddBezierCubic(curve.P0, curve.P1, curve.P2, curve.P3, color, thickness);
 
 		if (startArrowSize > 0.0f)
 		{

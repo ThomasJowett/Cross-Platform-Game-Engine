@@ -7,7 +7,6 @@
 #include "AI/Tasks.h"
 #include "AI/BehaviourTreeSerializer.h"
 
-#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui_internal.h"
 
 ImVec2 ToImVec2(Vector2f vec) { return ImVec2(vec.x, vec.y); }
@@ -435,7 +434,7 @@ BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> b
 	return nullptr;
 }
 
-BehaviourTreeView::Pin* BehaviourTreeView::FindPin(NodeEditor::PinId id)
+BehaviourTreeView::Pin* BehaviourTreeView::FindPin(const NodeEditor::PinId& id)
 {
 	for (Node& node : m_Nodes)
 	{

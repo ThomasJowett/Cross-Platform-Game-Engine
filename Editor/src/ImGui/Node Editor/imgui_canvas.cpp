@@ -1,5 +1,4 @@
-﻿# define IMGUI_DEFINE_MATH_OPERATORS
-# include "imgui_canvas.h"
+﻿# include "imgui_canvas.h"
 # include <type_traits>
 
 // https://stackoverflow.com/a/36079786

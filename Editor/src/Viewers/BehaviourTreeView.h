@@ -5,6 +5,7 @@
 #include "Interfaces/ICopyable.h"
 #include "Interfaces/ISaveable.h"
 #include "Interfaces/IUndoable.h"
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "ImGui/Node Editor/imgui_node_editor.h"
 
 namespace BehaviourTree
@@ -101,7 +102,7 @@ private:
 
 	void BuildNodeList();
 	BehaviourTreeView::Node* BuildNode(Ref<BehaviourTree::Node> btNode);
-	Pin* FindPin(NodeEditor::PinId id);
+	Pin* FindPin(const NodeEditor::PinId& id);
 
 	bool* m_Show;
 

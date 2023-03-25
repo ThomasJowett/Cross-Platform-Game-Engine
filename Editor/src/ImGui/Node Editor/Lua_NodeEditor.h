@@ -4,6 +4,7 @@
 
 #include "Events/Event.h"
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "ImGui/Node Editor/imgui_node_editor.h"
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ICopyable.h"

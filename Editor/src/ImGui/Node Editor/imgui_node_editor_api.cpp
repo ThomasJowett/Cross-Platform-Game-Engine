@@ -7,6 +7,7 @@
 // CREDITS
 //   Written by Michal Cichon
 //------------------------------------------------------------------------------
+#define IMGUI_DEFINE_MATH_OPERATORS
 # include "imgui_node_editor_internal.h"
 # include <algorithm>
 
