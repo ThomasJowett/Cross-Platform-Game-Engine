@@ -19,4 +19,6 @@ public:
 
 	virtual void MakeCurrent() override;
 
+private:
+
 };

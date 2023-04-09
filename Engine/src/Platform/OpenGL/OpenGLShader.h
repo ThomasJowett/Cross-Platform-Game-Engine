@@ -19,7 +19,7 @@ private:
 	void Compile(const std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources);
 	void CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram, const char* errorMessage);
 private:
-	uint32_t m_rendererID;
+	uint32_t m_RendererID;
 	std::string m_Name;
 
 	std::unordered_map<unsigned int, std::vector<uint32_t>> m_OpenGLSPIRV;

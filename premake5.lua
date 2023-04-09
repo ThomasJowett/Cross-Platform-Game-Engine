@@ -21,6 +21,15 @@ if _OPTIONS["arch"] then
 	Arch = _OPTIONS["arch"]
 end
 
+VulkanIncludeDir = ""
+VulkanDefine = ""
+HasVulkanSDK = false
+if os.getenv("VULKAN_SDK") ~= nil then
+	VulkanIncludeDir = os.getenv("VULKAN_SDK") .. "/Include"
+	VulkanDefine = "HAS_VULKAN_SDK"
+	HasVulkanSDK = true
+end
+
 workspace "Cross Platform Game Engine"
 	if Arch == "arm64" then
 		architecture "arm64"
@@ -63,8 +72,6 @@ project "Engine"
 	targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 	objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 
-
-
 	files
 	{
 		"%{prj.name}/src/**.h",
@@ -97,12 +104,14 @@ project "Engine"
 	{
 		"%{prj.name}/vendor",
 		"%{prj.name}/vendor/GLFW/include",
+		"%{prj.name}/vendor/GLFW/deps",
 		"%{prj.name}/vendor/GLAD/include",
 		"%{prj.name}/vendor/lua",
 		"%{prj.name}/vendor/spdlog/include",
 		"%{prj.name}/vendor/msdf-atlas-gen/msdf-atlas-gen",
 		"%{prj.name}/vendor/msdf-atlas-gen/msdfgen",
-		"%{prj.name}/vendor/box2d/include"
+		"%{prj.name}/vendor/box2d/include",
+		VulkanIncludeDir
 	}
 	
 	links
@@ -122,8 +131,27 @@ project "Engine"
 	{
 		"GLFW_INCLUDE_NONE",
 		"_CRT_SECURE_NO_WARNINGS",
-		"UNICODE"
+		"UNICODE",
+		VulkanDefine
 	}
+
+	if not HasVulkanSDK then
+		excludes
+		{
+			"%{prj.name}/src/Platform/Vulkan**.h",
+			"%{prj.name}/src/Platform/Vulkan**.cpp"
+		}
+	else
+		libdirs
+		{
+			os.getenv("VULKAN_SDK") .. "/lib"
+		}
+
+		links
+		{
+			"vulkan-1"
+		}
+	end
 
 	filter "system:windows"
 		staticruntime "Off"

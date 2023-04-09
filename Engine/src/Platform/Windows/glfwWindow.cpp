@@ -259,13 +259,13 @@ bool glfwWindow::Init(const WindowProps& props)
 		}
 
 		m_Window = glfwCreateWindow((int)m_Data.width, (int)m_Data.height, m_Data.title.c_str(), nullptr, nullptr);
-        if(m_Window)
-            ++s_GLFWWindowCount;
-        else
-        {
-            ENGINE_CRITICAL("Could not create a window with graphics API {0}", Settings::GetValue("Renderer", "API"));
-            return false;
-        }
+		if (m_Window)
+			++s_GLFWWindowCount;
+		else
+		{
+			ENGINE_CRITICAL("Could not create a window with graphics API {0}", Settings::GetValue("Renderer", "API"));
+			return false;
+		}
 	}
 
 	if (api == RendererAPI::API::OpenGL)
@@ -278,10 +278,12 @@ bool glfwWindow::Init(const WindowProps& props)
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 #endif
 	}
-    else if (api == RendererAPI::API::Vulkan)
-    {
+#ifdef HAS_VULKAN_SDK
+	else if (api == RendererAPI::API::Vulkan)
+	{
 		m_Context = CreateRef<VulkanContext>();
-    }
+	}
+#endif
 
 	m_Context->Init();
 

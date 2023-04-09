@@ -7,6 +7,9 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #endif // __WINDOWS__
+#ifdef HAS_VULKAN_SDK
+#include "Platform/Vulkan/VulkanRendererAPI.h"
+#endif // HAS_VULKAN_SDK
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
@@ -39,13 +42,14 @@ void RenderCommand::CreateRendererAPI()
 		return;
 	}
 #endif // __APPLE__
+#ifdef HAS_VULKAN_SDK
 	else if (api == "Vulkan")
 	{
 		RendererAPI::s_API = RendererAPI::API::Vulkan;
-		CORE_ASSERT(false, "Vulkan not yet supported!");
-		s_RendererAPI = nullptr;
+		s_RendererAPI = CreateScope<VulkanRendererAPI>();
 		return;
 	}
+#endif
 	else if (api == "None")
 	{
 		RendererAPI::s_API = RendererAPI::API::None;

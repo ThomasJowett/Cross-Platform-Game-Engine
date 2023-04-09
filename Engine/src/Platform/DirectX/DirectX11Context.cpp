@@ -45,9 +45,12 @@ DirectX11Context::~DirectX11Context()
 
 void DirectX11Context::Init()
 {
-	const char* windowTitle = Application::GetWindow()->GetTitle();
-	int renderWidth = Settings::GetInt(windowTitle, "Window_Width");
-	int renderHeight = Settings::GetInt(windowTitle, "Window_Height");
+	std::string windowTitle(1024, '\0');
+	int len = GetWindowTextA(m_WindowHandle, &windowTitle[0], (int)windowTitle.size());
+	windowTitle.resize(len);
+
+	int renderWidth = Settings::GetInt(windowTitle.c_str(), "Window_Width");
+	int renderHeight = Settings::GetInt(windowTitle.c_str(), "Window_Height");
 
 	m_SyncInterval = (Settings::GetBool("Display", "V-Sync")) ? 1 : 0;
 

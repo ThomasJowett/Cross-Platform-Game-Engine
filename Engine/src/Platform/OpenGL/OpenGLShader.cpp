@@ -47,13 +47,13 @@ OpenGLShader::~OpenGLShader()
 {
 	PROFILE_FUNCTION();
 	if (Application::Get().IsRunning())
-		glDeleteProgram(m_rendererID);
+		glDeleteProgram(m_RendererID);
 }
 
 void OpenGLShader::Bind() const
 {
 	PROFILE_FUNCTION();
-	glUseProgram(m_rendererID);
+	glUseProgram(m_RendererID);
 }
 
 void OpenGLShader::UnBind() const
@@ -162,23 +162,23 @@ void OpenGLShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::st
 		GLShaderIDs[glShaderIndex++] = shader;
 	}
 
-	m_rendererID = program;
+	m_RendererID = program;
 
 	// All the shaders are successfully compiled.
 	// Now time to link them together into a program.
 	// Get a program object.
 
 	// Link our program
-	glLinkProgram(m_rendererID);
-	CheckShaderError(m_rendererID, GL_LINK_STATUS, true, "ERROR: Program linking failed: ");
+	glLinkProgram(m_RendererID);
+	CheckShaderError(m_RendererID, GL_LINK_STATUS, true, "ERROR: Program linking failed: ");
 
-	glValidateProgram(m_rendererID);
-	CheckShaderError(m_rendererID, GL_VALIDATE_STATUS, true, "ERROR: Program is invalid: ");
+	glValidateProgram(m_RendererID);
+	CheckShaderError(m_RendererID, GL_VALIDATE_STATUS, true, "ERROR: Program is invalid: ");
 
 	// Always detach shaders after a successful link.
 	for (int i = 0; i < shaderSources.size(); i++)
 	{
-		glDetachShader(m_rendererID, GLShaderIDs[i]);
+		glDetachShader(m_RendererID, GLShaderIDs[i]);
 		glDeleteShader(GLShaderIDs[i]);
 	}
 }
@@ -203,7 +203,7 @@ void OpenGLShader::CheckShaderError(uint32_t shader, uint32_t flag, bool isProgr
 			glGetShaderInfoLog(shader, sizeof(error), nullptr, error);
 
 		// We don't need the program anymore.
-		glDeleteProgram(m_rendererID);
+		glDeleteProgram(m_RendererID);
 
 		// Don't leak the shader either.
 		glDeleteShader(shader);

@@ -12,7 +12,11 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 
-//#include "imgui/backends/imgui_impl_vulkan.h"
+#ifdef HAS_VULKAN_SDK
+#include "imgui/backends/imgui_impl_vulkan.h"
+
+static ImGui_ImplVulkanH_Window g_WindowData;
+#endif
 
 #include "GLFW/glfw3.h"
 
@@ -24,7 +28,6 @@
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // __WINDOWS__
-
 
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)
@@ -69,9 +72,21 @@ void ImGuiManager::Init()
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
+#ifdef HAS_VULKAN_SDK
+	else if (api == RendererAPI::API::Vulkan)
+	{
+		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow());
+
+		if (ImGui_ImplGlfw_InitForVulkan(window, true)) {
+			ImGui_ImplVulkan_InitInfo initInfo = {};
+			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
+			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
+		}
+	}
+#endif
 	else
 	{
-		ENGINE_CRITICAL("Could not initialise ImGui");
+		ENGINE_CRITICAL("ImGui not available for this graphics API");
 	}
 }
 
@@ -120,7 +135,9 @@ void ImGuiManager::Begin()
 	}
 	else if (api == RendererAPI::API::Vulkan)
 	{
-		//ImGui_ImplVulkan_NewFrame();
+#ifdef HAS_VULKAN_SDK
+		ImGui_ImplVulkan_NewFrame();
+#endif
 	}
 	ImGui_ImplGlfw_NewFrame();
 
@@ -150,7 +167,9 @@ void ImGuiManager::End()
 	}
 	else if (api == RendererAPI::API::Vulkan)
 	{
-		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData());
+#ifdef HAS_VULKAN_SDK
+		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
+#endif
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

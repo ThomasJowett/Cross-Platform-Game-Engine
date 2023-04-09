@@ -6,6 +6,9 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11Shader.h"
 #endif // __WINDOWS__
+#ifdef HAS_VULKAN_SDK
+#include "Platform/Vulkan/VulkanShader.h"
+#endif
 
 Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& fileDirectory)
 {
@@ -22,12 +25,13 @@ Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path&
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported")
-			return nullptr;
+		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
+		return nullptr;
 #endif // __APPLE__
+#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
-		CORE_ASSERT(false, "Could not create Shader: Vulkan is not currently supported")
-			return nullptr;
+		return CreateRef<VulkanShader>(name, fileDirectory);
+#endif // HAS_VULKAN_SDK
 	default:
 		break;
 	}
@@ -53,12 +57,13 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 #endif // __WINDOWS__
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported")
-			return nullptr;
+		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
+		return nullptr;
 #endif // __APPLE__
+#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
-		CORE_ASSERT(false, "Could not create Shader: Vulkan is not currently supported")
-			return nullptr;
+		return CreateRef<VulkanShader>(vertexShaderSrc, fragmentShaderSrc);
+#endif
 	default:
 		break;
 	}

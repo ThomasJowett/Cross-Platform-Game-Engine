@@ -6,6 +6,9 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11FrameBuffer.h"
 #endif // __WINDOWS__
+#ifdef HAS_VULKAN_SDK
+#include "Platform/Vulkan/VulkanFrameBuffer.h"
+#endif
 
 Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& specification)
 {
@@ -18,6 +21,10 @@ Ref<FrameBuffer> FrameBuffer::Create(const FrameBufferSpecification& specificati
 #endif // __WINDOWS__
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLFrameBuffer>(specification);
+#ifdef HAS_VULKAN_SDK
+	case RendererAPI::API::Vulkan:
+		return CreateRef<VulkanFrameBuffer>(specification);
+#endif
 	default:
 		break;
 	}
