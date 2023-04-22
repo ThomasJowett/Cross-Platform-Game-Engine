@@ -171,13 +171,19 @@ void MainDockSpace::OnDetach()
 	Settings::SetBool("Toolbars", "SaveOpen", m_ShowSaveOpenToolbar);
 
 	Settings::SaveSettings();
+	ViewerManager::CloseAll();
 }
 
 void MainDockSpace::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChangedEvent>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
-	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent e) { HistoryManager::Reset(); return false; });
+	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent e)
+		{
+			HistoryManager::Reset();
+			ViewerManager::CloseAll();
+			return false;
+		});
 }
 
 void MainDockSpace::OnUpdate(float deltaTime)
@@ -507,7 +513,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
-				iCopy->Paste();
+			iCopy->Paste();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
 	{

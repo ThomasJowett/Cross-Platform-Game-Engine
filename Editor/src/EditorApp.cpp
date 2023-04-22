@@ -3,6 +3,7 @@
 #include "MainDockSpace.h"
 #include "ProjectsStartScreen.h"
 #include "Renderer/RenderCommand.h"
+#include "Viewers/ViewerManager.h"
 
 Editor::Editor()
 {
@@ -21,4 +22,9 @@ Editor::Editor()
 	m_LayerStack.PushOverlay(CreateRef<MainDockSpace>());
 
 	window->SetIcon(GetWorkingDirectory() / "data" / "Icons" / "Logo.png");
+}
+
+Editor::~Editor()
+{
+	ViewerManager::CloseAll();
 }

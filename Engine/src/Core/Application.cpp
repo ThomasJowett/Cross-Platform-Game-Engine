@@ -53,6 +53,7 @@ Application::Application()
 Application::~Application()
 {
 	PROFILE_FUNCTION();
+	m_LayerStack.PushPop();
 	SceneManager::Shutdown();
 	Settings::SaveSettings();
 	if (m_Window) {
@@ -60,8 +61,8 @@ Application::~Application()
 		Renderer::Shutdown();
 		Font::Shutdown();
 	}
-	LuaManager::Shutdown();
 	AssetManager::Shutdown();
+	LuaManager::Shutdown();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

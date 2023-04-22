@@ -5,7 +5,7 @@ class Editor : public Application
 {
 public:
 	explicit Editor();
-	~Editor() = default;
+	~Editor();
 };
 
 /*Entry point*/

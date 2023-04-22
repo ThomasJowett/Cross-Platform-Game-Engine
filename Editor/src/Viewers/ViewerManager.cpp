@@ -63,7 +63,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 			{
 				if (status == FileStatus::Erased)
 				{
-					if(s_AssetViewers.find(path) != s_AssetViewers.end())
+					if (s_AssetViewers.find(path) != s_AssetViewers.end())
 						CloseViewer(path);
 				}
 			});
@@ -120,6 +120,14 @@ void ViewerManager::CloseViewer(const std::filesystem::path& assetPath)
 {
 	Application::GetLayerStack().RemoveOverlay(s_AssetViewers.at(assetPath).first);
 	s_AssetViewers.erase(assetPath);
+}
+
+void ViewerManager::CloseAll()
+{
+	while (s_AssetViewers.size() > 0)
+	{
+		CloseViewer(s_AssetViewers.begin()->first);
+	}
 }
 
 FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
