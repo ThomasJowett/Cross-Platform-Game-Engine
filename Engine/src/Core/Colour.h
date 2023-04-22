@@ -44,46 +44,25 @@ class Colour
 public:
 	float r, g, b, a;
 
-	/**
-	 * Construct a new Colour object
-	 * 
-	 */
+	//Construct a new Colour object
 	Colour() { r = 0.0f, g = 0.0f, b = 0.0f, a = 1.0f; }
 
-	/**
-	 * Construct a new Colour object from rgba
-	 * 
-	 * @param r red
-	 * @param g green
-	 * @param b blue
-	 * @param a alpha
-	 */
+	//Construct a new Colour object from rgba
 	Colour(float r, float g, float b, float a) :r(r), g(g), b(b), a(a) {}
 
-	/**
-	 * Construct a new Colour object from Colours enum
-	 * 
-	 * @param colour 
-	 */
+	// Construct a new Colour object from Colours enum
 	Colour(Colours colour)
 	{
 		SetColour(colour);
 	}
 
-	/**
-	 * Construct a new Colour object from hex value
-	 * 
-	 * @param hexValue 
-	 */
+	// Construct a new Colour object from hex value
 	Colour(int hexValue)
 	{
 		SetColour(hexValue);
 	}
 
-	/**
-	 * Destroy the Colour object
-	 * 
-	 */
+	// Destroy the Colour object
 	~Colour() = default;
 
 	void SetColour(Colours colour)
@@ -123,11 +102,7 @@ public:
 		}
 	}
 
-	/**
-	 * Set the Colour object from integer
-	 * 
-	 * @param hexValue in the form of 0xRRGGBBAA
-	 */
+	// Set the Colour object from integer
 	void SetColour(const uint32_t& hexValue)
 	{
 		r = ((hexValue >> 24) & 0x0FF) / 255.0f;
@@ -136,11 +111,7 @@ public:
 		a = ((hexValue) & 0xFF) / 255.0f;
 	}
 
-	/**
-	 * Set the Colour object from hexValue string
-	 * 
-	 * @param hex in the form of "#RRGGBBAA"
-	 */
+	// Set the Colour object from hexValue string, in the form of "#RRGGBBAA"
 	void SetColour(const std::string& hex)
 	{
 		std::string thisHex = hex;

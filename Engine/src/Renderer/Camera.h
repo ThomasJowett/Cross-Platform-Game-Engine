@@ -5,19 +5,12 @@
 class Camera
 {
 public:
-	/**
-	 * Construct a new Camera object from projection matrix
-	 * 
-	 * @param projectionMatrix 
-	 */
+	// Construct a new Camera object from projection matrix
 	Camera(Matrix4x4 projectionMatrix)
 		:m_ProjectionMatrix(projectionMatrix)
 	{}
 
-	/**
-	 * Construct a new Camera object
-	 * 
-	 */
+	// Construct a new Camera object
 	Camera() = default;
 	virtual ~Camera() = default;
 

@@ -11,44 +11,22 @@
 class Entity
 {
 public:
-	/**
-	 * Construct a new Empty Entity
-	 *
-	 */
+	// Construct a new Empty Entity
 	Entity() = default;
 
-	/**
-	 * Construct a new Entity object
-	 *
-	 * @param handle entt id
-	 * @param scene the entity belongs to
-	 * @param debugName name of the entity used only for debugging
-	 */
+	// Construct a new Entity object
 	Entity(entt::entity handle, Scene* scene, const std::string& debugName);
 
+	// Construct a new Entity object
 	Entity(entt::entity handle, Scene* scene);
 
-	/**
-	 * Construct a new Entity object from another
-	 *
-	 * @param other
-	 */
+	// Construct a new Entity object from another
 	Entity(const Entity& other) = default;
 
-	/**
-	 * Destroy the Entity object
-	 *
-	 */
+	// Destroy the Entity object
 	~Entity() = default;
 
-	/**
-	 * Add a component to this entity
-	 *
-	 * @tparam T
-	 * @tparam Args
-	 * @param args
-	 * @return T&
-	 */
+	// Add a component to this entity
 	template<typename T, typename... Args>
 	T& AddComponent(Args&&... args)
 	{
@@ -57,13 +35,7 @@ public:
 		return m_Scene->m_Registry.emplace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
-	/**
-	 * Add or replace a component of this entity
-	 * @tparam T
-	 * @tparam Args
-	 * @param args
-	 * @return T&
-	 */
+	// Add or replace a component of this entity
 	template<typename T, typename... Args>
 	T& AddOrReplaceComponent(Args&&... args)
 	{
@@ -75,12 +47,7 @@ public:
 
 	void Destroy();
 
-	/**
-	 * Get a reference to a Component of this Entity
-	 *
-	 * @tparam T type of component
-	 * @return T&
-	 */
+	// Get a reference to a Component of this Entity
 	template<typename T>
 	T& GetComponent()
 	{
@@ -95,11 +62,7 @@ public:
 		return m_Scene->m_Registry.get<T...>(m_EntityHandle);
 	}
 
-	/**
-	 * Get a reference to a Component of this Entity creating if needed
-	 * @tparam T
-	 * @return T&
-	 */
+	// Get a reference to a Component of this Entity creating if needed
 	template<typename T, typename... Args>
 	T& GetOrAddComponent(Args&&... args)
 	{
@@ -108,11 +71,7 @@ public:
 		return m_Scene->GetRegistry().get_or_emplace<T>(m_EntityHandle, std::forward<args>(args)...);
 	}
 
-	/**
-	 * Tries to get the component
-	 * @tparam T
-	 * @return T* nullptr if component does not exist
-	 */
+	// Tries to get the component
 	template<typename T>
 	T* TryGetComponent()
 	{
@@ -140,24 +99,14 @@ public:
 	Entity GetSibling();
 	Entity GetChild();
 
-	/**
-	 * Find if this Entity has a Component of certain type
-	 *
-	 * @tparam T type of Component
-	 * @return true Entity has this component
-	 * @return false Entity does not have this component
-	 */
+	// Find if this Entity has a Component of certain type
 	template<typename... T>
 	bool HasComponent() const
 	{
 		return m_Scene->m_Registry.any_of<T...>(m_EntityHandle);
 	}
 
-	/**
-	 * If the Entity has this component, then remove it
-	 *
-	 * @tparam T
-	 */
+	// If the Entity has this component, then remove it
 	template<typename T>
 	void RemoveComponent()
 	{
@@ -166,13 +115,7 @@ public:
 		m_Scene->MakeDirty();
 	}
 
-	/**
-	 * Does this entity belong to the given scene
-	 *
-	 * @param scene
-	 * @return true
-	 * @return false
-	 */
+	// Does this entity belong to the given scene
 	bool BelongsToScene(Scene* scene) const
 	{
 		return scene == m_Scene && IsSceneValid();
