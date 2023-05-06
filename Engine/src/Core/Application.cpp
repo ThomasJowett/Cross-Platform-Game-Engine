@@ -4,6 +4,8 @@
 #include "GLFW/glfw3.h"
 
 #include "Settings.h"
+#include "InputParser.h"
+#include "Version.h"
 
 #include "Renderer/Renderer.h"
 #include "Renderer/RenderCommand.h"
@@ -20,11 +22,15 @@
 #include "Utilities/StringUtils.h"
 #include "Scripting/Lua/LuaManager.h"
 
-Application* Application::s_Instance = nullptr;
+#ifndef DEBUG
+#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+#endif // !DEBUG
 
-std::filesystem::path Application::s_OpenDocument;
-std::filesystem::path Application::s_OpenDocumentDirectory;
-std::filesystem::path Application::s_WorkingDirectory;
+#if defined(_WIN32)
+#include <crtdbg.h>
+#endif
+
+Application* Application::s_Instance = nullptr;
 
 Application::EventCallbackFn Application::s_EventCallback;
 
@@ -32,20 +38,19 @@ Application::EventCallbackFn Application::s_EventCallback;
 
 Application::Application()
 {
+#if defined(_WIN32)
+	// Enable memory-leak reports
+	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
+#endif
+
+	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 	PROFILE_FUNCTION();
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
 
-	Settings::Init();
-	Random::Init();
-	LuaManager::Init();
-	Input::Init();
-
-	SetDefaultSettings();
-
-	RenderCommand::CreateRendererAPI();
-
 	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
+
+	
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -53,16 +58,77 @@ Application::Application()
 Application::~Application()
 {
 	PROFILE_FUNCTION();
+	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	m_LayerStack.PushPop();
 	SceneManager::Shutdown();
 	Settings::SaveSettings();
 	if (m_Window) {
-		if(m_ImGuiManager) m_ImGuiManager->Shutdown();
+		if (m_ImGuiManager) m_ImGuiManager->Shutdown();
 		Renderer::Shutdown();
 		Font::Shutdown();
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
+	PROFILE_END_SESSION("Shutdown");
+}
+
+int Application::ParseArgs(int argc, char* argv[])
+{
+	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+	std::filesystem::current_path(m_WorkingDirectory);
+
+	InputParser input(argc, argv);
+
+	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
+	{
+		std::cout << "usage:"
+			<< " [--help] "
+			<< " [--version] "
+			<< " [--profile] "
+			<< std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	if (input.CmdOptionExists("-v") || input.CmdOptionExists("--version"))
+	{
+		std::cout << VERSION_MAJOR << '.' << VERSION_MINOR << '.' << VERSION_PATCH << std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
+	{
+		Instrumentor::Enable();
+	}
+
+	std::string file;
+	bool hasFile = input.File(file);
+	if (hasFile)
+		SetOpenDocument(file);
+
+	if (!input.HasFoundAllArguments() && !hasFile)
+	{
+		std::cerr << "Not a valid input parameter" << std::endl;
+		return EXIT_FAILURE;
+	}
+
+	return -1;
+}
+
+void Application::Init()
+{
+	Logger::Init();
+	Settings::Init();
+	Random::Init();
+	LuaManager::Init();
+	Input::Init();
+
+	SetDefaultSettings();
+	RenderCommand::CreateRendererAPI();
+
+	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
+
+	ENGINE_INFO("Engine Initialised");
+	PROFILE_END_SESSION("Startup");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -80,7 +146,7 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 	m_Window = Window::Create(props);
 	if (m_Window) {
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
-		
+
 		if (Settings::GetBool(windowStr, "Window_Maximized"))
 		{
 			m_Window->MaximizeWindow();
@@ -103,7 +169,12 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 
 void Application::Run()
 {
+	PROFILE_BEGIN_SESSION("Run", "Profile-Run.json");
 	PROFILE_FUNCTION();
+
+	if (IsRunning()) {
+		ENGINE_ERROR("Application is already running");
+	}
 
 	double currentTime = GetTime();
 	double accumulator = 0.0f;
@@ -170,6 +241,8 @@ void Application::Run()
 
 		Input::ClearInputData();
 	}
+
+	PROFILE_END_SESSION("Run");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -262,56 +335,19 @@ bool Application::OnMaximize(WindowMaximizedEvent& e)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Application::SetDefaultSettings()
-{
-	const char* display = "Display";
-	const char* audio = "Audio";
-
-	Settings::SetDefaultBool(display, "V-Sync", true);
-    
-    Settings::SetDefaultDouble(audio, "Master", 100.0);
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-double Application::GetTime() const
-{
-#ifdef __WINDOWS__
-	static LARGE_INTEGER s_frequency;
-	//check to see if the application can read the frequency
-	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-	if (s_use_qpc)
-	{
-		//most accurate method of getting system time
-		LARGE_INTEGER now;
-		QueryPerformanceCounter(&now);
-		return (double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
-	}
-	else
-	{
-		//same value but only updates 64 times a second
-		return (double)GetTickCount64();
-	}
-#endif // __WINDOWS__
-
-	return glfwGetTime();
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-bool Application::SetOpenDocument(const std::filesystem::path& filepath)
+bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 {
 	SceneManager::ChangeSceneState(SceneState::Edit);
 
 	if (std::filesystem::exists(filepath))
 	{
-		s_OpenDocument = filepath;
+		m_OpenDocument = filepath;
 
 		std::string fileDirectory = filepath.string();
 
 		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of(std::filesystem::path::preferred_separator));
 
-		s_OpenDocumentDirectory = fileDirectory;
+		m_OpenDocumentDirectory = fileDirectory;
 
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
@@ -349,14 +385,65 @@ bool Application::SetOpenDocument(const std::filesystem::path& filepath)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Application::SetDefaultSettings()
+{
+	const char* display = "Display";
+	const char* audio = "Audio";
+
+	Settings::SetDefaultBool(display, "V-Sync", true);
+
+	Settings::SetDefaultDouble(audio, "Master", 100.0);
+
+	Settings::SetDefaultValue("Files", "Recent_Files", "");
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+double Application::GetTime() const
+{
+#ifdef __WINDOWS__
+	static LARGE_INTEGER s_frequency;
+	//check to see if the application can read the frequency
+	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
+	if (s_use_qpc)
+	{
+		//most accurate method of getting system time
+		LARGE_INTEGER now;
+		QueryPerformanceCounter(&now);
+		return (double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
+	}
+	else
+	{
+		//same value but only updates 64 times a second
+		return (double)GetTickCount64();
+	}
+#endif // __WINDOWS__
+
+	return glfwGetTime();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Application::SetOpenDocument(const std::filesystem::path& filepath)
+{
+	return s_Instance->SetOpenDocumentImpl(filepath);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 const std::filesystem::path& Application::GetOpenDocument()
 {
-	return s_OpenDocument;
+	return s_Instance->m_OpenDocument;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 const std::filesystem::path& Application::GetOpenDocumentDirectory()
 {
-	return s_OpenDocumentDirectory;
+	return s_Instance->m_OpenDocumentDirectory;
+}
+
+const std::filesystem::path& Application::GetWorkingDirectory()
+{
+	return s_Instance->m_WorkingDirectory;
 }

@@ -54,7 +54,7 @@ public:
 	static const std::filesystem::path& GetOpenDocumentDirectory();
 
 	// Get the directory that the application was launched from
-	static const std::filesystem::path& GetWorkingDirectory() { return s_WorkingDirectory; }
+	static const std::filesystem::path& GetWorkingDirectory();
 
 	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
@@ -63,12 +63,15 @@ private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
 	void Run();
+	int ParseArgs(int argc, char* argv[]);
+	void Init();
 	void OnEvent(Event& e);
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);
 	bool OnWindowMove(WindowMoveEvent& e);
 	bool OnMaximize(WindowMaximizedEvent& e);
 
+	bool SetOpenDocumentImpl(const std::filesystem::path& filepath);
 	void SetDefaultSettings();
 
 	double GetTime() const;
@@ -85,9 +88,9 @@ private:
 	static Application* s_Instance;
 	friend int ::main(int argc, char* argv[]);
 
-	static std::filesystem::path s_OpenDocument;
-	static std::filesystem::path s_OpenDocumentDirectory;
-	static std::filesystem::path s_WorkingDirectory;
+	std::filesystem::path m_OpenDocument;
+	std::filesystem::path m_OpenDocumentDirectory;
+	std::filesystem::path m_WorkingDirectory;
 
 	static EventCallbackFn s_EventCallback;
 };

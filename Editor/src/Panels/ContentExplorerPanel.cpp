@@ -21,7 +21,7 @@
 
 #include "Fonts/Fonts.h"
 
-static std::filesystem::path s_IconDirectory = Application::GetWorkingDirectory() / "data" / "Icons";
+static std::filesystem::path s_IconDirectory;
 
 template <typename TP>
 std::time_t to_time_t(TP tp)
@@ -692,6 +692,7 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	: Layer("ContentExplorer"), m_Show(show),
 	m_FileWatcher(std::chrono::seconds(1))
 {
+	s_IconDirectory = Application::GetWorkingDirectory() / "data" / "Icons";
 	m_TotalNumBrowsingEntries = 0;
 	m_NumBrowsingColumns = 0;
 	m_NumBrowsingEntriesPerColumn = 0;

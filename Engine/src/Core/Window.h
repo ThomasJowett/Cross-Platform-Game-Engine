@@ -37,7 +37,7 @@ struct WindowProps
 		WindowMode windowMode = WindowMode::WINDOWED,
 		bool maximized = false)
 		:title(title), width(width), height(height),
-		posX(posX), posY(posY)
+		posX(posX), posY(posY), windowMode(windowMode)
 	{
 	}
 };
