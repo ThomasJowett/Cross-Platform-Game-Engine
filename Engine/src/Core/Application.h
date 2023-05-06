@@ -63,8 +63,7 @@ private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
 	void Run();
-	int ParseArgs(int argc, char* argv[]);
-	void Init();
+	int Init(int argc, char* argv[]);
 	void OnEvent(Event& e);
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);

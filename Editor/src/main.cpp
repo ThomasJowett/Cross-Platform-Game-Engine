@@ -15,11 +15,9 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	int rCode = app->ParseArgs(argc, argv);
+	int rCode = app->Init(argc, argv);
 	if (rCode != -1)
 		return rCode;
-
-	app->Init();
 
 	Window* window = app->CreateDesktopWindow(WindowProps("Editor", 1920, 1080, 100, 100));
 

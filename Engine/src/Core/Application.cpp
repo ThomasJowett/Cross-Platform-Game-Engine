@@ -72,10 +72,11 @@ Application::~Application()
 	PROFILE_END_SESSION("Shutdown");
 }
 
-int Application::ParseArgs(int argc, char* argv[])
+int Application::Init(int argc, char* argv[])
 {
 	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 	std::filesystem::current_path(m_WorkingDirectory);
+	Logger::Init();
 
 	InputParser input(argc, argv);
 
@@ -100,6 +101,9 @@ int Application::ParseArgs(int argc, char* argv[])
 		Instrumentor::Enable();
 	}
 
+	Settings::Init();
+	SetDefaultSettings();
+
 	std::string file;
 	bool hasFile = input.File(file);
 	if (hasFile)
@@ -110,25 +114,19 @@ int Application::ParseArgs(int argc, char* argv[])
 		std::cerr << "Not a valid input parameter" << std::endl;
 		return EXIT_FAILURE;
 	}
-
-	return -1;
-}
-
-void Application::Init()
-{
-	Logger::Init();
-	Settings::Init();
+	
 	Random::Init();
 	LuaManager::Init();
 	Input::Init();
 
-	SetDefaultSettings();
 	RenderCommand::CreateRendererAPI();
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
 	ENGINE_INFO("Engine Initialised");
 	PROFILE_END_SESSION("Startup");
+
+	return -1;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
