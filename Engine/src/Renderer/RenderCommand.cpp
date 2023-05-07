@@ -57,5 +57,5 @@ void RenderCommand::CreateRendererAPI()
 		s_RendererAPI = nullptr;
 	}
 
-	ENGINE_ERROR("API: {0} is not recognised!");
+	ENGINE_ERROR("API: {0} is not recognised!", api);
 }
