@@ -13,7 +13,7 @@
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
-void RenderCommand::CreateRendererAPI()
+int RenderCommand::CreateRendererAPI()
 {
 	PROFILE_FUNCTION();
 	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
@@ -23,14 +23,14 @@ void RenderCommand::CreateRendererAPI()
 	{
 		RendererAPI::s_API = RendererAPI::API::OpenGL;
 		s_RendererAPI = CreateScope<OpenGLRendererAPI>();
-		return;
+		return 0;
 	}
 #ifdef __WINDOWS__
 	else if(api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
 		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
-		return;
+		return 0;
 	}
 #endif // __WINDOWS__
 #ifdef __APPLE__
@@ -39,7 +39,7 @@ void RenderCommand::CreateRendererAPI()
 		RendererAPI::s_API = RendererAPI::API::Metal;
 		CORE_ASSERT(false, "Metal not yet supported!");
 		s_RendererAPI = nullptr;
-		return;
+		return 1;
 	}
 #endif // __APPLE__
 #ifdef HAS_VULKAN_SDK
@@ -47,7 +47,7 @@ void RenderCommand::CreateRendererAPI()
 	{
 		RendererAPI::s_API = RendererAPI::API::Vulkan;
 		s_RendererAPI = CreateScope<VulkanRendererAPI>();
-		return;
+		return 0;
 	}
 #endif
 	else if (api == "None")
@@ -55,7 +55,9 @@ void RenderCommand::CreateRendererAPI()
 		RendererAPI::s_API = RendererAPI::API::None;
 		CORE_ASSERT(false, "API of none is not currently supported!");
 		s_RendererAPI = nullptr;
+		return 1;
 	}
 
 	ENGINE_ERROR("API: {0} is not recognised!", api);
+	return 1;
 }

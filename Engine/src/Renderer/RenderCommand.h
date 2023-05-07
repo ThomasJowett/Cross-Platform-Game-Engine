@@ -6,7 +6,7 @@ class RenderCommand
 {
 public:
 	// Create a Renderer API object
-	static void CreateRendererAPI();
+	static int CreateRendererAPI();
 
 	// Initialise the Renderer
 	inline static bool Init()

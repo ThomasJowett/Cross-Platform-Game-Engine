@@ -119,7 +119,8 @@ int Application::Init(int argc, char* argv[])
 	LuaManager::Init();
 	Input::Init();
 
-	RenderCommand::CreateRendererAPI();
+	if(RenderCommand::CreateRendererAPI() != 0)
+		return EXIT_FAILURE;
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
