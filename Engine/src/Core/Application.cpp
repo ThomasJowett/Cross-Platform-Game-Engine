@@ -49,8 +49,6 @@ Application::Application()
 	s_Instance = this;
 
 	s_EventCallback = BIND_EVENT_FN(Application::OnEvent);
-
-	
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -67,7 +67,8 @@ void LuaManager::Init()
 		sol::lib::table, 
 		sol::lib::coroutine, 
 		sol::lib::os,
-		sol::lib::string);
+		sol::lib::string,
+		sol::lib::io);
 
 	Lua::BindLogging(*s_State);
 	Lua::BindApp(*s_State);

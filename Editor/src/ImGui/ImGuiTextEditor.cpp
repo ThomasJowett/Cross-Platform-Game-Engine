@@ -2392,9 +2392,10 @@ void TextEditor::ColorizeInternal()
 					}
 					else if (c == '\\')
 					{
-						currentIndex += 1;
-						if (currentIndex < (int)line.size())
+						if (currentIndex + 1 < (int)line.size()) {
+							currentIndex += 1;
 							line[currentIndex].mMultiLineComment = inComment;
+						}
 					}
 				}
 				else
