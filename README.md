@@ -6,9 +6,12 @@
 </p>
 
 <h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL.</h3>
-<p align="center">
- <img width="864" height="528" src="Resources/Linux Screenshot.png">
-</p>
+
+<div align="center">
+ <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+ <br>                                               
+ <img src="Resources/Linux Screenshot.png">
+</div>
 
 To clone this repository run: `git clone --recursive https://github.com/ThomasJowett/Cross-Platform-Game-Engine`
 
