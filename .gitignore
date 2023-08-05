@@ -77,3 +77,4 @@ Editor/Editor.args.json
 *.xcworkspacedata
 
 Editor/data/Fonts/Manrope-Medium.png
+build
