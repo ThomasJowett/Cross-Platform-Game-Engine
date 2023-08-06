@@ -6,9 +6,7 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11Texture.h"
 #endif // __WINDOWS__
-#ifdef HAS_VULKAN_SDK
 #include "Platform/Vulkan/VulkanTexture.h"
-#endif
 
 Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, const void* pixels)
 {
@@ -27,10 +25,8 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format,
 		CORE_ASSERT(false, "Could not create Texture: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
 		return CreateRef<VulkanTexture2D>(width, height, format, pixels);
-#endif
 	default:
 		break;
 	}
