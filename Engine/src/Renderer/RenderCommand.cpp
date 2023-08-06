@@ -7,9 +7,7 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #endif // __WINDOWS__
-#ifdef HAS_VULKAN_SDK
 #include "Platform/Vulkan/VulkanRendererAPI.h"
-#endif // HAS_VULKAN_SDK
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
@@ -42,14 +40,12 @@ int RenderCommand::CreateRendererAPI()
 		return 1;
 	}
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	else if (api == "Vulkan")
 	{
 		RendererAPI::s_API = RendererAPI::API::Vulkan;
 		s_RendererAPI = CreateScope<VulkanRendererAPI>();
 		return 0;
 	}
-#endif
 	else if (api == "None")
 	{
 		RendererAPI::s_API = RendererAPI::API::None;

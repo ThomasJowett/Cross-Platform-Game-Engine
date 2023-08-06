@@ -6,9 +6,7 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11UniformBuffer.h"
 #endif // __WINDOWS__
-#ifdef HAS_VULKAN_SDK
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
-#endif
 
 Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 {
@@ -27,10 +25,8 @@ Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 		CORE_ASSERT(false, "Could not create Uniform Buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
 		return CreateRef<VulkanUniformBuffer>(size, binding);
-#endif
 	default:
 		break;
 	}

@@ -29,10 +29,8 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
 		return CreateRef<VulkanVertexBuffer>(size);
-#endif
 	default:
 		break;
 	}
@@ -62,10 +60,8 @@ Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
 		return CreateRef<VulkanVertexBuffer>(vertices, size);
-#endif
 	default:
 		break;
 	}
@@ -94,10 +90,8 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-#ifdef HAS_VULKAN_SDK
 	case RendererAPI::API::Vulkan:
 		return CreateRef<VulkanIndexBuffer>(indices, size);
-#endif
 	default:
 		break;
 	}
