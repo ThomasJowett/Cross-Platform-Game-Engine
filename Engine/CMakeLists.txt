@@ -13,7 +13,6 @@ file(GLOB SOURCES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/*.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilites/*.cpp
-
 )
 
 file(GLOB HEADERS
@@ -49,14 +48,32 @@ foreach(source IN LISTS SOURCES)
     source_group("Source Files${group_name}" FILES "${source}")
 endforeach()
 
-target_link_libraries(Engine PRIVATE 
+target_link_libraries(Engine PRIVATE
+                      opengl32
                       glfw
                       glad
-                      imgui)
+                      imgui
+                      tinyxml2
+                      cereal
+                      freetype
+                      lua
+                      )
+
+add_definitions(
+    -DGLFW_INCLUDE_NONE
+    -D_CRT_SECURE_NO_WARNINGS
+    -DUNICODE
+)
+
+
+
 
 target_include_directories(Engine PUBLIC
                             ${CMAKE_CURRENT_SOURCE_DIR}/src
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor
+                            ${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLFW/include
+                            ${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLFW/deps
+                            ${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLAD/include
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/spdlog/include
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/cereal/include
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/box2d/include
@@ -67,8 +84,6 @@ target_include_directories(Engine PUBLIC
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/EnTT
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/msdf-atlas-gen/msdf-atlas-gen
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/msdf-atlas-gen/msdfgen
-                            ${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLFW/include
-                            ${CMAKE_CURRENT_SOURCE_DIR}/vendor/GLAD/include
 
         )
 
