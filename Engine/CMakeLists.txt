@@ -1,62 +1,254 @@
-file(GLOB SOURCES
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animation/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParticleSystem/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/*.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilites/*.cpp
+file(GLOB ENGINE_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/Astar.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/Astar.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/BehaviorTree.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/BehaviourTreeSerializer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/BehaviourTreeSerializer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/Decorators.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/StateMachi.en.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/StateMachine.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/Tasks.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/Tasks.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animation/Animation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animation/Animation.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Application.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Application.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/BoundingBox.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/BoundingBox.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Factory.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Input.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Input.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Joysticks.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Joysticks.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Layer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Layer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/LayerStack.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/LayerStack.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Settings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Settings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Window.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Window.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Asset.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Colour.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/KeyCodes.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/Version.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/ApplicationEvent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/Event.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/Event.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/JoystickEvent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/KeyEvent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/MouseEvent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/SceneEvent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiBuildDirectX11.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiBuildGlfw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiUtilites.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/ImGuiUtilities.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/Debug.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/Instrumentor.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/InternalConsoleSink.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/InternalConsoleSink.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/Logger.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/Logger.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/Timer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParticleSystem/ParticleSystem.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParticleSystem/ParticleSystem.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/Contact2D.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/HitResult2D.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/PhysicsEngine2D.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/PhysicsEngine2D.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/PhysicsMaterial.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/PhysicsMaterial.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows/glfwInput.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows/glfwInput.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows/glfwWindow.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Windows/glfwWindow.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Buffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Buffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Camera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Font.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Font.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/FrameBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/FrameBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/GraphicsContext.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Material.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Material.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Pipeline.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Pipeline.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/RenderCommand.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/RenderCommand.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/RendererAPI.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/SubTexture2D.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/SubTexture2D.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/UniformBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/UniformBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Renderer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Renderer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/RendererAPI.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/RendererAPI.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Renderer2D.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Renderer2D.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Shader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Shader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Texture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Texture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Font.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Font.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Mesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Mesh.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/SpriteSheet.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/SpriteSheet.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/StaticMesh.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/StaticMesh.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Tileset.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/Tileset.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/UI/MSDFData.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/AssetManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/AssetManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Entity.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Entity.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Scene.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Scene.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneCamera.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneCamera.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneGraph.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneGraph.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneSerializer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/SceneSerializer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/AnimatedSpriteComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/AnimatedSpriteComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/BehaviourTreeComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/BillboardComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/BoxCollider2DComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/CameraComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/CanvasComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/CapsuleCollider2DComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/CircleCollider2DComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/CircleRendererComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/HierarchyComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/IDComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/LuaScriptComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/LuaScriptComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/NameComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/PointLightComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/PolygonCollider2DComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/PrimitiveComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/RigidBody2DComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/RigidBody2DComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/SpriteComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/StateMachineComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/StaticMeshComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/TextComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/TilemapComponent.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/TilemapComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/TransformComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/UIWidgets/ButtonComponent.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/Components/UIWidgets/Widget.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/Lua/LuaBindings.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/Lua/LuaBindings.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/Lua/LuaManager.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/Lua/LuaManager.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/Box2DDebugDraw.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/Box2DDebugDraw.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/FileUtils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/FileUtils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/FileWatcher.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/GeometryGenerator.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/GeometryGenerator.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/MathUtils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/MathUtils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/Random.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/SerializationUtils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/SerializationUtils.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/StringUtils.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/Triangulation.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilities/Triangulation.h
 )
 
-file(GLOB HEADERS
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/AI/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Animation/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Core/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Events/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ImGui/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Logging/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ParticleSystem/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Physics/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Renderer/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scene/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Scripting/*.h
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/Utilites/*.h
+if(WIN32)
+    file(GLOB DIRECTX_FILES
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Buffer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Buffer.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11FrameBuffer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11FrameBuffer.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11RendererAPI.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11RendererAPI.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Texture.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Texture.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Context.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Context.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Pipeline.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Pipeline.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Shader.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11Shader.h
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11UniformBuffer.cpp
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/DirectX/DirectX11UniformBuffer.h
+    )
+endif()
+
+file (GLOB OPENGL_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLFrameBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLFrameBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLRendererAPI.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLRendererAPI.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLTexture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLTexture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLVertexArray.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLVertexArray.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLContext.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLContext.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLPipeline.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLPipeline.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLShader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGLShader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGlUniformBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/OpenGL/OpenGlUniformBuffer.h
 )
 
-add_library(Engine ${SOURCES} ${HEADERS} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
+file (GLOB VULKAN_FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanDevice.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanDevice.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanRendererAPI.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanRendererAPI.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanTexture.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanTexture.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanContext.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanContext.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanFrameBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanFrameBuffer.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanShader.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanShader.h
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanUniformBuffer.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/Platform/Vulkan/VulkanUniformBuffer.h
+)
 
-foreach(header IN LISTS HEADERS)
-    get_filename_component(header_path "${header}" DIRECTORY)
-    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" group_path "${header_path}")
-    string(REPLACE "/" "\\" group_name "${group_path}")
-    source_group("Header Files${group_name}" FILES "${header}")
-endforeach()
+add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
-foreach(source IN LISTS SOURCES)
-    get_filename_component(source_path "${source}" DIRECTORY)
-    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" group_path "${source_path}")
-    string(REPLACE "/" "\\" group_name "${group_path}")
-    source_group("Source Files${group_name}" FILES "${source}")
-endforeach()
+add_library(Engine ${ENGINE_FILES} ${DIRECTX_FILES} ${OPENGL_FILES} ${VULKAN_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
+
+group_files_by_directory("ENGINE_FILES")
+group_files_by_directory("DIRECTX_FILES")
+group_files_by_directory("OPENGL_FILES")
+group_files_by_directory("VULKAN_FILES")
 
 target_link_libraries(Engine PRIVATE
                       opengl32
+                      ${Vulkan_LIBRARY}
                       glfw
                       glad
                       imgui
                       tinyxml2
-                      cereal
-                      freetype
                       lua
+                      box2d
+                      msdf-atlas-gen
                       )
 
 add_definitions(
@@ -66,7 +258,7 @@ add_definitions(
 )
 
 
-
+target_compile_options(Engine PRIVATE "/bigobj")
 
 target_include_directories(Engine PUBLIC
                             ${CMAKE_CURRENT_SOURCE_DIR}/src
