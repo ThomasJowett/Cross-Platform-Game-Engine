@@ -2,6 +2,8 @@
 
 #include "Renderer/Texture.h"
 
+#include <d3d11.h>
+
 class DirectX11Texture2D :public Texture2D
 {
 public:

@@ -1,6 +1,8 @@
 #pragma once
 #include "Renderer/Buffer.h"
 
+#include <d3d11.h>
+
 class DirectX11VertexBuffer :
 	public VertexBuffer
 {
