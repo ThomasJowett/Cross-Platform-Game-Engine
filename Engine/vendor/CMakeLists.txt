@@ -37,6 +37,7 @@ set_target_properties(glad PROPERTIES
 )
 
 add_library(freetype STATIC
+    freetype/include/ft2build.h
     freetype/src/autofit/autofit.c
 	freetype/src/base/ftbase.c
 	freetype/src/base/ftbbox.c
@@ -166,4 +167,67 @@ set_target_properties(lua PROPERTIES
 
 target_compile_definitions(freetype PRIVATE
     LUA_COMPAT_MATHLIB=1
+)
+
+file(GLOB MSDFGEN_FILES
+    msdf-atlas-gen/msdfgen/core/*.h
+    msdf-atlas-gen/msdfgen/core/*.hpp
+    msdf-atlas-gen/msdfgen/core/*.cpp
+    msdf-atlas-gen/msdfgen/ext/*.h
+    msdf-atlas-gen/msdfgen/ext/*.hpp
+    msdf-atlas-gen/msdfgen/ext/*.cpp
+    msdf-atlas-gen/msdfgen/lib/*.cpp
+    msdf-atlas-gen/msdfgen/include/*.h
+)
+
+add_library(msdfgen STATIC
+    ${MSDFGEN_FILES}
+)
+
+set_target_properties(msdfgen PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+target_include_directories(msdfgen PUBLIC
+    msdf-atlas-gen/msdfgen/include
+    freetype/include
+)
+
+target_compile_definitions(msdfgen PRIVATE
+    MSDFGEN_USE_CPP11
+)
+
+target_link_libraries(msdfgen PUBLIC
+    freetype
+)
+
+file(GLOB MSDF_ATLAS_GEN_FILES
+    msdf-atlas-gen/msdf-atlas-gen/**.h
+    msdf-atlas-gen/msdf-atlas-gen/**.hpp
+    msdf-atlas-gen/msdf-atlas-gen/**.cpp
+)
+
+add_library(msdf-atlas-gen STATIC
+    ${MSDF_ATLAS_GEN_FILES}
+)
+
+set_target_properties(msdf-atlas-gen PROPERTIES
+    CXX_STANDARD 17
+    CXX_STANDARD_REQUIRED ON
+)
+
+target_include_directories(msdf-atlas-gen PUBLIC
+    msdf-atlas-gen/msdf-atlas-gen
+    msdf-atlas-gen/msdfgen
+    msdf-atlas-gen/msdfgen/include
+    msdf-atlas-gen/artery-font-format
+)
+
+target_compile_definitions(msdf-atlas-gen PRIVATE
+    _CRT_SECURE_NO_WARNINGS
+)
+
+target_link_libraries(msdf-atlas-gen PUBLIC
+    msdfgen
 )
