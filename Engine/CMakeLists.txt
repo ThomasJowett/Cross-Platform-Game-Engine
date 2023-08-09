@@ -240,7 +240,7 @@ group_files_by_directory("OPENGL_FILES")
 group_files_by_directory("VULKAN_FILES")
 
 target_link_libraries(Engine PRIVATE
-                      opengl32
+                      ${OpenGL_LIBRARY}
                       ${Vulkan_LIBRARY}
                       glfw
                       glad
