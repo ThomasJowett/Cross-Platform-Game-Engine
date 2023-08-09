@@ -4,6 +4,16 @@ project(Cross-Platform-Game-Engine)
 
 set(CMAKE_CXX_STANDARD 17)
 
+set(CMAKE_BUILD_TYPE "Debug")
+
+function(group_files_by_directory FILE_LIST)
+    foreach(file IN LISTS ${FILE_LIST})
+        get_filename_component(file_path "${file}" DIRECTORY)
+        string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/src" "" group_path "${file_path}")
+        string(REPLACE "/" "\\" group_name "${group_path}")
+        source_group("${group_name}" FILES "${file}")
+    endforeach()
+endfunction()
 
 include_directories(Engine/vendor
 Engine/src
@@ -47,8 +57,7 @@ if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DEFAULT_STARTUP_TARGET})
 endif()
 
-add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
-add_compile_options("$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
+
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)
@@ -70,6 +79,7 @@ set(tinyxml2_INSTALL_CMAKEDIR OFF CACHE INTERNAL "")
 set(tinyxml2_INSTALL_PKGCONFIGDIR OFF CACHE INTERNAL "")
 
 add_subdirectory(Engine/vendor)
+add_subdirectory(Editor/vendor)
 add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
-add_subdirectory(EnGine/vendor/box2d)
+add_subdirectory(Engine/vendor/box2d)
