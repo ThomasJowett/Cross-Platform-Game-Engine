@@ -1,15 +1,15 @@
 #include "Webpage.h"
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include <Windows.h>	
 #include <shellapi.h>
 void Webpage::OpenWebpage(const std::wstring& url)
 {
 	ShellExecute(0, 0, url.c_str(), 0, 0, SW_SHOW);
 }
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #elif __linux__
 void Webpage::OpenWebpage(const std::wstring& url)
 {

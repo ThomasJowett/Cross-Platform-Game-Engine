@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-#ifdef __WINDOWS__ //windows x64 & x86
+#ifdef _WIN32 //windows x64 & x86
 
 #elif defined(__linux__)
 

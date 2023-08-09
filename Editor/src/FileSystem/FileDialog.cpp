@@ -2,7 +2,7 @@
 
 #include "Engine.h"
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include <commdlg.h>
 #include <cderr.h>
 
