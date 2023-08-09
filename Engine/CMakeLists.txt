@@ -39,7 +39,6 @@ file(GLOB ENGINE_FILES
     src/Events/KeyEvent.h
     src/Events/MouseEvent.h
     src/Events/SceneEvent.h
-    src/ImGui/ImGuiBuildDirectX11.cpp
     src/ImGui/ImGuiBuildGlfw.cpp
     src/ImGui/ImGuiManager.cpp
     src/ImGui/ImGuiManager.h
@@ -171,6 +170,7 @@ file(GLOB ENGINE_FILES
 
 if(WIN32)
     file(GLOB DIRECTX_FILES
+        src/ImGui/ImGuiBuildDirectX11.cpp
         src/Platform/DirectX/DirectX11Buffer.cpp
         src/Platform/DirectX/DirectX11Buffer.h
         src/Platform/DirectX/DirectX11FrameBuffer.cpp
