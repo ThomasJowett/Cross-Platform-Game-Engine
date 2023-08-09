@@ -260,7 +260,7 @@ add_definitions(
 if (MSVC)
     target_compile_options(Engine PRIVATE "/bigobj")
 else ()
-  target_compile_options(Engine PRIVATE -Wa,-mbig-obj)
+  add_compile_options(-Wa,-mbig-obj)
 endif ()
 
 target_include_directories(Engine PUBLIC
