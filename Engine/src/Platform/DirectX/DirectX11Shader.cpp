@@ -10,6 +10,8 @@
 
 #pragma comment(lib, "dxguid.lib")
 
+#include <d3dcompiler.h>
+
 std::string DirectX11Shader::s_ShaderVersion = "_5_0";
 
 extern ID3D11Device* g_D3dDevice;

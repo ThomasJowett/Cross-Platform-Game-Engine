@@ -2,6 +2,7 @@
 #include "Renderer/Shader.h"
 
 #include <d3d11_1.h>
+#include <d3d11shader.h>
 
 class DirectX11Shader :public Shader
 {
