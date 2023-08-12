@@ -22,7 +22,7 @@ set_target_properties(imgui PROPERTIES
 )
 
 add_library(glad STATIC
-    GLAD/include/GLAD/glad.h
+    GLAD/include/glad/glad.h
     GLAD/include/KHR/khrplatform.h
     GLAD/src/glad.c
 )
