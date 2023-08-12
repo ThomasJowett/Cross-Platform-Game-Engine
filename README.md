@@ -15,34 +15,22 @@
 
 To clone this repository run: `git clone --recursive https://github.com/ThomasJowett/Cross-Platform-Game-Engine`
 
-## Project Generation
-### Windows
-For Visual studio, run the batch files `Progen_vs2019.bat` or `Progen_vs2022.bat` in the Scripts folder
-### Mac
-Make the premake5 and shell scripts executable by running
-```
-chmod +x vendor/bin/premake/premake5_arm
-chmod +x Scripts/Progen_gmake_arm.sh
-chmod +x Scripts/Progen_Xcode_arm.sh
-```
-For Xcode, run the shell script `Progen_Xcode_arm.sh` in the Scripts folder.
+## Building
+Vulkan SDK is required to be installed to build: https://vulkan.lunarg.com/
 
-For gcc, run the shell script `Progen_gmake_arm.sh` in the Scripts folder.
+Build using cmake
+
+### Windows
+Use cmake to generate Visual studio project files.
+### Mac
+Use cmake to generate xcode or make files.
 ### Linux
 First install dependencies by opening a console window and running the following command:
 ```
 sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev g++ make
 ```
-Then make the premake5 and shell script file executable by running 
-```
-chmod +x vendor/bin/premake/premake5
-chmod +x Scripts/Progen_gmake.sh
-```
-Then run the shell script to generate the make files 
-```
-./Scripts/Progen_gmake.sh
-```
-The engine can now be built by running `make`.
+Use cmake to generate make files.
+The engine can be built using `make`.
 ## Example Projects
 If you would like to check out some example projects they can be downloaded from [here](https://github.com/ThomasJowett/ExampleGameProjects)
 ## Dependencies
@@ -61,3 +49,4 @@ If you would like to check out some example projects they can be downloaded from
 * [sol2](https://github.com/ThePhD/sol2) : A C++ single header library binding to Lua.
 * [SPIR-V Cross](https://github.com/KhronosGroup/SPIRV-Cross) : A tool designed for parsing and converting SPIR-V to other shader languages.
 * [msdf atlas](https://github.com/Chlumsky/msdf-atlas-gen) : A utility for generating compact font atlases. 
+* [Vulkan](https://www.vulkan.org/) : A cross-platform industry standard graphics API.
