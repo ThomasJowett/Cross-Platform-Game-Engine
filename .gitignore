@@ -76,5 +76,12 @@ Editor/Editor.args.json
 *.xcuserstate
 *.xcworkspacedata
 
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+CMakeScripts/
+cmake_install.cmake
+CTestTestfile.cmake
+
 Editor/data/Fonts/Manrope-Medium.png
 build
