@@ -278,12 +278,10 @@ bool glfwWindow::Init(const WindowProps& props)
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 #endif
 	}
-#ifdef HAS_VULKAN_SDK
 	else if (api == RendererAPI::API::Vulkan)
 	{
 		m_Context = CreateRef<VulkanContext>();
 	}
-#endif
 
 	m_Context->Init();
 
