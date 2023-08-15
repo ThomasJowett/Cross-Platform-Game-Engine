@@ -15,23 +15,6 @@ function(group_files_by_directory FILE_LIST)
     endforeach()
 endfunction()
 
-include_directories(Engine/vendor
-Engine/src
-Engine/vendor
-Engine/vendor/spdlog/include
-Engine/vendor/cereal/include
-Engine/vendor/box2d/include
-Engine/vendor/lua
-Engine/vendor/imgui
-Engine/vendor/stb
-Engine/vendor/simpleini
-Engine/vendor/EnTT
-Engine/vendor/msdf-atlas-gen/msdf-atlas-gen
-Engine/vendor/msdf-atlas-gen/msdfgen
-Engine/vendor/GLFW/include
-Engine/vendor/GLAD/include
-)
-
 find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
 
@@ -39,10 +22,6 @@ include_directories(${OPENGL_INCLUDE_DIRS})
 
 IF(UNIX AND NOT APPLE)
     set(LINUX TRUE)
-ENDIF()
-
-IF(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
 ENDIF()
 
 IF (NOT Vulkan_FOUND)
@@ -78,11 +57,20 @@ set(tinyxml2_BUILD_TESTING OFF CACHE INTERNAL "")
 set(tinyxml2_INSTALL_CMAKEDIR OFF CACHE INTERNAL "")
 set(tinyxml2_INSTALL_PKGCONFIGDIR OFF CACHE INTERNAL "")
 
+if(CMAKE_SYSTEM_NAME STREQUAL Windows)
+  set(VOLK_STATIC_DEFINES VK_USE_PLATFORM_WIN32_KHR)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Linux)
+  set(VOLK_STATIC_DEFINES VK_USE_PLATFORM_XLIB_KHR)
+elseif(CMAKE_SYSTEM_NAME STREQUAL Darwin)
+  set(VOLK_STATIC_DEFINES VK_USE_PLATFORM_MACOS_MVK)
+endif()
+
 add_subdirectory(Engine/vendor)
 add_subdirectory(Editor/vendor)
 add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
 add_subdirectory(Engine/vendor/box2d)
+add_subdirectory(Engine/vendor/vulkan/volk)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 
@@ -98,3 +86,4 @@ set_target_properties(miniz PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
 set_target_properties(msdf-atlas-gen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msdfgen)
 set_target_properties(msdfgen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msdfgen)
 set_target_properties(OpenFBX PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+set_target_properties(volk PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})

@@ -52,13 +52,6 @@ target_include_directories(Editor PUBLIC
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/OpenFBX/src
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/json
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinygltf
-                            Engine/src
-                            Engine/vendor
-                            Engine/vendor/spdlog/include
-                            Engine/vendor/cereal/include
-                            Engine/vendor/box2d/include
-                            Engine/vendor/lua
-                            Engine/vendor/stb
         )
 
 add_definitions(

@@ -47,3 +47,6 @@
 [submodule "Engine/vendor/vulkan/Vulkan-Headers"]
 	path = Engine/vendor/vulkan/Vulkan-Headers
 	url = https://github.com/KhronosGroup/Vulkan-Headers.git
+[submodule "Engine/vendor/vulkan/volk"]
+	path = Engine/vendor/vulkan/volk
+	url = https://github.com/zeux/volk.git
