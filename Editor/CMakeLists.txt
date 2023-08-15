@@ -38,7 +38,22 @@ endif()
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
-add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES})
+if(APPLE)
+    set(EDITOR_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Icon.icns)
+    set_source_files_properties(${EDITOR_ICON} PROPERTIES 
+        MACOSX_PACKAGE_LOCATION "Resources")
+    add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON})
+
+    set_target_properties(Editor PROPERTIES 
+        BUNDLE True
+        MACOSX_BUNDLE_GUI_IDENTIFIER "com.Jowett.Thomas.Editor"
+        MACOSX_BUNDLE_BUNDLE_NAME "Editor"
+        MACOSX_BUNDLE_BUNDLE_VERSION "0.0.1"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING "0.0.1"
+    )
+else()
+    add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES})
+endif()
 
 group_files_by_directory("SOURCES")
 group_files_by_directory("HEADERS")
