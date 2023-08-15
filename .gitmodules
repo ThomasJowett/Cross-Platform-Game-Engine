@@ -44,3 +44,6 @@
 [submodule "Engine/vendor/msdf-atlas-gen"]
 	path = Engine/vendor/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
+[submodule "Engine/vendor/vulkan/Vulkan-Headers"]
+	path = Engine/vendor/vulkan/Vulkan-Headers
+	url = https://github.com/KhronosGroup/Vulkan-Headers.git

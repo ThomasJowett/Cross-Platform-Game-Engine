@@ -279,6 +279,7 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
+                            vendor/vulkan/Vulkan-Headers/include
 
         )
 
