@@ -77,7 +77,18 @@ void ImGuiManager::Init()
 		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow());
 
 		if (ImGui_ImplGlfw_InitForVulkan(window, true)) {
+			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+			
+			Ref<VulkanContext> vulkanContext = std::dynamic_pointer_cast<VulkanContext>(context);
+			VkDescriptorPool descriptorPool;
+
 			ImGui_ImplVulkan_InitInfo initInfo = {};
+			initInfo.Instance = g_VkInstance;
+			initInfo.PhysicalDevice = vulkanContext->GetPhysicalDevice()->GetVkPhysicalDevice();
+			initInfo.Device = vulkanContext->GetDevice()->GetVkDevice();
+			//initInfo.QueueFamily = ;
+			initInfo.Queue = vulkanContext->GetDevice()->GetGraphicsQueue();
+
 			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
 			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
 		}
