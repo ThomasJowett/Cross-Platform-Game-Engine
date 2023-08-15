@@ -61,7 +61,7 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 	for (uint32_t i = 0; i < queueFamilyCount; i++)
 	{
 		
-		fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
+		//fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
 	}
 
 	uint32_t graphicsQueueNodeIndex = UINT32_MAX;
