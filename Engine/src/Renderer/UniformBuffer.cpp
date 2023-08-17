@@ -3,9 +3,9 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGlUniformBuffer.h"
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11UniformBuffer.h"
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #include "Platform/Vulkan/VulkanUniformBuffer.h"
 
 Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
@@ -16,10 +16,10 @@ Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLUniformBuffer>(size, binding);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		return CreateRef<DirectX11UniformBuffer>(size, binding);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create Uniform Buffer: Metal is not currently supported");

@@ -212,6 +212,8 @@ file (GLOB OPENGL_FILES
 )
 
 file (GLOB VULKAN_FILES
+    src/Platform/Vulkan/Vulkan.h
+    src/Platform/Vulkan/Vulkan.cpp
     src/Platform/Vulkan/VulkanBuffer.cpp
     src/Platform/Vulkan/VulkanBuffer.h
     src/Platform/Vulkan/VulkanDevice.cpp
@@ -256,6 +258,7 @@ add_definitions(
     -DGLFW_INCLUDE_NONE
     -D_CRT_SECURE_NO_WARNINGS
     -DUNICODE
+    -DIMGUI_IMPL_VULKAN_NO_PROTOTYPES
 )
 
 if (MSVC)
@@ -280,8 +283,7 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
-                            vendor/vulkan/Vulkan-Headers/include
-
+                            ${VULKAN_INCLUDE_DIR}
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)

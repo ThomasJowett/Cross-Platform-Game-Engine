@@ -13,7 +13,7 @@
 
 #include "Platform/OpenGL/OpenGLContext.h"
 #include "Platform/Vulkan/VulkanContext.h"
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"   // for glfwGetWin32Window
 #include "Platform/DirectX/DirectX11Context.h"
@@ -274,7 +274,7 @@ bool glfwWindow::Init(const WindowProps& props)
 	}
 	else if (api == RendererAPI::API::Directx11)
 	{
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 #endif
 	}

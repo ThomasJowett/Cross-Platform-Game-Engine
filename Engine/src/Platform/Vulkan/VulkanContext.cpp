@@ -1,8 +1,9 @@
 #include "stdafx.h"
 #include "VulkanContext.h"
 #include "Core/Version.h"
+#include "Logging/Instrumentor.h"
 
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
 
 VkInstance g_VkInstance = VK_NULL_HANDLE;
 
@@ -17,6 +18,18 @@ VulkanContext::~VulkanContext()
 
 void VulkanContext::Init()
 {
+	PROFILE_FUNCTION();
+
+	if (volkInitialize() != VK_SUCCESS)
+	{
+		ENGINE_CRITICAL("Volk failed to initialize");
+	}
+
+	if (volkGetInstanceVersion() == 0)
+	{
+		ENGINE_CRITICAL("Could not find volk loader");
+	}
+
 	VkResult err;
 	VkApplicationInfo appInfo = {};
 	appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
@@ -44,9 +57,11 @@ void VulkanContext::Init()
 
 	err = vkCreateInstance(&instanceCreateInfo, nullptr, &g_VkInstance);
 
-	if (err) {
+	if (err != VK_SUCCESS) {
 		ENGINE_CRITICAL("Could not create vulkan instance!");
 	}
+
+	volkLoadInstance(g_VkInstance);
 
 	m_PhysicalDevice = CreateRef<VulkanPhysicalDevice>();
 
