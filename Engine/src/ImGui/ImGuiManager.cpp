@@ -29,6 +29,15 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // _WINDOWS
 
+static void CheckVkResult(VkResult err)
+{
+	if (err == 0)
+		return;
+	ENGINE_ERROR("Vulkan: VkResult = {0}", err);
+	if (err < 0)
+		abort();
+}
+
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)
 {
@@ -82,14 +91,18 @@ void ImGuiManager::Init()
 			Ref<VulkanContext> vulkanContext = std::dynamic_pointer_cast<VulkanContext>(context);
 			VkDescriptorPool descriptorPool;
 
+			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
 			ImGui_ImplVulkan_InitInfo initInfo = {};
 			initInfo.Instance = g_VkInstance;
 			initInfo.PhysicalDevice = vulkanContext->GetPhysicalDevice()->GetVkPhysicalDevice();
 			initInfo.Device = vulkanContext->GetDevice()->GetVkDevice();
-			//initInfo.QueueFamily = ;
+			initInfo.QueueFamily = vulkanContext->GetPhysicalDevice()->GetGraphicsQueueFamilyIndex();
 			initInfo.Queue = vulkanContext->GetDevice()->GetGraphicsQueue();
+			initInfo.Subpass = 0;
+			initInfo.ImageCount = wd->ImageCount;
+			initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+			initInfo.CheckVkResultFn = CheckVkResult;
 
-			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
 			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
 		}
 	}
