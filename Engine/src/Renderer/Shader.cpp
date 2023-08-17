@@ -3,9 +3,9 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11Shader.h"
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #include "Platform/Vulkan/VulkanShader.h"
 
 Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& fileDirectory)
@@ -16,11 +16,11 @@ Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path&
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLShader>(name, fileDirectory);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		//CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
 		return CreateRef<DirectX11Shader>(name, fileDirectory);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
@@ -46,11 +46,11 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLShader>(vertexShaderSrc, fragmentShaderSrc);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		CORE_ASSERT(false, "Could not create Shader: DirectX is not currently supported")
 			return CreateRef<DirectX11Shader>(vertexShaderSrc, fragmentShaderSrc);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
