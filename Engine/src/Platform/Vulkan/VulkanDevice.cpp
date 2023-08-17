@@ -56,48 +56,24 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 
 	m_QueueFamilyProperties.resize(queueFamilyCount);
 	vkGetPhysicalDeviceQueueFamilyProperties(m_PhysicalDevice, &queueFamilyCount, m_QueueFamilyProperties.data());
+	
+	uint32_t extensionCount = 0;
+	vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extensionCount, nullptr);
 
-	std::vector<VkBool32>supportsPresent(queueFamilyCount);
-	for (uint32_t i = 0; i < queueFamilyCount; i++)
-	{
-		
-		fpGetPhysicalDeviceSurfaceSupportKHR(m_PhysicalDevice, i, surface, &supportsPresent[i]);
-	}
-
-	uint32_t graphicsQueueNodeIndex = UINT32_MAX;
-	uint32_t presentQueueNodeIndex = UINT32_MAX;
-	for (uint32_t i = 0; i < queueFamilyCount; i++)
-	{
-		if ((m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) != 0)
-		{
-			if (graphicsQueueNodeIndex == UINT32_MAX)
-			{
-				graphicsQueueNodeIndex = i;
-			}
-
-			if (supportsPresent[i] == VK_TRUE)
-			{
-				graphicsQueueNodeIndex = i;
-				presentQueueNodeIndex = i;
-				break;
-			}
-		}
-	}
-	if (presentQueueNodeIndex == UINT32_MAX)
-	{
-		// If there's no queue that supports both present and graphics
-		// try to find a separate present queue
-		for (uint32_t i = 0; i < queueFamilyCount; ++i)
-		{
-			if (supportsPresent[i] == VK_TRUE)
-			{
-				presentQueueNodeIndex = i;
-				break;
+	if (extensionCount > 0) {
+		std::vector<VkExtensionProperties> extensions(extensionCount);
+		if (vkEnumerateDeviceExtensionProperties(m_PhysicalDevice, nullptr, &extensionCount, &extensions.front()) == VK_SUCCESS) {
+			ENGINE_INFO("Selected physical device has {0} extensions", extensions.size());
+			for (const VkExtensionProperties& extension : extensions) {
+				m_SupportedExtensions.emplace(extension.extensionName);
 			}
 		}
 	}
 
-	uint32_t extCount = 0;
+	static const float defaultQueuepriority(0.0f);
+
+	int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
+	m_QueueFamilyIndices = GetQueueFamilyIndices(requestedQueueTypes);
 }
 
 bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const
@@ -121,4 +97,10 @@ VulkanDevice::~VulkanDevice()
 	if (m_Device) {
 		vkDestroyDevice(m_Device, nullptr);
 	}
+}
+
+VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilyIndices(int queueFlags)
+{
+	//TODO: fill out this function!
+	return QueueFamilyIndices();
 }
