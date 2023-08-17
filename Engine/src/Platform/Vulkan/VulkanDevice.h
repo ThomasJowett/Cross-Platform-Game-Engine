@@ -8,14 +8,16 @@
 class VulkanPhysicalDevice
 {
 	struct QueueFamilyIndices {
-		uint32_t graphics;
-		uint32_t compute;
+		uint32_t Graphics;
+		uint32_t Compute;
+		uint32_t Transfer;
 	};
 public:
 	VulkanPhysicalDevice();
 	bool IsExtensionSupported(const std::string& extensionName) const;
 
 	VkPhysicalDevice GetVkPhysicalDevice() { return m_PhysicalDevice; }
+	const std::vector<VkDeviceQueueCreateInfo>& GetDeviceQueueCreateInfos() { return m_QueueCreateInfos; }
 private:
 	QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
 private:

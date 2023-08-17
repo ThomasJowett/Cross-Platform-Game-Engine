@@ -70,10 +70,43 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 		}
 	}
 
-	static const float defaultQueuepriority(0.0f);
+	static const float defaultQueuePriority(0.0f);
 
 	int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
 	m_QueueFamilyIndices = GetQueueFamilyIndices(requestedQueueTypes);
+
+	// Graphics queue
+	if(requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT) {
+		VkDeviceQueueCreateInfo queueInfo{};
+		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+		queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Graphics;
+		queueInfo.queueCount = 1;
+		queueInfo.pQueuePriorities = &defaultQueuePriority;
+		m_QueueCreateInfos.push_back(queueInfo);
+	}
+
+	// Dedicated compute queue
+	if(requestedQueueTypes & VK_QUEUE_COMPUTE_BIT) {
+		if(m_QueueFamilyIndices.Compute != m_QueueFamilyIndices.Graphics){
+			VkDeviceQueueCreateInfo queueInfo{};
+			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Compute;
+			queueInfo.queueCount = 1;
+			queueInfo.pQueuePriorities = &defaultQueuePriority;
+			m_QueueCreateInfos.push_back(queueInfo);
+		}
+	}
+
+	// Dedicated transfer queue
+	if(requestedQueueTypes & VK_QUEUE_TRANSFER_BIT) {
+		if((m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Compute) && m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Graphics){
+			VkDeviceQueueCreateInfo queueInfo{};
+			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+			queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Transfer;
+			queueInfo.pQueuePriorities = &defaultQueuePriority;
+			m_QueueCreateInfos.push_back(queueInfo);
+		}
+	}
 }
 
 bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const
@@ -84,12 +117,26 @@ bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName
 VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice> physicalDevice, VkPhysicalDeviceFeatures enabledFeatures)
 	:m_PhysicalDevice(physicalDevice), m_EnabledFeatures(enabledFeatures)
 {
+	std::vector<const char*> deviceExtensions{};
+	deviceExtensions.push_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-	//deviceCreateInfo.queueCreateInfoCount = (uint32_t)m_PhysicalDevice->
+	const std::vector<VkDeviceQueueCreateInfo>& deviceQueueCreateInfos = m_PhysicalDevice->GetDeviceQueueCreateInfos();
+	deviceCreateInfo.queueCreateInfoCount = deviceQueueCreateInfos.size();
+	deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
+	deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
+
+	if(deviceExtensions.size() > 0) {
+		deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();
+		deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
+	}
+
 	VkResult result = vkCreateDevice(m_PhysicalDevice->GetVkPhysicalDevice(), &deviceCreateInfo, nullptr, &m_Device);
 
-	//vkGetDeviceQueue(m_Device, )
+	if (result == VK_SUCCESS) {
+		//TODO create the command pool
+	}
 }
 
 VulkanDevice::~VulkanDevice()
@@ -101,6 +148,48 @@ VulkanDevice::~VulkanDevice()
 
 VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilyIndices(int queueFlags)
 {
-	//TODO: fill out this function!
-	return QueueFamilyIndices();
+	QueueFamilyIndices indices;
+
+	// Dedicated compute queue
+	if(queueFlags & VK_QUEUE_COMPUTE_BIT) {
+		for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++){
+			VkQueueFamilyProperties& queueFamilyProperties = m_QueueFamilyProperties[i];
+			if((queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)){
+				indices.Compute = i;
+				break;
+			}
+		}
+	}
+
+	// Dedicated transfer queue
+	if(queueFlags & VK_QUEUE_TRANSFER_BIT) {
+		for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++) {
+			VkQueueFamilyProperties& queueFamilyProperties = m_QueueFamilyProperties[i];
+			if((queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
+			{
+				indices.Transfer = i;
+				break;
+			}
+		}
+	}
+
+	for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++){
+		if((queueFlags & VK_QUEUE_TRANSFER_BIT) && indices.Transfer == -1)
+		{
+			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
+				indices.Transfer = i;
+		}
+
+		if((queueFlags & VK_QUEUE_COMPUTE_BIT) && indices.Compute == -1){
+			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
+				indices.Compute = i;
+		}
+
+		if(queueFlags & VK_QUEUE_GRAPHICS_BIT){
+			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+				indices.Compute = i;
+		}
+	}
+
+	return indices;
 }
