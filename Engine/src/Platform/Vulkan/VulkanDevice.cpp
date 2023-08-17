@@ -72,11 +72,11 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 
 	static const float defaultQueuePriority(0.0f);
 
-	int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT | VK_QUEUE_TRANSFER_BIT;
-	m_QueueFamilyIndices = GetQueueFamilyIndices(requestedQueueTypes);
+	int requestedQueueTypes = VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT;
 
 	// Graphics queue
 	if(requestedQueueTypes & VK_QUEUE_GRAPHICS_BIT) {
+		m_QueueFamilyIndices.Graphics = GetQueueFamilyIndex(VK_QUEUE_GRAPHICS_BIT);
 		VkDeviceQueueCreateInfo queueInfo{};
 		queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
 		queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Graphics;
@@ -84,9 +84,13 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 		queueInfo.pQueuePriorities = &defaultQueuePriority;
 		m_QueueCreateInfos.push_back(queueInfo);
 	}
+	else {
+		m_QueueFamilyIndices.Graphics = 0;
+	}
 
 	// Dedicated compute queue
 	if(requestedQueueTypes & VK_QUEUE_COMPUTE_BIT) {
+		m_QueueFamilyIndices.Compute = GetQueueFamilyIndex(VK_QUEUE_COMPUTE_BIT);
 		if(m_QueueFamilyIndices.Compute != m_QueueFamilyIndices.Graphics){
 			VkDeviceQueueCreateInfo queueInfo{};
 			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
@@ -96,16 +100,8 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 			m_QueueCreateInfos.push_back(queueInfo);
 		}
 	}
-
-	// Dedicated transfer queue
-	if(requestedQueueTypes & VK_QUEUE_TRANSFER_BIT) {
-		if((m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Compute) && m_QueueFamilyIndices.Transfer != m_QueueFamilyIndices.Graphics){
-			VkDeviceQueueCreateInfo queueInfo{};
-			queueInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-			queueInfo.queueFamilyIndex = m_QueueFamilyIndices.Transfer;
-			queueInfo.pQueuePriorities = &defaultQueuePriority;
-			m_QueueCreateInfos.push_back(queueInfo);
-		}
+	else {
+		m_QueueFamilyIndices.Compute = m_QueueFamilyIndices.Graphics;
 	}
 }
 
@@ -123,16 +119,18 @@ VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice> physicalDevice, VkPhy
 	VkDeviceCreateInfo deviceCreateInfo = {};
 	deviceCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
 	const std::vector<VkDeviceQueueCreateInfo>& deviceQueueCreateInfos = m_PhysicalDevice->GetDeviceQueueCreateInfos();
-	deviceCreateInfo.queueCreateInfoCount = deviceQueueCreateInfos.size();
+	deviceCreateInfo.queueCreateInfoCount = static_cast<uint32_t>(deviceQueueCreateInfos.size());
 	deviceCreateInfo.pQueueCreateInfos = deviceQueueCreateInfos.data();
 	deviceCreateInfo.pEnabledFeatures = &enabledFeatures;
-
+	
 	if(deviceExtensions.size() > 0) {
 		deviceCreateInfo.enabledExtensionCount = (uint32_t)deviceExtensions.size();
 		deviceCreateInfo.ppEnabledExtensionNames = deviceExtensions.data();
 	}
 
 	VkResult result = vkCreateDevice(m_PhysicalDevice->GetVkPhysicalDevice(), &deviceCreateInfo, nullptr, &m_Device);
+
+	vkGetDeviceQueue(m_Device, m_PhysicalDevice->GetGraphicsQueueFamilyIndex(), 0, &m_GraphicsQueue);
 
 	if (result == VK_SUCCESS) {
 		//TODO create the command pool
@@ -146,50 +144,28 @@ VulkanDevice::~VulkanDevice()
 	}
 }
 
-VulkanPhysicalDevice::QueueFamilyIndices VulkanPhysicalDevice::GetQueueFamilyIndices(int queueFlags)
+uint32_t VulkanPhysicalDevice::GetQueueFamilyIndex(VkQueueFlagBits queueFlags)
 {
-	QueueFamilyIndices indices;
-
-	// Dedicated compute queue
-	if(queueFlags & VK_QUEUE_COMPUTE_BIT) {
-		for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++){
-			VkQueueFamilyProperties& queueFamilyProperties = m_QueueFamilyProperties[i];
-			if((queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) && ((queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)){
-				indices.Compute = i;
+	// Dedicated queue for compute
+	// Try to find a queue family index that supports compute but not graphics
+	if (queueFlags & VK_QUEUE_COMPUTE_BIT)
+	{
+		for (uint32_t i = 0; i < static_cast<uint32_t>(m_QueueFamilyProperties.size()); i++) {
+			if ((m_QueueFamilyProperties[i].queueFlags & queueFlags) && ((m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0)) {
+				return i;
 				break;
 			}
 		}
 	}
 
-	// Dedicated transfer queue
-	if(queueFlags & VK_QUEUE_TRANSFER_BIT) {
-		for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++) {
-			VkQueueFamilyProperties& queueFamilyProperties = m_QueueFamilyProperties[i];
-			if((queueFamilyProperties.queueFlags & VK_QUEUE_TRANSFER_BIT) && ((queueFamilyProperties.queueFlags & VK_QUEUE_GRAPHICS_BIT) == 0) && ((queueFamilyProperties.queueFlags & VK_QUEUE_COMPUTE_BIT) == 0))
-			{
-				indices.Transfer = i;
-				break;
-			}
+	// For other queue types or if no separate compute queue is present, return the first one to support the requested flags
+	for (uint32_t i = 0; i < static_cast<uint32_t>(m_QueueFamilyProperties.size()); i++) {
+		if (m_QueueFamilyProperties[i].queueFlags & queueFlags) {
+			return i;
+			break;
 		}
 	}
 
-	for(uint32_t i = 0; i < m_QueueFamilyProperties.size(); i++){
-		if((queueFlags & VK_QUEUE_TRANSFER_BIT) && indices.Transfer == -1)
-		{
-			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_TRANSFER_BIT)
-				indices.Transfer = i;
-		}
-
-		if((queueFlags & VK_QUEUE_COMPUTE_BIT) && indices.Compute == -1){
-			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_COMPUTE_BIT)
-				indices.Compute = i;
-		}
-
-		if(queueFlags & VK_QUEUE_GRAPHICS_BIT){
-			if(m_QueueFamilyProperties[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
-				indices.Compute = i;
-		}
-	}
-
-	return indices;
+	ENGINE_ERROR("Could not find a matching queue family index");
+	return 0;
 }

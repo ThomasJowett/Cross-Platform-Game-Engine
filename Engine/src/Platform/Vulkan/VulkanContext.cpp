@@ -88,8 +88,10 @@ void VulkanContext::Init()
 
 	m_PhysicalDevice = CreateRef<VulkanPhysicalDevice>();
 
-	VkPhysicalDeviceFeatures enabledFeatures;
-	std::memset(&enabledFeatures, 0, sizeof(VkPhysicalDeviceFeatures));
+	VkPhysicalDeviceFeatures enabledFeatures{};
+	if (m_PhysicalDevice->GetVkPhysicalDeviceFeatures().samplerAnisotropy) {
+		enabledFeatures.samplerAnisotropy = VK_TRUE;
+	}
 
 	m_Device = CreateRef<VulkanDevice>(m_PhysicalDevice, enabledFeatures);
 }

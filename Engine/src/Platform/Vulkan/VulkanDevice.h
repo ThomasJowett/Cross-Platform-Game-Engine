@@ -18,8 +18,13 @@ public:
 
 	VkPhysicalDevice GetVkPhysicalDevice() { return m_PhysicalDevice; }
 	const std::vector<VkDeviceQueueCreateInfo>& GetDeviceQueueCreateInfos() { return m_QueueCreateInfos; }
+	VkPhysicalDeviceFeatures GetVkPhysicalDeviceFeatures() { return m_Features; }
+
+	uint32_t GetGraphicsQueueFamilyIndex() { return m_QueueFamilyIndices.Graphics; }
+	uint32_t GetComputeQueueFamilyIndex() { return m_QueueFamilyIndices.Compute; }
+	uint32_t GetTransferQueueFamilyIndex() { return m_QueueFamilyIndices.Transfer; }
 private:
-	QueueFamilyIndices GetQueueFamilyIndices(int queueFlags);
+	uint32_t GetQueueFamilyIndex(VkQueueFlagBits queueFlags);
 private:
 	VkPhysicalDevice m_PhysicalDevice = nullptr;
 	VkPhysicalDeviceProperties m_Properties;
