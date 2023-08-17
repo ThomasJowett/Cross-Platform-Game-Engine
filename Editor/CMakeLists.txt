@@ -44,6 +44,10 @@ if(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources")
     add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON})
 
+    if(XCODE)
+        set_property(TARGET Editor PROPERTY XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
+    endif()
+
     set_target_properties(Editor PROPERTIES 
         BUNDLE True
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.Jowett.Thomas.Editor"
