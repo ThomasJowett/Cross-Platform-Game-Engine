@@ -29,15 +29,6 @@ extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 #endif // _WINDOWS
 
-static void CheckVkResult(VkResult err)
-{
-	if (err == 0)
-		return;
-	ENGINE_ERROR("Vulkan: VkResult = {0}", err);
-	if (err < 0)
-		abort();
-}
-
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)
 {
@@ -68,7 +59,7 @@ void ImGuiManager::Init()
 	if (api == RendererAPI::API::Directx11)
 	{
 #ifdef _WINDOWS
-		if(ImGui_ImplGlfw_InitForOther(std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow()), true))
+		if (ImGui_ImplGlfw_InitForOther(std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow()), true))
 		{
 			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
 		}
@@ -77,7 +68,7 @@ void ImGuiManager::Init()
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = std::any_cast<GLFWwindow*>(Application::GetWindow()->GetNativeWindow());
-		
+
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
@@ -87,7 +78,7 @@ void ImGuiManager::Init()
 
 		if (ImGui_ImplGlfw_InitForVulkan(window, true)) {
 			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
-			
+
 			Ref<VulkanContext> vulkanContext = std::dynamic_pointer_cast<VulkanContext>(context);
 			VkDescriptorPool descriptorPool;
 
@@ -98,11 +89,24 @@ void ImGuiManager::Init()
 			initInfo.Device = vulkanContext->GetDevice()->GetVkDevice();
 			initInfo.QueueFamily = vulkanContext->GetPhysicalDevice()->GetGraphicsQueueFamilyIndex();
 			initInfo.Queue = vulkanContext->GetDevice()->GetGraphicsQueue();
+			//initInfo.PipelineCache = g_PipelineCache;
+			//initInfo.DescriptorPool = g_DescriptorPool;
 			initInfo.Subpass = 0;
+			//initInfo.MinImageCount = g_MinImageCount;
 			initInfo.ImageCount = wd->ImageCount;
 			initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-			initInfo.CheckVkResultFn = CheckVkResult;
-
+			//initInfo.Allocator = g_Allocator;
+			initInfo.CheckVkResultFn = [](VkResult result) {
+				if (result == 0)
+					return;
+				ENGINE_ERROR("Vulkan: VkResult = {0}", result);
+				if (result < 0)
+					abort();
+			};
+			bool success = ImGui_ImplVulkan_LoadFunctions([](const char* function_name, void* user_data) {
+				VkInstance instance = static_cast<VkInstance>(user_data);
+				return reinterpret_cast<PFN_vkVoidFunction>(vkGetInstanceProcAddr(instance, function_name));
+				}, g_VkInstance);
 			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
 		}
 	}
