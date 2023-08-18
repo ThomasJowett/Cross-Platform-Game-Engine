@@ -46,6 +46,7 @@ public:
 	VkDevice GetVkDevice() { return m_Device; }
 
 	VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
+	Ref<VulkanPhysicalDevice> GetPyhsicalDevice() { return m_PhysicalDevice; }
 private:
 private:
 	VkDevice m_Device;

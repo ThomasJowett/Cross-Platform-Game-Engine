@@ -80,24 +80,50 @@ void ImGuiManager::Init()
 			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 			Ref<VulkanContext> vulkanContext = std::dynamic_pointer_cast<VulkanContext>(context);
+
+			VkDevice device = vulkanContext->GetDevice()->GetVkDevice();
 			VkDescriptorPool descriptorPool;
 
+			// Create Descriptor Pool
+			VkDescriptorPoolSize pool_sizes[] =
+			{
+				{ VK_DESCRIPTOR_TYPE_SAMPLER, 100 },
+				{ VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 100 },
+				{ VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 100 },
+				{ VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, 100 },
+				{ VK_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC, 100 },
+				{ VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, 100 }
+			};
+			VkDescriptorPoolCreateInfo pool_info = {};
+			pool_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+			pool_info.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
+			pool_info.maxSets = 100 * IM_ARRAYSIZE(pool_sizes);
+			pool_info.poolSizeCount = (uint32_t)IM_ARRAYSIZE(pool_sizes);
+			pool_info.pPoolSizes = pool_sizes;
+			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool));
+
 			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
+			g_WindowData.ImageCount = 2;
 			ImGui_ImplVulkan_InitInfo initInfo = {};
 			initInfo.Instance = g_VkInstance;
 			initInfo.PhysicalDevice = vulkanContext->GetPhysicalDevice()->GetVkPhysicalDevice();
-			initInfo.Device = vulkanContext->GetDevice()->GetVkDevice();
+			initInfo.Device = device;
 			initInfo.QueueFamily = vulkanContext->GetPhysicalDevice()->GetGraphicsQueueFamilyIndex();
 			initInfo.Queue = vulkanContext->GetDevice()->GetGraphicsQueue();
-			//initInfo.PipelineCache = g_PipelineCache;
-			//initInfo.DescriptorPool = g_DescriptorPool;
+			initInfo.PipelineCache = nullptr;
+			initInfo.DescriptorPool = descriptorPool;
 			initInfo.Subpass = 0;
-			//initInfo.MinImageCount = g_MinImageCount;
+			initInfo.MinImageCount = 2;
 			initInfo.ImageCount = wd->ImageCount;
 			initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-			//initInfo.Allocator = g_Allocator;
+			initInfo.Allocator = nullptr;
 			initInfo.CheckVkResultFn = [](VkResult result) {
-				if (result == 0)
+				if (result == VK_SUCCESS)
 					return;
 				ENGINE_ERROR("Vulkan: VkResult = {0}", result);
 				if (result < 0)

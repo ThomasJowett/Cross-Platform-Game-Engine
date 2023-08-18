@@ -220,6 +220,8 @@ file (GLOB VULKAN_FILES
     src/Platform/Vulkan/VulkanDevice.h
     src/Platform/Vulkan/VulkanRendererAPI.cpp
     src/Platform/Vulkan/VulkanRendererAPI.h
+    src/Platform/Vulkan/VulkanSwapChain.cpp
+    src/Platform/Vulkan/VulkanSwapChain.h
     src/Platform/Vulkan/VulkanTexture.cpp
     src/Platform/Vulkan/VulkanTexture.h
     src/Platform/Vulkan/VulkanContext.cpp

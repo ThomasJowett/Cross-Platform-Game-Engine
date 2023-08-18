@@ -5,9 +5,12 @@
 
 #include "Vulkan.h"
 
+#include "GLFW/glfw3.h"
+
 VkInstance g_VkInstance = VK_NULL_HANDLE;
 
-VulkanContext::VulkanContext()
+VulkanContext::VulkanContext(GLFWwindow* windowHandle)
+	:m_WindowHandle(windowHandle)
 {
 }
 
@@ -94,20 +97,32 @@ void VulkanContext::Init()
 	}
 
 	m_Device = CreateRef<VulkanDevice>(m_PhysicalDevice, enabledFeatures);
+	m_Swapchain = CreateRef<VulkanSwapChain>();
+	m_Swapchain->Init(g_VkInstance, m_Device);
+	m_Swapchain->InitSurface(m_WindowHandle);
+
+	int width, height;
+	glfwGetWindowSize(m_WindowHandle, &width, &height);
+	m_Swapchain->Create(&width, &height);
 }
 
 void VulkanContext::SwapBuffers()
 {
+	PROFILE_FUNCTION();
+	glfwSwapBuffers(m_WindowHandle);
 }
 
 void VulkanContext::ResizeBuffers(uint32_t width, uint32_t height)
 {
+	m_Swapchain->OnResize(width, height);
 }
 
 void VulkanContext::SetSwapInterval(uint32_t interval)
 {
+	glfwSwapInterval((int)interval);
 }
 
 void VulkanContext::MakeCurrent()
 {
+	glfwMakeContextCurrent(m_WindowHandle);
 }

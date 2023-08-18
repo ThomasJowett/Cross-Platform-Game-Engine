@@ -280,7 +280,7 @@ bool glfwWindow::Init(const WindowProps& props)
 	}
 	else if (api == RendererAPI::API::Vulkan)
 	{
-		m_Context = CreateRef<VulkanContext>();
+		m_Context = CreateRef<VulkanContext>(m_Window);
 	}
 
 	m_Context->Init();

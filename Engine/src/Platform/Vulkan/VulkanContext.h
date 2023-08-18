@@ -2,12 +2,13 @@
 
 #include "Renderer/GraphicsContext.h"
 #include "VulkanDevice.h"
+#include "VulkanSwapChain.h"
 #include "Core/core.h"
 
 class VulkanContext : public GraphicsContext
 {
 public:
-	VulkanContext();
+	VulkanContext(GLFWwindow* windowHandle);
 	~VulkanContext();
 
 	// Inherited via GraphicsContext
@@ -25,6 +26,8 @@ public:
 	Ref<VulkanDevice> GetDevice() { return m_Device; }
 
 private:
+	GLFWwindow* m_WindowHandle;
 	Ref<VulkanPhysicalDevice> m_PhysicalDevice;
 	Ref<VulkanDevice> m_Device;
+	Ref<VulkanSwapChain> m_Swapchain;
 };
