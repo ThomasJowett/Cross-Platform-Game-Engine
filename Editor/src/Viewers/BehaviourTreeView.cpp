@@ -276,11 +276,13 @@ void BehaviourTreeView::Delete()
 
 bool BehaviourTreeView::HasSelection() const
 {
+	NodeEditor::SetCurrentEditor(m_NodeEditorContext);
 	return NodeEditor::GetSelectedObjectCount() > 0;
 }
 
 void BehaviourTreeView::SelectAll()
 {
+	NodeEditor::SetCurrentEditor(m_NodeEditorContext);
 	for (Node& node : m_Nodes)
 		NodeEditor::SelectNode(node.id, true);
 
