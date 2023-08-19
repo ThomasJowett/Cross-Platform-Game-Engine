@@ -211,7 +211,107 @@ void VulkanSwapChain::Create(int* width, int* height)
 		VK_CHECK_RESULT(vkCreateImageView(device, &colourAttachmentView, nullptr, &m_Images[i].ImageView));
 	}
 
-	//TODO: Fill out the rest of this function
+	if (!m_Semaphores.RenderComplete || !m_Semaphores.PresentComplete)
+	{
+		VkSemaphoreCreateInfo semaphoreCreateInfo{};
+		semaphoreCreateInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+		VK_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVkDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.RenderComplete));
+		VK_CHECK_RESULT(vkCreateSemaphore(m_Device->GetVkDevice(), &semaphoreCreateInfo, nullptr, &m_Semaphores.PresentComplete));
+	}
+
+	if (m_WaitFences.size() != m_ImageCount)
+	{
+		VkFenceCreateInfo fenceCreateInfo{};
+		fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceCreateInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+		m_WaitFences.resize(m_ImageCount);
+		for (auto& fence : m_WaitFences)
+		{
+			VK_CHECK_RESULT(vkCreateFence(m_Device->GetVkDevice(), &fenceCreateInfo, nullptr, &fence));
+		}
+	}
+
+	VkPipelineStageFlags pipelineStageFlags = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	m_SubmitInfo = {};
+	m_SubmitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	m_SubmitInfo.pWaitDstStageMask = &pipelineStageFlags;
+	m_SubmitInfo.waitSemaphoreCount = 1;
+	m_SubmitInfo.pWaitSemaphores = &m_Semaphores.PresentComplete;
+	m_SubmitInfo.signalSemaphoreCount = 1;
+	m_SubmitInfo.pSignalSemaphores = &m_Semaphores.RenderComplete;
+
+	VkFormat depthFormat = m_Device->GetPyhsicalDevice()->GetDepthFormat();
+
+	// Render Pass
+	VkAttachmentDescription colourAttachmentDesc = {};
+	colourAttachmentDesc.format = m_ColourFormat;
+	colourAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+	colourAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+	colourAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+	colourAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+	colourAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+	colourAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+	colourAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+
+	VkAttachmentReference colorReference = {};
+	colorReference.attachment = 0;
+	colorReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+	VkAttachmentReference depthReference = {};
+	depthReference.attachment = 1;
+	depthReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+	VkSubpassDescription subpassDescription = {};
+	subpassDescription.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+	subpassDescription.colorAttachmentCount = 1;
+	subpassDescription.pColorAttachments = &colorReference;
+	subpassDescription.inputAttachmentCount = 0;
+	subpassDescription.pInputAttachments = nullptr;
+	subpassDescription.preserveAttachmentCount = 0;
+	subpassDescription.pPreserveAttachments = nullptr;
+	subpassDescription.pResolveAttachments = nullptr;
+
+	VkSubpassDependency dependency = {};
+	dependency.srcSubpass = VK_SUBPASS_EXTERNAL;
+	dependency.dstSubpass = 0;
+	dependency.srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+	dependency.srcAccessMask = 0;
+	dependency.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+
+	VkRenderPassCreateInfo renderPassInfo = {};
+	renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+	renderPassInfo.attachmentCount = 1;
+	renderPassInfo.pAttachments = &colourAttachmentDesc;
+	renderPassInfo.subpassCount = 1;
+	renderPassInfo.pSubpasses = &subpassDescription;
+	renderPassInfo.dependencyCount = 1;
+	renderPassInfo.pDependencies = &dependency;
+
+	VK_CHECK_RESULT(vkCreateRenderPass(m_Device->GetVkDevice(), &renderPassInfo, nullptr, &m_RenderPass));
+
+	// Create framebuffers for every swapchain image
+	{
+		for (auto& framebuffer : m_Framebuffers)
+			vkDestroyFramebuffer(device, framebuffer, nullptr);
+
+		VkFramebufferCreateInfo frameBufferCreateInfo = {};
+		frameBufferCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		frameBufferCreateInfo.renderPass = m_RenderPass;
+		frameBufferCreateInfo.attachmentCount = 1;
+		frameBufferCreateInfo.width = m_Width;
+		frameBufferCreateInfo.height = m_Height;
+		frameBufferCreateInfo.layers = 1;
+
+		m_Framebuffers.resize(m_ImageCount);
+		for (uint32_t i = 0; i < m_Framebuffers.size(); i++)
+		{
+			frameBufferCreateInfo.pAttachments = &m_Images[i].ImageView;
+			VK_CHECK_RESULT(vkCreateFramebuffer(m_Device->GetVkDevice(), &frameBufferCreateInfo, nullptr, &m_Framebuffers[i]));
+		}
+	}
 }
 
 void VulkanSwapChain::Destroy()

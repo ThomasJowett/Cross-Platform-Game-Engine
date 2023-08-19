@@ -103,6 +103,22 @@ VulkanPhysicalDevice::VulkanPhysicalDevice()
 	else {
 		m_QueueFamilyIndices.Compute = m_QueueFamilyIndices.Graphics;
 	}
+
+	std::vector<VkFormat> depthFormats = {
+		VK_FORMAT_D32_SFLOAT_S8_UINT,
+		VK_FORMAT_D32_SFLOAT,
+		VK_FORMAT_D24_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM_S8_UINT,
+		VK_FORMAT_D16_UNORM
+	};
+
+	for (auto& format : depthFormats)
+	{
+		VkFormatProperties formatProperties;
+		vkGetPhysicalDeviceFormatProperties(m_PhysicalDevice, format, &formatProperties);
+		if (formatProperties.optimalTilingFeatures & VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT)
+			m_DepthFormat = format;
+	}
 }
 
 bool VulkanPhysicalDevice::IsExtensionSupported(const std::string& extensionName) const

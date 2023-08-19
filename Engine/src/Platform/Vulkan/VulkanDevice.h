@@ -23,6 +23,8 @@ public:
 	uint32_t GetGraphicsQueueFamilyIndex() { return m_QueueFamilyIndices.Graphics; }
 	uint32_t GetComputeQueueFamilyIndex() { return m_QueueFamilyIndices.Compute; }
 	uint32_t GetTransferQueueFamilyIndex() { return m_QueueFamilyIndices.Transfer; }
+
+	VkFormat GetDepthFormat() const { return m_DepthFormat; }
 private:
 	uint32_t GetQueueFamilyIndex(VkQueueFlagBits queueFlags);
 private:
@@ -36,6 +38,8 @@ private:
 	std::vector<VkQueueFamilyProperties> m_QueueFamilyProperties;
 	std::vector<VkDeviceQueueCreateInfo> m_QueueCreateInfos;
 	QueueFamilyIndices m_QueueFamilyIndices;
+
+	VkFormat m_DepthFormat = VK_FORMAT_UNDEFINED;
 };
 
 class VulkanDevice

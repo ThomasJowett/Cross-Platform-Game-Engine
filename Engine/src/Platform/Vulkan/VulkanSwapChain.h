@@ -41,4 +41,16 @@ private:
 	};
 	std::vector<SwapChainImage> m_Images;
 	std::vector<VkImage> m_VulkanImages;
+
+	struct
+	{
+		VkSemaphore PresentComplete = nullptr;
+		VkSemaphore RenderComplete = nullptr;
+	}m_Semaphores;
+
+	VkSubmitInfo m_SubmitInfo;
+
+	std::vector<VkFence> m_WaitFences;
+
+	std::vector<VkFramebuffer> m_Framebuffers;
 };
