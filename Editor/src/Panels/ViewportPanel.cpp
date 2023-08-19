@@ -376,15 +376,27 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.camera.GetProjectionMatrix());
-				Vector3f frontTopLeft = Vector3f(-1.0f, 1.0f, -1.0f) * projection * view;
-				Vector3f frontTopRight = Vector3f(1.0f, 1.0f, -1.0f) * projection * view;
-				Vector3f frontBottomLeft = Vector3f(-1.0f, -1.0f, -1.0f) * projection * view;
-				Vector3f frontBottomRight = Vector3f(1.0f, -1.0f, -1.0f) * projection * view;
+				projection.Transpose();
 
-				Vector3f backTopLeft = Vector3f(-1.0f, 1.0f, 1.0f) * projection * view;
-				Vector3f backTopRight = Vector3f(1.0f, 1.0f, 1.0f) * projection * view;
-				Vector3f backBottomLeft = Vector3f(-1.0f, -1.0f, 1.0f) * projection * view;
-				Vector3f backBottomRight = Vector3f(1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontTopLeft_4 = Vector4f(-1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontTopRight_4 = Vector4f(1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontBottomLeft_4 = Vector4f(-1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontBottomRight_4 = Vector4f(1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
+
+				Vector4f backTopLeft_4 = Vector4f(-1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
+				Vector4f backTopRight_4 = Vector4f(1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
+				Vector4f backBottomLeft_4 = Vector4f(-1.0f, -1.0f, 1.0f, 1.0f) * projection * view;
+				Vector4f backBottomRight_4 = Vector4f(1.0f, -1.0f, 1.0f, 1.0f) * projection * view;
+
+				Vector3f frontTopLeft = frontTopLeft_4.xyz() / frontTopLeft_4.w;
+				Vector3f frontTopRight = frontTopRight_4.xyz() / frontTopRight_4.w;
+				Vector3f frontBottomLeft = frontBottomLeft_4.xyz() / frontBottomLeft_4.w;
+				Vector3f frontBottomRight = frontBottomRight_4.xyz() / frontBottomRight_4.w;
+
+				Vector3f backTopLeft = backTopLeft_4.xyz() / backTopLeft_4.w;
+				Vector3f backTopRight = backTopRight_4.xyz() / backTopRight_4.w;
+				Vector3f backBottomLeft = backBottomLeft_4.xyz() / backBottomLeft_4.w;
+				Vector3f backBottomRight = backBottomRight_4.xyz() / backBottomRight_4.w;
 
 				Renderer2D::DrawHairLine(frontTopLeft, frontTopRight, Colours::SILVER, (int)entity);
 				Renderer2D::DrawHairLine(frontTopRight, frontBottomRight, Colours::SILVER, (int)entity);
