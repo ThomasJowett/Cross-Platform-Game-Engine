@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <numeric>
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #ifdef __MINGW32__
 	#define WIN32_LEAN_AND_MEAN
 #else
