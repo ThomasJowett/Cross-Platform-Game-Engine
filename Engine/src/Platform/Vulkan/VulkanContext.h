@@ -24,6 +24,7 @@ public:
 
 	Ref<VulkanPhysicalDevice> GetPhysicalDevice() { return m_PhysicalDevice; }
 	Ref<VulkanDevice> GetDevice() { return m_Device; }
+	Ref<VulkanSwapChain> GetSwapChain() { return m_Swapchain; }
 
 private:
 	GLFWwindow* m_WindowHandle;

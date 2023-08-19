@@ -14,6 +14,9 @@ public:
 	void Destroy();
 
 	void OnResize(int width, int height);
+
+	uint32_t GetImageCount() const { return m_ImageCount; }
+	VkRenderPass GetRenderPass() { return m_RenderPass; }
 private:
 	VkInstance m_Instance;
 	Ref<VulkanDevice> m_Device;
@@ -21,5 +24,21 @@ private:
 
 	VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
 
-	bool m_VSync;
+	uint32_t m_ImageCount = 0;
+
+	VkRenderPass m_RenderPass = nullptr;
+
+	uint32_t m_Width = 0;
+	uint32_t m_Height = 0;
+
+	VkFormat m_ColourFormat;
+	VkColorSpaceKHR m_ColourSpace;
+
+	struct SwapChainImage
+	{
+		VkImage Image = nullptr;
+		VkImageView ImageView = nullptr;
+	};
+	std::vector<SwapChainImage> m_Images;
+	std::vector<VkImage> m_VulkanImages;
 };
