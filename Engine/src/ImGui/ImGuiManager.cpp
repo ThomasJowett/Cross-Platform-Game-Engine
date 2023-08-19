@@ -15,7 +15,6 @@
 #include "imgui/backends/imgui_impl_vulkan.h"
 #include "Platform/Vulkan/VulkanContext.h"
 
-static ImGui_ImplVulkanH_Window g_WindowData;
 extern VkInstance g_VkInstance;
 
 #include "GLFW/glfw3.h"
@@ -84,6 +83,8 @@ void ImGuiManager::Init()
 			VkDevice device = vulkanContext->GetDevice()->GetVkDevice();
 			VkDescriptorPool descriptorPool;
 
+			Ref<VulkanSwapChain> swapChain = vulkanContext->GetSwapChain();
+
 			// Create Descriptor Pool
 			VkDescriptorPoolSize pool_sizes[] =
 			{
@@ -107,8 +108,6 @@ void ImGuiManager::Init()
 			pool_info.pPoolSizes = pool_sizes;
 			VK_CHECK_RESULT(vkCreateDescriptorPool(device, &pool_info, nullptr, &descriptorPool));
 
-			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
-			g_WindowData.ImageCount = 2;
 			ImGui_ImplVulkan_InitInfo initInfo = {};
 			initInfo.Instance = g_VkInstance;
 			initInfo.PhysicalDevice = vulkanContext->GetPhysicalDevice()->GetVkPhysicalDevice();
@@ -119,9 +118,9 @@ void ImGuiManager::Init()
 			initInfo.DescriptorPool = descriptorPool;
 			initInfo.Subpass = 0;
 			initInfo.MinImageCount = 2;
-			initInfo.ImageCount = wd->ImageCount;
 			initInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
 			initInfo.Allocator = nullptr;
+			initInfo.ImageCount = swapChain->GetImageCount();
 			initInfo.CheckVkResultFn = [](VkResult result) {
 				if (result == VK_SUCCESS)
 					return;
@@ -133,7 +132,7 @@ void ImGuiManager::Init()
 				VkInstance instance = static_cast<VkInstance>(user_data);
 				return reinterpret_cast<PFN_vkVoidFunction>(vkGetInstanceProcAddr(instance, function_name));
 				}, g_VkInstance);
-			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
+			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, swapChain->GetRenderPass());
 		}
 	}
 	else
