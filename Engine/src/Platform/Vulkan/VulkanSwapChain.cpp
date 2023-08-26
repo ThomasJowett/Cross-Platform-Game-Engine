@@ -2,6 +2,7 @@
 #include "VulkanSwapChain.h"
 
 #include "Core/Settings.h"
+#include "Logging/Instrumentor.h"
 #include <GLFW/glfw3.h>
 //#include <limits>
 
@@ -325,4 +326,65 @@ void VulkanSwapChain::OnResize(int width, int height)
 	vkDeviceWaitIdle(device);
 	Create(&width, &height);
 	vkDeviceWaitIdle(device);
+}
+
+void VulkanSwapChain::BeginFrame()
+{
+	PROFILE_FUNCTION();
+
+	//TODO: resource release  queue
+
+	VK_CHECK_RESULT(vkResetCommandPool(m_Device->GetVkDevice(), m_CommandBuffers[m_CurrentBufferIndex].CommandPool, 0));
+}
+
+void VulkanSwapChain::Present()
+{
+	PROFILE_FUNCTION();
+	
+	VkPipelineStageFlags waitStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.pWaitDstStageMask = &waitStageMask;
+	submitInfo.pWaitSemaphores = &m_Semaphores.PresentComplete;
+	submitInfo.waitSemaphoreCount = 1;
+	submitInfo.pSignalSemaphores = &m_Semaphores.RenderComplete;
+	submitInfo.signalSemaphoreCount = 1;
+	submitInfo.pCommandBuffers = &m_CommandBuffers[m_CurrentBufferIndex].CommandBuffer;
+	submitInfo.commandBufferCount = 1;
+
+	VK_CHECK_RESULT(vkResetFences(m_Device->GetVkDevice(), 1, &m_WaitFences[m_CurrentBufferIndex]));
+	VK_CHECK_RESULT(vkQueueSubmit(m_Device->GetGraphicsQueue(), 1, &submitInfo, m_WaitFences[m_CurrentBufferIndex]));
+
+	VkResult result;
+	{
+		PROFILE_SCOPE("Vulkan Queue Present");
+
+		VkPresentInfoKHR presentInfo = {};
+		presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+		presentInfo.pNext = NULL;
+		presentInfo.swapchainCount = 1;
+		presentInfo.pSwapchains = &m_Swapchain;
+		presentInfo.pImageIndices = &m_CurrentImageIndex;
+		presentInfo.pWaitSemaphores = &m_Semaphores.RenderComplete;
+		presentInfo.waitSemaphoreCount = 1;
+		result = vkQueuePresentKHR(m_Device->GetGraphicsQueue(), &presentInfo);
+	}
+
+	if (result != VK_SUCCESS)
+	{
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
+			OnResize(m_Width, m_Height);
+		}
+		else {
+			VK_CHECK_RESULT(result);
+		}
+	}
+
+	{
+		PROFILE_SCOPE("Vulkan wait for fences");
+		m_CurrentBufferIndex = (m_CurrentBufferIndex + 1);
+		VK_CHECK_RESULT(vkWaitForFences(m_Device->GetVkDevice(), 1, &m_WaitFences[m_CurrentBufferIndex], VK_TRUE, UINT64_MAX));
+	}
 }

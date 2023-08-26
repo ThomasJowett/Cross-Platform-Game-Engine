@@ -15,8 +15,13 @@ public:
 
 	void OnResize(int width, int height);
 
+	void BeginFrame();
+	void Present();
+
 	uint32_t GetImageCount() const { return m_ImageCount; }
 	VkRenderPass GetRenderPass() { return m_RenderPass; }
+
+	uint32_t GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
 private:
 	VkInstance m_Instance;
 	Ref<VulkanDevice> m_Device;
@@ -53,4 +58,14 @@ private:
 	std::vector<VkFence> m_WaitFences;
 
 	std::vector<VkFramebuffer> m_Framebuffers;
+
+	uint32_t m_CurrentBufferIndex = 0;
+	uint32_t m_CurrentImageIndex = 0;
+
+	struct SwapChainCommandBuffer
+	{
+		VkCommandPool CommandPool = nullptr;
+		VkCommandBuffer CommandBuffer = nullptr;
+	};
+	std::vector<SwapChainCommandBuffer> m_CommandBuffers;
 };
