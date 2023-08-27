@@ -41,25 +41,10 @@ void VulkanContext::Init()
 	appInfo.apiVersion = VK_API_VERSION_1_3;
 	appInfo.applicationVersion = VERSION;
 
-	std::vector<const char*>instanceExtensions = {
-		VK_KHR_SURFACE_EXTENSION_NAME
-	};
+	uint32_t extensions_count = 0;
+	const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
 
-#if defined(_WIN32)
-	instanceExtensions.push_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_ANDROID_KHR)
-	instanceExtensions.push_back(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME);
-#elif defined(_DIRECT2DISPLAY)
-	instanceExtensions.push_back(VK_KHR_DISPLAY_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_WAYLAND_KHR)
-	instanceExtensions.push_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_XCB_KHR)
-	instanceExtensions.push_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_MACOS_MVK)
-	instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-#elif defined(VK_USE_PLATFORM_XLIB_KHR)
-	instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
-#endif
+	std::vector<const char*> instanceExtensions(glfw_extensions, glfw_extensions + extensions_count);
 
 #if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
     instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
