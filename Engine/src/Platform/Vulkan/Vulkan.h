@@ -3,7 +3,7 @@
 #define VK_NO_PROTOTYPES
 #include <volk.h>
 
-#include <vulkan/vk_enum_string_helper.h >
+#include <vulkan/vk_enum_string_helper.h>
 
 #define VK_CHECK_RESULT(f)\
 {\
