@@ -41,9 +41,6 @@ void VulkanContext::Init()
 	appInfo.apiVersion = VK_API_VERSION_1_3;
 	appInfo.applicationVersion = VERSION;
 
-	uint32_t extensions_count = 0;
-	const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&extensions_count);
-
 	std::vector<const char*>instanceExtensions = {
 		VK_KHR_SURFACE_EXTENSION_NAME
 	};
@@ -64,7 +61,10 @@ void VulkanContext::Init()
 	instanceExtensions.push_back(VK_KHR_XLIB_SURFACE_EXTENSION_NAME);
 #endif
 
-	//std::vector<const char*> instanceExtensions(glfw_extensions, glfw_extensions + extensions_count);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
+    instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+    instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
+#endif
 
 	VkValidationFeatureEnableEXT enables[] = { VK_VALIDATION_FEATURE_ENABLE_BEST_PRACTICES_EXT };
 	VkValidationFeaturesEXT features = {};
@@ -78,15 +78,9 @@ void VulkanContext::Init()
 	instanceCreateInfo.pApplicationInfo = &appInfo;
 	instanceCreateInfo.enabledExtensionCount = (uint32_t)instanceExtensions.size();
 	instanceCreateInfo.ppEnabledExtensionNames = instanceExtensions.data();
-#ifdef VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME
-	instanceExtensions.push_back(VK_KHR_PORTABILITY_ENUMERATION_EXTENSION_NAME);
+#if defined(VK_USE_PLATFORM_MACOS_MVK) && (VK_HEADER_VERSION >= 216)
     instanceCreateInfo.flags = VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
 #endif
-
-//#if defined(VK_USE_PLATFORM_MACOS_MVK)
-//	instanceExtensions.push_back(VK_MVK_MACOS_SURFACE_EXTENSION_NAME);
-//	instanceExtensions.push_back(VK_KHR_GET_PHYSICAL_DEVICE_PROPERTIES_2_EXTENSION_NAME);
-//#endif
 
 	err = vkCreateInstance(&instanceCreateInfo, nullptr, &g_VkInstance);
 
