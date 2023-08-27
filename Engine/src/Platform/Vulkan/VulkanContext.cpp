@@ -106,7 +106,9 @@ void VulkanContext::ResizeBuffers(uint32_t width, uint32_t height)
 
 void VulkanContext::SetSwapInterval(uint32_t interval)
 {
-	glfwSwapInterval((int)interval);
+	int width = m_Swapchain->GetWidth();
+	int height = m_Swapchain->GetHeight();
+	m_Swapchain->Create(&width, &height);
 }
 
 void VulkanContext::MakeCurrent()
