@@ -51,6 +51,12 @@ public:
 
 	VkQueue GetGraphicsQueue() { return m_GraphicsQueue; }
 	Ref<VulkanPhysicalDevice> GetPyhsicalDevice() { return m_PhysicalDevice; }
+
+	VkCommandBuffer GetCommandBuffer(bool begin, bool compute = false);
+	void FlushCommandBuffer(VkCommandBuffer commandBuffer);
+	void FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue);
+
+	VkCommandBuffer CreateSecondaryCommandBuffer() const;
 private:
 private:
 	VkDevice m_Device;
@@ -58,5 +64,7 @@ private:
 	VkPhysicalDeviceFeatures m_EnabledFeatures;
 
 	VkQueue m_GraphicsQueue;
+	VkQueue m_ComputeQueue;
 
+	VkCommandPool m_CommandPool = nullptr, m_ComputeCommandPool = nullptr;
 };

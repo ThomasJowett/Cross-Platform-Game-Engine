@@ -22,6 +22,30 @@ public:
 	VkRenderPass GetRenderPass() { return m_RenderPass; }
 
 	uint32_t GetCurrentBufferIndex() const { return m_CurrentBufferIndex; }
+
+	uint32_t GetWidth() const { return m_Width; }
+	uint32_t GetHeight() const { return m_Height; }
+
+	VkCommandBuffer GetCurrentDrawCommandBuffer() { return GetDrawCommandBuffer(m_CurrentBufferIndex); }
+	VkCommandBuffer GetDrawCommandBuffer(uint32_t index)
+	{
+		ASSERT(index < m_CommandBuffers.size(), "Command buffer out of range");
+		return m_CommandBuffers.at(index).CommandBuffer;
+	}
+
+	VkFramebuffer GetCurrentFramebuffer() { return GetFramebuffer(m_CurrentImageIndex); }
+	VkFramebuffer GetFramebuffer(uint32_t index)
+	{
+		ASSERT(index < m_Framebuffers.size(), "Frame buffer out of range");
+		return m_Framebuffers.at(index);
+	}
+
+	VkCommandPool GetCurrentCommandPool() { return GetCommandPool(m_CurrentBufferIndex); }
+	VkCommandPool GetCommandPool(uint32_t index)
+	{
+		ASSERT(index < m_CommandBuffers.size(), "Command buffer out of range");
+		return m_CommandBuffers.at(index).CommandPool;
+	}
 private:
 	VkInstance m_Instance;
 	Ref<VulkanDevice> m_Device;

@@ -1,6 +1,8 @@
 #include "stdafx.h"
 #include "VulkanDevice.h"
 
+#include <GLFW/glfw3.h>
+
 extern VkInstance g_VkInstance;
 
 VulkanPhysicalDevice::VulkanPhysicalDevice()
@@ -149,15 +151,94 @@ VulkanDevice::VulkanDevice(const Ref<VulkanPhysicalDevice> physicalDevice, VkPhy
 	vkGetDeviceQueue(m_Device, m_PhysicalDevice->GetGraphicsQueueFamilyIndex(), 0, &m_GraphicsQueue);
 
 	if (result == VK_SUCCESS) {
-		//TODO create the command pool
+		VkCommandPoolCreateInfo cmdPoolInfo = {};
+		cmdPoolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->GetGraphicsQueueFamilyIndex();
+		cmdPoolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+		VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &cmdPoolInfo, nullptr, &m_CommandPool));
+
+		cmdPoolInfo.queueFamilyIndex = m_PhysicalDevice->GetComputeQueueFamilyIndex();
+		VK_CHECK_RESULT(vkCreateCommandPool(m_Device, &cmdPoolInfo, nullptr, &m_ComputeCommandPool));
+
+		vkGetDeviceQueue(m_Device, m_PhysicalDevice->GetGraphicsQueueFamilyIndex(), 0, &m_GraphicsQueue);
+		vkGetDeviceQueue(m_Device, m_PhysicalDevice->GetComputeQueueFamilyIndex(), 0, &m_ComputeQueue);
 	}
 }
 
 VulkanDevice::~VulkanDevice()
 {
 	if (m_Device) {
+		vkDestroyCommandPool(m_Device, m_CommandPool, nullptr);
+		vkDestroyCommandPool(m_Device, m_ComputeCommandPool, nullptr);
+
+		vkDeviceWaitIdle(m_Device);
 		vkDestroyDevice(m_Device, nullptr);
 	}
+}
+
+VkCommandBuffer VulkanDevice::GetCommandBuffer(bool begin, bool compute)
+{
+	VkCommandBuffer cmdBuffer;
+
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+	cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufAllocateInfo.commandPool = compute ? m_ComputeCommandPool : m_CommandPool;
+	cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+	cmdBufAllocateInfo.commandBufferCount = 1;
+
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &cmdBufAllocateInfo, &cmdBuffer));
+
+	if (begin)
+	{
+		VkCommandBufferBeginInfo cmdBufBeginInfo{};
+		cmdBufBeginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		VK_CHECK_RESULT(vkBeginCommandBuffer(cmdBuffer, &cmdBufBeginInfo));
+	}
+	return cmdBuffer;
+}
+
+void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer)
+{
+	FlushCommandBuffer(commandBuffer, m_GraphicsQueue);
+}
+
+void VulkanDevice::FlushCommandBuffer(VkCommandBuffer commandBuffer, VkQueue queue)
+{
+	ASSERT(commandBuffer != VK_NULL_HANDLE, "Command buffer is null");
+	VK_CHECK_RESULT(vkEndCommandBuffer(commandBuffer));
+
+	VkSubmitInfo submitInfo = {};
+	submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+	submitInfo.commandBufferCount = 1;
+	submitInfo.pCommandBuffers = &commandBuffer;
+
+	VkFenceCreateInfo fenceCreateInfo = {};
+	fenceCreateInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+	fenceCreateInfo.flags = 0;
+	VkFence fence;
+	VK_CHECK_RESULT(vkCreateFence(m_Device, &fenceCreateInfo, nullptr, &fence));
+
+	// Submit to the queue
+	VK_CHECK_RESULT(vkQueueSubmit(queue, 1, &submitInfo, fence));
+	// Wait for the fence to signal that command buffer has finished executing
+	VK_CHECK_RESULT(vkWaitForFences(m_Device, 1, &fence, VK_TRUE, UINT64_MAX));
+
+	vkDestroyFence(m_Device, fence, nullptr);
+	vkFreeCommandBuffers(m_Device, m_CommandPool, 1, &commandBuffer);
+}
+
+VkCommandBuffer VulkanDevice::CreateSecondaryCommandBuffer() const
+{
+	VkCommandBuffer cmdBuffer;
+
+	VkCommandBufferAllocateInfo cmdBufAllocateInfo = {};
+	cmdBufAllocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+	cmdBufAllocateInfo.commandPool = m_CommandPool;
+	cmdBufAllocateInfo.level = VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+	cmdBufAllocateInfo.commandBufferCount = 1;
+
+	VK_CHECK_RESULT(vkAllocateCommandBuffers(m_Device, &cmdBufAllocateInfo, &cmdBuffer));
+	return cmdBuffer;
 }
 
 uint32_t VulkanPhysicalDevice::GetQueueFamilyIndex(VkQueueFlagBits queueFlags)

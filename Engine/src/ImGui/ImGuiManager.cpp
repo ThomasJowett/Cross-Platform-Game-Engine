@@ -16,6 +16,7 @@
 #include "Platform/Vulkan/VulkanContext.h"
 
 extern VkInstance g_VkInstance;
+static std::vector<VkCommandBuffer> s_ImGuiCommandBuffers;
 
 #include "GLFW/glfw3.h"
 
@@ -133,6 +134,22 @@ void ImGuiManager::Init()
 				return reinterpret_cast<PFN_vkVoidFunction>(vkGetInstanceProcAddr(instance, function_name));
 				}, g_VkInstance);
 			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, swapChain->GetRenderPass());
+
+			{
+				VkCommandBuffer commandBuffer = vulkanContext->GetDevice()->GetCommandBuffer(true);
+
+				ImGui_ImplVulkan_CreateFontsTexture(commandBuffer);
+
+				vulkanContext->GetDevice()->FlushCommandBuffer(commandBuffer);
+
+				VK_CHECK_RESULT(vkDeviceWaitIdle(device));
+				ImGui_ImplVulkan_DestroyFontUploadObjects();
+			}
+
+			uint32_t framesInFlight = 3;
+			s_ImGuiCommandBuffers.resize(framesInFlight);
+			for (uint32_t i = 0; i < framesInFlight; i++)
+				s_ImGuiCommandBuffers[i] = vulkanContext->GetDevice()->CreateSecondaryCommandBuffer();
 		}
 	}
 	else
@@ -216,7 +233,82 @@ void ImGuiManager::End()
 	}
 	else if (api == RendererAPI::API::Vulkan)
 	{
-		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
+		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+
+		Ref<VulkanContext> vulkanContext = std::dynamic_pointer_cast<VulkanContext>(context);
+
+		VkDevice device = vulkanContext->GetDevice()->GetVkDevice();
+
+		Ref<VulkanSwapChain> swapChain = vulkanContext->GetSwapChain();
+
+		uint32_t width = swapChain->GetWidth();
+		uint32_t height = swapChain->GetHeight();
+
+		uint32_t commandBufferIndex = swapChain->GetCurrentBufferIndex();
+
+		VkClearValue clearValues[2];
+		clearValues[0].color = { {0.4f, 0.4, 0.4, 0.4f} };
+		clearValues[1].depthStencil = { 1.0f, 0 };
+
+		VkCommandBufferBeginInfo drawCmdBuffInfo = {};
+		drawCmdBuffInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		drawCmdBuffInfo.flags |= VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
+		drawCmdBuffInfo.pNext = nullptr;
+		VkCommandBuffer drawCommandBuffer = swapChain->GetCurrentDrawCommandBuffer();
+		VK_CHECK_RESULT(vkBeginCommandBuffer(drawCommandBuffer, &drawCmdBuffInfo));
+
+		VkRenderPassBeginInfo renderPassBegininfo = {};
+		renderPassBegininfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		renderPassBegininfo.pNext = nullptr;
+		renderPassBegininfo.renderPass = swapChain->GetRenderPass();
+		renderPassBegininfo.framebuffer = swapChain->GetCurrentFramebuffer();
+		renderPassBegininfo.renderArea.offset.x = 0;
+		renderPassBegininfo.renderArea.offset.y = 0;
+		renderPassBegininfo.renderArea.extent.width = width;
+		renderPassBegininfo.renderArea.extent.height = height;
+		renderPassBegininfo.clearValueCount = 1;
+		renderPassBegininfo.pClearValues = clearValues;
+		vkCmdBeginRenderPass(drawCommandBuffer, &renderPassBegininfo, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+
+		VkCommandBufferInheritanceInfo inheritanceInfo = {};
+		inheritanceInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_INHERITANCE_INFO;
+		inheritanceInfo.renderPass = swapChain->GetRenderPass();
+		inheritanceInfo.framebuffer = swapChain->GetCurrentFramebuffer();
+
+		VkCommandBufferBeginInfo cmdBuffInfo = {};
+		cmdBuffInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+		cmdBuffInfo.flags = VK_COMMAND_BUFFER_USAGE_RENDER_PASS_CONTINUE_BIT;
+		cmdBuffInfo.pInheritanceInfo = &inheritanceInfo;
+
+		VK_CHECK_RESULT(vkBeginCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex], &cmdBuffInfo));
+
+		VkViewport viewport = {};
+		viewport.x = 0.0f;
+		viewport.y = (float)height;
+		viewport.height = -(float)height;
+		viewport.width = (float)width;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
+		vkCmdSetViewport(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &viewport);
+
+		VkRect2D scissor = {};
+		scissor.extent.width = width;
+		scissor.extent.height = height;
+		scissor.offset.x = 0;
+		scissor.offset.y = 0;
+		vkCmdSetScissor(s_ImGuiCommandBuffers[commandBufferIndex], 0, 1, &scissor);
+
+		ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), drawCommandBuffer);
+
+		VK_CHECK_RESULT(vkEndCommandBuffer(s_ImGuiCommandBuffers[commandBufferIndex]));
+
+		std::vector<VkCommandBuffer> commandBuffers;
+		commandBuffers.push_back(s_ImGuiCommandBuffers[commandBufferIndex]);
+
+		vkCmdExecuteCommands(drawCommandBuffer, uint32_t(commandBuffers.size()), commandBuffers.data());
+
+		vkCmdEndRenderPass(drawCommandBuffer);
+		VK_CHECK_RESULT(vkEndCommandBuffer(drawCommandBuffer));
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
