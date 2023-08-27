@@ -78,9 +78,10 @@ bool Material::Load(const std::filesystem::path& filepath)
 		m_Transparent = pRoot->BoolAttribute("Transparent", false);
 		m_CastShadows = pRoot->BoolAttribute("CastShadows", true);
 
-		const char* shaderChar = pRoot->Attribute("Shader", "Standard");
+		const char* shaderChar = pRoot->Attribute("Shader");
 
-		m_Shader = shaderChar;
+		if(shaderChar)
+			m_Shader = shaderChar;
 
 		tinyxml2::XMLElement* pTextureElement = pRoot->FirstChildElement("Texture");
 
