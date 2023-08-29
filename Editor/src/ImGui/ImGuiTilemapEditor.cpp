@@ -292,8 +292,8 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				{
 				case TilemapEditor::DrawMode::Stamp:
 				case TilemapEditor::DrawMode::Random:
-					break;
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = 0;
+					break;
 				case TilemapEditor::DrawMode::Fill:
 					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], 0);
 					break;
@@ -311,6 +311,7 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
 					break;
 				case TilemapEditor::DrawMode::Random:
+					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
 					break;
 				case TilemapEditor::DrawMode::Fill:
 					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], temp);
@@ -359,6 +360,45 @@ void TilemapEditor::FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t orig
 	FloodFillTileRecursive(x - 1, y, originalTileType, newTileType);
 	FloodFillTileRecursive(x, y + 1, originalTileType, newTileType);
 	FloodFillTileRecursive(x, y - 1, originalTileType, newTileType);
+}
+
+uint32_t TilemapEditor::GetRandomSelectedTile()
+{
+	std::vector<uint32_t> selection;
+	for (size_t i = 0; i < m_SelectedTiles.size(); i++)
+	{
+		for (size_t j = 0; j < m_SelectedTiles[i].size(); j++)
+		{
+			if (m_SelectedTiles[i][j])
+				selection.push_back(i * m_SelectedTiles[i].size() + j);
+		}
+	}
+
+	if (selection.empty())
+		return -1;
+
+	if (selection.size() == 1)
+		return selection.at(0);
+
+	float totalProbabilites = 0.0f;
+
+	for (uint32_t index : selection) {
+		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
+		totalProbabilites += tile.GetProbability();
+	}
+
+	float randomValue = Random::FloatInRange(0.0f, totalProbabilites);
+
+	float cumulativeProbability = 0.0f;
+	for (uint32_t index : selection) {
+		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
+		cumulativeProbability += tile.GetProbability();
+		if (randomValue <= cumulativeProbability) {
+			return index + 1;
+		}
+	}
+
+	return -1;
 }
 
 void TilemapEditor::SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp)

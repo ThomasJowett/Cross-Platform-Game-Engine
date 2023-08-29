@@ -27,6 +27,7 @@ public:
 private:
 	void FloodFillTile(uint32_t x, uint32_t y, uint32_t tileIndex);
 	void FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t originalTileType, uint32_t newTileType);
+	uint32_t GetRandomSelectedTile();
 private:
 	bool* m_Show;
 	DrawMode m_DrawMode = DrawMode::Stamp;
