@@ -140,7 +140,7 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 	Settings::SetDefaultInt(windowStr, "Window_Mode", (int)props.windowMode);
 	Settings::SetDefaultBool(windowStr, "Window_Maximized", props.maximized);
 
-	m_Window = Window::Create(props);
+	m_Window = CreateScope<Window>(props);
 	if (m_Window) {
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
