@@ -4,6 +4,8 @@
 #include <any>
 #include <filesystem>
 
+#include <GLFW/glfw3.h>
+
 #include "core.h"
 #include "Events/Event.h"
 #include "Renderer/GraphicsContext.h"
@@ -48,39 +50,70 @@ class Window
 public:
 	using EventCallbackFn = std::function<void(Event&)>;
 
-	virtual ~Window() = default;
+	Window(const WindowProps& props);
+	~Window();
 
-	virtual void OnUpdate() = 0;
+	bool Init(const WindowProps& props);
 
-	virtual unsigned int GetWidth() const = 0;
-	virtual unsigned int GetHeight() const = 0;
+	void OnUpdate();
 
-	virtual unsigned int GetPosX() const = 0;
-	virtual unsigned int GetPosY() const = 0;
+	unsigned int GetWidth() const { return m_Data.width; }
+	unsigned int GetHeight() const { return m_Data.height; }
+
+	unsigned int GetPosX() const { return m_Data.posX; }
+	unsigned int GetPosY() const { return m_Data.posY; }
 
 	// Window attributes
-	virtual void SetEventCallback(const EventCallbackFn& callback) = 0;
-	virtual void SetVSync(bool enabled) = 0;
-	virtual bool IsVSync() const = 0;
+	void SetEventCallback(const EventCallbackFn& callback) { m_Data.eventCallback = callback; }
+	void SetVSync(bool enabled);
+	bool IsVSync() const;
 
-	virtual void SetIcon(const std::filesystem::path& path) = 0;
-	virtual void SetCursor(Cursors cursorType) = 0;
-	virtual void SetTitle(const char* title) = 0;
-	virtual const char* GetTitle() = 0;
+	void SetIcon(const std::filesystem::path& path);
+	void SetCursor(Cursors cursorType);
+	void SetTitle(const char* title);
+	const char* GetTitle();
 
-	virtual void DisableCursor() = 0;
-	virtual void EnableCursor() = 0;
+	void DisableCursor();
+	void EnableCursor();
 
-	virtual void SetCursorPosition(double xpos, double ypos) = 0;
+	void SetCursorPosition(double xpos, double ypos);
 
-	virtual void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0) = 0;
+	void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0);
 
-	virtual void MaximizeWindow() = 0; 
-	virtual void RestoreWindow() = 0;
+	void MaximizeWindow(); 
+	void RestoreWindow();
 
-	virtual std::any GetNativeWindow() const = 0;
-	virtual Ref<GraphicsContext> GetContext() const = 0;
-	
-	static Scope<Window> Create(const WindowProps& props = WindowProps());
+	GLFWwindow* GetNativeWindow() const;
+	Ref<GraphicsContext> GetContext() const;
+
+private:
+	void Shutdown();
+
+private:
+	struct WindowData
+	{
+		std::string title;
+		unsigned int width, height, posX, posY;
+		bool vSync;
+		WindowMode mode;
+		bool maximized;
+
+		EventCallbackFn eventCallback;
+	};
+
+	GLFWwindow* m_Window;
+	GLFWvidmode m_BaseVideoMode;
+	WindowData m_Data;
+
+	struct WindowModeParams {
+		unsigned int width, Height;
+		int xPos, yPos;
+	};
+
+	WindowModeParams m_OldWindowedParams;
+
+	Ref<GraphicsContext> m_Context;
+
+	GLFWcursor* m_SystemCursors[(int)Cursors::NumCursors] = {};
 };
 

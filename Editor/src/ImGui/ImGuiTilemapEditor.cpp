@@ -288,12 +288,39 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
 			{
-				m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = 0;
+				switch (m_DrawMode)
+				{
+				case TilemapEditor::DrawMode::Stamp:
+				case TilemapEditor::DrawMode::Random:
+					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = 0;
+					break;
+				case TilemapEditor::DrawMode::Fill:
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], 0);
+					break;
+				case TilemapEditor::DrawMode::Rect:
+					break;
+
+				}
 				m_TilemapComp->Rebuild();
 			}
 			else if (HasSelection())
 			{
-				m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
+				switch (m_DrawMode)
+				{
+				case TilemapEditor::DrawMode::Stamp:
+					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
+					break;
+				case TilemapEditor::DrawMode::Random:
+					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
+					break;
+				case TilemapEditor::DrawMode::Fill:
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], temp);
+					break;
+				case TilemapEditor::DrawMode::Rect:
+					break;
+				default:
+					break;
+				}
 				m_TilemapComp->Rebuild();
 			}
 		}
@@ -309,6 +336,69 @@ void TilemapEditor::Hide()
 {
 	*m_Show = false;
 	m_TilemapComp = nullptr;
+}
+
+void TilemapEditor::FloodFillTile(uint32_t x, uint32_t y, uint32_t newTileType)
+{
+	uint32_t originalTileType = m_TilemapComp->tiles[y][x];
+	if (originalTileType == newTileType)
+		return;
+	FloodFillTileRecursive(x, y, originalTileType, newTileType);
+}
+
+void TilemapEditor::FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t originalTileType, uint32_t newTileType)
+{
+	if (x < 0 || x >= m_TilemapComp->tilesWide || y < 0 || y >= m_TilemapComp->tilesHigh)
+		return;
+
+	if (m_TilemapComp->tiles[y][x] != originalTileType)
+		return;
+
+	m_TilemapComp->tiles[y][x] = newTileType;
+
+	FloodFillTileRecursive(x + 1, y, originalTileType, newTileType);
+	FloodFillTileRecursive(x - 1, y, originalTileType, newTileType);
+	FloodFillTileRecursive(x, y + 1, originalTileType, newTileType);
+	FloodFillTileRecursive(x, y - 1, originalTileType, newTileType);
+}
+
+uint32_t TilemapEditor::GetRandomSelectedTile()
+{
+	std::vector<uint32_t> selection;
+	for (size_t i = 0; i < m_SelectedTiles.size(); i++)
+	{
+		for (size_t j = 0; j < m_SelectedTiles[i].size(); j++)
+		{
+			if (m_SelectedTiles[i][j])
+				selection.push_back(i * m_SelectedTiles[i].size() + j);
+		}
+	}
+
+	if (selection.empty())
+		return -1;
+
+	if (selection.size() == 1)
+		return selection.at(0);
+
+	float totalProbabilites = 0.0f;
+
+	for (uint32_t index : selection) {
+		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
+		totalProbabilites += tile.GetProbability();
+	}
+
+	float randomValue = Random::FloatInRange(0.0f, totalProbabilites);
+
+	float cumulativeProbability = 0.0f;
+	for (uint32_t index : selection) {
+		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
+		cumulativeProbability += tile.GetProbability();
+		if (randomValue <= cumulativeProbability) {
+			return index + 1;
+		}
+	}
+
+	return -1;
 }
 
 void TilemapEditor::SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp)
