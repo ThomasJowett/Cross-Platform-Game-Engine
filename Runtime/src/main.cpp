@@ -37,7 +37,7 @@ int main(int argc, char* argv[])
 	file.read((char*)&startupScene[0], size);
 	file.close();
 
-	Window* window = app->CreateDesktopWindow(WindowProps(gameName, 1920, 1080, 100, 100));
+	DesktopWindow* window = app->CreateDesktopWindow(WindowProps(gameName, 1920, 1080, 100, 100));
 
 	if (!window)
 		return EXIT_FAILURE;

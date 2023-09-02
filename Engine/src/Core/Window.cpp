@@ -31,26 +31,26 @@ static void	GLFWErrorCallback(int error, const char* description)
 	ENGINE_ERROR("GLFW Error {0} {1}", error, description);
 }
 
-Window::Window(const WindowProps& props)
+DesktopWindow::DesktopWindow(const WindowProps& props)
 {
 	PROFILE_FUNCTION();
 	Init(props);
 }
 
-Window::~Window()
+DesktopWindow::~DesktopWindow()
 {
 	PROFILE_FUNCTION();
 	Shutdown();
 }
 
-void Window::OnUpdate()
+void DesktopWindow::OnUpdate()
 {
 	PROFILE_FUNCTION();
 	glfwPollEvents();
 	m_Context->SwapBuffers();
 }
 
-void Window::SetVSync(bool enabled)
+void DesktopWindow::SetVSync(bool enabled)
 {
 	PROFILE_FUNCTION();
 
@@ -60,12 +60,12 @@ void Window::SetVSync(bool enabled)
 	m_Data.vSync = enabled;
 }
 
-bool Window::IsVSync() const
+bool DesktopWindow::IsVSync() const
 {
 	return m_Data.vSync;
 }
 
-void Window::SetIcon(const std::filesystem::path& path)
+void DesktopWindow::SetIcon(const std::filesystem::path& path)
 {
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(0);
@@ -81,7 +81,7 @@ void Window::SetIcon(const std::filesystem::path& path)
 	stbi_image_free(data);
 }
 
-void Window::SetCursor(Cursors cursorType)
+void DesktopWindow::SetCursor(Cursors cursorType)
 {
 	PROFILE_FUNCTION();
 
@@ -117,17 +117,17 @@ void Window::SetCursor(Cursors cursorType)
 	glfwSetCursor(m_Window, m_SystemCursors[(int)cursorType]);
 }
 
-void Window::SetTitle(const char* title)
+void DesktopWindow::SetTitle(const char* title)
 {
 	glfwSetWindowTitle(m_Window, title);
 }
 
-const char* Window::GetTitle()
+const char* DesktopWindow::GetTitle()
 {
 	return m_Data.title.c_str();
 }
 
-void Window::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
+void DesktopWindow::SetWindowMode(WindowMode mode, unsigned int width, unsigned int height)
 {
 	if (!m_Window)
 		return;
@@ -189,42 +189,42 @@ void Window::SetWindowMode(WindowMode mode, unsigned int width, unsigned int hei
 	glfwSetWindowMonitor(m_Window, monitor, m_OldWindowedParams.xPos, m_OldWindowedParams.yPos, width, height, m_BaseVideoMode.refreshRate);
 }
 
-void Window::MaximizeWindow()
+void DesktopWindow::MaximizeWindow()
 {
 	glfwMaximizeWindow(m_Window);
 }
 
-void Window::RestoreWindow()
+void DesktopWindow::RestoreWindow()
 {
 	glfwRestoreWindow(m_Window);
 }
 
-GLFWwindow* Window::GetNativeWindow() const
+GLFWwindow* DesktopWindow::GetNativeWindow() const
 {
 	return m_Window;
 }
 
-Ref<GraphicsContext> Window::GetContext() const
+Ref<GraphicsContext> DesktopWindow::GetContext() const
 {
 	return m_Context;
 }
 
-void Window::DisableCursor()
+void DesktopWindow::DisableCursor()
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
 
-void Window::EnableCursor()
+void DesktopWindow::EnableCursor()
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Window::SetCursorPosition(double xpos, double ypos)
+void DesktopWindow::SetCursorPosition(double xpos, double ypos)
 {
 	glfwSetCursorPos(m_Window, xpos, ypos);
 }
 
-bool Window::Init(const WindowProps& props)
+bool DesktopWindow::Init(const WindowProps& props)
 {
 	PROFILE_FUNCTION();
 
@@ -503,7 +503,7 @@ bool Window::Init(const WindowProps& props)
 	return true;
 }
 
-void Window::Shutdown()
+void DesktopWindow::Shutdown()
 {
 	PROFILE_FUNCTION();
 

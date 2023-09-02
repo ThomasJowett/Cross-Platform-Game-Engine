@@ -45,13 +45,13 @@ struct WindowProps
 };
 
 // Desktop system window
-class Window
+class DesktopWindow
 {
 public:
 	using EventCallbackFn = std::function<void(Event&)>;
 
-	Window(const WindowProps& props);
-	~Window();
+	DesktopWindow(const WindowProps& props);
+	~DesktopWindow();
 
 	bool Init(const WindowProps& props);
 

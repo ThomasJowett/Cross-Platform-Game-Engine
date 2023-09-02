@@ -22,10 +22,10 @@ public:
 	// Gets the static instance of the application
 	static inline Application& Get() { return *s_Instance; }
 
-	static Window* CreateDesktopWindow(const WindowProps& props) { return Get().CreateDesktopWindowImpl(props); }
+	static DesktopWindow* CreateDesktopWindow(const WindowProps& props) { return Get().CreateDesktopWindowImpl(props); }
 
-	// Get the applications Window object
-	static Window* GetWindow() { return Get().GetWindowImpl(); }
+	// Get the applications Desktop Window object
+	static DesktopWindow* GetWindow() { return Get().GetWindowImpl(); }
 
 	// Set whether to show Dear ImGui
 	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
@@ -60,8 +60,8 @@ public:
 	static void CallEvent(Event& event) { s_EventCallback(event); }
 
 private:
-	inline Window* GetWindowImpl() { return m_Window.get(); }
-	Window* CreateDesktopWindowImpl(const WindowProps& props);
+	inline DesktopWindow* GetWindowImpl() { return m_Window.get(); }
+	DesktopWindow* CreateDesktopWindowImpl(const WindowProps& props);
 	void Run();
 	int Init(int argc, char* argv[]);
 	void OnEvent(Event& e);
@@ -78,7 +78,7 @@ private:
 protected:
 	LayerStack m_LayerStack;
 private:
-	Scope<Window> m_Window;
+	Scope<DesktopWindow> m_Window;
 	Scope<ImGuiManager> m_ImGuiManager;
 	bool m_Running = false;
 	bool m_Minimized = false;
