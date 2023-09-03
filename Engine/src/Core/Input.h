@@ -3,9 +3,13 @@
 #include "core.h"
 #include "Renderer/RendererAPI.h"
 
+struct GLFWwindow;
+
 class Input
 {
 public: 
+	Input(GLFWwindow* windowHandle);
+
 	inline static bool IsKeyPressed(int keycode) { return s_Instance->IsKeyPressedImpl(keycode); }
 
 	inline static bool IsMouseButtonPressed(int button) 
@@ -25,20 +29,22 @@ public:
 	inline static double GetMouseWheelHorizontal()
 		{ return s_Instance->m_MouseWheelX; }
 
-	static void Init();
+	static void Init(GLFWwindow* windowHandle);
 
 	static void SetMouseWheel(double X, double Y);
 	static void ClearInputData() { s_Instance->m_MouseWheelX = 0.0f; s_Instance->m_MouseWheelY = 0.0f; }
 protected:
-	virtual bool IsKeyPressedImpl(int keycode) = 0;
-	virtual bool IsMouseButtonPressedImpl(int button) = 0;
-	virtual std::pair<double, double> GetMousePosImpl() = 0;
-	virtual double GetMouseXImpl() = 0;
-	virtual double GetMouseYImpl() = 0;
-	virtual bool IsJoystickButtonPressedImpl(int joystickSlot, int button) = 0;
-	virtual double GetJoystickAxisImpl(int joystickSlot, int axis) = 0;
+	virtual bool IsKeyPressedImpl(int keycode);
+	virtual bool IsMouseButtonPressedImpl(int button);
+	virtual std::pair<double, double> GetMousePosImpl();
+	virtual double GetMouseXImpl();
+	virtual double GetMouseYImpl();
+	virtual bool IsJoystickButtonPressedImpl(int joystickSlot, int button);
+	virtual double GetJoystickAxisImpl(int joystickSlot, int axis);
 private:
 	static Scope<Input> s_Instance;
 
 	double m_MouseWheelX = 0.0f, m_MouseWheelY = 0.0f;
+
+	GLFWwindow* m_Window;
 };

@@ -115,7 +115,6 @@ int Application::Init(int argc, char* argv[])
 	
 	Random::Init();
 	LuaManager::Init();
-	Input::Init();
 
 	if(RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
@@ -152,6 +151,7 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 
 		Renderer::Init();
 		Font::Init();
+		Input::Init(m_Window->GetNativeWindow());
 
 		if (!m_ImGuiManager) {
 			m_ImGuiManager = CreateScope<ImGuiManager>();

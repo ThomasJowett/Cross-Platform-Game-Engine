@@ -59,8 +59,6 @@ file(GLOB ENGINE_FILES
     src/Physics/PhysicsEngine2D.h
     src/Physics/PhysicsMaterial.cpp
     src/Physics/PhysicsMaterial.h
-    src/Platform/Windows/glfwInput.cpp
-    src/Platform/Windows/glfwInput.h
     src/Renderer/Buffer.cpp
     src/Renderer/Buffer.h
     src/Renderer/Camera.h
