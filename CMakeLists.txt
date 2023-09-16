@@ -52,7 +52,7 @@ ELSE()
 ENDIF()
 
 if (MSVC)
-    add_compile_options(/MP)
+    add_compile_options(/MP /ZI /JMC)
     set(DEFAULT_STARTUP_TARGET Editor)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DEFAULT_STARTUP_TARGET})
 endif()
