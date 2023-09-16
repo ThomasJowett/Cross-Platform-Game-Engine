@@ -415,6 +415,32 @@ void BindInput(sol::state& state)
 	input.set_function("GetJoyStickCount", &Joysticks::GetJoystickCount);
 	input.set_function("IsJoystickButtonPressed", &Input::IsJoystickButtonPressed);
 	input.set_function("GetJoystickAxis", &Input::GetJoystickAxis);
+
+	std::initializer_list<std::pair<sol::string_view, int>> cursorItems =
+	{
+		{ "Arrow", (int)Cursors::Arrow},
+		{ "IBeam", (int)Cursors::IBeam},
+		{ "CrossHair", (int)Cursors::CrossHair},
+		{ "PointingHand", (int)Cursors::PointingHand},
+		{ "ResizeEW", (int)Cursors::ResizeEW},
+		{ "ResizeNS", (int)Cursors::ResizeNS},
+		{ "ResizeNWSE", (int)Cursors::ResizeNWSE},
+		{ "ResizeNESW", (int)Cursors::ResizeNESW},
+		{ "ResizeAll", (int)Cursors::ResizeAll},
+		{ "NotAllowed", (int)Cursors::NotAllowed}
+	};
+
+	state.new_enum("Cursors", cursorItems);
+
+	SetFunction(input, "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
+		{ return Application::GetWindow()->SetCursor(cursor); });
+	SetFunction(input, "DisableCursor", "Disable the cursor", [](sol::this_state s)
+		{ return Application::GetWindow()->DisableCursor(); });
+	SetFunction(input, "EnableCursor", "Enable the cursor", [](sol::this_state s)
+		{ return Application::GetWindow()->EnableCursor(); });
+	SetFunction(input, "SetCursorPosition", "Set the position of the cursor", [](sol::this_state s, double xPos, double yPos)
+		{ return Application::GetWindow()->SetCursorPosition(xPos, yPos); });
+
 }
 
 //--------------------------------------------------------------------------------------------------------------

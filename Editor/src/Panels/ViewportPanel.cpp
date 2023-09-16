@@ -1089,6 +1089,24 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
+	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+	{
+		SceneManager::ChangeSceneState(SceneState::Edit);
+	}
+
+
+	if (SceneManager::GetSceneState() == SceneState::Play) {
+		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
+		{
+			Application::GetWindow()->EnableCursor();
+			ImGuiManager::SetOverrideMouseCursor(true);
+		}
+	}
+	else if (alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P)))
+	{
+		SceneManager::ChangeSceneState(SceneState::Play);
+	}
+
 	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
 		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q)))

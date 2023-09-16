@@ -172,6 +172,12 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 			ChangeScene(s_EditingScene);
 			s_EditingScene.clear();
 		}
+		if (sceneState == SceneState::Play)
+			ImGuiManager::SetOverrideMouseCursor(false);
+		else {
+			Application::GetWindow()->EnableCursor();
+			ImGuiManager::SetOverrideMouseCursor(true);
+		}
 		return true;
 	}
 	return false;

@@ -59,7 +59,7 @@ void ImGuiManager::Init()
 	if (api == RendererAPI::API::Directx11)
 	{
 #ifdef __WINDOWS__
-		if(ImGui_ImplGlfw_InitForOther(Application::GetWindow()->GetNativeWindow(), true))
+		if (ImGui_ImplGlfw_InitForOther(Application::GetWindow()->GetNativeWindow(), true))
 		{
 			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
 		}
@@ -68,7 +68,7 @@ void ImGuiManager::Init()
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
-		
+
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
@@ -173,5 +173,20 @@ void ImGuiManager::End()
 		ImGui::UpdatePlatformWindows();
 		ImGui::RenderPlatformWindowsDefault();
 		glfwMakeContextCurrent(backup_current_context);
+	}
+}
+
+void ImGuiManager::SetOverrideMouseCursor(bool overrideCursor)
+{
+	ImGuiIO& io = ImGui::GetIO();
+	if (overrideCursor) {
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+		io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+	}
+	else {
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+		io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
 	}
 }
