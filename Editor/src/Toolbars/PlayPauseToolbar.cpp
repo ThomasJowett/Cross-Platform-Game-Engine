@@ -52,7 +52,7 @@ void PlayPauseToolbar::PlayButton()
 			|| SceneManager::GetSceneState() == SceneState::Edit)
 			SceneManager::ChangeSceneState(SceneState::Play);
 	}
-	ImGui::Tooltip("Play");
+	ImGui::Tooltip("Play (Alt + P)");
 	ImGui::SameLine();
 }
 

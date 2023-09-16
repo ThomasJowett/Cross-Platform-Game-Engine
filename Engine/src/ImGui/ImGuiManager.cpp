@@ -175,18 +175,3 @@ void ImGuiManager::End()
 		glfwMakeContextCurrent(backup_current_context);
 	}
 }
-
-void ImGuiManager::SetOverrideMouseCursor(bool overrideCursor)
-{
-	ImGuiIO& io = ImGui::GetIO();
-	if (overrideCursor) {
-		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
-		io.ConfigFlags &= ~ImGuiConfigFlags_NavNoCaptureKeyboard;
-		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
-	}
-	else {
-		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-		io.ConfigFlags |= ImGuiConfigFlags_NavNoCaptureKeyboard;
-		io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
-	}
-}

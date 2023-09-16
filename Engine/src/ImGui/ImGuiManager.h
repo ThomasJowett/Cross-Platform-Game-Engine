@@ -20,8 +20,6 @@ public:
 	bool IsUsing() { return m_UsingImGui; }
 	void SetIsUsing(bool isUsing) { m_UsingImGui = isUsing; }
 
-	static void SetOverrideMouseCursor(bool overrideCursor);
-
 private:
 	bool m_UsingImGui;
 

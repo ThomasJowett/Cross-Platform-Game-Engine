@@ -1099,7 +1099,10 @@ void ViewportPanel::HandleKeyboardInputs()
 		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
 		{
 			Application::GetWindow()->EnableCursor();
-			ImGuiManager::SetOverrideMouseCursor(true);
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		}
 	}
 	else if (alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P)))

@@ -4,6 +4,7 @@
 #include "Core/Application.h"
 #include "AssetManager.h"
 #include "Core/Settings.h"
+#include "imgui.h"
 
 Scope<Scene> SceneManager::s_CurrentScene;
 std::filesystem::path SceneManager::s_NextFilepath;
@@ -172,11 +173,15 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 			ChangeScene(s_EditingScene);
 			s_EditingScene.clear();
 		}
-		if (sceneState == SceneState::Play)
-			ImGuiManager::SetOverrideMouseCursor(false);
+		ImGuiIO& io = ImGui::GetIO();
+		if (sceneState == SceneState::Play) {
+			io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+		}
 		else {
 			Application::GetWindow()->EnableCursor();
-			ImGuiManager::SetOverrideMouseCursor(true);
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		}
 		return true;
 	}
