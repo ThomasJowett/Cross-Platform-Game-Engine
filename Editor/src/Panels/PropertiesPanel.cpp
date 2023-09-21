@@ -330,12 +330,34 @@ void PropertiesPanel::DrawComponents(Entity entity)
 		});
 
 	// Circle Renderer------------------------------------------------------------------------------------------------------------------
-	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [](auto& circleRenderer)
+	DrawComponent<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity, [&](auto& circleRenderer)
 		{
+			ImGui::BeginGroup();
+			if (!m_EditCircleRendererCommand.first)
+				m_EditCircleRendererCommand.second = CreateRef<EditComponentCommand<CircleRendererComponent>>(entity);
+
+			Colour prevColour = circleRenderer.colour;
 			float* colour[4] = { &circleRenderer.colour.r, &circleRenderer.colour.g, &circleRenderer.colour.b, &circleRenderer.colour.a };
-			Dirty(ImGui::ColorEdit4("Colour", colour[0]));
-			Dirty(ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f));
-			Dirty(ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f));
+			if (ImGui::ColorEdit4("Colour", colour[0])) {
+				SceneManager::CurrentScene()->MakeDirty();
+				if (prevColour != circleRenderer.colour)
+					m_EditCircleRendererCommand.first = true;
+			}
+			if (ImGui::DragFloat("Thickness", &circleRenderer.thickness, 0.025f, 0.0f, 1.0f)) {
+				SceneManager::CurrentScene()->MakeDirty();
+				m_EditCircleRendererCommand.first = true;
+			}
+			if (ImGui::DragFloat("Fade", &circleRenderer.fade, 0.00025f, 0.0f, 1.0f)) {
+				SceneManager::CurrentScene()->MakeDirty();
+				m_EditCircleRendererCommand.first = true;
+			}
+
+			ImGui::EndGroup();
+			if (!ImGui::IsItemActive() && m_EditCircleRendererCommand.first) {
+				HistoryManager::AddHistoryRecord(m_EditCircleRendererCommand.second); 
+				m_EditCircleRendererCommand.first = false;
+				m_EditCircleRendererCommand.second = nullptr;
+			}
 		});
 
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
