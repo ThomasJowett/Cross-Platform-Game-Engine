@@ -63,6 +63,8 @@ public:
 	unsigned int GetPosX() const { return m_Data.posX; }
 	unsigned int GetPosY() const { return m_Data.posY; }
 
+	WindowMode GetWindowMode() const { return m_Data.mode; }
+
 	// Window attributes
 	void SetEventCallback(const EventCallbackFn& callback) { m_Data.eventCallback = callback; }
 	void SetVSync(bool enabled);
