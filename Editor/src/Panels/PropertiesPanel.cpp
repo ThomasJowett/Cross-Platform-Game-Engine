@@ -918,6 +918,24 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				Dirty(ImGui::Vector("Screen Position", billboard.screenPosition, 0.0f));
 		});
 
+	DrawComponent<CanvasComponent>("Canvas", entity, [](auto& canvas)
+		{
+			ImGui::InputFloat("Pixels per unit", &canvas.pixelPerUnit, 0.1f);
+		});
+
+	DrawComponent<ButtonComponent>("Button", entity, [](auto& button)
+		{
+			ImGui::Texture2DEdit("Normal", button.normalTexture);
+			ImGui::Texture2DEdit("Hovered", button.hoveredTexture);
+			ImGui::Texture2DEdit("Clicked", button.clickedTexture);
+			ImGui::Texture2DEdit("disabled", button.disabledTexture);
+
+			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
+			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
+
+			ImGui::Checkbox("Disabled", &button.disabled);
+		});
+
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
@@ -976,6 +994,12 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity);
 		AddComponentMenuItem<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity);
 		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
+
+		if (ImGui::BeginMenu("UI Widgets")) {
+			AddComponentMenuItem<CanvasComponent>("Canvas", entity);
+			AddComponentMenuItem<ButtonComponent>("Button", entity);
+			ImGui::EndMenu();
+		}
 
 		std::vector<std::filesystem::path> scripts = Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT));
 

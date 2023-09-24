@@ -29,7 +29,7 @@ private:
 
 // Serious issue and a failure of something important
 #define ENGINE_ERROR(...)		::Logger::GetEngineLogger()->error(__VA_ARGS__);\
-								DBG_OUTPUT("\n");
+								DBG_OUTPUT("\n")\
 
 // Indicates you may have a problem or unusual situation
 #define ENGINE_WARN(...)		::Logger::GetEngineLogger()->warn(__VA_ARGS__);\

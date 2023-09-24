@@ -6,8 +6,11 @@
 #include "Renderer/Material.h"
 
 #include "Core/Colour.h"
+#include "Core/Asset.h"
 
 #include "TinyXml2/tinyxml2.h"
+#include "Scene/AssetManager.h"
+
 
 namespace SerializationUtils
 {
@@ -33,4 +36,69 @@ void Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture);
 
 std::string RelativePath(const std::filesystem::path& path);
 std::filesystem::path AbsolutePath(const char* path);
+
+template<typename Archive>
+void SaveAssetToArchive(Archive& archive, const Ref<Asset>& asset)
+{
+    std::string relativePath;
+    if (asset && !asset->GetFilepath().empty())
+    {
+        relativePath = FileUtils::RelativePath(asset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+    }
+    archive(relativePath);
+}
+
+template<typename Archive, typename Asset>
+void LoadAssetFromArchive(Archive& archive, Ref<Asset>& asset)
+{
+    std::string relativePath;
+    archive(relativePath);
+    if (!relativePath.empty())
+    {
+        asset = AssetManager::GetAsset<Asset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+    }
+    else
+    {
+        asset.reset();
+    }
+}
+
+template<typename Archive>
+void SaveTextureToArchive(Archive& archive, const Ref<Texture2D>& texture)
+{
+	std::string relativePath;
+	if (texture && !texture->GetFilepath().empty())
+	{
+		relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+	}
+	archive(relativePath);
+	if (!relativePath.empty())
+	{
+		archive((int)texture->GetFilterMethod());
+		archive((int)texture->GetWrapMethod());
+	}
+}
+
+template<typename Archive>
+void LoadTextureFromArchive(Archive& archive, Ref<Texture2D>& texture)
+{
+	std::string relativePath;
+	archive(relativePath);
+	if (!relativePath.empty())
+	{
+		texture = AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		int filterMethod, wrapMethod;
+		archive(filterMethod);
+		archive(wrapMethod);
+		if (texture)
+		{
+			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
+			texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
+		}
+	}
+	else
+	{
+		texture.reset();
+	}
+}
 }

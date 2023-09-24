@@ -61,26 +61,14 @@ private:
 	{
 		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
 
-		std::string relativePath;
-		if (tileset && !tileset->GetFilepath().empty())
-			relativePath = FileUtils::RelativePath(tileset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(relativePath);
+		SerializationUtils::SaveAssetToArchive(archive, tileset);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-		{
-			tileset = AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-		}
-		else
-		{
-			tileset.reset();
-		}
+		SerializationUtils::LoadAssetFromArchive(archive, tileset);
 
 		Rebuild();
 		runtimeBody = nullptr;

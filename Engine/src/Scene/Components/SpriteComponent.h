@@ -23,17 +23,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		std::string relativePath;
-		if (texture && !texture->GetFilepath().empty())
-		{
-			relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		}
-		archive(relativePath);
-		if (!relativePath.empty())
-		{
-			archive((int)texture->GetFilterMethod());
-			archive((int)texture->GetWrapMethod());
-		}
+		SerializationUtils::SaveTextureToArchive(archive, texture);
 		archive(tint);
 		archive(tilingFactor);
 	}
@@ -41,24 +31,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-		{
-			texture = AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-			int filterMethod, wrapMethod;
-			archive(filterMethod);
-			archive(wrapMethod);
-			if (texture)
-			{
-				texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
-				texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
-			}
-		}
-		else
-		{
-			texture.reset();
-		}
+		SerializationUtils::LoadTextureFromArchive(archive, texture);
 		archive(tint);
 		archive(tilingFactor);
 	}

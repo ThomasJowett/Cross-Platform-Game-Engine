@@ -432,7 +432,7 @@ void HierarchyPanel::CreateMenu()
 		}
 		m_SelectedEntity = entity;
 	}
-	if (ImGui::MenuItem("UI"))
+	if (ImGui::BeginMenu("UI"))
 	{
 		if (ImGui::MenuItem("Canvas"))
 		{
@@ -447,13 +447,14 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Button"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Button");
-			//entity.AddComponent<UIButtonComponent>
+			entity.AddComponent<ButtonComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
 				m_SelectedEntity.AddChild(entity);
 			}
 			m_SelectedEntity = entity;
 		}
+		ImGui::EndMenu();
 	}
 }
 

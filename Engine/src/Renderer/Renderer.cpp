@@ -215,7 +215,7 @@ void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const 
 	command.indexCount = indexCount ? indexCount : mesh->GetIndexCount();
 	command.startIndex = startIndex;
 	command.vertexOffset = vertexOffset;
-	command.material = material.get();
+	command.material = material ? material.get() : Material::GetDefaultMaterial().get();
 	command.mesh = mesh.get();
 	command.transform = transform;
 
