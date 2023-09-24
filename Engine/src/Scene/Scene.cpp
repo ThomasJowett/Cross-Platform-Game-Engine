@@ -68,7 +68,6 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
-	entity.AddComponent<TransformComponent>();
 	m_Dirty = true;
 	return entity;
 }
@@ -99,7 +98,8 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
 
-	newEntity.GetTransform().position += position;
+	if(TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>(); transformComp)
+		transformComp->position += position;
 
 	if(m_PhysicsEngine2D)
 		m_PhysicsEngine2D->InitializeEntity(newEntity);

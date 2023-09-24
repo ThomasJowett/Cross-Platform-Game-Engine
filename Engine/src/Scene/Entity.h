@@ -79,9 +79,6 @@ public:
 		return m_Scene->m_Registry.try_get<T>(m_EntityHandle);
 	}
 
-	// Get the transform component
-	TransformComponent& GetTransform();
-
 	// Get the name
 	std::string& GetName();
 	void SetName(const std::string_view name);

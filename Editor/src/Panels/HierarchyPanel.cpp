@@ -275,11 +275,22 @@ void HierarchyPanel::CreateMenu()
 		}
 		m_SelectedEntity = entity;
 	}
+	if (ImGui::MenuItem("Create World entity"))
+	{
+		Entity entity = SceneManager::CurrentScene()->CreateEntity("New Entity");
+		entity.AddComponent<TransformComponent>();
+		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+		if (m_SelectedEntity) {
+			m_SelectedEntity.AddChild(entity);
+		}
+		m_SelectedEntity = entity;
+	}
 	if (ImGui::BeginMenu("3D Object"))
 	{
 		if (ImGui::MenuItem("Cube"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cube");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cube);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -290,6 +301,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Sphere"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Sphere");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Sphere);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -300,6 +312,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Plane"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Plane");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Plane);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -310,6 +323,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Cylinder"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cylinder");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cylinder);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -320,6 +334,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Cone"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Cone");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Cone);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -330,6 +345,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Torus"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Torus");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PrimitiveComponent>(PrimitiveComponent::Shape::Torus);
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -348,6 +364,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Sprite"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Sprite");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<SpriteComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -358,6 +375,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Animated Sprite"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Animated Sprite");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<AnimatedSpriteComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -368,6 +386,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Circle"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Circle");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<CircleRendererComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -378,6 +397,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Tilemap"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Tilemap");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<TilemapComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -400,6 +420,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Point Light"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Point Light");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<PointLightComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -425,6 +446,7 @@ void HierarchyPanel::CreateMenu()
 	if (ImGui::MenuItem("Camera"))
 	{
 		Entity entity = SceneManager::CurrentScene()->CreateEntity("Camera");
+		entity.AddComponent<TransformComponent>();
 		entity.AddComponent<CameraComponent>();
 		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 		if (m_SelectedEntity) {
@@ -437,6 +459,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Canvas"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Canvas");
+			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<CanvasComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -447,6 +470,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Button"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Button");
+			//entity.AddComponent<WidgetComponent>();
 			entity.AddComponent<ButtonComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {

@@ -107,12 +107,13 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	pElement->SetAttribute("Name", entity.GetName().c_str());
 	pElement->SetAttribute("ID", entity.GetID().to_string().c_str());
 
-	TransformComponent const& transformcomp = entity.GetTransform();
-
-	tinyxml2::XMLElement* pTransformElement = pElement->InsertNewChildElement("Transform");
-	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp.position);
-	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Rotation"), transformcomp.rotation);
-	SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Scale"), transformcomp.scale);
+	if (TransformComponent* transformcomp = entity.TryGetComponent<TransformComponent>())
+	{
+		tinyxml2::XMLElement* pTransformElement = pElement->InsertNewChildElement("Transform");
+		SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Position"), transformcomp->position);
+		SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Rotation"), transformcomp->rotation);
+		SerializationUtils::Encode(pTransformElement->InsertNewChildElement("Scale"), transformcomp->scale);
+	}
 
 	if (entity.HasComponent<CameraComponent>())
 	{
@@ -525,7 +526,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	// Transform ----------------------------------------------------------------------------------------------------------
 	if (tinyxml2::XMLElement* pTransformComponentElement = pEntityElement->FirstChildElement("Transform"))
 	{
-		TransformComponent& transformComp = entity.GetTransform();
+		TransformComponent& transformComp = entity.GetOrAddComponent<TransformComponent>();
 		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Position"), transformComp.position);
 		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Rotation"), transformComp.rotation);
 		SerializationUtils::Decode(pTransformComponentElement->FirstChildElement("Scale"), transformComp.scale);
