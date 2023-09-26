@@ -64,6 +64,8 @@ public:
 	void SetHasCollision(bool hasCollision) { m_HasCollision = hasCollision; };
 	bool HasCollision() { return m_HasCollision; }
 
+	size_t GetNumberOfTiles() { return m_Tiles.size(); }
+
 private:
 	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
 	Ref<SubTexture2D> m_Texture;

@@ -28,6 +28,8 @@ void TilemapComponent::Rebuild()
 					{ 0.0f, 0.0f }
 	};
 
+	size_t maxTileIndex = tileset->GetNumberOfTiles();
+
 	if (orientation == Orientation::orthogonal)
 	{
 		// 0,0________ X
@@ -43,6 +45,11 @@ void TilemapComponent::Rebuild()
 			{
 				if (tiles[i][j] == 0)
 					continue;
+
+				if (tiles[i][j] > maxTileIndex) {
+					tiles[i][j] = 0;
+					continue;
+				}
 
 				tileset->SetCurrentTile(tiles[i][j] - 1);
 				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
@@ -75,6 +82,11 @@ void TilemapComponent::Rebuild()
 			{
 				if (tiles[i][j] == 0)
 					continue;
+
+				if (tiles[i][j] > maxTileIndex) {
+					tiles[i][j] = 0;
+					continue;
+				}
 
 				tileset->SetCurrentTile(tiles[i][j] - 1);
 				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
