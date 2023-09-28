@@ -8,6 +8,7 @@
 #include "Renderer/Texture.h"
 #include "Renderer/Material.h"
 #include "Scene/AssetManager.h"
+#include "Utilities/SerializationUtils.h"
 
 struct SpriteComponent
 {

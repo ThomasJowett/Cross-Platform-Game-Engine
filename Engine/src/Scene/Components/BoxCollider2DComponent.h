@@ -6,6 +6,7 @@
 #include "Physics/PhysicsMaterial.h"
 
 #include "Utilities/FileUtils.h"
+#include "Utilities/SerializationUtils.h"
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 

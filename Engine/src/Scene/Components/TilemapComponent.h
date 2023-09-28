@@ -3,6 +3,7 @@
 #include "Renderer/Tileset.h"
 #include "Core/Colour.h"
 #include "Utilities/FileUtils.h"
+#include "Utilities/SerializationUtils.h"
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 #include "Renderer/Mesh.h"
