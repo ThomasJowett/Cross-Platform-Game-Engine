@@ -517,7 +517,8 @@ void HierarchyPanel::Cut()
 void HierarchyPanel::Paste()
 {
 	m_SelectedEntity = SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), ImGui::GetClipboardText(), true);
-	HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
+	if(m_SelectedEntity)
+		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 }
 
 void HierarchyPanel::Duplicate()

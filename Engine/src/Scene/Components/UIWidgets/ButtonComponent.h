@@ -4,9 +4,11 @@
 
 #include "Renderer/Texture.h"
 
-#include "Widget.h"
+#include "WidgetComponent.h"
 
-struct Button : public Widget
+#include "Utilities/SerializationUtils.h"
+
+struct ButtonComponent
 {
 	Ref<Texture2D> icon;
 	Ref<Texture2D> normalTexture;
@@ -14,40 +16,32 @@ struct Button : public Widget
 	Ref<Texture2D> clickedTexture;
 	Ref<Texture2D> disabledTexture;
 
+	Colour normalTint = Colours::WHITE;
+	Colour hoveredTint = Colours::WHITE;
+	Colour clickedTint = Colours::WHITE;
+	Colour disabledTint = Colours::WHITE;
 
+	bool disabled = false;
 
 private:
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(tint);
-		std::string relativePath;
-		if (spriteSheet && !spriteSheet->GetFilepath().empty())
-			relativePath = FileUtils::RelativePath(spriteSheet->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(relativePath);
-		archive(animation);
+		SerializationUtils::SaveTextureToArchive(archive, normalTexture);
+		SerializationUtils::SaveTextureToArchive(archive, hoveredTexture);
+		SerializationUtils::SaveTextureToArchive(archive, clickedTexture);
+		SerializationUtils::SaveTextureToArchive(archive, disabledTexture);
+		archive(normalTint, hoveredTint, clickedTint, disabledTint);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(tint);
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-		{
-			spriteSheet = AssetManager::GetAsset<SpriteSheet>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-		}
-		else
-		{
-			spriteSheet.reset();
-		}
-		archive(animation);
-		if (spriteSheet && !animation.empty()) {
-			Animation* animationRef = spriteSheet->GetAnimation(animation);
-			if (animationRef)
-				currentFrame = animationRef->GetStartFrame();
-		}
+		SerializationUtils::LoadTextureFromArchive(archive, normalTexture);
+		SerializationUtils::LoadTextureFromArchive(archive, hoveredTexture);
+		SerializationUtils::LoadTextureFromArchive(archive, clickedTexture);
+		SerializationUtils::LoadTextureFromArchive(archive, disabledTexture);
+		archive(normalTint, hoveredTint, clickedTint, disabledTint);
 	}
 };

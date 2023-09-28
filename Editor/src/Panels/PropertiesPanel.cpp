@@ -180,8 +180,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (sprite.texture)
 					{
-						entity.GetTransform().scale.x = (float)sprite.texture->GetWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
-						entity.GetTransform().scale.y = (float)sprite.texture->GetHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						if (TransformComponent* transformcomp = entity.TryGetComponent<TransformComponent>())
+						{
+							transformcomp->scale.x = (float)sprite.texture->GetWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+							transformcomp->scale.y = (float)sprite.texture->GetHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						}
 					}
 					m_EditSpriteCommand.first = true;
 					SceneManager::CurrentScene()->MakeDirty();
@@ -233,21 +236,24 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					m_EditAnimatedSpriteCommand.first = true;
 			}
 
-			std::string tilesetName;
+			std::string spritesheetName;
 			if (sprite.spriteSheet)
 			{
 				if (ImGui::Button("Pixel Perfect"))
 				{
 					if (sprite.spriteSheet)
 					{
-						entity.GetTransform().scale.x = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
-						entity.GetTransform().scale.y = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						if (TransformComponent* transformcomp = entity.TryGetComponent<TransformComponent>())
+						{
+							transformcomp->scale.x = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteWidth() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+							transformcomp->scale.y = (float)sprite.spriteSheet->GetSubTexture()->GetSpriteHeight() / SceneManager::CurrentScene()->GetPixelsPerUnit();
+						}
 						SceneManager::CurrentScene()->MakeDirty();
 						m_EditAnimatedSpriteCommand.first = true;
 					}
 				}
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
-				tilesetName = sprite.spriteSheet->GetFilepath().filename().string();
+				spritesheetName = sprite.spriteSheet->GetFilepath().filename().string();
 
 				static std::filesystem::file_time_type currentFileTime;
 
@@ -260,7 +266,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				}
 			}
 
-			if (ImGui::BeginCombo("SpriteSheet", tilesetName.c_str()))
+			if (ImGui::BeginCombo("SpriteSheet", spritesheetName.c_str()))
 			{
 				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SPRITESHEET)))
 				{
@@ -300,7 +306,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					ViewerManager::OpenViewer(sprite.spriteSheet->GetFilepath());
 				}
-				ImGui::Tooltip("Edit Tileset");
+				ImGui::Tooltip("Edit Sprite Sheet");
 			}
 
 			if (sprite.spriteSheet)
@@ -977,6 +983,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 
 	if (ImGui::BeginPopup("Components"))
 	{
+		AddComponentMenuItem<TransformComponent>(ICON_MDI_AXIS_ARROW" Transform", entity);
 		AddComponentMenuItem<SpriteComponent>(ICON_FA_IMAGE" Sprite", entity);
 		AddComponentMenuItem<AnimatedSpriteComponent>(ICON_FA_IMAGE" Animated Sprite", entity);
 		AddComponentMenuItem<CircleRendererComponent>(ICON_FA_CIRCLE" Circle Renderer", entity);
