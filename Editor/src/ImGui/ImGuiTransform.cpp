@@ -15,9 +15,6 @@ bool ImGui::Transform(Vector3f& position, Vector3f& rotation, Vector3f& scale)
 	ImGui::TextUnformatted("Position");
 	float width = ImGui::GetContentRegionAvail().x;
 
-	float lineHeight = ImGui::GetFontSize() + ImGui::GetStyle().FramePadding.y * 2.0f;
-	ImVec2 buttonSize = { lineHeight + 3.0f, lineHeight };
-
 	ImGui::TextColored({ 245,0,0,255 }, "X");
 	ImGui::SameLine();
 	ImGui::SetNextItemWidth(width / 3 - 20);

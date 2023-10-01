@@ -121,7 +121,7 @@ bool Scene::RemoveEntity(Entity& entity)
 	{
 		if (m_IsUpdating) {
 			if (!m_Registry.any_of<DestroyMarker>(entity))
-				m_Registry.emplace<DestroyMarker>(entity.GetHandle());
+				m_Registry.emplace<DestroyMarker>(entity);
 		}
 		else
 			SceneGraph::Remove(entity);
@@ -338,6 +338,25 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	if (m_PhysicsEngine2D)
 		m_PhysicsEngine2D->OnRender();
 
+	Renderer::EndScene();
+
+	if (renderTarget != nullptr)
+		RenderCommand::ClearDepth();
+
+	SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+
+	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
+	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
+	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
+
+	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
+	for (auto entity : buttonGroup)
+	{
+		auto&& [widgetComp, buttonComp] = buttonGroup.get(entity);
+
+		//TODO: check button state
+		Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
+	}
 	Renderer::EndScene();
 
 	if (renderTarget != nullptr)

@@ -13,7 +13,7 @@ void SceneGraph::Traverse(entt::registry& registry)
 		registry.get<TransformComponent>(entity).SetWorldMatrix(Matrix4x4());
 	}
 
-	registry.view<TransformComponent, HierarchyComponent>().each(
+	registry.view<TransformComponent, HierarchyComponent>(/*entt::exclude<CanvasComponent>*/).each(
 		[&]([[maybe_unused]] const auto entity, auto& transformComp, auto& hierarchyComp)
 		{
 			// if the entity is active and a root node
@@ -22,6 +22,88 @@ void SceneGraph::Traverse(entt::registry& registry)
 				UpdateTransform(&transformComp, &hierarchyComp, registry);
 			}
 		});
+}
+
+void SceneGraph::TraverseUI(entt::registry& registry, uint32_t viewportWidth, uint32_t viewportHeight)
+{
+	PROFILE_FUNCTION();
+
+	auto nonHierachyWidgets = registry.view<WidgetComponent>(entt::exclude<HierarchyComponent>);
+
+	float viewport_scale = (float)(viewportWidth + viewportHeight) / (float)(WidgetComponent::s_referenceWidth + WidgetComponent::s_referenceHeight);
+
+	for (auto entity : nonHierachyWidgets)
+	{
+		auto& widgetComp = registry.get<WidgetComponent>(entity);
+
+		Vector3f position;
+		//Vector3f position(widgetComp.position.x * viewport_scale, -(widgetComp.position.y * viewport_scale), 0.0f);
+		Vector3f scale;
+
+		float leftAnchorScreenPosition = viewportWidth * widgetComp.anchorLeft;
+		float rightAnchorScreenPosition = viewportWidth * widgetComp.anchorRight;
+		float topAnchorScreenPosition = viewportHeight * widgetComp.anchorTop;
+		float bottomAnchorScreenPosition = viewportHeight * widgetComp.anchorBottom;
+
+		float viewportScaleX = (float)viewportWidth / (float)WidgetComponent::s_referenceWidth;
+		float viewportScaleY = (float)viewportHeight / (float)WidgetComponent::s_referenceHeight;
+
+		if (widgetComp.fixedWidth) {
+			position.x = leftAnchorScreenPosition + (widgetComp.marginLeft * viewportScaleX);
+			scale.x = widgetComp.size.x;
+		}
+		else {
+			position.x = leftAnchorScreenPosition + (widgetComp.marginLeft * viewportScaleX);
+			scale.x = widgetComp.size.x;
+			//scale.x = rightAnchorScreenPosition + (widgetComp.marginRight * viewportScaleX);
+		}
+
+		if (widgetComp.fixedHeight) {
+			position.y = -(topAnchorScreenPosition + (widgetComp.marginTop * viewportScaleY));
+			scale.y = widgetComp.size.y;
+		}
+		else {
+			position.y = -(topAnchorScreenPosition + (widgetComp.marginTop * viewportScaleY));
+			scale.y = widgetComp.size.y;
+			//scale.y = bottomAnchorScreenPosition + (widgetComp.marginBottom * viewportScaleY);
+		}
+
+		scale.z = 1.0f;
+
+		//Vector3f position(leftAnchorScreenPosition + widgetComp.marginLeft, topAnchorScreenPosition - widgetComp.marginTop, 0.0f);
+		//Vector3f bottomRight(rightAnchorScreenPosition + widgetComp.marginRight, bottomAnchorScreenPosition + widgetComp.marginBottom, 0.0f);
+		//Vector3f scale = position + bottomRight;
+
+		//Vector3f position(widgetComp.position.x * viewport_scale, -(widgetComp.position.y * viewport_scale), 0.0f);
+		//Vector3f position(widgetComp.position.x, -(widgetComp.position.y), 0.0f);
+
+		//Vector3f scale(widgetComp.size.x * viewport_scale, widgetComp.size.y * viewport_scale, 1.0f);
+		//Vector3f scale(widgetComp.size.x, widgetComp.size.y, 1.0f);
+		Vector3f halfScale = scale / 2.0f;
+		halfScale.y = -halfScale.y;
+
+		Matrix4x4 transform = 
+			//Matrix4x4::Translate(Vector3f(leftAnchorScreenPosition, -topAnchorScreenPosition, 0.0f))
+			//* Matrix4x4::Translate(Vector3f(widgetComp.marginLeft, -widgetComp.marginTop, 0.0f))
+			Matrix4x4::Translate(position)
+			* Matrix4x4::RotateZ(widgetComp.rotation) 
+			* Matrix4x4::Translate(halfScale)
+			* Matrix4x4::Scale(scale);
+
+		widgetComp.SetTransformMatrix(transform);
+	}
+
+	auto widgetView = registry.view<WidgetComponent, HierarchyComponent>();
+	for (auto entity : widgetView) {
+		WidgetComponent& widgetComp = widgetView.get<WidgetComponent>(entity);
+		HierarchyComponent& hierarchyComp = widgetView.get<HierarchyComponent>(entity);
+
+		// if the entity is active and a root node
+		if (hierarchyComp.isActive && hierarchyComp.parent == entt::null)
+		{
+			UpdateUIWidgetTransform(&widgetComp, &hierarchyComp, registry);
+		}
+	}
 }
 
 void SceneGraph::Reparent(Entity entity, Entity parent)
@@ -233,4 +315,28 @@ void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyCom
 			UpdateTransform(siblingTransformComp, siblingHierarchyComp, registry);
 		}
 	}
+}
+
+void SceneGraph::UpdateUIWidgetTransform(WidgetComponent* widget, HierarchyComponent* hierachyComp, entt::registry& registry)
+{
+	Matrix4x4 parentTransform = Matrix4x4();
+
+	if (hierachyComp->parent != entt::null) {
+		auto parentEntity = hierachyComp->parent;
+
+		if (registry.valid(parentEntity)) {
+			WidgetComponent* parentWidget = registry.try_get<WidgetComponent>(parentEntity);
+			HierarchyComponent* parentHierarchy = registry.try_get<HierarchyComponent>(parentEntity);
+
+			parentTransform = parentWidget->GetTransformMatrix();
+
+			UpdateUIWidgetTransform(parentWidget, parentHierarchy, registry);
+		}
+	}
+	else
+	{
+		Matrix4x4 transform = Matrix4x4::Translate(widget->position.to_Vector3D());
+	}
+
+	//Matrix4x4 localTransform = 
 }

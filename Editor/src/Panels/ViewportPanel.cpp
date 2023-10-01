@@ -790,9 +790,7 @@ void ViewportPanel::OnImGuiRender()
 
 					// Gizmos
 
-					Matrix4x4 transformMat;
-					if (transformComp)
-						transformMat = transformComp->GetWorldMatrix();
+					Matrix4x4 transformMat = transformComp->GetWorldMatrix();
 
 					transformMat.Transpose();
 
@@ -973,6 +971,30 @@ void ViewportPanel::OnImGuiRender()
 						HistoryManager::AddHistoryRecord(m_EditTransformCommand);
 						m_EditTransformCommand = nullptr;
 					}
+				}
+				
+				if (WidgetComponent* widgetComp = selectedEntity.TryGetComponent<WidgetComponent>())
+				{
+
+					ImVec2 topLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
+					ImVec2 bottomLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
+					ImVec2 bottomRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
+					ImVec2 topRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
+
+					
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+					drawList->AddCircleFilled(topLeft, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(topLeft, 3, IM_COL32(255, 255, 255, 255));
+
+					drawList->AddCircleFilled(bottomLeft, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(bottomLeft, 3, IM_COL32(255, 255, 255, 255));
+					
+					drawList->AddCircleFilled(bottomRight, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(bottomRight, 3, IM_COL32(255, 255, 255, 255));
+
+					drawList->AddCircleFilled(topRight, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(topRight, 3, IM_COL32(255, 255, 255, 255));
 				}
 			}
 		}

@@ -71,6 +71,30 @@ void DirectX11RendererAPI::Clear()
 	}
 }
 
+void DirectX11RendererAPI::ClearColour()
+{
+	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow()->GetContext().get());
+	auto renderTarget = context->GetRenderTargetView();
+
+	if (renderTarget)
+	{
+		g_ImmediateContext->OMSetRenderTargets(1, &renderTarget, NULL);
+		g_ImmediateContext->ClearRenderTargetView(context->GetRenderTargetView(), &m_ClearColour.r);
+	}
+}
+
+void DirectX11RendererAPI::ClearDepth()
+{
+	DirectX11Context* context = dynamic_cast<DirectX11Context*>(Application::GetWindow()->GetContext().get());
+	auto renderTarget = context->GetRenderTargetView();
+
+	if (renderTarget)
+	{
+		g_ImmediateContext->OMSetRenderTargets(1, &renderTarget, NULL);
+		g_ImmediateContext->ClearDepthStencilView(context->GetDepthStencilView(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+	}
+}
+
 void DirectX11RendererAPI::DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
 	if (!backFaceCull)

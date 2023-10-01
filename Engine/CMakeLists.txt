@@ -142,7 +142,8 @@ file(GLOB ENGINE_FILES
     src/Scene/Components/TilemapComponent.h
     src/Scene/Components/TransformComponent.h
     src/Scene/Components/UIWidgets/ButtonComponent.h
-    src/Scene/Components/UIWidgets/Widget.h
+    src/Scene/Components/UIWidgets/WidgetComponent.h
+    src/Scene/Components/UIWidgets/WidgetComponent.cpp
     src/Scripting/Lua/LuaBindings.cpp
     src/Scripting/Lua/LuaBindings.h
     src/Scripting/Lua/LuaManager.cpp

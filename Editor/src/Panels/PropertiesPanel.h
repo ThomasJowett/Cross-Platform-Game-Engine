@@ -90,6 +90,7 @@ private:
 
 	Ref<EditComponentCommand<NameComponent>> m_EditNameComponent;
 	std::pair<bool, Ref<EditComponentCommand<TransformComponent>>> m_EditTransformComponent;
+	std::pair<bool, Ref<EditComponentCommand<WidgetComponent>>> m_EditWidgetComponent;
 	std::pair<bool, Ref<EditComponentCommand<SpriteComponent>>> m_EditSpriteCommand;
 	std::pair<bool, Ref<EditComponentCommand<AnimatedSpriteComponent>>> m_EditAnimatedSpriteCommand;
 	std::pair<bool, Ref<EditComponentCommand<CircleRendererComponent>>> m_EditCircleRendererCommand;

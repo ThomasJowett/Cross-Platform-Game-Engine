@@ -459,7 +459,6 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Canvas"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Canvas");
-			entity.AddComponent<TransformComponent>();
 			entity.AddComponent<CanvasComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
@@ -470,7 +469,7 @@ void HierarchyPanel::CreateMenu()
 		if (ImGui::MenuItem("Button"))
 		{
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Button");
-			//entity.AddComponent<WidgetComponent>();
+			entity.AddComponent<WidgetComponent>();
 			entity.AddComponent<ButtonComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {

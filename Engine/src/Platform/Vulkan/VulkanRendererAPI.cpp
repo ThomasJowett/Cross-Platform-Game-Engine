@@ -25,6 +25,14 @@ void VulkanRendererAPI::Clear()
 {
 }
 
+void VulkanRendererAPI::ClearColour()
+{
+}
+
+void VulkanRendererAPI::ClearDepth()
+{
+}
+
 void VulkanRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
 }
