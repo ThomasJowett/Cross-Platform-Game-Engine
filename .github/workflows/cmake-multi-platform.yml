@@ -58,7 +58,7 @@ jobs:
           sudo apt-get install -y vulkan-sdk
         }
         if ($env:RUNNER_OS -eq "Windows") {
-          curl -o vulkan-sdk.exe https://vulkan.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe
+          Invoke-WebRequest -Uri 'https://vulkan.lunarg.com/sdk/download/1.3.261.1/windows/VulkanSDK-1.3.261.1-Installer.exe' -OutFile 'vulkan-sdk.exe'
           Start-Process -Wait -FilePath .\vulkan-sdk.exe -ArgumentList '/S' -NoNewWindow
           Remove-Item vulkan-sdk.exe
         }
