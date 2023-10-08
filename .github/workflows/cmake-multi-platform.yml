@@ -63,11 +63,10 @@ jobs:
     - name: Install Vulkan SDK Windows
       if: startsWith(matrix.os, 'windows')
       run: |
-          choco install vulkan-sdk
-      # mkdir vulkan-sdk-install
-      # cd vulkan-sdk-install
-      # curl -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe
-      # .\vulkan-sdk.exe
+          mkdir vulkan-sdk-install
+          cd vulkan-sdk-install
+          curl -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe
+          .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
