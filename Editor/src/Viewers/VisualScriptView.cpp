@@ -3,24 +3,24 @@
 #include "IconsFontAwesome6.h"
 #include "ViewerManager.h"
 
-VisualSriptView::VisualSriptView(bool* show, const std::filesystem::path& filepath)
+VisualScriptView::VisualScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("VisualScriptView"), m_Show(show), m_Filepath(filepath)
 {
 }
 
-void VisualSriptView::OnAttach()
+void VisualScriptView::OnAttach()
 {
 	m_LuaNodeEditor.SetFilepath(m_Filepath.string());
 
 	m_WindowName = ICON_FA_DIAGRAM_PROJECT + std::string(" " + m_Filepath.filename().string());
 }
 
-void VisualSriptView::OnDetach()
+void VisualScriptView::OnDetach()
 {
 	m_LuaNodeEditor.Destroy();
 }
 
-void VisualSriptView::OnImGuiRender()
+void VisualScriptView::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
@@ -188,10 +188,10 @@ void VisualSriptView::OnImGuiRender()
 	ImGui::End();
 }
 
-void VisualSriptView::Save()
+void VisualScriptView::Save()
 {
 }
 
-void VisualSriptView::SaveAs()
+void VisualScriptView::SaveAs()
 {
 }

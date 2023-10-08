@@ -108,7 +108,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	}
 	case FileType::TILESET:			OpenAssetViewer<TilesetView>(assetPath);			return;
 	case FileType::SPRITESHEET:		OpenAssetViewer<SpriteSheetView>(assetPath);		return;
-	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualSriptView>(assetPath);		return;
+	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualScriptView>(assetPath);		return;
 	case FileType::PHYSICSMATERIAL:	OpenAssetViewer<PhysicsMaterialView>(assetPath);	return;
 	case FileType::FONT:			OpenAssetViewer<FontView>(assetPath);				return;
 	case FileType::BEHAVIOURTREE:	OpenAssetViewer<BehaviourTreeView>(assetPath);			return;
@@ -303,6 +303,10 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		extensions.push_back(".behaviourtree");
 		break;
 	}
+    case FileType::STATEMACHINE:
+    {
+        extensions.push_back(".statemachine");
+    }
 	}
 	return extensions;
 }

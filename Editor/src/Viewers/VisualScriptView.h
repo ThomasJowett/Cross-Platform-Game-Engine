@@ -13,7 +13,7 @@
 
 #include "ViewerManager.h"
 
-class VisualSriptView
+class VisualScriptView
 	:public View, public ICopyable, public IUndoable, public ISaveable
 {
 	struct Variable
@@ -35,8 +35,8 @@ class VisualSriptView
 		std::string defaultValue = "false";
 	};
 public:
-	VisualSriptView(bool* show, const std::filesystem::path& filepath);
-	~VisualSriptView() = default;
+	VisualScriptView(bool* show, const std::filesystem::path& filepath);
+	~VisualScriptView() = default;
 
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
