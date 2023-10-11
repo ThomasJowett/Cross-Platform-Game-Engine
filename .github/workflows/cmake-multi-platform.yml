@@ -24,7 +24,6 @@ jobs:
       # To add more build types (Release, Debug, RelWithDebInfo, etc.) customize the build_type list.
       matrix:
         os: [ubuntu-latest, windows-latest]
-        # os: [ubuntu-latest]
         build_type: [Release]
         c_compiler: [gcc, clang, cl]
         include:
@@ -67,6 +66,14 @@ jobs:
           cd vulkan-sdk-install
           curl -o vulkan-sdk.exe https://sdk.lunarg.com/sdk/download/latest/windows/vulkan-sdk.exe
           .\vulkan-sdk.exe --accept-licenses --default-answer --confirm-command install
+          $vulkanSdkPath = Get-ChildItem "C:\VulkanSDK" -Directory | Sort-Object CreationTime -Descending | Select-Object -First 1
+          echo "VULKAN_SDK_VERSION=$($vulkanSdkPath.Name)" >> $GITHUB_ENV
+
+    - name: Set Vulkan Environment Variables
+      run: |
+          echo "VULKAN_SDK_PATH=C:\VulkanSDK\$VULKAN_SDK_VERSION" >> $GITHUB_ENV
+          echo "VULKAN_SDK_INCLUDE=C:\VulkanSDK\$VULKAN_SDK_VERSION\Include" >> $GITHUB_ENV
+          echo "VULKAN_SDK_LIB=C:\VulkanSDK\$VULKAN_SDK_VERSION\Lib" >> $GITHUB_ENV
 
     - name: Set reusable strings
       # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
@@ -83,6 +90,8 @@ jobs:
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DVulkan_LIBRARY=$VULKAN_SDK_LIB/vulkan-1.lib
+        -DVulkan_INCLUDE_DIR=$VULKAN_SDK_INCLUDE
         -S ${{ github.workspace }}
 
     - name: Build
