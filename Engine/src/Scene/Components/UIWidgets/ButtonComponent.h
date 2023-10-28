@@ -21,8 +21,6 @@ struct ButtonComponent
 	Colour clickedTint = Colours::WHITE;
 	Colour disabledTint = Colours::WHITE;
 
-	bool disabled = false;
-
 private:
 	friend cereal::access;
 	template<typename Archive>

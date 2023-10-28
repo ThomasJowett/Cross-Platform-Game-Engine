@@ -166,6 +166,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::BeginGroup();
 
 			bool edited = false;
+
+			if (ImGui::Checkbox("Disabled", &widget.disabled))
+				edited = true;
 			if (ImGui::Checkbox("Fixed Width", &widget.fixedWidth)) {
 				edited = true;
 				widget.SetAnchorRight(widget.anchorLeft);
@@ -1120,8 +1123,6 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
-
-			ImGui::Checkbox("Disabled", &button.disabled);
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------

@@ -7,6 +7,8 @@ struct WidgetComponent
 	WidgetComponent() = default;
 	WidgetComponent(const WidgetComponent& other) = default;
 
+	bool disabled = false;
+
 	bool fixedWidth = true;
 	bool fixedHeight = true;
 
@@ -73,6 +75,7 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
+		archive(disabled);
 		archive(fixedWidth, fixedHeight);
 		archive(position, size, rotation);
 		archive(anchorLeft, anchorTop, anchorRight, anchorBottom);

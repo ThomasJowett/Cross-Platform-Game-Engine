@@ -470,6 +470,54 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCanvasElement->SetAttribute("PixelPerUnit", component->pixelPerUnit);
 	}
 
+	if (WidgetComponent* component = entity.TryGetComponent<WidgetComponent>())
+	{
+		tinyxml2::XMLElement* pWidgetElement = pElement->InsertNewChildElement("Widget");
+
+		pWidgetElement->SetAttribute("Disabled", component->disabled);
+		pWidgetElement->SetAttribute("FixedWidth", component->fixedWidth);
+		pWidgetElement->SetAttribute("FixedHeight", component->fixedHeight);
+		pWidgetElement->SetAttribute("AnchorLeft", component->anchorLeft);
+		pWidgetElement->SetAttribute("AnchorRight", component->anchorRight);
+		pWidgetElement->SetAttribute("AnchorTop", component->anchorTop);
+		pWidgetElement->SetAttribute("AnchorBottom", component->anchorBottom);
+		pWidgetElement->SetAttribute("MarginLeft", component->marginLeft);
+		pWidgetElement->SetAttribute("MarginRight", component->marginRight);
+		pWidgetElement->SetAttribute("MarginTop", component->marginTop);
+		pWidgetElement->SetAttribute("MarginBottom", component->marginBottom);
+
+		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Position"), component->position);
+		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Size"), component->size);
+
+	}
+
+	if (ButtonComponent* component = entity.TryGetComponent<ButtonComponent>())
+	{
+		tinyxml2::XMLElement* pButtonElement = pElement->InsertNewChildElement("Button");
+
+		if (component->normalTexture)
+		{
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTexture"), component->normalTexture);
+		}
+		if (component->hoveredTexture)
+		{
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTexture"), component->hoveredTexture);
+		}
+		if (component->clickedTexture)
+		{
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTexture"), component->clickedTexture);
+		}
+		if (component->disabledTexture)
+		{
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTexture"), component->disabledTexture);
+		}
+
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTint"), component->normalTint);
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTint"), component->hoveredTint);
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTint"), component->clickedTint);
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("disabledTint"), component->disabledTint);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
 		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
@@ -988,6 +1036,46 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		CanvasComponent& component = entity.AddComponent<CanvasComponent>();
 
 		component.pixelPerUnit = pCanvasComponent->FloatAttribute("PixelPerUnit", 1.0f);
+	}
+
+	// Widget ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pWidgetComponent = pEntityElement->FirstChildElement("Widget"))
+	{
+		WidgetComponent& component = entity.AddComponent<WidgetComponent>();
+
+		pWidgetComponent->QueryBoolAttribute("Disabled", &component.disabled);
+
+		pWidgetComponent->QueryBoolAttribute("FixedWidth", &component.fixedWidth);
+		pWidgetComponent->QueryBoolAttribute("FixedHeight", &component.fixedHeight);
+
+		pWidgetComponent->QueryFloatAttribute("AnchorLeft", &component.anchorLeft);
+		pWidgetComponent->QueryFloatAttribute("AnchorRight", &component.anchorRight);
+		pWidgetComponent->QueryFloatAttribute("AnchorTop", &component.anchorTop);
+		pWidgetComponent->QueryFloatAttribute("AnchorBottom", &component.anchorBottom);
+
+		pWidgetComponent->QueryFloatAttribute("MarginLeft", &component.marginLeft);
+		pWidgetComponent->QueryFloatAttribute("MarginRight", &component.marginRight);
+		pWidgetComponent->QueryFloatAttribute("MarginTop", &component.marginTop);
+		pWidgetComponent->QueryFloatAttribute("MarginBottom", &component.marginBottom);
+		
+		pWidgetComponent->QueryFloatAttribute("rotation", &component.rotation);
+		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Position"), component.position);
+		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Size"), component.size);
+	}
+
+	// Button ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pButtonComponent = pEntityElement->FirstChildElement("Button"))
+	{
+		ButtonComponent& component = entity.AddComponent<ButtonComponent>();
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("NormalTexture"), component.normalTexture);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTexture"), component.hoveredTexture);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTexture"), component.clickedTexture);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTexture"), component.disabledTexture);
+
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("NormalTint"), component.normalTint);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTint"), component.clickedTint);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
 	}
 
 	// Hierarchy --------------------------------------------------------------------------------------------------
