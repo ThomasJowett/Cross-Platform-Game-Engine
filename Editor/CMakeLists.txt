@@ -91,3 +91,5 @@ add_custom_command(
     ${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini
     "$<TARGET_FILE_DIR:Editor>"
 )
+
+set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")

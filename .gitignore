@@ -85,3 +85,4 @@ CTestTestfile.cmake
 
 Editor/data/Fonts/Manrope-Medium.png
 build
+build_*

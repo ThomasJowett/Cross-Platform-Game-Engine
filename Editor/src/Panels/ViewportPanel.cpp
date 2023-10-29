@@ -168,7 +168,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		m_Framebuffer->Bind();
 		Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
-		if (selectedEntity)
+		if (selectedEntity && selectedEntity.HasComponent<TransformComponent>())
 		{
 			TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
 
@@ -495,14 +495,23 @@ void ViewportPanel::OnImGuiRender()
 	ImGuizmo::SetOrthographic(m_Is2DMode);
 	ImGuizmo::BeginFrame();
 
-	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
-
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
 	if (SceneManager::CurrentScene()->IsDirty() && SceneManager::GetSceneState() == SceneState::Edit)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
+
+	if (m_Fullscreen) {
+		bool use_work_area = true;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
+		ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+		flags |= ImGuiWindowFlags_NoDecoration;
+	}
+	else {
+		ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
+	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	bool shown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
@@ -709,6 +718,7 @@ void ViewportPanel::OnImGuiRender()
 							std::string entityName = file->filename().string();
 							entityName = entityName.substr(0, entityName.find_last_of('.'));
 							Entity staticMeshEntity = SceneManager::CurrentScene()->CreateEntity(entityName);
+							staticMeshEntity.AddComponent<TransformComponent>();
 
 							StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
@@ -752,222 +762,249 @@ void ViewportPanel::OnImGuiRender()
 			if (m_HierarchyPanel->GetSelectedEntity().IsSceneValid())
 			{
 				Entity selectedEntity = m_HierarchyPanel->GetSelectedEntity();
-				TransformComponent& transformComp = selectedEntity.GetTransform();
 
-				if (m_HierarchyPanel->IsFocused())
+				TransformComponent* transformComp = selectedEntity.TryGetComponent<TransformComponent>();
+				if (transformComp)
 				{
-					m_CameraController.LookAt(transformComp.GetWorldPosition(), transformComp.scale.x); // TODO: get the bounds of the object and offset the camera by that amount
-					m_HierarchyPanel->HasFocused();
-				}
-
-				// Draw a camera preview if the selected entity has a camera
-				if (selectedEntity.HasComponent<CameraComponent>())
-				{
-					ImVec2 cameraPreviewPosition = ImVec2(window_pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
-						window_pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
-
-					ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
-						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
-						((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].z * 255.0f) << 16) |
-						255 << 24;
-
-					ImGui::GetWindowDrawList()->AddRectFilled(cameraPreviewPosition,
-						ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().width + 2,
-							cameraPreviewPosition.y + m_CameraPreview->GetSpecification().height + 24.0f),
-						color, ImGui::GetStyle().WindowRounding);
-
-					uintptr_t cameraTex = (uintptr_t)m_CameraPreview->GetColourAttachment();
-					float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
-					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
-					ImGui::Text(" %s", selectedEntity.GetName().c_str());
-					ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
-					ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
-				}
-
-				// Gizmos
-
-				Matrix4x4 transformMat = transformComp.GetWorldMatrix();
-
-				transformMat.Transpose();
-
-				float translation[3], rotation[3], scale[3];
-
-				ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
-
-				bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
-				float snapValue = 0.5f;
-				if (m_Operation == OperationMode::Rotate)
-					snapValue = 10.0f;
-
-				float bounds[6];
-
-				if (selectedEntity.HasComponent<SpriteComponent>()
-					|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
-					|| selectedEntity.HasComponent<CircleRendererComponent>())
-				{
-					bounds[0] = -0.5f;
-					bounds[1] = -0.5f;
-					bounds[2] = 0.0f;
-					bounds[3] = 0.5f;
-					bounds[4] = 0.5f;
-					bounds[5] = 0.0f;
-				}
-				else if (selectedEntity.HasComponent<StaticMeshComponent, PrimitiveComponent, TilemapComponent>())
-				{
-					const BoundingBox* box = nullptr;
-					if (auto comp = selectedEntity.TryGetComponent<StaticMeshComponent>())
+					if (m_HierarchyPanel->IsFocused())
 					{
-						if (comp->mesh)
-							box = &comp->mesh->GetBounds();
-					}
-					else if (auto comp = selectedEntity.TryGetComponent<PrimitiveComponent>())
-					{
-						if (comp->mesh)
-							box = &comp->mesh->GetBounds();
-					}
-					else if (auto comp = selectedEntity.TryGetComponent<TilemapComponent>())
-					{
-						if (comp->mesh)
-							box = &comp->mesh->GetBounds();
+						m_CameraController.LookAt(transformComp->GetWorldPosition(), transformComp->scale.x); // TODO: get the bounds of the object and offset the camera by that amount
+						m_HierarchyPanel->HasFocused();
 					}
 
-					if (box)
+
+					// Draw a camera preview if the selected entity has a camera
+					if (selectedEntity.HasComponent<CameraComponent>())
 					{
-						bounds[0] = box->Min().x;
-						bounds[1] = box->Min().y;
-						bounds[2] = box->Min().z;
-						bounds[3] = box->Max().x;
-						bounds[4] = box->Max().y;
-						bounds[5] = box->Max().z;
+						ImVec2 cameraPreviewPosition = ImVec2(window_pos.x - ImGui::GetStyle().ItemSpacing.x - 1 + m_ViewportSize.x - m_CameraPreview->GetSpecification().width,
+							window_pos.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 24.0f);
+
+						ImU32 color = ((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].x * 255.0f)) |
+							((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].y * 255.0f) << 8) |
+							((ImU32)(ImGui::GetStyle().Colors[ImGuiCol_TitleBg].z * 255.0f) << 16) |
+							255 << 24;
+
+						ImGui::GetWindowDrawList()->AddRectFilled(cameraPreviewPosition,
+							ImVec2(cameraPreviewPosition.x + m_CameraPreview->GetSpecification().width + 2,
+								cameraPreviewPosition.y + m_CameraPreview->GetSpecification().height + 24.0f),
+							color, ImGui::GetStyle().WindowRounding);
+
+						uintptr_t cameraTex = (uintptr_t)m_CameraPreview->GetColourAttachment();
+						float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
+						ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
+						ImGui::Text(" %s", selectedEntity.GetName().c_str());
+						ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
+						ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
 					}
-				}
-				else if (selectedEntity.HasComponent<BoxCollider2DComponent>())
-				{
-					BoxCollider2DComponent& boxColliderComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
-					TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
 
-					bounds[0] = -boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
-					bounds[1] = -boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
-					bounds[2] = 0.0f;
-					bounds[3] = boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
-					bounds[4] = boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
-					bounds[5] = 0.0f;
-				}
-				else
-				{
-					memset(bounds, 0, sizeof(bounds));
-				}
+					// Gizmos
 
-				float snapValues[3] = { snapValue, snapValue, snapValue };
+					Matrix4x4 transformMat = transformComp->GetWorldMatrix();
 
-				ImGuizmo::OPERATION gizmoOperation = ImGuizmo::BOUNDS;
-				switch (m_Operation)
-				{
-				case ViewportPanel::OperationMode::Select:
-					gizmoOperation = ImGuizmo::BOUNDS;
-					break;
-				case ViewportPanel::OperationMode::Move:
-					gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
-					break;
-				case ViewportPanel::OperationMode::Rotate:
-					gizmoOperation = ImGuizmo::OPERATION::ROTATE;
-					break;
-				case ViewportPanel::OperationMode::Scale:
-					gizmoOperation = ImGuizmo::OPERATION::SCALE;
-					break;
-				case ViewportPanel::OperationMode::Universal:
-					gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
-					break;
-				default:
-					break;
-				}
-
-				ImGuizmo::MODE gizmoMode = ImGuizmo::LOCAL;
-				switch (m_Translation)
-				{
-				case ViewportPanel::TranslationMode::Local:
-					gizmoMode = ImGuizmo::LOCAL;
-					break;
-				case ViewportPanel::TranslationMode::World:
-					gizmoMode = ImGuizmo::WORLD;
-					break;
-				default:
-					break;
-				}
-
-				ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16,
-					gizmoOperation, gizmoMode,
-					transformMat.m16,
-					NULL, snap ? &snapValues[0] : NULL,
-					gizmoOperation == ImGuizmo::BOUNDS ? bounds : NULL,
-					snap ? snapValues : NULL);
-
-				if (ImGuizmo::IsUsing())
-				{
-					if (!m_EditTransformCommand)
-						m_EditTransformCommand = CreateRef<EditComponentCommand<TransformComponent>>(selectedEntity);
 					transformMat.Transpose();
-					Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp.GetParentMatrix());
-					transformMat = parentMatrix * transformMat;
-					transformMat.Transpose();
+
+					float translation[3], rotation[3], scale[3];
 
 					ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
 
-					Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
+					bool snap = Input::IsKeyPressed(KEY_LEFT_CONTROL);
+					float snapValue = 0.5f;
+					if (m_Operation == OperationMode::Rotate)
+						snapValue = 10.0f;
 
-					CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
+					float bounds[6];
 
-					RigidBody2DComponent* rigidBody2DComp = selectedEntity.TryGetComponent<RigidBody2DComponent>();
-
-					if (SceneManager::GetSceneState() != SceneState::Edit && rigidBody2DComp)
+					if (selectedEntity.HasComponent<SpriteComponent>()
+						|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
+						|| selectedEntity.HasComponent<CircleRendererComponent>())
 					{
-						rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotationRad.z);
-						transformComp.position.z = translation[2];
-						transformComp.rotation.x = rotationRad.x;
-						transformComp.rotation.y = rotationRad.y;
-
-						if (SceneManager::GetSceneState() == SceneState::SimulatePause)
+						bounds[0] = -0.5f;
+						bounds[1] = -0.5f;
+						bounds[2] = 0.0f;
+						bounds[3] = 0.5f;
+						bounds[4] = 0.5f;
+						bounds[5] = 0.0f;
+					}
+					else if (selectedEntity.HasComponent<StaticMeshComponent, PrimitiveComponent, TilemapComponent>())
+					{
+						const BoundingBox* box = nullptr;
+						if (auto comp = selectedEntity.TryGetComponent<StaticMeshComponent>())
 						{
-							Vector2f position;
-							float angle;
-
-							rigidBody2DComp->GetTransform(position, angle);
-							transformComp.position.x = position.x;
-							transformComp.position.y = position.y;
-							transformComp.rotation.z = angle;
+							if (comp->mesh)
+								box = &comp->mesh->GetBounds();
 						}
+						else if (auto comp = selectedEntity.TryGetComponent<PrimitiveComponent>())
+						{
+							if (comp->mesh)
+								box = &comp->mesh->GetBounds();
+						}
+						else if (auto comp = selectedEntity.TryGetComponent<TilemapComponent>())
+						{
+							if (comp->mesh)
+								box = &comp->mesh->GetBounds();
+						}
+
+						if (box)
+						{
+							bounds[0] = box->Min().x;
+							bounds[1] = box->Min().y;
+							bounds[2] = box->Min().z;
+							bounds[3] = box->Max().x;
+							bounds[4] = box->Max().y;
+							bounds[5] = box->Max().z;
+						}
+					}
+					else if (selectedEntity.HasComponent<BoxCollider2DComponent>())
+					{
+						BoxCollider2DComponent& boxColliderComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
+						TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
+
+						bounds[0] = -boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
+						bounds[1] = -boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
+						bounds[2] = 0.0f;
+						bounds[3] = boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
+						bounds[4] = boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
+						bounds[5] = 0.0f;
 					}
 					else
 					{
-						Vector3f deltaRotation = rotationRad - transformComp.rotation;
-						if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
+						memset(bounds, 0, sizeof(bounds));
+					}
+
+					float snapValues[3] = { snapValue, snapValue, snapValue };
+
+					ImGuizmo::OPERATION gizmoOperation = ImGuizmo::BOUNDS;
+					switch (m_Operation)
+					{
+					case ViewportPanel::OperationMode::Select:
+						gizmoOperation = ImGuizmo::BOUNDS;
+						break;
+					case ViewportPanel::OperationMode::Move:
+						gizmoOperation = ImGuizmo::OPERATION::TRANSLATE;
+						break;
+					case ViewportPanel::OperationMode::Rotate:
+						gizmoOperation = ImGuizmo::OPERATION::ROTATE;
+						break;
+					case ViewportPanel::OperationMode::Scale:
+						gizmoOperation = ImGuizmo::OPERATION::SCALE;
+						break;
+					case ViewportPanel::OperationMode::Universal:
+						gizmoOperation = ImGuizmo::OPERATION::UNIVERSAL;
+						break;
+					default:
+						break;
+					}
+
+					ImGuizmo::MODE gizmoMode = ImGuizmo::LOCAL;
+					switch (m_Translation)
+					{
+					case ViewportPanel::TranslationMode::Local:
+						gizmoMode = ImGuizmo::LOCAL;
+						break;
+					case ViewportPanel::TranslationMode::World:
+						gizmoMode = ImGuizmo::WORLD;
+						break;
+					default:
+						break;
+					}
+
+					ImGuizmo::Manipulate(cameraViewMat.m16, cameraProjectionMat.m16,
+						gizmoOperation, gizmoMode,
+						transformMat.m16,
+						NULL, snap ? &snapValues[0] : NULL,
+						gizmoOperation == ImGuizmo::BOUNDS ? bounds : NULL,
+						snap ? snapValues : NULL);
+
+					if (ImGuizmo::IsUsing())
+					{
+						if (!m_EditTransformCommand)
+							m_EditTransformCommand = CreateRef<EditComponentCommand<TransformComponent>>(selectedEntity);
+						transformMat.Transpose();
+						Matrix4x4 parentMatrix = Matrix4x4::Inverse(transformComp->GetParentMatrix());
+						transformMat = parentMatrix * transformMat;
+						transformMat.Transpose();
+
+						ImGuizmo::DecomposeMatrixToComponents(transformMat.m16, translation, rotation, scale);
+
+						Vector3f rotationRad((float)DegToRad(rotation[0]), (float)DegToRad(rotation[1]), (float)DegToRad(rotation[2]));
+
+						CORE_ASSERT(!std::isnan(translation[0]), "Translation is not a number!");
+
+						RigidBody2DComponent* rigidBody2DComp = selectedEntity.TryGetComponent<RigidBody2DComponent>();
+
+						if (SceneManager::GetSceneState() != SceneState::Edit && rigidBody2DComp)
 						{
-							Vector3f translationVec = Vector3f(translation[0], translation[1], translation[2]);
-							if ((translationVec - transformComp.position).SqrMagnitude() >= 0.000001f)
-								SceneManager::CurrentScene()->MakeDirty();
-							transformComp.position = translationVec;
+							rigidBody2DComp->SetTransform(Vector2f(translation[0], translation[1]), rotationRad.z);
+							transformComp->position.z = translation[2];
+							transformComp->rotation.x = rotationRad.x;
+							transformComp->rotation.y = rotationRad.y;
+
+							if (SceneManager::GetSceneState() == SceneState::SimulatePause)
+							{
+								Vector2f position;
+								float angle;
+
+								rigidBody2DComp->GetTransform(position, angle);
+								transformComp->position.x = position.x;
+								transformComp->position.y = position.y;
+								transformComp->rotation.z = angle;
+							}
 						}
-						if (gizmoOperation == ImGuizmo::OPERATION::ROTATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
+						else
 						{
-							if (deltaRotation.SqrMagnitude() >= 0.000001f)
-								SceneManager::CurrentScene()->MakeDirty();
-							transformComp.rotation += deltaRotation;
-						}
-						if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
-						{
-							Vector3f scaleVec = Vector3f(scale[0], scale[1], scale[2]);
-							if ((scaleVec - transformComp.scale).SqrMagnitude() >= 0.000001f)
-								SceneManager::CurrentScene()->MakeDirty();
-							transformComp.scale = scaleVec;
+							Vector3f deltaRotation = rotationRad - transformComp->rotation;
+							if (gizmoOperation == ImGuizmo::OPERATION::TRANSLATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
+							{
+								Vector3f translationVec = Vector3f(translation[0], translation[1], translation[2]);
+								if ((translationVec - transformComp->position).SqrMagnitude() >= 0.000001f)
+									SceneManager::CurrentScene()->MakeDirty();
+								transformComp->position = translationVec;
+							}
+							if (gizmoOperation == ImGuizmo::OPERATION::ROTATE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL)
+							{
+								if (deltaRotation.SqrMagnitude() >= 0.000001f)
+									SceneManager::CurrentScene()->MakeDirty();
+								transformComp->rotation += deltaRotation;
+							}
+							if (gizmoOperation == ImGuizmo::OPERATION::SCALE || gizmoOperation == ImGuizmo::OPERATION::UNIVERSAL || m_Operation == OperationMode::Select)
+							{
+								Vector3f scaleVec = Vector3f(scale[0], scale[1], scale[2]);
+								if ((scaleVec - transformComp->scale).SqrMagnitude() >= 0.000001f)
+									SceneManager::CurrentScene()->MakeDirty();
+								transformComp->scale = scaleVec;
+							}
 						}
 					}
+					else if (m_EditTransformCommand)
+					{
+						HistoryManager::AddHistoryRecord(m_EditTransformCommand);
+						m_EditTransformCommand = nullptr;
+					}
 				}
-				else if (m_EditTransformCommand)
+				
+				if (WidgetComponent* widgetComp = selectedEntity.TryGetComponent<WidgetComponent>())
 				{
-					HistoryManager::AddHistoryRecord(m_EditTransformCommand);
-					m_EditTransformCommand = nullptr;
-				}
 
+					ImVec2 topLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
+					ImVec2 bottomLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
+					ImVec2 bottomRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
+					ImVec2 topRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
+
+					
+					ImDrawList* drawList = ImGui::GetWindowDrawList();
+
+					drawList->AddCircleFilled(topLeft, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(topLeft, 3, IM_COL32(255, 255, 255, 255));
+
+					drawList->AddCircleFilled(bottomLeft, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(bottomLeft, 3, IM_COL32(255, 255, 255, 255));
+					
+					drawList->AddCircleFilled(bottomRight, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(bottomRight, 3, IM_COL32(255, 255, 255, 255));
+
+					drawList->AddCircleFilled(topRight, 4, IM_COL32(44, 44, 44, 255));
+					drawList->AddCircleFilled(topRight, 3, IM_COL32(255, 255, 255, 255));
+				}
 			}
 		}
 
@@ -1088,6 +1125,31 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto shift = io.KeyShift;
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
+
+	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+	{
+		SceneManager::ChangeSceneState(SceneState::Edit);
+	}
+
+	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F11)))
+	{
+		m_Fullscreen = !m_Fullscreen;
+	}
+
+	if (SceneManager::GetSceneState() == SceneState::Play) {
+		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
+		{
+			Application::GetWindow()->EnableCursor();
+			ImGuiIO& io = ImGui::GetIO();
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		}
+	}
+	else if (alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P)))
+	{
+		SceneManager::ChangeSceneState(SceneState::Play);
+	}
 
 	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{

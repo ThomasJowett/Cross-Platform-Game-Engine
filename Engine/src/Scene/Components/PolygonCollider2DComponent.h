@@ -5,6 +5,7 @@
 
 #include "math/Vector2f.h"
 #include "Physics/PhysicsMaterial.h"
+#include "Utilities/SerializationUtils.h"
 
 #include <vector>
 
@@ -37,24 +38,14 @@ private:
 	{
 		archive(offset, vertices, isTrigger);
 
-		std::string relativePath;
-		if (physicsMaterial)
-		{
-			relativePath = FileUtils::RelativePath(physicsMaterial->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		}
-		archive(relativePath);
+		SerializationUtils::SaveAssetToArchive(archive, physicsMaterial);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		archive(offset, vertices, isTrigger);
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-		else
-			physicsMaterial.reset();
+		SerializationUtils::LoadAssetFromArchive(archive, physicsMaterial);
 
 		runtimeBody = nullptr;
 	}

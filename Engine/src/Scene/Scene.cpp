@@ -68,7 +68,6 @@ Entity Scene::CreateEntity(Uuid id, const std::string& name)
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
-	entity.AddComponent<TransformComponent>();
 	m_Dirty = true;
 	return entity;
 }
@@ -99,9 +98,10 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
 
-	newEntity.GetTransform().position += position;
+	if (TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>(); transformComp)
+		transformComp->position += position;
 
-	if(m_PhysicsEngine2D)
+	if (m_PhysicsEngine2D)
 		m_PhysicsEngine2D->InitializeEntity(newEntity);
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
@@ -121,7 +121,7 @@ bool Scene::RemoveEntity(Entity& entity)
 	{
 		if (m_IsUpdating) {
 			if (!m_Registry.any_of<DestroyMarker>(entity))
-				m_Registry.emplace<DestroyMarker>(entity.GetHandle());
+				m_Registry.emplace<DestroyMarker>(entity);
 		}
 		else
 			SceneGraph::Remove(entity);
@@ -341,6 +341,39 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	Renderer::EndScene();
 
 	if (renderTarget != nullptr)
+		RenderCommand::ClearDepth();
+
+	SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+
+	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
+	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
+	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
+
+	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
+	for (auto entity : buttonGroup)
+	{
+		auto&& [widgetComp, buttonComp] = buttonGroup.get(entity);
+
+		switch (widgetComp.state)
+		{
+		case WidgetComponent::WidgetState::normal:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::hovered:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.hoveredTexture, buttonComp.hoveredTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::clicked:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.clickedTexture, buttonComp.clickedTint, 1.0f, (int)entity);
+			break;
+		default:
+			break;
+		}
+
+		//TODO: check button state
+	}
+	Renderer::EndScene();
+
+	if (renderTarget != nullptr)
 		renderTarget->UnBind();
 }
 
@@ -398,7 +431,7 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_Registry.view<BehaviourTreeComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& behaviourTreeComponent)
 		{
-			if(behaviourTreeComponent.behaviourTree)
+			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->update(deltaTime);
 		});
 
@@ -493,7 +526,7 @@ void Scene::OnFixedUpdate()
 
 		m_Registry.view<TransformComponent, TilemapComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				if(colliderComp.runtimeBody)
+				if (colliderComp.runtimeBody)
 					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}

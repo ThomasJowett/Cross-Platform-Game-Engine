@@ -51,8 +51,10 @@ Entity LoadImageLayer(tinyxml2::XMLElement* pImageLayer)
 	tinyxml2::XMLElement* pImage = pImageLayer->FirstChildElement("image");
 
 	Entity imageLayerEntity = SceneManager::CurrentScene()->CreateEntity(layerName ? layerName : "Image");
-	imageLayerEntity.GetTransform().position = offset;
-	imageLayerEntity.GetTransform().scale = Vector3f((float)s_TileWidth, (float)s_TileHeight, 1.0f);
+
+	TransformComponent& transformComp = imageLayerEntity.GetOrAddComponent<TransformComponent>();
+	transformComp.position = offset;
+	transformComp.scale = Vector3f((float)s_TileWidth, (float)s_TileHeight, 1.0f);
 
 	SpriteComponent& spriteComp = imageLayerEntity.AddComponent<SpriteComponent>();
 
@@ -88,7 +90,8 @@ Entity LoadObjectGroup(tinyxml2::XMLElement* pObjectGroup)
 		0.0f
 	);
 	Entity groupEntity = SceneManager::CurrentScene()->CreateEntity(groupName);
-	groupEntity.GetTransform().position = offset;
+	TransformComponent& transformComp = groupEntity.GetOrAddComponent<TransformComponent>();
+	transformComp.position = offset;
 
 	tinyxml2::XMLElement* pObject = pObjectGroup->FirstChildElement("object");
 
@@ -96,6 +99,7 @@ Entity LoadObjectGroup(tinyxml2::XMLElement* pObjectGroup)
 	{
 		const char* objectName = pObject->Attribute("name");
 		Entity entity = SceneManager::CurrentScene()->CreateEntity(objectName ? objectName : "Tiled Object");
+		TransformComponent& transformComp = entity.GetOrAddComponent<TransformComponent>();
 		groupEntity.AddChild(entity);
 
 		pObject = pObject->NextSiblingElement("object");
@@ -122,7 +126,8 @@ Entity LoadLayer(tinyxml2::XMLElement* pLayer)
 
 	Entity entity = SceneManager::CurrentScene()->CreateEntity(name);
 	TilemapComponent& tilemapComp = entity.AddComponent<TilemapComponent>(s_Orientation, width, height);
-	entity.GetTransform().position = offset;
+	TransformComponent& transformComp = entity.GetOrAddComponent<TransformComponent>();
+	transformComp.position = offset;
 
 	tinyxml2::XMLElement* pData = pLayer->FirstChildElement("data");
 
@@ -175,6 +180,7 @@ Entity LoadGroup(tinyxml2::XMLElement* pGroup)
 {
 	std::string groupName = pGroup->Attribute("name");
 	Entity groupEntity = SceneManager::CurrentScene()->CreateEntity(groupName);
+	TransformComponent& transformComp = groupEntity.GetOrAddComponent<TransformComponent>();
 
 	const char* horizontalOffsetChar = pGroup->Attribute("offsetx");
 	const char* verticalOffsetChar = pGroup->Attribute("offsety");
@@ -184,7 +190,7 @@ Entity LoadGroup(tinyxml2::XMLElement* pGroup)
 		verticalOffsetChar != nullptr ? atoi(verticalOffsetChar) / s_TileHeight : 0.0f,
 		0.0f
 	);
-	groupEntity.GetTransform().position = offset;
+	transformComp.position = offset;
 
 	tinyxml2::XMLElement* pLayer = pGroup->FirstChildElement("layer");
 

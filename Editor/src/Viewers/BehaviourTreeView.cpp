@@ -2,7 +2,7 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
-#include "AI/BehaviorTree.h"
+#include "AI/BehaviourTree.h"
 #include "AI/Decorators.h"
 #include "AI/Tasks.h"
 #include "AI/BehaviourTreeSerializer.h"

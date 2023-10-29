@@ -119,7 +119,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileTyp
 		filter = L"TrueType (.ttf)\0*.ttf\0";
 		break;
 	case FileType::BEHAVIOURTREE:
-		filter = L"Behaviour Tree (.behaviortree)\0*.behaviourtree\0";
+		filter = L"Behaviour Tree (.behaviourtree)\0*.behaviourtree\0";
 	default:
 		filter = L"Any\0*.*\0";
 		break;

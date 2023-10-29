@@ -4,9 +4,10 @@
 
 #include "Renderer/SpriteSheet.h"
 #include "Core/Colour.h"
-#include "Scene/AssetManager.h"
+
 #include "Core/Application.h"
 #include "Utilities/FileUtils.h"
+#include "Utilities/SerializationUtils.h"
 
 struct AnimatedSpriteComponent
 {
@@ -27,10 +28,7 @@ private:
 	void save(Archive& archive) const
 	{
 		archive(tint);
-		std::string relativePath;
-		if (spriteSheet && !spriteSheet->GetFilepath().empty())
-			relativePath = FileUtils::RelativePath(spriteSheet->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		archive(relativePath);
+		SerializationUtils::SaveAssetToArchive(archive, spriteSheet);
 		archive(animation);
 	}
 
@@ -38,16 +36,7 @@ private:
 	void load(Archive& archive)
 	{
 		archive(tint);
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-		{
-			spriteSheet = AssetManager::GetAsset<SpriteSheet>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-		}
-		else
-		{
-			spriteSheet.reset();
-		}
+		SerializationUtils::LoadAssetFromArchive(archive, spriteSheet);
 		archive(animation);
 		if (spriteSheet && !animation.empty()) {
 			Animation* animationRef = spriteSheet->GetAnimation(animation);

@@ -53,6 +53,16 @@ void OpenGLRendererAPI::Clear()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
+void OpenGLRendererAPI::ClearColour()
+{
+	glClear(GL_COLOR_BUFFER_BIT);
+}
+
+void OpenGLRendererAPI::ClearDepth()
+{
+	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
 void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
 	if (!backFaceCull)

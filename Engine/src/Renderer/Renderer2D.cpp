@@ -615,23 +615,25 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 	float textureIndex = 0.0f;
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
 
-	for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
-	{
-		if (*s_Data.textureSlots[i].get() == *texture.get())
+	if (texture) {
+		for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
 		{
-			textureIndex = (float)i;
-			break;
+			if (*s_Data.textureSlots[i].get() == *texture.get())
+			{
+				textureIndex = (float)i;
+				break;
+			}
 		}
-	}
 
-	if (textureIndex == 0.0f)
-	{
-		if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
-			NextQuadsBatch();
+		if (textureIndex == 0.0f)
+		{
+			if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
+				NextQuadsBatch();
 
-		textureIndex = (float)s_Data.textureSlotIndex;
-		s_Data.textureSlots[s_Data.textureSlotIndex] = texture;
-		s_Data.textureSlotIndex++;
+			textureIndex = (float)s_Data.textureSlotIndex;
+			s_Data.textureSlots[s_Data.textureSlotIndex] = texture;
+			s_Data.textureSlotIndex++;
+		}
 	}
 
 	for (size_t i = 0; i < 4; i++)

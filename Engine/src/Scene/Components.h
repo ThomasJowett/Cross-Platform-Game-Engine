@@ -24,6 +24,9 @@
 #include "Components/TextComponent.h"
 #include "Components/PointLightComponent.h"
 
+#include "Components/UIWidgets/WidgetComponent.h"
+#include "Components/UIWidgets/ButtonComponent.h"
+
 //List of components that can be serialized
 #define COMPONENTS			\
 IDComponent,				\
@@ -48,5 +51,7 @@ StateMachineComponent,		\
 BillboardComponent,			\
 CanvasComponent,			\
 TextComponent,				\
-PointLightComponent			\
+PointLightComponent,		\
+WidgetComponent,			\
+ButtonComponent				\
 

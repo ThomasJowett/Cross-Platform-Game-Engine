@@ -90,6 +90,22 @@ private:
 
 	Ref<EditComponentCommand<NameComponent>> m_EditNameComponent;
 	std::pair<bool, Ref<EditComponentCommand<TransformComponent>>> m_EditTransformComponent;
+	std::pair<bool, Ref<EditComponentCommand<WidgetComponent>>> m_EditWidgetComponent;
 	std::pair<bool, Ref<EditComponentCommand<SpriteComponent>>> m_EditSpriteCommand;
 	std::pair<bool, Ref<EditComponentCommand<AnimatedSpriteComponent>>> m_EditAnimatedSpriteCommand;
+	std::pair<bool, Ref<EditComponentCommand<CircleRendererComponent>>> m_EditCircleRendererCommand;
+	std::pair<bool, Ref<EditComponentCommand<TilemapComponent>>> m_EditTilemapCommand;
+	std::pair<bool, Ref<EditComponentCommand<StaticMeshComponent>>> m_EditStaticMeshCommand;
+	std::pair<bool, Ref<EditComponentCommand<CameraComponent>>> m_EditCameraCommand;
+	std::pair<bool, Ref<EditComponentCommand<PrimitiveComponent>>> m_EditPrimitiveCommand;
+	std::pair<bool, Ref<EditComponentCommand<TextComponent>>> m_EditTextCommand;
+	std::pair<bool, Ref<EditComponentCommand<RigidBody2DComponent>>> m_EditRigidBody2DCommand;
+	std::pair<bool, Ref<EditComponentCommand<BoxCollider2DComponent>>> m_EditBoxCollider2DCommand;
+	std::pair<bool, Ref<EditComponentCommand<CircleCollider2DComponent>>> m_EditCircleCollider2DCommand;
+	std::pair<bool, Ref<EditComponentCommand<PolygonCollider2DComponent>>> m_EditPolygonCollider2DCommand;
+	std::pair<bool, Ref<EditComponentCommand<CapsuleCollider2DComponent> >> m_EditCapsuleCollider2DCommand;
+	std::pair<bool, Ref<EditComponentCommand<BehaviourTreeComponent>>> m_EditBehaviourTreeCommand;
+	std::pair<bool, Ref<EditComponentCommand<StateMachineComponent>>> m_EditStateMachineCommand;
+	std::pair<bool, Ref<EditComponentCommand<BillboardComponent>>> m_EditBillboardCommand;
+	std::pair<bool, Ref<EditComponentCommand<PointLightComponent>>> m_EditPontLightCommand;
 };

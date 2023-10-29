@@ -22,6 +22,7 @@
 #include "stb_image.h"
 
 #include "Core/Settings.h"
+#include "imgui.h"
 
 static uint8_t s_GLFWWindowCount = 0;
 
@@ -212,11 +213,15 @@ Ref<GraphicsContext> DesktopWindow::GetContext() const
 void DesktopWindow::DisableCursor()
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
 }
 
 void DesktopWindow::EnableCursor()
 {
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	ImGuiIO& io = ImGui::GetIO();
+	io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
 }
 
 void DesktopWindow::SetCursorPosition(double xpos, double ypos)

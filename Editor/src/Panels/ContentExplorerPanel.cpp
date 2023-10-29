@@ -649,6 +649,8 @@ std::string ContentExplorerPanel::GetFileIconForFileType(FileType type) const
 		return ICON_FA_IMAGE;
 	case FileType::SCRIPT:
 		return ICON_FA_FILE_CODE;
+	case FileType::BEHAVIOURTREE:
+	case FileType::STATEMACHINE:
 	case FileType::VISUALSCRIPT:
 		return ICON_FA_DIAGRAM_PROJECT;
 	case FileType::AUDIO:

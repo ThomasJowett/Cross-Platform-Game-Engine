@@ -1,30 +1,17 @@
 #include "stdafx.h"
 #include "LuaBindings.h"
 
-#include "Logging/Logger.h"
 #include "Logging/Instrumentor.h"
-#include "Core/Application.h"
-#include "Core/Input.h"
-#include "Core/MouseButtonCodes.h"
-#include "Core/Joysticks.h"
-#include "Scene/Scene.h"
 #include "Scene/Entity.h"
-#include "Scene/SceneManager.h"
 #include "Scene/Components.h"
-#include "Utilities/StringUtils.h"
 #include "Renderer/Renderer2D.h"
 #include "Physics/HitResult2D.h"
 #include "Core/Settings.h"
 #include "LuaManager.h"
-#include "AI/BehaviorTree.h"
+#include "AI/BehaviourTree.h"
 
-template<typename T, typename... Args>
-void SetFunction(T& type, const std::string& name, const std::string& description, Args&&... args)
+namespace Lua
 {
-	type.set_function(name, std::forward<Args>(args)...);
-	LuaManager::AddIdentifier(name, description);
-}
-
 template<typename Component>
 void RegisterComponent(sol::state& state)
 {
@@ -33,167 +20,17 @@ void RegisterComponent(sol::state& state)
 	name = SplitString(name, '\n')[0];
 	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
-	SetFunction(entity_Type, "Add" + name, "Add " + name + " to entity", static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
-	SetFunction(entity_Type, "Remove" + name, "Remove " + name + " from entity", &Entity::RemoveComponent<Component>);
-	SetFunction(entity_Type, "Has" + name, "Has entity got a " + name, &Entity::HasComponent<Component>);
-	SetFunction(entity_Type, "GetOrAdd" + name, "Get or Add " + name , &Entity::GetOrAddComponent<Component>);
-	SetFunction(entity_Type, "Get" + name, "Get " + name, &Entity::TryGetComponent<Component>);
+	entity_Type.set_function("Add" + name, static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
+	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
+	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
+	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
+	entity_Type.set_function("Get" + name, &Entity::TryGetComponent<Component>);
 }
 
 template<typename... Component>
 void RegisterAllComponents(sol::state& state)
 {
 	(RegisterComponent<Component>(state), ...);
-}
-
-namespace Lua
-{
-void BindLogging(sol::state& state)
-{
-	PROFILE_FUNCTION();
-
-	sol::table log = state.create_table("Log");
-	LuaManager::AddIdentifier("Log", "Print to the log");
-
-	SetFunction(log, "Trace", "Print very fine detailed Diagnostic information", [](std::string_view message) { CLIENT_TRACE(message); });
-	SetFunction(log, "Info", "Normal application behaviour", [](std::string_view message) { CLIENT_INFO(message); });
-	SetFunction(log, "Debug", "Diagnostic information to help the understand the flow of scripts", [](std::string_view message) { CLIENT_DEBUG(message); });
-	SetFunction(log, "Warn", "Indicates you may have a problem or unusual situation", [](std::string_view message) { CLIENT_WARN(message); });
-	SetFunction(log, "Error", "Serious issue and a failure of something important", [](std::string_view message) { CLIENT_ERROR(message); });
-	SetFunction(log, "Critical", "Fatal error only to be called when the application is about to crash", [](std::string_view message) { CLIENT_CRITICAL(message); });
-}
-
-//--------------------------------------------------------------------------------------------------------------
-
-void BindApp(sol::state& state)
-{
-	PROFILE_FUNCTION();
-
-	std::initializer_list<std::pair<sol::string_view, int>> windowModes =
-	{
-		{ "Windowed", (int)WindowMode::WINDOWED },
-		{ "Full_Screen", (int)WindowMode::FULL_SCREEN },
-		{ "Borderless", (int)WindowMode::BORDERLESS }
-	};
-	state.new_enum("WindowMode", windowModes);
-
-	sol::table application = state.create_table("App");
-	LuaManager::AddIdentifier("App", "Application");
-
-	application.set_function("ShowImGui", &Application::ShowImGui);
-	application.set_function("ToggleImGui", &Application::ToggleImGui);
-
-	application.set_function("GetFixedUpdateInterval", [](sol::this_state s)
-		{ return Application::Get().GetFixedUpdateInterval(); });
-
-	application.set_function("MaximizeWindow", [](sol::this_state s)
-		{ return Application::GetWindow()->MaximizeWindow(); });
-	application.set_function("RestoreWindow", [](sol::this_state s)
-		{ return Application::GetWindow()->RestoreWindow(); });
-	application.set_function("SetWindowMode", [](sol::this_state s, WindowMode windowMode)
-		{ return Application::GetWindow()->SetWindowMode(windowMode); });
-
-	application.set_function("GetDocumentDirectory", []()
-		{ return Application::GetOpenDocumentDirectory().string(); });
-
-	sol::table settings = state.create_table("Settings");
-	LuaManager::AddIdentifier("Settings", "Application settings");
-
-	SetFunction(settings, "SetValue", "Set a value", & Settings::SetValue);
-	SetFunction(settings, "SetBool", "Set a boolean", & Settings::SetBool);
-	SetFunction(settings, "SetDouble", "Set a double", & Settings::SetDouble);
-	SetFunction(settings, "SetInt", "Set an integer", & Settings::SetInt);
-	SetFunction(settings, "SetVec2", "Set a vector2", & Settings::SetVector2f);
-	SetFunction(settings, "SetVec3", "Set a vector3", & Settings::SetVector3f);
-
-	SetFunction(settings, "GetValue", "Get a value", & Settings::GetValue);
-	SetFunction(settings, "GetBool", "Get a boolean", & Settings::GetBool);
-	SetFunction(settings, "GetDouble", "Get a double", & Settings::GetDouble);
-	SetFunction(settings, "GetInt", "Get an integer", & Settings::GetInt);
-	SetFunction(settings, "GetVec2", "Get a vector2", & Settings::GetVector2f);
-	SetFunction(settings, "GetVec3", "Get a vector3", & Settings::GetVector3f);
-
-	SetFunction(settings, "SetDefaultValue", "Set default value", & Settings::SetDefaultValue);
-	SetFunction(settings, "SetDefaultBool", "Set default boolean", &Settings::SetDefaultBool);
-	SetFunction(settings, "SetDefaultDouble", "Set default double", &Settings::SetDefaultDouble);
-	SetFunction(settings, "SetDefaultInt", "Set default integer", &Settings::SetDefaultInt);
-	SetFunction(settings, "SetDefaultVec2", "Set default vector2", &Settings::SetDefaultVector2f);
-	SetFunction(settings, "SetDefaultVec3", "Set default vector3", &Settings::SetDefaultVector3f);
-
-	SetFunction(settings, "GetDefaultValue", "Get default value", &Settings::GetDefaultValue);
-	SetFunction(settings, "GetDefaultBool", "Get default boolean", &Settings::GetDefaultBool);
-	SetFunction(settings, "GetDefaultDouble", "Get default double", &Settings::GetDefaultDouble);
-	SetFunction(settings, "GetDefaultInt", "Get default integer", &Settings::GetDefaultInt);
-	SetFunction(settings, "GetDefaultVec2", "Get default vector2", &Settings::GetDefaultVector2f);
-	SetFunction(settings, "GetDefaultVec3", "Get default vector3", &Settings::GetDefaultVector3f);
-}
-
-//--------------------------------------------------------------------------------------------------------------
-
-void ChangeScene(const std::string_view sceneFilepath)
-{
-	SceneManager::ChangeScene(std::filesystem::path(sceneFilepath));
-}
-
-Ref<Scene> LoadScene(const std::string_view sceneFilepath)
-{
-	Ref<Scene> newScene = CreateRef<Scene>(Application::GetOpenDocumentDirectory() / sceneFilepath);
-	newScene->Load();
-	return newScene;
-}
-
-void BindScene(sol::state& state)
-{
-	PROFILE_FUNCTION();
-
-	SetFunction(state, "ChangeScene", "Load and change to scene", & ChangeScene);
-	SetFunction(state, "LoadScene", "Load a scene", & LoadScene);
-
-	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
-	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
-	scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
-	scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
-	scene_type.set_function("FindEntity", &Scene::GetEntityByPath);
-	scene_type.set_function("InstantiateScene", &Scene::InstantiateScene);
-	scene_type.set_function("InstantiateEntity", &Scene::InstantiateEntity);
-
-	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
-	hitResult_type["Hit"] = &HitResult2D::hit;
-	hitResult_type["Entity"] = &HitResult2D::entity;
-	hitResult_type["Point"] = &HitResult2D::hitPoint;
-	hitResult_type["Normal"] = &HitResult2D::hitNormal;
-
-	scene_type.set_function("RayCast2D", &Scene::RayCast2D);
-	scene_type.set_function("MultiRayCast2D", &Scene::MultiRayCast2D);
-
-	sol::table assetManager = state.create_table("AssetManager");
-	assetManager.set_function("GetTexture", [](std::string_view path) -> Ref<Texture2D>
-		{
-			return AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
-		});
-	assetManager.set_function("GetMaterial", [](std::string_view path) -> Ref<Material>
-		{
-			return AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
-		});
-	assetManager.set_function("GetStaticMesh", [](std::string_view path) -> Ref<StaticMesh>
-		{
-			return AssetManager::GetAsset<StaticMesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
-		});
-	assetManager.set_function("GetPhysicsMaterial", [](std::string_view path) -> Ref<PhysicsMaterial>
-		{
-			return AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
-		});
-	assetManager.set_function("GetTileset", [](std::string_view path) -> Ref<Tileset>
-		{
-			return AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
-		});
-
-	sol::usertype<Material> material_type = state.new_usertype<Material>("Material");
-	material_type.set_function("SetShader", &Material::SetShader);
-	material_type.set_function("GetShader", &Material::GetShader);
-	material_type.set_function("AddTexture", &Material::AddTexture);
-	material_type.set_function("GetTextureOffset", &Material::GetTextureOffset);
-	material_type.set_function("SetTextureOffset", &Material::SetTextureOffset);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -357,124 +194,7 @@ void BindEntity(sol::state& state)
 
 //--------------------------------------------------------------------------------------------------------------
 
-void BindInput(sol::state& state)
-{
-	PROFILE_FUNCTION();
-
-	sol::table input = state.create_table("Input");
-	LuaManager::AddIdentifier("Input", "Input");
-
-	SetFunction(input, "IsKeyPressed", "Is key pressed", [](char c)
-		{
-			return Input::IsKeyPressed((int)c);
-		});
-	SetFunction(input, "IsMouseButtonPressed", "Is the mouse button pressed", &Input::IsMouseButtonPressed);
-	SetFunction(input, "GetMousePos", "Get mouse position", &Input::GetMousePos);
-
-	std::initializer_list<std::pair<sol::string_view, int>> mouseItems = {
-		{ "Left", MOUSE_BUTTON_LEFT },
-		{ "Right", MOUSE_BUTTON_RIGHT },
-		{ "Middle", MOUSE_BUTTON_MIDDLE },
-	};
-	state.new_enum("MouseButton", mouseItems);
-
-	std::initializer_list<std::pair<sol::string_view, int>> joystickItems = {
-		{ "A", GAMEPAD_BUTTON_A },
-		{ "B", GAMEPAD_BUTTON_B },
-		{ "X", GAMEPAD_BUTTON_X },
-		{ "Y", GAMEPAD_BUTTON_Y },
-		{ "LeftBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
-		{ "RightBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
-		{ "Back", GAMEPAD_BUTTON_BACK },
-		{ "Start", GAMEPAD_BUTTON_START },
-		{ "Guide",GAMEPAD_BUTTON_GUIDE },
-		{ "LeftThumbStick", GAMEPAD_BUTTON_LEFT_THUMB },
-		{ "RightThumbStick", GAMEPAD_BUTTON_RIGHT_THUMB },
-		{ "Up", GAMEPAD_BUTTON_DPAD_UP },
-		{ "Right", GAMEPAD_BUTTON_DPAD_RIGHT },
-		{ "Down", GAMEPAD_BUTTON_DPAD_DOWN },
-		{ "Left", GAMEPAD_BUTTON_DPAD_LEFT },
-		{ "Cross", GAMEPAD_BUTTON_CROSS },
-		{ "Circle", GAMEPAD_BUTTON_CIRCLE },
-		{ "Square", GAMEPAD_BUTTON_SQUARE },
-		{ "Triangle", GAMEPAD_BUTTON_TRIANGLE }
-	};
-	state.new_enum("JoystickButton", joystickItems);
-
-	std::initializer_list<std::pair<sol::string_view, int>> joystickAxisItems =
-	{
-		{ "LeftX", GAMEPAD_AXIS_LEFT_X },
-		{ "LeftY", GAMEPAD_AXIS_LEFT_Y },
-		{ "RightX", GAMEPAD_AXIS_RIGHT_X },
-		{ "RightY", GAMEPAD_AXIS_RIGHT_Y },
-		{ "LeftTrigger", GAMEPAD_AXIS_LEFT_TRIGGER },
-		{ "RightTrigger", GAMEPAD_AXIS_RIGHT_TRIGGER }
-	};
-	state.new_enum("JoystickAxis", joystickAxisItems);
-
-	input.set_function("GetJoyStickCount", &Joysticks::GetJoystickCount);
-	input.set_function("IsJoystickButtonPressed", &Input::IsJoystickButtonPressed);
-	input.set_function("GetJoystickAxis", &Input::GetJoystickAxis);
-}
-
 //--------------------------------------------------------------------------------------------------------------
-
-void BindMath(sol::state& state)
-{
-	PROFILE_FUNCTION();
-
-	sol::usertype<Vector2f> vector2_type = state.new_usertype<Vector2f>(
-		"Vec2",
-		sol::constructors<Vector2f(float, float), Vector2f()>(),
-		"x", &Vector2f::x,
-		"y", &Vector2f::y,
-		sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
-		sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; },
-		sol::meta_function::multiplication, [](const Vector2f& a, const float& b) {return a * b; },
-		sol::meta_function::unary_minus, [](Vector2f const& a) {return -a; }
-	);
-
-	vector2_type.set_function("Length", &Vector2f::Magnitude);
-	vector2_type.set_function("SqrLength", &Vector2f::SqrMagnitude);
-	vector2_type.set_function("Normalize", &Vector2f::Normalize);
-	vector2_type.set_function("Clamp", &Vector2f::Clamp);
-	vector2_type.set_function("Perpendicular", &Vector2f::Perpendicular);
-
-	sol::usertype<Vector3f> vector3_type = state.new_usertype<Vector3f>(
-		"Vec3",
-		sol::constructors<Vector3f(float, float, float), Vector3f()>(),
-		"x", &Vector3f::x,
-		"y", &Vector3f::y,
-		"z", &Vector3f::z,
-		sol::meta_function::addition, [](const Vector3f& a, const Vector3f& b) { return a + b; },
-		sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; },
-		sol::meta_function::multiplication, [](const Vector3f& a, const float& b) {return a * b; },
-		sol::meta_function::unary_minus, [](Vector3f const& a) {return -a; }
-	);
-
-	vector3_type.set_function("Length", &Vector3f::Magnitude);
-	vector3_type.set_function("SqrLength", &Vector3f::SqrMagnitude);
-	vector3_type.set_function("Normalize", &Vector3f::Normalize);
-
-	sol::usertype<Quaternion> quaternion_type = state.new_usertype<Quaternion>(
-		"Quaternion",
-		sol::constructors<Quaternion(float, float, float), Quaternion()>(),
-		"w", &Quaternion::w,
-		"x", &Quaternion::x,
-		"y", &Quaternion::y,
-		"z", &Quaternion::z,
-		sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a + b; },
-		sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a - b; }
-	);
-
-	quaternion_type.set_function("EulerAngles", &Quaternion::EulerAngles);
-	quaternion_type.set_function("Length", &Quaternion::GetMagnitude);
-	quaternion_type.set_function("SqrLength", &Quaternion::GetSqrMagnitude);
-	quaternion_type.set_function("Normalize", &Quaternion::Normalize);
-	quaternion_type.set_function("GetNormalized", &Quaternion::GetNormalized);
-	quaternion_type.set_function("Conjugate", &Quaternion::Conjugate);
-	quaternion_type.set_function("Inverse", &Quaternion::Inverse);
-}
 
 void BindCommonTypes(sol::state& state)
 {

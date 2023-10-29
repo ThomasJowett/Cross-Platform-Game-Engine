@@ -6,6 +6,7 @@
 #include "Physics/PhysicsMaterial.h"
 
 #include "Utilities/FileUtils.h"
+#include "Utilities/SerializationUtils.h"
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 
@@ -28,25 +29,15 @@ private:
 	void save(Archive& archive) const
 	{
 		archive(offset, size, isTrigger);
-		
-		std::string relativePath;
-		if (physicsMaterial)
-		{
-			relativePath = FileUtils::RelativePath(physicsMaterial->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-		}
-		archive(relativePath);
+
+		SerializationUtils::SaveAssetToArchive(archive, physicsMaterial);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
 		archive(offset, size, isTrigger);
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-			physicsMaterial = AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-		else
-			physicsMaterial.reset();
+		SerializationUtils::LoadAssetFromArchive(archive, physicsMaterial);
 
 		runtimeBody = nullptr;
 	}

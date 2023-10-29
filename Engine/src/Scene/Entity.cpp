@@ -31,11 +31,6 @@ void Entity::Destroy()
 	m_Scene->RemoveEntity(*this);
 }
 
-TransformComponent& Entity::GetTransform()
-{
-	return GetComponent<TransformComponent>();
-}
-
 std::string& Entity::GetName()
 {
 	return GetComponent<NameComponent>().name;

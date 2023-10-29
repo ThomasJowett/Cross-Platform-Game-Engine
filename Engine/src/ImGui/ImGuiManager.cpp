@@ -68,7 +68,7 @@ void ImGuiManager::Init()
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
-		
+
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}

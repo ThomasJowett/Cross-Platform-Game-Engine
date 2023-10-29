@@ -1,5 +1,5 @@
 #pragma once
-#include "BehaviorTree.h"
+#include "BehaviourTree.h"
 
 namespace BehaviourTree
 {

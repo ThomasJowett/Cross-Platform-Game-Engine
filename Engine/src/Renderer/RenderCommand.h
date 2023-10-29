@@ -32,6 +32,16 @@ public:
 		s_RendererAPI->Clear();
 	}
 
+	inline static void ClearColour()
+	{
+		s_RendererAPI->ClearColour();
+	}
+
+	inline static void ClearDepth()
+	{
+		s_RendererAPI->ClearDepth();
+	}
+
 	// Draws primitives from the vertex array
 	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL)
 	{

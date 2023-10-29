@@ -1,5 +1,6 @@
 #pragma once
 
+#define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui/imgui.h"
 
 #include "ViewportCameraController.h"
@@ -99,4 +100,6 @@ private:
 	Ref<Mesh> m_GridMesh;
 
 	Ref<EditComponentCommand<TransformComponent>> m_EditTransformCommand = nullptr;
+
+	bool m_Fullscreen = false;
 };
