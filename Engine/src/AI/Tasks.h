@@ -1,6 +1,6 @@
 #pragma once
 
-#include "BehaviorTree.h"
+#include "BehaviourTree.h"
 #include "sol/sol.hpp"
 
 namespace BehaviourTree

@@ -2,7 +2,7 @@
 
 #include "cereal/access.hpp"
 
-#include "AI/BehaviorTree.h"
+#include "AI/BehaviourTree.h"
 #include "AI/BehaviourTreeSerializer.h"
 
 struct BehaviourTreeComponent

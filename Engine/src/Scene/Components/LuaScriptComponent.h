@@ -30,8 +30,15 @@ struct LuaScriptComponent
 	void OnUpdate(float deltaTime);
 	void OnFixedUpdate();
 	void OnDebugRender();
+
 	void OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point);
 	void OnEndContact(b2Fixture* fixture);
+
+	void OnPressed();
+	void OnReleased();
+	void OnHovered();
+	void OnUnHovered();
+
 	bool IsContactListener();
 
 	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }

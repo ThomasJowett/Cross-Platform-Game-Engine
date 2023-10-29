@@ -1,7 +1,7 @@
 file(GLOB ENGINE_FILES
     src/AI/Astar.cpp
     src/AI/Astar.h
-    src/AI/BehaviorTree.h
+    src/AI/BehaviourTree.h
     src/AI/BehaviourTreeSerializer.cpp
     src/AI/BehaviourTreeSerializer.h
     src/AI/Decorators.h
@@ -148,6 +148,11 @@ file(GLOB ENGINE_FILES
     src/Scripting/Lua/LuaBindings.h
     src/Scripting/Lua/LuaManager.cpp
     src/Scripting/Lua/LuaManager.h
+    src/Scripting/Lua/LuaApp.cpp
+    src/Scripting/Lua/LuaInput.cpp
+    src/Scripting/Lua/LuaLogging.cpp
+    src/Scripting/Lua/LuaMaths.cpp
+    src/Scripting/Lua/LuaScene.cpp
     src/Utilities/Box2DDebugDraw.cpp
     src/Utilities/Box2DDebugDraw.h
     src/Utilities/FileUtils.cpp

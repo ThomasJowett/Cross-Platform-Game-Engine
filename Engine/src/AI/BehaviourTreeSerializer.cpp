@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "BehaviourTreeSerializer.h"
 
-#include "BehaviorTree.h"
+#include "BehaviourTree.h"
 #include "Decorators.h"
 #include "Tasks.h"
 
