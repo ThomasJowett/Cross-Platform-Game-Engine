@@ -100,4 +100,6 @@ private:
 	Ref<Mesh> m_GridMesh;
 
 	Ref<EditComponentCommand<TransformComponent>> m_EditTransformCommand = nullptr;
+
+	bool m_Fullscreen = false;
 };

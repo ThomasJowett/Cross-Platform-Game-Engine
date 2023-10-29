@@ -495,14 +495,23 @@ void ViewportPanel::OnImGuiRender()
 	ImGuizmo::SetOrthographic(m_Is2DMode);
 	ImGuizmo::BeginFrame();
 
-	ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
-	ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
-
 	ImGuiIO& io = ImGui::GetIO();
 	ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_MenuBar;
 
 	if (SceneManager::CurrentScene()->IsDirty() && SceneManager::GetSceneState() == SceneState::Edit)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
+
+	if (m_Fullscreen) {
+		bool use_work_area = true;
+		const ImGuiViewport* viewport = ImGui::GetMainViewport();
+		ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
+		ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
+		flags |= ImGuiWindowFlags_NoDecoration;
+	}
+	else {
+		ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
+	}
 
 	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 	bool shown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
@@ -1122,6 +1131,10 @@ void ViewportPanel::HandleKeyboardInputs()
 		SceneManager::ChangeSceneState(SceneState::Edit);
 	}
 
+	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F11)))
+	{
+		m_Fullscreen = !m_Fullscreen;
+	}
 
 	if (SceneManager::GetSceneState() == SceneState::Play) {
 		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
