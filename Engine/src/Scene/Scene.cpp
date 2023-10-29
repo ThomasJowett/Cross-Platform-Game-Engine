@@ -98,10 +98,10 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
 
-	if(TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>(); transformComp)
+	if (TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>(); transformComp)
 		transformComp->position += position;
 
-	if(m_PhysicsEngine2D)
+	if (m_PhysicsEngine2D)
 		m_PhysicsEngine2D->InitializeEntity(newEntity);
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
@@ -354,8 +354,22 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	{
 		auto&& [widgetComp, buttonComp] = buttonGroup.get(entity);
 
+		switch (widgetComp.state)
+		{
+		case WidgetComponent::WidgetState::normal:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::hovered:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.hoveredTexture, buttonComp.hoveredTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::clicked:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.clickedTexture, buttonComp.clickedTint, 1.0f, (int)entity);
+			break;
+		default:
+			break;
+		}
+
 		//TODO: check button state
-		Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
 	}
 	Renderer::EndScene();
 
@@ -417,7 +431,7 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_Registry.view<BehaviourTreeComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& behaviourTreeComponent)
 		{
-			if(behaviourTreeComponent.behaviourTree)
+			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->update(deltaTime);
 		});
 
@@ -512,7 +526,7 @@ void Scene::OnFixedUpdate()
 
 		m_Registry.view<TransformComponent, TilemapComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				if(colliderComp.runtimeBody)
+				if (colliderComp.runtimeBody)
 					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 	}
