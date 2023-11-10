@@ -4,9 +4,9 @@
 #include "Logging/Instrumentor.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11RendererAPI.h"
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #include "Platform/Vulkan/VulkanRendererAPI.h"
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
@@ -23,14 +23,14 @@ int RenderCommand::CreateRendererAPI()
 		s_RendererAPI = CreateScope<OpenGLRendererAPI>();
 		return 0;
 	}
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	else if(api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
 		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
 		return 0;
 	}
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	else if (api == "Metal")
 	{
