@@ -378,7 +378,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 		return -1;
 
 	if (selection.size() == 1)
-		return selection.at(0);
+		return selection.at(0) + 1;
 
 	float totalProbabilites = 0.0f;
 
