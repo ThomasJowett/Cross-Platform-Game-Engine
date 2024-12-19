@@ -267,4 +267,4 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 	return std::nullopt;
 }
 
-#endif // __WINDOWS__
+#endif // _WINDOWS

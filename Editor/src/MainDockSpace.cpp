@@ -1,8 +1,8 @@
 #include "MainDockSpace.h"
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include <shellapi.h>
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"

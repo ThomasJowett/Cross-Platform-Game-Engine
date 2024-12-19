@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "VulkanRendererAPI.h"
 
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
 
 VulkanRendererAPI::~VulkanRendererAPI()
 {
