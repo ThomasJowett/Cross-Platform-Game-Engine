@@ -32,8 +32,16 @@ Engine/vendor/GLFW/include
 Engine/vendor/GLAD/include
 )
 
-find_package(Vulkan REQUIRED)
 find_package(OpenGL REQUIRED)
+
+include(FetchContent)
+
+FetchContent_Declare(
+  webgpu
+  GIT_REPOSITORY https://github.com/eliemichel/WebGPU-distribution
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(webgpu)
 
 include_directories(${OPENGL_INCLUDE_DIRS})
 
@@ -41,23 +49,11 @@ IF(UNIX AND NOT APPLE)
     set(LINUX TRUE)
 ENDIF()
 
-IF(WIN32)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DVK_USE_PLATFORM_WIN32_KHR")
-ENDIF()
-
-IF (NOT Vulkan_FOUND)
-	message(FATAL_ERROR "Could not find Vulkan library!")
-ELSE()
-	message(STATUS ${Vulkan_LIBRARY})
-ENDIF()
-
 if (MSVC)
     add_compile_options(/MP /ZI /JMC)
     set(DEFAULT_STARTUP_TARGET Editor)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DEFAULT_STARTUP_TARGET})
 endif()
-
-
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)
@@ -83,6 +79,7 @@ add_subdirectory(Editor/vendor)
 add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
 add_subdirectory(Engine/vendor/box2d)
+add_subdirectory(Engine/vendor/glfw3webgpu)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 

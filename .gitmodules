@@ -40,3 +40,6 @@
 [submodule "Engine/vendor/msdf-atlas-gen"]
 	path = Engine/vendor/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
+[submodule "Engine/vendor/glfw3webgpu"]
+	path = Engine/vendor/glfw3webgpu
+	url = git@github.com:eliemichel/glfw3webgpu.git

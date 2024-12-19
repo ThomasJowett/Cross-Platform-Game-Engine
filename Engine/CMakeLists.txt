@@ -17,28 +17,6 @@ file(GLOB_RECURSE ENGINE_FILES
     src/ImGui/ImGuiUtilities.cpp
 )
 
-if(WIN32)
-    file(GLOB DIRECTX_FILES
-        src/ImGui/ImGuiBuildDirectX11.cpp
-        src/Platform/DirectX/DirectX11Buffer.cpp
-        src/Platform/DirectX/DirectX11Buffer.h
-        src/Platform/DirectX/DirectX11FrameBuffer.cpp
-        src/Platform/DirectX/DirectX11FrameBuffer.h
-        src/Platform/DirectX/DirectX11RendererAPI.cpp
-        src/Platform/DirectX/DirectX11RendererAPI.h
-        src/Platform/DirectX/DirectX11Texture.cpp
-        src/Platform/DirectX/DirectX11Texture.h
-        src/Platform/DirectX/DirectX11Context.cpp
-        src/Platform/DirectX/DirectX11Context.h
-        src/Platform/DirectX/DirectX11Pipeline.cpp
-        src/Platform/DirectX/DirectX11Pipeline.h
-        src/Platform/DirectX/DirectX11Shader.cpp
-        src/Platform/DirectX/DirectX11Shader.h
-        src/Platform/DirectX/DirectX11UniformBuffer.cpp
-        src/Platform/DirectX/DirectX11UniformBuffer.h
-    )
-endif()
-
 file (GLOB OPENGL_FILES
     src/Platform/OpenGL/OpenGLBuffer.cpp
     src/Platform/OpenGL/OpenGLBuffer.h
@@ -56,41 +34,41 @@ file (GLOB OPENGL_FILES
     src/Platform/OpenGL/OpenGLPipeline.h
     src/Platform/OpenGL/OpenGLShader.cpp
     src/Platform/OpenGL/OpenGLShader.h
-    src/Platform/OpenGL/OpenGlUniformBuffer.cpp
-    src/Platform/OpenGL/OpenGlUniformBuffer.h
+    src/Platform/OpenGL/OpenGLUniformBuffer.cpp
+    src/Platform/OpenGL/OpenGLUniformBuffer.h
 )
 
-file (GLOB VULKAN_FILES
-    src/Platform/Vulkan/VulkanBuffer.cpp
-    src/Platform/Vulkan/VulkanBuffer.h
-    src/Platform/Vulkan/VulkanDevice.cpp
-    src/Platform/Vulkan/VulkanDevice.h
-    src/Platform/Vulkan/VulkanRendererAPI.cpp
-    src/Platform/Vulkan/VulkanRendererAPI.h
-    src/Platform/Vulkan/VulkanTexture.cpp
-    src/Platform/Vulkan/VulkanTexture.h
-    src/Platform/Vulkan/VulkanContext.cpp
-    src/Platform/Vulkan/VulkanContext.h
-    src/Platform/Vulkan/VulkanFrameBuffer.cpp
-    src/Platform/Vulkan/VulkanFrameBuffer.h
-    src/Platform/Vulkan/VulkanShader.cpp
-    src/Platform/Vulkan/VulkanShader.h
-    src/Platform/Vulkan/VulkanUniformBuffer.cpp
-    src/Platform/Vulkan/VulkanUniformBuffer.h
+file (GLOB WEBGPU_FILES
+    src/Platform/WebGPU/WebGPUBuffer.cpp
+    src/Platform/WebGPU/WebGPUBuffer.h
+    src/Platform/WebGPU/WebGPUFrameBuffer.cpp
+    src/Platform/WebGPU/WebGPUFrameBuffer.h
+    src/Platform/WebGPU/WebGPURendererAPI.cpp
+    src/Platform/WebGPU/WebGPURendererAPI.h
+    src/Platform/WebGPU/WebGPUTexture.cpp
+    src/Platform/WebGPU/WebGPUTexture.h
+    src/Platform/WebGPU/WebGPUVertexArray.cpp
+    src/Platform/WebGPU/WebGPUVertexArray.h
+    src/Platform/WebGPU/WebGPUContext.cpp
+    src/Platform/WebGPU/WebGPUContext.h
+    src/Platform/WebGPU/WebGPUPipeline.cpp
+    src/Platform/WebGPU/WebGPUPipeline.h
+    src/Platform/WebGPU/WebGPUShader.cpp
+    src/Platform/WebGPU/WebGPUShader.h
+    src/Platform/WebGPU/WebGPUUniformBuffer.cpp
+    src/Platform/WebGPU/WebGPUUniformBuffer.h
 )
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
-add_library(Engine ${ENGINE_FILES} ${DIRECTX_FILES} ${OPENGL_FILES} ${VULKAN_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
+add_library(Engine ${ENGINE_FILES} ${OPENGL_FILES} ${WEBGPU_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
 
 group_files_by_directory("ENGINE_FILES")
-group_files_by_directory("DIRECTX_FILES")
 group_files_by_directory("OPENGL_FILES")
-group_files_by_directory("VULKAN_FILES")
+group_files_by_directory("WEBGPU_FILES")
 
 target_link_libraries(Engine PRIVATE
                       ${OpenGL_LIBRARY}
-                      ${Vulkan_LIBRARY}
                       glfw
                       glad
                       imgui
@@ -98,6 +76,8 @@ target_link_libraries(Engine PRIVATE
                       lua
                       box2d
                       msdf-atlas-gen
+                      webgpu
+                      glfw3webgpu
                       )
 
 add_definitions(
