@@ -1,0 +1,43 @@
+#pragma once
+
+#include "Renderer/Buffer.h"
+#include "WebGPUVertexArray.h"
+
+class WebGPUVertexBuffer : public VertexBuffer
+{
+public:
+	WebGPUVertexBuffer(uint32_t size);
+	WebGPUVertexBuffer(void* vertices, uint32_t size);
+	~WebGPUVertexBuffer();
+
+	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; m_VertexArray->AddVertexBuffer(this); }
+	virtual const BufferLayout& GetLayout() const override { return m_Layout; }
+
+	virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
+	virtual void SetData(const void* data) override;
+
+	virtual void Bind() const override;
+	virtual void UnBind() const override;
+
+	virtual uint32_t GetSize() override { return m_Size; }
+private:
+	uint32_t m_RendererID;
+	BufferLayout m_Layout;
+	uint32_t m_Size;
+
+	Ref<WebGPUVertexArray> m_VertexArray;
+};
+
+class WebGPUIndexBuffer : public IndexBuffer
+{
+public:
+	WebGPUIndexBuffer(uint32_t* indices, uint32_t count);
+	~WebGPUIndexBuffer();
+	virtual void Bind() const override;
+	virtual void UnBind() const override;
+
+	virtual uint32_t GetCount() const override { return m_Count; }
+private:
+	uint32_t m_RendererID;
+	uint32_t m_Count;
+};
