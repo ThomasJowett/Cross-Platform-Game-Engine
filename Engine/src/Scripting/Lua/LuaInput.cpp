@@ -8,6 +8,8 @@
 #include "Core/MouseButtonCodes.h"
 #include "Core/Joysticks.h"
 
+#include "Scene/SceneManager.h"
+
 namespace Lua
 {
 void BindInput(sol::state& state)
@@ -88,7 +90,12 @@ void BindInput(sol::state& state)
 	SetFunction(input, "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
 		{ return Application::GetWindow()->SetCursor(cursor); });
 	SetFunction(input, "DisableCursor", "Disable the cursor", [](sol::this_state s)
-		{ return Application::GetWindow()->DisableCursor(); });
+		{
+			if (SceneManager::GetSceneState() == SceneState::Play)
+				return Application::GetWindow()->DisableCursor();
+			else
+				return;
+		});
 	SetFunction(input, "EnableCursor", "Enable the cursor", [](sol::this_state s)
 		{ return Application::GetWindow()->EnableCursor(); });
 	SetFunction(input, "SetCursorPosition", "Set the position of the cursor", [](sol::this_state s, double xPos, double yPos)
