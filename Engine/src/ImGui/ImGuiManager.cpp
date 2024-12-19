@@ -11,23 +11,9 @@
 #include "imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
-
-#include "imgui/backends/imgui_impl_vulkan.h"
-#include "Platform/Vulkan/VulkanContext.h"
-
-static ImGui_ImplVulkanH_Window g_WindowData;
-extern VkInstance g_VkInstance;
+#include "imgui/backends/imgui_impl_wgpu.h"
 
 #include "GLFW/glfw3.h"
-
-#ifdef __WINDOWS__
-#include "Platform/DirectX/DirectX11RendererAPI.h"
-#include "Platform/DirectX/DirectX11Context.h"
-#include "imgui/backends/imgui_impl_dx11.h"
-
-extern ID3D11Device* g_D3dDevice;
-extern ID3D11DeviceContext* g_ImmediateContext;
-#endif // __WINDOWS__
 
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)
@@ -56,30 +42,19 @@ void ImGuiManager::Init()
 
 	//Setup Platform/Renderer bindings
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef __WINDOWS__
-		if (ImGui_ImplGlfw_InitForOther(Application::GetWindow()->GetNativeWindow(), true))
-		{
-			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
-		}
-#endif // __WINDOWS__
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
 
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
-	else if (api == RendererAPI::API::Vulkan)
+	else if (api == RendererAPI::API::WebGPU)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
 
-		if (ImGui_ImplGlfw_InitForVulkan(window, true)) {
-			ImGui_ImplVulkan_InitInfo initInfo = {};
-			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
-			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
+		if (ImGui_ImplGlfw_InitForOther(window, true)) {
+			m_UsingImGui = ImGui_ImplWGPU_Init(m_Device, 3, m_SwapchainFormat, m_DepthTextureFormat);//TODO: get the device, swapchain format and depth texture format
 		}
 	}
 	else
@@ -93,11 +68,9 @@ void ImGuiManager::Shutdown()
 	PROFILE_FUNCTION();
 
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
+	if (api == RendererAPI::API::WebGPU)
 	{
-#ifdef __WINDOWS__
-		ImGui_ImplDX11_Shutdown();
-#endif // __WINDOWS__
+		ImGui_ImplWGPU_Shutdown();
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -121,19 +94,13 @@ void ImGuiManager::Begin()
 {
 	PROFILE_FUNCTION();
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef __WINDOWS__
-		ImGui_ImplDX11_NewFrame();
-#endif // __WINDOWS__
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 	}
-	else if (api == RendererAPI::API::Vulkan)
+	else if (api == RendererAPI::API::WebGPU)
 	{
-		ImGui_ImplVulkan_NewFrame();
+		ImGui_ImplWGPU_NewFrame();
 	}
 	ImGui_ImplGlfw_NewFrame();
 
@@ -151,19 +118,13 @@ void ImGuiManager::End()
 	ImGui::Render();
 
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef __WINDOWS__
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif // __WINDOWS__
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
-	else if (api == RendererAPI::API::Vulkan)
+	else if (api == RendererAPI::API::WebGPU)
 	{
-		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
+		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);//TODO: pass the render pass to this function
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

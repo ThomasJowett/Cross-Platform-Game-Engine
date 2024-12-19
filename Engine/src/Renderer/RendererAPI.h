@@ -17,9 +17,7 @@ public:
 	{
 		None = 0,
 		OpenGL = 1,
-		Directx11,
-		Metal,
-		Vulkan
+		WebGPU
 	};
 
 public:

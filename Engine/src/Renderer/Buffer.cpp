@@ -5,10 +5,7 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
-#ifdef __WINDOWS__
-#include "Platform/DirectX/DirectX11Buffer.h"
-#endif // __WINDOWS__
-#include "Platform/Vulkan/VulkanBuffer.h"
+#include "Platform/WebGPU/WebGPUBuffer.h"
 
 Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 {
@@ -19,18 +16,8 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 			return nullptr;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLVertexBuffer>(size);
-#ifdef __WINDOWS__
-	case RendererAPI::API::Directx11:
-		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
-		return CreateRef<DirectX11VertexBuffer>(size);
-#endif // __WINDOWS__
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
-		return nullptr;
-#endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanVertexBuffer>(size);
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUVertexBuffer>(size);
 	default:
 		break;
 	}
@@ -50,18 +37,8 @@ Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 			return nullptr;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLVertexBuffer>(vertices, size);
-#ifdef __WINDOWS__
-	case RendererAPI::API::Directx11:
-		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
-		return CreateRef<DirectX11VertexBuffer>(vertices, size);
-#endif // __WINDOWS__
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
-		return nullptr;
-#endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanVertexBuffer>(vertices, size);
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUVertexBuffer>(vertices, size);
 	default:
 		break;
 	}
@@ -80,18 +57,8 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLIndexBuffer>(indices, size);
-#ifdef __WINDOWS__
-	case RendererAPI::API::Directx11:
-		ENGINE_WARN("Could not create index buffer: DirectX is not currently supported");
-		return CreateRef<DirectX11IndexBuffer>(indices, size);
-#endif // __WINDOWS__
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported");
-		return nullptr;
-#endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanIndexBuffer>(indices, size);
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUIndexBuffer>(indices, size);
 	default:
 		break;
 	}

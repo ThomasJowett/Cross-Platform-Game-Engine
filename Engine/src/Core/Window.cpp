@@ -12,11 +12,10 @@
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
-#include "Platform/Vulkan/VulkanContext.h"
+#include "Platform/WebGPU/WebGPUContext.h"
 #ifdef _WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"   // for glfwGetWin32Window
-#include "Platform/DirectX/DirectX11Context.h"
 #endif
 
 #include "stb_image.h"
@@ -268,8 +267,7 @@ bool Window::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
-
-		else if (api == RendererAPI::API::Directx11 || api == RendererAPI::API::Vulkan)
+		else if (api == RendererAPI::API::WebGPU)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
@@ -288,15 +286,9 @@ bool Window::Init(const WindowProps& props)
 	{
 		m_Context = CreateRef<OpenGLContext>(m_Window);
 	}
-	else if (api == RendererAPI::API::Directx11)
+	else if (api == RendererAPI::API::WebGPU)
 	{
-#ifdef _WINDOWS
-		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
-#endif
-	}
-	else if (api == RendererAPI::API::Vulkan)
-	{
-		m_Context = CreateRef<VulkanContext>();
+		m_Context = CreateRef<WebGPUContext>(m_Window);
 	}
 
 	m_Context->Init();
