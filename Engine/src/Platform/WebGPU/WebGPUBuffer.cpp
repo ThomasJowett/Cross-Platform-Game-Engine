@@ -3,42 +3,62 @@
 
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
-#include <glad/glad.h>
+#include "Renderer/RenderCommand.h"
 
 WebGPUVertexBuffer::WebGPUVertexBuffer(uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-	m_VertexArray = CreateRef<WebGPUVertexArray>();
+	wgpu::BufferDescriptor bufferDesc{};
+	bufferDesc.size = size;
+	bufferDesc.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst;
+	bufferDesc.mappedAtCreation = false;
+
+	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	m_Buffer = device.createBuffer(bufferDesc);
 }
 
 WebGPUVertexBuffer::WebGPUVertexBuffer(void* vertices, uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
-	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
-	m_VertexArray = CreateRef<WebGPUVertexArray>();
+	wgpu::BufferDescriptor bufferDesc{};
+	bufferDesc.size = size;
+	bufferDesc.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst;
+	bufferDesc.mappedAtCreation = true;
+	
+	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+
+	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	m_Buffer = device.createBuffer(bufferDesc);
+
+	void* mappedData = m_Buffer.getMappedRange(0, size);
+	memcpy(mappedData, vertices, size);
+	m_Buffer.unmap();
 }
 
 WebGPUVertexBuffer::~WebGPUVertexBuffer()
 {
 	PROFILE_FUNCTION();
 	if (Application::Get().IsRunning())
-		glDeleteBuffers(1, &m_RendererID);
+		m_Buffer.release();
 }
 
 void WebGPUVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 {
-	CORE_ASSERT(size <= m_Size, "Size must be less than the buffer size");
+	CORE_ASSERT(size + offset <= m_Size, "Size must be less than the buffer size");
 
 	PROFILE_FUNCTION();
-	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	glBufferSubData(GL_ARRAY_BUFFER, offset, size, data);
+	void* mappedMemory = m_Buffer.getMappedRange(offset, size);
+	CORE_ASSERT(mappedMemory, "Failed to map buffer for writing");
+
+	memcpy(mappedMemory, data, size);
+	m_Buffer.unmap();
 }
 
 void WebGPUVertexBuffer::SetData(const void* data)
@@ -49,14 +69,12 @@ void WebGPUVertexBuffer::SetData(const void* data)
 void WebGPUVertexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
-	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	m_VertexArray->Bind();
+	//TODO: get the renderpass and call 
+	// renderPass.setVertexBuffer(0, m_Buffer, 0, m_Buffer.getSize());
 }
 
 void WebGPUVertexBuffer::UnBind() const
 {
-	PROFILE_FUNCTION();
-	glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
 //------------------------------------------------------------------------------------
@@ -65,26 +83,39 @@ WebGPUIndexBuffer::WebGPUIndexBuffer(uint32_t* indices, uint32_t count)
 	:m_Count(count)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
-	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	glBufferData(GL_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
+	uint32_t size = count * sizeof(uint32_t);
+
+	wgpu::BufferDescriptor bufferDesc{};
+	bufferDesc.size = size;
+	bufferDesc.usage = wgpu::BufferUsage::Index | wgpu::BufferUsage::CopyDst;
+	bufferDesc.mappedAtCreation = true;
+
+	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+
+	m_Buffer = device.createBuffer(bufferDesc);
+
+	void* mappedData = m_Buffer.getMappedRange(0, size);
+	memcpy(mappedData, indices, size);
+	m_Buffer.unmap();
 }
 
 WebGPUIndexBuffer::~WebGPUIndexBuffer()
 {
 	PROFILE_FUNCTION();
 	if (Application::Get().IsRunning())
-		glDeleteBuffers(1, &m_RendererID);
+		m_Buffer.release();
 }
 
 void WebGPUIndexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_RendererID);
+	//TODO: get the render pass and call:
+	//renderPass.setIndexBuffer(m_Buffer, wgpu::IndexFormat::Uint16, 0, m_Count * sizeof(uint16_t));
 }
 
 void WebGPUIndexBuffer::UnBind() const
 {
-	PROFILE_FUNCTION();
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }

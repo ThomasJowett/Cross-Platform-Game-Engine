@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Renderer/Buffer.h"
-#include "WebGPUVertexArray.h"
+#include "WebGPUContext.h"
+
+#include <webgpu/webgpu.hpp>
 
 class WebGPUVertexBuffer : public VertexBuffer
 {
@@ -10,7 +12,7 @@ public:
 	WebGPUVertexBuffer(void* vertices, uint32_t size);
 	~WebGPUVertexBuffer();
 
-	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; m_VertexArray->AddVertexBuffer(this); }
+	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout;}
 	virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 
 	virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
@@ -21,11 +23,11 @@ public:
 
 	virtual uint32_t GetSize() override { return m_Size; }
 private:
-	uint32_t m_RendererID;
+	wgpu::Buffer m_Buffer;
 	BufferLayout m_Layout;
 	uint32_t m_Size;
 
-	Ref<WebGPUVertexArray> m_VertexArray;
+	Ref<WebGPUContext> m_WebGPUContext;
 };
 
 class WebGPUIndexBuffer : public IndexBuffer
@@ -38,6 +40,8 @@ public:
 
 	virtual uint32_t GetCount() const override { return m_Count; }
 private:
-	uint32_t m_RendererID;
+	wgpu::Buffer m_Buffer;
 	uint32_t m_Count;
+
+	Ref<WebGPUContext> m_WebGPUContext;
 };
