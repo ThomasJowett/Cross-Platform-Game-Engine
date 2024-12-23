@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Renderer/Pipeline.h"
-#include "WebGPUVertexArray.h"
+#include "WebGPUContext.h"
+#include <webgpu/webgpu.hpp>
 
 class WebGPUPipeline : public Pipeline
 {
@@ -20,5 +21,8 @@ private:
 	bool m_BackfaceCull = true;
 
 	Ref<Shader> m_Shader = nullptr;
-	Ref<WebGPUVertexArray> m_VertexArray;
+
+	wgpu::RenderPipeline m_Pipeline;
+
+	Ref<WebGPUContext> m_WebGPUContext;
 };
