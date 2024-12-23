@@ -63,6 +63,14 @@ void OpenGLRendererAPI::ClearDepth()
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
+void OpenGLRendererAPI::StartRenderPass()
+{
+}
+
+void OpenGLRendererAPI::EndRenderPass()
+{
+}
+
 void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
 	if (!backFaceCull)

@@ -42,6 +42,11 @@ public:
 		s_RendererAPI->ClearDepth();
 	}
 
+	inline static void StartRenderPass()
+	{
+		s_RendererAPI->StartRenderPass();
+	}
+
 	// Draws primitives from the vertex array
 	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL)
 	{

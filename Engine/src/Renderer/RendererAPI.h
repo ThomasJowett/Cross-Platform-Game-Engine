@@ -29,6 +29,9 @@ public:
 	virtual void ClearColour() = 0;
 	virtual void ClearDepth() = 0;
 
+	virtual void StartRenderPass() = 0;
+	virtual void EndRenderPass() = 0;
+
 	virtual void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL) = 0;
 	virtual void DrawLines(uint32_t vertexCount = 0) = 0;
 

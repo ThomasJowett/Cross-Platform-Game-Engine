@@ -60,7 +60,29 @@ void WebGPURendererAPI::ClearColour()
 
 void WebGPURendererAPI::ClearDepth()
 {
-	glClear(GL_DEPTH_BUFFER_BIT);
+}
+
+void WebGPURendererAPI::StartRenderPass()
+{
+	wgpu::RenderPassDescriptor renderPassDesc = {};
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+
+	wgpu::CommandEncoderDescriptor encoderDesc = {};
+	encoderDesc.label = "Command encoder";
+
+	wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
+
+	//TODO: render pass descriptor
+
+	m_RenderPass = encoder.beginRenderPass(renderPassDesc);
+
+}
+
+void WebGPURendererAPI::EndRenderPass()
+{
+	m_RenderPass.end();
+	m_RenderPass.release();
 }
 
 void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
