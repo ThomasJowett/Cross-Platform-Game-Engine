@@ -39,6 +39,7 @@ file (GLOB OPENGL_FILES
 )
 
 file (GLOB WEBGPU_FILES
+    src/Platform/WebGPU/WebGPU.cpp
     src/Platform/WebGPU/WebGPUBuffer.cpp
     src/Platform/WebGPU/WebGPUBuffer.h
     src/Platform/WebGPU/WebGPUFrameBuffer.cpp
@@ -92,6 +93,12 @@ else ()
   add_compile_options(-Wa,-mbig-obj)
 endif ()
 
+if(XCODE)
+    set_target_properties(Attercop PROPERTIES
+        XCODE_GENERATE_SCHEME ON
+        XCODE_SCHEME_ENABLE_GPU_FRAME_CAPTURE_MODE "Metal")
+endif()
+
 target_include_directories(Engine PUBLIC
                             src
                             vendor
@@ -108,7 +115,6 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
-
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)
