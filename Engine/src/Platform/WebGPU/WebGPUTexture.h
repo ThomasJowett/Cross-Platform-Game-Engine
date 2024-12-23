@@ -1,7 +1,8 @@
 #pragma once
 
 #include "Renderer/Texture.h"
-#include <glad/glad.h>
+#include "WebGPUContext.h"
+#include <webgpu/webgpu.hpp>
 
 class WebGPUTexture2D : public Texture2D
 {
@@ -19,7 +20,7 @@ public:
 
 	virtual std::string GetName() const override;
 
-	virtual uint32_t GetRendererID() const override;
+	virtual void* GetRendererID() const override;
 
 	virtual void Reload() override;
 
@@ -33,10 +34,19 @@ private:
 
 	bool LoadTextureFromFile();
 
-	void SetFilteringAndWrappingMethod();
+	void CreateSampler();
 	uint32_t m_Width, m_Height;
 
-	uint32_t m_RendererID;
+	wgpu::TextureFormat m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+	wgpu::TextureDescriptor m_TextureDesc;
+	wgpu::Texture m_Texture;
 
-	GLenum m_InternalFormat, m_DataFormat, m_Type;
+	wgpu::TextureViewDescriptor m_TextureViewDesc;
+	wgpu::TextureView m_TextureView;
+
+	wgpu::Sampler m_Sampler;
+
+	wgpu::BindGroup m_BindGroup;
+
+	Ref<WebGPUContext> m_WebGPUContext;
 };
