@@ -22,7 +22,7 @@ struct VertexOutput
 };
 
 layout (location = 0) out VertexOutput Output;
-layout (location = 4) out int EntityId;
+layout(location = 4)out flat int v_EntityId;
 
 void main()
 {
@@ -30,7 +30,7 @@ void main()
 	Output.Thickness = a_Thickness;
 	Output.Fade = a_Fade;
 	Output.LocalPosition = a_LocalPosition;
-	EntityId = a_EntityId;
-
+	v_EntityId = a_EntityId;
+	
 	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 }
