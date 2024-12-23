@@ -1,112 +1,69 @@
 #include "stdafx.h"
 #include "WebGPUShader.h"
+#include "WebGPUContext.h"
 #include "Logging/Instrumentor.h"
 #include "Core/core.h"
-#include <glad/glad.h>
 
 #include <fstream>
 #include <filesystem>
-
-static GLenum ShaderTypeToGLShaderType(const Shader::ShaderTypes& type)
-{
-	switch (type)
-	{
-	case Shader::ShaderTypes::VERTEX:		return GL_VERTEX_SHADER;
-	case Shader::ShaderTypes::TESS_HULL:	return GL_TESS_CONTROL_SHADER;
-	case Shader::ShaderTypes::TESS_DOMAIN:	return GL_TESS_EVALUATION_SHADER;
-	case Shader::ShaderTypes::GEOMETRY:		return GL_GEOMETRY_SHADER;
-	case Shader::ShaderTypes::PIXEL:		return GL_FRAGMENT_SHADER;
-	case Shader::ShaderTypes::COMPUTE:		return GL_COMPUTE_SHADER;
-
-	default:
-		CORE_ASSERT(false, "UnSupported shader type")
-			return 0;
-	}
-}
 
 WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
-	Compile(LoadShaderSources(fileDirectory / name));
-}
-
-WebGPUShader::WebGPUShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
-	:m_Name(name)
-{
-	PROFILE_FUNCTION();
-	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
-
-	shaderSources[Shader::ShaderTypes::VERTEX] = vertexSource;
-	shaderSources[Shader::ShaderTypes::PIXEL] = fragmentSource;
-
-	Compile(shaderSources);
+	if (!LoadShader(fileDirectory / name)) {
+		ENGINE_ERROR("Could not load shader from file: {0}", (fileDirectory / name).string());
+	}
 }
 
 WebGPUShader::~WebGPUShader()
 {
 	PROFILE_FUNCTION();
-	if (Application::Get().IsRunning())
-		glDeleteProgram(m_RendererID);
+	if (Application::Get().IsRunning()) {}
 }
 
 void WebGPUShader::Bind() const
 {
 	PROFILE_FUNCTION();
-	glUseProgram(m_RendererID);
 }
 
 void WebGPUShader::UnBind() const
 {
 	PROFILE_FUNCTION();
-	glUseProgram(0);
 }
 
-std::unordered_map<Shader::ShaderTypes, std::string> WebGPUShader::LoadShaderSources(const std::filesystem::path& filepath)
+bool WebGPUShader::LoadShader(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
-	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
 	if (filepath.empty())
-		return shaderSources;
+		return false;
 
 	std::filesystem::path shaderPath = filepath;
 
-	shaderPath.replace_extension(".vert");
+	shaderPath.replace_extension(".wgsl");
 
-	if (std::filesystem::exists(shaderPath.replace_extension(".vert")))
+	if (std::filesystem::exists(shaderPath))
 	{
-		shaderSources[Shader::ShaderTypes::VERTEX] = ReadFile(shaderPath);
+		std::string shaderSource = ReadFile(shaderPath);
+
+		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc{};
+		shaderCodeDesc.chain.next = nullptr;
+		shaderCodeDesc.chain.sType = wgpu::SType::ShaderModuleWGSLDescriptor;
+		shaderCodeDesc.code = shaderSource.c_str();
+		wgpu::ShaderModuleDescriptor shaderDesc{};
+		shaderDesc.hintCount = 0;
+		shaderDesc.hints = nullptr;
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+
+		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+		auto webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+		auto device = webGPUContext->GetWebGPUDevice();
+		m_Shader = device.createShaderModule(shaderDesc);
 	}
 
-	if (std::filesystem::exists(shaderPath.replace_extension(".tesc")))
-	{
-		shaderSources[Shader::ShaderTypes::TESS_HULL] = ReadFile(shaderPath);
-	}
-
-	if (std::filesystem::exists(shaderPath.replace_extension(".tese")))
-	{
-		shaderSources[Shader::ShaderTypes::TESS_DOMAIN] = ReadFile(shaderPath);
-	}
-
-	if (std::filesystem::exists(shaderPath.replace_extension(".geom")))
-	{
-		shaderSources[Shader::ShaderTypes::GEOMETRY] = ReadFile(shaderPath);
-	}
-
-	if (std::filesystem::exists(shaderPath.replace_extension(".frag")))
-	{
-		shaderSources[Shader::ShaderTypes::PIXEL] = ReadFile(shaderPath);
-	}
-
-	if (std::filesystem::exists(shaderPath.replace_extension(".comp")))
-	{
-		shaderSources[Shader::ShaderTypes::COMPUTE] = ReadFile(shaderPath);
-	}
-
-	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
-
-	return shaderSources;
+	return m_Shader;
 }
 
 std::string WebGPUShader::ReadFile(const std::filesystem::path& filepath)
@@ -124,90 +81,4 @@ std::string WebGPUShader::ReadFile(const std::filesystem::path& filepath)
 	}
 
 	return result;
-}
-
-void WebGPUShader::Compile(const std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources)
-{
-	PROFILE_FUNCTION();
-	GLuint program = glCreateProgram();
-	CORE_ASSERT(shaderSources.size() <= 6, "There can only be 6 shaders in a shader program");
-
-	if (shaderSources.empty())
-	{
-		ENGINE_CRITICAL("Could not find required shader");
-		return;
-	}
-
-	std::array<GLenum, 6> GLShaderIDs;
-	int glShaderIndex = 0;
-	for (auto&& [key, value] : shaderSources)
-	{
-		GLenum type = ShaderTypeToGLShaderType(key);
-		const std::string& source = value;
-
-		GLuint shader = glCreateShader(type);
-
-		// Send the shader source code to GL
-		// Note that std::string's .c_str is NULL character terminated.
-		const GLchar* GLsource = (const GLchar*)source.c_str();
-		glShaderSource(shader, 1, &GLsource, 0);
-
-		// Compile the shader
-		glCompileShader(shader);
-
-		CheckShaderError(shader, GL_COMPILE_STATUS, false, "Error: Shader compilation failed: ");
-
-		// Attach our shaders to our program
-		glAttachShader(program, shader);
-		GLShaderIDs[glShaderIndex++] = shader;
-	}
-
-	m_RendererID = program;
-
-	// All the shaders are successfully compiled.
-	// Now time to link them together into a program.
-	// Get a program object.
-
-	// Link our program
-	glLinkProgram(m_RendererID);
-	CheckShaderError(m_RendererID, GL_LINK_STATUS, true, "ERROR: Program linking failed: ");
-
-	glValidateProgram(m_RendererID);
-	CheckShaderError(m_RendererID, GL_VALIDATE_STATUS, true, "ERROR: Program is invalid: ");
-
-	// Always detach shaders after a successful link.
-	for (int i = 0; i < shaderSources.size(); i++)
-	{
-		glDetachShader(m_RendererID, GLShaderIDs[i]);
-		glDeleteShader(GLShaderIDs[i]);
-	}
-}
-
-void WebGPUShader::CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram, const char* errorMessage)
-{
-	PROFILE_FUNCTION();
-	GLint success = 0;
-	if (isProgram)
-		glGetProgramiv(shader, flag, &success);
-	else
-		glGetShaderiv(shader, flag, &success);
-
-	if (success == GL_FALSE)
-	{
-		char error[1024] = { 0 };
-		if (isProgram)
-		{
-			glGetProgramInfoLog(shader, sizeof(error), nullptr, error);
-		}
-		else
-			glGetShaderInfoLog(shader, sizeof(error), nullptr, error);
-
-		// We don't need the program anymore.
-		glDeleteProgram(m_RendererID);
-
-		// Don't leak the shader either.
-		glDeleteShader(shader);
-
-		ENGINE_ERROR("{0}: {1}", errorMessage, error);
-	}
 }
