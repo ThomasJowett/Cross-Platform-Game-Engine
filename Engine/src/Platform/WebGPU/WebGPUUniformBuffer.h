@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Renderer/UniformBuffer.h"
+#include "WebGPUContext.h"
+#include <webgpu/webgpu.hpp>
 
 class WebGPUUniformBuffer : public UniformBuffer
 {
@@ -10,5 +12,8 @@ public:
 
 	virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
 private:
-	uint32_t m_RendererID = 0;
+	wgpu::BufferDescriptor m_BufferDesc;
+	wgpu::Buffer m_UniformBuffer;
+
+	Ref<WebGPUContext> m_WebGPUContext;
 };
