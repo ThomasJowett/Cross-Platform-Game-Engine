@@ -14,7 +14,7 @@ void TextureView::OnAttach()
 {
 	m_Texture = AssetManager::GetTexture(m_FilePath.string());
 
-	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string(m_Texture->GetRendererID());
+	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string((uint32_t)m_Texture->GetRendererID());
 
 	if (m_Texture->GetWidth() <= 32 || m_Texture->GetHeight() <= 32)
 		m_Zoom = 2.0f;

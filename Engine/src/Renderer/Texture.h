@@ -60,7 +60,7 @@ public:
 
 	virtual std::string GetName() const = 0;
 
-	virtual uint32_t GetRendererID() const = 0;
+	virtual void* GetRendererID() const = 0;
 
 	virtual void Reload() = 0;
 

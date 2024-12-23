@@ -121,9 +121,9 @@ std::string OpenGLTexture2D::GetName() const
 	return m_Filepath.filename().string();
 }
 
-uint32_t OpenGLTexture2D::GetRendererID() const
+void* OpenGLTexture2D::GetRendererID() const
 {
-	return m_RendererID;
+	return (void*)m_RendererID;
 }
 
 void OpenGLTexture2D::Reload()
@@ -137,7 +137,7 @@ void OpenGLTexture2D::Reload()
 
 bool OpenGLTexture2D::operator==(const Texture& other) const
 {
-	return m_RendererID == ((OpenGLTexture2D&)other).GetRendererID();
+	return m_RendererID == (uint32_t)((OpenGLTexture2D&)other).GetRendererID();
 }
 
 void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)

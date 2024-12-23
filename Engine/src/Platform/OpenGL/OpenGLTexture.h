@@ -19,7 +19,7 @@ public:
 
 	virtual std::string GetName() const override;
 
-	virtual uint32_t GetRendererID() const override;
+	virtual void* GetRendererID() const override;
 
 	virtual void Reload() override;
 
