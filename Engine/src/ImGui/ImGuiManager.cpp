@@ -13,6 +13,8 @@
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include "imgui/backends/imgui_impl_wgpu.h"
 
+#include "Platform/WebGPU/WebGPUContext.h"
+
 #include "GLFW/glfw3.h"
 
 ImGuiManager::ImGuiManager()
@@ -54,7 +56,14 @@ void ImGuiManager::Init()
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
 
 		if (ImGui_ImplGlfw_InitForOther(window, true)) {
-			m_UsingImGui = ImGui_ImplWGPU_Init(m_Device, 3, m_SwapchainFormat, m_DepthTextureFormat);//TODO: get the device, swapchain format and depth texture format
+			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+
+			Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+			auto device = webGPUContext->GetWebGPUDevice();
+			auto format = webGPUContext->GetSwapchainFormat();
+
+			m_UsingImGui = ImGui_ImplWGPU_Init(device, 3, format);//TODO: get the device, swapchain format and depth texture format
 		}
 	}
 	else
@@ -124,7 +133,7 @@ void ImGuiManager::End()
 	}
 	else if (api == RendererAPI::API::WebGPU)
 	{
-		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);//TODO: pass the render pass to this function
+		//ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);//TODO: pass the render pass to this function
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
