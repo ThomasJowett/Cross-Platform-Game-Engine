@@ -1,7 +1,7 @@
 #version 450 core
 
-layout(location = 0) out vec4 frag_colour;
-layout(location = 1) out int entityId;
+layout(location = 0)out vec4 frag_colour;
+layout(location = 1)out int entityId;
 
 struct VertexOutput
 {
@@ -11,8 +11,8 @@ struct VertexOutput
 	float Fade;
 };
 
-layout (location = 0) in VertexOutput Input;
-layout (location = 4) in flat int v_EntityId;
+layout(location = 0)in VertexOutput Input;
+layout(location = 4)in flat int v_EntityId;
 
 void main()
 {
@@ -21,8 +21,8 @@ void main()
 	float alpha = smoothstep(0.0, Input.Fade, dist);
 	alpha *= smoothstep(Input.Thickness + Input.Fade, Input.Thickness, dist);
 	
-	if(alpha <= 0.0001)
-		discard;
+	if (alpha <= 0.0001)
+	discard;
 	// Set output colour
 	frag_colour = Input.Colour;
 	frag_colour.a *= alpha;
