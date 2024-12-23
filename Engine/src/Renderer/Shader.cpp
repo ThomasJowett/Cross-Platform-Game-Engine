@@ -25,26 +25,6 @@ Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path&
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc)
-{
-	switch (Renderer::GetAPI())
-	{
-	case RendererAPI::API::None:
-		break;
-	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLShader>(vertexShaderSrc, fragmentShaderSrc);
-	case RendererAPI::API::WebGPU:
-		return CreateRef<WebGPUShader>(vertexShaderSrc, fragmentShaderSrc);
-	default:
-		break;
-	}
-
-	CORE_ASSERT(true, "Could not create Shader: Invalid Renderer API")
-		return nullptr;
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
 void ShaderLibrary::Add(const Ref<Shader>& shader)
 {
 	CORE_ASSERT(!Exists(shader->GetName()), "Shader already exists!");

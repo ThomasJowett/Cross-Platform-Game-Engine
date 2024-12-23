@@ -20,8 +20,6 @@ public:
 
 	// Create Shader from file
 	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
-	//create Shader from  source strings
-	static Ref<Shader> Create(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
 
 	enum class ShaderTypes
 	{
