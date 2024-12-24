@@ -325,14 +325,16 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					}
 					break;
 				case TilemapComponent::Orientation::hexagonal:
+					//TODO: draw lines on hexagonal grid
 					break;
 				case TilemapComponent::Orientation::staggered:
+					//TODO: draw lines on staggered grid
 					break;
 				default:
 					break;
 				}
 
-				m_TilemapEditor->SetTilemapComp(transformComp, tilemapComp);
+				m_TilemapEditor->SetTilemapEntity(selectedEntity);
 
 				if (m_TilemapEditor->IsShown() && m_WindowHovered)
 				{

@@ -3,6 +3,8 @@
 #include "Scene/Components/TransformComponent.h"
 #include "Core/Layer.h"
 
+#include "History/HistoryCommands.h"
+
 class TilemapEditor : public Layer
 {
 	enum class DrawMode
@@ -17,7 +19,7 @@ public:
 	virtual void OnImGuiRender() override;
 	virtual void OnEvent(Event& event) override;
 	void OnRender(const Vector3f& mousePosition);
-	void SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp);
+	void SetTilemapEntity(Entity tilemapEntity);
 	bool HasSelection();
 	bool IsShown() const { return *m_Show; }
 	bool IsHovered() const;
@@ -41,6 +43,9 @@ private:
 
 	int m_HoveredCoords[2];
 
+	Entity m_TilemapEntity;
 	TilemapComponent* m_TilemapComp = nullptr;
 	const TransformComponent* m_TransformComp = nullptr;
+
+	std::pair<bool, Ref<EditComponentCommand<TilemapComponent>>> m_EditTilemapComponent;
 };

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Scene/Entity.h"
+#include "Core/core.h"
 
 class HistoryRecord
 {

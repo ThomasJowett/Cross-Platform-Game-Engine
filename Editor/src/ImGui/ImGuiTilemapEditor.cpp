@@ -288,6 +288,10 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
 			{
+				if (!m_EditTilemapComponent.first) {
+					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
+					m_EditTilemapComponent.first = true;
+				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
@@ -305,6 +309,10 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (HasSelection())
 			{
+				if (!m_EditTilemapComponent.first) {
+					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
+					m_EditTilemapComponent.first = true;
+				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
@@ -324,6 +332,13 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				m_TilemapComp->Rebuild();
 			}
 		}
+	}
+
+	if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && m_EditTilemapComponent.first)
+	{
+		HistoryManager::AddHistoryRecord(m_EditTilemapComponent.second);
+		m_EditTilemapComponent.first = false;
+		m_EditTilemapComponent.second = nullptr;
 	}
 }
 
@@ -401,10 +416,11 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	return -1;
 }
 
-void TilemapEditor::SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp)
+void TilemapEditor::SetTilemapEntity(Entity tilemapEntity)
 {
-	m_TilemapComp = &tilemapComp;
-	m_TransformComp = &transformComp;
+	m_TilemapComp = &(tilemapEntity.GetComponent<TilemapComponent>());
+	m_TransformComp = &(tilemapEntity.GetComponent<TransformComponent>());
+	m_TilemapEntity = tilemapEntity;
 }
 
 bool TilemapEditor::HasSelection()
