@@ -44,6 +44,10 @@ if(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources")
     add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON})
 
+    if(XCODE)
+        set_property(TARGET Editor PROPERTY XCODE_ATTRIBUTE_CODE_SIGN_IDENTITY "")
+    endif()
+
     set_target_properties(Editor PROPERTIES 
         BUNDLE True
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.Jowett.Thomas.Editor"
@@ -67,13 +71,6 @@ target_include_directories(Editor PUBLIC
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/OpenFBX/src
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/json
                             ${CMAKE_CURRENT_SOURCE_DIR}/vendor/tinygltf
-                            Engine/src
-                            Engine/vendor
-                            Engine/vendor/spdlog/include
-                            Engine/vendor/cereal/include
-                            Engine/vendor/box2d/include
-                            Engine/vendor/lua
-                            Engine/vendor/stb
         )
 
 add_definitions(

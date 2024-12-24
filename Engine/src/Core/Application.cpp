@@ -129,7 +129,7 @@ int Application::Init(int argc, char* argv[])
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
+DesktopWindow* Application::CreateDesktopWindowImpl(const WindowProps& props)
 {
 	const char* windowStr = props.title.c_str();
 	Settings::SetDefaultInt(windowStr, "Window_Width", props.width);
@@ -139,7 +139,7 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 	Settings::SetDefaultInt(windowStr, "Window_Mode", (int)props.windowMode);
 	Settings::SetDefaultBool(windowStr, "Window_Maximized", props.maximized);
 
-	m_Window = CreateScope<Window>(props);
+	m_Window = CreateScope<DesktopWindow>(props);
 	if (m_Window) {
 		m_Window->SetEventCallback(BIND_EVENT_FN(Application::OnEvent));
 
@@ -398,7 +398,7 @@ void Application::SetDefaultSettings()
 
 double Application::GetTime() const
 {
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	static LARGE_INTEGER s_frequency;
 	//check to see if the application can read the frequency
 	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
@@ -414,7 +414,7 @@ double Application::GetTime() const
 		//same value but only updates 64 times a second
 		return (double)GetTickCount64();
 	}
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 	return glfwGetTime();
 }
