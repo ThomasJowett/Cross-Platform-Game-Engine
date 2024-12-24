@@ -503,20 +503,23 @@ void ViewportPanel::OnImGuiRender()
 	if (SceneManager::CurrentScene()->IsDirty() && SceneManager::GetSceneState() == SceneState::Edit)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	bool shown;
+
 	if (m_Fullscreen) {
 		bool use_work_area = true;
 		const ImGuiViewport* viewport = ImGui::GetMainViewport();
 		ImGui::SetNextWindowPos(use_work_area ? viewport->WorkPos : viewport->Pos);
 		ImGui::SetNextWindowSize(use_work_area ? viewport->WorkSize : viewport->Size);
 		flags |= ImGuiWindowFlags_NoDecoration;
+		shown = ImGui::Begin("Viewport fullscreen", m_Show, flags);
 	}
 	else {
 		ImGui::SetNextWindowSize(ImVec2(800, 800), ImGuiCond_FirstUseEver);
 		ImGui::SetNextWindowPos(ImVec2(30, 30), ImGuiCond_FirstUseEver);
+		shown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	}
 
-	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
-	bool shown = ImGui::Begin(ICON_FA_BORDER_ALL" Viewport", m_Show, flags);
 	if (shown)
 	{
 		if (ImGui::BeginMenuBar())
