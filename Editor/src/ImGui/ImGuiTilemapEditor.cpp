@@ -251,7 +251,9 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			* Matrix4x4::Translate(Vector3f(isoPosition.x, isoPosition.y, 0.01f));
 	}
 
-	uint32_t temp = 0;
+	uint32_t topRightSelectionIndex = 0;
+	uint32_t topRightSelectionX = std::numeric_limits<uint32_t>::max();
+	uint32_t topRightSelectionY = std::numeric_limits<uint32_t>::max();
 
 	if (IsHovered())
 	{
@@ -263,14 +265,23 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				{
 					if (m_SelectedTiles[y][x])
 					{
-						if (m_TilemapComp->tileset)
-							m_TilemapComp->tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x));
-						temp = (y * m_SelectedTiles[y].size() + x) + 1;
-						break;
+						if (x < topRightSelectionX)
+							topRightSelectionX = x;
+						if (y < topRightSelectionY)
+							topRightSelectionY = y;
 					}
 				}
 			}
-			Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+			if (m_TilemapComp->tileset)
+				m_TilemapComp->tileset->SetCurrentTile((uint32_t)(topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX));
+
+			topRightSelectionIndex = (topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX) + 1;
+			if (Input::IsKeyPressed(KEY_LEFT_SHIFT)) {
+				Renderer2D::DrawQuad(tileTransform, Colour(1.0f, 0.0f, 0.0f, 0.6f));
+			}
+			else {
+				Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+			}
 		}
 
 		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -316,13 +327,13 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
-					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
+					ApplyStamp(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionX, topRightSelectionY);
 					break;
 				case TilemapEditor::DrawMode::Random:
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
 					break;
 				case TilemapEditor::DrawMode::Fill:
-					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], temp);
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionIndex);
 					break;
 				case TilemapEditor::DrawMode::Rect:
 					break;
@@ -371,10 +382,10 @@ void TilemapEditor::FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t orig
 
 	m_TilemapComp->tiles[y][x] = newTileType;
 
-	FloodFillTileRecursive(x + 1, y, originalTileType, newTileType);
-	FloodFillTileRecursive(x - 1, y, originalTileType, newTileType);
-	FloodFillTileRecursive(x, y + 1, originalTileType, newTileType);
-	FloodFillTileRecursive(x, y - 1, originalTileType, newTileType);
+	FloodFillTileRecursive(x + 1, y, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x - 1, y, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x, y + 1, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x, y - 1, originalTileType, GetRandomSelectedTile());
 }
 
 uint32_t TilemapEditor::GetRandomSelectedTile()
@@ -414,6 +425,27 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	}
 
 	return -1;
+}
+
+void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, int topRightSelectionX, int topRightSelectionY)
+{
+	for (size_t row = topRightSelectionY; row < m_Rows; ++row) {
+
+		for (size_t col = topRightSelectionX; col < m_Columns; ++col)
+		{
+			if (m_SelectedTiles[row][col])
+			{
+				int tileX = startX + (col - topRightSelectionX);
+				int tileY = startY + (row - topRightSelectionY);
+
+				if (tileX >= 0 && tileX < m_TilemapComp->tilesWide &&
+					tileY >= 0 && tileY < m_TilemapComp->tilesHigh)
+				{
+					m_TilemapComp->tiles[tileY][tileX] = row * m_Columns + col + 1;
+				}
+			}
+		}
+	}
 }
 
 void TilemapEditor::SetTilemapEntity(Entity tilemapEntity)
