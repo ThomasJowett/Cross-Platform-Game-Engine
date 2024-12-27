@@ -242,6 +242,12 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 		m_HoveredCoords[0] = (int)std::floor(coords.x);
 		m_HoveredCoords[1] = (int)std::floor(coords.y);
 	}
+	else if (m_TilemapComp->orientation == TilemapComponent::Orientation::hexagonal)
+	{
+		Vector2f coords = m_TilemapComp->WorldToHex(Vector2f(localPosition.x, localPosition.y));
+		m_HoveredCoords[0] = (int)std::floor(coords.x);
+		m_HoveredCoords[1] = (int)std::floor(coords.y);
+	}
 
 	uint32_t topRightSelectionIndex = 0;
 	uint32_t topRightSelectionX = std::numeric_limits<uint32_t>::max();
@@ -478,6 +484,12 @@ Matrix4x4 TilemapEditor::GetTileTransform(int x, int y)
 
 		return m_TransformComp->GetWorldMatrix()
 			* Matrix4x4::Translate(Vector3f(isoPosition.x, isoPosition.y, 0.01f));
+	}
+	case TilemapComponent::Orientation::hexagonal:
+	{
+		Vector2f hexPosition = m_TilemapComp->HexToWorld(x, y);
+		return m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f(hexPosition.x, hexPosition.y, 0.01f));
 	}
 	default:
 		return Matrix4x4();
