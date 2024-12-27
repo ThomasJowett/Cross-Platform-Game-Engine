@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "TilemapComponent.h"
+#include "Scene/SceneManager.h"
 
 Vector2f TilemapComponent::IsoToWorld(uint32_t x, uint32_t y) const
 {
@@ -9,6 +10,34 @@ Vector2f TilemapComponent::IsoToWorld(uint32_t x, uint32_t y) const
 Vector2f TilemapComponent::WorldToIso(Vector2f v) const
 {
 	return Vector2f((v.x - v.y * 2.0f), -(v.x + v.y * 2.0f));
+}
+
+Vector2f TilemapComponent::HexToWorld(uint32_t q, uint32_t r) const
+{
+	float hexWitdth = (float)tileWidth / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+	float hexHeight = (float)tileHeight / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+
+	float x = hexWitdth * 3.0f / 4.0f * q;
+	float y = hexHeight * r;
+	if (q % 2 == 1)
+	{
+		y += hexHeight * 0.5f;
+	}
+	return Vector2f(x, -y);
+}
+
+Vector2f TilemapComponent::WorldToHex(Vector2f v) const
+{
+	float hexWidth = (float)tileWidth / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+	float hexHeight = (float)tileHeight / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+
+	float approxQ = v.x / (hexWidth * 3.0f / 4.0f);
+	int q = (int)std::round(approxQ);
+
+	float yOffset = (q % 2 == 1) ? hexHeight * 0.5f : 0.0f;
+	float approxR = (-v.y - yOffset) / hexHeight;
+	int r = (int)std::round(approxR);
+	return Vector2f((float)q, (float)r);
 }
 
 void TilemapComponent::Rebuild()

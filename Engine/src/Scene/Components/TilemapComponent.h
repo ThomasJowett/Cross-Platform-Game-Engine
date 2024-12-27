@@ -55,6 +55,9 @@ struct TilemapComponent
 	Vector2f IsoToWorld(uint32_t x, uint32_t y) const;
 	Vector2f WorldToIso(Vector2f v) const;
 
+	Vector2f HexToWorld(uint32_t q, uint32_t r) const;
+	Vector2f WorldToHex(Vector2f v) const;
+
 private:
 	friend cereal::access;
 	template<typename Archive>
