@@ -325,8 +325,68 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					}
 					break;
 				case TilemapComponent::Orientation::hexagonal:
-					//TODO: draw lines on hexagonal grid
+				{
+					float pixelsPerUnit = (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+					float halfWidth = (float)tilemapComp.tileWidth / pixelsPerUnit / 2.0f;
+					float halfHeight = (float)tilemapComp.tileHeight / pixelsPerUnit / 2.0f;
+					float quarterWidth = halfWidth * 0.5f;
+
+					std::vector<Vector2f> cornerOffsets = {
+						{-halfWidth, 0.0f},                // Left
+						{-quarterWidth, -halfHeight},      // Bottom-left
+						{quarterWidth, -halfHeight},       // Bottom-right
+						{halfWidth, 0.0f},                 // Right
+						{quarterWidth, halfHeight},        // Top-right
+						{-quarterWidth, halfHeight}        // Top-left
+					};
+
+					/*      5 ----- 4
+						   /         \
+						  /           \
+						0 ------------ 3
+						  \           /
+						   \         /
+						    1 ----- 2
+					*/
+
+					for (uint32_t r = 0; r < tilemapComp.tilesHigh; ++r)
+					{
+						for (uint32_t q = 0; q < tilemapComp.tilesWide; ++q)
+						{
+							Vector2f centerHex = tilemapComp.HexToWorld(q, r);
+
+							std::vector<Vector3f> transformedCorners(cornerOffsets.size());
+
+							for (size_t i = 0; i < cornerOffsets.size(); ++i)
+							{
+								Vector2f corner = centerHex + cornerOffsets[i];
+								transformedCorners[i] = transformComp.GetWorldMatrix() * Vector3f(corner.x, corner.y, 0.001f);
+							}
+
+							for (size_t i : {0, 1, 2})
+							{
+								Renderer2D::DrawHairLine(transformedCorners[i], transformedCorners[i + 1], gridLineColour, selectedEntity);
+							}
+
+							if (q == tilemapComp.tilesWide - 1 || (q % 2 == 0 && r == 0))
+							{
+								Renderer2D::DrawHairLine(transformedCorners[3], transformedCorners[4], gridLineColour, selectedEntity);
+							}
+
+							if (r == 0)
+							{
+								Renderer2D::DrawHairLine(transformedCorners[4], transformedCorners[5], gridLineColour, selectedEntity);
+							}
+
+							if (q == 0 || (q % 2 == 0 && r == 0))
+							{
+								Renderer2D::DrawHairLine(transformedCorners[0], transformedCorners[5], gridLineColour, selectedEntity);
+							}
+
+						}
+					}
 					break;
+				}
 				case TilemapComponent::Orientation::staggered:
 					//TODO: draw lines on staggered grid
 					break;
@@ -705,7 +765,7 @@ void ViewportPanel::OnImGuiRender()
 		m_ViewportHovered = (m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
 			&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f)
 			|| (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)
-				&& m_MousePositionBeginClick.x < m_ViewportSize.x&& m_MousePositionBeginClick.y < m_ViewportSize.y
+				&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
 				&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f);
 
 		if (SceneManager::GetSceneState() == SceneState::Edit)
@@ -986,16 +1046,16 @@ void ViewportPanel::OnImGuiRender()
 						m_EditTransformCommand = nullptr;
 					}
 				}
-				
+
 				if (WidgetComponent* widgetComp = selectedEntity.TryGetComponent<WidgetComponent>())
 				{
 
-					ImVec2 topLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
-					ImVec2 bottomLeft(m_ViewportSize.x* widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
-					ImVec2 bottomRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorBottom + window_pos.y);
-					ImVec2 topRight(m_ViewportSize.x* widgetComp->anchorRight + window_pos.x, m_ViewportSize.y* widgetComp->anchorTop + window_pos.y);
+					ImVec2 topLeft(m_ViewportSize.x * widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y * widgetComp->anchorTop + window_pos.y);
+					ImVec2 bottomLeft(m_ViewportSize.x * widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y * widgetComp->anchorBottom + window_pos.y);
+					ImVec2 bottomRight(m_ViewportSize.x * widgetComp->anchorRight + window_pos.x, m_ViewportSize.y * widgetComp->anchorBottom + window_pos.y);
+					ImVec2 topRight(m_ViewportSize.x * widgetComp->anchorRight + window_pos.x, m_ViewportSize.y * widgetComp->anchorTop + window_pos.y);
 
-					
+
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
 
 					drawList->AddCircleFilled(topLeft, 4, IM_COL32(44, 44, 44, 255));
@@ -1003,7 +1063,7 @@ void ViewportPanel::OnImGuiRender()
 
 					drawList->AddCircleFilled(bottomLeft, 4, IM_COL32(44, 44, 44, 255));
 					drawList->AddCircleFilled(bottomLeft, 3, IM_COL32(255, 255, 255, 255));
-					
+
 					drawList->AddCircleFilled(bottomRight, 4, IM_COL32(44, 44, 44, 255));
 					drawList->AddCircleFilled(bottomRight, 3, IM_COL32(255, 255, 255, 255));
 
