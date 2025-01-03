@@ -2,7 +2,7 @@
 
 namespace Debug
 {
-#if defined (DEBUG) && (__WINDOWS__)
+#if defined (DEBUG) && (_WINDOWS)
 	#define DBG_OUTPUT(...) Debug::Output(__FILE__, __LINE__, __VA_ARGS__)
 	#define OUTPUT(...) Debug::Output(__VA_ARGS__)
 

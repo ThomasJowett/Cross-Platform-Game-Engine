@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "VulkanBuffer.h"
 
-#include <vulkan/vulkan.h>
+#include "Vulkan.h"
 
 #include "Logging/Instrumentor.h"
 

@@ -61,12 +61,16 @@ file (GLOB OPENGL_FILES
 )
 
 file (GLOB VULKAN_FILES
+    src/Platform/Vulkan/Vulkan.h
+    src/Platform/Vulkan/Vulkan.cpp
     src/Platform/Vulkan/VulkanBuffer.cpp
     src/Platform/Vulkan/VulkanBuffer.h
     src/Platform/Vulkan/VulkanDevice.cpp
     src/Platform/Vulkan/VulkanDevice.h
     src/Platform/Vulkan/VulkanRendererAPI.cpp
     src/Platform/Vulkan/VulkanRendererAPI.h
+    src/Platform/Vulkan/VulkanSwapChain.cpp
+    src/Platform/Vulkan/VulkanSwapChain.h
     src/Platform/Vulkan/VulkanTexture.cpp
     src/Platform/Vulkan/VulkanTexture.h
     src/Platform/Vulkan/VulkanContext.cpp
@@ -98,12 +102,14 @@ target_link_libraries(Engine PRIVATE
                       lua
                       box2d
                       msdf-atlas-gen
+                      volk
                       )
 
 add_definitions(
     -DGLFW_INCLUDE_NONE
     -D_CRT_SECURE_NO_WARNINGS
     -DUNICODE
+    -DIMGUI_IMPL_VULKAN_NO_PROTOTYPES
 )
 
 if (MSVC)
@@ -128,7 +134,7 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
-
+                            ${VULKAN_INCLUDE_DIR}
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)
