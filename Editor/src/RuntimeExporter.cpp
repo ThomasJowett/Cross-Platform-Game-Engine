@@ -17,9 +17,9 @@ void RuntimeExporter::Init(std::filesystem::path exportLocation)
 
 	m_GameName = exportLocation.filename();
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	m_GameName.replace_extension(".exe");
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 	std::ifstream file(Application::GetOpenDocument());
 
