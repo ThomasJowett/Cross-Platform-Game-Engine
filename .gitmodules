@@ -30,10 +30,6 @@
 	path = Engine/vendor/spdlog
 	url = https://github.com/gabime/spdlog
 	branch = v1.x
-[submodule "Engine/vendor/SPIRV-Cross"]
-	path = Engine/vendor/SPIRV-Cross
-	url = https://github.com/KhronosGroup/SPIRV-Cross
-	branch = master
 [submodule "Engine/vendor/lua"]
 	path = Engine/vendor/lua
 	url = https://github.com/lua/lua
