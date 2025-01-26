@@ -50,12 +50,7 @@ void TilemapComponent::Rebuild()
 	std::vector<Vertex> verticesList;
 	std::vector<uint32_t> indicesList;
 
-	Vector2f positions[4] = {
-					{ 0.0f, 1.0f },
-					{ 1.0f, 1.0f },
-					{ 1.0f, 0.0f },
-					{ 0.0f, 0.0f }
-	};
+
 
 	size_t maxTileIndex = tileset->GetNumberOfTiles();
 
@@ -67,6 +62,13 @@ void TilemapComponent::Rebuild()
 		//   |_|_|_|_|
 		//   |_|_|_|_|
 		//  Y
+
+		Vector2f positions[4] = {
+				{ 0.0f, 1.0f },
+				{ 1.0f, 1.0f },
+				{ 1.0f, 0.0f },
+				{ 0.0f, 0.0f }
+		};
 
 		for (size_t i = 0; i < tilesHigh; i++)
 		{
@@ -105,6 +107,13 @@ void TilemapComponent::Rebuild()
 		//   \/\/
 		//    \/
 
+		Vector2f positions[4] = {
+				{ 0.0f, 0.0f },
+				{ 1.0f, 0.0f },
+				{ 1.0f, 1.0f },
+				{ 0.0f, 1.0f }
+		};
+
 		for (uint32_t i = 0; i < tilesHigh; i++)
 		{
 			for (uint32_t j = 0; j < tilesWide; j++)
@@ -120,13 +129,14 @@ void TilemapComponent::Rebuild()
 				tileset->SetCurrentTile(tiles[i][j] - 1);
 				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
 
+				Vector2f isoCoords = IsoToWorld(j, i);
+
 				for (uint32_t v = 0; v < 4; v++)
 				{
 					Vertex vertex;
-					Vector2f isoCoords = IsoToWorld(j, i);
 
-					vertex.position.x = isoCoords.x + positions[3 - v].x - 0.5f;
-					vertex.position.y = isoCoords.y + positions[3 - v].y - 0.5f;
+					vertex.position.x = isoCoords.x + positions[v].x - 0.5f;
+					vertex.position.y = isoCoords.y + positions[v].y - 0.5f;
 					vertex.position.z = (i + j) * 0.0001f;
 
 					vertex.normal.z = 1.0f;
@@ -134,6 +144,55 @@ void TilemapComponent::Rebuild()
 
 					vertex.texcoord = Vector2f(texCoords[v].x, texCoords[v].y);
 
+					verticesList.push_back(vertex);
+				}
+			}
+		}
+	}
+	else if (orientation == Orientation::hexagonal)
+	{
+		Vector2f positions[4] = {
+				{ 0.0f, 0.0f },
+				{ 1.0f, 0.0f },
+				{ 1.0f, 1.0f },
+				{ 0.0f, 1.0f }
+		};
+
+		for (uint32_t r = 0; r < tilesHigh; r++)
+		{
+			for (uint32_t q = 0; q < tilesWide; q++)
+			{
+				if (tiles[r][q] == 0)
+					continue;
+
+				if (tiles[r][q] > maxTileIndex) {
+					tiles[r][q] = 0;
+					continue;
+				}
+
+				tileset->SetCurrentTile(tiles[r][q] - 1);
+				const Vector2f* texCoords = tileset->GetSubTexture()->GetTextureCoordinates();
+
+				int tileSize[2] = { (int)tileset->GetSubTexture()->GetSpriteWidth(), (int)tileset->GetSubTexture()->GetSpriteHeight() };
+
+				float hexWitdth = (float)tileWidth / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+				float hexHeight = (float)tileSize[1] / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+
+				Vector2f center = HexToWorld(q, r);
+
+				for (size_t v = 0; v < 4; v++)
+				{
+					Vertex vertex;
+					vertex.position.x = center.x + positions[v].x - 0.5f;
+					if (positions[v].y < 1.0f)
+						vertex.position.y = center.y + positions[v].y - (hexHeight * 0.5f);
+					else
+						vertex.position.y = center.y + positions[v].y - 0.5f;
+					vertex.position.z = r * 0.0001f;
+
+					vertex.normal.z = 1.0f;
+					vertex.tangent.x = 1.0f;
+					vertex.texcoord = Vector2f(texCoords[v].x, texCoords[v].y);
 					verticesList.push_back(vertex);
 				}
 			}
