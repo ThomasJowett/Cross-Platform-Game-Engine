@@ -72,14 +72,20 @@ public:
 
 	bool SwitchTo(const std::filesystem::path fi)
 	{
-		if (fi.string().length() == 0)
+		if (fi.string().empty())
 			return false;
-		if (currentPathIndex >= 0 && paths.size() > 0)
+		if (currentPathIndex >= 0 && !paths.empty())
 		{
-			const std::filesystem::path lastPath = paths[currentPathIndex];
+			const std::filesystem::path& lastPath = paths[currentPathIndex];
 			if (lastPath == fi)
 				return false;
 		}
+
+		if (currentPathIndex < (int)paths.size() - 1)
+		{
+			paths.erase(paths.begin() + currentPathIndex + 1, paths.end());
+		}
+
 		paths.push_back(fi);
 		currentPathIndex = (int)paths.size() - 1;
 		return true;

@@ -235,23 +235,23 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 	{
 		m_HoveredCoords[0] = (int)std::floor(localPosition.x);
 		m_HoveredCoords[1] = (int)std::floor(-localPosition.y);
-
-		tileTransform = m_TransformComp->GetWorldMatrix()
-			* Matrix4x4::Translate(Vector3f((float)m_HoveredCoords[0] + 0.5f, -(float)m_HoveredCoords[1] - 0.5f, 0.01f));
 	}
 	else if (m_TilemapComp->orientation == TilemapComponent::Orientation::isometric)
 	{
 		Vector2f coords = m_TilemapComp->WorldToIso(Vector2f(localPosition.x, localPosition.y));
 		m_HoveredCoords[0] = (int)std::floor(coords.x);
 		m_HoveredCoords[1] = (int)std::floor(coords.y);
-
-		Vector2f isoPosition = m_TilemapComp->IsoToWorld(m_HoveredCoords[0], m_HoveredCoords[1]);
-
-		tileTransform = m_TransformComp->GetWorldMatrix()
-			* Matrix4x4::Translate(Vector3f(isoPosition.x, isoPosition.y, 0.01f));
+	}
+	else if (m_TilemapComp->orientation == TilemapComponent::Orientation::hexagonal)
+	{
+		Vector2f coords = m_TilemapComp->WorldToHex(Vector2f(localPosition.x, localPosition.y));
+		m_HoveredCoords[0] = (int)std::floor(coords.x);
+		m_HoveredCoords[1] = (int)std::floor(coords.y);
 	}
 
-	uint32_t temp = 0;
+	uint32_t topRightSelectionIndex = 0;
+	uint32_t topRightSelectionX = std::numeric_limits<uint32_t>::max();
+	uint32_t topRightSelectionY = std::numeric_limits<uint32_t>::max();
 
 	if (IsHovered())
 	{
@@ -263,14 +263,46 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				{
 					if (m_SelectedTiles[y][x])
 					{
-						if (m_TilemapComp->tileset)
-							m_TilemapComp->tileset->SetCurrentTile((uint32_t)(y * m_SelectedTiles[y].size() + x));
-						temp = (y * m_SelectedTiles[y].size() + x) + 1;
-						break;
+						if (x < topRightSelectionX)
+							topRightSelectionX = x;
+						if (y < topRightSelectionY)
+							topRightSelectionY = y;
 					}
 				}
 			}
-			Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+
+			topRightSelectionIndex = (topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX) + 1;
+			if (Input::IsKeyPressed(KEY_LEFT_SHIFT)) {
+				tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
+				Renderer2D::DrawQuad(tileTransform, Colour(1.0f, 0.0f, 0.0f, 0.6f));
+			}
+			else {
+				if (m_TilemapComp->tileset) {
+					if (m_DrawMode == TilemapEditor::DrawMode::Stamp)
+					{
+						for (size_t row = topRightSelectionY; row < m_Rows; ++row) {
+							for (size_t col = topRightSelectionX; col < m_Columns; ++col) {
+								if (m_SelectedTiles[row][col])
+								{
+									int tileX = m_HoveredCoords[0] + (col - topRightSelectionX);
+									int tileY = m_HoveredCoords[1] + (row - topRightSelectionY);
+									if (tileX < m_TilemapComp->tilesWide && tileY < m_TilemapComp->tilesHigh) {
+										tileTransform = GetTileTransform(tileX, tileY);
+										m_TilemapComp->tileset->SetCurrentTile((uint32_t)(row * m_Columns + col));
+										Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+									}
+								}
+							}
+						}
+					}
+					else
+					{
+						m_TilemapComp->tileset->SetCurrentTile((uint32_t)(topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX));
+						tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
+						Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+					}
+				}
+			}
 		}
 
 		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
@@ -288,6 +320,10 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
 			{
+				if (!m_EditTilemapComponent.first) {
+					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
+					m_EditTilemapComponent.first = true;
+				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
@@ -305,16 +341,20 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (HasSelection())
 			{
+				if (!m_EditTilemapComponent.first) {
+					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
+					m_EditTilemapComponent.first = true;
+				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
-					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = temp;
+					ApplyStamp(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionX, topRightSelectionY);
 					break;
 				case TilemapEditor::DrawMode::Random:
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
 					break;
 				case TilemapEditor::DrawMode::Fill:
-					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], temp);
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionIndex);
 					break;
 				case TilemapEditor::DrawMode::Rect:
 					break;
@@ -324,6 +364,13 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				m_TilemapComp->Rebuild();
 			}
 		}
+	}
+
+	if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && m_EditTilemapComponent.first)
+	{
+		HistoryManager::AddHistoryRecord(m_EditTilemapComponent.second);
+		m_EditTilemapComponent.first = false;
+		m_EditTilemapComponent.second = nullptr;
 	}
 }
 
@@ -356,10 +403,10 @@ void TilemapEditor::FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t orig
 
 	m_TilemapComp->tiles[y][x] = newTileType;
 
-	FloodFillTileRecursive(x + 1, y, originalTileType, newTileType);
-	FloodFillTileRecursive(x - 1, y, originalTileType, newTileType);
-	FloodFillTileRecursive(x, y + 1, originalTileType, newTileType);
-	FloodFillTileRecursive(x, y - 1, originalTileType, newTileType);
+	FloodFillTileRecursive(x + 1, y, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x - 1, y, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x, y + 1, originalTileType, GetRandomSelectedTile());
+	FloodFillTileRecursive(x, y - 1, originalTileType, GetRandomSelectedTile());
 }
 
 uint32_t TilemapEditor::GetRandomSelectedTile()
@@ -401,10 +448,59 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	return -1;
 }
 
-void TilemapEditor::SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp)
+void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, int topRightSelectionX, int topRightSelectionY)
 {
-	m_TilemapComp = &tilemapComp;
-	m_TransformComp = &transformComp;
+	for (size_t row = topRightSelectionY; row < m_Rows; ++row) {
+
+		for (size_t col = topRightSelectionX; col < m_Columns; ++col)
+		{
+			if (m_SelectedTiles[row][col])
+			{
+				int tileX = startX + (col - topRightSelectionX);
+				int tileY = startY + (row - topRightSelectionY);
+
+				if (tileX >= 0 && tileX < m_TilemapComp->tilesWide &&
+					tileY >= 0 && tileY < m_TilemapComp->tilesHigh)
+				{
+					m_TilemapComp->tiles[tileY][tileX] = row * m_Columns + col + 1;
+				}
+			}
+		}
+	}
+}
+
+Matrix4x4 TilemapEditor::GetTileTransform(int x, int y)
+{
+	switch (m_TilemapComp->orientation)
+	{
+	case TilemapComponent::Orientation::orthogonal:
+	{
+		return m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f((float)x + 0.5f, -(float)y - 0.5f, 0.01f));
+	}
+	case TilemapComponent::Orientation::isometric:
+	{
+		Vector2f isoPosition = m_TilemapComp->IsoToWorld(x, y);
+
+		return m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f(isoPosition.x, isoPosition.y, 0.01f));
+	}
+	case TilemapComponent::Orientation::hexagonal:
+	{
+		Vector2f hexPosition = m_TilemapComp->HexToWorld(x, y);
+		return m_TransformComp->GetWorldMatrix()
+			* Matrix4x4::Translate(Vector3f(hexPosition.x, hexPosition.y, 0.01f));
+	}
+	default:
+		return Matrix4x4();
+	}
+}
+
+void TilemapEditor::SetTilemapEntity(Entity tilemapEntity)
+{
+	m_TilemapComp = &(tilemapEntity.GetComponent<TilemapComponent>());
+	m_TransformComp = &(tilemapEntity.GetComponent<TransformComponent>());
+	m_TilemapEntity = tilemapEntity;
 }
 
 bool TilemapEditor::HasSelection()

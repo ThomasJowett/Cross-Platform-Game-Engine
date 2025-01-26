@@ -3,6 +3,8 @@
 #include "Scene/Components/TransformComponent.h"
 #include "Core/Layer.h"
 
+#include "History/HistoryCommands.h"
+
 class TilemapEditor : public Layer
 {
 	enum class DrawMode
@@ -17,7 +19,7 @@ public:
 	virtual void OnImGuiRender() override;
 	virtual void OnEvent(Event& event) override;
 	void OnRender(const Vector3f& mousePosition);
-	void SetTilemapComp(const TransformComponent& transformComp, TilemapComponent& tilemapComp);
+	void SetTilemapEntity(Entity tilemapEntity);
 	bool HasSelection();
 	bool IsShown() const { return *m_Show; }
 	bool IsHovered() const;
@@ -28,6 +30,8 @@ private:
 	void FloodFillTile(uint32_t x, uint32_t y, uint32_t tileIndex);
 	void FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t originalTileType, uint32_t newTileType);
 	uint32_t GetRandomSelectedTile();
+	void ApplyStamp(uint32_t startX, uint32_t startY, int topRightSelectionX, int topRightSelectionY);
+	Matrix4x4 GetTileTransform(int x, int y);
 private:
 	bool* m_Show;
 	DrawMode m_DrawMode = DrawMode::Stamp;
@@ -41,6 +45,9 @@ private:
 
 	int m_HoveredCoords[2];
 
+	Entity m_TilemapEntity;
 	TilemapComponent* m_TilemapComp = nullptr;
 	const TransformComponent* m_TransformComp = nullptr;
+
+	std::pair<bool, Ref<EditComponentCommand<TilemapComponent>>> m_EditTilemapComponent;
 };

@@ -1,5 +1,6 @@
 #pragma once
 #include "HistoryManager.h"
+#include "Scene/Entity.h"
 
 class AddEntityCommand : public HistoryRecord
 {
