@@ -413,7 +413,6 @@ void MainDockSpace::OnImGuiRender()
 		ImGui::Text("cereal version: %i.%i.%i", CEREAL_VERSION_MAJOR, CEREAL_VERSION_MINOR, CEREAL_VERSION_PATCH);
 		ImGui::Text("Simple ini version: %i.%i", 4, 17);
 		ImGui::Text("entt version: %i.%i.%i", 3, 9, 0);
-		ImGui::Text("SPIR-V Cross version: %i", SPV_VERSION);
 		ImGui::Text("lua version: %s.%s.%s", LUA_VERSION_MAJOR, LUA_VERSION_MINOR, LUA_VERSION_RELEASE);
 		ImGui::Text("Box2D version: %i.%i.%i", b2_version.major, b2_version.minor, b2_version.revision);
 		if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
