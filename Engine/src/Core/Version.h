@@ -15,5 +15,4 @@
 #include "spdlog/version.h"
 #include "cereal/version.hpp"
 #include "lua/lua.h"
-#include "SPIRV-Cross/spirv.h"
 #include "box2d/b2_common.h"
