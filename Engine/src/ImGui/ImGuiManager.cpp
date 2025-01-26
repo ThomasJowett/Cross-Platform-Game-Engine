@@ -12,12 +12,6 @@
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 
-#include "imgui/backends/imgui_impl_vulkan.h"
-#include "Platform/Vulkan/VulkanContext.h"
-
-static ImGui_ImplVulkanH_Window g_WindowData;
-extern VkInstance g_VkInstance;
-
 #include "GLFW/glfw3.h"
 
 #ifdef __WINDOWS__
@@ -72,16 +66,6 @@ void ImGuiManager::Init()
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
 	}
-	else if (api == RendererAPI::API::Vulkan)
-	{
-		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
-
-		if (ImGui_ImplGlfw_InitForVulkan(window, true)) {
-			ImGui_ImplVulkan_InitInfo initInfo = {};
-			ImGui_ImplVulkanH_Window* wd = &g_WindowData;
-			m_UsingImGui = ImGui_ImplVulkan_Init(&initInfo, wd->RenderPass);
-		}
-	}
 	else
 	{
 		ENGINE_CRITICAL("ImGui not available for this graphics API");
@@ -131,10 +115,6 @@ void ImGuiManager::Begin()
 	{
 		ImGui_ImplOpenGL3_NewFrame();
 	}
-	else if (api == RendererAPI::API::Vulkan)
-	{
-		ImGui_ImplVulkan_NewFrame();
-	}
 	ImGui_ImplGlfw_NewFrame();
 
 	ImGui::NewFrame();
@@ -160,10 +140,6 @@ void ImGuiManager::End()
 	else if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
-	}
-	else if (api == RendererAPI::API::Vulkan)
-	{
-		//ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), );
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)

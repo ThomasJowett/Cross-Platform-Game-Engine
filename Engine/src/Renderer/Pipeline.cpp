@@ -25,9 +25,6 @@ Ref<Pipeline> Pipeline::Create(const Spec& spec)
 		CORE_ASSERT(false, "Could not create pipeline: Metal is not currently supported")
 			return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		CORE_ASSERT(false, "Could not create pipeline: Vulkan is not currently supported")
-			return nullptr;
 	default:
 		break;
 	}

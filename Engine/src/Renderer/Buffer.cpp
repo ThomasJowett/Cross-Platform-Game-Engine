@@ -8,7 +8,6 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11Buffer.h"
 #endif // __WINDOWS__
-#include "Platform/Vulkan/VulkanBuffer.h"
 
 Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 {
@@ -29,8 +28,6 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanVertexBuffer>(size);
 	default:
 		break;
 	}
@@ -60,8 +57,6 @@ Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanVertexBuffer>(vertices, size);
 	default:
 		break;
 	}
@@ -90,8 +85,6 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanIndexBuffer>(indices, size);
 	default:
 		break;
 	}

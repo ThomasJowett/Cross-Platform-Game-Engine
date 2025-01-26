@@ -6,7 +6,6 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11Shader.h"
 #endif // __WINDOWS__
-#include "Platform/Vulkan/VulkanShader.h"
 
 Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path& fileDirectory)
 {
@@ -26,8 +25,6 @@ Ref<Shader> Shader::Create(const std::string& name, const std::filesystem::path&
 		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanShader>(name, fileDirectory);
 	default:
 		break;
 	}
@@ -56,8 +53,6 @@ Ref<Shader> Shader::Create(const std::string& name, const std::string& vertexSha
 		CORE_ASSERT(false, "Could not create Shader: Metal is not currently supported");
 		return nullptr;
 #endif // __APPLE__
-	case RendererAPI::API::Vulkan:
-		return CreateRef<VulkanShader>(vertexShaderSrc, fragmentShaderSrc);
 	default:
 		break;
 	}

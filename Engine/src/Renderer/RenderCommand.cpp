@@ -7,7 +7,6 @@
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #endif // __WINDOWS__
-#include "Platform/Vulkan/VulkanRendererAPI.h"
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
@@ -24,7 +23,7 @@ int RenderCommand::CreateRendererAPI()
 		return 0;
 	}
 #ifdef __WINDOWS__
-	else if(api == "DirectX11")
+	else if (api == "DirectX11")
 	{
 		RendererAPI::s_API = RendererAPI::API::Directx11;
 		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
@@ -40,12 +39,6 @@ int RenderCommand::CreateRendererAPI()
 		return 1;
 	}
 #endif // __APPLE__
-	else if (api == "Vulkan")
-	{
-		RendererAPI::s_API = RendererAPI::API::Vulkan;
-		s_RendererAPI = CreateScope<VulkanRendererAPI>();
-		return 0;
-	}
 	else if (api == "None")
 	{
 		RendererAPI::s_API = RendererAPI::API::None;

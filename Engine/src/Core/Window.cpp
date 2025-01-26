@@ -12,7 +12,6 @@
 #include "Renderer/Renderer.h"
 
 #include "Platform/OpenGL/OpenGLContext.h"
-#include "Platform/Vulkan/VulkanContext.h"
 #ifdef _WINDOWS
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3native.h"   // for glfwGetWin32Window
@@ -269,7 +268,7 @@ bool Window::Init(const WindowProps& props)
 			glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 		}
 
-		else if (api == RendererAPI::API::Directx11 || api == RendererAPI::API::Vulkan)
+		else if (api == RendererAPI::API::Directx11)
 		{
 			glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
 		}
@@ -293,10 +292,6 @@ bool Window::Init(const WindowProps& props)
 #ifdef _WINDOWS
 		m_Context = CreateRef<DirectX11Context>(glfwGetWin32Window(m_Window));
 #endif
-	}
-	else if (api == RendererAPI::API::Vulkan)
-	{
-		m_Context = CreateRef<VulkanContext>();
 	}
 
 	m_Context->Init();

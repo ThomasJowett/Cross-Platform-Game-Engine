@@ -60,37 +60,16 @@ file (GLOB OPENGL_FILES
     src/Platform/OpenGL/OpenGlUniformBuffer.h
 )
 
-file (GLOB VULKAN_FILES
-    src/Platform/Vulkan/VulkanBuffer.cpp
-    src/Platform/Vulkan/VulkanBuffer.h
-    src/Platform/Vulkan/VulkanDevice.cpp
-    src/Platform/Vulkan/VulkanDevice.h
-    src/Platform/Vulkan/VulkanRendererAPI.cpp
-    src/Platform/Vulkan/VulkanRendererAPI.h
-    src/Platform/Vulkan/VulkanTexture.cpp
-    src/Platform/Vulkan/VulkanTexture.h
-    src/Platform/Vulkan/VulkanContext.cpp
-    src/Platform/Vulkan/VulkanContext.h
-    src/Platform/Vulkan/VulkanFrameBuffer.cpp
-    src/Platform/Vulkan/VulkanFrameBuffer.h
-    src/Platform/Vulkan/VulkanShader.cpp
-    src/Platform/Vulkan/VulkanShader.h
-    src/Platform/Vulkan/VulkanUniformBuffer.cpp
-    src/Platform/Vulkan/VulkanUniformBuffer.h
-)
-
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
-add_library(Engine ${ENGINE_FILES} ${DIRECTX_FILES} ${OPENGL_FILES} ${VULKAN_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
+add_library(Engine ${ENGINE_FILES} ${DIRECTX_FILES} ${OPENGL_FILES} ${CMAKE_CURRENT_SOURCE_DIR}/vendor/stb/stb.cpp)
 
 group_files_by_directory("ENGINE_FILES")
 group_files_by_directory("DIRECTX_FILES")
 group_files_by_directory("OPENGL_FILES")
-group_files_by_directory("VULKAN_FILES")
 
 target_link_libraries(Engine PRIVATE
                       ${OpenGL_LIBRARY}
-                      ${Vulkan_LIBRARY}
                       glfw
                       glad
                       imgui

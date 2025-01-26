@@ -15,9 +15,6 @@
 
 To clone this repository run: `git clone --recursive https://github.com/ThomasJowett/Cross-Platform-Game-Engine`
 
-## Building
-Vulkan SDK is required to be installed to build: https://vulkan.lunarg.com/
-
 Build using cmake
 
 ### Windows
@@ -47,6 +44,4 @@ If you would like to check out some example projects they can be downloaded from
 * [LiquidFun](https://github.com/google/liquidfun) : 2D Physics library and Extension of Box2D that provides particle and fluid dynamics.
 * [lua](https://github.com/lua/lua) : A powerful, efficient, lightweight, embeddable scripting language.
 * [sol2](https://github.com/ThePhD/sol2) : A C++ single header library binding to Lua.
-* [SPIR-V Cross](https://github.com/KhronosGroup/SPIRV-Cross) : A tool designed for parsing and converting SPIR-V to other shader languages.
 * [msdf atlas](https://github.com/Chlumsky/msdf-atlas-gen) : A utility for generating compact font atlases. 
-* [Vulkan](https://www.vulkan.org/) : A cross-platform industry standard graphics API.
