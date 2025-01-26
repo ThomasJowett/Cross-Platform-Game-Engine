@@ -9,6 +9,9 @@
 
 <div align="center">
  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
+  <a href="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/actions/workflows/cmake-multi-platform.yml">
+    <img src="https://github.com/ThomasJowett/Cross-Platform-Game-Engine/actions/workflows/cmake-multi-platform.yml/badge.svg?branch=master" alt="Build Status">
+  </a>
  <br>                                               
  <img src="Resources/Linux Screenshot.png">
 </div>
