@@ -5,7 +5,7 @@
 
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
-#include "Texture.h"
+#include "Asset/Texture.h"
 
 #include "Core/core.h"
 

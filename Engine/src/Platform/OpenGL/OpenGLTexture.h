@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 #include <glad/glad.h>
 
 class OpenGLTexture2D : public Texture2D

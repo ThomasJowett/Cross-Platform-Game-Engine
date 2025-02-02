@@ -1,6 +1,7 @@
 file(GLOB_RECURSE ENGINE_FILES
     src/AI/*.cpp
     src/Animation/*.cpp
+    src/Asset/*.cpp
     src/Core/*.cpp
     src/Events/*.cpp
     src/Logging/*.cpp

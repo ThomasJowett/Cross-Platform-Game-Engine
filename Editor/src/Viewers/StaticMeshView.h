@@ -4,8 +4,8 @@
 
 #include "Core/Layer.h"
 #include "Renderer/Mesh.h"
-#include "Renderer/Material.h"
-#include "Renderer/StaticMesh.h"
+#include "Asset/Material.h"
+#include "Asset/StaticMesh.h"
 
 #include "Renderer/FrameBuffer.h"
 #include "imgui/imgui.h"

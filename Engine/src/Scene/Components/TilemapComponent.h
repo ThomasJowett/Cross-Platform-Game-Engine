@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/Tileset.h"
+#include "Asset/Tileset.h"
 #include "Core/Colour.h"
 #include "Utilities/FileUtils.h"
 #include "Utilities/SerializationUtils.h"

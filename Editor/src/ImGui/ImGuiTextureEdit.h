@@ -2,7 +2,7 @@
 
 #include "imgui/imgui.h"
 
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 
 namespace ImGui
 {

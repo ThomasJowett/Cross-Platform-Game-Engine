@@ -26,17 +26,19 @@
 
 // Renderer
 #include "Renderer/Camera.h"
-#include "Renderer/Shader.h"
 #include "Renderer/Renderer.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/RenderCommand.h"
 #include "Renderer/Buffer.h"
 #include "Renderer/GraphicsContext.h"
 #include "Renderer/RendererAPI.h"
-#include "Renderer/Texture.h"
 #include "Renderer/SubTexture2D.h"
 #include "Renderer/Mesh.h"
 #include "Renderer/FrameBuffer.h"
+
+// Assets
+#include "Asset/Shader.h"
+#include "Asset/Texture.h"
 
 // Utilities
 #include "Utilities/GeometryGenerator.h"

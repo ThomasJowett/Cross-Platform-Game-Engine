@@ -2,7 +2,7 @@
 #include <filesystem>
 
 #include "Core/Layer.h"
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 #include "ViewerManager.h"
 
 class TextureView :

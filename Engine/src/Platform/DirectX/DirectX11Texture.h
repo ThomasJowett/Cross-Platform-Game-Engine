@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 
 #include <d3d11.h>
 

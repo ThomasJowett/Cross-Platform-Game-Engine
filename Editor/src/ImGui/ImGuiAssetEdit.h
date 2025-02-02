@@ -2,7 +2,7 @@
 
 #include "imgui/imgui.h"
 
-#include "Renderer/Material.h"
+#include "Asset/Material.h"
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
 

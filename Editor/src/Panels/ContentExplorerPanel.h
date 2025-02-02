@@ -7,7 +7,7 @@
 #include "FileSystem/Directory.h"
 #include "Utilities/FileWatcher.h"
 #include "Interfaces/ICopyable.h"
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 #include "Viewers/ViewerManager.h"
 
 #include "imgui/imgui.h"

@@ -5,8 +5,8 @@
 #include "cereal/cereal.hpp"
 #include "cereal/access.hpp"
 
-#include "Renderer/Texture.h"
-#include "Renderer/Material.h"
+#include "Asset/Texture.h"
+#include "Asset/Material.h"
 #include "Scene/AssetManager.h"
 #include "Utilities/SerializationUtils.h"
 

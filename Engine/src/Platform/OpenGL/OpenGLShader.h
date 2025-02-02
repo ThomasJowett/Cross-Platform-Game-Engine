@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Renderer/Shader.h"
+#include "Asset/Shader.h"
 
 class OpenGLShader : public Shader
 {

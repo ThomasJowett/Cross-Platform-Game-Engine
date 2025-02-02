@@ -7,7 +7,7 @@
 #include "Core/Layer.h"
 #include "Scene/Entity.h"
 #include "Renderer/Mesh.h"
-#include "Renderer/Material.h"
+#include "Asset/Material.h"
 
 struct ImGuiTextFilter;
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Texture.h"
 
-#include "Renderer.h"
+#include "Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 #ifdef __WINDOWS__
 #include "Platform/DirectX/DirectX11Texture.h"

@@ -2,10 +2,10 @@
 
 #include "Camera.h"
 
-#include "Texture.h"
+#include "Asset/Texture.h"
 #include "SubTexture2D.h"
 #include "Core/Colour.h"
-#include "Renderer/Font.h"
+#include "Asset/Font.h"
 
 #include "Scene/Components/SpriteComponent.h"
 #include "Scene/Components/CircleRendererComponent.h"

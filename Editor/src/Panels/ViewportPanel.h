@@ -9,7 +9,7 @@
 #include "Interfaces/IUndoable.h"
 #include "Interfaces/ISaveable.h"
 
-#include "Renderer/Shader.h"
+#include "Asset/Shader.h"
 
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"

@@ -2,7 +2,7 @@
 
 #include "cereal/access.hpp"
 
-#include "Renderer/SpriteSheet.h"
+#include "Asset/SpriteSheet.h"
 #include "Core/Colour.h"
 
 #include "Core/Application.h"

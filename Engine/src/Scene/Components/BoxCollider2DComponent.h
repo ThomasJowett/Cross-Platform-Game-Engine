@@ -3,7 +3,7 @@
 #include "cereal/cereal.hpp"
 
 #include "math/Vector2f.h"
-#include "Physics/PhysicsMaterial.h"
+#include "Asset/PhysicsMaterial.h"
 
 #include "Utilities/FileUtils.h"
 #include "Utilities/SerializationUtils.h"
