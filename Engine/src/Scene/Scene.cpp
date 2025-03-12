@@ -198,6 +198,11 @@ void Scene::OnRuntimeStart()
 
 	if (m_DrawDebug)
 		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
+
+	m_AudioEngine = CreateRef<ma_engine>();
+	if (ma_engine_init(nullptr, m_AudioEngine.get() != MA_SUCCESS)) {
+		ENGINE_CRITICAL("Failed to initialize MiniAudio engine");
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -211,6 +216,9 @@ void Scene::OnRuntimePause()
 void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
+
+	ma_engine_uninit(m_AudioEngine.get());
+	m_AudioEngine.reset();
 
 	m_PhysicsEngine2D.reset();
 
