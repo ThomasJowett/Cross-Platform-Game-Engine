@@ -7,6 +7,7 @@
 #include "Core/UUID.h"
 #include "math/Vector2f.h"
 #include "Physics/PhysicsEngine2D.h"
+#include "miniaudio/miniaudio.h"
 
 class Entity;
 class FrameBuffer;
@@ -96,6 +97,8 @@ private:
 	Ref<PhysicsEngine2D> m_PhysicsEngine2D;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
+
+	Ref<ma_engine> m_AudioEngine;
 
 	uint32_t m_PixelsPerUnit = 16;
 
