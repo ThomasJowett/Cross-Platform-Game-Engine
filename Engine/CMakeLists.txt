@@ -78,6 +78,7 @@ target_link_libraries(Engine PRIVATE
                       lua
                       box2d
                       msdf-atlas-gen
+                      miniaudio
                       )
 
 add_definitions(
