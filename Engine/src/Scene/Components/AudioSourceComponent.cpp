@@ -1,5 +1,5 @@
 #include "cereal/cereal.hpp"
-#include "Assets/Audio.h"
+#include "Asset/Audio.h"
 #include "Utilities/SerializationUtils.h"
 
 struct AudioSourceComponent
@@ -18,4 +18,4 @@ private:
 	{
 		SerializationUtils::LoadAssetFromArchive(archive, audio);
 	}
-}
+};

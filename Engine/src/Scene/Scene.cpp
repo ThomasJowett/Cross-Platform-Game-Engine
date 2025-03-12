@@ -200,7 +200,7 @@ void Scene::OnRuntimeStart()
 		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
 
 	m_AudioEngine = CreateRef<ma_engine>();
-	if (ma_engine_init(nullptr, m_AudioEngine.get() != MA_SUCCESS)) {
+	if (ma_engine_init(nullptr, m_AudioEngine.get()) != MA_SUCCESS) {
 		ENGINE_CRITICAL("Failed to initialize MiniAudio engine");
 	}
 }
