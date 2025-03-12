@@ -40,3 +40,6 @@
 [submodule "Engine/vendor/msdf-atlas-gen"]
 	path = Engine/vendor/msdf-atlas-gen
 	url = https://github.com/Chlumsky/msdf-atlas-gen.git
+[submodule "Engine/vendor/miniaudio"]
+	path = Engine/vendor/miniaudio
+	url = git@github.com:mackron/miniaudio.git
