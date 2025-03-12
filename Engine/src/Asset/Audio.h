@@ -13,4 +13,4 @@ private:
 	int m_SampleRate = 0;
 	int m_Channels = 0;
 	int m_BitDepth = 0;
-}
+};

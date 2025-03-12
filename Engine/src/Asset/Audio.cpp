@@ -1,6 +1,7 @@
 #include "Audio.h"
 
 #include "miniaudio/miniaudio.h"
+#include "Logging/Instrumentor.h"
 
 Audio::Audio()
 {
@@ -25,10 +26,10 @@ bool Audio::Load(const std::filesystem::path& filepath)
 
 	ma_decoder decoder;
 
-	ma_result result = ma_decoder_init_file(filepath.string().c_str()), nullptr, & ma_decoder);
+	ma_result result = ma_decoder_init_file(filepath.string().c_str(), nullptr, &decoder);
 	if (result != MA_SUCCESS)
 	{
-		BM_ENGINE_ERROR("Failed to decode audio file: {0}", filepath);
+		ENGINE_ERROR("Failed to decode audio file: {0}", filepath);
 		return false;
 	}
 
