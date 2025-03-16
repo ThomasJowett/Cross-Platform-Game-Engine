@@ -1134,6 +1134,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::Checkbox("Stream", &audioSource.stream));
 		});
 
+	DrawComponent<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity, [](auto& audioListener)
+		{
+			Dirty(ImGui::Checkbox("Primary", &audioListener.primary));
+		});
+
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
@@ -1195,6 +1200,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity);
 		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
 		AddComponentMenuItem<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity);
+		AddComponentMenuItem<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity);
 
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
