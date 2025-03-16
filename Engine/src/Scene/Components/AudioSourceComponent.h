@@ -2,6 +2,8 @@
 #include "Asset/AudioClip.h"
 #include "Utilities/SerializationUtils.h"
 
+struct ma_sound;
+
 struct AudioSourceComponent
 {
 	AudioSourceComponent() = default;
@@ -14,6 +16,10 @@ struct AudioSourceComponent
 	bool loop = false;
 
 	bool stream = false;
+
+	bool play = false;
+
+	Ref<ma_sound> sound;
 
 private:
 	friend cereal::access;

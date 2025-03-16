@@ -203,6 +203,37 @@ void Scene::OnRuntimeStart()
 	if (ma_engine_init(nullptr, m_AudioEngine.get()) != MA_SUCCESS) {
 		ENGINE_CRITICAL("Failed to initialize MiniAudio engine");
 	}
+
+	m_Registry.view<AudioSourceComponent>().each(
+		[this](const auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.audioClip)
+			{
+				audioSourceComponent.sound = CreateRef<ma_sound>();
+				ma_uint32 flags = audioSourceComponent.stream ? MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM : MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
+				if (audioSourceComponent.loop)
+					flags |= MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING;
+				if (ma_sound_init_from_file(
+					m_AudioEngine.get(), audioSourceComponent.audioClip->GetFilepath().string().c_str(),
+					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+				{
+					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
+				}
+				else
+				{
+					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
+					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
+
+					if (auto* transformComponent = m_Registry.try_get<TransformComponent>(entity))
+					{
+						auto position = transformComponent->GetWorldPosition();
+						ma_sound_set_position(audioSourceComponent.sound.get(), position.x, position.y, position.z);
+					}
+				}
+
+				audioSourceComponent.play = true;
+			}
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -216,6 +247,15 @@ void Scene::OnRuntimePause()
 void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
+
+	m_Registry.view<AudioSourceComponent>().each(
+		[this](const auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.audioClip)
+			{
+				ma_sound_uninit(audioSourceComponent.sound.get());
+			}
+		});
 
 	ma_engine_uninit(m_AudioEngine.get());
 	m_AudioEngine.reset();
@@ -441,6 +481,18 @@ void Scene::OnUpdate(float deltaTime)
 		{
 			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->update(deltaTime);
+		});
+
+	m_Registry.view<AudioSourceComponent>(entt::exclude<DestroyMarker>).each([this](auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.play) {
+				if (!ma_sound_is_playing(audioSourceComponent.sound.get()))
+				{
+					ma_sound_stop(audioSourceComponent.sound.get());
+				}
+				ma_sound_start(audioSourceComponent.sound.get());
+				audioSourceComponent.play = false;
+			}
 		});
 
 	m_IsUpdating = false;
