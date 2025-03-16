@@ -66,6 +66,7 @@ public:
 	void SetFilepath(std::filesystem::path filepath);
 
 	Entity GetPrimaryCameraEntity();
+	Entity GetPrimaryListenerEntity();
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
 

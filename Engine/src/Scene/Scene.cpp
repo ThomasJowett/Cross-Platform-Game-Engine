@@ -495,6 +495,14 @@ void Scene::OnUpdate(float deltaTime)
 			}
 		});
 
+	Entity primaryListenerEntity = GetPrimaryListenerEntity();
+
+	if (primaryListenerEntity)
+	{
+		auto [transformComp, audioListenerComp] = primaryListenerEntity.GetComponents<TransformComponent, AudioListenerComponent>();
+		ma_engine_listener_set_position(m_AudioEngine.get(), 0, transformComp.position.x, transformComp.position.y, transformComp.position.z);
+	}
+
 	m_IsUpdating = false;
 
 	auto destroyView = m_Registry.view<DestroyMarker>();
@@ -749,6 +757,20 @@ Entity Scene::GetPrimaryCameraEntity()
 	{
 		CameraComponent const& cameraComp = view.get<CameraComponent>(entity);
 		if (cameraComp.primary)
+			return Entity{ entity, this };
+	}
+	return Entity();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::GetPrimaryListenerEntity()
+{
+	auto view = m_Registry.view<AudioListenerComponent>();
+	for (auto entity : view)
+	{
+		AudioListenerComponent const& listenerComp = view.get<AudioListenerComponent>(entity);
+		if (listenerComp.primary)
 			return Entity{ entity, this };
 	}
 	return Entity();

@@ -421,7 +421,12 @@ void HierarchyPanel::CreateMenu()
 		}
 		if (ImGui::MenuItem("Audio Listener", "", nullptr, false))
 		{
-			//TODO: Create Audio Listener
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Audio Listener");
+			entity.AddComponent<AudioListenerComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity)
+				m_SelectedEntity.AddChild(entity);
+			m_SelectedEntity = entity;
 		}
 		ImGui::EndMenu();
 	}
