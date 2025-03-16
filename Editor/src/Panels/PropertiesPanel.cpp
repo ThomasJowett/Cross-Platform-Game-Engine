@@ -1131,6 +1131,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::DragFloat("Volume", &audioSource.volume, 0.01f, 0.0f, 1.0f));
 			Dirty(ImGui::DragFloat("Pitch", &audioSource.pitch, 0.01f, 0.0f, 3.0f));
 			Dirty(ImGui::Checkbox("Loop", &audioSource.loop));
+			Dirty(ImGui::Checkbox("Stream", &audioSource.stream));
 		});
 
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
