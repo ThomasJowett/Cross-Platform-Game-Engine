@@ -20,14 +20,14 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(volume, pitch, loop);
-		SerializationUtils::SaveAssetToArchive(archive, audio);
+		archive(volume, pitch, loop, stream);
+		SerializationUtils::SaveAssetToArchive(archive, audioClip);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(volume, pitch, loop);
-		SerializationUtils::LoadAssetFromArchive(archive, audio);
+		archive(volume, pitch, loop, stream);
+		SerializationUtils::LoadAssetFromArchive(archive, audioClip);
 	}
 };
