@@ -3,7 +3,7 @@
 #include <IconsFontAwesome6.h>
 #include <imgui.h>
 #include <MainDockSpace.h>
-#include <Asset/Audio.h>
+#include <Asset/AudioClip.h>
 
 AudioView::AudioView(bool* show, std::filesystem::path filepath)
 	:View("AudioView"), m_Show(show), m_Filepath(filepath)
