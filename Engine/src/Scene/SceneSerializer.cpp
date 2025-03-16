@@ -518,6 +518,17 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("disabledTint"), component->disabledTint);
 	}
 
+	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
+	{
+		tinyxml2::XMLElement* pAudioSourceElement = pElement->InsertNewChildElement("AudioSource");
+		if (component->audioClip)
+			SerializationUtils::Encode(pAudioSourceElement, component->audioClip->GetFilepath());
+		pAudioSourceElement->SetAttribute("Volume", component->volume);
+		pAudioSourceElement->SetAttribute("Pitch", component->pitch);
+		pAudioSourceElement->SetAttribute("Loop", component->loop);
+		pAudioSourceElement->SetAttribute("Stream", component->stream);
+	}
+
 	if (entity.HasComponent<HierarchyComponent>())
 	{
 		if (HierarchyComponent const& component = entity.GetComponent<HierarchyComponent>();
@@ -1076,6 +1087,20 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTint"), component.clickedTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
+	}
+
+	// AudioSource ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pAudioSourceComponent = pEntityElement->FirstChildElement("AudioSource"))
+	{
+		AudioSourceComponent& component = entity.AddComponent<AudioSourceComponent>();
+		std::filesystem::path audioClipPath;
+		SerializationUtils::Decode(pAudioSourceComponent, audioClipPath);
+		if (!audioClipPath.empty())
+			component.audioClip = AssetManager::GetAsset<AudioClip>(audioClipPath);
+		pAudioSourceComponent->QueryFloatAttribute("Volume", &component.volume);
+		pAudioSourceComponent->QueryFloatAttribute("Pitch", &component.pitch);
+		pAudioSourceComponent->QueryBoolAttribute("Loop", &component.loop);
+		pAudioSourceComponent->QueryBoolAttribute("Stream", &component.stream);
 	}
 
 	// Hierarchy --------------------------------------------------------------------------------------------------
