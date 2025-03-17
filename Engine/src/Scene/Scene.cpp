@@ -223,11 +223,18 @@ void Scene::OnRuntimeStart()
 				{
 					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
 					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
+					ma_sound_set_min_distance(audioSourceComponent.sound.get(), audioSourceComponent.minDistance);
+					ma_sound_set_max_distance(audioSourceComponent.sound.get(), audioSourceComponent.maxDistance);
+					ma_sound_set_rolloff(audioSourceComponent.sound.get(), audioSourceComponent.rolloff);
+					ma_sound_set_attenuation_model(audioSourceComponent.sound.get(), ma_attenuation_model_linear);
 
 					if (auto* transformComponent = m_Registry.try_get<TransformComponent>(entity))
 					{
 						auto position = transformComponent->GetWorldPosition();
 						ma_sound_set_position(audioSourceComponent.sound.get(), position.x, position.y, position.z);
+					}
+					else {
+						ma_sound_set_spatialization_enabled(audioSourceComponent.sound.get(), false);
 					}
 				}
 
@@ -493,6 +500,24 @@ void Scene::OnUpdate(float deltaTime)
 				ma_sound_start(audioSourceComponent.sound.get());
 				audioSourceComponent.play = false;
 			}
+
+			ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
+			ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
+			ma_sound_set_min_distance(audioSourceComponent.sound.get(), audioSourceComponent.minDistance);
+			ma_sound_set_max_distance(audioSourceComponent.sound.get(), audioSourceComponent.maxDistance);
+			ma_sound_set_rolloff(audioSourceComponent.sound.get(), audioSourceComponent.rolloff);
+
+			if (auto* transformComponent = m_Registry.try_get<TransformComponent>(entity))
+			{
+				auto position = transformComponent->GetWorldPosition();
+				ma_sound_set_position(audioSourceComponent.sound.get(), position.x, position.y, position.z);
+			}
+
+			if (RigidBody2DComponent* rigidBody2DComp = m_Registry.try_get<RigidBody2DComponent>(entity))
+			{
+				auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+				ma_sound_set_velocity(audioSourceComponent.sound.get(), velocity.x, velocity.y, 0.0f);
+			}
 		});
 
 	Entity primaryListenerEntity = GetPrimaryListenerEntity();
@@ -501,6 +526,11 @@ void Scene::OnUpdate(float deltaTime)
 	{
 		auto [transformComp, audioListenerComp] = primaryListenerEntity.GetComponents<TransformComponent, AudioListenerComponent>();
 		ma_engine_listener_set_position(m_AudioEngine.get(), 0, transformComp.position.x, transformComp.position.y, transformComp.position.z);
+
+		if (RigidBody2DComponent* rigidBody2DComp = primaryListenerEntity.TryGetComponent<RigidBody2DComponent>()) {
+			auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+			ma_engine_listener_set_velocity(m_AudioEngine.get(), 0, velocity.x, velocity.y, 0.0f);
+		}
 	}
 
 	m_IsUpdating = false;

@@ -1131,6 +1131,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::DragFloat("Volume", &audioSource.volume, 0.01f, 0.0f, 1.0f));
 			Dirty(ImGui::DragFloat("Pitch", &audioSource.pitch, 0.01f, 0.0f, 3.0f));
 			Dirty(ImGui::Checkbox("Loop", &audioSource.loop));
+			Dirty(ImGui::DragFloat("Min Distance", &audioSource.minDistance, 0.5f, 0.0f, 100.0f));
+			Dirty(ImGui::DragFloat("Max Distance", &audioSource.maxDistance, 0.5f, 0.0f, 100.0f));
+			Dirty(ImGui::DragFloat("Rolloff", &audioSource.rolloff, 0.5f, 0.0f, 100.0f));
 			Dirty(ImGui::Checkbox("Stream", &audioSource.stream));
 		});
 

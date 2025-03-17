@@ -526,7 +526,16 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pAudioSourceElement->SetAttribute("Volume", component->volume);
 		pAudioSourceElement->SetAttribute("Pitch", component->pitch);
 		pAudioSourceElement->SetAttribute("Loop", component->loop);
+		pAudioSourceElement->SetAttribute("MinDistance", component->minDistance);
+		pAudioSourceElement->SetAttribute("MaxDistance", component->maxDistance);
+		pAudioSourceElement->SetAttribute("Rolloff", component->rolloff);
 		pAudioSourceElement->SetAttribute("Stream", component->stream);
+	}
+
+	if (AudioListenerComponent* component = entity.TryGetComponent<AudioListenerComponent>())
+	{
+		tinyxml2::XMLElement* pAudioListenerElement = pElement->InsertNewChildElement("AudioListener");
+		pAudioListenerElement->SetAttribute("Primary", component->primary);
 	}
 
 	if (entity.HasComponent<HierarchyComponent>())
@@ -1100,7 +1109,17 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pAudioSourceComponent->QueryFloatAttribute("Volume", &component.volume);
 		pAudioSourceComponent->QueryFloatAttribute("Pitch", &component.pitch);
 		pAudioSourceComponent->QueryBoolAttribute("Loop", &component.loop);
+		pAudioSourceComponent->QueryFloatAttribute("MinDistance", &component.minDistance);
+		pAudioSourceComponent->QueryFloatAttribute("MaxDistance", &component.maxDistance);
+		pAudioSourceComponent->QueryFloatAttribute("Rolloff", &component.rolloff);
 		pAudioSourceComponent->QueryBoolAttribute("Stream", &component.stream);
+	}
+
+	// AudioListener ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pAudioListenerComponent = pEntityElement->FirstChildElement("AudioListener"))
+	{
+		AudioListenerComponent& component = entity.AddComponent<AudioListenerComponent>();
+		pAudioListenerComponent->QueryBoolAttribute("Primary", &component.primary);
 	}
 
 	// Hierarchy --------------------------------------------------------------------------------------------------
