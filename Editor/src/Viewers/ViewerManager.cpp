@@ -37,7 +37,7 @@ static const char* MeshExtensions[] =
 
 static const char* AudioExtensions[] =
 {
-  ".ogg", ".mp3", ".wav", ".flac"
+  ".mp3", ".wav", ".flac"
 };
 
 static const char* FontExtensions[] =
