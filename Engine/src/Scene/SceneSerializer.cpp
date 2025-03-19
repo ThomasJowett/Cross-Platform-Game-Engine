@@ -530,6 +530,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pAudioSourceElement->SetAttribute("MaxDistance", component->maxDistance);
 		pAudioSourceElement->SetAttribute("Rolloff", component->rolloff);
 		pAudioSourceElement->SetAttribute("Stream", component->stream);
+		pAudioSourceElement->SetAttribute("PlayOnStart", component->playOnStart);
 	}
 
 	if (AudioListenerComponent* component = entity.TryGetComponent<AudioListenerComponent>())
@@ -1113,6 +1114,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pAudioSourceComponent->QueryFloatAttribute("MaxDistance", &component.maxDistance);
 		pAudioSourceComponent->QueryFloatAttribute("Rolloff", &component.rolloff);
 		pAudioSourceComponent->QueryBoolAttribute("Stream", &component.stream);
+		pAudioSourceComponent->QueryBoolAttribute("PlayOnStart", &component.playOnStart);
 	}
 
 	// AudioListener ----------------------------------------------------------------------------------------------------
