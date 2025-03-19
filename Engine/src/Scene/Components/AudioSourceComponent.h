@@ -22,23 +22,31 @@ struct AudioSourceComponent
 
 	bool stream = false;
 
-	bool play = false;
+	bool playOnStart = false;
 
 	Ref<ma_sound> sound;
 
+	void Play() { play = true; }
+	void Pause() { pause = true; }
+	void Stop() { stop = true; }
+
 private:
+	friend class Scene;
+	bool play = false;
+	bool pause = false;
+	bool stop = false;
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(volume, pitch, loop, minDistance, maxDistance, rolloff, stream);
+		archive(volume, pitch, loop, minDistance, maxDistance, rolloff, stream, playOnStart);
 		SerializationUtils::SaveAssetToArchive(archive, audioClip);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(volume, pitch, loop, minDistance, maxDistance, rolloff, stream);
+		archive(volume, pitch, loop, minDistance, maxDistance, rolloff, stream, playOnStart);
 		SerializationUtils::LoadAssetFromArchive(archive, audioClip);
 	}
 };

@@ -238,7 +238,8 @@ void Scene::OnRuntimeStart()
 					}
 				}
 
-				audioSourceComponent.play = true;
+				if (audioSourceComponent.playOnStart)
+					audioSourceComponent.play = true;
 			}
 		});
 }
@@ -495,10 +496,26 @@ void Scene::OnUpdate(float deltaTime)
 			if (audioSourceComponent.play) {
 				if (!ma_sound_is_playing(audioSourceComponent.sound.get()))
 				{
+					ma_sound_start(audioSourceComponent.sound.get());
+				}
+				audioSourceComponent.play = false;
+				audioSourceComponent.pause = false;
+				audioSourceComponent.stop = false;
+			}
+			if (audioSourceComponent.pause) {
+				if (ma_sound_is_playing(audioSourceComponent.sound.get()))
+				{
 					ma_sound_stop(audioSourceComponent.sound.get());
 				}
-				ma_sound_start(audioSourceComponent.sound.get());
+				audioSourceComponent.pause = false;
 				audioSourceComponent.play = false;
+			}
+			if (audioSourceComponent.stop) {
+				ma_sound_stop(audioSourceComponent.sound.get());
+				ma_sound_seek_to_pcm_frame(audioSourceComponent.sound.get(), 0);
+				audioSourceComponent.stop = false;
+				audioSourceComponent.play = false;
+				audioSourceComponent.pause = false;
 			}
 
 			ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);

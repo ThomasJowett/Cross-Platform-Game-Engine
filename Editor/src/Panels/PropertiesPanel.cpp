@@ -1135,6 +1135,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::DragFloat("Max Distance", &audioSource.maxDistance, 0.5f, 0.0f, 100.0f));
 			Dirty(ImGui::DragFloat("Rolloff", &audioSource.rolloff, 0.5f, 0.0f, 100.0f));
 			Dirty(ImGui::Checkbox("Stream", &audioSource.stream));
+			Dirty(ImGui::Checkbox("Play On Awake", &audioSource.playOnStart));
 		});
 
 	DrawComponent<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity, [](auto& audioListener)
