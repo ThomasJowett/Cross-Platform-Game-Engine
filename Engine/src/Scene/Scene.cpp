@@ -24,6 +24,8 @@
 #include "Physics/HitResult2D.h"
 #include "Physics/Contact2D.h"
 
+#include "miniaudio/miniaudio.h"
+
 struct DestroyMarker {};
 
 template<typename Component>

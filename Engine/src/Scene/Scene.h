@@ -7,13 +7,13 @@
 #include "Core/UUID.h"
 #include "math/Vector2f.h"
 #include "Physics/PhysicsEngine2D.h"
-#include "miniaudio/miniaudio.h"
 
 class Entity;
 class FrameBuffer;
 class Camera;
 class Matrix4x4;
 struct HitResult2D;
+struct ma_engine;
 
 class Scene
 {
