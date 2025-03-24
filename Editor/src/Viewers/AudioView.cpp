@@ -52,12 +52,12 @@ void AudioView::OnAttach()
 		return;
 	}
 
-	constexpr size_t CHUNK_SIZE = 4096;
+	constexpr size_t CHUNK_SIZE = 1024;
 
-	float* buffer = new float[CHUNK_SIZE];
+	void* buffer = malloc(CHUNK_SIZE * decoder.outputChannels * ma_get_bytes_per_sample(decoder.outputFormat));
+	std::vector<float> floatBuffer(CHUNK_SIZE * decoder.outputChannels);
 
 	m_VolumeHistory.resize(VOLUME_HISTORY_LENGTH);
-	uint32_t volumeHistoryIndex = 0;
 	ma_uint64 totalFramesRead = 0;
 	
 	ma_uint64 frameCount = 0;
@@ -66,29 +66,50 @@ void AudioView::OnAttach()
 		return;
 	}
 
-	while (totalFramesRead < frameCount)
+	int channels = decoder.outputChannels;
+
+	ma_uint64 framesPerSample = frameCount / VOLUME_HISTORY_LENGTH;
+
+	for (size_t i = 0; i < VOLUME_HISTORY_LENGTH; i++)
 	{
+		ma_uint64 seekFrame = i * framesPerSample;
+
+		if (ma_decoder_seek_to_pcm_frame(&decoder, seekFrame) != MA_SUCCESS)
+		{
+			ENGINE_ERROR("Failed to seek to frame {0} for audio file: {1}", seekFrame, m_Filepath);
+			break;
+		}
+
 		ma_uint64 framesRead = 0;
-		ma_decoder_read_pcm_frames(&decoder, buffer, CHUNK_SIZE, &framesRead);
+		if (ma_decoder_read_pcm_frames(&decoder, buffer, CHUNK_SIZE, &framesRead) != MA_SUCCESS) {
+			ENGINE_ERROR("Error reading PCM frames for audio file: {0}, at frame {1}", m_Filepath, totalFramesRead);
+			break;
+		}
 
 		if (framesRead == 0)
 		{
 			break;
 		}
 
-		float rms = 0.0f;
-		for (ma_uint64 i = 0; i < framesRead; i++)
+		if (decoder.outputFormat == ma_format_f32)
 		{
-			rms += buffer[i] * buffer[i];
+			memcpy(floatBuffer.data(), buffer, framesRead * channels * sizeof(float));
+		}
+		else
+		{
+			ma_pcm_convert(floatBuffer.data(), ma_format_f32, buffer, decoder.outputFormat, framesRead * decoder.outputChannels, ma_dither_mode_none);
+		}
+
+		float rms = 0.0f;
+		for (ma_uint64 i = 0; i < framesRead * channels; i += channels)
+		{
+			rms += floatBuffer[i] * floatBuffer[i];
 		}
 		rms = sqrt(rms / framesRead);
-		m_VolumeHistory[volumeHistoryIndex] = rms;
-		volumeHistoryIndex = (volumeHistoryIndex + 1) % VOLUME_HISTORY_LENGTH;
-
-		totalFramesRead += framesRead;
+		m_VolumeHistory[i] = rms;
 	}
 
-	delete[] buffer;
+	free(buffer);
 	ma_decoder_uninit(&decoder);
 }
 
@@ -107,6 +128,12 @@ void AudioView::OnImGuiRender()
 		ImGui::Text("Sample Rate: %d", m_Audio->GetSampleRate());
 		ImGui::Text("Channels: %d", m_Audio->GetChannels());
 		ImGui::Text("Bit Depth: %d", m_Audio->GetBitDepth());
+
+		ImGui::PlotLines("Volume", m_VolumeHistory.data(), VOLUME_HISTORY_LENGTH);
+		if (ImGui::Button("Play"))
+		{
+			ma_sound_start(m_Sound.get());
+		}
 	}
 	ImGui::End();
 }
