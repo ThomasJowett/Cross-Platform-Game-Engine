@@ -119,8 +119,16 @@ void AudioView::OnImGuiRender()
 		ViewerManager::CloseViewer(m_Filepath);
 		return;
 	}
+
+	ImGui::SetNextWindowSize(ImVec2(800, 280), ImGuiCond_FirstUseEver);
+
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
 	{
+		ma_sound_get_cursor_in_seconds(m_Sound.get(), &m_PlaybackTime);
+
+		float fullWidth = ImGui::GetContentRegionAvail().x;
+		float plotHeight = 120.0f;
+		
 		if (ImGui::IsWindowFocused())
 		{
 			MainDockSpace::SetFocussedWindow(this);
@@ -129,10 +137,55 @@ void AudioView::OnImGuiRender()
 		ImGui::Text("Channels: %d", m_Audio->GetChannels());
 		ImGui::Text("Bit Depth: %d", m_Audio->GetBitDepth());
 
-		ImGui::PlotLines("Volume", m_VolumeHistory.data(), VOLUME_HISTORY_LENGTH);
-		if (ImGui::Button("Play"))
-		{
+		ImGui::PushItemWidth(fullWidth);
+		ImVec2 plotPos = ImGui::GetCursorScreenPos();
+		ImVec2 plotSize = ImVec2(fullWidth, plotHeight);
+		ImGui::PlotHistogram("##Volume", m_VolumeHistory.data(), VOLUME_HISTORY_LENGTH, 0, NULL, 0.0f, 1.0f, plotSize);
+
+		ImDrawList* drawList = ImGui::GetWindowDrawList();
+		float playbackNorm = m_PlaybackTime / m_Length;
+		float playbackX = plotPos.x + playbackNorm * plotSize.x;
+
+		drawList->AddLine(ImVec2(playbackX, plotPos.y),
+			ImVec2(playbackX, plotPos.y + plotSize.y),
+			ImGui::GetColorU32(ImGuiCol_Text), 2.0f);
+
+		if (ImGui::SliderFloat("##PlaybackTime", &m_PlaybackTime, 0.0f, m_Length, "%.3fs")) {
+			if (m_Playing)
+				ma_sound_stop(m_Sound.get());
+			ma_sound_seek_to_second(m_Sound.get(), m_PlaybackTime);
+		}
+		
+		if (!ImGui::IsItemActive() && m_Playing) {
 			ma_sound_start(m_Sound.get());
+			m_Playing = true;
+		}
+		ImGui::PopItemWidth();
+
+		ImGui::Dummy(ImVec2(0,0));
+
+		ImGui::SameLine(ImGui::GetWindowContentRegionMax().x / 2.0f);
+
+		if (m_Playing) {
+			if (ImGui::Button(ICON_FA_PAUSE "##Pause"))
+			{
+				ma_sound_stop(m_Sound.get());
+				m_Playing = false;
+			}
+		}
+		else {
+			if (ImGui::Button(ICON_FA_PLAY "##Play"))
+			{
+				ma_sound_start(m_Sound.get());
+				m_Playing = true;
+			}
+		}
+
+		if (m_PlaybackTime == m_Length)
+		{
+			ma_sound_stop(m_Sound.get());
+			ma_sound_seek_to_second(m_Sound.get(), 0.0f);
+			m_Playing = false;
 		}
 	}
 	ImGui::End();
