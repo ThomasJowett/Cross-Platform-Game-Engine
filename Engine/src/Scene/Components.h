@@ -14,6 +14,7 @@
 #include "Components/CircleCollider2DComponent.h"
 #include "Components/PolygonCollider2DComponent.h"
 #include "Components/CapsuleCollider2DComponent.h"
+#include "Components/WeldJoint2DComponent.h"
 #include "Components/CircleRendererComponent.h"
 #include "Components/HierarchyComponent.h"
 #include "Components/LuaScriptComponent.h"
@@ -57,5 +58,6 @@ PointLightComponent,		\
 WidgetComponent,			\
 ButtonComponent,			\
 AudioSourceComponent,		\
-AudioListenerComponent		\
+AudioListenerComponent,		\
+WeldJoint2DComponent		\
 
