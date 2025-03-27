@@ -7,7 +7,7 @@
 class b2Body;
 class b2WeldJoint;
 
-struct WeldJointComponent
+struct WeldJoint2DComponent
 {
 	Vector2f offset;
 
