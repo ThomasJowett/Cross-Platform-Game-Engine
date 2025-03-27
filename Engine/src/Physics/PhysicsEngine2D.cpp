@@ -12,6 +12,7 @@
 #include "Scene/Components/TilemapComponent.h"
 #include "Scene/Components/LuaScriptComponent.h"
 #include "Scene/Components/HierarchyComponent.h"
+#include "Scene/Components/WeldJoint2DComponent.h"
 #include "Renderer/Renderer2D.h"
 #include "box2d/box2d.h"
 #include "Utilities/Box2DDebugDraw.h"
@@ -23,6 +24,9 @@ CircleCollider2DComponent,	\
 PolygonCollider2DComponent,	\
 CapsuleCollider2DComponent,	\
 TilemapComponent			\
+
+#define JOINT_COMPONENTS \
+WeldJoint2DComponent	 \
 
 uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
@@ -424,6 +428,9 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
 	else if (TilemapComponent* colliderComp = entity.TryGetComponent<TilemapComponent>())
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+
+	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
+		m_Box2DWorld->DestroyJoint(weldJointComp->joint);
 }
 
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
