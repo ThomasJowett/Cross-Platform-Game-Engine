@@ -1071,6 +1071,15 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
+	// Weld Joint 2D -----------------------------------------------------------------------------------------------------------------
+	DrawComponent<WeldJoint2DComponent>(ICON_FA_LINK" Weld Joint 2D", entity, [=](auto& weldJoint2D)
+		{
+			Dirty(ImGui::Vector("Anchor", weldJoint2D.anchor));
+			Dirty(ImGui::DragFloat("Damping", &weldJoint2D.damping, 0.01f, 0.0f, 1.0f));
+			Dirty(ImGui::DragFloat("Stiffness", &weldJoint2D.stiffness, 0.01f, 0.0f, 100.0f));
+			Dirty(ImGui::Checkbox("Collide Connected", &weldJoint2D.collideConnected));
+		});
+
 	// Point Light --------------------------------------------------------------------------------------------------------------------
 	DrawComponent<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity, [](auto& pointLight)
 		{
@@ -1205,6 +1214,17 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
 		AddComponentMenuItem<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity);
 		AddComponentMenuItem<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity);
+
+		if (ImGui::BeginMenu("Joints"))
+		{
+			//AddComponentMenuItem<DistanceJoint2DComponent>(ICON_FA_LINK" Distance Joint 2D", entity);
+			AddComponentMenuItem<WeldJoint2DComponent>(ICON_FA_LINK" Weld Joint 2D", entity);
+			//AddComponentMenuItem<PrismaticJoint2DComponent>(ICON_FA_LINK" Prismatic Joint 2D", entity);
+			//AddComponentMenuItem<RevoluteJoint2DComponent>(ICON_FA_LINK" Revolute Joint 2D", entity);
+			//AddComponentMenuItem<WheelJoint2DComponent>(ICON_FA_LINK" Wheel Joint 2D", entity);
+			//AddComponentMenuItem<TargetJoint2DComponent>(ICON_FA_LINK" Target Joint 2D", entity);
+			ImGui::EndMenu();
+		}
 
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
