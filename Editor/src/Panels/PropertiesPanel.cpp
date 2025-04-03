@@ -1125,6 +1125,24 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
 		});
 
+	DrawComponent<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity, [](auto& audioSource)
+		{
+			Dirty(ImGui::AssetEdit<AudioClip>("Audio Clip", audioSource.audioClip, nullptr, FileType::AUDIO));
+			Dirty(ImGui::DragFloat("Volume", &audioSource.volume, 0.01f, 0.0f, 1.0f));
+			Dirty(ImGui::DragFloat("Pitch", &audioSource.pitch, 0.01f, 0.0f, 3.0f));
+			Dirty(ImGui::Checkbox("Loop", &audioSource.loop));
+			Dirty(ImGui::DragFloat("Min Distance", &audioSource.minDistance, 0.5f, 0.0f, 100.0f));
+			Dirty(ImGui::DragFloat("Max Distance", &audioSource.maxDistance, 0.5f, 0.0f, 100.0f));
+			Dirty(ImGui::DragFloat("Rolloff", &audioSource.rolloff, 0.5f, 0.0f, 100.0f));
+			Dirty(ImGui::Checkbox("Stream", &audioSource.stream));
+			Dirty(ImGui::Checkbox("Play On Awake", &audioSource.playOnStart));
+		});
+
+	DrawComponent<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity, [](auto& audioListener)
+		{
+			Dirty(ImGui::Checkbox("Primary", &audioListener.primary));
+		});
+
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
@@ -1185,6 +1203,8 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity);
 		AddComponentMenuItem<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity);
 		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
+		AddComponentMenuItem<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity);
+		AddComponentMenuItem<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity);
 
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);

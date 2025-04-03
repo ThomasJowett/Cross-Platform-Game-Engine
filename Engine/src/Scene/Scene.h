@@ -13,6 +13,7 @@ class FrameBuffer;
 class Camera;
 class Matrix4x4;
 struct HitResult2D;
+struct ma_engine;
 
 class Scene
 {
@@ -65,6 +66,7 @@ public:
 	void SetFilepath(std::filesystem::path filepath);
 
 	Entity GetPrimaryCameraEntity();
+	Entity GetPrimaryListenerEntity();
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
 
@@ -96,6 +98,8 @@ private:
 	Ref<PhysicsEngine2D> m_PhysicsEngine2D;
 
 	Vector2f m_Gravity = { 0.0f, -9.81f };
+
+	Ref<ma_engine> m_AudioEngine;
 
 	uint32_t m_PixelsPerUnit = 16;
 

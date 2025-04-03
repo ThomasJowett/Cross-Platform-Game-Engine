@@ -2,7 +2,7 @@
 
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
-#include "Physics/PhysicsMaterial.h"
+#include "Asset/PhysicsMaterial.h"
 #include "History/HistoryCommands.h"
 #include "Scene/Components.h"
 #include "Interfaces/IUndoable.h"

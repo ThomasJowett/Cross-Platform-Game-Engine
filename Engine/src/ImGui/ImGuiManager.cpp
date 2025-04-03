@@ -3,7 +3,7 @@
 
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 #include "Renderer/RendererAPI.h"
 
 

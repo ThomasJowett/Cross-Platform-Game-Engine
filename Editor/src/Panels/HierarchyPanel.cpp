@@ -409,9 +409,24 @@ void HierarchyPanel::CreateMenu()
 	}
 	if (ImGui::BeginMenu("Audio"))
 	{
-		if (ImGui::MenuItem("Audio Source", "", nullptr, false))
+		if (ImGui::MenuItem("Audio Source"))
 		{
-			//TODO: create an audio source component
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Audio Source");
+			entity.AddComponent<AudioSourceComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Audio Listener"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Audio Listener");
+			entity.AddComponent<AudioListenerComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity)
+				m_SelectedEntity.AddChild(entity);
+			m_SelectedEntity = entity;
 		}
 		ImGui::EndMenu();
 	}
@@ -516,7 +531,7 @@ void HierarchyPanel::Cut()
 void HierarchyPanel::Paste()
 {
 	m_SelectedEntity = SceneSerializer::DeserializeEntity(SceneManager::CurrentScene(), ImGui::GetClipboardText(), true);
-	if(m_SelectedEntity)
+	if (m_SelectedEntity)
 		HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(m_SelectedEntity));
 }
 

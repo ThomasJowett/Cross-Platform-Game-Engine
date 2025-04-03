@@ -7,7 +7,7 @@
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
 #include "Core/BoundingBox.h"
-#include "Material.h"
+#include "Asset/Material.h"
 
 struct Vertex
 {

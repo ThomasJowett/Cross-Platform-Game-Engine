@@ -12,6 +12,7 @@
 #include "FontView.h"
 #include "BehaviourTreeView.h"
 #include "Scene/SceneManager.h"
+#include "AudioView.h"
 
 std::map<std::filesystem::path, std::pair<Ref<View>, bool*>> s_AssetViewers;
 Ref<FileWatcher> s_FileWatcher = nullptr;
@@ -36,7 +37,7 @@ static const char* MeshExtensions[] =
 
 static const char* AudioExtensions[] =
 {
-  ".ogg", ".mp3", ".wav"
+  ".mp3", ".wav", ".flac"
 };
 
 static const char* FontExtensions[] =
@@ -101,11 +102,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::SCRIPT:
 	case FileType::TEXT:			OpenAssetViewer<ScriptView>(assetPath);				return;
 	case FileType::MATERIAL:		OpenAssetViewer<MaterialView>(assetPath);			return;
-	case FileType::AUDIO:
-	{
-		CLIENT_WARN("No audio viewer implemented");
-		return;
-	}
+	case FileType::AUDIO:			OpenAssetViewer<AudioView>(assetPath);				return;
 	case FileType::TILESET:			OpenAssetViewer<TilesetView>(assetPath);			return;
 	case FileType::SPRITESHEET:		OpenAssetViewer<SpriteSheetView>(assetPath);		return;
 	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualScriptView>(assetPath);		return;

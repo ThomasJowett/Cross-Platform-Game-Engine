@@ -2,7 +2,7 @@
 
 #include "cereal/cereal.hpp"
 
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 
 #include "WidgetComponent.h"
 

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "Shader.h"
 
-#include "Renderer.h"
+#include "Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLShader.h"
 #include "Platform/WebGPU/WebGPUShader.h"
 

@@ -2,8 +2,8 @@
 
 #include "RendererAPI.h"
 #include "Camera.h"
-#include "Shader.h"
-#include "Material.h"
+#include "Asset/Shader.h"
+#include "Asset/Material.h"
 #include "Mesh.h"
 
 #include "Scene/Components/StaticMeshComponent.h"

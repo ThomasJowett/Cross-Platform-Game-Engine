@@ -5,7 +5,7 @@
 
 #include "Interfaces/ISaveable.h"
 #include "Interfaces/IUndoable.h"
-#include "Physics/PhysicsMaterial.h"
+#include "Asset/PhysicsMaterial.h"
 #include "ViewerManager.h"
 
 class PhysicsMaterialView :

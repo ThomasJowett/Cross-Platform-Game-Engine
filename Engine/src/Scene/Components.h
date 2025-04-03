@@ -23,6 +23,8 @@
 #include "Components/CanvasComponent.h"
 #include "Components/TextComponent.h"
 #include "Components/PointLightComponent.h"
+#include "Components/AudioSourceComponent.h"
+#include "Components/AudioListenerComponent.h"
 
 #include "Components/UIWidgets/WidgetComponent.h"
 #include "Components/UIWidgets/ButtonComponent.h"
@@ -53,5 +55,7 @@ CanvasComponent,			\
 TextComponent,				\
 PointLightComponent,		\
 WidgetComponent,			\
-ButtonComponent				\
+ButtonComponent,			\
+AudioSourceComponent,		\
+AudioListenerComponent		\
 

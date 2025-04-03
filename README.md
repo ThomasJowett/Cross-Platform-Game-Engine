@@ -47,4 +47,5 @@ If you would like to check out some example projects they can be downloaded from
 * [LiquidFun](https://github.com/google/liquidfun) : 2D Physics library and Extension of Box2D that provides particle and fluid dynamics.
 * [lua](https://github.com/lua/lua) : A powerful, efficient, lightweight, embeddable scripting language.
 * [sol2](https://github.com/ThePhD/sol2) : A C++ single header library binding to Lua.
-* [msdf atlas](https://github.com/Chlumsky/msdf-atlas-gen) : A utility for generating compact font atlases. 
+* [msdf atlas](https://github.com/Chlumsky/msdf-atlas-gen) : A utility for generating compact font atlases.
+* [miniaudio](https://github.com/mackron/miniaudio.git) : Audio playback and capture library

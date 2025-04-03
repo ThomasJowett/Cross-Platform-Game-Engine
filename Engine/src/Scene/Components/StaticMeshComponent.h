@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Core/core.h"
-#include "Renderer/StaticMesh.h"
-#include "Renderer/Material.h"
+#include "Asset/StaticMesh.h"
+#include "Asset/Material.h"
 #include "Scene/AssetManager.h"
 
 struct StaticMeshComponent

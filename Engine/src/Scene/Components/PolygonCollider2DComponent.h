@@ -4,7 +4,7 @@
 #include "cereal/types/vector.hpp"
 
 #include "math/Vector2f.h"
-#include "Physics/PhysicsMaterial.h"
+#include "Asset/PhysicsMaterial.h"
 #include "Utilities/SerializationUtils.h"
 
 #include <vector>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ViewerManager.h"
-#include "Renderer/SpriteSheet.h"
+#include "Asset/SpriteSheet.h"
 #include "Interfaces/ISaveable.h"
 #include "Scene/Components/AnimatedSpriteComponent.h"
 

@@ -1,6 +1,7 @@
 file(GLOB_RECURSE ENGINE_FILES
     src/AI/*.cpp
     src/Animation/*.cpp
+    src/Asset/*.cpp
     src/Core/*.cpp
     src/Events/*.cpp
     src/Logging/*.cpp
@@ -77,6 +78,7 @@ target_link_libraries(Engine PRIVATE
                       lua
                       box2d
                       msdf-atlas-gen
+                      miniaudio
                       webgpu
                       glfw3webgpu
                       )

@@ -3,7 +3,7 @@
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
 
-#include "Renderer/Material.h"
+#include "Asset/Material.h"
 
 #include "Core/Colour.h"
 #include "Core/Asset.h"

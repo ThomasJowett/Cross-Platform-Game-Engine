@@ -231,3 +231,7 @@ target_compile_definitions(msdf-atlas-gen PRIVATE
 target_link_libraries(msdf-atlas-gen PUBLIC
     msdfgen
 )
+
+add_library(miniaudio STATIC miniaudio/miniaudio.c)
+
+target_include_directories(miniaudio PUBLIC miniaudio)

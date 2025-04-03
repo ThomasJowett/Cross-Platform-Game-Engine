@@ -24,6 +24,8 @@
 #include "Physics/HitResult2D.h"
 #include "Physics/Contact2D.h"
 
+#include "miniaudio/miniaudio.h"
+
 struct DestroyMarker {};
 
 template<typename Component>
@@ -198,6 +200,50 @@ void Scene::OnRuntimeStart()
 
 	if (m_DrawDebug)
 		m_PhysicsEngine2D->ShowDebugDraw(m_DrawDebug);
+
+	m_AudioEngine = CreateRef<ma_engine>();
+	if (ma_engine_init(nullptr, m_AudioEngine.get()) != MA_SUCCESS) {
+		ENGINE_CRITICAL("Failed to initialize MiniAudio engine");
+	}
+
+	m_Registry.view<AudioSourceComponent>().each(
+		[this](const auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.audioClip)
+			{
+				audioSourceComponent.sound = CreateRef<ma_sound>();
+				ma_uint32 flags = audioSourceComponent.stream ? MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM : MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
+				if (audioSourceComponent.loop)
+					flags |= MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING;
+				if (ma_sound_init_from_file(
+					m_AudioEngine.get(), audioSourceComponent.audioClip->GetFilepath().string().c_str(),
+					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+				{
+					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
+				}
+				else
+				{
+					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
+					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
+					ma_sound_set_min_distance(audioSourceComponent.sound.get(), audioSourceComponent.minDistance);
+					ma_sound_set_max_distance(audioSourceComponent.sound.get(), audioSourceComponent.maxDistance);
+					ma_sound_set_rolloff(audioSourceComponent.sound.get(), audioSourceComponent.rolloff);
+					ma_sound_set_attenuation_model(audioSourceComponent.sound.get(), ma_attenuation_model_linear);
+
+					if (auto* transformComponent = m_Registry.try_get<TransformComponent>(entity))
+					{
+						auto position = transformComponent->GetWorldPosition();
+						ma_sound_set_position(audioSourceComponent.sound.get(), position.x, position.y, position.z);
+					}
+					else {
+						ma_sound_set_spatialization_enabled(audioSourceComponent.sound.get(), false);
+					}
+				}
+
+				if (audioSourceComponent.playOnStart)
+					audioSourceComponent.play = true;
+			}
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -211,6 +257,18 @@ void Scene::OnRuntimePause()
 void Scene::OnRuntimeStop()
 {
 	PROFILE_FUNCTION();
+
+	m_Registry.view<AudioSourceComponent>().each(
+		[this](const auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.audioClip)
+			{
+				ma_sound_uninit(audioSourceComponent.sound.get());
+			}
+		});
+
+	ma_engine_uninit(m_AudioEngine.get());
+	m_AudioEngine.reset();
 
 	m_PhysicsEngine2D.reset();
 
@@ -434,6 +492,65 @@ void Scene::OnUpdate(float deltaTime)
 			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->update(deltaTime);
 		});
+
+	m_Registry.view<AudioSourceComponent>(entt::exclude<DestroyMarker>).each([this](auto entity, auto& audioSourceComponent)
+		{
+			if (audioSourceComponent.play) {
+				if (!ma_sound_is_playing(audioSourceComponent.sound.get()))
+				{
+					ma_sound_start(audioSourceComponent.sound.get());
+				}
+				audioSourceComponent.play = false;
+				audioSourceComponent.pause = false;
+				audioSourceComponent.stop = false;
+			}
+			if (audioSourceComponent.pause) {
+				if (ma_sound_is_playing(audioSourceComponent.sound.get()))
+				{
+					ma_sound_stop(audioSourceComponent.sound.get());
+				}
+				audioSourceComponent.pause = false;
+				audioSourceComponent.play = false;
+			}
+			if (audioSourceComponent.stop) {
+				ma_sound_stop(audioSourceComponent.sound.get());
+				ma_sound_seek_to_pcm_frame(audioSourceComponent.sound.get(), 0);
+				audioSourceComponent.stop = false;
+				audioSourceComponent.play = false;
+				audioSourceComponent.pause = false;
+			}
+
+			ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
+			ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
+			ma_sound_set_min_distance(audioSourceComponent.sound.get(), audioSourceComponent.minDistance);
+			ma_sound_set_max_distance(audioSourceComponent.sound.get(), audioSourceComponent.maxDistance);
+			ma_sound_set_rolloff(audioSourceComponent.sound.get(), audioSourceComponent.rolloff);
+
+			if (auto* transformComponent = m_Registry.try_get<TransformComponent>(entity))
+			{
+				auto position = transformComponent->GetWorldPosition();
+				ma_sound_set_position(audioSourceComponent.sound.get(), position.x, position.y, position.z);
+			}
+
+			if (RigidBody2DComponent* rigidBody2DComp = m_Registry.try_get<RigidBody2DComponent>(entity))
+			{
+				auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+				ma_sound_set_velocity(audioSourceComponent.sound.get(), velocity.x, velocity.y, 0.0f);
+			}
+		});
+
+	Entity primaryListenerEntity = GetPrimaryListenerEntity();
+
+	if (primaryListenerEntity)
+	{
+		auto [transformComp, audioListenerComp] = primaryListenerEntity.GetComponents<TransformComponent, AudioListenerComponent>();
+		ma_engine_listener_set_position(m_AudioEngine.get(), 0, transformComp.position.x, transformComp.position.y, transformComp.position.z);
+
+		if (RigidBody2DComponent* rigidBody2DComp = primaryListenerEntity.TryGetComponent<RigidBody2DComponent>()) {
+			auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+			ma_engine_listener_set_velocity(m_AudioEngine.get(), 0, velocity.x, velocity.y, 0.0f);
+		}
+	}
 
 	m_IsUpdating = false;
 
@@ -689,6 +806,20 @@ Entity Scene::GetPrimaryCameraEntity()
 	{
 		CameraComponent const& cameraComp = view.get<CameraComponent>(entity);
 		if (cameraComp.primary)
+			return Entity{ entity, this };
+	}
+	return Entity();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::GetPrimaryListenerEntity()
+{
+	auto view = m_Registry.view<AudioListenerComponent>();
+	for (auto entity : view)
+	{
+		AudioListenerComponent const& listenerComp = view.get<AudioListenerComponent>(entity);
+		if (listenerComp.primary)
 			return Entity{ entity, this };
 	}
 	return Entity();

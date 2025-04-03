@@ -6,9 +6,9 @@
 #include "Scene/SceneManager.h"
 #include "Physics/HitResult2D.h"
 #include "Scene/AssetManager.h"
-#include "Renderer/StaticMesh.h"
-#include "Renderer/Tileset.h"
-#include "Physics/PhysicsMaterial.h"
+#include "Asset/StaticMesh.h"
+#include "Asset/Tileset.h"
+#include "Asset/PhysicsMaterial.h"
 
 namespace Lua
 {

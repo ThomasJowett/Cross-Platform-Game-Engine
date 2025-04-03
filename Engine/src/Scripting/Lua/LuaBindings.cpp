@@ -190,6 +190,19 @@ void BindEntity(sol::state& state)
 	text_type["MaxWidth"] = &TextComponent::maxWidth;
 	text_type["Colour"] = &TextComponent::colour;
 	text_type["Font"] = &TextComponent::font;
+
+	auto audio_source_type = state["AudioSourceComponent"].get_or_create<sol::usertype<AudioSourceComponent>>();
+	audio_source_type["Clip"] = &AudioSourceComponent::audioClip;
+	audio_source_type["Volume"] = &AudioSourceComponent::volume;
+	audio_source_type["Pitch"] = &AudioSourceComponent::pitch;
+	audio_source_type["Loop"] = &AudioSourceComponent::loop;
+	audio_source_type["MinDistance"] = &AudioSourceComponent::minDistance;
+	audio_source_type["MaxDistance"] = &AudioSourceComponent::maxDistance;
+	audio_source_type["Rolloff"] = &AudioSourceComponent::rolloff;
+	audio_source_type["Stream"] = &AudioSourceComponent::stream;
+	audio_source_type.set_function("Play", &AudioSourceComponent::Play);
+	audio_source_type.set_function("Pause", &AudioSourceComponent::Pause);
+	audio_source_type.set_function("Stop", &AudioSourceComponent::Stop);
 }
 
 //--------------------------------------------------------------------------------------------------------------
