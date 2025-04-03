@@ -96,7 +96,7 @@ else ()
 endif ()
 
 if(XCODE)
-    set_target_properties(Attercop PROPERTIES
+    set_target_properties(Engine PROPERTIES
         XCODE_GENERATE_SCHEME ON
         XCODE_SCHEME_ENABLE_GPU_FRAME_CAPTURE_MODE "Metal")
 endif()
