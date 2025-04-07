@@ -404,6 +404,15 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCapsuleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
+	if (entity.HasComponent<WeldJoint2DComponent>())
+	{
+		WeldJoint2DComponent const& component = entity.GetComponent<WeldJoint2DComponent>();
+		tinyxml2::XMLElement* pWeldJointElement = pElement->InsertNewChildElement("WeldJoint2D");
+		pWeldJointElement->SetAttribute("CollideConnected", component.collideConnected);
+		pWeldJointElement->SetAttribute("Damping", component.damping);
+		pWeldJointElement->SetAttribute("Stiffness", component.stiffness);
+	}
+
 	if (entity.HasComponent<CircleRendererComponent>())
 	{
 		CircleRendererComponent const& component = entity.GetComponent<CircleRendererComponent>();
@@ -951,6 +960,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.isTrigger = pPolygonCollider2DComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
+	// CapsuleCollider2D --------------------------------------------------------------------------------------------
 	if (tinyxml2::XMLElement* pCapsuleColliderComponentElement = pEntityElement->FirstChildElement("CapsuleCollider2D"))
 	{
 		CapsuleCollider2DComponent& component = entity.AddComponent<CapsuleCollider2DComponent>();
@@ -971,6 +981,15 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
 
 		component.isTrigger = pCapsuleColliderComponentElement->BoolAttribute("IsTrigger", false);
+	}
+
+	// WeldJoint2D ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement* pWeldJoint2DColliderComponentElement = pEntityElement->FirstChildElement("WeldJoint2D"))
+	{
+		WeldJoint2DComponent& component = entity.AddComponent<WeldJoint2DComponent>();
+		pWeldJoint2DColliderComponentElement->QueryBoolAttribute("CollideConnected", &component.collideConnected);
+		pWeldJoint2DColliderComponentElement->QueryFloatAttribute("Damping", &component.damping);
+		pWeldJoint2DColliderComponentElement->QueryFloatAttribute("Stiffness", &component.stiffness);
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------
