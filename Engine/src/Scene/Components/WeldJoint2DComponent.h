@@ -9,7 +9,13 @@ class b2WeldJoint;
 
 struct WeldJoint2DComponent
 {
-	Vector2f offset;
+	bool collideConnected = false;
+	Vector2f anchor;
+	float damping = 0.0f;
+	float stiffness = 0.0f;
+
+	entt::entity entityA;
+	entt::entity entityB;
 
 	b2Body* bodyA;
 	b2Body* bodyB;
@@ -20,6 +26,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(offset);
+		archive(anchor, collideConnected, damping, stiffness);
 	}
 };
