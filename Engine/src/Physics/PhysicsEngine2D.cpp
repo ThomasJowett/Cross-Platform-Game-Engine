@@ -4,6 +4,7 @@
 #include "Contact2D.h"
 
 #include "Scene/Entity.h"
+#include "Scene/SceneGraph.h"
 #include "Scene/Components/RigidBody2DComponent.h"
 #include "Scene/Components/BoxCollider2DComponent.h"
 #include "Scene/Components/CircleCollider2DComponent.h"
@@ -66,26 +67,30 @@ PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
 
-	m_Scene->GetRegistry().view<TransformComponent>().each(
+	b2BodyDef worldBodyDef;
+	worldBodyDef.position.Set(0.0f, 0.0f);
+	worldBodyDef.type = b2_staticBody;
+
+	m_WorldBody = m_Box2DWorld->CreateBody(&worldBodyDef);
+
+	m_Scene->GetRegistry().view<TransformComponent>(entt::exclude<HierarchyComponent>).each(
 		[this](const auto physicsEntity, auto& transformComp)
 		{
-			Entity entity = { physicsEntity, m_Scene };
-
-			// if an entity has physics it must not have a parent for the physics position to work correctly
-			if (entity.HasComponent<HierarchyComponent>() && entity.HasComponent<RigidBody2DComponent>())
-			{
-				Vector3f position;
-				Vector3f rotation;
-				Vector3f scale;
-				transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
-				//SceneGraph::Unparent(entity, m_Registry);
-				//transformComp.position = position;
-				//transformComp.rotation = rotation;
-				//transformComp.scale = scale;
-			}
-
-			InitializeEntity(entity);
+			InitializeEntity({ physicsEntity, m_Scene });
 		});
+
+	auto& registry = m_Scene->GetRegistry();
+
+	auto view = registry.view<TransformComponent, HierarchyComponent>();
+
+	for (auto entityHandle : view)
+	{
+		auto& hierarchyComp = view.get<HierarchyComponent>(entityHandle);
+		if (hierarchyComp.parent == entt::null && hierarchyComp.isActive)
+		{
+			InitializeEntity({ entityHandle, m_Scene });
+		}
+	}
 }
 
 PhysicsEngine2D::~PhysicsEngine2D()
@@ -133,6 +138,33 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 {
 	b2Body* body = nullptr;
 	TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
+
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	entt::entity parent = entt::null;
+	entt::entity firstChild = entt::null;
+	entt::entity nextSibling = entt::null;
+
+	//TODO: figure out how to set the anchor point
+	Vector2f anchor = transformComp.position;
+
+	if (hierarchyComp && hierarchyComp->parent != entt::null)
+	{
+		parent = hierarchyComp->parent;
+		firstChild = hierarchyComp->firstChild;
+		nextSibling = hierarchyComp->nextSibling;
+		Vector3f position;
+		Vector3f rotation;
+		Vector3f scale;
+		Matrix4x4 transform = transformComp.GetWorldMatrix();
+
+		transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
+		SceneGraph::Unparent(entity);
+		transformComp.position = position;
+		transformComp.rotation = rotation;
+		transformComp.scale = scale;
+		anchor = transformComp.position;
+	}
 
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 	{
@@ -411,6 +443,53 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		}
 
 		tilemapComp->runtimeBody = body;
+	}
+
+	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
+	{
+		b2WeldJointDef jointDef;
+		weldJointComp->bodyA = body;
+		weldJointComp->entityA = entity.GetHandle();
+		weldJointComp->entityB = parent;
+
+		if (weldJointComp->entityB != entt::null) {
+			if (RigidBody2DComponent* rigidBodyComp = m_Scene->GetRegistry().try_get<RigidBody2DComponent>(weldJointComp->entityB)) {
+				weldJointComp->bodyB = rigidBodyComp->runtimeBody;
+			}
+			else if (TilemapComponent* tilemapComp = m_Scene->GetRegistry().try_get<TilemapComponent>(weldJointComp->entityB)) {
+				weldJointComp->bodyB = tilemapComp->runtimeBody;
+			}
+			else {
+				weldJointComp->bodyB = m_WorldBody;
+			}
+		} else {
+			weldJointComp->bodyB = m_WorldBody;
+		}
+
+		jointDef.bodyA = weldJointComp->bodyA;
+		jointDef.bodyB = weldJointComp->bodyB;
+		//jointDef.localAnchorA = b2Vec2(weldJointComp->anchor.x, weldJointComp->anchor.y);
+		jointDef.localAnchorA = b2Vec2(anchor.x, anchor.y);
+		//jointDef.localAnchorB = b2Vec2(anchor.x, anchor.y);
+		jointDef.localAnchorB = b2Vec2(0.0f, 0.0f);
+		jointDef.referenceAngle = jointDef.bodyB->GetAngle() - jointDef.bodyA->GetAngle();
+		jointDef.collideConnected = weldJointComp->collideConnected;
+		jointDef.damping = weldJointComp->damping;
+		jointDef.stiffness = weldJointComp->stiffness;
+		jointDef.userData.pointer = (uintptr_t)entity.GetHandle();
+		weldJointComp->joint = (b2WeldJoint*)m_Box2DWorld->CreateJoint(&jointDef);
+	}
+
+	// Initialize the first child
+	if (firstChild != entt::null)
+	{
+		InitializeEntity({ firstChild, m_Scene });
+	}
+
+	// Initialize the next sibling
+	if (nextSibling != entt::null)
+	{
+		InitializeEntity({ nextSibling, m_Scene });
 	}
 }
 
