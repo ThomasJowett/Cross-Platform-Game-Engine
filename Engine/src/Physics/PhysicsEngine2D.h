@@ -42,4 +42,6 @@ private:
 
 	const int32_t m_VelocityIterations = 6;
 	const int32_t m_PositionIterations = 2;
+
+	b2Body* m_WorldBody = nullptr;
 };
