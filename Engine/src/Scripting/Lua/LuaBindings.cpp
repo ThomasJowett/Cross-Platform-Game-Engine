@@ -143,6 +143,11 @@ void BindEntity(sol::state& state)
 	capsuleCollider2D_type["Height"] = &CapsuleCollider2DComponent::height;
 	capsuleCollider2D_type["PhysicsMaterial"] = &CapsuleCollider2DComponent::physicsMaterial;
 
+	auto weldJoint2D_type = state["WeldJoint2DComponent"].get_or_create<sol::usertype<WeldJoint2DComponent>>();
+	weldJoint2D_type["CollideConnected"] = &WeldJoint2DComponent::collideConnected;
+	weldJoint2D_type["Damping"] = &WeldJoint2DComponent::damping;
+	weldJoint2D_type["Stiffness"] = &WeldJoint2DComponent::stiffness;
+
 	auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
 	circleRenderer_type["Colour"] = &CircleRendererComponent::colour;
 	circleRenderer_type["Radius"] = &CircleRendererComponent::radius;
