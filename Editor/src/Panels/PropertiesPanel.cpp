@@ -1074,7 +1074,6 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Weld Joint 2D -----------------------------------------------------------------------------------------------------------------
 	DrawComponent<WeldJoint2DComponent>(ICON_FA_LINK" Weld Joint 2D", entity, [=](auto& weldJoint2D)
 		{
-			Dirty(ImGui::Vector("Anchor", weldJoint2D.anchor));
 			Dirty(ImGui::DragFloat("Damping", &weldJoint2D.damping, 0.01f, 0.0f, 1.0f));
 			Dirty(ImGui::DragFloat("Stiffness", &weldJoint2D.stiffness, 0.01f, 0.0f, 100.0f));
 			Dirty(ImGui::Checkbox("Collide Connected", &weldJoint2D.collideConnected));

@@ -145,9 +145,6 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 	entt::entity firstChild = entt::null;
 	entt::entity nextSibling = entt::null;
 
-	//TODO: figure out how to set the anchor point
-	Vector2f anchor = transformComp.position;
-
 	if (hierarchyComp && hierarchyComp->parent != entt::null)
 	{
 		parent = hierarchyComp->parent;
@@ -163,7 +160,6 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		transformComp.position = position;
 		transformComp.rotation = rotation;
 		transformComp.scale = scale;
-		anchor = transformComp.position;
 	}
 
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
@@ -465,13 +461,12 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		} else {
 			weldJointComp->bodyB = m_WorldBody;
 		}
+		b2Vec2 worldAnchor = weldJointComp->bodyB->GetWorldCenter();
 
 		jointDef.bodyA = weldJointComp->bodyA;
 		jointDef.bodyB = weldJointComp->bodyB;
-		//jointDef.localAnchorA = b2Vec2(weldJointComp->anchor.x, weldJointComp->anchor.y);
-		jointDef.localAnchorA = b2Vec2(anchor.x, anchor.y);
-		//jointDef.localAnchorB = b2Vec2(anchor.x, anchor.y);
-		jointDef.localAnchorB = b2Vec2(0.0f, 0.0f);
+		jointDef.localAnchorA = weldJointComp->bodyA->GetLocalPoint(worldAnchor);
+		jointDef.localAnchorB = weldJointComp->bodyB->GetLocalPoint(worldAnchor);
 		jointDef.referenceAngle = jointDef.bodyB->GetAngle() - jointDef.bodyA->GetAngle();
 		jointDef.collideConnected = weldJointComp->collideConnected;
 		jointDef.damping = weldJointComp->damping;
