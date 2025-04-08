@@ -10,7 +10,6 @@ class b2WeldJoint;
 struct WeldJoint2DComponent
 {
 	bool collideConnected = false;
-	Vector2f anchor;
 	float damping = 0.0f;
 	float stiffness = 0.0f;
 
@@ -26,6 +25,6 @@ private:
 	template<typename Archive>
 	void serialize(Archive& archive)
 	{
-		archive(anchor, collideConnected, damping, stiffness);
+		archive(collideConnected, damping, stiffness);
 	}
 };
