@@ -203,6 +203,13 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 	{
 		auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
 
+		constexpr float MinBoxSize = 0.001f;
+
+		if(std::abs(boxColliderComp.size.x) <= MinBoxSize)
+			boxColliderComp.size.x = MinBoxSize;
+		if (std::abs(boxColliderComp.size.y) <= MinBoxSize)
+			boxColliderComp.size.y = MinBoxSize;
+
 		b2PolygonShape boxShape;
 		boxShape.SetAsBox(abs(boxColliderComp.size.x * transformComp.scale.x), abs(boxColliderComp.size.y * transformComp.scale.y),
 			b2Vec2(boxColliderComp.offset.x, boxColliderComp.offset.y),
