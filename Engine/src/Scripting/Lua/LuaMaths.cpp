@@ -26,6 +26,15 @@ void BindMath(sol::state& state)
 	vector2_type.set_function("Normalize", &Vector2f::Normalize);
 	vector2_type.set_function("Clamp", &Vector2f::Clamp);
 	vector2_type.set_function("Perpendicular", &Vector2f::Perpendicular);
+	vector2_type.set_function("Dot", &Vector2f::Dot);
+	vector2_type.set_function("Distance", &Vector2f::Distance);
+	vector2_type.set_function("SqrDistance", &Vector2f::SqrDistance);
+	vector2_type.set_function("Lerp", &Vector2f::Lerp);
+	vector2_type.set_function("Angle", &Vector2f::Angle);
+	vector2_type.set_function("Cross", &Vector2f::Cross);
+	vector2_type.set_function("Perpendicular", &Vector2f::Perpendicular);
+	vector2_type.set_function("Reflect", &Vector2f::Reflect);
+	vector2_type.set_function("Zero", &Vector2f::Zero);
 
 	sol::usertype<Vector3f> vector3_type = state.new_usertype<Vector3f>(
 		"Vec3",
@@ -42,6 +51,13 @@ void BindMath(sol::state& state)
 	vector3_type.set_function("Length", &Vector3f::Magnitude);
 	vector3_type.set_function("SqrLength", &Vector3f::SqrMagnitude);
 	vector3_type.set_function("Normalize", &Vector3f::Normalize);
+	vector3_type.set_function("Clamp", &Vector3f::Clamp);
+	vector3_type.set_function("Dot", &Vector3f::Dot);
+	vector3_type.set_function("Distance", &Vector3f::Distance);
+	vector3_type.set_function("Lerp", &Vector3f::Lerp);
+	vector3_type.set_function("Cross", &Vector3f::Cross);
+	vector3_type.set_function("Reflect", &Vector3f::Reflect);
+	vector3_type.set_function("Zero", &Vector3f::Zero);
 
 	sol::usertype<Quaternion> quaternion_type = state.new_usertype<Quaternion>(
 		"Quaternion",
