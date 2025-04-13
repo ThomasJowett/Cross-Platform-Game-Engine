@@ -191,6 +191,8 @@ void Renderer::SetDrawMode(DrawMode drawMode)
 
 void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform, int entityId, uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset)
 {
+	if (!mesh)
+		return;
 	Command command;
 	command.entityId = entityId;
 	command.indexCount = indexCount ? indexCount : mesh->GetIndexCount();
