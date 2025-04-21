@@ -124,6 +124,10 @@ bool Scene::RemoveEntity(Entity& entity)
 	PROFILE_FUNCTION();
 	if (entity.BelongsToScene(this))
 	{
+		if (entity.HasComponent<LuaScriptComponent>())
+		{
+			LuaManager::GetSignalBus().Disconnect(entity);
+		}
 		if (m_IsUpdating) {
 			if (!m_Registry.any_of<DestroyMarker>(entity))
 				m_Registry.emplace<DestroyMarker>(entity);
