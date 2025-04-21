@@ -67,6 +67,7 @@ Entity Scene::CreateEntity(const std::string& name)
 
 Entity Scene::CreateEntity(Uuid id, const std::string& name)
 {
+	PROFILE_FUNCTION();
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
@@ -91,6 +92,7 @@ void Scene::InstantiateScene(const Ref<Scene> prefab, const Vector3f& position)
 
 Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 {
+	PROFILE_FUNCTION();
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
 	doc.InsertFirstChild(pEntityElement);
@@ -119,6 +121,7 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 bool Scene::RemoveEntity(Entity& entity)
 {
+	PROFILE_FUNCTION();
 	if (entity.BelongsToScene(this))
 	{
 		if (m_IsUpdating) {
@@ -136,6 +139,7 @@ bool Scene::RemoveEntity(Entity& entity)
 
 Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 {
+	PROFILE_FUNCTION();
 	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
 

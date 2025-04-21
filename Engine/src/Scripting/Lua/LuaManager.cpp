@@ -17,7 +17,7 @@ std::vector<std::pair<std::string, std::string>> LuaManager::s_Identifiers = {
 };
 
 int LoadFileRequire(lua_State* L) {
-
+	PROFILE_FUNCTION();
 	// use sol2 stack API to pull
 	// "first argument"
 	std::string path = sol::stack::get<std::string>(L, 1);
@@ -49,6 +49,7 @@ int LoadFileRequire(lua_State* L) {
 
 void UnloadModules()
 {
+	PROFILE_FUNCTION();
 	for (std::string& mod : s_Modules)
 	{
 		s_UnrequireFunction(mod);
@@ -98,6 +99,7 @@ void LuaManager::Init()
 
 void LuaManager::Shutdown()
 {
+	PROFILE_FUNCTION();
 	s_SignalBus.Shutdown();
 	s_UnrequireFunction.abandon();
 	CleanUp();
@@ -107,6 +109,7 @@ void LuaManager::Shutdown()
 
 void LuaManager::CleanUp()
 {
+	PROFILE_FUNCTION();
 	if (s_State)
 	{
 		s_SignalBus.Shutdown();
