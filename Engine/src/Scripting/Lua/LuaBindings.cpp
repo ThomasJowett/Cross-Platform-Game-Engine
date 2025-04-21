@@ -217,8 +217,6 @@ void BindEntity(sol::state& state)
 
 //--------------------------------------------------------------------------------------------------------------
 
-//--------------------------------------------------------------------------------------------------------------
-
 void BindCommonTypes(sol::state& state)
 {
 	sol::usertype<Colour> colour_type = state.new_usertype<Colour>(
@@ -298,6 +296,8 @@ void BindCommonTypes(sol::state& state)
 	state.new_enum("NodeStatus", nodeStatusItems);
 }
 
+//--------------------------------------------------------------------------------------------------------------
+
 void BindDebug(sol::state& state)
 {
 	PROFILE_FUNCTION();
@@ -310,5 +310,36 @@ void BindDebug(sol::state& state)
 		{ Renderer2D::DrawHairLineCircle(position, radius, segments, colour); });
 	debug.set_function("DrawRect", [](const Vector3f& position, const Vector2f& size, const Colour& colour)
 		{ Renderer2D::DrawHairLineRect(position, size, colour); });
+}
+
+//--------------------------------------------------------------------------------------------------------------
+
+void BindSignaling(sol::state& state)
+{
+	PROFILE_FUNCTION();
+	sol::table signal = state.create_table("Signal");
+	LuaManager::AddIdentifier("Signal", "Signal bus");
+	SetFunction(signal, "Connect", "Connects a function to a signal",
+		[&](const std::string& signalName, Entity listener, sol::function callback)
+		{
+			SignalBus::Callback cb = [callback](Entity sender, sol::table data)
+				{
+					sol::state_view lua = callback.lua_state();
+					sol::table luaData = lua.create_table();
+
+					for (const auto& [key, value] : data)
+					{
+						luaData[key] = value;
+					}
+
+					callback(sender, luaData);
+				};
+			LuaManager::GetSignalBus().Connect(signalName, listener, cb);
+		});
+	SetFunction(signal, "Emit", "Emits a signal",
+		[&](const std::string& signalName, Entity sender, sol::table data)
+		{
+			LuaManager::GetSignalBus().Emit(signalName, sender, data);
+		});
 }
 }

@@ -7,6 +7,7 @@
 
 Scope<sol::state> LuaManager::s_State = nullptr;
 static std::vector<std::string> s_Modules;
+SignalBus LuaManager::s_SignalBus;
 
 static sol::function s_UnrequireFunction;
 
@@ -78,6 +79,7 @@ void LuaManager::Init()
 	Lua::BindMath(*s_State);
 	Lua::BindCommonTypes(*s_State);
 	Lua::BindDebug(*s_State);
+	Lua::BindSignaling(*s_State);
 
 	const char* lua_function_script = 
 	R"(
