@@ -40,7 +40,12 @@ void BindEntity(sol::state& state)
 	PROFILE_FUNCTION();
 
 	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
-		sol::constructors<sol::types<entt::entity, Scene*>>());
+		sol::constructors<
+			Entity(),
+			Entity(const Entity&),
+			sol::types<entt::entity, Scene*>
+		>()
+	);
 	SetFunction(entity_type, "IsSceneValid", "Is Valid", & Entity::IsSceneValid);
 	SetFunction(entity_type, "GetName", "Get Name", & Entity::GetName);
 	SetFunction(entity_type, "SetName", "Set Name", & Entity::SetName);
