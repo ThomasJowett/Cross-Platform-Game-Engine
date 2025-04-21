@@ -98,6 +98,7 @@ void LuaManager::Init()
 
 void LuaManager::Shutdown()
 {
+	s_SignalBus.Shutdown();
 	s_UnrequireFunction.abandon();
 	CleanUp();
 	s_State->clear_package_loaders();
@@ -108,6 +109,7 @@ void LuaManager::CleanUp()
 {
 	if (s_State)
 	{
+		s_SignalBus.Shutdown();
 		UnloadModules();
 		s_State->stack_clear();
 		s_State->collect_garbage();

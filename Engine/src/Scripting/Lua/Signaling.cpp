@@ -18,3 +18,12 @@ void SignalBus::Emit(const std::string& signalName, Entity sender, sol::table da
 		}
 	}
 }
+
+void SignalBus::Shutdown()
+{
+	for (auto& [signalName, subscriber] : m_Subscribers)
+	{
+		subscriber.clear();
+	}
+	m_Subscribers.clear();
+}

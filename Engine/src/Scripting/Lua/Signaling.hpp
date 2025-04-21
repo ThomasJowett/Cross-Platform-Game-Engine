@@ -12,6 +12,8 @@ public:
 
 	void Emit(const std::string& signalName, Entity sender, sol::table data);
 
+	void Shutdown();
+
 private:
 	struct Subscriber {
 		Entity listener;
