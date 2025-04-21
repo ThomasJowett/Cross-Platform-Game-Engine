@@ -62,11 +62,11 @@ void LuaManager::Init()
 	s_State = CreateScope<sol::state>(nullptr);
 
 	s_State->open_libraries(
-		sol::lib::base, 
-		sol::lib::package, 
-		sol::lib::math, 
-		sol::lib::table, 
-		sol::lib::coroutine, 
+		sol::lib::base,
+		sol::lib::package,
+		sol::lib::math,
+		sol::lib::table,
+		sol::lib::coroutine,
 		sol::lib::os,
 		sol::lib::string,
 		sol::lib::io);
