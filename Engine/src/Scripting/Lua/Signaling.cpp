@@ -14,6 +14,16 @@ void SignalBus::Disconnect(Entity listener)
 	}
 }
 
+void SignalBus::Disconnect(const std::string& signalName, Entity listener)
+{
+	auto it = m_Subscribers.find(signalName);
+	if (it != m_Subscribers.end())
+	{
+		it->second.erase(std::remove_if(it->second.begin(), it->second.end(),
+			[listener](const Subscriber& subscriber) { return subscriber.listener == listener; }), it->second.end());
+	}
+}
+
 void SignalBus::Emit(const std::string& signalName, Entity sender, sol::table data)
 {
 	auto it = m_Subscribers.find(signalName);

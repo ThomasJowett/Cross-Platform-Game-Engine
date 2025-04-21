@@ -336,6 +336,11 @@ void BindSignaling(sol::state& state)
 				};
 			LuaManager::GetSignalBus().Connect(signalName, listener, cb);
 		});
+	SetFunction(signal, "Disconnect", "Disconnects a function from a signal",
+		[&](const std::string& signalName, Entity listener)
+		{
+			LuaManager::GetSignalBus().Disconnect(signalName, listener);
+		});
 	SetFunction(signal, "Emit", "Emits a signal",
 		[&](const std::string& signalName, Entity sender, sol::table data)
 		{
