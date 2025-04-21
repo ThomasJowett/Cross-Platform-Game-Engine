@@ -9,6 +9,7 @@ public:
 	using Callback = std::function<void(Entity sender, sol::table data)>;
 
 	void Connect(const std::string& signalName, Entity listener, Callback callback);
+	void Disconnect(Entity listener);
 
 	void Emit(const std::string& signalName, Entity sender, sol::table data);
 
