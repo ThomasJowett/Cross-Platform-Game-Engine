@@ -308,6 +308,26 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 	return extensions;
 }
 
+template<size_t N>
+void AppendExtensions(std::vector<std::string>& extensions, const char* (&extensionsArray)[N])
+{
+	for (size_t i = 0; i < N; ++i)
+	{
+		extensions.push_back(extensionsArray[i]);
+	}
+}
+
+std::vector<std::string> ViewerManager::GetAllExtensions()
+{
+	std::vector<std::string> result;
+	AppendExtensions(result, TextExtensions);
+	AppendExtensions(result, ImageExtensions);
+	AppendExtensions(result, MeshExtensions);
+	AppendExtensions(result, AudioExtensions);
+	AppendExtensions(result, FontExtensions);
+	return result;
+}
+
 void ViewerManager::SaveAll()
 {
 	for (auto&& [path, viewer] : s_AssetViewers)
