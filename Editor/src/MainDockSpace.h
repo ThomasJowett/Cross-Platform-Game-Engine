@@ -45,6 +45,8 @@ private:
 	bool m_ShowJoystickInfo;
 	bool m_ShowTilemapEditor;
 
+	bool m_ShowAssetPacker = false;
+
 #ifdef DEBUG
 	bool m_ShowImGuiDemo;
 #endif // DEBUG

@@ -33,6 +33,7 @@
 #include "cereal/types/string.hpp"
 
 #include "RuntimeExporter.h"
+#include "FileSystem/AssetPacker.h"
 
 #include "Engine.h"
 
@@ -278,14 +279,16 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
-
-				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
+				m_ShowAssetPacker = true;
+				Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory()));
+				// TODO: Trigger this when the user clicks the export button in the asset packer
+				/*std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
 				if (exportLocation.has_value())
 				{
 					RuntimeExporter exporter;
 					exporter.Init(exportLocation.value());
 					exporter.ExportGame();
-				}
+				}*/
 			}
 			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
