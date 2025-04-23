@@ -325,6 +325,14 @@ std::vector<std::string> ViewerManager::GetAllExtensions()
 	AppendExtensions(result, MeshExtensions);
 	AppendExtensions(result, AudioExtensions);
 	AppendExtensions(result, FontExtensions);
+	result.push_back(".scene");
+	result.push_back(".material");
+	result.push_back(".physicsmaterial");
+	result.push_back(".tileset");
+	result.push_back(".spritesheet");
+	result.push_back(".behaviourtree");
+	result.push_back(".statemachine");
+	result.push_back(".visualscript");
 	return result;
 }
 
