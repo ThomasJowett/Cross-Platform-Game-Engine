@@ -70,5 +70,37 @@ void AssetPacker::DiscoverAssets()
 void AssetPacker::PackAssets()
 {
 	PROFILE_FUNCTION();
-	// TODO: Implement the packing logic
+	
+	mz_zip_archive zip = {};
+	memset(&zip, 0, sizeof(zip));
+
+	std::filesystem::path outputZipPath = m_ExportDirectory / "packed_assets.zip";
+
+	if (!mz_zip_writer_init_file(&zip, outputZipPath.string().c_str(), 0)) {
+		ENGINE_ERROR("Failed to initialize zip writer: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
+		return;
+	}
+
+	for (const auto& asset : m_SelectedAssets)
+	{
+		std::string relativePath = std::filesystem::relative(asset, m_ProjectDirectory).string();
+		std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
+		if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), asset.string().c_str(), nullptr, 0, 0))
+		{
+			ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
+			mz_zip_writer_end(&zip);
+			return;
+		}
+	}
+
+	// TODO: Add shaders to the zip file
+
+	if (!mz_zip_writer_finalize_archive(&zip))
+	{
+		ENGINE_ERROR("Failed to finalize zip archive: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
+	}
+
+	mz_zip_writer_end(&zip);
+
+	ExportGame();
 }
