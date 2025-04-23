@@ -5,12 +5,44 @@
 #include <Logging/Instrumentor.h>
 #include <imgui.h>
 
+#include "cereal/archives/json.hpp"
+#include "cereal/types/string.hpp"
 
+#include <miniz.h>
 
-AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory)
-	: Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory)
+struct AssetBundleFooter {
+	uint64_t zipSize;
+	uint64_t defaultSceneSize;
+	char magic[8];
+};
+
+constexpr const char* BUNDLE_MAGIC = "GMBUNDLE";
+
+AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory)
+	: Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
 {
 	DiscoverAssets();
+
+	for (const auto& asset : m_DiscoveredAssets)
+	{
+		m_SelectedAssets.insert(asset);
+	}
+
+	m_ExportDirectory.remove_filename();
+	m_GameName = exportDirectory.filename();
+
+#ifdef _WINDOWS
+	m_GameName.replace_extension(".exe");
+#endif // __WINDOWS__
+
+	std::ifstream file(Application::GetOpenDocument());
+
+	if (!file.is_open()) return;
+
+	cereal::JSONInputArchive input(file);
+	input(m_Data);
+
+	file.close();
 }
 
 void AssetPacker::OnImGuiRender()
@@ -64,7 +96,6 @@ void AssetPacker::DiscoverAssets()
 
 	// Get all files in the project directory
 	m_DiscoveredAssets = Directory::GetFilesRecursive(m_ProjectDirectory, wantedExtensions);
-
 }
 
 void AssetPacker::PackAssets()
@@ -103,4 +134,43 @@ void AssetPacker::PackAssets()
 	mz_zip_writer_end(&zip);
 
 	ExportGame();
+}
+
+void AssetPacker::ExportGame()
+{
+	PROFILE_FUNCTION();
+
+	std::filesystem::path exePath = Application::GetWorkingDirectory() / "runtime" / "Runtime.exe";
+	if (!std::filesystem::exists(exePath))
+	{
+		exePath = Application::GetWorkingDirectory() / "runtime" / "Runtime";
+	}
+	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
+
+	std::filesystem::path executableName = m_ExportDirectory / m_GameName;
+
+	std::ifstream exeFile(exePath, std::ios::binary);
+	std::ifstream zipFile(zipPath, std::ios::binary);
+	std::ofstream outFile(executableName, std::ios::binary);
+
+	std::vector<char> exeData((std::istreambuf_iterator<char>(exeFile)), {});
+	std::vector<char> zipData((std::istreambuf_iterator<char>(zipFile)), {});
+
+	outFile.write(exeData.data(), exeData.size());
+	outFile.write(zipData.data(), zipData.size());
+
+	// Write the footer
+	AssetBundleFooter footer;
+	footer.zipSize = zipData.size();
+	footer.defaultSceneSize = m_Data.defaultScene.size();
+	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
+
+	outFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+
+	exeFile.close();
+	zipFile.close();
+
+	std::filesystem::remove(zipPath);
+
+	ENGINE_INFO("Exported game to {0}", executableName);
 }
