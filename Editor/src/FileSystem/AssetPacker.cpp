@@ -158,6 +158,7 @@ void AssetPacker::ExportGame()
 
 	outFile.write(exeData.data(), exeData.size());
 	outFile.write(zipData.data(), zipData.size());
+	outFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
 
 	// Write the footer
 	AssetBundleFooter footer;
