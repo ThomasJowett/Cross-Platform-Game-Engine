@@ -2,7 +2,11 @@ add_executable(Runtime src/main.cpp
                 src/RuntimeLayer.cpp
                 src/RuntimeLayer.h)
 
-target_link_libraries(Runtime PRIVATE Engine)
+target_link_libraries(Runtime PRIVATE Engine miniz)
+
+target_include_directories(Runtime PUBLIC
+                            ${CMAKE_SOURCE_DIR}/Editor/vendor/OpenFBX/src
+)
 
 get_target_property(EDITOR_BINARY_DIR Editor RUNTIME_OUTPUT_DIRECTORY)
 
