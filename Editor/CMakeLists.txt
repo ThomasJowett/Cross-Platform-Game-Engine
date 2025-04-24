@@ -96,3 +96,5 @@ add_custom_command(
 )
 
 set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+
+add_dependencies(Editor Runtime)
