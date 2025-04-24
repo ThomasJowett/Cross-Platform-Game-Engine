@@ -4,6 +4,15 @@
 
 #include "RuntimeLayer.h"
 
+#include <miniz.h>
+
+struct AssetBundleFooter {
+	uint64_t zipSize;
+	uint64_t gameTitleSize;
+	uint64_t defaultSceneSize;
+	char magic[8];
+};
+
 int main(int argc, char* argv[])
 {
 	Ref<Application> app = CreateRef<Application>();
@@ -18,37 +27,71 @@ int main(int argc, char* argv[])
 	if (rCode != -1)
 		return rCode;
 
-	Application::SetOpenDocument(Application::GetWorkingDirectory() / "Startup");
+	std::ifstream exe(argv[0], std::ios::binary | std::ios::ate);
+	std::streamoff exeSize = exe.tellg();
+	exe.seekg(exeSize - sizeof(AssetBundleFooter));
 
-	std::ifstream file;
-	file.open(Application::GetWorkingDirectory() / "Startup", std::ios::in | std::ios::binary);
-	if (!file.good()) {
-		ENGINE_ERROR("Could not open startup file");
+	AssetBundleFooter footer;
+	exe.read(reinterpret_cast<char*>(&footer), sizeof(footer));
+
+	if (std::memcmp(footer.magic, "GMBUNDLE", sizeof(footer.magic)) != 0)
+	{
+		ENGINE_ERROR("Invalid asset bundle");
 		return EXIT_FAILURE;
 	}
-	size_t size;
-	std::string gameName;
-	std::string startupScene;
-	file.read((char*)&size, sizeof(size));
-	gameName.resize(size);
-	file.read((char*)&gameName[0], size);
-	file.read((char*)&size, sizeof(size));
-	startupScene.resize(size);
-	file.read((char*)&startupScene[0], size);
-	file.close();
 
-	Window* window = app->CreateDesktopWindow(WindowProps(gameName, 1920, 1080, 100, 100));
+	exe.seekg(exeSize - sizeof(AssetBundleFooter) - footer.defaultSceneSize);
+	std::string defaultScene(footer.defaultSceneSize, '\0');
+	exe.read(&defaultScene[0], footer.defaultSceneSize);
 
-	if (!window)
+	ENGINE_DEBUG("Default scene: {0}", defaultScene);
+
+	exe.seekg(exeSize - sizeof(AssetBundleFooter) - footer.defaultSceneSize - footer.gameTitleSize);
+	std::string gameTitle(footer.gameTitleSize, '\0');
+	exe.read(&gameTitle[0], footer.gameTitleSize);
+
+	std::streamoff zipOffset = exeSize - sizeof(AssetBundleFooter) - footer.defaultSceneSize - footer.gameTitleSize - footer.zipSize;
+
+	exe.seekg(zipOffset);
+
+	std::vector<uint8_t> zipData(footer.zipSize);
+	exe.read(reinterpret_cast<char*>(zipData.data()), footer.zipSize);
+
+	mz_zip_archive zip = {};
+	if (!mz_zip_reader_init_mem(&zip, zipData.data(), zipData.size(), 0))
+	{
+		ENGINE_ERROR("Failed to initialize zip reader: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
 		return EXIT_FAILURE;
+	}
 
-	RenderCommand::SetClearColour(Colours::GREY);
+	int numFiles = (int)mz_zip_reader_get_num_files(&zip);
+	ENGINE_DEBUG("Zip contains {0} files", numFiles);
 
-	SceneManager::ChangeScene(std::filesystem::path(startupScene));
+	for (int i = 0; i < numFiles; i++)
+	{
+		mz_zip_archive_file_stat file_stat;
+		if (mz_zip_reader_file_stat(&zip, i, &file_stat))
+		{
+			ENGINE_DEBUG("Extracting: {0}", file_stat.m_filename);
 
-	app->GetLayerStack().PushLayer(CreateRef<RuntimeLayer>());
+			// TODO: load this into the asset library
+		}
+	}
 
-	app->Run();
+	mz_zip_reader_end(&zip);
+
+	//Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
+
+	//if (!window)
+	//	return EXIT_FAILURE;
+
+	//RenderCommand::SetClearColour(Colours::GREY);
+
+	//SceneManager::ChangeScene(std::filesystem::path(defaultScene));
+
+	//app->GetLayerStack().PushLayer(CreateRef<RuntimeLayer>());
+
+	//app->Run();
 
 	return EXIT_SUCCESS;
 }
