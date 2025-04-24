@@ -12,6 +12,7 @@
 
 struct AssetBundleFooter {
 	uint64_t zipSize;
+	uint64_t gameTitleSize;
 	uint64_t defaultSceneSize;
 	char magic[8];
 };
@@ -158,11 +159,13 @@ void AssetPacker::ExportGame()
 
 	outFile.write(exeData.data(), exeData.size());
 	outFile.write(zipData.data(), zipData.size());
+	outFile.write(m_GameName.string().c_str(), m_GameName.string().size());
 	outFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
 
 	// Write the footer
 	AssetBundleFooter footer;
 	footer.zipSize = zipData.size();
+	footer.gameTitleSize = m_GameName.string().size();
 	footer.defaultSceneSize = m_Data.defaultScene.size();
 	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
 
