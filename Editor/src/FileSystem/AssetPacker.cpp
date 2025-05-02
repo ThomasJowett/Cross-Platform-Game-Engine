@@ -125,7 +125,41 @@ void AssetPacker::PackAssets()
 		}
 	}
 
-	// TODO: Add shaders to the zip file
+	std::filesystem::path dataPath = Application::GetWorkingDirectory() / "data";
+
+	std::filesystem::path shadersPath = dataPath / "Shaders";
+
+	if (std::filesystem::exists(shadersPath) && std::filesystem::is_directory(shadersPath))
+	{
+		for (const auto& shader : std::filesystem::directory_iterator(shadersPath))
+		{
+			std::string relativePath = std::filesystem::relative(shader, dataPath).string();
+			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
+			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), shader.path().string().c_str(), nullptr, 0, 0))
+			{
+				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
+				mz_zip_writer_end(&zip);
+				return;
+			}
+		}
+	}
+
+	std::filesystem::path fontsPath = dataPath / "Fonts";
+
+	if (std::filesystem::exists(fontsPath) && std::filesystem::is_directory(fontsPath))
+	{
+		for (const auto& font : std::filesystem::directory_iterator(fontsPath))
+		{
+			std::string relativePath = std::filesystem::relative(font, dataPath).string();
+			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
+			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), font.path().string().c_str(), nullptr, 0, 0))
+			{
+				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
+				mz_zip_writer_end(&zip);
+				return;
+			}
+		}
+	}
 
 	if (!mz_zip_writer_finalize_archive(&zip))
 	{
