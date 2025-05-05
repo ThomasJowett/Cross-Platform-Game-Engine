@@ -33,6 +33,8 @@ private:
 
 	bool LoadTextureFromFile();
 
+	bool LoadTextureFromMemory(const std::vector<uint8_t>& imageData);
+
 	void SetFilteringAndWrappingMethod();
 	uint32_t m_Width, m_Height;
 
