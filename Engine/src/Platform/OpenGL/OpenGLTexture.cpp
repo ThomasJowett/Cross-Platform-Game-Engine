@@ -248,3 +248,65 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 
 	return true;
 }
+
+bool OpenGLTexture2D::LoadTextureFromMemory(const std::vector<uint8_t>& imageData)
+{
+	PROFILE_FUNCTION();
+
+	int width, height, channels;
+	stbi_set_flip_vertically_on_load(1);
+	stbi_uc* data = nullptr;
+	{
+		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::vector<uint8_t>&)");
+		data = stbi_load_from_memory(imageData.data(), (int)imageData.size(), &width, &height, &channels, 0);
+	}
+
+	m_Width = (uint32_t)width;
+	m_Height = (uint32_t)height;
+
+	GLenum internalFormat = 0, dataFormat = 0;
+	if (channels == 4)
+	{
+		internalFormat = GL_RGBA8;
+		dataFormat = GL_RGBA;
+	}
+	else if (channels == 3)
+	{
+		internalFormat = GL_RGB8;
+		dataFormat = GL_RGB;
+	}
+	else if (channels == 1)
+	{
+		internalFormat = GL_R8;
+		dataFormat = GL_RED;
+	}
+	else
+	{
+		stbi_image_free(data);
+		ENGINE_ERROR("Unsupported image format");
+		return false;
+	}
+
+	m_InternalFormat = internalFormat;
+	m_DataFormat = dataFormat;
+	m_Type = GL_UNSIGNED_BYTE;
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+	SetFilteringAndWrappingMethod();
+
+	if (m_Width % 8 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+	else if (m_Width % 4 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	else if (m_Width % 2 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	else
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
+
+	stbi_image_free(data);
+
+	return true;
+}
