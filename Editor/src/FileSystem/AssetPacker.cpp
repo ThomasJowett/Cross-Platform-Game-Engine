@@ -117,7 +117,7 @@ void AssetPacker::PackAssets()
 	{
 		std::string relativePath = std::filesystem::relative(asset, m_ProjectDirectory).string();
 		std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
-		if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), asset.string().c_str(), nullptr, 0, 0))
+		if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), asset.string().c_str(), nullptr, 0, MZ_BEST_SPEED))
 		{
 			ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
 			mz_zip_writer_end(&zip);
@@ -135,7 +135,7 @@ void AssetPacker::PackAssets()
 		{
 			std::string relativePath = std::filesystem::relative(shader, dataPath).string();
 			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
-			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), shader.path().string().c_str(), nullptr, 0, 0))
+			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), shader.path().string().c_str(), nullptr, 0, MZ_BEST_SPEED))
 			{
 				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
 				mz_zip_writer_end(&zip);
@@ -152,7 +152,7 @@ void AssetPacker::PackAssets()
 		{
 			std::string relativePath = std::filesystem::relative(font, dataPath).string();
 			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
-			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), font.path().string().c_str(), nullptr, 0, 0))
+			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), font.path().string().c_str(), nullptr, 0, MZ_BEST_SPEED))
 			{
 				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
 				mz_zip_writer_end(&zip);
