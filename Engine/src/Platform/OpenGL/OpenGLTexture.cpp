@@ -41,6 +41,19 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	}
 }
 
+std::pair<GLenum, GLenum> GetDataFormatType(int channels)
+{
+	switch (channels)
+	{
+	case 1: return { GL_RED, GL_R8 };
+	case 3: return { GL_RGB, GL_RGB8 };
+	case 4: return { GL_RGBA, GL_RGBA8 };
+	default:
+		CORE_ASSERT(false, "Unsupported number of channels");
+		return { GL_FALSE, GL_FALSE };
+	}
+}
+
 OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
 	:m_Width(width), m_Height(height)
 {
@@ -203,22 +216,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
 
-	GLenum internalFormat = 0, dataFormat = 0;
-	if (channels == 4)
-	{
-		internalFormat = GL_RGBA8;
-		dataFormat = GL_RGBA;
-	}
-	else if (channels == 3)
-	{
-		internalFormat = GL_RGB8;
-		dataFormat = GL_RGB;
-	}
-	else if (channels == 1)
-	{
-		internalFormat = GL_R8;
-		dataFormat = GL_RED;
-	}
+	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 
 	CORE_ASSERT(internalFormat && dataFormat, "Format not supported");
 	if (!(internalFormat && dataFormat))
@@ -264,28 +262,11 @@ bool OpenGLTexture2D::LoadTextureFromMemory(const std::vector<uint8_t>& imageDat
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
 
-	GLenum internalFormat = 0, dataFormat = 0;
-	if (channels == 4)
-	{
-		internalFormat = GL_RGBA8;
-		dataFormat = GL_RGBA;
-	}
-	else if (channels == 3)
-	{
-		internalFormat = GL_RGB8;
-		dataFormat = GL_RGB;
-	}
-	else if (channels == 1)
-	{
-		internalFormat = GL_R8;
-		dataFormat = GL_RED;
-	}
-	else
-	{
-		stbi_image_free(data);
-		ENGINE_ERROR("Unsupported image format");
+	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
+
+	CORE_ASSERT(internalFormat && dataFormat, "Format not supported");
+	if (!(internalFormat && dataFormat))
 		return false;
-	}
 
 	m_InternalFormat = internalFormat;
 	m_DataFormat = dataFormat;
