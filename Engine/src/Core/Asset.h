@@ -3,6 +3,7 @@
 #include "Core/core.h"
 #include "Core/UUID.h"
 #include "Core/Factory.h"
+#include "Core/VirtualFileSystem.h"
 #include "Utilities/FileWatcher.h"
 
 #include <filesystem>
@@ -12,6 +13,7 @@ class Asset
 {
 public:
 	virtual bool Load(const std::filesystem::path& filepath) = 0;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) = 0;
 	virtual const std::filesystem::path& GetFilepath() const { return m_Filepath; };
 
 	bool Reload() { return Load(m_Filepath); }
@@ -63,15 +65,35 @@ public:
 	}
 
 	template<typename T>
-	Ref<T> Load(const std::filesystem::path& filepath)
+	Ref<T> Load(const std::filesystem::path& filepath, Ref<VirtualFileSystem> vfs)
 	{
 		if (Exists(filepath))
 			return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
 
-		Ref<T> asset = CreateRef<T>(filepath);
+		Ref<T> asset;
+		if (std::filesystem::exists(filepath)) {
+			asset = CreateRef<T>(filepath);
+		}
+		else if (vfs && vfs->Exists(filepath.string())) {
+			std::vector<uint8_t> data;
+			if (vfs->ReadFile(filepath.string(), data))
+			{
+				asset = CreateRef<T>(filepath, data);
+			}
+			else
+			{
+				ENGINE_ERROR("Could not load asset from bundle: {0}", filepath);
+				return nullptr;
+			}
+		}
+		else {
+			ENGINE_ERROR("Asset does not exist: {0}", filepath);
+			return nullptr;
+		}
 		Add(asset);
 		return std::dynamic_pointer_cast<T>(asset);
 	}
+
 	template<typename T>
 	Ref<T> Get(const std::filesystem::path& filepath)
 	{
