@@ -1,10 +1,9 @@
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
 #include "Scene/SceneManager.h"
+#include "Scene/AssetManager.h"
 
 #include "RuntimeLayer.h"
-
-#include <miniz.h>
 
 struct AssetBundleFooter {
 	uint64_t zipSize;
@@ -57,28 +56,7 @@ int main(int argc, char* argv[])
 	std::vector<uint8_t> zipData(footer.zipSize);
 	exe.read(reinterpret_cast<char*>(zipData.data()), footer.zipSize);
 
-	mz_zip_archive zip = {};
-	if (!mz_zip_reader_init_mem(&zip, zipData.data(), zipData.size(), 0))
-	{
-		ENGINE_ERROR("Failed to initialize zip reader: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
-		return EXIT_FAILURE;
-	}
-
-	int numFiles = (int)mz_zip_reader_get_num_files(&zip);
-	ENGINE_DEBUG("Zip contains {0} files", numFiles);
-
-	for (int i = 0; i < numFiles; i++)
-	{
-		mz_zip_archive_file_stat file_stat;
-		if (mz_zip_reader_file_stat(&zip, i, &file_stat))
-		{
-			ENGINE_DEBUG("Extracting: {0}", file_stat.m_filename);
-
-			// TODO: load this into the asset library
-		}
-	}
-
-	mz_zip_reader_end(&zip);
+	AssetManager::LoadBundle(zipData.data(), zipData.size());
 
 	//Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
 
