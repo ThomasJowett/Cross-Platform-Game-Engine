@@ -79,6 +79,7 @@ target_link_libraries(Engine PRIVATE
                       box2d
                       msdf-atlas-gen
                       miniaudio
+                      miniz
                       )
 
 add_definitions(
@@ -109,7 +110,7 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
-
+                            ${CMAKE_SOURCE_DIR}/Editor/vendor/OpenFBX/src
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)
