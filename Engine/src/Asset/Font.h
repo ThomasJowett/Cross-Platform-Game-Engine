@@ -11,10 +11,12 @@ class Font : public Asset
 public:
 	Font();
 	Font(const std::filesystem::path& filepath);
+	Font(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
 	~Font();
 
 	// Inherited via Asset
 	virtual bool Load(const std::filesystem::path& filepath) override;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 
 	Ref<Texture2D> GetFontAtlas() const { return m_TextureAtlas; }
 	const MSDFData* GetMSDFData() const { return m_MSDFData; }
