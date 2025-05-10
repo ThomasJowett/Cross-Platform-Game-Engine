@@ -8,6 +8,11 @@ StaticMesh::StaticMesh(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+StaticMesh::StaticMesh(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	Load(filepath, data);
+}
+
 bool StaticMesh::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
@@ -95,4 +100,10 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	file.close();
 
 	return true;
+}
+
+bool StaticMesh::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	//TODO: implement loading static mesh from memory
+	return false;
 }
