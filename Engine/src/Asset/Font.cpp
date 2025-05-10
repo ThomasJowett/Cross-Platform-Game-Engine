@@ -32,7 +32,7 @@ void Font::Init()
 	if (AssetManager::HasBundle())
 	{
 		std::vector<uint8_t> data;
-		AssetManager::GetFileData("Fonts/Manrope-Medium.ttf", data);
+		AssetManager::GetFileData("data/Fonts/Manrope-Medium.ttf", data);
 		s_DefaultFont = CreateRef<Font>("data/Fonts/Manrope-Medium.ttf", data);
 	}
 	else
@@ -164,19 +164,18 @@ bool Font::Load(const std::filesystem::path& filepath, const std::vector<uint8_t
 	// Load PNG atlas from memory
 	std::filesystem::path cachePath = filepath;
 	cachePath.replace_extension(".png");
-	std::string cacheName = cachePath.string();
 
 	std::vector<uint8_t> pngData;
-	AssetManager::GetFileData(cacheName, pngData);
+	AssetManager::GetFileData(cachePath, pngData);
 	if (pngData.empty())
 	{
-		ENGINE_ERROR("Could not load font atlas from memory: {0}", cacheName);
+		ENGINE_ERROR("Could not load font atlas from memory: {0}", cachePath.string());
 		msdfgen::destroyFont(fontHandle);
 		msdfgen::deinitializeFreetype(ftHandle);
 		return false;
 	}
 
-	m_TextureAtlas = Texture2D::Create(pngData);
+	m_TextureAtlas = Texture2D::Create(cachePath, pngData);
 	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
 
 	if (m_MSDFData)
