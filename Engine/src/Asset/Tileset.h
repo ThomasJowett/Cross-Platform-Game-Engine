@@ -7,6 +7,11 @@
 #include <set>
 #include <filesystem>
 
+namespace tinyxml2
+{
+class XMLDocument;
+}
+
 class Tile
 {
 public:
@@ -39,7 +44,9 @@ public:
 	Tileset();
 
 	Tileset(const std::filesystem::path& filepath);
+	Tileset(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
 	virtual bool Load(const std::filesystem::path& filepath) override;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 	bool Save() const;
 	bool SaveAs(const std::filesystem::path& filepath) const;
 
@@ -68,6 +75,7 @@ public:
 
 private:
 	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
+	bool LoadXML(tinyxml2::XMLDocument* doc);
 	Ref<SubTexture2D> m_Texture;
 
 	std::vector<Tile> m_Tiles;
