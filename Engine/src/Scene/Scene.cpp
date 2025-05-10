@@ -790,6 +790,23 @@ bool Scene::Load(bool binary)
 	return true;
 }
 
+bool Scene::Load(const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+
+	SceneSerializer sceneSerializer = SceneSerializer(this);
+	if (!sceneSerializer.Deserialize(m_Filepath, data))
+	{
+		ENGINE_ERROR("Failed to load scene from memory. {0}", m_Filepath.string());
+	}
+
+	m_Dirty = false;
+	SceneLoadedEvent event(m_Filepath);
+	Application::CallEvent(event);
+
+	return true;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::SetFilepath(std::filesystem::path filepath)
