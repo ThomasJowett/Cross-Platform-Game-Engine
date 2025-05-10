@@ -54,6 +54,7 @@ public:
 	void Save(bool binary = false);
 	void Save(std::filesystem::path filepath, bool binary = false);
 	bool Load(bool binary = false);
+	bool Load(const std::vector<uint8_t>& data);
 
 	void MakeDirty() { m_Dirty = true; }
 	bool IsDirty() const { return m_Dirty; }
