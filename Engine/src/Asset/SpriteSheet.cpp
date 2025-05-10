@@ -19,19 +19,27 @@ SpriteSheet::SpriteSheet(const std::filesystem::path& filepath)
 bool SpriteSheet::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
-	if (!std::filesystem::exists(filepath)) return false;
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	if (!std::filesystem::exists(absolutePath)) return false;
 
 	tinyxml2::XMLDocument doc;
 
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
-		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("SpriteSheet");
-
-		if (!pRoot)
+		if (!LoadXML(&doc))
 		{
-			ENGINE_ERROR("SpriteSheet does not contain a SpriteSheet node: {0}", filepath);
+			ENGINE_ERROR("Could not load spritesheet file: {0}", absolutePath);
 			return false;
 		}
+	}
+	else
+	{
+		ENGINE_ERROR("Could not load spritesheet {0}. {1} on line {2}", absolutePath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
+	}
+	m_Filepath = filepath;
+	return true;
+}
 
 		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
 			ENGINE_WARN("Tileset created with a different version of the engine");

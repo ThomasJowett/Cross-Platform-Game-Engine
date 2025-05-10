@@ -12,9 +12,10 @@
 class Asset
 {
 public:
+	virtual const std::filesystem::path& GetFilepath() const { return m_Filepath; };
+
 	virtual bool Load(const std::filesystem::path& filepath) = 0;
 	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) = 0;
-	virtual const std::filesystem::path& GetFilepath() const { return m_Filepath; };
 
 	bool Reload() { return Load(m_Filepath); }
 	const Uuid& GetUUID() const { return m_Uuid; }

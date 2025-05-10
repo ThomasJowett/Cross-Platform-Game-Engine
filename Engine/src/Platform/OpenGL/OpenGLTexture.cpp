@@ -197,15 +197,17 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 {
 	PROFILE_FUNCTION();
 
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
+
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::string&)");
-		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(absolutePath.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image! " + m_Filepath.string());
+	CORE_ASSERT(data, "Failed to load image! " + absolutePath.string());
 
 	if (!data)
 	{

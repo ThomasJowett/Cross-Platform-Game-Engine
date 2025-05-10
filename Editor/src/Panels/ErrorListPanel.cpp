@@ -33,7 +33,8 @@ void ErrorListPanel::OnUpdate(float deltaTime)
 			std::optional<std::pair<int, std::string>> result = luaScriptComp.ParseScript(Entity(entity, SceneManager::CurrentScene()));
 			if (result.has_value())
 			{
-				m_ErrorList.push_back(std::make_pair(Error(luaScriptComp.absoluteFilepath, result.value().first, result.value().second), false));
+				auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / luaScriptComp.script->GetFilepath());
+				m_ErrorList.push_back(std::make_pair(Error(absolutePath, result.value().first, result.value().second), false));
 			}
 		}
 		m_CurrentTime = 0.0f;

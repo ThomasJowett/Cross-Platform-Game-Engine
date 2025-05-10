@@ -24,11 +24,11 @@ private:
 		if (mesh)
 		{
 			if (!mesh->GetFilepath().empty())
-				relativeMeshPath = FileUtils::RelativePath(mesh->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+				relativeMeshPath = mesh->GetFilepath().string();
 			std::vector<std::string> relativeMaterials;
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
-				relativeMaterials.push_back(FileUtils::RelativePath(materialOverrides[i]->GetFilepath(), Application::GetOpenDocumentDirectory()).string());
+				relativeMaterials.push_back(materialOverrides[i]->GetFilepath().string());
 			}
 			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 		}
@@ -45,7 +45,7 @@ private:
 
 		if (!relativeMeshPath.empty())
 		{
-			mesh = AssetManager::GetAsset<StaticMesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMeshPath));
+			mesh = AssetManager::GetAsset<StaticMesh>(relativeMeshPath);
 			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
@@ -53,7 +53,7 @@ private:
 				if (relativeMaterials[i].empty())
 					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
 				else
-					materialOverrides[i] = AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativeMaterials[i]));
+					materialOverrides[i] = AssetManager::GetAsset<Material>(relativeMaterials[i]);
 			}
 		}
 		else

@@ -21,14 +21,17 @@ Tileset::Tileset(const std::filesystem::path& filepath)
 
 bool Tileset::Load(const std::filesystem::path& filepath)
 {
-	if (!std::filesystem::exists(filepath))
+	PROFILE_FUNCTION();
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	if (!std::filesystem::exists(absolutePath))
 	{
-		ENGINE_ERROR("Could not load Tileset: {0}, File does not exist!", filepath);
+		ENGINE_ERROR("Could not load Tileset: {0}, File does not exist!", absolutePath);
 		return false;
 	}
 	tinyxml2::XMLDocument doc;
 
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
 		
 		tinyxml2::XMLElement* pRoot;
@@ -37,7 +40,7 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 
 		if (!pRoot)
 		{
-			ENGINE_ERROR("Tileset does not have a Tileset node");
+			ENGINE_ERROR("Could not load tileset file: {0}", absolutePath);
 			return false;
 		}
 
@@ -84,9 +87,10 @@ bool Tileset::Load(const std::filesystem::path& filepath)
 	}
 	else
 	{
-		ENGINE_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		ENGINE_ERROR("Could not load tileset {0}. {1} on line {2}", absolutePath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
 	}
+	m_Filepath = filepath;
 	return true;
 }
 

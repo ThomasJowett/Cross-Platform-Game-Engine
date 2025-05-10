@@ -21,7 +21,7 @@ private:
 		archive(text, maxWidth, colour);
 		std::string relativePath;
 		if(font != Font::GetDefaultFont())
-			relativePath = FileUtils::RelativePath(font->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+			relativePath = font->GetFilepath().string();
 		archive(relativePath);
 	}
 
@@ -33,7 +33,7 @@ private:
 		archive(relativePath);
 		if (!relativePath.empty())
 		{
-			font = AssetManager::GetAsset<Font>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			font = AssetManager::GetAsset<Font>(relativePath);
 		}
 		else
 		{
