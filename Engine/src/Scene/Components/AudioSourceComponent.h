@@ -3,6 +3,7 @@
 #include "Utilities/SerializationUtils.h"
 
 struct ma_sound;
+struct ma_decoder;
 
 struct AudioSourceComponent
 {
@@ -25,6 +26,7 @@ struct AudioSourceComponent
 	bool playOnStart = false;
 
 	Ref<ma_sound> sound;
+	Ref<ma_decoder> decoder;
 
 	void Play() { play = true; }
 	void Pause() { pause = true; }
