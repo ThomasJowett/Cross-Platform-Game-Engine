@@ -117,7 +117,13 @@ bool SceneManager::FinalChangeScene()
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
 
-	if (!s_CurrentScene->Load())
+	if (s_NextFilepath.is_relative() && AssetManager::HasBundle()) {
+		std::vector<uint8_t> data;
+		AssetManager::GetFileData(s_NextFilepath.string(), data);
+		if (!s_CurrentScene->Load(data))
+			s_CurrentScene.reset();
+	}
+	else if (!s_CurrentScene->Load())
 		s_CurrentScene.reset();
 
 	SceneChangedEvent event(s_NextFilepath);
