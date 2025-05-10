@@ -14,14 +14,14 @@
 
 #include "GLFW/glfw3.h"
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11RendererAPI.h"
 #include "Platform/DirectX/DirectX11Context.h"
 #include "imgui/backends/imgui_impl_dx11.h"
 
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 ImGuiManager::ImGuiManager()
 	:m_UsingImGui(false)
@@ -52,12 +52,12 @@ void ImGuiManager::Init()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 		if (ImGui_ImplGlfw_InitForOther(Application::GetWindow()->GetNativeWindow(), true))
 		{
 			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
 		}
-#endif // __WINDOWS__
+#endif // _WINDOWS
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -79,9 +79,9 @@ void ImGuiManager::Shutdown()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 		ImGui_ImplDX11_Shutdown();
-#endif // __WINDOWS__
+#endif // _WINDOWS
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -107,9 +107,9 @@ void ImGuiManager::Begin()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 		ImGui_ImplDX11_NewFrame();
-#endif // __WINDOWS__
+#endif // _WINDOWS
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -133,9 +133,9 @@ void ImGuiManager::End()
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::Directx11)
 	{
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif // __WINDOWS__
+#endif // _WINDOWS
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{

@@ -398,7 +398,7 @@ void Application::SetDefaultSettings()
 
 double Application::GetTime() const
 {
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	static LARGE_INTEGER s_frequency;
 	//check to see if the application can read the frequency
 	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
@@ -414,7 +414,7 @@ double Application::GetTime() const
 		//same value but only updates 64 times a second
 		return (double)GetTickCount64();
 	}
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 	return glfwGetTime();
 }

@@ -34,7 +34,7 @@ AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirecto
 
 #ifdef _WINDOWS
 	m_GameName.replace_extension(".exe");
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 	std::ifstream file(Application::GetOpenDocument());
 
