@@ -6,6 +6,7 @@
 #include "Viewers/ViewerManager.h"
 #include "IconsFontAwesome6.h"
 #include "Scene/AssetManager.h"
+#include "Utilities/FileUtils.h"
 
 #include <filesystem>
 
@@ -74,7 +75,7 @@ bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVe
 
 	std::string textureName;
 	if (texture)
-		textureName = texture->GetName();
+		textureName = texture->GetFilepath().string();
 
 	ImGui::BeginGroup();
 	std::string comboLabel = "##textureEdit" + std::string(label);
@@ -146,7 +147,10 @@ bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVe
 				if (file->extension().string() == ext)
 				{
 					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-						texture = AssetManager::GetTexture(*file);
+					{
+						auto relativePath = FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory());
+						texture = AssetManager::GetTexture(relativePath);
+					}
 				}
 			}
 		}

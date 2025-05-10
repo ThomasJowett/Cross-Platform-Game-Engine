@@ -40,27 +40,27 @@ std::filesystem::path AbsolutePath(const char* path);
 template<typename Archive>
 void SaveAssetToArchive(Archive& archive, const Ref<Asset>& asset)
 {
-    std::string relativePath;
-    if (asset && !asset->GetFilepath().empty())
-    {
-        relativePath = asset->GetFilepath().string();
-    }
-    archive(relativePath);
+	std::string relativePath;
+	if (asset && !asset->GetFilepath().empty())
+	{
+		relativePath = asset->GetFilepath().string();
+	}
+	archive(relativePath);
 }
 
 template<typename Archive, typename Asset>
 void LoadAssetFromArchive(Archive& archive, Ref<Asset>& asset)
 {
-    std::string relativePath;
-    archive(relativePath);
-    if (!relativePath.empty())
-    {
-        asset = AssetManager::GetAsset<Asset>(relativePath);
-    }
-    else
-    {
-        asset.reset();
-    }
+	std::string relativePath;
+	archive(relativePath);
+	if (!relativePath.empty())
+	{
+		asset = AssetManager::GetAsset<Asset>(relativePath);
+	}
+	else
+	{
+		asset.reset();
+	}
 }
 
 template<typename Archive>

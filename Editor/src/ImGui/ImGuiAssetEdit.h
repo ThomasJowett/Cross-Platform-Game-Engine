@@ -20,7 +20,8 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 	if (asset && !asset->GetFilepath().empty())
 	{
 		assetName = asset->GetFilepath().filename().string();
-		if (!std::filesystem::exists(asset->GetFilepath()))
+		auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / asset->GetFilepath());
+		if (!std::filesystem::exists(absolutePath))
 		{
 			asset = defaultAsset;
 			assetName.clear();
@@ -50,7 +51,8 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 		{
 			if (ImGui::Selectable(file.filename().string().c_str()))
 			{
-				asset = AssetManager::GetAsset<T>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file));
+				auto relativePath = FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory());
+				asset = AssetManager::GetAsset<T>(relativePath);
 				edited = true;
 				break;
 			}
@@ -70,7 +72,10 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 				if (file->extension().string() == ext)
 				{
 					if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-						asset = AssetManager::GetAsset<T>(*file);
+					{
+						auto relativePath = FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory());
+						asset = AssetManager::GetAsset<T>(relativePath);
+					}
 				}
 			}
 		}

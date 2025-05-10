@@ -113,7 +113,7 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 		std::optional<std::pair<int, std::string>> result = scriptComponent->ParseScript(newEntity);
 		if (result.has_value())
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->absoluteFilepath, result.value().first, result.value().second);
+			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->script->GetFilepath(), result.value().first, result.value().second);
 		}
 	}
 	return Entity();
@@ -195,7 +195,7 @@ void Scene::OnRuntimeStart()
 			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
 			if (result.has_value())
 			{
-				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
+				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.script->GetFilepath().string(), result.value().first, result.value().second);
 			}
 			else
 			{

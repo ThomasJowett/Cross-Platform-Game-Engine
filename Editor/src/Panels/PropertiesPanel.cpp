@@ -76,7 +76,7 @@ void PropertiesPanel::OnImGuiRender()
 						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 						{
 							StaticMeshComponent comp = entity.GetOrAddComponent<StaticMeshComponent>();
-							comp.mesh->Load(*file);
+							comp.mesh->Load(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 						}
 					}
 					else if (file->extension() == ".lua")
@@ -478,7 +478,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						if (file->extension().string() == ext)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-								sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(*file);
+								sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 						}
 					}
 				}
@@ -651,7 +651,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 							{
-								tilemap.tileset = AssetManager::GetAsset<Tileset>(*file);
+								tilemap.tileset = AssetManager::GetAsset<Tileset>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 								tilemap.mesh->GetMaterials()[0]->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 								SceneManager::CurrentScene()->MakeDirty();
 							}
