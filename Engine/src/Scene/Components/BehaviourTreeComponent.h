@@ -9,7 +9,7 @@ struct BehaviourTreeComponent
 {
 	BehaviourTreeComponent() = default;
 	BehaviourTreeComponent(const BehaviourTreeComponent&) = default;
-	Ref<BehaviourTree::BehaviourTree> behaviourTree;
+	Ref<BehaviourTree::BehaviourTree> behaviourTree; //TODO: make behaviortree asset
 
 	std::filesystem::path filepath;
 
