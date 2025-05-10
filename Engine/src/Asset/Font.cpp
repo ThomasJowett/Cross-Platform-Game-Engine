@@ -3,6 +3,7 @@
 
 #include "Renderer/UI/MSDFData.h"
 #include "Logging/Instrumentor.h"
+#include "Scene/AssetManager.h"
 
 Font::Font()
 {
@@ -11,6 +12,11 @@ Font::Font()
 Font::Font(const std::filesystem::path& filepath)
 {
 	Load(filepath);
+}
+
+Font::Font(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	Load(filepath, data);
 }
 
 Font::~Font()
@@ -23,7 +29,14 @@ Ref<Font> Font::s_DefaultFont;
 void Font::Init()
 {
 	PROFILE_FUNCTION();
-	s_DefaultFont = CreateRef<Font>(Application::GetWorkingDirectory() / "data" / "Fonts" / "Manrope-Medium.ttf");
+	if (AssetManager::HasBundle())
+	{
+		std::vector<uint8_t> data;
+		AssetManager::GetFileData("Fonts/Manrope-Medium.ttf", data);
+		s_DefaultFont = CreateRef<Font>("data/Fonts/Manrope-Medium.ttf", data);
+	}
+	else
+		s_DefaultFont = CreateRef<Font>("data/Fonts/Manrope-Medium.ttf");
 }
 
 void Font::Shutdown()
@@ -118,13 +131,66 @@ bool Font::Load(const std::filesystem::path& filepath)
 
 	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();
 
-	m_TextureAtlas = Texture2D::Create(bitmap.width, bitmap.height, Texture::Format::RGBA32F, (void*)bitmap.pixels);
-	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
-
 	msdfgen::destroyFont(fontHandle);
 	msdfgen::deinitializeFreetype(ftHandle);
 
 	// Cache the texture to png file
-	msdfgen::savePng(bitmap, cachePath.string().c_str());
+	msdfgen::savePng(bitmap, absoluteCachePath.string().c_str());
+
+	m_TextureAtlas = AssetManager::GetTexture(cachePath);
+
+	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
+	return true;
+}
+
+bool Font::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+
+	msdfgen::FreetypeHandle* ftHandle = msdfgen::initializeFreetype();
+	msdfgen::FontHandle* fontHandle = msdfgen::loadFontData(ftHandle, data.data(), (int)data.size());
+
+	if (!ftHandle || !fontHandle)
+	{
+		ENGINE_ERROR("Could not load font: {0}", filepath);
+		msdfgen::destroyFont(fontHandle);
+		msdfgen::deinitializeFreetype(ftHandle);
+		return false;
+	}
+
+	m_Filepath = filepath;
+	m_TextureAtlas.reset();
+
+	// Load PNG atlas from memory
+	std::filesystem::path cachePath = filepath;
+	cachePath.replace_extension(".png");
+	std::string cacheName = cachePath.string();
+
+	std::vector<uint8_t> pngData;
+	AssetManager::GetFileData(cacheName, pngData);
+	if (pngData.empty())
+	{
+		ENGINE_ERROR("Could not load font atlas from memory: {0}", cacheName);
+		msdfgen::destroyFont(fontHandle);
+		msdfgen::deinitializeFreetype(ftHandle);
+		return false;
+	}
+
+	m_TextureAtlas = Texture2D::Create(pngData);
+	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
+
+	if (m_MSDFData)
+		delete m_MSDFData;
+	m_MSDFData = new MSDFData();
+	m_MSDFData->fontGeometry = msdf_atlas::FontGeometry(&m_MSDFData->glyphs);
+
+	int glyphsLoaded = m_MSDFData->fontGeometry.loadCharset(fontHandle, 1.0f, msdf_atlas::Charset::ASCII);
+	ASSERT(glyphsLoaded >= 0, "Could not load any glyphs from the font");
+
+	m_MSDFData->fontGeometry.setName(m_Filepath.string().c_str());
+
+	msdfgen::destroyFont(fontHandle);
+	msdfgen::deinitializeFreetype(ftHandle);
+
 	return true;
 }
