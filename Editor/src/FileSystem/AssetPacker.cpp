@@ -125,9 +125,9 @@ void AssetPacker::PackAssets()
 		}
 	}
 
-	std::filesystem::path dataPath = Application::GetWorkingDirectory() / "data";
+	std::filesystem::path dataPath = Application::GetWorkingDirectory();
 
-	std::filesystem::path shadersPath = dataPath / "Shaders";
+	std::filesystem::path shadersPath = dataPath / "data" / "Shaders";
 
 	if (std::filesystem::exists(shadersPath) && std::filesystem::is_directory(shadersPath))
 	{
@@ -144,7 +144,7 @@ void AssetPacker::PackAssets()
 		}
 	}
 
-	std::filesystem::path fontsPath = dataPath / "Fonts";
+	std::filesystem::path fontsPath = dataPath / "data" / "Fonts";
 
 	if (std::filesystem::exists(fontsPath) && std::filesystem::is_directory(fontsPath))
 	{
