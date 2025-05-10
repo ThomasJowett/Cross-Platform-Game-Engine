@@ -1370,7 +1370,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						// try to get the image to display the thumbnail
 						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
 						{
-							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i]);
+							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i], nullptr);
 							uint32_t textureHeight = icon->GetHeight();
 							uint32_t textureWidth = icon->GetWidth();
 
