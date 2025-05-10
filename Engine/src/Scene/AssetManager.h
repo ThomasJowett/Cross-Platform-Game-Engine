@@ -14,9 +14,25 @@ public:
 	static void LoadBundle(const void* zipData, size_t zipSize)
 	{
 		PROFILE_FUNCTION();
-		s_Instance->m_VFS = CreateRef<VirtualFileSystem>();
-		s_Instance->m_VFS->Mount(zipData, zipSize);
+		AssetManager::Get().m_VFS = CreateRef<VirtualFileSystem>();
+		AssetManager::Get().m_VFS->Mount(zipData, zipSize);
+		ENGINE_INFO("Asset Bundle Loaded");
 	}
+
+	static bool HasBundle()
+	{
+		return (bool)AssetManager::Get().m_VFS;
+	}
+
+	static bool GetFileData(const std::filesystem::path& name, std::vector<uint8_t>& data)
+	{
+		PROFILE_FUNCTION();
+		if (s_Instance->m_VFS) {
+			return s_Instance->m_VFS->ReadFile(name, data);
+		}
+		return false;
+	}
+
 	template<typename T>
 	static Ref<T> GetAsset(const std::filesystem::path& filepath)
 	{
@@ -29,9 +45,7 @@ public:
 	static Ref<Texture2D> GetTexture(const std::filesystem::path& filepath)
 	{
 		PROFILE_FUNCTION();
-		if(AssetManager::Get().m_VFS)
-			return AssetManager::Get().m_Textures.Load(filepath, AssetManager::Get().m_VFS);
-		return AssetManager::Get().m_Textures.Load(filepath);
+		return AssetManager::Get().m_Textures.Load(filepath, AssetManager::Get().m_VFS);
 	}
 
 	static void CleanUp()
@@ -43,7 +57,9 @@ public:
 	{
 		AssetManager::Get().m_Assets.Clear();
 		AssetManager::Get().m_Textures.Clear();
-		AssetManager::Get().m_VFS->Unmount();
+		if(AssetManager::Get().m_VFS)
+			AssetManager::Get().m_VFS->Unmount();
+		AssetManager::Get().m_VFS.reset();
 	}
 
 private:
