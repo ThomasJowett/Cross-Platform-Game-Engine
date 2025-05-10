@@ -96,15 +96,21 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 
 	m_Filepath = path;
 
-	bool isValid = std::filesystem::exists(path);
-
-	CORE_ASSERT(isValid, "Image does not exist! " + path.string());
-
-	if (isValid){
-		isValid = LoadTextureFromFile();
-	} else {
+	bool isValid = LoadTextureFromFile();
+	if (!isValid){
 		NullTexture();
 	}
+}
+
+OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData)
+{
+	PROFILE_FUNCTION()
+	bool isValid = LoadTextureFromMemory(imageData);
+	if (!isValid)
+	{
+		NullTexture();
+	}
+	m_Filepath = filepath;
 }
 
 OpenGLTexture2D::~OpenGLTexture2D()
@@ -127,11 +133,6 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 {
 	PROFILE_FUNCTION();
 	glBindTextureUnit(slot, m_RendererID);
-}
-
-std::string OpenGLTexture2D::GetName() const
-{
-	return m_Filepath.filename().string();
 }
 
 uint32_t OpenGLTexture2D::GetRendererID() const
@@ -198,6 +199,12 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	PROFILE_FUNCTION();
 
 	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
+
+	if (!std::filesystem::exists(absolutePath))
+	{
+		ENGINE_ERROR("Image does not exist! {0}", absolutePath.string());
+		return false;
+	}
 
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);
