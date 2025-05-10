@@ -2,6 +2,17 @@
 #include "Logging/Logger.h"
 #include "Logging/Instrumentor.h"
 
+VirtualFileSystem::VirtualFileSystem()
+{
+	PROFILE_FUNCTION();
+	mz_zip_zero_struct(&m_Archive);
+}
+
+VirtualFileSystem::~VirtualFileSystem()
+{
+	mz_zip_reader_end(&m_Archive);
+}
+
 void VirtualFileSystem::Mount(const void* zipData, size_t zipSize)
 {
 	PROFILE_FUNCTION();
@@ -39,12 +50,12 @@ void VirtualFileSystem::Unmount()
 	m_FileIndex.clear();
 }
 
-bool VirtualFileSystem::Exists(const std::string& path)
+bool VirtualFileSystem::Exists(const std::filesystem::path& path)
 {
 	return (m_FileIndex.find(path) != m_FileIndex.end());
 }
 
-bool VirtualFileSystem::ReadFile(const std::string& path, std::vector<uint8_t>& outData)
+bool VirtualFileSystem::ReadFile(const std::filesystem::path& path, std::vector<uint8_t>& outData)
 {
 	PROFILE_FUNCTION();
 	auto it = m_FileIndex.find(path);
