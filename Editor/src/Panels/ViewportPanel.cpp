@@ -787,7 +787,7 @@ void ViewportPanel::OnImGuiRender()
 
 							StaticMeshComponent& staticMeshComp = staticMeshEntity.AddComponent<StaticMeshComponent>();
 
-							staticMeshComp.mesh = AssetManager::GetAsset<StaticMesh>(*file);
+							staticMeshComp.mesh = AssetManager::GetAsset<StaticMesh>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 							staticMeshComp.materialOverrides.resize(staticMeshComp.mesh->GetMesh()->GetSubmeshes().size());
 						}
 					}

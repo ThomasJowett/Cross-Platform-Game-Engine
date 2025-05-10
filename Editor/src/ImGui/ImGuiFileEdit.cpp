@@ -50,7 +50,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 			{
 				if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 				{
-					filepath = *file;
+					filepath = FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory());
 					edited = true;
 				}
 			}

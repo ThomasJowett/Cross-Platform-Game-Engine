@@ -446,7 +446,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
 
-		SerializationUtils::Encode(pLuaScriptElement, component.absoluteFilepath);
+		if (component.script)
+			SerializationUtils::Encode(pLuaScriptElement, component.script->GetFilepath());
 	}
 
 	if (entity.HasComponent<PointLightComponent>())
@@ -664,7 +665,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (tilesetChar)
 			{
-				if (std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
+				if (std::filesystem::path tilesetFilepath = tilesetChar;
 					!tilesetFilepath.empty())
 				{
 					component.spriteSheet = AssetManager::GetAsset<SpriteSheet>(tilesetFilepath);
@@ -696,7 +697,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (meshFilepathChar)
 			{
-				if (std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+				if (std::filesystem::path meshFilepath = meshFilepathChar;
 					!meshFilepath.empty())
 				{
 					component.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
@@ -828,7 +829,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (const char* tilesetChar = pTilemapComponentElement->Attribute("Filepath"))
 		{
-			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
+			std::filesystem::path tilesetfilepath = tilesetChar;
 			if (!tilesetfilepath.empty())
 			{
 				component.tileset = AssetManager::GetAsset<Tileset>(tilesetfilepath);
@@ -1043,8 +1044,12 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pLuaScriptComponentElement = pEntityElement->FirstChildElement("LuaScript"))
 	{
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
-
-		SerializationUtils::Decode(pLuaScriptComponentElement, component.absoluteFilepath);
+		std::filesystem::path scriptPath;
+		SerializationUtils::Decode(pLuaScriptComponentElement, scriptPath);
+		if (!scriptPath.empty())
+			component.script = AssetManager::GetAsset<LuaScript>(scriptPath);
+		else
+			component.script = nullptr;
 	}
 
 	// Point Light --------------------------------------------------------------------------------------------------
