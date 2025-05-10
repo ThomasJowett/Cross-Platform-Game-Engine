@@ -22,6 +22,8 @@ void ErrorListPanel::OnAttach()
 void ErrorListPanel::OnUpdate(float deltaTime)
 {
 	m_CurrentTime += deltaTime;
+	// TODO: get the list of errors from a lua error event
+	return;
 	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit && SceneManager::IsSceneLoaded())
 	{
 		m_ErrorList.clear();
