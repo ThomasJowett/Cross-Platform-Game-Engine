@@ -3,8 +3,14 @@
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Entity.h"
+#include "Scene/AssetManager.h"
 #include "box2d/box2d.h"
 #include "Logging/Instrumentor.h"
+
+LuaScriptComponent::LuaScriptComponent(const std::filesystem::path& filepath)
+{
+	script = AssetManager::GetAsset<LuaScript>(filepath);
+}
 
 LuaScriptComponent::~LuaScriptComponent()
 {
@@ -16,20 +22,17 @@ LuaScriptComponent::~LuaScriptComponent()
 
 std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entity entity)
 {
-	LuaManager::GetState().collect_garbage();
-	if (absoluteFilepath.empty())
-	{
-		return std::make_pair(0, "No file loaded");
-	}
+	PROFILE_FUNCTION();
 
-	if (!std::filesystem::exists(absoluteFilepath))
+	LuaManager::GetState().collect_garbage();
+	if (!script)
 	{
-		return std::make_pair(0, "File does not exist");
+		return std::make_pair(0, "No script loaded");
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
-	sol::protected_function_result result = LuaManager::GetState().script_file(absoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+	sol::protected_function_result result = LuaManager::GetState().script(script->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
 	if (!result.valid())
 	{

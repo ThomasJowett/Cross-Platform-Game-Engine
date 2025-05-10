@@ -5,8 +5,7 @@
 #include <vector>
 #include <filesystem>
 
-#include "Core/Application.h"
-#include "Utilities/FileUtils.h"
+#include "Asset/LuaScript.h"
 
 class Entity;
 class PhysicsEngine2D;
@@ -15,12 +14,12 @@ class b2Fixture;
 struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
-	LuaScriptComponent(const std::filesystem::path& filepath) : absoluteFilepath(filepath) { }
+	LuaScriptComponent(const std::filesystem::path& filepath);
 	LuaScriptComponent(const LuaScriptComponent&) = default;
 
 	~LuaScriptComponent();
 
-	std::filesystem::path absoluteFilepath;
+	Ref<LuaScript> script;
 	bool created = false;
 
 	std::optional<std::pair<int, std::string>> ParseScript(Entity entity);
@@ -50,19 +49,13 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		std::string relativePath;
-		if (!absoluteFilepath.empty())
-			relativePath = FileUtils::RelativePath(absoluteFilepath, Application::GetOpenDocumentDirectory()).string();
-		archive(relativePath);
+		SerializationUtils::SaveAssetToArchive(archive, script);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		std::string relativePath;
-		archive(relativePath);
-		if (!relativePath.empty())
-			absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath);
+		SerializationUtils::LoadAssetFromArchive(archive, script);
 	}
 
 	friend PhysicsEngine2D;
