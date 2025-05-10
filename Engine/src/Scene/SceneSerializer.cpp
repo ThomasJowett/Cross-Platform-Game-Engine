@@ -98,6 +98,50 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	}
 }
 
+bool SceneSerializer::Deserialize(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+
+	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
+	{
+		m_Scene->SetFilepath(filepath);
+		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Scene");
+
+		if (!pRoot)
+		{
+			ENGINE_ERROR("Not a valid scene file. Could not find Scene node");
+			return false;
+		}
+
+		Vector2f gravity = m_Scene->GetGravity();
+		SerializationUtils::Decode(pRoot->FirstChildElement("Gravity"), gravity);
+		m_Scene->SetGravity(gravity);
+
+		// Version
+
+		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
+			ENGINE_WARN("Loading scene created with a different version of the engine");
+
+		// Entities
+		tinyxml2::XMLElement* pEntityElement = pRoot->LastChildElement("Entity");
+
+		while (pEntityElement)
+		{
+			DeserializeEntity(m_Scene, pEntityElement);
+			pEntityElement = pEntityElement->PreviousSiblingElement("Entity");
+		}
+
+		return true;
+	}
+	else
+	{
+		ENGINE_ERROR("Could not load scene {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
+	}
+	return false;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity, tinyxml2::XMLElement* pParentNode)
