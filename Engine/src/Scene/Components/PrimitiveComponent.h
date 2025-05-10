@@ -212,7 +212,7 @@ private:
 		std::string relativePath;
 		if (material && !material->GetFilepath().empty() && material != Material::GetDefaultMaterial())
 		{
-			relativePath = FileUtils::RelativePath(material->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+			relativePath = material->GetFilepath().string();
 		}
 		archive(relativePath);
 	}
@@ -232,7 +232,7 @@ private:
 		archive(relativePath);
 		if (!relativePath.empty())
 		{
-			material = AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+			material = AssetManager::GetAsset<Material>(relativePath);
 		}
 		else
 		{

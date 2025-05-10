@@ -12,12 +12,14 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
 
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
 	std::ifstream file;
-	file.open(filepath, std::ios::in | std::ios::binary);
+	file.open(absolutePath, std::ios::in | std::ios::binary);
 
 	if (!file.good())
 	{
-		ENGINE_ERROR("Failed to load staticmesh from {0}", filepath.string());
+		ENGINE_ERROR("Failed to load staticmesh from {0}", absolutePath.string());
 		return false;
 	}
 

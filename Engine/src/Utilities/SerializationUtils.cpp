@@ -64,7 +64,7 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::files
 {
 	if (!filepath.empty())
 	{
-		pElement->SetAttribute("Filepath", RelativePath(filepath).c_str());
+		pElement->SetAttribute("Filepath", filepath.string().c_str());
 	}
 }
 
@@ -75,7 +75,7 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, std::files
 		const char* relativePath = pElement->Attribute("Filepath");
 		if (relativePath)
 		{
-			filepath = AbsolutePath(relativePath);
+			filepath = relativePath;
 		}
 	}
 }

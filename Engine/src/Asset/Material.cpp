@@ -52,14 +52,16 @@ void Material::AddTexture(Ref<Texture2D> texture, uint32_t slot)
 
 bool Material::Load(const std::filesystem::path& filepath)
 {
-	if (!std::filesystem::exists(filepath))
+	PROFILE_FUNCTION();
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	if (!std::filesystem::exists(absolutePath))
 	{
 		return false;
 	}
 
 	tinyxml2::XMLDocument doc;
 
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
 		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Material");
 

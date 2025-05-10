@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "PhysicsMaterial.h"
+#include "Core/Application.h"
 
 #include "TinyXml2/tinyxml2.h"
 

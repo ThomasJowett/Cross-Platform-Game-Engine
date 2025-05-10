@@ -83,8 +83,8 @@ void PropertiesPanel::OnImGuiRender()
 					{
 						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 						{
-							LuaScriptComponent comp = entity.GetOrAddComponent<LuaScriptComponent>();
-							comp.absoluteFilepath = *file;
+							LuaScriptComponent& comp = entity.GetOrAddComponent<LuaScriptComponent>();
+							comp.script = AssetManager::GetAsset<LuaScript>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 							comp.ParseScript(entity);
 						}
 					}
@@ -442,7 +442,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				static std::filesystem::file_time_type currentFileTime;
 
-				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(sprite.spriteSheet->GetFilepath());
+				std::filesystem::path absoluteSpriteSheetPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / sprite.spriteSheet->GetFilepath());
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(absoluteSpriteSheetPath);
 
 				if (lastWrittenTime != currentFileTime)
 				{
@@ -489,7 +490,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##AnimatedSprite"))
 				{
-					ViewerManager::OpenViewer(sprite.spriteSheet->GetFilepath());
+					auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / sprite.spriteSheet->GetFilepath());
+					ViewerManager::OpenViewer(absolutePath);
 				}
 				ImGui::Tooltip("Edit Sprite Sheet");
 			}
@@ -663,7 +665,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE))
 				{
-					ViewerManager::OpenViewer(tilemap.tileset->GetFilepath());
+					auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / tilemap.tileset->GetFilepath());
+					ViewerManager::OpenViewer(absolutePath);
 				}
 			}
 
@@ -1154,7 +1157,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
-			if (ImGui::BeginCombo("##luaScript", luaScript.absoluteFilepath.filename().string().c_str()))
+			if (ImGui::BeginCombo("##luaScript", luaScript.script->GetFilepath().filename().string().c_str()))
 			{
 				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
 				{
@@ -1162,7 +1165,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
 						Ref<EditComponentCommand<LuaScriptComponent>> editLuaCommand = CreateRef<EditComponentCommand<LuaScriptComponent>>(entity);
-						luaScript.absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file);
+						luaScript.script = AssetManager::GetAsset<LuaScript>(file);
 						SceneManager::CurrentScene()->MakeDirty();
 						HistoryManager::AddHistoryRecord(editLuaCommand);
 						break;
@@ -1174,7 +1177,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
 			{
-				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
+				auto filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / luaScript.script->GetFilepath());
+				ViewerManager::OpenViewer(filepath);
 			}
 			ImGui::Tooltip("Edit script");
 		});

@@ -63,7 +63,11 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 
 bool Texture2D::Load(const std::filesystem::path& filepath)
 {
-	return (Texture2D::Create(filepath) == nullptr);
+	PROFILE_FUNCTION();
+	m_Filepath = filepath;
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	return (Texture2D::Create(absolutePath) == nullptr);
+}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

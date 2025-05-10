@@ -412,8 +412,9 @@ void SpriteSheetView::Save()
 
 void SpriteSheetView::SaveAs()
 {
-	auto ext = m_LocalSpriteSheet->GetFilepath().extension();
-	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_LocalSpriteSheet->GetFilepath().extension().string()));
+	auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_LocalSpriteSheet->GetFilepath());
+	auto ext = absolutePath.extension();
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(absolutePath.extension().string()));
 	if (dialogPath)
 	{
 		std::filesystem::path filepath = dialogPath.value();

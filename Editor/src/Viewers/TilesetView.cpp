@@ -318,8 +318,9 @@ void TilesetView::Save()
 
 void TilesetView::SaveAs()
 {
-	auto ext = m_LocalTileset->GetFilepath().extension();
-	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_LocalTileset->GetFilepath().extension().string()));
+	auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_LocalTileset->GetFilepath());
+	auto ext = absolutePath.extension();
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(absolutePath.extension().string()));
 	if (dialogPath)
 	{
 		std::filesystem::path filepath = dialogPath.value();

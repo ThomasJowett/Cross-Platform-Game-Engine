@@ -34,9 +34,10 @@ void Font::Shutdown()
 bool Font::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
-	if (!std::filesystem::exists(filepath))
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	if (!std::filesystem::exists(absolutePath))
 	{
-		ENGINE_ERROR("Font does not exist: {0}", filepath);
+		ENGINE_ERROR("Font does not exist: {0}", absolutePath);
 		return false;
 	}
 
@@ -45,14 +46,15 @@ bool Font::Load(const std::filesystem::path& filepath)
 	// Try Loading the atlas cache
 	std::filesystem::path cachePath = filepath;
 	cachePath.replace_extension(".png");
-	if (std::filesystem::exists(cachePath))
+	std::filesystem::path absoluteCachePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / cachePath);
+	if (std::filesystem::exists(absoluteCachePath))
 	{
-		m_TextureAtlas = Texture2D::Create(cachePath);
+		m_TextureAtlas = AssetManager::GetTexture(cachePath);
 		m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
 	}
 
 	msdfgen::FreetypeHandle* ftHandle = msdfgen::initializeFreetype();
-	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(ftHandle, filepath.string().c_str());
+	msdfgen::FontHandle* fontHandle = msdfgen::loadFont(ftHandle, absolutePath.string().c_str());
 
 	if (!ftHandle || !fontHandle)
 	{

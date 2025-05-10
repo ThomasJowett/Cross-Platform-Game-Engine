@@ -24,16 +24,17 @@ AudioClip::~AudioClip()
 bool AudioClip::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
-	if (!std::filesystem::exists(filepath))
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	if (!std::filesystem::exists(absolutePath))
 	{
-		ENGINE_ERROR("Font does not exist: {0}", filepath);
+		ENGINE_ERROR("Audio file does not exist: {0}", absolutePath);
 		return false;
 	}
 
 	ma_decoder decoder;
-	if (ma_decoder_init_file(filepath.string().c_str(), NULL, &decoder) != MA_SUCCESS)
+	if (ma_decoder_init_file(absolutePath.string().c_str(), NULL, &decoder) != MA_SUCCESS)
 	{
-		ENGINE_ERROR("Failed to decode audio file: {0}", filepath);
+		ENGINE_ERROR("Failed to decode audio file: {0}", absolutePath);
 		return false;
 	}
 
