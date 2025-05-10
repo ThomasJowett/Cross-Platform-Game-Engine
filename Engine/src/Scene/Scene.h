@@ -31,7 +31,7 @@ public:
 
 	Entity DuplicateEntity(Entity entity, Entity parent);
 
-	void OnRuntimeStart();
+	void OnRuntimeStart(bool createSnapshot = true);
 	void OnRuntimePause();
 	void OnRuntimeStop();
 

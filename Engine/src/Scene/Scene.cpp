@@ -177,17 +177,19 @@ Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::OnRuntimeStart()
+void Scene::OnRuntimeStart(bool createSnapshot)
 {
 	PROFILE_FUNCTION();
 
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
-
-	std::stringstream().swap(m_Snapshot);
-	cereal::BinaryOutputArchive output(m_Snapshot);
-	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+	if (createSnapshot)
+	{
+		std::stringstream().swap(m_Snapshot);
+		cereal::BinaryOutputArchive output(m_Snapshot);
+		entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+	}
 
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
