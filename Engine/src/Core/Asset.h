@@ -4,6 +4,7 @@
 #include "Core/UUID.h"
 #include "Core/Factory.h"
 #include "Core/VirtualFileSystem.h"
+#include "Core/Application.h"
 #include "Utilities/FileWatcher.h"
 
 #include <filesystem>
@@ -72,19 +73,25 @@ public:
 			return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
 
 		Ref<T> asset;
-		if (std::filesystem::exists(filepath)) {
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+		if (std::filesystem::exists(absolutePath)) {
+			ENGINE_INFO("Loading asset from disk: {0}", absolutePath);
 			asset = CreateRef<T>(filepath);
 		}
-		else if (vfs && vfs->Exists(filepath.string())) {
-			std::vector<uint8_t> data;
-			if (vfs->ReadFile(filepath.string(), data))
-			{
-				asset = CreateRef<T>(filepath, data);
-			}
-			else
-			{
-				ENGINE_ERROR("Could not load asset from bundle: {0}", filepath);
-				return nullptr;
+		else if (vfs)
+		{
+			if (vfs->Exists(filepath)) {
+				std::vector<uint8_t> data;
+				if (vfs->ReadFile(filepath, data))
+				{
+					ENGINE_INFO("Loading asset from bundle: {0}", filepath);
+					asset = CreateRef<T>(filepath, data);
+				}
+				else
+				{
+					ENGINE_ERROR("Could not load asset from bundle: {0}", filepath);
+					return nullptr;
+				}
 			}
 		}
 		else {
