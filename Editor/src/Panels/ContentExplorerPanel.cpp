@@ -540,7 +540,7 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 void ContentExplorerPanel::OpenItem(size_t index)
 {
 	if (m_Files[index].extension() == ".scene") {
-		if (SceneManager::CurrentScene()->IsDirty()) {
+		if (SceneManager::IsSceneLoaded() && SceneManager::CurrentScene()->IsDirty()) {
 			m_TryingToChangeScene = true;
 		}
 		else
