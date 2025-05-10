@@ -7,12 +7,19 @@
 #include <filesystem>
 #include <unordered_map>
 
+namespace tinyxml2
+{
+class XMLDocument;
+}
+
 class SpriteSheet : public Asset
 {
 public:
 	SpriteSheet();
 	SpriteSheet(const std::filesystem::path& filepath);
+	SpriteSheet(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
 	virtual bool Load(const std::filesystem::path& filepath) override;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 	bool Save() const;
 	bool SaveAs(const std::filesystem::path& filepath) const;
 
@@ -29,4 +36,6 @@ public:
 private:
 	Ref<SubTexture2D> m_Texture;
 	std::unordered_map<std::string, Animation> m_Animations;
+
+	bool LoadXML(tinyxml2::XMLDocument* doc);
 };
