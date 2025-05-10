@@ -16,6 +16,11 @@ SpriteSheet::SpriteSheet(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+SpriteSheet::SpriteSheet(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	Load(filepath, data);
+}
+
 bool SpriteSheet::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
@@ -41,52 +46,25 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath)
 	return true;
 }
 
-		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
-			ENGINE_WARN("Tileset created with a different version of the engine");
-		}
-
-		m_Filepath = filepath;
-
-		m_Animations.clear();
-
-		Ref<Texture2D> texture;
-
-		SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
-
-		if (texture)
+bool SpriteSheet::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
+	{
+		if (!LoadXML(&doc))
 		{
-			uint32_t spriteWidth, spriteHeight;
-			pRoot->QueryUnsignedAttribute("SpriteWidth", &spriteWidth);
-			pRoot->QueryUnsignedAttribute("SpriteHeight", &spriteHeight);
-
-			m_Texture = CreateRef<SubTexture2D>(texture, spriteWidth, spriteHeight);
-		}
-		else
-			m_Texture = CreateRef<SubTexture2D>();
-
-		tinyxml2::XMLElement* pAnimation = pRoot->FirstChildElement("Animation");
-		while (pAnimation)
-		{
-			const char* name = pAnimation->Attribute("Name");
-
-			float holdTime = 0.0f;
-			uint32_t startFrame, frameCount;
-
-			pAnimation->QueryFloatAttribute("HoldTime", &holdTime);
-			pAnimation->QueryUnsignedAttribute("StartFrame", &startFrame);
-			pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
-
-			AddAnimation(name, startFrame, frameCount, holdTime);
-
-			pAnimation = pAnimation->NextSiblingElement("Animation");
+			ENGINE_ERROR("Could not load spritesheet from memory: {0}", filepath);
+			return false;
 		}
 	}
 	else
 	{
-		ENGINE_ERROR("Could not load spritesheet {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		ENGINE_ERROR("Could not load spritesheet from memory {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
 	}
-	return true;
+	m_Filepath = filepath;
+	return false;
 }
 
 bool SpriteSheet::Save() const
@@ -174,4 +152,54 @@ Animation* SpriteSheet::GetAnimation(const std::string& animationName)
 		return &animation->second;
 	}
 	return nullptr;
+}
+
+bool SpriteSheet::LoadXML(tinyxml2::XMLDocument* doc)
+{
+	tinyxml2::XMLElement* pRoot = doc->FirstChildElement("SpriteSheet");
+
+	if (!pRoot)
+	{
+		ENGINE_ERROR("SpriteSheet does not contain a SpriteSheet node");
+		return false;
+	}
+
+	if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
+		ENGINE_WARN("Tileset created with a different version of the engine");
+	}
+
+	m_Animations.clear();
+
+	Ref<Texture2D> texture;
+
+	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
+
+	if (texture)
+	{
+		uint32_t spriteWidth, spriteHeight;
+		pRoot->QueryUnsignedAttribute("SpriteWidth", &spriteWidth);
+		pRoot->QueryUnsignedAttribute("SpriteHeight", &spriteHeight);
+
+		m_Texture = CreateRef<SubTexture2D>(texture, spriteWidth, spriteHeight);
+	}
+	else
+		m_Texture = CreateRef<SubTexture2D>();
+
+	tinyxml2::XMLElement* pAnimation = pRoot->FirstChildElement("Animation");
+	while (pAnimation)
+	{
+		const char* name = pAnimation->Attribute("Name");
+
+		float holdTime = 0.0f;
+		uint32_t startFrame, frameCount;
+
+		pAnimation->QueryFloatAttribute("HoldTime", &holdTime);
+		pAnimation->QueryUnsignedAttribute("StartFrame", &startFrame);
+		pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
+
+		AddAnimation(name, startFrame, frameCount, holdTime);
+
+		pAnimation = pAnimation->NextSiblingElement("Animation");
+	}
+	return true;
 }
