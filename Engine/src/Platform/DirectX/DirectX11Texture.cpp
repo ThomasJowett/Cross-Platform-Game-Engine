@@ -39,6 +39,11 @@ DirectX11Texture2D::DirectX11Texture2D(const std::filesystem::path& path)
 	}
 }
 
+DirectX11Texture2D::DirectX11Texture2D(const std::filesystem::path& path, const std::vector<uint8_t>& data)
+{
+	//TODO: implement loading from memory
+}
+
 DirectX11Texture2D::~DirectX11Texture2D()
 {
 	if (m_ShaderResourceView) m_ShaderResourceView->Release();
@@ -52,11 +57,6 @@ void DirectX11Texture2D::SetData(const void* data)
 void DirectX11Texture2D::Bind(uint32_t slot) const
 {
 	g_ImmediateContext->PSSetShaderResources(slot, 1, &m_ShaderResourceView);
-}
-
-std::string DirectX11Texture2D::GetName() const
-{
-	return Asset::m_Filepath.filename().string();
 }
 
 uint32_t DirectX11Texture2D::GetRendererID() const

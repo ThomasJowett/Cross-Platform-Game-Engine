@@ -9,6 +9,7 @@ class DirectX11Texture2D :public Texture2D
 public:
 	DirectX11Texture2D(uint32_t width, uint32_t height, Format format);
 	DirectX11Texture2D(const std::filesystem::path& path);
+	DirectX11Texture2D(const std::filesystem::path& path, const std::vector<uint8_t>& data);
 	virtual ~DirectX11Texture2D();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
@@ -17,8 +18,6 @@ public:
 	virtual void SetData(const void* data) override;
 
 	virtual void Bind(uint32_t slot) const override;
-
-	virtual std::string GetName() const override;
 
 	virtual uint32_t GetRendererID() const override;
 
