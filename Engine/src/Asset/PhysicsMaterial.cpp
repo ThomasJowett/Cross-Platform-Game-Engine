@@ -78,7 +78,7 @@ bool PhysicsMaterial::Load(const std::filesystem::path& filepath, const std::vec
 		}
 	}
 	m_Filepath = filepath;
-	return false;
+	return true;
 }
 
 bool PhysicsMaterial::SaveAs(const std::filesystem::path& filepath) const
