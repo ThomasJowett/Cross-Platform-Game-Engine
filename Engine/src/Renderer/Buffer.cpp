@@ -5,9 +5,9 @@
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLBuffer.h"
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11Buffer.h"
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 {
@@ -18,11 +18,11 @@ Ref<VertexBuffer> VertexBuffer::Create(uint32_t size)
 			return nullptr;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLVertexBuffer>(size);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
 		return CreateRef<DirectX11VertexBuffer>(size);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
@@ -47,11 +47,11 @@ Ref<VertexBuffer> VertexBuffer::Create(void* vertices, uint32_t size)
 			return nullptr;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLVertexBuffer>(vertices, size);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create vertex buffer: DirectX is not currently supported");
 		return CreateRef<DirectX11VertexBuffer>(vertices, size);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create vertex buffer: Metal is not currently supported");
@@ -75,11 +75,11 @@ Ref<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t size)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLIndexBuffer>(indices, size);
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
 		ENGINE_WARN("Could not create index buffer: DirectX is not currently supported");
 		return CreateRef<DirectX11IndexBuffer>(indices, size);
-#endif // __WINDOWS__
+#endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:
 		CORE_ASSERT(false, "Could not create index buffer: Metal is not currently supported");

@@ -20,7 +20,7 @@
 #include <filesystem>
 #include <numeric>
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #ifdef __MINGW32__
 	#define WIN32_LEAN_AND_MEAN
 #else
@@ -30,7 +30,7 @@
 #include <d3d11.h>
 #include <d3dcompiler.h>
 
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 // math libraries
 #include "math/Line3D.h"
