@@ -64,7 +64,11 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::files
 {
 	if (!filepath.empty())
 	{
-		pElement->SetAttribute("Filepath", filepath.string().c_str());
+		std::filesystem::path finalPath = filepath;
+		finalPath.make_preferred();
+		std::string finalPathString = finalPath.string();
+		std::replace(finalPathString.begin(), finalPathString.end(), '\\', '/');
+		pElement->SetAttribute("Filepath", finalPathString.c_str());
 	}
 }
 
