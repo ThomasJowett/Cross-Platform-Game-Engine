@@ -106,7 +106,9 @@ bool SpriteSheet::SaveAs(const std::filesystem::path& filepath) const
 		pAnimation->SetAttribute("HoldTime", animation.GetHoldTime());
 	}
 
-	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	tinyxml2::XMLError error = doc.SaveFile(absolutePath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
 

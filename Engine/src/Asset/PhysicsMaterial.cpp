@@ -94,7 +94,9 @@ bool PhysicsMaterial::SaveAs(const std::filesystem::path& filepath) const
 	pRoot->SetAttribute("Friction", m_Friction);
 	pRoot->SetAttribute("Restitution", m_Restitution);
 
-	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	tinyxml2::XMLError error = doc.SaveFile(absolutePath.string().c_str());
 
 	return error == tinyxml2::XML_SUCCESS;
 }
