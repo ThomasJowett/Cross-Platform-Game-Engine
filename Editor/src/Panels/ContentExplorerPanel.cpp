@@ -539,15 +539,16 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 
 void ContentExplorerPanel::OpenItem(size_t index)
 {
+	std::filesystem::path relativePath = FileUtils::RelativePath(m_Files[index], Application::GetOpenDocumentDirectory());
 	if (m_Files[index].extension() == ".scene") {
 		if (SceneManager::IsSceneLoaded() && SceneManager::CurrentScene()->IsDirty()) {
 			m_TryingToChangeScene = true;
 		}
 		else
-			SceneManager::ChangeScene(m_Files[index]);
+			SceneManager::ChangeScene(relativePath);
 	}
 	else
-		ViewerManager::OpenViewer(m_Files[index]);
+		ViewerManager::OpenViewer(relativePath);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

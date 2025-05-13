@@ -86,7 +86,8 @@ bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVe
 			const bool is_selected = false;
 			if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 			{
-				texture = AssetManager::GetTexture(file);
+				auto relativePath = FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory());
+				texture = AssetManager::GetTexture(relativePath);
 				edited = true;
 				break;
 			}

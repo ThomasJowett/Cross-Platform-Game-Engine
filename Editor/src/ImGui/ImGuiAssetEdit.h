@@ -87,8 +87,7 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 		ImGui::SameLine();
 		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##EditAsset"))
 		{
-			auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / asset->GetFilepath());
-			ViewerManager::OpenViewer(absolutePath);
+			ViewerManager::OpenViewer(asset->GetFilepath());
 		}
 		ImGui::Tooltip("Open Asset Viewer");
 
