@@ -490,8 +490,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##AnimatedSprite"))
 				{
-					auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / sprite.spriteSheet->GetFilepath());
-					ViewerManager::OpenViewer(absolutePath);
+					ViewerManager::OpenViewer(sprite.spriteSheet->GetFilepath());
 				}
 				ImGui::Tooltip("Edit Sprite Sheet");
 			}
@@ -665,8 +664,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::SameLine();
 				if (ImGui::Button(ICON_FA_PEN_TO_SQUARE))
 				{
-					auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / tilemap.tileset->GetFilepath());
-					ViewerManager::OpenViewer(absolutePath);
+					ViewerManager::OpenViewer(tilemap.tileset->GetFilepath());
 				}
 			}
 
@@ -1177,8 +1175,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
 			{
-				auto filepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / luaScript.script->GetFilepath());
-				ViewerManager::OpenViewer(filepath);
+				ViewerManager::OpenViewer(luaScript.script->GetFilepath());
 			}
 			ImGui::Tooltip("Edit script");
 		});
