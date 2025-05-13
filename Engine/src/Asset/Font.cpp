@@ -78,6 +78,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 	}	
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	if (m_MSDFData)
 		delete m_MSDFData;
@@ -159,6 +160,7 @@ bool Font::Load(const std::filesystem::path& filepath, const std::vector<uint8_t
 	}
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	m_TextureAtlas.reset();
 
 	// Load PNG atlas from memory

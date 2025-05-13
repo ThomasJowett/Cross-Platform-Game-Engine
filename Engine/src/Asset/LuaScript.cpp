@@ -26,6 +26,7 @@ bool LuaScript::Load(const std::filesystem::path& filepath)
 	m_Source = buffer.str();
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
 }
 
@@ -33,5 +34,6 @@ bool LuaScript::Load(const std::filesystem::path& filepath, const std::vector<ui
 {
 	m_Source = std::string(data.begin(), data.end());
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
 }
