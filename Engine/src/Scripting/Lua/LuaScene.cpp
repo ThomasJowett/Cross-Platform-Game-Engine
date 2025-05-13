@@ -51,23 +51,23 @@ void BindScene(sol::state& state)
 	sol::table assetManager = state.create_table("AssetManager");
 	assetManager.set_function("GetTexture", [](std::string_view path) -> Ref<Texture2D>
 		{
-			return AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetTexture(path);
 		});
 	assetManager.set_function("GetMaterial", [](std::string_view path) -> Ref<Material>
 		{
-			return AssetManager::GetAsset<Material>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetAsset<Material>(path);
 		});
 	assetManager.set_function("GetStaticMesh", [](std::string_view path) -> Ref<StaticMesh>
 		{
-			return AssetManager::GetAsset<StaticMesh>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetAsset<StaticMesh>(path);
 		});
 	assetManager.set_function("GetPhysicsMaterial", [](std::string_view path) -> Ref<PhysicsMaterial>
 		{
-			return AssetManager::GetAsset<PhysicsMaterial>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetAsset<PhysicsMaterial>(path);
 		});
 	assetManager.set_function("GetTileset", [](std::string_view path) -> Ref<Tileset>
 		{
-			return AssetManager::GetAsset<Tileset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / path));
+			return AssetManager::GetAsset<Tileset>(path);
 		});
 
 	sol::usertype<Material> material_type = state.new_usertype<Material>("Material");
