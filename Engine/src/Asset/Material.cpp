@@ -81,6 +81,7 @@ bool Material::Load(const std::filesystem::path& filepath)
 	}
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	return true;
 }
@@ -99,6 +100,7 @@ bool Material::Load(const std::filesystem::path& filepath, const std::vector<uin
 	}
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
 }
 

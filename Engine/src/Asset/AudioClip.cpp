@@ -45,6 +45,7 @@ bool AudioClip::Load(const std::filesystem::path& filepath)
 	ma_decoder_uninit(&decoder);
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	return true;
 }
@@ -71,6 +72,7 @@ bool AudioClip::Load(const std::filesystem::path& filepath, const std::vector<ui
 	ma_decoder_uninit(&decoder);
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	return false;
 }

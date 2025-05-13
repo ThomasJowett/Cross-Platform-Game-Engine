@@ -93,7 +93,8 @@ bool Texture2D::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
 	m_Filepath = filepath;
-	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	m_Filepath.make_preferred();
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
 	return (Texture2D::Create(absolutePath) == nullptr);
 }
 
@@ -101,7 +102,8 @@ bool Texture2D::Load(const std::filesystem::path& filepath, const std::vector<ui
 {
 	PROFILE_FUNCTION();
 	m_Filepath = filepath;
-	return (Texture2D::Create(filepath, data) == nullptr);
+	m_Filepath.make_preferred();
+	return (Texture2D::Create(m_Filepath, data) == nullptr);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

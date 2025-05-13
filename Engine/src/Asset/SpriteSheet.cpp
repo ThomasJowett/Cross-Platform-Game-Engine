@@ -43,6 +43,7 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath)
 		return false;
 	}
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
 }
 
@@ -64,6 +65,7 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath, const std::vector<
 		return false;
 	}
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return false;
 }
 

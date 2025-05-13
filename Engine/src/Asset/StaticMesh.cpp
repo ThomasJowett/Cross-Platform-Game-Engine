@@ -29,6 +29,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	}
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	std::filesystem::path assetDirectory = filepath;
 	assetDirectory.remove_filename();
