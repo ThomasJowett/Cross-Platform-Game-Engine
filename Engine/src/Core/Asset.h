@@ -63,14 +63,14 @@ public:
 	{
 		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
 		if(!resource->GetFilepath().empty())
-			m_Assets[resource->GetFilepath().string()] = resource;
+			m_Assets[resource->GetFilepath()] = resource;
 	}
 
 	template<typename T>
 	Ref<T> Load(const std::filesystem::path& filepath, Ref<VirtualFileSystem> vfs)
 	{
 		if (Exists(filepath))
-			return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
+			return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 
 		Ref<T> asset;
 		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
@@ -106,13 +106,13 @@ public:
 	Ref<T> Get(const std::filesystem::path& filepath)
 	{
 		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
-		return std::dynamic_pointer_cast<T>(m_Assets[filepath.string()].lock());
+		return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 	}
 
 	bool Exists(const std::filesystem::path& filepath)
 	{
-		if (m_Assets.find(filepath.string()) != m_Assets.end())
-			return m_Assets[filepath.string()].use_count() > 0;
+		if (m_Assets.find(filepath) != m_Assets.end())
+			return m_Assets[filepath].use_count() > 0;
 		return false;
 	}
 
@@ -134,7 +134,7 @@ public:
 	}
 
 private:
-	std::unordered_map<std::string, std::weak_ptr<Asset>> m_Assets;
+	std::unordered_map<std::filesystem::path, std::weak_ptr<Asset>> m_Assets;
 	FileWatcher m_FileWatcher;
 };
 
