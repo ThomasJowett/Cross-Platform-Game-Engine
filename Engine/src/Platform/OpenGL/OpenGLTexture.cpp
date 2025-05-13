@@ -111,6 +111,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const st
 		NullTexture();
 	}
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 }
 
 OpenGLTexture2D::~OpenGLTexture2D()
