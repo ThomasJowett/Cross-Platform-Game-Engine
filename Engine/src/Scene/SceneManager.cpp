@@ -21,6 +21,11 @@ Scene* SceneManager::CurrentScene()
 bool SceneManager::ChangeScene(std::filesystem::path filepath)
 {
 	std::filesystem::path finalpath = filepath;
+	if (filepath.empty())
+	{
+		s_NextFilepath.clear();
+		return FinalChangeScene();
+	}
 	if (finalpath.is_relative())
 	{
 		if (!Application::GetOpenDocument().empty())
@@ -116,6 +121,10 @@ bool SceneManager::FinalChangeScene()
 
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
+	else {
+		s_CurrentScene.reset();
+		return false;
+	}
 
 	if (s_NextFilepath.is_relative() && AssetManager::HasBundle()) {
 		std::vector<uint8_t> data;
