@@ -10,7 +10,7 @@ public:
 	BundleAudioStream() = default;
 	~BundleAudioStream();
 
-	ma_result Init(const std::filesystem::path& filepath);
+	ma_result Init(const std::filesystem::path& filepath, bool stream);
 	void Uninit();
 
 	ma_data_source_base* GetDataSource() { return &m_Base; }
