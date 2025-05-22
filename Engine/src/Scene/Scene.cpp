@@ -225,13 +225,27 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 				ma_uint32 flags = audioSourceComponent.stream ? MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM : MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
 				if (audioSourceComponent.loop)
 					flags |= MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING;
-				if (ma_sound_init_from_file(
-					m_AudioEngine.get(), audioSourceComponent.audioClip->GetFilepath().string().c_str(),
+				if (AssetManager::HasBundle())
+				{
+					std::vector<uint8_t> data;
+					AssetManager::GetFileData(audioSourceComponent.audioClip->GetFilepath(), data);
+					audioSourceComponent.bundleStream = CreateRef<BundleAudioStream>();
+					audioSourceComponent.bundleStream->Init(audioSourceComponent.audioClip->GetFilepath());
+
+					if (ma_sound_init_from_data_source(m_AudioEngine.get(), audioSourceComponent.bundleStream->GetDataSource(), flags, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+					{
+						ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
+					}
+				}
+				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath()); 
+					ma_sound_init_from_file(
+					m_AudioEngine.get(), absolutePath.string().c_str(),
 					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
 				{
 					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 				}
-				else
+				
+				if(audioSourceComponent.sound)
 				{
 					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
 					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
@@ -248,10 +262,10 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 					else {
 						ma_sound_set_spatialization_enabled(audioSourceComponent.sound.get(), false);
 					}
-				}
 
-				if (audioSourceComponent.playOnStart)
-					audioSourceComponent.play = true;
+					if (audioSourceComponent.playOnStart)
+						audioSourceComponent.play = true;
+				}
 			}
 		});
 }
