@@ -834,10 +834,12 @@ void Scene::SetFilepath(std::filesystem::path filepath)
 		if (std::filesystem::exists(Application::GetWorkingDirectory() / filepath))
 		{
 			m_Filepath = filepath;
+			m_Filepath.make_preferred();
 		}
 		else if (std::filesystem::exists(Application::GetOpenDocumentDirectory() / filepath))
 		{
 			m_Filepath = filepath;
+			m_Filepath.make_preferred();
 		}
 	}
 }
