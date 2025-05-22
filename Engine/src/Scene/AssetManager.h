@@ -33,6 +33,15 @@ public:
 		return false;
 	}
 
+	static mz_zip_archive* GetBundleArchive()
+	{
+		PROFILE_FUNCTION();
+		if (AssetManager::Get().m_VFS) {
+			return &AssetManager::Get().m_VFS->GetArchive();
+		}
+		return nullptr;
+	}
+
 	template<typename T>
 	static Ref<T> GetAsset(const std::filesystem::path& filepath)
 	{
