@@ -12,6 +12,8 @@ public:
 	bool Exists(const std::filesystem::path& path);
 	bool ReadFile(const std::filesystem::path& path, std::vector<uint8_t>& data);
 
+	mz_zip_archive& GetArchive() { return m_Archive; }
+
 private:
 	mz_zip_archive m_Archive;
 	std::unordered_map<std::filesystem::path, mz_uint> m_FileIndex;
