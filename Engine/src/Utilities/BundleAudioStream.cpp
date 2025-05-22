@@ -6,7 +6,19 @@ BundleAudioStream::~BundleAudioStream()
 	Uninit();
 }
 
-ma_result BundleAudioStream::Init(const std::filesystem::path& filepath)
+static size_t MZWriteToBuffer(void* pUser, mz_uint64 offset, const void* pBuf, size_t bytes)
+{
+	std::vector<uint8_t>* buffer = static_cast<std::vector<uint8_t>*>(pUser);
+	const uint8_t* src = static_cast<const uint8_t*>(pBuf);
+	if (offset + bytes > buffer->size())
+	{
+		buffer->resize(offset + bytes);
+	}
+	std::memcpy(buffer->data() + offset, src, bytes);
+	return bytes;
+}
+
+ma_result BundleAudioStream::Init(const std::filesystem::path& filepath, bool stream)
 {
 	ma_data_source_config baseConfig = ma_data_source_config_init();
 	baseConfig.vtable = &s_VTable;
@@ -16,18 +28,27 @@ ma_result BundleAudioStream::Init(const std::filesystem::path& filepath)
 		return MA_ERROR;
 	}
 
-	size_t fileSize = 0;
 	auto archive = AssetManager::GetBundleArchive();
 	std::string zipPath = filepath.string();
 	std::replace(zipPath.begin(), zipPath.end(), '\\', '/');
-	void* fileData = mz_zip_reader_extract_file_to_heap(archive, zipPath.c_str(), &fileSize, 0);
-	if (!fileData)
-	{
-		return MA_ERROR;
-	}
 
-	m_DecoderBuffer.assign(static_cast<uint8_t*>(fileData), static_cast<uint8_t*>(fileData) + fileSize);
-	mz_free(fileData);
+	if (!stream)
+	{
+		size_t fileSize = 0;
+
+		void* fileData = mz_zip_reader_extract_file_to_heap(archive, zipPath.c_str(), &fileSize, 0);
+		if (!fileData)
+		{
+			return MA_ERROR;
+		}
+
+		m_DecoderBuffer.assign(static_cast<uint8_t*>(fileData), static_cast<uint8_t*>(fileData) + fileSize);
+		mz_free(fileData);
+	}
+	else
+	{
+		mz_zip_reader_extract_file_to_callback(archive, zipPath.c_str(), MZWriteToBuffer, &m_DecoderBuffer, 0);
+	}
 
 	if (ma_decoder_init_memory(m_DecoderBuffer.data(), m_DecoderBuffer.size(), NULL, &m_Decoder) != MA_SUCCESS)
 	{

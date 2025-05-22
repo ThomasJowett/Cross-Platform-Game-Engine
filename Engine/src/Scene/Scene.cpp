@@ -230,7 +230,7 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 					std::vector<uint8_t> data;
 					AssetManager::GetFileData(audioSourceComponent.audioClip->GetFilepath(), data);
 					audioSourceComponent.bundleStream = CreateRef<BundleAudioStream>();
-					audioSourceComponent.bundleStream->Init(audioSourceComponent.audioClip->GetFilepath());
+					audioSourceComponent.bundleStream->Init(audioSourceComponent.audioClip->GetFilepath(), audioSourceComponent.stream);
 
 					if (ma_sound_init_from_data_source(m_AudioEngine.get(), audioSourceComponent.bundleStream->GetDataSource(), flags, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
 					{
