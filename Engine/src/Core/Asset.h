@@ -93,6 +93,10 @@ public:
 					return nullptr;
 				}
 			}
+			else {
+				ENGINE_ERROR("Asset does not exist in bundle: {0}", filepath);
+				return nullptr;
+			}
 		}
 		else {
 			ENGINE_ERROR("Asset does not exist: {0}", filepath);
