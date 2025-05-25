@@ -129,11 +129,24 @@ Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path, Ref<Vir
 	{
 		texture = Texture2D::Create(path);
 	}
-	else if (vfs && vfs->Exists(path))
+	else if (vfs)
 	{
-		std::vector<uint8_t> data;
-		AssetManager::GetFileData(path.string(), data);
-		texture = Texture2D::Create(path, data);
+		if (vfs->Exists(path))
+		{
+			std::vector<uint8_t> data;
+			AssetManager::GetFileData(path.string(), data);
+			texture = Texture2D::Create(path, data);
+			if (!texture)
+			{
+				ENGINE_ERROR("Failed to load texture from bundle: {0}", path);
+				return nullptr;
+			}
+		}
+		else
+		{
+			ENGINE_ERROR("Texture does not exist in bundle: {0}", path);
+			return nullptr;
+		}
 	}
 
 	Add(texture);
