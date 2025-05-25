@@ -7,6 +7,13 @@
 
 class AssetPacker : public Layer
 {
+	enum Stage
+	{
+		DiscoveringAssets,
+		PackingAssets,
+		ExportingGame,
+		Done
+	};
 public:
 	AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory);
 
@@ -26,4 +33,8 @@ private:
 	std::unordered_set<std::filesystem::path> m_SelectedAssets;
 
 	ProjectData m_Data;
+
+	std::atomic<float> m_Progress = 0.0f;
+	std::atomic<Stage> m_CurrentStage = Stage::DiscoveringAssets;
+	std::thread m_PackThread;
 };
