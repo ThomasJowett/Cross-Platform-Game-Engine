@@ -58,31 +58,56 @@ void AssetPacker::OnImGuiRender()
 
 	if (ImGui::BeginPopupModal("Pack Assets", &m_Show, ImGuiWindowFlags_AlwaysAutoResize))
 	{
-		ImGui::Text("Select assets to pack into the bundle:");
-		ImGui::Separator();
-		for (const auto& asset : m_DiscoveredAssets)
-		{
-			bool selected = m_SelectedAssets.find(asset) != m_SelectedAssets.end();
-			if (ImGui::Checkbox(asset.filename().string().c_str(), &selected))
+		if (m_CurrentStage == Stage::DiscoveringAssets) {
+			ImGui::Text("Select assets to pack into the bundle:");
+			ImGui::Separator();
+			for (const auto& asset : m_DiscoveredAssets)
 			{
-				if (selected)
-					m_SelectedAssets.insert(asset);
-				else
-					m_SelectedAssets.erase(asset);
+				bool selected = m_SelectedAssets.find(asset) != m_SelectedAssets.end();
+				if (ImGui::Checkbox(asset.filename().string().c_str(), &selected))
+				{
+					if (selected)
+						m_SelectedAssets.insert(asset);
+					else
+						m_SelectedAssets.erase(asset);
+				}
+			}
+			if (ImGui::Button("Pack Selected Assets"))
+			{
+				m_PackThread = std::thread([this]() {
+					m_CurrentStage = Stage::PackingAssets;
+					m_Progress.store(0.0f);
+					PackAssets();
+					});
+			}
+
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				m_Show = false;
+				ImGui::CloseCurrentPopup();
 			}
 		}
-		if (ImGui::Button("Pack Selected Assets"))
-		{
-			PackAssets();
-			m_Show = false;
-			ImGui::CloseCurrentPopup();
+		else if (m_CurrentStage == Stage::PackingAssets) {
+			ImGui::Text("Packing assets...");
+			ImGui::ProgressBar(m_Progress.load(), ImVec2(0.0f, 0.0f));
 		}
+		else if (m_CurrentStage == Stage::ExportingGame) {
+			ImGui::Text("Exporting game...");
+			ImGui::ProgressBar(m_Progress.load(), ImVec2(0.0f, 0.0f));
+		}
+		else if (m_CurrentStage == Stage::Done) {
+			ImGui::Text("Assets packed successfully!");
+			if (ImGui::Button("Close"))
+			{
+				m_Show = false;
+				ImGui::CloseCurrentPopup();
+			}
 
-		ImGui::SameLine();
-		if (ImGui::Button("Cancel"))
-		{
-			m_Show = false;
-			ImGui::CloseCurrentPopup();
+			if(m_PackThread.joinable())
+			{
+				m_PackThread.join();
+			}
 		}
 		ImGui::EndPopup();
 	}
@@ -102,6 +127,8 @@ void AssetPacker::DiscoverAssets()
 void AssetPacker::PackAssets()
 {
 	PROFILE_FUNCTION();
+
+	m_CurrentStage = Stage::PackingAssets;
 	
 	mz_zip_archive zip = {};
 	memset(&zip, 0, sizeof(zip));
@@ -113,9 +140,32 @@ void AssetPacker::PackAssets()
 		return;
 	}
 
-	for (const auto& asset : m_SelectedAssets)
+	std::vector<std::filesystem::path> filesToPack;
+	filesToPack.insert(filesToPack.end(), m_SelectedAssets.begin(), m_SelectedAssets.end());
+
+	auto collectFilesFromDir = [&](const std::filesystem::path& dir) {
+		if (std::filesystem::exists(dir) && std::filesystem::is_directory(dir))
+		{
+			for (const auto& entry : std::filesystem::directory_iterator(dir))
+			{
+				filesToPack.push_back(entry.path());
+			}
+		}
+	};
+
+	std::filesystem::path dataPath = Application::GetWorkingDirectory();
+	collectFilesFromDir(dataPath / "data" / "Shaders");
+	collectFilesFromDir(dataPath / "data" / "Fonts");
+
+	const size_t totalFiles = filesToPack.size();
+
+	for (const auto& asset : filesToPack)
 	{
-		std::string relativePath = std::filesystem::relative(asset, m_ProjectDirectory).string();
+		std::string relativePath;
+		if(asset.string().compare(0, m_ProjectDirectory.string().length(), m_ProjectDirectory.string()) == 0)
+			relativePath = std::filesystem::relative(asset, m_ProjectDirectory).string();
+		else
+			relativePath = std::filesystem::relative(asset, dataPath).string();
 		std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
 		if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), asset.string().c_str(), nullptr, 0, MZ_BEST_SPEED))
 		{
@@ -123,42 +173,8 @@ void AssetPacker::PackAssets()
 			mz_zip_writer_end(&zip);
 			return;
 		}
-	}
 
-	std::filesystem::path dataPath = Application::GetWorkingDirectory();
-
-	std::filesystem::path shadersPath = dataPath / "data" / "Shaders";
-
-	if (std::filesystem::exists(shadersPath) && std::filesystem::is_directory(shadersPath))
-	{
-		for (const auto& shader : std::filesystem::directory_iterator(shadersPath))
-		{
-			std::string relativePath = std::filesystem::relative(shader, dataPath).string();
-			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
-			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), shader.path().string().c_str(), nullptr, 0, MZ_BEST_SPEED))
-			{
-				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
-				mz_zip_writer_end(&zip);
-				return;
-			}
-		}
-	}
-
-	std::filesystem::path fontsPath = dataPath / "data" / "Fonts";
-
-	if (std::filesystem::exists(fontsPath) && std::filesystem::is_directory(fontsPath))
-	{
-		for (const auto& font : std::filesystem::directory_iterator(fontsPath))
-		{
-			std::string relativePath = std::filesystem::relative(font, dataPath).string();
-			std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
-			if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), font.path().string().c_str(), nullptr, 0, MZ_BEST_SPEED))
-			{
-				ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
-				mz_zip_writer_end(&zip);
-				return;
-			}
-		}
+		m_Progress.store(static_cast<float>(std::distance(m_SelectedAssets.begin(), std::find(m_SelectedAssets.begin(), m_SelectedAssets.end(), asset))) / m_SelectedAssets.size());
 	}
 
 	if (!mz_zip_writer_finalize_archive(&zip))
@@ -174,6 +190,8 @@ void AssetPacker::PackAssets()
 void AssetPacker::ExportGame()
 {
 	PROFILE_FUNCTION();
+
+	m_CurrentStage = Stage::ExportingGame;
 
 	std::filesystem::path exePath = Application::GetWorkingDirectory() / "runtime" / "Runtime.exe";
 	if (!std::filesystem::exists(exePath))
@@ -209,6 +227,7 @@ void AssetPacker::ExportGame()
 	zipFile.close();
 
 	std::filesystem::remove(zipPath);
+	m_CurrentStage = Stage::Done;
 
 	ENGINE_INFO("Exported game to {0}", executableName);
 }
