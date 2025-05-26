@@ -15,7 +15,8 @@ ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 
 void ScriptView::OnAttach()
 {
-	if (!std::filesystem::exists(m_FilePath))
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath);
+	if (!std::filesystem::exists(absolutePath))
 	{
 		ViewerManager::CloseViewer(m_FilePath);
 		return;
@@ -37,14 +38,14 @@ void ScriptView::OnAttach()
 
 	m_TextEditor.SetLanguageDefinition(lang);
 
-	std::ifstream file(m_FilePath);
+	std::ifstream file(absolutePath);
 
 	if (file.good())
 	{
 		std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 		m_TextEditor.SetText(str);
-		m_TextEditor.SetFilePath(m_FilePath);
+		m_TextEditor.SetFilePath(absolutePath);
 	}
 	Settings::SetDefaultBool("TextEditor", "ShowWhiteSpace", true);
 	m_TextEditor.SetShowWhitespaces(Settings::GetBool("TextEditor", "ShowWhiteSpace"));
@@ -73,7 +74,7 @@ void ScriptView::OnImGuiRender()
 			ImGui::TextUnformatted("Save unsaved changes?");
 			if (ImGui::Button("Save"))
 			{
-				m_TextEditor.SaveTextToFile(m_FilePath);
+				Save();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
@@ -175,8 +176,10 @@ void ScriptView::OnImGuiRender()
 
 void ScriptView::Save()
 {
-	if (!IsReadOnly())
-		m_TextEditor.SaveTextToFile(m_FilePath);
+	if (!IsReadOnly()) {
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath);
+		m_TextEditor.SaveTextToFile(absolutePath);
+	}
 
 	if (m_FilePath.extension() == ".lua")
 	{
