@@ -346,6 +346,9 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 
 		m_OpenDocumentDirectory = fileDirectory;
 
+		if (filepath.extension() != ".proj")
+			return true;
+
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
