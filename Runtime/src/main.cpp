@@ -58,13 +58,14 @@ int main(int argc, char* argv[])
 
 	AssetManager::LoadBundle(zipData.data(), zipData.size());
 
-
 	Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
 
 	if (!window)
 		return EXIT_FAILURE;
 
 	RenderCommand::SetClearColour(Colours::GREY);
+
+	Application::SetOpenDocument(argv[0]);
 
 	SceneManager::ChangeScene(std::filesystem::path(defaultScene));
 
