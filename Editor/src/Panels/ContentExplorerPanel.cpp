@@ -541,6 +541,7 @@ void ContentExplorerPanel::OpenItem(size_t index)
 {
 	std::filesystem::path relativePath = FileUtils::RelativePath(m_Files[index], Application::GetOpenDocumentDirectory());
 	if (m_Files[index].extension() == ".scene") {
+		SceneManager::ChangeSceneState(SceneState::Edit);
 		if (SceneManager::IsSceneLoaded() && SceneManager::CurrentScene()->IsDirty()) {
 			m_TryingToChangeScene = true;
 		}
@@ -1696,8 +1697,8 @@ void ContentExplorerPanel::OnImGuiRender()
 			ImGui::SameLine();
 			if (ImGui::Button("Don't Save"))
 			{
-				//HistoryManager::Undo(HistoryManager::GetUndoSteps());
-				//HistoryManager::Reset();
+				SceneManager::CurrentScene()->MakeClean();
+				SceneManager::ChangeScene(m_CurrentSelectedPath);
 				OpenAllSelectedItems();
 				m_TryingToChangeScene = false;
 				ImGui::CloseCurrentPopup();
