@@ -158,6 +158,7 @@ void AssetPacker::PackAssets()
 	collectFilesFromDir(dataPath / "data" / "Fonts");
 
 	const size_t totalFiles = filesToPack.size();
+	size_t filesPacked = 0;
 
 	for (const auto& asset : filesToPack)
 	{
@@ -174,7 +175,8 @@ void AssetPacker::PackAssets()
 			return;
 		}
 
-		m_Progress.store(static_cast<float>(std::distance(m_SelectedAssets.begin(), std::find(m_SelectedAssets.begin(), m_SelectedAssets.end(), asset))) / m_SelectedAssets.size());
+		++filesPacked;
+		m_Progress.store(static_cast<float>(filesPacked) / totalFiles);
 	}
 
 	if (!mz_zip_writer_finalize_archive(&zip))
