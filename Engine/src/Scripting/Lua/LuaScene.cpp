@@ -20,8 +20,28 @@ void ChangeScene(const std::string_view sceneFilepath)
 Ref<Scene> LoadScene(const std::string_view sceneFilepath)
 {
 	Ref<Scene> newScene = CreateRef<Scene>(Application::GetOpenDocumentDirectory() / sceneFilepath);
-	newScene->Load();
-	return newScene;
+	std::filesystem::path scenePath = Application::GetOpenDocumentDirectory() / sceneFilepath;
+	if (std::filesystem::exists(scenePath))
+	{
+		newScene->Load();
+		return newScene;
+	}
+	else if (AssetManager::HasBundle())
+	{
+		std::vector<uint8_t> data;
+		if (AssetManager::GetFileData(sceneFilepath, data))
+		{
+			newScene->Load(data);
+			return newScene;
+		}
+		else
+		{
+			ENGINE_ERROR("Failed to load scene from bundle: {0}", sceneFilepath);
+			return nullptr;
+		}
+	}
+	ENGINE_ERROR("Scene file does not exist: {0}", sceneFilepath);
+	return nullptr;
 }
 
 void BindScene(sol::state& state)
