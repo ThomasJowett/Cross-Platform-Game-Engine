@@ -976,6 +976,9 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	if (textureIndex == 0.0f)
 	{
+		if (s_Data.fontAtlasSlotIndex >= Renderer2DData::maxTexturesSlots)
+			NextTextBatch();
+
 		textureIndex = (float)s_Data.fontAtlasSlotIndex;
 		s_Data.fontAtlasSlots[s_Data.fontAtlasSlotIndex] = fontAtlas;
 		s_Data.fontAtlasSlotIndex++;
