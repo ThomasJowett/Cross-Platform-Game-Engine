@@ -177,7 +177,7 @@ bool Font::Load(const std::filesystem::path& filepath, const std::vector<uint8_t
 		return false;
 	}
 
-	m_TextureAtlas = Texture2D::Create(cachePath, pngData);
+	m_TextureAtlas = AssetManager::GetTexture(cachePath);
 	m_TextureAtlas->SetFilterMethod(Texture::FilterMethod::Linear);
 
 	if (m_MSDFData)
@@ -189,6 +189,24 @@ bool Font::Load(const std::filesystem::path& filepath, const std::vector<uint8_t
 	ASSERT(glyphsLoaded >= 0, "Could not load any glyphs from the font");
 
 	m_MSDFData->fontGeometry.setName(m_Filepath.string().c_str());
+
+	for (msdf_atlas::GlyphGeometry& glyph : m_MSDFData->glyphs)
+	{
+		glyph.edgeColoring(msdfgen::edgeColoringInkTrap, 3.0, 0);
+	}
+
+	msdf_atlas::TightAtlasPacker atlasPacker;
+
+	atlasPacker.setDimensionsConstraint(msdf_atlas::TightAtlasPacker::DimensionsConstraint::MULTIPLE_OF_FOUR_SQUARE);
+	atlasPacker.setPadding(0);
+	atlasPacker.setScale(40);
+	atlasPacker.setPixelRange(2.0);
+	atlasPacker.setMiterLimit(1.0);
+	if (int remaining = atlasPacker.pack(m_MSDFData->glyphs.data(), (int)m_MSDFData->glyphs.size()))
+	{
+		ASSERT(remaining >= 0, "Remaining cannot be negative");
+		ENGINE_ERROR("Could not fit {0} out of {1} glyphs into the atlas.", remaining, (int)m_MSDFData->glyphs.size());
+	}
 
 	msdfgen::destroyFont(fontHandle);
 	msdfgen::deinitializeFreetype(ftHandle);
