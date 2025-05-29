@@ -14,6 +14,14 @@ class AssetPacker : public Layer
 		ExportingGame,
 		Done
 	};
+
+	struct AssetNode {
+		std::string name;
+		std::filesystem::path fullPath;
+		bool isDirectory = false;
+		std::vector<Ref<AssetNode>> children;
+	};
+	
 public:
 	AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory);
 
@@ -21,8 +29,11 @@ public:
 
 private:
 	void DiscoverAssets();
+	void AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root);
 	void PackAssets();
 	void ExportGame();
+
+	void DrawAssetTree(Ref<AssetNode> node);
 
 	bool m_Show = true;
 
@@ -37,4 +48,6 @@ private:
 	std::atomic<float> m_Progress = 0.0f;
 	std::atomic<Stage> m_CurrentStage = Stage::DiscoveringAssets;
 	std::thread m_PackThread;
+
+	Ref<AssetNode> m_AssetTree;
 };
