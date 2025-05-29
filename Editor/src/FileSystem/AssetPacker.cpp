@@ -56,22 +56,24 @@ void AssetPacker::OnImGuiRender()
 
 	ImGui::OpenPopup("Pack Assets");
 
-	if (ImGui::BeginPopupModal("Pack Assets", &m_Show, ImGuiWindowFlags_AlwaysAutoResize))
+	ImGui::SetNextWindowSize(ImVec2(600, 600), ImGuiCond_FirstUseEver);
+
+	if (ImGui::BeginPopupModal("Pack Assets", &m_Show, ImGuiWindowFlags_NoResize))
 	{
 		if (m_CurrentStage == Stage::DiscoveringAssets) {
 			ImGui::Text("Select assets to pack into the bundle:");
 			ImGui::Separator();
-			for (const auto& asset : m_DiscoveredAssets)
+
+			float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
+			ImVec2 contentRegion = ImGui::GetContentRegionAvail();
+
+			if (ImGui::BeginChild("AssetTree", ImVec2(contentRegion.x, contentRegion.y - footerHeight), true))
 			{
-				bool selected = m_SelectedAssets.find(asset) != m_SelectedAssets.end();
-				if (ImGui::Checkbox(asset.filename().string().c_str(), &selected))
-				{
-					if (selected)
-						m_SelectedAssets.insert(asset);
-					else
-						m_SelectedAssets.erase(asset);
-				}
+				for (auto asset : m_AssetTree->children)
+					DrawAssetTree(asset);
 			}
+			ImGui::EndChild();
+
 			if (ImGui::Button("Pack Selected Assets"))
 			{
 				m_PackThread = std::thread([this]() {
@@ -86,6 +88,7 @@ void AssetPacker::OnImGuiRender()
 			{
 				m_Show = false;
 				ImGui::CloseCurrentPopup();
+				Application::GetLayerStack().RemoveLayer(shared_from_this());
 			}
 		}
 		else if (m_CurrentStage == Stage::PackingAssets) {
@@ -122,6 +125,41 @@ void AssetPacker::DiscoverAssets()
 
 	// Get all files in the project directory
 	m_DiscoveredAssets = Directory::GetFilesRecursive(m_ProjectDirectory, wantedExtensions);
+
+	m_AssetTree = CreateRef<AssetNode>();
+
+	for (const auto& asset : m_DiscoveredAssets) {
+		AddAssetToTree(asset, m_AssetTree);
+	}
+}
+
+void AssetPacker::AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root)
+{
+	PROFILE_FUNCTION();
+	auto current = root;
+	std::filesystem::path relativePath = std::filesystem::relative(assetPath, m_ProjectDirectory);
+	for (auto& part : relativePath.parent_path()) {
+		auto it = std::find_if(current->children.begin(), current->children.end(),
+			[&](const auto& node) { return node->name == part.string() && node->isDirectory; });
+
+		if (it == current->children.end()) {
+			auto folder = std::make_shared<AssetNode>();
+			folder->name = part.string();
+			folder->isDirectory = true;
+			current->children.push_back(folder);
+			current = folder;
+		}
+		else {
+			current = *it;
+		}
+	}
+
+	// Add actual file
+	auto file = CreateRef<AssetNode>();
+	file->name = assetPath.filename().string();
+	file->fullPath = assetPath;
+	file->isDirectory = false;
+	current->children.push_back(file);
 }
 
 void AssetPacker::PackAssets()
@@ -232,4 +270,65 @@ void AssetPacker::ExportGame()
 	m_CurrentStage = Stage::Done;
 
 	ENGINE_INFO("Exported game to {0}", executableName);
+	Application::GetLayerStack().RemoveLayer(shared_from_this());
+}
+
+void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
+{
+	PROFILE_FUNCTION();
+	if (node->isDirectory)
+	{
+		bool allSelected = true;
+		bool anySelected = false;
+		for (const auto& child : node->children) {
+			if (!child->isDirectory) {
+				bool selected = m_SelectedAssets.find(child->fullPath) != m_SelectedAssets.end();
+				anySelected |= selected;
+				allSelected &= selected;
+			}
+		}
+		bool folderSelected = allSelected;
+		ImGui::PushID(node->fullPath.string().c_str());
+		if (ImGui::Checkbox(("##checkbox_" + node->name).c_str(), &folderSelected))
+		{
+			std::function<void(const Ref<AssetNode>&)> toggleSelection = [&](const Ref<AssetNode>& childNode) {
+				if (childNode->isDirectory) {
+					for (const auto& child : childNode->children) {
+						toggleSelection(child);
+					}
+				}
+				else {
+					if (folderSelected)
+						m_SelectedAssets.insert(childNode->fullPath);
+					else
+						m_SelectedAssets.erase(childNode->fullPath);
+				}
+				};
+			toggleSelection(node);
+		}
+		ImGui::SameLine();
+		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
+		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
+		
+		if (opened)
+		{
+			for (const auto& child : node->children)
+			{
+				DrawAssetTree(child);
+			}
+			ImGui::TreePop();
+		}
+		ImGui::PopID();
+	}
+	else
+	{
+		bool selected = m_SelectedAssets.find(node->fullPath) != m_SelectedAssets.end();
+		if (ImGui::Checkbox(node->name.c_str(), &selected))
+		{
+			if (selected)
+				m_SelectedAssets.insert(node->fullPath);
+			else
+				m_SelectedAssets.erase(node->fullPath);
+		}
+	}
 }
