@@ -6,6 +6,7 @@
 #include <filesystem>
 
 #include "Asset/LuaScript.h"
+#include "Utilities/SerializationUtils.h"
 
 class Entity;
 class PhysicsEngine2D;
