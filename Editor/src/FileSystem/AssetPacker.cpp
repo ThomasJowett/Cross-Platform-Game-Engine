@@ -138,7 +138,7 @@ void AssetPacker::AddAssetToTree(const std::filesystem::path& assetPath, Ref<Ass
 	PROFILE_FUNCTION();
 	auto current = root;
 	std::filesystem::path relativePath = std::filesystem::relative(assetPath, m_ProjectDirectory);
-	for (auto& part : relativePath.parent_path()) {
+	for (const auto& part : relativePath.parent_path()) {
 		auto it = std::find_if(current->children.begin(), current->children.end(),
 			[&](const auto& node) { return node->name == part.string() && node->isDirectory; });
 
