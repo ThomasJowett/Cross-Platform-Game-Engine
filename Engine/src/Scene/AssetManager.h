@@ -24,6 +24,15 @@ public:
 		return (bool)AssetManager::Get().m_VFS;
 	}
 
+	static bool FileExistsInBundle(const std::filesystem::path& name)
+	{
+		PROFILE_FUNCTION();
+		if (s_Instance->m_VFS) {
+			return s_Instance->m_VFS->Exists(name);
+		}
+		return false;
+	}
+
 	static bool GetFileData(const std::filesystem::path& name, std::vector<uint8_t>& data)
 	{
 		PROFILE_FUNCTION();

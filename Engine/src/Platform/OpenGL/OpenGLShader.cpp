@@ -3,6 +3,7 @@
 #include "Logging/Instrumentor.h"
 #include "Core/core.h"
 #include <glad/glad.h>
+#include "Scene/AssetManager.h"
 
 #include <fstream>
 #include <filesystem>
@@ -28,7 +29,15 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path&
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
-	Compile(LoadShaderSources(fileDirectory / name));
+
+	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
+
+	if (!LoadShaderSourcesFromDisk(Application::GetWorkingDirectory() / fileDirectory / name, shaderSources))
+		LoadShaderSourcesFromBundle(fileDirectory / name, shaderSources);
+
+	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
+
+	Compile(shaderSources);
 }
 
 OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
@@ -62,13 +71,12 @@ void OpenGLShader::UnBind() const
 	glUseProgram(0);
 }
 
-std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSources(const std::filesystem::path& filepath)
+bool OpenGLShader::LoadShaderSourcesFromDisk(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources)
 {
 	PROFILE_FUNCTION();
-	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
 	if (filepath.empty())
-		return shaderSources;
+		return false;
 
 	std::filesystem::path shaderPath = filepath;
 
@@ -104,9 +112,58 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 		shaderSources[Shader::ShaderTypes::COMPUTE] = ReadFile(shaderPath);
 	}
 
-	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
+	return !shaderSources.empty();
+}
 
-	return shaderSources;
+bool OpenGLShader::LoadShaderSourcesFromBundle(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources)
+{
+	PROFILE_FUNCTION();
+	if (!AssetManager::HasBundle())
+	{
+		ENGINE_ERROR("No Asset Bundle loaded");
+		return false;
+	}
+	std::vector<uint8_t> data;
+
+	std::filesystem::path shaderPath = filepath;
+
+	shaderPath.replace_extension(".vert");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::VERTEX] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".tesc");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::TESS_HULL] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".tese");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::TESS_DOMAIN] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".geom");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::GEOMETRY] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".frag");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::PIXEL] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".comp");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::COMPUTE] = shaderSource;
+	}
+
+	return !shaderSources.empty();
 }
 
 std::string OpenGLShader::ReadFile(const std::filesystem::path& filepath)

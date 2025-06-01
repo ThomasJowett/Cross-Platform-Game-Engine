@@ -14,13 +14,12 @@ public:
 
 	virtual std::string GetName() const override { return m_Name; }
 private:
-	std::unordered_map<Shader::ShaderTypes, std::string> LoadShaderSources(const std::filesystem::path& filepath);
+	bool LoadShaderSourcesFromDisk(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources);
+	bool LoadShaderSourcesFromBundle(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources);
 	std::string ReadFile(const std::filesystem::path& filepath);
 	void Compile(const std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources);
 	void CheckShaderError(uint32_t shader, uint32_t flag, bool isProgram, const char* errorMessage);
 private:
 	uint32_t m_RendererID;
 	std::string m_Name;
-
-	std::unordered_map<unsigned int, std::vector<uint32_t>> m_OpenGLSPIRV;
 };
