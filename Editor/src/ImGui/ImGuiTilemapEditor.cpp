@@ -249,9 +249,9 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 		m_HoveredCoords[1] = (int)std::floor(coords.y);
 	}
 
-	uint32_t topRightSelectionIndex = 0;
-	uint32_t topRightSelectionX = std::numeric_limits<uint32_t>::max();
-	uint32_t topRightSelectionY = std::numeric_limits<uint32_t>::max();
+	size_t topRightSelectionIndex = 0;
+	size_t topRightSelectionX = std::numeric_limits<size_t>::max();
+	size_t topRightSelectionY = std::numeric_limits<size_t>::max();
 
 	if (IsHovered())
 	{
@@ -259,7 +259,7 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 		{
 			for (size_t y = 0; y < m_SelectedTiles.size(); y++)
 			{
-				for (size_t x = 0; x < m_SelectedTiles[y].size(); x++)
+				for (size_t x = 0; x < (uint32_t)m_SelectedTiles[y].size(); x++)
 				{
 					if (m_SelectedTiles[y][x])
 					{
@@ -284,9 +284,9 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 							for (size_t col = topRightSelectionX; col < m_Columns; ++col) {
 								if (m_SelectedTiles[row][col])
 								{
-									int tileX = m_HoveredCoords[0] + (col - topRightSelectionX);
-									int tileY = m_HoveredCoords[1] + (row - topRightSelectionY);
-									if (tileX < m_TilemapComp->tilesWide && tileY < m_TilemapComp->tilesHigh) {
+									int tileX = m_HoveredCoords[0] + (int)(col - topRightSelectionX);
+									int tileY = m_HoveredCoords[1] + (int)(row - topRightSelectionY);
+									if (tileX < (int)m_TilemapComp->tilesWide && tileY < (int)m_TilemapComp->tilesHigh) {
 										tileTransform = GetTileTransform(tileX, tileY);
 										m_TilemapComp->tileset->SetCurrentTile((uint32_t)(row * m_Columns + col));
 										Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
@@ -354,7 +354,7 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
 					break;
 				case TilemapEditor::DrawMode::Fill:
-					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionIndex);
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], (uint32_t)topRightSelectionIndex);
 					break;
 				case TilemapEditor::DrawMode::Rect:
 					break;
@@ -417,7 +417,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 		for (size_t j = 0; j < m_SelectedTiles[i].size(); j++)
 		{
 			if (m_SelectedTiles[i][j])
-				selection.push_back(i * m_SelectedTiles[i].size() + j);
+				selection.push_back((uint32_t)(i * m_SelectedTiles[i].size() + j));
 		}
 	}
 
@@ -431,7 +431,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 
 	for (uint32_t index : selection) {
 		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
-		totalProbabilites += tile.GetProbability();
+		totalProbabilites += (float)tile.GetProbability();
 	}
 
 	float randomValue = Random::FloatInRange(0.0f, totalProbabilites);
@@ -439,7 +439,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	float cumulativeProbability = 0.0f;
 	for (uint32_t index : selection) {
 		const Tile& tile = m_TilemapComp->tileset->GetTile(index);
-		cumulativeProbability += tile.GetProbability();
+		cumulativeProbability += (float)tile.GetProbability();
 		if (randomValue <= cumulativeProbability) {
 			return index + 1;
 		}
@@ -448,7 +448,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	return -1;
 }
 
-void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, int topRightSelectionX, int topRightSelectionY)
+void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, size_t topRightSelectionX, size_t topRightSelectionY)
 {
 	for (size_t row = topRightSelectionY; row < m_Rows; ++row) {
 
@@ -456,13 +456,13 @@ void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, int topRightSel
 		{
 			if (m_SelectedTiles[row][col])
 			{
-				int tileX = startX + (col - topRightSelectionX);
-				int tileY = startY + (row - topRightSelectionY);
+				size_t tileX = startX + (col - topRightSelectionX);
+				size_t tileY = startY + (row - topRightSelectionY);
 
-				if (tileX >= 0 && tileX < m_TilemapComp->tilesWide &&
-					tileY >= 0 && tileY < m_TilemapComp->tilesHigh)
+				if (tileX < m_TilemapComp->tilesWide &&
+					tileY < m_TilemapComp->tilesHigh)
 				{
-					m_TilemapComp->tiles[tileY][tileX] = row * m_Columns + col + 1;
+					m_TilemapComp->tiles[tileY][tileX] = (uint32_t)(row * m_Columns + col + 1);
 				}
 			}
 		}
