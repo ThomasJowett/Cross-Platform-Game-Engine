@@ -30,7 +30,7 @@ private:
 	void FloodFillTile(uint32_t x, uint32_t y, uint32_t tileIndex);
 	void FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t originalTileType, uint32_t newTileType);
 	uint32_t GetRandomSelectedTile();
-	void ApplyStamp(uint32_t startX, uint32_t startY, int topRightSelectionX, int topRightSelectionY);
+	void ApplyStamp(uint32_t startX, uint32_t startY, size_t topRightSelectionX, size_t topRightSelectionY);
 	Matrix4x4 GetTileTransform(int x, int y);
 private:
 	bool* m_Show;
