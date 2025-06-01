@@ -8,7 +8,7 @@ RuntimeLayer::RuntimeLayer()
 
 void RuntimeLayer::OnAttach()
 {
-	SceneManager::ChangeSceneState(SceneState::Play);
+	SceneManager::ChangeSceneState(SceneState::Play, false);
 }
 
 void RuntimeLayer::OnUpdate(float deltaTime)

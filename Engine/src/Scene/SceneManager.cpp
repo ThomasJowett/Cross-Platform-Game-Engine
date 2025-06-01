@@ -165,7 +165,7 @@ bool SceneManager::CreateScene(std::filesystem::path filename)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool SceneManager::ChangeSceneState(SceneState sceneState)
+bool SceneManager::ChangeSceneState(SceneState sceneState, bool createSnapshot)
 {
 	if (sceneState != s_SceneState)
 	{
@@ -174,7 +174,7 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 			if (s_SceneState != SceneState::Pause && s_SceneState != SceneState::SimulatePause)
 			{
 				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
-					s_CurrentScene->OnRuntimeStart();
+					s_CurrentScene->OnRuntimeStart(createSnapshot);
 			}
 			if (s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
 				s_CurrentScene->OnRuntimeStop();
