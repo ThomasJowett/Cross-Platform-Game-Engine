@@ -219,6 +219,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 	m_History.SwitchTo(m_CurrentPath);
+	m_FileWatcher.SetPathToWatch(m_CurrentPath);
 	m_ForceRescan = true;
 }
 
@@ -798,8 +799,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		if (m_TextureLibrary.Size() > 100)
 			m_TextureLibrary.Clear();
-
-		m_FileWatcher.SetPathToWatch(m_CurrentPath);
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);

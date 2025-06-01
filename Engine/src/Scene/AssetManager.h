@@ -7,6 +7,7 @@
 #include "Asset/Texture.h"
 #include "Core/Factory.h"
 #include "Core/VirtualFileSystem.h"
+#include "Utilities/FileUtils.h"
 
 class AssetManager
 {
@@ -68,11 +69,60 @@ public:
 
 	static void CleanUp()
 	{
+		PROFILE_FUNCTION();
 		AssetManager::Get().m_Assets.CleanUnused();
+		AssetManager::Get().m_Textures.Clear();
+	}
+
+	static void Init(const std::filesystem::path& directory)
+	{
+		PROFILE_FUNCTION();
+
+		AssetManager::Get().m_FileWatcher.SetPathToWatch(directory);
+
+		AssetManager::Get().m_FileWatcher.SetPathToWatch(directory);
+		AssetManager::Get().m_FileWatcher.Stop();
+		AssetManager::Get().m_FileWatcher.Start([=](std::string path, FileStatus status)
+			{
+				std::filesystem::path relativePath = FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory());
+				switch (status)
+				{
+				case FileStatus::Created:
+					break;
+				case FileStatus::Modified:
+					if (AssetManager::Get().m_Assets.Exists(relativePath))
+					{
+						ENGINE_DEBUG("Reloading asset {0}", path);
+						AssetManager::Get().m_Assets.Get(relativePath)->Reload();
+					}
+					else if (AssetManager::Get().m_Textures.Exists(relativePath))
+					{
+						ENGINE_DEBUG("Reloading texture {0}", path);
+						AssetManager::Get().m_Textures.Get(relativePath)->Reload();
+					}
+					break;
+				case FileStatus::Erased:
+					if (AssetManager::Get().m_Assets.Exists(relativePath))
+					{
+						ENGINE_ERROR("An asset in use has been deleted! {0}", path);
+						AssetManager::Get().m_Assets.Remove(relativePath);
+					}
+					else if (AssetManager::Get().m_Textures.Exists(relativePath))
+					{
+						ENGINE_ERROR("A texture in use has been deleted! {0}", path);
+						AssetManager::Get().m_Textures.Get(relativePath)->Reload();
+					}
+
+					break;
+				default:
+					break;
+				}
+			});
 	}
 
 	static void Shutdown()
 	{
+		PROFILE_FUNCTION();
 		AssetManager::Get().m_Assets.Clear();
 		AssetManager::Get().m_Textures.Clear();
 		if(AssetManager::Get().m_VFS)
@@ -81,13 +131,15 @@ public:
 	}
 
 private:
-	AssetManager():m_Assets(Application::GetOpenDocumentDirectory()) {};
+	AssetManager();
 	~AssetManager() = default;
 	static AssetManager& Get();
 
 	AssetLibrary m_Assets;
 	TextureLibrary2D m_Textures;
 	Ref<VirtualFileSystem> m_VFS;
+
+	FileWatcher m_FileWatcher;
 
 	static AssetManager* s_Instance;
 };

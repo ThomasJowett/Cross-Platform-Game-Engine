@@ -88,6 +88,7 @@ class TextureLibrary2D
 {
 public:
 	void Add(const Ref<Texture2D>& texture);
+	void Remove(const std::filesystem::path& name);
 	Ref<Texture2D> Load(const std::filesystem::path& path, Ref<VirtualFileSystem> vfs);
 	Ref<Texture2D> Get(const std::filesystem::path& name);
 	void Clear();

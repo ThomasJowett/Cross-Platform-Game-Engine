@@ -372,6 +372,9 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
 		}
 
+		AssetManager::CleanUp();
+		AssetManager::Init(m_OpenDocumentDirectory);
+
 		if (s_Instance)
 		{
 			AppOpenDocumentChangedEvent event;

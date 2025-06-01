@@ -117,6 +117,22 @@ void TextureLibrary2D::Add(const Ref<Texture2D>& texture)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void TextureLibrary2D::Remove(const std::filesystem::path& name)
+{
+	PROFILE_FUNCTION();
+	auto it = m_Textures.find(name);
+	if (it != m_Textures.end())
+	{
+		m_Textures.erase(it);
+	}
+	else
+	{
+		ENGINE_ERROR("Texture not found: {0}", name);
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path, Ref<VirtualFileSystem> vfs)
 {
 	PROFILE_FUNCTION();

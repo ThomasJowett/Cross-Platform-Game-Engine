@@ -6,6 +6,7 @@
 #include "Core/VirtualFileSystem.h"
 #include "Core/Application.h"
 #include "Utilities/FileWatcher.h"
+#include "Logging/Instrumentor.h"
 
 #include <filesystem>
 
@@ -28,47 +29,34 @@ protected:
 class AssetLibrary
 {
 public:
-	AssetLibrary(const std::filesystem::path& directory)
-		:m_FileWatcher(std::chrono::milliseconds(2000))
-	{
-		m_FileWatcher.SetPathToWatch(directory);
-		m_FileWatcher.Start([=](std::string path, FileStatus status)
-			{
-				switch (status)
-				{
-				case FileStatus::Created:
-					break;
-				case FileStatus::Modified:
-					if (Exists(path))
-					{
-						ENGINE_DEBUG("Reloading asset {0}", path);
-						m_Assets[path].lock()->Reload();
-					}
-					break;
-				case FileStatus::Erased:
-					if (Exists(path))
-					{
-						ENGINE_ERROR("An asset in use has been deleted! {0}", path);
-						m_Assets.at(path).reset();
-						m_Assets.erase(path);
-					}
-					break;
-				default:
-					break;
-				}
-			});
-	}
+	AssetLibrary() = default;
 
 	void Add(const Ref<Asset>& resource)
 	{
+		PROFILE_FUNCTION();
 		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
 		if(!resource->GetFilepath().empty())
 			m_Assets[resource->GetFilepath()] = resource;
 	}
 
+	void Remove(const std::filesystem::path& filepath)
+	{
+		PROFILE_FUNCTION();
+		auto it = m_Assets.find(filepath);
+		if (it != m_Assets.end())
+		{
+			m_Assets.erase(it);
+		}
+		else
+		{
+			ENGINE_ERROR("Asset not found: {0}", filepath);
+		}
+	}
+
 	template<typename T>
 	Ref<T> Load(const std::filesystem::path& filepath, Ref<VirtualFileSystem> vfs)
 	{
+		PROFILE_FUNCTION();
 		if (Exists(filepath))
 			return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 
@@ -106,15 +94,24 @@ public:
 		return std::dynamic_pointer_cast<T>(asset);
 	}
 
+	Ref<Asset> Get(const std::filesystem::path& filepath)
+	{
+		PROFILE_FUNCTION();
+		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
+		return m_Assets[filepath].lock();
+	}
+
 	template<typename T>
 	Ref<T> Get(const std::filesystem::path& filepath)
 	{
+		PROFILE_FUNCTION();
 		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
 		return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 	}
 
 	bool Exists(const std::filesystem::path& filepath)
 	{
+		PROFILE_FUNCTION();
 		if (m_Assets.find(filepath) != m_Assets.end())
 			return m_Assets[filepath].use_count() > 0;
 		return false;
@@ -122,11 +119,13 @@ public:
 
 	void Clear()
 	{
+		PROFILE_FUNCTION();
 		m_Assets.clear();
 	}
 
 	void CleanUnused()
 	{
+		PROFILE_FUNCTION();
 		auto iter = m_Assets.begin();
 		while (iter != m_Assets.end())
 		{
@@ -139,7 +138,4 @@ public:
 
 private:
 	std::unordered_map<std::filesystem::path, std::weak_ptr<Asset>> m_Assets;
-	FileWatcher m_FileWatcher;
 };
-
-
