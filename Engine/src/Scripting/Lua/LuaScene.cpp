@@ -58,6 +58,7 @@ void BindScene(sol::state& state)
 	scene_type.set_function("FindEntity", &Scene::GetEntityByPath);
 	scene_type.set_function("InstantiateScene", &Scene::InstantiateScene);
 	scene_type.set_function("InstantiateEntity", &Scene::InstantiateEntity);
+	scene_type.set_function("GetPixelsPerUnit", &Scene::GetPixelsPerUnit);
 
 	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
 	hitResult_type["Hit"] = &HitResult2D::hit;
