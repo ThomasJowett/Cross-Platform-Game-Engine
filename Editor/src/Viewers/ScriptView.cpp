@@ -22,6 +22,8 @@ void ScriptView::OnAttach()
 		return;
 	}
 
+	m_Script = AssetManager::GetAsset<LuaScript>(m_FilePath);
+
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
 	TextEditor::LanguageDefinition lang = DetermineLanguageDefinition();
@@ -185,6 +187,8 @@ void ScriptView::Save()
 	{
 		ParseLuaScript();
 	}
+
+	m_Script->Load(m_FilePath);
 }
 
 void ScriptView::SaveAs()

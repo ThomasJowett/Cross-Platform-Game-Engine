@@ -46,5 +46,7 @@ private:
 
 	std::filesystem::path m_FilePath;
 
+	Ref<LuaScript> m_Script;
+
 	TextEditor m_TextEditor;
 };
