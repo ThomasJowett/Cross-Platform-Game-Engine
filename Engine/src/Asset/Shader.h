@@ -6,7 +6,7 @@
 
 #include "Core/Application.h"
 
-#define SHADER_DIRECTORY Application::GetWorkingDirectory() / "data" / "Shaders"
+#define SHADER_DIRECTORY "data/Shaders"
 
 class Shader
 {
