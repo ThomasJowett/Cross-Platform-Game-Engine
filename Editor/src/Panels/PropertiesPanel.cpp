@@ -1155,7 +1155,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
-			if (ImGui::BeginCombo("##luaScript", luaScript.script->GetFilepath().filename().string().c_str()))
+			std::string scriptName = luaScript.script ? luaScript.script->GetFilepath().filename().string() : "";
+
+			if (ImGui::BeginCombo("##luaScript", scriptName.c_str()))
 			{
 				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
 				{
