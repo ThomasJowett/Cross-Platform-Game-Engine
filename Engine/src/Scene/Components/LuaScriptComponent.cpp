@@ -40,7 +40,8 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 
 		auto [line, file, errorStr] = ParseLuaError(error.what());
 
-		Application::CallEvent(LuaErrorEvent(line, file, errorStr));
+		auto event = LuaErrorEvent(line, file, errorStr);
+		Application::CallEvent(event);
 
 		return false;
 	}
