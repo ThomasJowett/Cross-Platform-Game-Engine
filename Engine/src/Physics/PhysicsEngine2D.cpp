@@ -18,6 +18,7 @@
 #include "box2d/box2d.h"
 #include "Utilities/Box2DDebugDraw.h"
 #include "Utilities/Triangulation.h"
+#include "Logging/Instrumentor.h"
 
 #define COLLIDER_COMPONENTS	\
 BoxCollider2DComponent,		\
@@ -31,6 +32,7 @@ WeldJoint2DComponent	 \
 
 uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
+	PROFILE_FUNCTION();
 	switch (type)
 	{
 	case RigidBody2DComponent::BodyType::STATIC:
@@ -45,6 +47,7 @@ uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 
 void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMaterial)
 {
+	PROFILE_FUNCTION();
 	if (physicsMaterial)
 	{
 		fixtureDef.density = physicsMaterial->GetDensity();
@@ -63,6 +66,7 @@ void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMa
 PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	:m_Scene(scene)
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld = CreateScope<b2World>(b2Vec2(gravity.x, gravity.y));
 	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
@@ -99,6 +103,7 @@ PhysicsEngine2D::~PhysicsEngine2D()
 
 void PhysicsEngine2D::OnFixedUpdate()
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), m_VelocityIterations, m_PositionIterations);
 
 	m_Scene->GetRegistry().view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
@@ -125,17 +130,20 @@ void PhysicsEngine2D::OnFixedUpdate()
 
 void PhysicsEngine2D::OnRender()
 {
+	PROFILE_FUNCTION();
 	if (m_Box2DDraw)
 		m_Box2DWorld->DebugDraw();
 }
 
 void PhysicsEngine2D::RemoveOldContacts()
 {
+	PROFILE_FUNCTION();
 	m_ContactListener->RemoveOld();
 }
 
 void PhysicsEngine2D::InitializeEntity(Entity entity)
 {
+	PROFILE_FUNCTION();
 	b2Body* body = nullptr;
 	TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
 
@@ -497,6 +505,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 
 void PhysicsEngine2D::DestroyEntity(Entity entity)
 {
+	PROFILE_FUNCTION();
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 		m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
 	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
@@ -516,11 +525,13 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld->SetGravity(b2Vec2(gravity.x, gravity.y));
 }
 
 HitResult2D PhysicsEngine2D::RayCast(Vector2f begin, Vector2f end)
 {
+	PROFILE_FUNCTION();
 	HitResult2D callback;
 	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
 
@@ -537,6 +548,7 @@ HitResult2D PhysicsEngine2D::RayCast(Vector2f begin, Vector2f end)
 
 std::vector<HitResult2D> PhysicsEngine2D::MultiRayCast2D(Vector2f begin, Vector2f end)
 {
+	PROFILE_FUNCTION();
 	RayCastMultipleCallback callback;
 	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
 
@@ -545,6 +557,7 @@ std::vector<HitResult2D> PhysicsEngine2D::MultiRayCast2D(Vector2f begin, Vector2
 
 void PhysicsEngine2D::ShowDebugDraw(bool show)
 {
+	PROFILE_FUNCTION();
 	if (show) {
 		m_Box2DDraw = CreateScope<Box2DDebugDraw>();
 		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);
