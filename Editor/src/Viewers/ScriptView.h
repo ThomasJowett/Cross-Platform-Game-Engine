@@ -18,6 +18,7 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 	virtual void OnImGuiRender() override;
+	virtual void OnEvent(Event& event) override;
 
 	virtual void Copy() override { m_TextEditor.Copy(); }
 	virtual void Cut() override { m_TextEditor.Cut(); }

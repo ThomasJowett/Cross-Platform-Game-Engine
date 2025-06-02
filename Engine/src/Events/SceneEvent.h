@@ -3,6 +3,8 @@
 #include "Event.h"
 #include <filesystem>
 
+enum class SceneState;
+
 class SceneChangedEvent : public Event
 {
 public:
@@ -71,4 +73,26 @@ public:
 	EVENT_CLASS_CATEGORY(EventCategory::SCENE);
 private:
 	const std::filesystem::path m_Filepath;
+};
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+class SceneStateChangedEvent : public Event
+{
+public:
+	SceneStateChangedEvent(SceneState state)
+		:m_State(state)
+	{
+	}
+	SceneState GetSceneState() const { return m_State; }
+	std::string to_string() const override
+	{
+		std::stringstream ss;
+		ss << "Scene state changed to: " << static_cast<int>(m_State);
+		return ss.str();
+	}
+	EVENT_CLASS_TYPE(SCENE_STATE_CHANGED);
+	EVENT_CLASS_CATEGORY(EventCategory::SCENE);
+private:
+	SceneState m_State;
 };

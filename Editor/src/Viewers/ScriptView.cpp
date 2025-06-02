@@ -176,6 +176,21 @@ void ScriptView::OnImGuiRender()
 	ImGui::End();
 }
 
+void ScriptView::OnEvent(Event& event)
+{
+	PROFILE_FUNCTION();
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<LuaErrorEvent>([this](LuaErrorEvent& luaErrorEvent)
+		{
+			if (luaErrorEvent.GetFile() == m_Script->GetFilepath()) {
+				TextEditor::ErrorMarkers errorMarkers;
+				errorMarkers.emplace(luaErrorEvent.GetLine(), luaErrorEvent.GetErrorMessage());
+				m_TextEditor.SetErrorMarkers(errorMarkers);
+			}
+			return false;
+		});
+}
+
 void ScriptView::Save()
 {
 	if (!IsReadOnly()) {
@@ -228,17 +243,12 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 
 void ScriptView::ParseLuaScript()
 {
+	TextEditor::ErrorMarkers errorMarkers;
+	m_TextEditor.SetErrorMarkers(errorMarkers);
 	Scene testScene("");
 	
 	Entity entity = testScene.CreateEntity("lua script");
 	
 	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
-	auto results = luaComp.ParseScript(entity);
-	
-	TextEditor::ErrorMarkers errorMarkers;
-	if (results.has_value())
-	{
-		errorMarkers.emplace(results.value().first, results.value().second);
-	}
-	m_TextEditor.SetErrorMarkers(errorMarkers);
+	luaComp.ParseScript(entity);
 }

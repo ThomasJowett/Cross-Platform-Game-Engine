@@ -12,6 +12,32 @@ class Entity;
 class PhysicsEngine2D;
 class b2Fixture;
 
+class LuaErrorEvent : public Event
+{
+public:
+	LuaErrorEvent(int line, const std::string& file, const std::string& errorMessage)
+		: m_Line(line), m_File(file), m_Message(errorMessage) {
+	}
+
+	inline int GetLine() const { return m_Line; }
+	inline const std::string& GetFile() const { return m_File; }
+	inline const std::string& GetErrorMessage() const { return m_Message; }
+
+	std::string to_string() const override
+	{
+		std::stringstream ss;
+		ss << "LuaErrorEvent: " << m_File << ":(" << m_Line << ") " << m_Message;
+		return ss.str();
+	}
+
+	EVENT_CLASS_TYPE(LUA_ERROR);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
+private:
+	int m_Line;
+	std::string m_File;
+	std::string m_Message;
+};
+
 struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
@@ -23,7 +49,7 @@ struct LuaScriptComponent
 	Ref<LuaScript> script;
 	bool created = false;
 
-	std::optional<std::pair<int, std::string>> ParseScript(Entity entity);
+	bool ParseScript(Entity entity);
 
 	void OnCreate();
 	void OnDestroy();
@@ -71,4 +97,6 @@ private:
 	Ref<sol::protected_function> m_OnDebugRenderFunc;
 	Ref<sol::protected_function> m_OnBeginContactFunc;
 	Ref<sol::protected_function> m_OnEndContactFunc;
+
+	std::tuple<int, std::string, std::string> ParseLuaError(const std::string& errorMessage);
 };

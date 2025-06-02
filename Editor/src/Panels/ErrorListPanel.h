@@ -24,6 +24,8 @@ public:
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
 
+	void OnEvent(Event& event) override;
+
 	void AddError(Error& error);
 	void ClearAllErrors();
 private:
@@ -31,7 +33,4 @@ private:
 
 	std::vector<std::pair<Error, bool>> m_ErrorList;
 	uint32_t m_NumberSelected = 0;
-
-	float m_UpdateInterval = 5.0f;
-	float m_CurrentTime = 0.0f;
 };

@@ -169,6 +169,7 @@ bool SceneManager::ChangeSceneState(SceneState sceneState, bool createSnapshot)
 {
 	if (sceneState != s_SceneState)
 	{
+		Application::CallEvent(SceneStateChangedEvent(sceneState));
 		if (IsSceneLoaded())
 		{
 			if (s_SceneState != SceneState::Pause && s_SceneState != SceneState::SimulatePause)

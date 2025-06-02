@@ -110,10 +110,10 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
 	{
-		std::optional<std::pair<int, std::string>> result = scriptComponent->ParseScript(newEntity);
-		if (result.has_value())
+		bool result = scriptComponent->ParseScript(newEntity);
+		if (!result)
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->script->GetFilepath(), result.value().first, result.value().second);
+			ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
 		}
 	}
 	return Entity();
@@ -194,15 +194,15 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
 		{
-			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
-			if (result.has_value())
-			{
-				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.script->GetFilepath().string(), result.value().first, result.value().second);
-			}
-			else
+			bool result = scriptComponent.ParseScript(Entity{ entity, this });
+			if (result)
 			{
 				scriptComponent.OnCreate();
 				scriptComponent.created = true;
+			}
+			else
+			{
+				ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent.script->GetFilepath().string());
 			}
 		});
 
@@ -422,10 +422,14 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 	Renderer::EndScene();
 
-	if (renderTarget != nullptr)
+	//TODO: UI Traverse
+	return;
+
+	if (renderTarget != nullptr) {
 		RenderCommand::ClearDepth();
 
-	SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+		SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+	}
 
 	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
 	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
