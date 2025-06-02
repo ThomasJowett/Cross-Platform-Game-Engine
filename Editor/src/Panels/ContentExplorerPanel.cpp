@@ -458,10 +458,6 @@ void ContentExplorerPanel::RightClickMenu()
 			CreateNewMaterial();
 			m_Renaming = true;
 		}
-		if (ImGui::Selectable("Prefab"))
-		{
-			CLIENT_DEBUG("new prefab");
-		}
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
 		{
 			CreateNewLuaScript();
