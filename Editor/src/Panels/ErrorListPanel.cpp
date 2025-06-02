@@ -115,7 +115,8 @@ void ErrorListPanel::OnEvent(Event& event)
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<LuaErrorEvent>([this](LuaErrorEvent& luaErrorEvent)
 		{
-			AddError(Error(luaErrorEvent.GetFile(), luaErrorEvent.GetLine(), luaErrorEvent.GetErrorMessage()));
+			auto error = Error(luaErrorEvent.GetFile(), luaErrorEvent.GetLine(), luaErrorEvent.GetErrorMessage());
+			AddError(error);
 			return false;
 		});
 	dispatcher.Dispatch<SceneStateChangedEvent>([this](SceneStateChangedEvent& sceneStateChangedEvent)
