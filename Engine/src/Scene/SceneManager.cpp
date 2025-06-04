@@ -190,15 +190,17 @@ bool SceneManager::ChangeSceneState(SceneState sceneState, bool createSnapshot)
 			ChangeScene(s_EditingScene);
 			s_EditingScene.clear();
 		}
-		ImGuiIO& io = ImGui::GetIO();
-		if (sceneState == SceneState::Play) {
-			io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-			io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
-		}
-		else {
-			Application::GetWindow()->EnableCursor();
-			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		if (ImGui::GetCurrentContext()) {
+			ImGuiIO& io = ImGui::GetIO();
+			if (sceneState == SceneState::Play) {
+				io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+				io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+			}
+			else {
+				Application::GetWindow()->EnableCursor();
+				io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+				io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+			}
 		}
 		return true;
 	}
