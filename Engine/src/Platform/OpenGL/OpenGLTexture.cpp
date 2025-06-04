@@ -104,7 +104,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData)
 {
-	PROFILE_FUNCTION()
+	PROFILE_FUNCTION();
 	bool isValid = LoadTextureFromMemory(imageData);
 	if (!isValid)
 	{

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Triangulation.h"
+#include "Logging/Logger.h"
 #include "Logging/Instrumentor.h"
 
 template<typename T>
