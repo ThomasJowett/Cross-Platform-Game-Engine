@@ -43,7 +43,6 @@ Application::Application()
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 #endif
 
-	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 	PROFILE_FUNCTION();
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
@@ -56,7 +55,6 @@ Application::Application()
 Application::~Application()
 {
 	PROFILE_FUNCTION();
-	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	m_LayerStack.PushPop();
 	SceneManager::Shutdown();
 	Settings::SaveSettings();
@@ -67,7 +65,6 @@ Application::~Application()
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
-	PROFILE_END_SESSION("Shutdown");
 }
 
 int Application::Init(int argc, char* argv[])
@@ -96,7 +93,6 @@ int Application::Init(int argc, char* argv[])
 
 	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
 	{
-		Instrumentor::Enable();
 	}
 
 	Settings::Init();
@@ -122,8 +118,6 @@ int Application::Init(int argc, char* argv[])
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
 	ENGINE_INFO("Engine Initialised");
-	PROFILE_END_SESSION("Startup");
-
 	return -1;
 }
 
@@ -166,7 +160,6 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 
 void Application::Run()
 {
-	PROFILE_BEGIN_SESSION("Run", "Profile-Run.json");
 	PROFILE_FUNCTION();
 
 	if (IsRunning()) {
@@ -180,7 +173,7 @@ void Application::Run()
 
 	while (m_Running)
 	{
-		PROFILE_SCOPE("Run Loop");
+		PROFILE_FRAME();
 
 		double newTime = GetTime();
 		double frameTime = newTime - currentTime;
@@ -238,8 +231,6 @@ void Application::Run()
 
 		Input::ClearInputData();
 	}
-
-	PROFILE_END_SESSION("Run");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
