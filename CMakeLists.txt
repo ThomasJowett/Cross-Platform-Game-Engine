@@ -50,8 +50,6 @@ if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DEFAULT_STARTUP_TARGET})
 endif()
 
-
-
 add_subdirectory(Engine)
 add_subdirectory(Editor)
 add_subdirectory(Runtime)
@@ -76,6 +74,7 @@ add_subdirectory(Editor/vendor)
 add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
 add_subdirectory(Engine/vendor/box2d)
+add_subdirectory(Engine/vendor/tracy)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 
@@ -92,3 +91,6 @@ set_target_properties(msdf-atlas-gen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msd
 set_target_properties(msdfgen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msdfgen)
 set_target_properties(OpenFBX PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
 set_target_properties(miniaudio PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+set_target_properties(TracyClient PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+
+

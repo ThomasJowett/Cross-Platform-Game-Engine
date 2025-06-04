@@ -114,3 +114,12 @@ target_include_directories(Engine PUBLIC
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)
+
+set(ENABLE_PROFILING OFF CACHE BOOL "Enable Profiling with Tracy")
+
+if(ENABLE_PROFILING)
+    add_compile_definitions(ATCP_ENABLE_TRACY)
+    target_include_directories(Engine PUBLIC "${CMAKE_SOURCE_DIR}/Engine/vendor/tracy/public/tracy")
+    target_link_libraries(Engine PUBLIC Tracy::TracyClient)
+    message("enabling profiling")
+endif()
