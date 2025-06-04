@@ -5,6 +5,8 @@
 #include <Logging/Instrumentor.h>
 #include <imgui.h>
 
+#include "Core/Application.h"
+
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
@@ -100,11 +102,12 @@ void AssetPacker::OnImGuiRender()
 			ImGui::ProgressBar(m_Progress.load(), ImVec2(0.0f, 0.0f));
 		}
 		else if (m_CurrentStage == Stage::Done) {
-			ImGui::Text("Assets packed successfully!");
+			ImGui::Text("Game exported successfully!");
 			if (ImGui::Button("Close"))
 			{
 				m_Show = false;
 				ImGui::CloseCurrentPopup();
+				Application::GetLayerStack().RemoveLayer(shared_from_this());
 			}
 
 			if(m_PackThread.joinable())
@@ -232,6 +235,7 @@ void AssetPacker::ExportGame()
 	PROFILE_FUNCTION();
 
 	m_CurrentStage = Stage::ExportingGame;
+	m_Progress.store(0.0f);
 
 	std::filesystem::path exePath = Application::GetWorkingDirectory() / "runtime" / "Runtime.exe";
 	if (!std::filesystem::exists(exePath))
@@ -242,16 +246,25 @@ void AssetPacker::ExportGame()
 
 	std::filesystem::path executableName = m_ExportDirectory / m_GameName;
 
+	m_Progress.store(0.1f);
+
 	std::ifstream exeFile(exePath, std::ios::binary);
 	std::ifstream zipFile(zipPath, std::ios::binary);
 	std::ofstream outFile(executableName, std::ios::binary);
+	m_Progress.store(0.2f);
 
 	std::vector<char> exeData((std::istreambuf_iterator<char>(exeFile)), {});
+	m_Progress.store(0.3f);
 	std::vector<char> zipData((std::istreambuf_iterator<char>(zipFile)), {});
 
+	m_Progress.store(0.4f);
+
 	outFile.write(exeData.data(), exeData.size());
+	m_Progress.store(0.5f);
 	outFile.write(zipData.data(), zipData.size());
+	m_Progress.store(0.7f);
 	outFile.write(m_GameName.string().c_str(), m_GameName.string().size());
+	m_Progress.store(0.8f);
 	outFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
 
 	// Write the footer
@@ -262,15 +275,16 @@ void AssetPacker::ExportGame()
 	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
 
 	outFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+	m_Progress.store(0.9f);
 
 	exeFile.close();
 	zipFile.close();
 
 	std::filesystem::remove(zipPath);
 	m_CurrentStage = Stage::Done;
+	m_Progress.store(1.0f);
 
 	ENGINE_INFO("Exported game to {0}", executableName);
-	Application::GetLayerStack().RemoveLayer(shared_from_this());
 }
 
 void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
