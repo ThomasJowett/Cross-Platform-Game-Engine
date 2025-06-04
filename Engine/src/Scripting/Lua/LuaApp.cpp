@@ -4,6 +4,7 @@
 #include "Logging/Instrumentor.h"
 #include "LuaManager.h"
 #include "Core/Settings.h"
+#include "Core/Application.h"
 
 namespace Lua
 {

@@ -9,6 +9,7 @@
 #include "Core/Joysticks.h"
 
 #include "Scene/SceneManager.h"
+#include <Core/Application.h>
 
 namespace Lua
 {
