@@ -11,6 +11,7 @@
 
 #include "IconsFontAwesome6.h"
 #include "imgui/imgui.h"
+#include "ImGui/ImGuiUtilites.h"
 
 FontView::FontView(bool* show, std::filesystem::path filepath)
 	:View("FontView"), m_Show(show), m_Filepath(filepath)
@@ -51,9 +52,7 @@ void FontView::OnImGuiRender()
 		Renderer::EndScene();
 		m_Framebuffer->UnBind();
 
-		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
-
-		ImGui::Image((void*)tex, ImVec2(512.0f, 256.0f), ImVec2(0, 1), ImVec2(1,0));
+		ImGui::Image(m_Framebuffer->GetColourAttachment(), ImVec2(512.0f, 256.0f));
 	}
 
 	ImGui::End();

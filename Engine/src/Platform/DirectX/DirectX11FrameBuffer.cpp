@@ -40,7 +40,7 @@ int DirectX11FrameBuffer::ReadPixel(uint32_t attachmentIndex, int x, int y)
 	return 0;
 }
 
-uint32_t DirectX11FrameBuffer::GetColourAttachment(size_t index)
+Ref<Texture> DirectX11FrameBuffer::GetColourAttachment(size_t index)
 {
 	return 0;
 }

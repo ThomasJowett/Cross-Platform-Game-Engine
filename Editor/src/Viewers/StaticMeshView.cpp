@@ -96,9 +96,7 @@ void StaticMeshView::OnImGuiRender()
 		}
 		ImGui::EndMenuBar();
 
-		uint64_t tex = (uint64_t)m_Framebuffer->GetColourAttachment();
-
-		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(m_Framebuffer->GetColourAttachment(), m_ViewportSize);
 	}
 	ImGui::End();
 

@@ -54,7 +54,7 @@ std::pair<GLenum, GLenum> GetDataFormatType(int channels)
 	}
 }
 
-OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
@@ -80,13 +80,23 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
 	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
+	
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+	bool multisampled = samples > 1;
+
+	glCreateTextures(multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &m_RendererID);
+
 	if (pixels)
+	{
+		if (multisampled)
+			glTextureStorage2DMultisample(m_RendererID, samples, m_InternalFormat, m_Width, m_Height, GL_FALSE);
+		else
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+
 		SetData(pixels);
 
-	SetFilteringAndWrappingMethod();
+		SetFilteringAndWrappingMethod();
+	}
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
@@ -141,12 +151,16 @@ uint32_t OpenGLTexture2D::GetRendererID() const
 	return m_RendererID;
 }
 
-void OpenGLTexture2D::Reload()
+bool OpenGLTexture2D::Reload()
 {
 	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 	{
 		glDeleteTextures(1, &m_RendererID);
-		LoadTextureFromFile();
+		return LoadTextureFromFile();
+	}
+	else {
+		NullTexture();
+		return false;
 	}
 }
 

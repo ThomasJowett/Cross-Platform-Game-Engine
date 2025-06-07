@@ -60,7 +60,7 @@ public:
 
 	virtual uint32_t GetRendererID() const = 0;
 
-	virtual void Reload() = 0;
+	virtual bool Reload() = 0;
 
 	FilterMethod GetFilterMethod() const { return m_FilterMethod; }
 	virtual void SetFilterMethod(FilterMethod filterMethod) { m_FilterMethod = filterMethod; }
@@ -79,7 +79,7 @@ class Texture2D :public Texture
 public:
 	virtual bool Load(const std::filesystem::path& filepath) override;
 	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
-	static Ref<Texture2D> Create(uint32_t width, uint32_t height, Format format = Format::RGBA, const void* pixels = nullptr);
+	static Ref<Texture2D> Create(uint32_t width, uint32_t height, Format format = Format::RGBA, uint32_t samples = 1, const void* pixels = nullptr);
 	static Ref<Texture2D> Create(const std::filesystem::path& filepath);
 	static Ref<Texture2D> Create(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData);
 };

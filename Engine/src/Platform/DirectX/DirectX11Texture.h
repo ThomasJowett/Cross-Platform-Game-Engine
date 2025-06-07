@@ -7,7 +7,7 @@
 class DirectX11Texture2D :public Texture2D
 {
 public:
-	DirectX11Texture2D(uint32_t width, uint32_t height, Format format);
+	DirectX11Texture2D(uint32_t width, uint32_t height, uint32_t samples, Format format);
 	DirectX11Texture2D(const std::filesystem::path& path);
 	DirectX11Texture2D(const std::filesystem::path& path, const std::vector<uint8_t>& data);
 	virtual ~DirectX11Texture2D();
@@ -21,7 +21,7 @@ public:
 
 	virtual uint32_t GetRendererID() const override;
 
-	virtual void Reload() override;
+	virtual bool Reload() override;
 
 	virtual bool operator==(const Texture& other) const;
 private:

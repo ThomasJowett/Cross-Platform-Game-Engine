@@ -7,7 +7,7 @@
 #include "Platform/DirectX/DirectX11Texture.h"
 #endif // _WINDOWS
 
-Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, const void* pixels)
+Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 {
 	PROFILE_FUNCTION();
 	switch (Renderer::GetAPI())
@@ -15,10 +15,10 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format,
 	case RendererAPI::API::None:
 		break;
 	case RendererAPI::API::OpenGL:
-		return CreateRef<OpenGLTexture2D>(width, height, format, pixels);
+		return CreateRef<OpenGLTexture2D>(width, height, format, samples, pixels);
 #ifdef _WINDOWS
 	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11Texture2D>(width, height, format);
+		return CreateRef<DirectX11Texture2D>(width, height, samples, format);
 #endif // _WINDOWS
 #ifdef __APPLE__
 	case RendererAPI::API::Metal:

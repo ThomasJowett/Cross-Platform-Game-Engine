@@ -112,15 +112,13 @@ bool Renderer::Init()
 	s_SceneData.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
 
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, &whiteTextureData);
+	s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &whiteTextureData);
 
-	s_RendererData.normalTexture = Texture2D::Create(1, 1);
 	uint32_t normalTextureData = Colour(0.5f, 0.5f, 1.0f, 1.0f).HexValue();
-	s_RendererData.normalTexture->SetData(&normalTextureData);
+	s_RendererData.normalTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &normalTextureData);
 
-	s_RendererData.mixMapTexture = Texture2D::Create(1, 1);
 	uint32_t mixMapTextureData = Colour(0.5f, 0.0f, 0.5f, 1.0f).HexValue();
-	s_RendererData.mixMapTexture->SetData(&mixMapTextureData);
+	s_RendererData.mixMapTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &mixMapTextureData);
 
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
