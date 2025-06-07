@@ -730,9 +730,7 @@ void ViewportPanel::OnImGuiRender()
 
 		ImVec2 window_pos = ImGui::GetCursorScreenPos();
 
-		uintptr_t tex = (uintptr_t)m_Framebuffer->GetColourAttachment();
-
-		ImGui::Image((void*)tex, m_ViewportSize, ImVec2(0, 1), ImVec2(1, 0));
+		ImGui::Image(m_Framebuffer->GetColourAttachment(), m_ViewportSize);
 		ImGui::PopStyleVar(2);
 		m_RightClickMenuOpen = false;
 		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right))
@@ -854,12 +852,11 @@ void ViewportPanel::OnImGuiRender()
 								cameraPreviewPosition.y + m_CameraPreview->GetSpecification().height + 24.0f),
 							color, ImGui::GetStyle().WindowRounding);
 
-						uintptr_t cameraTex = (uintptr_t)m_CameraPreview->GetColourAttachment();
 						float cameraCursorPosition = topLeft.x - ImGui::GetStyle().ItemSpacing.x + m_ViewportSize.x - m_CameraPreview->GetSpecification().width;
 						ImGui::SetCursorPos(ImVec2(cameraCursorPosition, topLeft.y - ImGui::GetStyle().ItemSpacing.y + m_ViewportSize.y - m_CameraPreview->GetSpecification().height - 21.0f));
 						ImGui::Text(" %s", selectedEntity.GetName().c_str());
 						ImGui::SetCursorPos(ImVec2(cameraCursorPosition, ImGui::GetCursorPosY()));
-						ImGui::Image((void*)cameraTex, ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height), ImVec2(0, 1), ImVec2(1, 0));
+						ImGui::Image(m_CameraPreview->GetColourAttachment(), ImVec2((float)m_CameraPreview->GetSpecification().width, (float)m_CameraPreview->GetSpecification().height));
 					}
 
 					// Gizmos

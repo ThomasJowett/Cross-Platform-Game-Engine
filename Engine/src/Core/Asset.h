@@ -19,7 +19,7 @@ public:
 	virtual bool Load(const std::filesystem::path& filepath) = 0;
 	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) = 0;
 
-	bool Reload() { return Load(m_Filepath); }
+	virtual bool Reload() { return Load(m_Filepath); }
 	const Uuid& GetUUID() const { return m_Uuid; }
 protected:
 	std::filesystem::path m_Filepath;

@@ -164,7 +164,7 @@ Ref<Material> Material::GetDefaultMaterial()
 			}
 		}
 
-		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, &textureData);
+		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, false, &textureData);
 
 		s_DefaultMaterial->AddTexture(texture, 0);
 	}

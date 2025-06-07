@@ -268,9 +268,8 @@ bool Renderer2D::Init()
 
 	// Textures & Shaders -------------------------------------------------------------------------------
 
-	s_Data.whiteTexture = Texture2D::Create(1, 1);
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_Data.whiteTexture->SetData(&whiteTextureData);
+	s_Data.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &whiteTextureData);
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");

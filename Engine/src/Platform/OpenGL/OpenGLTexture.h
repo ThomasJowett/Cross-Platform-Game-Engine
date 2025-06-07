@@ -6,7 +6,7 @@
 class OpenGLTexture2D : public Texture2D
 {
 public:
-	OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels);
+	OpenGLTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels);
 	OpenGLTexture2D(const std::filesystem::path& filepath);
 	OpenGLTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData);
 	virtual ~OpenGLTexture2D();
@@ -20,7 +20,7 @@ public:
 
 	virtual uint32_t GetRendererID() const override;
 
-	virtual void Reload() override;
+	virtual bool Reload() override;
 
 	virtual bool operator==(const Texture& other) const override;
 

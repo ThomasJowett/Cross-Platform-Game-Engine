@@ -9,7 +9,7 @@
 extern ID3D11Device* g_D3dDevice;
 extern ID3D11DeviceContext* g_ImmediateContext;
 
-DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height, Format format)
+DirectX11Texture2D::DirectX11Texture2D(uint32_t width, uint32_t height, uint32_t samples, Format format)
 	:m_Width(width), m_Height(height)
 {
 	m_Filepath = "NO DATA";
@@ -64,10 +64,14 @@ uint32_t DirectX11Texture2D::GetRendererID() const
 	return uint32_t(); // TODO: return renderer
 }
 
-void DirectX11Texture2D::Reload()
+bool DirectX11Texture2D::Reload()
 {
 	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
-		LoadTextureFromFile();
+		return LoadTextureFromFile();
+	else {
+		NullTexture();
+		return false;
+	}
 }
 
 bool DirectX11Texture2D::operator==(const Texture& other) const
