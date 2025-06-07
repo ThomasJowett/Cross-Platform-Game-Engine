@@ -11,7 +11,7 @@
 
 #include "IconsFontAwesome6.h"
 #include "imgui/imgui.h"
-#include "ImGui/ImGuiUtilites.h"
+#include "ImGui/ImGuiUtilities.h"
 
 FontView::FontView(bool* show, std::filesystem::path filepath)
 	:View("FontView"), m_Show(show), m_Filepath(filepath)
