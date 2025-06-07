@@ -4,12 +4,12 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout)
 	:m_Vertices(vertices), m_Indices(indices)
 {
 	const float* v = (float*)m_Vertices.data();
 	// Generate the bounding box
-	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size(), 11);
+	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size(), layout.GetStride() / sizeof(float));
 
 	Submesh submesh;
 	submesh.firstIndex = 0;
@@ -23,8 +23,8 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& ind
 
 	m_Materials.push_back(material);
 
-	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(Vertex)));
-	m_VertexBuffer->SetLayout(s_StaticMeshLayout);
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * layout.GetStride()));
+	m_VertexBuffer->SetLayout(layout);
 
 	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
 }
