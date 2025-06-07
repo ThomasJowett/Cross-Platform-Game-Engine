@@ -6,7 +6,7 @@
 #include "Utilities/StringUtils.h"
 
 #include "imgui/imgui.h"
-#include "ImGui/ImGuiUtilites.h"
+#include "ImGui/ImGuiUtilities.h"
 
 PhysicsMaterialView::PhysicsMaterialView(bool* show, std::filesystem::path filepath)
 	:View("PhysicsMaterialView"), m_Show(show), m_FilePath(filepath)

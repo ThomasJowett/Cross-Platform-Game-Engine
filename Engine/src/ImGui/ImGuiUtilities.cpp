@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#include "ImGuiUtilites.h"
+#include "ImGuiUtilities.h"
 
 static size_t ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 {

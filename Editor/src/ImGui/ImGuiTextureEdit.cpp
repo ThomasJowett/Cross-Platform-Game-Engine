@@ -1,5 +1,5 @@
 #include "ImGuiTextureEdit.h"
-#include "ImGui/ImGuiUtilites.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #include "Core/Application.h"
 #include "FileSystem/Directory.h"
