@@ -70,7 +70,7 @@ Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 		20, 22, 23
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -150,7 +150,7 @@ Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines,
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -234,7 +234,7 @@ Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widt
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -256,7 +256,7 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 		0,2,3
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_FullscreenLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -397,7 +397,7 @@ Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius,
 		indices.push_back(baseIndex + i + 1);
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -455,5 +455,5 @@ Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }

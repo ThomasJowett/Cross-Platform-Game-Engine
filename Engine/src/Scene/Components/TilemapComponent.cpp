@@ -225,5 +225,5 @@ void TilemapComponent::Rebuild()
 	material->SetTwoSided(true);
 	material->SetTransparency(true);
 
-	mesh = CreateRef<Mesh>(verticesList, indicesList, material);
+	mesh = CreateRef<Mesh>(verticesList, indicesList, material, s_StaticMeshLayout);
 }

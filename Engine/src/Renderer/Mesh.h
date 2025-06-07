@@ -52,6 +52,11 @@ static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float2, "a_TexCoord"}
 };
 
+static BufferLayout s_FullscreenLayout = {
+	{ShaderDataType::Float3, "a_Position"},
+	{ShaderDataType::Float2, "a_TexCoord"}
+};
+
 struct Submesh
 {
 	uint32_t firstIndex;
@@ -72,7 +77,7 @@ class Mesh
 {
 public:
 	Mesh() = default;
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material);
+	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout);
 	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials);
 	virtual ~Mesh() = default;
 
