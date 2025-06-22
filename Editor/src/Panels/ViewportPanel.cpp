@@ -124,11 +124,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	if (sceneState == SceneState::Play || sceneState == SceneState::Pause)
 	{
-		SceneManager::CurrentScene()->Render(m_Framebuffer);
+		auto [view, projection] = SceneManager::CurrentScene()->GetPrimaryCameraViewProjection();
+		Renderer::RenderScene(SceneManager::CurrentScene(), view, projection, m_Framebuffer);
+		m_Framebuffer->UnBind();
 	}
 	else if (sceneState == SceneState::SimulatePause || sceneState == SceneState::Edit || sceneState == SceneState::Simulate)
 	{
-		SceneManager::CurrentScene()->Render(m_Framebuffer, m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
+		Renderer::RenderScene(SceneManager::CurrentScene(), m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix(), m_Framebuffer);
+		m_Framebuffer->UnBind();
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
@@ -161,7 +164,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			Matrix4x4 projection = cameraComp.camera.GetProjectionMatrix();
 			m_CameraPreview->Bind();
 			RenderCommand::Clear();
-			SceneManager::CurrentScene()->Render(m_CameraPreview, view, projection);
+			Renderer::RenderScene(SceneManager::CurrentScene(), view, projection, m_CameraPreview);
+			m_CameraPreview->UnBind();
 		}
 
 		// Debug render pass
