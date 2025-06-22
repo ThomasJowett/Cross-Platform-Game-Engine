@@ -9,6 +9,9 @@
 #include "Asset/StaticMesh.h"
 #include "Asset/Tileset.h"
 #include "Asset/PhysicsMaterial.h"
+#include "Renderer/Renderer.h"
+
+#include "Renderer/PostProcessEffects/GaussianBlurEffect.h"
 
 namespace Lua
 {
@@ -97,5 +100,54 @@ void BindScene(sol::state& state)
 	material_type.set_function("AddTexture", &Material::AddTexture);
 	material_type.set_function("GetTextureOffset", &Material::GetTextureOffset);
 	material_type.set_function("SetTextureOffset", &Material::SetTextureOffset);
+	material_type.set_function("GetTilingFactor", &Material::GetTilingFactor);
+	material_type.set_function("SetTilingFactor", &Material::SetTilingFactor);
+	material_type.set_function("SetTint", &Material::SetTint);
+	material_type.set_function("GetTint", &Material::GetTint);
+	material_type.set_function("IsTwoSided", &Material::IsTwoSided);
+	material_type.set_function("SetTwoSided", &Material::SetTwoSided);
+	material_type.set_function("IsTransparent", &Material::IsTransparent);
+	material_type.set_function("SetTransparency", &Material::SetTransparency);
+	material_type.set_function("CastsShadows", &Material::CastsShadows);
+	material_type.set_function("SetCastShadows", &Material::SetCastShadows);
+
+	state.new_usertype<PostProcessEffect>("PostProcessEffect", sol::no_constructor);
+
+	state.new_usertype<GaussianBlurEffect>(
+		"GaussianBlurEffect",
+		sol::constructors<GaussianBlurEffect(float)>(),
+		sol::base_classes, sol::bases<PostProcessEffect>()
+	);
+	
+	sol::table postProcess = state.create_table("PostProcess");
+	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect> 
+		{
+			if (name == "GaussianBlur") {
+				if (args.size() == 1) {
+					float strength = args.get<float>(0);
+					return std::make_shared<GaussianBlurEffect>(strength);
+				}
+				else {
+					ENGINE_ERROR("GaussianBlur effect requires 1 argument (strength)");
+					return nullptr;
+				}
+			}
+			else {
+				ENGINE_ERROR("Unkown effect type: {}", name);
+				return nullptr;
+			}
+		});
+	postProcess.set_function("AddEffect", [](Ref<PostProcessEffect> effect)
+		{
+			Renderer::AddPostProcessEffect(effect);
+		});
+	postProcess.set_function("RemoveEffect", [](Ref<PostProcessEffect> effect)
+		{
+			Renderer::RemovePostProcessEffect(effect);
+		});
+	postProcess.set_function("ClearEffects", []()
+		{
+			Renderer::ClearPostProcessEffects();
+		});
 }
 }
