@@ -252,3 +252,21 @@ Ref<Shader> Renderer::GetShader(const std::string& name, bool postProcess)
 {
 	return s_ShaderLibrary.Load(name, postProcess);
 }
+
+void Renderer::AddPostProcessEffect(const Ref<PostProcessEffect>& effect)
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->AddPostProcessEffect(effect);
+}
+
+void Renderer::RemovePostProcessEffect(const Ref<PostProcessEffect>& effect)
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->RemovePostProcessEffect(effect);
+}
+
+void Renderer::ClearPostProcessEffects()
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->ClearPostProcessEffects();
+}
