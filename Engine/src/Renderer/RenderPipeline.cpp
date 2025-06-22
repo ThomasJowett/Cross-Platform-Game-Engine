@@ -20,9 +20,6 @@ RenderPipeline::RenderPipeline()
 	m_PongFrameBuffer = FrameBuffer::Create(pingPongSpec);
 
 	m_FinalPassShader = Renderer::GetShader("FinalPass", true);
-	//m_FinalPassShader = Renderer::GetShader("EntityIdEffect", true);
-
-	m_PostProcessStack.AddEffect(std::make_shared<GaussianBlurEffect>(1.0f));
 }
 
 RenderPipeline::~RenderPipeline()
