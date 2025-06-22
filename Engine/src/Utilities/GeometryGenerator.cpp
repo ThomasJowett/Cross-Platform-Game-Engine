@@ -110,7 +110,7 @@ Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 		20, 22, 23
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -190,7 +190,7 @@ Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines,
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -274,7 +274,7 @@ Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widt
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -283,11 +283,11 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
 
-	std::vector<Vertex> vertices = {
-		Vertex({Vector3f(-1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 1.0f)}),
-		Vertex({Vector3f(-1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 0.0f)}),
-		Vertex({Vector3f(+1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 0.0f)}),
-		Vertex({Vector3f(+1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 1.0f)})
+	std::vector<FullScreenVertex> vertices = {
+		FullScreenVertex({Vector3f(-1.0f, -1.0f, 0.0f),  Vector2f(0.0f, 1.0f)}),
+		FullScreenVertex({Vector3f(-1.0f, +1.0f, 0.0f),  Vector2f(0.0f, 0.0f)}),
+		FullScreenVertex({Vector3f(+1.0f, +1.0f, 0.0f),  Vector2f(1.0f, 0.0f)}),
+		FullScreenVertex({Vector3f(+1.0f, -1.0f, 0.0f),  Vector2f(1.0f, 1.0f)})
 	};
 
 	std::vector<uint32_t> indices =
@@ -296,7 +296,7 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 		0,2,3
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_FullscreenLayout);
+	return CreateRef<Mesh>(FlattenFullscreenVertices(vertices), indices, Material::GetDefaultMaterial(), s_FullscreenLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -437,7 +437,7 @@ Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius,
 		indices.push_back(baseIndex + i + 1);
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -495,5 +495,5 @@ Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
