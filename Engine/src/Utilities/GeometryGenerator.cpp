@@ -7,6 +7,46 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+std::vector<float> GeometryGenerator::FlattenVertices(const std::vector<Vertex>& vertices)
+{
+	PROFILE_FUNCTION();
+	std::vector<float> flatVertices;
+	flatVertices.reserve(vertices.size() * 11);
+	for (const auto& vertex : vertices)
+	{
+		flatVertices.push_back(vertex.position.x);
+		flatVertices.push_back(vertex.position.y);
+		flatVertices.push_back(vertex.position.z);
+		flatVertices.push_back(vertex.normal.x);
+		flatVertices.push_back(vertex.normal.y);
+		flatVertices.push_back(vertex.normal.z);
+		flatVertices.push_back(vertex.tangent.x);
+		flatVertices.push_back(vertex.tangent.y);
+		flatVertices.push_back(vertex.tangent.z);
+		flatVertices.push_back(vertex.texcoord.x);
+		flatVertices.push_back(vertex.texcoord.y);
+	}
+	return flatVertices;
+}
+
+std::vector<float> FlattenFullscreenVertices(const std::vector<FullScreenVertex>& vertices)
+{
+	PROFILE_FUNCTION();
+	std::vector<float> data;
+	data.reserve(vertices.size() * 5); // 3 (position) + 2 (uv)
+
+	for (const auto& v : vertices)
+	{
+		data.push_back(v.position.x);
+		data.push_back(v.position.y);
+		data.push_back(v.position.z);
+		data.push_back(v.texcoord.x);
+		data.push_back(v.texcoord.y);
+	}
+
+	return data;
+}
+
 Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
