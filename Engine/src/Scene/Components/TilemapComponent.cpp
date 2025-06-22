@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "TilemapComponent.h"
 #include "Scene/SceneManager.h"
+#include "Utilities/GeometryGenerator.h"
 
 Vector2f TilemapComponent::IsoToWorld(uint32_t x, uint32_t y) const
 {
@@ -225,5 +226,5 @@ void TilemapComponent::Rebuild()
 	material->SetTwoSided(true);
 	material->SetTransparency(true);
 
-	mesh = CreateRef<Mesh>(verticesList, indicesList, material, s_StaticMeshLayout);
+	mesh = CreateRef<Mesh>(GeometryGenerator::FlattenVertices(verticesList), indicesList, material, s_StaticMeshLayout);
 }
