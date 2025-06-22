@@ -214,6 +214,43 @@ Ref<Texture> OpenGLFrameBuffer::GetColourAttachment(size_t index)
 	return m_ColourAttachments[index];
 }
 
+Ref<Texture> OpenGLFrameBuffer::GetDepthAttachment()
+{
+	return m_DepthAttachment;
+}
+
+void OpenGLFrameBuffer::BlitDepthTo(Ref<FrameBuffer> target)
+{
+	PROFILE_FUNCTION();
+	CORE_ASSERT(target, "Target framebuffer cannot be null");
+	CORE_ASSERT(target->GetSpecification().samples == 1, "Target framebuffer must not be multisampled");
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, std::dynamic_pointer_cast<OpenGLFrameBuffer>(target)->GetRendererID());
+	glBlitFramebuffer(0, 0, m_Specification.width, m_Specification.height,
+		0, 0, target->GetSpecification().width, target->GetSpecification().height,
+		GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void OpenGLFrameBuffer::BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex)
+{
+	auto targetGL = std::dynamic_pointer_cast<OpenGLFrameBuffer>(target);
+
+	CORE_ASSERT(targetGL, "Target framebuffer must be an OpenGLFrameBuffer");
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_RendererID);
+	glReadBuffer(GL_COLOR_ATTACHMENT0 + (int)srcAttachmentIndex);
+
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, targetGL->GetRendererID());
+	glDrawBuffer(GL_COLOR_ATTACHMENT0 + (int)dstAttachmentIndex);
+
+	glBlitFramebuffer(0, 0, m_Specification.width, m_Specification.height,
+		0, 0, target->GetSpecification().width, target->GetSpecification().height,
+		GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
 void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 {
 	CORE_ASSERT(index < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");

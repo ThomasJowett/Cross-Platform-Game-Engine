@@ -79,6 +79,10 @@ public:
 	virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 
 	virtual Ref<Texture> GetColourAttachment(size_t index = 0) = 0;
+	virtual Ref<Texture> GetDepthAttachment() = 0;
+
+	virtual void BlitDepthTo(Ref<FrameBuffer> target) = 0;
+	virtual void BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex) = 0;
 
 	virtual const FrameBufferSpecification& GetSpecification() const = 0;
 

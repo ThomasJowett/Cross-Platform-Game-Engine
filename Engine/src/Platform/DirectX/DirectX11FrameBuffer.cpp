@@ -45,6 +45,19 @@ Ref<Texture> DirectX11FrameBuffer::GetColourAttachment(size_t index)
 	return 0;
 }
 
+Ref<Texture> DirectX11FrameBuffer::GetDepthAttachment()
+{
+	return 0;
+}
+
+void DirectX11FrameBuffer::BlitDepthTo(Ref<FrameBuffer> target)
+{
+}
+
+void DirectX11FrameBuffer::BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex)
+{
+}
+
 void DirectX11FrameBuffer::ClearAttachment(size_t index, int value)
 {
 }
