@@ -181,6 +181,8 @@ void Application::Run()
 
 		accumulator += frameTime;
 
+		m_DeltaTime = (float)frameTime;
+
 		// On Fixed update
 		while (accumulator >= m_FixedUpdateInterval)
 		{
