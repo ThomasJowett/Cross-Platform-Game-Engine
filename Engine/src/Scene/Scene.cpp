@@ -902,6 +902,19 @@ Entity Scene::GetEntityByPath(const std::string& path)
 	}
 }
 
+std::tuple<Matrix4x4, Matrix4x4> Scene::GetPrimaryCameraViewProjection()
+{
+	Entity cameraEntity = GetPrimaryCameraEntity();
+	if (cameraEntity)
+	{
+		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+		Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+		Matrix4x4 projection = cameraComp.camera.GetProjectionMatrix();
+		return std::make_tuple(view, projection);
+	}
+	return std::tuple<Matrix4x4, Matrix4x4>();
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::SetShowDebug(bool show)

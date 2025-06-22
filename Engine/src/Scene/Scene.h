@@ -73,6 +73,8 @@ public:
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
 
+	std::tuple<Matrix4x4, Matrix4x4> GetPrimaryCameraViewProjection();
+
 	void SetShowDebug(bool show);
 
 	Vector2f& GetGravity() { return m_Gravity; }
