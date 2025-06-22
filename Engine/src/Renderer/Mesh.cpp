@@ -4,12 +4,13 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout)
-	:m_Vertices(vertices), m_Indices(indices)
+Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout)
+	:m_Vertices(vertices), m_Indices(indices), m_VertexLayout(layout)
 {
 	const float* v = (float*)m_Vertices.data();
 	// Generate the bounding box
-	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size(), layout.GetStride() / sizeof(float));
+	auto stride = layout.GetStride() / sizeof(float);
+	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size() / stride, stride);
 
 	Submesh submesh;
 	submesh.firstIndex = 0;
@@ -23,20 +24,21 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& ind
 
 	m_Materials.push_back(material);
 
-	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * layout.GetStride()));
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(float)));
 	m_VertexBuffer->SetLayout(layout);
 
 	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
 }
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials)
-	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials)
+Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials, const BufferLayout& layout)
+	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials), m_VertexLayout(layout)
 {
-	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)indices.size());
-	m_VertexBuffer->SetLayout(s_StaticMeshLayout);
-	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)indices.size());
+	auto stride = layout.GetStride() / sizeof(float);
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)m_Vertices.size() * sizeof(float));
+	m_VertexBuffer->SetLayout(layout);
+	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
 
-	m_Bounds.EnclosePoints((float*)m_Vertices.data(), (uint32_t)m_Vertices.size(), 11);
+	m_Bounds.EnclosePoints(m_Vertices.data(), (uint32_t)m_Vertices.size() / stride, stride);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
