@@ -19,7 +19,7 @@ public:
 	virtual std::string GetName() const = 0;
 
 	// Create Shader from file
-	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
+	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY, bool postProcess = false);
 	//create Shader from  source strings
 	static Ref<Shader> Create(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
 
@@ -38,7 +38,7 @@ class ShaderLibrary
 {
 public:
 	void Add(const Ref<Shader>& shader);
-	Ref<Shader> Load(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
+	Ref<Shader> Load(const std::string& name, bool postProcess = false, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
 	Ref<Shader> Get(const std::string& name);
 
 	bool Exists(const std::string& name) const;
