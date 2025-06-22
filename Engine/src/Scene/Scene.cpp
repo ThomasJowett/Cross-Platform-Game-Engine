@@ -308,6 +308,7 @@ void Scene::OnRuntimeStop()
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
 	AssetManager::CleanUp();
+	Renderer::ClearPostProcessEffects();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
