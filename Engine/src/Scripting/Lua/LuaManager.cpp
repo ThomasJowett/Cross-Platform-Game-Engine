@@ -33,7 +33,7 @@ int LoadFileRequire(lua_State* L) {
 		filepath /= std::string(path + ".lua");
 	}
 
-	if(!filepath.empty())
+	if (!filepath.empty())
 	{
 		luaL_loadfile(L, filepath.string().c_str());
 		s_Modules.push_back(path);
@@ -82,8 +82,8 @@ void LuaManager::Init()
 	Lua::BindDebug(*s_State);
 	Lua::BindSignaling(*s_State);
 
-	const char* lua_function_script = 
-	R"(
+	const char* lua_function_script =
+		R"(
 		function unrequire(m) 
 			package.loaded[m] = nil 
 			_G[m] = nil 
@@ -103,8 +103,10 @@ void LuaManager::Shutdown()
 	s_SignalBus.Shutdown();
 	s_UnrequireFunction.abandon();
 	CleanUp();
-	s_State->clear_package_loaders();
-	s_State.reset();
+	if (s_State) {
+		s_State->clear_package_loaders();
+		s_State.reset();
+	}
 }
 
 void LuaManager::CleanUp()
