@@ -45,6 +45,16 @@ struct SkinnedVertex
 	}
 };
 
+struct FullScreenVertex
+{
+	Vector3f position;
+	Vector2f texcoord;
+	bool operator==(const FullScreenVertex& other) const
+	{
+		return position == other.position && texcoord == other.texcoord;
+	}
+};
+
 static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float3, "a_Position"},
 		{ShaderDataType::Float3, "a_Normal"},
