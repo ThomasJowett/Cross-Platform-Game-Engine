@@ -19,6 +19,7 @@ struct alignas(16) PostProcessData
 
 class PostProcessEffect {
 public:
+	PostProcessEffect() = default;
 	virtual ~PostProcessEffect() = default;
 
 	Ref<Shader> GetShader() const;
