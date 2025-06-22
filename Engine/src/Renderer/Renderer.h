@@ -30,5 +30,10 @@ public:
 	static void RenderScene(Scene* scene, const Matrix4x4& view, const Matrix4x4& projection, Ref<FrameBuffer> finalOutputTarget = nullptr);
 
 	static Ref<Shader> GetShader(const std::string& name, bool postProcess = false);
+
+	static void AddPostProcessEffect(const Ref<PostProcessEffect>& effect);
+	static void RemovePostProcessEffect(const Ref<PostProcessEffect>& effect);
+	static void ClearPostProcessEffects();
+
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 };
