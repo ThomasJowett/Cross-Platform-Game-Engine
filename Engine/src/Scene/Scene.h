@@ -36,10 +36,12 @@ public:
 	void OnRuntimeStop();
 
 	// Render the scene to the render target from the camera transform and projection
-	void Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
+	void Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
 	// Render the scene to the render target from the primary camera entity in the scene
-	void Render(Ref<FrameBuffer> renderTarget);
+	void Render();
+
+	void RenderUI(uint32_t canvasWidth, uint32_t canvasHeight);
 
 	// Called once per frame
 	void OnUpdate(float deltaTime);

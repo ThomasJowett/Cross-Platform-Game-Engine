@@ -312,7 +312,7 @@ void Scene::OnRuntimeStop()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
 
@@ -344,8 +344,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	}
 
 	SceneGraph::Traverse(m_Registry);
-	if (renderTarget != nullptr)
-		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
 
@@ -424,10 +422,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 	//TODO: UI Traverse
 	return;
-
-	if (renderTarget != nullptr) {
-		RenderCommand::ClearDepth();
-
+	/*
 		SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
 	}
 
@@ -459,13 +454,12 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	}
 	Renderer::EndScene();
 
-	if (renderTarget != nullptr)
-		renderTarget->UnBind();
+		*/
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::Render(Ref<FrameBuffer> renderTarget)
+void Scene::Render()
 {
 	PROFILE_FUNCTION();
 
@@ -481,7 +475,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
-	Render(renderTarget, view, projection);
+	Render(view, projection);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
