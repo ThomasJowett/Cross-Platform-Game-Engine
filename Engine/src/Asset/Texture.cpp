@@ -165,7 +165,8 @@ Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path, Ref<Vir
 		}
 	}
 
-	Add(texture);
+	if(texture)
+		Add(texture);
 	return texture;
 }
 
