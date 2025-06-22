@@ -2,10 +2,14 @@
 #include "Renderer.h"
 #include "Renderer2D.h"
 #include "RenderCommand.h"
+#include "RenderPipeline.h"
+
 
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
 #include "Asset/Texture.h"
+#include "Scene/Entity.h"
+#include "Scene/Components/CameraComponent.h"
 
 #include "Core/core.h"
 
@@ -58,6 +62,7 @@ struct SceneData
 RendererData s_RendererData;
 SceneData s_SceneData;
 ShaderLibrary s_ShaderLibrary;
+Scope<RenderPipeline> s_RenderPipeline;
 
 std::vector<Command> s_OpaqueRenderQueue;
 std::vector<Command> s_TransparentRenderQueue;
@@ -120,6 +125,8 @@ bool Renderer::Init()
 	uint32_t mixMapTextureData = Colour(0.5f, 0.0f, 0.5f, 1.0f).HexValue();
 	s_RendererData.mixMapTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &mixMapTextureData);
 
+	s_RenderPipeline = CreateScope<RenderPipeline>();
+
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
 	return false;
@@ -137,6 +144,8 @@ void Renderer::Shutdown()
 void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 {
 	RenderCommand::SetViewport(0, 0, width, height);
+	if (s_RenderPipeline)
+		s_RenderPipeline->Resize(width, height);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -224,4 +233,22 @@ void Renderer::Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& ma
 	{
 		Submit(mesh, materials[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
 	}
+}
+
+void Renderer::RenderScene(Scene* scene)
+{
+    PROFILE_FUNCTION();
+    auto [view, projection] = scene->GetPrimaryCameraViewProjection();
+    s_RenderPipeline->Render(scene, view, projection, nullptr);
+}
+
+void Renderer::RenderScene(Scene* scene, const Matrix4x4& view, const Matrix4x4& projection, Ref<FrameBuffer> finalOutputTarget)
+{
+    PROFILE_FUNCTION();
+    s_RenderPipeline->Render(scene, view, projection, finalOutputTarget);
+}
+
+Ref<Shader> Renderer::GetShader(const std::string& name, bool postProcess)
+{
+	return s_ShaderLibrary.Load(name, postProcess);
 }
