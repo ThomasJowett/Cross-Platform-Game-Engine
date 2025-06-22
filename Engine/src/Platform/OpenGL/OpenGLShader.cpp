@@ -25,7 +25,7 @@ static GLenum ShaderTypeToGLShaderType(const Shader::ShaderTypes& type)
 	}
 }
 
-OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory)
+OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
@@ -34,6 +34,23 @@ OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path&
 
 	if (!LoadShaderSourcesFromDisk(Application::GetWorkingDirectory() / fileDirectory / name, shaderSources))
 		LoadShaderSourcesFromBundle(fileDirectory / name, shaderSources);
+
+	if (postProcess && shaderSources.find(Shader::ShaderTypes::VERTEX) == shaderSources.end())
+	{
+		// load default vertex shader for post processing
+		shaderSources[Shader::ShaderTypes::VERTEX] = R"(
+			#version 330 core
+			layout(location = 0) in vec2 a_Position;
+			layout(location = 1) in vec2 a_TexCoord;
+			out vec2 v_TexCoord;
+			void main()
+			{
+				gl_Position = vec4(a_Position, 0.0, 1.0);
+				v_TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
+			}
+		)";
+	}
+
 
 	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
 

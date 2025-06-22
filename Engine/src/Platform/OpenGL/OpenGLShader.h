@@ -5,7 +5,7 @@
 class OpenGLShader : public Shader
 {
 public:
-	OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory);
+	OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess);
 	OpenGLShader(const std::string& name, const std::string& vertexShaderSrc, const std::string& fragmentShaderSrc);
 	~OpenGLShader();
 
