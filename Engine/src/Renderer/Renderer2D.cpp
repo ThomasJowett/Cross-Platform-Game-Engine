@@ -966,7 +966,7 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	for (uint32_t i = 1; i < s_Data.fontAtlasSlotIndex; i++)
 	{
-		if (*s_Data.fontAtlasSlots[i].get() == *fontAtlas.get())
+		if (s_Data.fontAtlasSlots[i]->GetFilepath() == fontAtlas->GetFilepath())
 		{
 			textureIndex = (float)i;
 			break;
