@@ -2,7 +2,7 @@
 #include "UniformBuffer.h"
 
 #include "Renderer.h"
-#include "Platform/OpenGL/OpenGlUniformBuffer.h"
+#include "Platform/OpenGL/OpenGLUniformBuffer.h"
 #ifdef _WINDOWS
 #include "Platform/DirectX/DirectX11UniformBuffer.h"
 #endif // _WINDOWS

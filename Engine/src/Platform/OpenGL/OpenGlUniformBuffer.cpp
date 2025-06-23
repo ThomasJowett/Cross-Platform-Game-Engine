@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "OpenGlUniformBuffer.h"
+#include "OpenGLUniformBuffer.h"
 #include "Core/Application.h"
 
 #include <glad/glad.h>

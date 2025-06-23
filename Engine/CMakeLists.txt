@@ -57,8 +57,8 @@ file (GLOB OPENGL_FILES
     src/Platform/OpenGL/OpenGLPipeline.h
     src/Platform/OpenGL/OpenGLShader.cpp
     src/Platform/OpenGL/OpenGLShader.h
-    src/Platform/OpenGL/OpenGlUniformBuffer.cpp
-    src/Platform/OpenGL/OpenGlUniformBuffer.h
+    src/Platform/OpenGL/OpenGLUniformBuffer.cpp
+    src/Platform/OpenGL/OpenGLUniformBuffer.h
 )
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
