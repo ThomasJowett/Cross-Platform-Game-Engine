@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SceneManager.h"
+#include "SceneGraph.h"
 #include "Events/SceneEvent.h"
 #include "Core/Application.h"
 #include "AssetManager.h"
@@ -226,7 +227,8 @@ void SceneManager::Restart()
 	if (IsSceneLoaded())
 	{
 		s_CurrentScene->OnRuntimeStop();
-		s_CurrentScene->OnRuntimeStart();
+		SceneGraph::Traverse(s_CurrentScene->GetRegistry());
+		s_CurrentScene->OnRuntimeStart(true);
 	}
 }
 
