@@ -29,14 +29,17 @@ Ref<Font> Font::s_DefaultFont;
 void Font::Init()
 {
 	PROFILE_FUNCTION();
+	std::filesystem::path fontPath = "data/Fonts/Manrope-Medium.ttf";
 	if (AssetManager::HasBundle())
 	{
 		std::vector<uint8_t> data;
-		AssetManager::GetFileData("data/Fonts/Manrope-Medium.ttf", data);
-		s_DefaultFont = CreateRef<Font>("data/Fonts/Manrope-Medium.ttf", data);
+		AssetManager::GetFileData(fontPath, data);
+		s_DefaultFont = CreateRef<Font>(fontPath, data);
 	}
-	else
-		s_DefaultFont = CreateRef<Font>("data/Fonts/Manrope-Medium.ttf");
+	else {
+		std::filesystem::path absolutePath = Application::GetWorkingDirectory() / fontPath;
+		s_DefaultFont = CreateRef<Font>(absolutePath);
+	}
 }
 
 void Font::Shutdown()
