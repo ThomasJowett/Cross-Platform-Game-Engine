@@ -22,7 +22,7 @@ public:
 	static bool Update(float deltaTime);
 	static bool FixedUpdate();
 	static bool CreateScene(std::filesystem::path filename);
-	static bool ChangeSceneState(SceneState sceneState, bool createSnapshot = true);
+	static bool ChangeSceneState(SceneState sceneState);
 	static SceneState GetSceneState();
 	static void Restart();
 	static void Shutdown();

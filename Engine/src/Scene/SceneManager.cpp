@@ -103,7 +103,7 @@ bool SceneManager::FinalChangeScene()
 {
 	if (IsSceneLoaded())
 	{
-		if (s_CurrentScene->IsDirty())
+		if (s_CurrentScene->IsDirty() && s_SceneState == SceneState::Edit)
 		{
 			s_CurrentScene->Save();
 		}
@@ -165,7 +165,7 @@ bool SceneManager::CreateScene(std::filesystem::path filename)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-bool SceneManager::ChangeSceneState(SceneState sceneState, bool createSnapshot)
+bool SceneManager::ChangeSceneState(SceneState sceneState)
 {
 	if (sceneState != s_SceneState)
 	{
@@ -176,7 +176,7 @@ bool SceneManager::ChangeSceneState(SceneState sceneState, bool createSnapshot)
 			if (s_SceneState != SceneState::Pause && s_SceneState != SceneState::SimulatePause)
 			{
 				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
-					s_CurrentScene->OnRuntimeStart(createSnapshot);
+					s_CurrentScene->OnRuntimeStart(s_SceneState == SceneState::Edit);
 			}
 			if (s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
 				s_CurrentScene->OnRuntimeStop();
