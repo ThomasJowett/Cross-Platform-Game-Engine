@@ -108,6 +108,7 @@ void SceneGraph::TraverseUI(entt::registry& registry, uint32_t viewportWidth, ui
 
 void SceneGraph::Reparent(Entity entity, Entity parent)
 {
+	PROFILE_FUNCTION();
 	ASSERT(entity.BelongsToScene(parent.GetScene()), "Entities must belong to the same scene");
 	entt::registry& registry = entity.GetScene()->GetRegistry();
 	Unparent(entity);
@@ -157,6 +158,7 @@ void SceneGraph::Reparent(Entity entity, Entity parent)
 
 void SceneGraph::Unparent(Entity entity)
 {
+	PROFILE_FUNCTION();
 	entt::registry& registry = entity.GetScene()->GetRegistry();
 	HierarchyComponent* hierachyComp = entity.TryGetComponent<HierarchyComponent>();
 
@@ -210,6 +212,7 @@ void SceneGraph::Unparent(Entity entity)
 
 void SceneGraph::Remove(Entity entity)
 {
+	PROFILE_FUNCTION();
 	entt::registry& registry = entity.GetScene()->GetRegistry();
 	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
 
@@ -229,8 +232,67 @@ void SceneGraph::Remove(Entity entity)
 	registry.destroy(entity);
 }
 
+void SceneGraph::MoveBefore(Entity entity, Entity before)
+{
+	PROFILE_FUNCTION();
+	if (entity == before) return;
+	entt::registry& registry = entity.GetScene()->GetRegistry();
+
+	// Remove from current parent/sibling list
+	Unparent(entity);
+
+	HierarchyComponent& beforeHC = before.GetOrAddComponent<HierarchyComponent>();
+	entt::entity parentHandle = beforeHC.parent;
+	Entity parent(parentHandle, entity.GetScene());
+
+	// Insert as sibling before 'before'
+	HierarchyComponent& entityHC = entity.GetOrAddComponent<HierarchyComponent>();
+	entityHC.parent = parentHandle;
+	entityHC.nextSibling = before.GetHandle();
+	entityHC.previousSibling = beforeHC.previousSibling;
+
+	if (beforeHC.previousSibling != entt::null) {
+		HierarchyComponent* prevHC = registry.try_get<HierarchyComponent>(beforeHC.previousSibling);
+		if (prevHC) prevHC->nextSibling = entity.GetHandle();
+	}
+	else if (parentHandle != entt::null) {
+		// If 'before' was the first child, update parent's firstChild
+		HierarchyComponent* parentHC = registry.try_get<HierarchyComponent>(parentHandle);
+		if (parentHC) parentHC->firstChild = entity.GetHandle();
+	}
+
+	beforeHC.previousSibling = entity.GetHandle();
+}
+
+void SceneGraph::MoveAfter(Entity entity, Entity after)
+{
+	PROFILE_FUNCTION();
+	if (entity == after) return;
+	entt::registry& registry = entity.GetScene()->GetRegistry();
+
+	// Remove from current parent/sibling list
+	Unparent(entity);
+
+	HierarchyComponent& afterHC = after.GetOrAddComponent<HierarchyComponent>();
+	entt::entity parentHandle = afterHC.parent;
+	Entity parent(parentHandle, entity.GetScene());
+
+	// Insert as sibling after 'after'
+	HierarchyComponent& entityHC = entity.GetOrAddComponent<HierarchyComponent>();
+	entityHC.parent = parentHandle;
+	entityHC.previousSibling = after.GetHandle();
+	entityHC.nextSibling = afterHC.nextSibling;
+
+	if (afterHC.nextSibling != entt::null) {
+		HierarchyComponent* nextHC = registry.try_get<HierarchyComponent>(afterHC.nextSibling);
+		if (nextHC) nextHC->previousSibling = entity.GetHandle();
+	}
+	afterHC.nextSibling = entity.GetHandle();
+}
+
 std::vector<Entity> SceneGraph::GetChildren(Entity entity)
 {
+	PROFILE_FUNCTION();
 	entt::registry& registry = entity.GetScene()->GetRegistry();
 	std::vector<Entity> children;
 	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
@@ -250,6 +312,7 @@ std::vector<Entity> SceneGraph::GetChildren(Entity entity)
 
 entt::entity SceneGraph::FindEntity(const std::vector<std::string>& path, entt::registry& registry)
 {
+	PROFILE_FUNCTION();
 	auto view = registry.view<NameComponent, HierarchyComponent>();
 	for (auto entity : view)
 	{
@@ -284,6 +347,7 @@ entt::entity SceneGraph::FindEntity(const std::vector<std::string>& path, entt::
 
 void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyComponent* hierarchyComp, entt::registry& registry)
 {
+	PROFILE_FUNCTION();
 	if (hierarchyComp->parent != entt::null)
 	{
 		TransformComponent* parentTransformComp = registry.try_get<TransformComponent>(hierarchyComp->parent);
@@ -319,6 +383,7 @@ void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyCom
 
 void SceneGraph::UpdateUIWidgetTransform(WidgetComponent* widget, HierarchyComponent* hierachyComp, entt::registry& registry)
 {
+	PROFILE_FUNCTION();
 	Matrix4x4 parentTransform = Matrix4x4();
 
 	if (hierachyComp->parent != entt::null) {
