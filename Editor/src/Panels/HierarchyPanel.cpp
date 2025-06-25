@@ -162,6 +162,19 @@ void HierarchyPanel::DrawNode(Entity entity)
 		| ((m_SelectedEntity == entity) ? ImGuiTreeNodeFlags_Selected : 0)
 		| (!hasChildren || m_TextFilter->IsActive() ? ImGuiTreeNodeFlags_Leaf : 0);
 
+	if (hierarchyComp != nullptr) {
+		ImGui::PushID(("drop_before" + std::to_string((uint32_t)entity)).c_str());
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 1));
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
+				Entity* dragged = (Entity*)payload->Data;
+				SceneGraph::MoveBefore(*dragged, entity);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::PopID();
+	}
+
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name.c_str());
 
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
@@ -231,6 +244,19 @@ void HierarchyPanel::DrawNode(Entity entity)
 		}
 
 		ImGui::TreePop();
+	}
+
+	if (hierarchyComp != nullptr && hierarchyComp->nextSibling == entt::null) {
+		ImGui::PushID(("drop_after" + std::to_string((uint32_t)entity)).c_str());
+		ImGui::Dummy(ImVec2(ImGui::GetContentRegionAvail().x, 1));
+		if (ImGui::BeginDragDropTarget()) {
+			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
+				Entity* dragged = (Entity*)payload->Data;
+				SceneGraph::MoveAfter(*dragged, entity);
+			}
+			ImGui::EndDragDropTarget();
+		}
+		ImGui::PopID();
 	}
 
 	if (entityDeleted)
