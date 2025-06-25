@@ -11,6 +11,8 @@ public:
 	static void Reparent(Entity entity, Entity parent);
 	static void Unparent(Entity entity);
 	static void Remove(Entity entity);
+	static void MoveBefore(Entity entity, Entity before);
+	static void MoveAfter(Entity entity, Entity after);
 	static std::vector<Entity> GetChildren(Entity entity);
 	static entt::entity FindEntity(const std::vector<std::string>& path, entt::registry& registry);
 private:
