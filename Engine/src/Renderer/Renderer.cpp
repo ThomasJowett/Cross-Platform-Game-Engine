@@ -137,6 +137,7 @@ bool Renderer::Init()
 void Renderer::Shutdown()
 {
 	Renderer2D::Shutdown();
+	s_RenderPipeline.reset();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -237,15 +238,15 @@ void Renderer::Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& ma
 
 void Renderer::RenderScene(Scene* scene)
 {
-    PROFILE_FUNCTION();
-    auto [view, projection] = scene->GetPrimaryCameraViewProjection();
-    s_RenderPipeline->Render(scene, view, projection, nullptr);
+	PROFILE_FUNCTION();
+	auto [view, projection] = scene->GetPrimaryCameraViewProjection();
+	s_RenderPipeline->Render(scene, view, projection, nullptr);
 }
 
 void Renderer::RenderScene(Scene* scene, const Matrix4x4& view, const Matrix4x4& projection, Ref<FrameBuffer> finalOutputTarget)
 {
-    PROFILE_FUNCTION();
-    s_RenderPipeline->Render(scene, view, projection, finalOutputTarget);
+	PROFILE_FUNCTION();
+	s_RenderPipeline->Render(scene, view, projection, finalOutputTarget);
 }
 
 Ref<Shader> Renderer::GetShader(const std::string& name, bool postProcess)
