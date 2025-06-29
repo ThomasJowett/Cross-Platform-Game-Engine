@@ -22,7 +22,26 @@ void Input::SetMouseWheel(double X, double Y)
 {
 	s_Instance->m_MouseWheelX += X; 
 	s_Instance->m_MouseWheelY += Y;
-};
+}
+
+void Input::SetMousePressed(int button)
+{
+	s_Instance->m_MouseButtonsPressed.at(button) = true;
+}
+
+void Input::SetMouseReleased(int button)
+{
+	s_Instance->m_MouseButtonsReleased.at(button) = true;
+}
+
+void Input::ClearInputData()
+{
+	s_Instance->m_MouseWheelX = 0.0f;
+	s_Instance->m_MouseWheelY = 0.0f;
+
+	s_Instance->m_MouseButtonsPressed = {};
+	s_Instance->m_MouseButtonsReleased = {};
+}
 
 bool Input::IsKeyPressedImpl(int keycode)
 {
