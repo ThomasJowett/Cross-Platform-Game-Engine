@@ -2,6 +2,8 @@
 
 #include "core.h"
 #include "Renderer/RendererAPI.h"
+#include "MouseButtonCodes.h"
+#include "KeyCodes.h"
 
 struct GLFWwindow;
 
