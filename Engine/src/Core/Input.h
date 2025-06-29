@@ -32,7 +32,9 @@ public:
 	static void Init(GLFWwindow* windowHandle);
 
 	static void SetMouseWheel(double X, double Y);
-	static void ClearInputData() { s_Instance->m_MouseWheelX = 0.0f; s_Instance->m_MouseWheelY = 0.0f; }
+	static void SetMousePressed(int button);
+	static void SetMouseReleased(int button);
+	static void ClearInputData();
 protected:
 	virtual bool IsKeyPressedImpl(int keycode);
 	virtual bool IsMouseButtonPressedImpl(int button);
@@ -46,5 +48,7 @@ private:
 
 	double m_MouseWheelX = 0.0f, m_MouseWheelY = 0.0f;
 
+	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsPressed = {};
+	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsReleased = {};
 	GLFWwindow* m_Window;
 };
