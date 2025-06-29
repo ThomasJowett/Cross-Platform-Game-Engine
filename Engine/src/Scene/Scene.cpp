@@ -25,6 +25,7 @@
 #include "Physics/Contact2D.h"
 
 #include "miniaudio/miniaudio.h"
+#include "Core/Input.h"
 
 struct DestroyMarker {};
 
@@ -420,16 +421,36 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 		m_PhysicsEngine2D->OnRender();
 
 	Renderer::EndScene();
+}
 
-	//TODO: UI Traverse
-	return;
-	/*
-		SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::Render()
+{
+	PROFILE_FUNCTION();
+
+	Matrix4x4 view;
+	Matrix4x4 projection;
+
+	Entity cameraEntity = GetPrimaryCameraEntity();
+
+	if (cameraEntity)
+	{
+		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
-	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
-	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
-	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
+	Render(view, projection);
+}
+
+void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
+{
+	auto [mouseX, mouseY] = Input::GetMousePos();
+	bool mousePressed = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+	bool mouseReleased = Input::IsMouseButtonReleased(MOUSE_BUTTON_RIGHT);
+
+	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
 
 	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
 	for (auto entity : buttonGroup)
@@ -453,30 +474,6 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 
 		//TODO: check button state
 	}
-	Renderer::EndScene();
-
-		*/
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Scene::Render()
-{
-	PROFILE_FUNCTION();
-
-	Matrix4x4 view;
-	Matrix4x4 projection;
-
-	Entity cameraEntity = GetPrimaryCameraEntity();
-
-	if (cameraEntity)
-	{
-		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
-		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-		projection = cameraComp.camera.GetProjectionMatrix();
-	}
-
-	Render(view, projection);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
