@@ -115,7 +115,7 @@ double Input::GetJoystickAxisImpl(int joystickSlot, int axis)
 	int axes_count;
 	const float* axes = glfwGetJoystickAxes(joystickSlot, &axes_count);
 
-	if (axis < axes_count)
+	if (axes && axis >= 0 && axis < axes_count)
 		return axes[axis];
 
 	return 0.0f;
