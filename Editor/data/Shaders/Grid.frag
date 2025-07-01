@@ -36,17 +36,22 @@ void main()
     val *= clamp(1 - ((dist - u_Radius) / u_Radius), 0, 1);
     
     // Major grid lines
-    const float extraTickness = 0.5;
-    vec3 axes = (abs(Input.world.xyz)) / fwidth(Input.world.xyz) - extraTickness;
+    const float extraThickness = 0.5;
+    vec3 axes = (abs(Input.world.xyz)) / fwidth(Input.world.xyz) - extraThickness;
     size = min(min(axes.x, axes.y), axes.z);
     float axisVal = 1.0 - min(size, 1.0);
     axisVal *= clamp(1 - ((dist - u_Radius * 1.5) / (u_Radius * 1.5)), 0, 1);
     
     // combine, and drop transparent pixels
-    val = max(val * 0.6, axisVal);
-    if (val <= 0)
+    float finalAlpha = max(val * 0.6, axisVal);
+    if (finalAlpha <= 0)
     discard;
     
-    frag_colour = vec4(vec3(u_Colour.xyz), val);
+    vec3 colour = u_Colour.xyz;
+    if (axisVal > val * 0.6) {
+        colour *= 0.3; // Darken major grid lines
+    }
+    
+    frag_colour = vec4(vec3(colour), finalAlpha);
     entityId = u_EntityId;
 }
