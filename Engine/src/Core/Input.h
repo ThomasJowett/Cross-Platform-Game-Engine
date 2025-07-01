@@ -16,6 +16,10 @@ public:
 
 	inline static bool IsMouseButtonPressed(int button) 
 		{ return s_Instance->IsMouseButtonPressedImpl(button); }
+	inline static bool IsMouseButtonReleased(int button)
+		{ return s_Instance->m_MouseButtonsReleased.at(button); }
+	inline static bool IsMouseJustPressed(int button)
+		{ return s_Instance->m_MouseButtonsPressed.at(button); }
 	inline static std::pair<double, double> GetMousePos() 
 		{ return s_Instance->GetMousePosImpl(); }
 	inline static double GetMouseX() 
