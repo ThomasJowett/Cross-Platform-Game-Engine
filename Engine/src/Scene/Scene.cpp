@@ -452,6 +452,10 @@ void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 
 	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
 
+	float halfWidth = canvasWidth / 2.0f;
+	float halfHeight = canvasHeight / 2.0f;
+	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
+
 	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
 	for (auto entity : buttonGroup)
 	{
@@ -474,6 +478,8 @@ void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 
 		//TODO: check button state
 	}
+
+	Renderer::EndScene();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
