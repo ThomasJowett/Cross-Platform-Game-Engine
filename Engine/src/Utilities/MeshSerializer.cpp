@@ -23,6 +23,35 @@ static void SerializeBufferLayout(std::ostream& out, const BufferLayout& layout)
 	}
 }
 
+static BufferLayout DeserializeBufferLayout(std::istream& in)
+{
+	uint32_t elementCount;
+	in.read((char*)&elementCount, sizeof(uint32_t));
+
+	std::vector<BufferElement> elements;
+	elements.reserve(elementCount);
+
+	for (uint32_t i = 0; i < elementCount; ++i)
+	{
+		uint32_t nameLength;
+		in.read((char*)&nameLength, sizeof(uint32_t));
+
+		std::string name(nameLength, '\0');
+		in.read(name.data(), nameLength);
+
+		uint32_t typeInt;
+		in.read((char*)&typeInt, sizeof(uint32_t));
+		ShaderDataType type = static_cast<ShaderDataType>(typeInt);
+
+		bool normalized = false;
+		in.read((char*)&normalized, sizeof(bool));
+
+		elements.emplace_back(type, name, normalized);
+	}
+
+	return BufferLayout(elements);
+}
+
 bool MeshSerializer::Serialize(const std::filesystem::path& filepath, const Ref<Mesh>& mesh)
 {
     std::ofstream out(filepath, std::ios::binary);
@@ -65,9 +94,13 @@ bool MeshSerializer::Serialize(const std::filesystem::path& filepath, const Ref<
 
 		out.write(reinterpret_cast<const char*>(&sm.transform), sizeof(sm.transform));
 		out.write(reinterpret_cast<const char*>(&sm.localTransform), sizeof(sm.localTransform));
-		out.write(reinterpret_cast<const char*>(&sm.boundingBox.Min()), sizeof(Vector3f));
-		out.write(reinterpret_cast<const char*>(&sm.boundingBox.Max()), sizeof(Vector3f));
+		Vector3f min = sm.boundingBox.Min();
+		Vector3f max = sm.boundingBox.Max();
+		out.write(reinterpret_cast<const char*>(&min), sizeof(Vector3f));
+		out.write(reinterpret_cast<const char*>(&max), sizeof(Vector3f));
 	}
+
+	SerializeBufferLayout(out, mesh->GetVertexLayout());
 
 	out.close();
 
@@ -120,7 +153,9 @@ static Ref<Mesh> DeserializeFromStream(std::istream& in)
 
 	std::vector<Ref<Material>> materials; //TODO: Deserialize materials from file or use a default material
 
-	return CreateRef<Mesh>(vertices, indices, submeshes, materials, s_StaticMeshLayout); //TODO: serialize buffer layout
+	BufferLayout layout = DeserializeBufferLayout(in);
+
+	return CreateRef<Mesh>(vertices, indices, submeshes, materials, layout);
 }
 
 Ref<Mesh> MeshSerializer::DeserializeFromMemory(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
