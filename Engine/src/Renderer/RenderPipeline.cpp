@@ -80,6 +80,8 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	m_FullscreenQuad->GetIndexBuffer()->UnBind();
 	m_FullscreenQuad->GetVertexBuffer()->UnBind();
 
+	scene->RenderUI(width, height);
+
 	if (finalOutputTarget) {
 		m_SceneFrameBuffer->BlitDepthTo(finalOutputTarget);
 		finalOutputTarget->UnBind();

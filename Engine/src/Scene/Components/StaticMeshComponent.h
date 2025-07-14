@@ -15,6 +15,19 @@ struct StaticMeshComponent
 	StaticMeshComponent(Ref<StaticMesh> mesh)
 		:mesh(mesh) {}
 
+	void SetMesh(const Ref<StaticMesh> newMesh)
+	{
+		mesh = newMesh;
+		materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
+
+		const auto& materials = mesh->GetMesh()->GetMaterials();
+
+		for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
+		{
+			materialOverrides[i] = materials[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
+		}
+	}
+
 private:
 	friend cereal::access;
 	template<typename Archive>

@@ -13,12 +13,10 @@ public:
 	virtual bool Load(const std::filesystem::path& filepath) override;
 	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 
-	const BoundingBox& GetBounds() { return m_Bounds; }
-	void SetBounds(const BoundingBox& bounds) { m_Bounds = bounds; }
+	const BoundingBox& GetBounds() { return m_Mesh->GetBounds(); }
 
 	const Ref<Mesh>& GetMesh() const { return m_Mesh; }
 
 private:
 	Ref<Mesh> m_Mesh;
-	BoundingBox m_Bounds;
 };

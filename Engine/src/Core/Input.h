@@ -2,6 +2,8 @@
 
 #include "core.h"
 #include "Renderer/RendererAPI.h"
+#include "MouseButtonCodes.h"
+#include "KeyCodes.h"
 
 struct GLFWwindow;
 
@@ -14,6 +16,10 @@ public:
 
 	inline static bool IsMouseButtonPressed(int button) 
 		{ return s_Instance->IsMouseButtonPressedImpl(button); }
+	inline static bool IsMouseButtonReleased(int button)
+		{ return s_Instance->m_MouseButtonsReleased.at(button); }
+	inline static bool IsMouseJustPressed(int button)
+		{ return s_Instance->m_MouseButtonsPressed.at(button); }
 	inline static std::pair<double, double> GetMousePos() 
 		{ return s_Instance->GetMousePosImpl(); }
 	inline static double GetMouseX() 
@@ -32,7 +38,9 @@ public:
 	static void Init(GLFWwindow* windowHandle);
 
 	static void SetMouseWheel(double X, double Y);
-	static void ClearInputData() { s_Instance->m_MouseWheelX = 0.0f; s_Instance->m_MouseWheelY = 0.0f; }
+	static void SetMousePressed(int button);
+	static void SetMouseReleased(int button);
+	static void ClearInputData();
 protected:
 	virtual bool IsKeyPressedImpl(int keycode);
 	virtual bool IsMouseButtonPressedImpl(int button);
@@ -46,5 +54,7 @@ private:
 
 	double m_MouseWheelX = 0.0f, m_MouseWheelY = 0.0f;
 
+	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsPressed = {};
+	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsReleased = {};
 	GLFWwindow* m_Window;
 };

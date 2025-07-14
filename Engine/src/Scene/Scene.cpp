@@ -25,6 +25,7 @@
 #include "Physics/Contact2D.h"
 
 #include "miniaudio/miniaudio.h"
+#include "Core/Input.h"
 
 struct DestroyMarker {};
 
@@ -383,20 +384,10 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	for (auto entity : staticMeshGroup)
 	{
 		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
-		if (staticMeshComp.mesh)
-		{
-			Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
-			//const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
-			//if (staticMeshComp.materialOverrides.size() != meshes.size())
-			//	staticMeshComp.materialOverrides.resize(meshes.size());
-			//for (size_t i = 0; i < meshes.size(); i++)
-			//{
-			//	if (!staticMeshComp.materialOverrides[i].empty())
-			//		Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-			//	else
-			//		Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-			//}
-		}
+		if (!staticMeshComp.mesh || !staticMeshComp.mesh->GetMesh())
+			continue;
+
+		Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto primitiveGroup = m_Registry.view<TransformComponent, PrimitiveComponent>();
@@ -420,15 +411,39 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 		m_PhysicsEngine2D->OnRender();
 
 	Renderer::EndScene();
+}
 
-	//TODO: UI Traverse
-	return;
-	/*
-		SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::Render()
+{
+	PROFILE_FUNCTION();
+
+	Matrix4x4 view;
+	Matrix4x4 projection;
+
+	Entity cameraEntity = GetPrimaryCameraEntity();
+
+	if (cameraEntity)
+	{
+		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
-	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
-	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
+	Render(view, projection);
+}
+
+void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
+{
+	auto [mouseX, mouseY] = Input::GetMousePos();
+	bool mousePressed = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
+	bool mouseReleased = Input::IsMouseButtonReleased(MOUSE_BUTTON_RIGHT);
+
+	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
+
+	float halfWidth = canvasWidth / 2.0f;
+	float halfHeight = canvasHeight / 2.0f;
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
 
 	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
@@ -453,30 +468,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 
 		//TODO: check button state
 	}
+
 	Renderer::EndScene();
-
-		*/
-}
-
-/* ------------------------------------------------------------------------------------------------------------------ */
-
-void Scene::Render()
-{
-	PROFILE_FUNCTION();
-
-	Matrix4x4 view;
-	Matrix4x4 projection;
-
-	Entity cameraEntity = GetPrimaryCameraEntity();
-
-	if (cameraEntity)
-	{
-		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
-		view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
-		projection = cameraComp.camera.GetProjectionMatrix();
-	}
-
-	Render(view, projection);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

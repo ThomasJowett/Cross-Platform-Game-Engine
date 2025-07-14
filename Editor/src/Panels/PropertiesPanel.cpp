@@ -683,7 +683,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 			{
-				staticMesh.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
+				staticMesh.SetMesh(AssetManager::GetAsset<StaticMesh>(meshFilepath));
+				
 				SceneManager::CurrentScene()->MakeDirty();
 			}
 			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
