@@ -384,20 +384,10 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	for (auto entity : staticMeshGroup)
 	{
 		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
-		if (staticMeshComp.mesh)
-		{
-			Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
-			//const std::vector<Ref<Mesh>>& meshes = staticMeshComp.mesh->GetMeshes();
-			//if (staticMeshComp.materialOverrides.size() != meshes.size())
-			//	staticMeshComp.materialOverrides.resize(meshes.size());
-			//for (size_t i = 0; i < meshes.size(); i++)
-			//{
-			//	if (!staticMeshComp.materialOverrides[i].empty())
-			//		Renderer::Submit(AssetManager::GetAsset<Material>(staticMeshComp.materialOverrides[i]), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-			//	else
-			//		Renderer::Submit(meshes[i]->GetMaterial(), meshes[i]->GetVertexArray(), transformComp.GetWorldMatrix(), (int)entity);
-			//}
-		}
+		if (!staticMeshComp.mesh || !staticMeshComp.mesh->GetMesh())
+			continue;
+
+		Renderer::Submit(staticMeshComp.mesh->GetMesh(), staticMeshComp.materialOverrides, transformComp.GetWorldMatrix(), (int)entity);
 	}
 
 	auto primitiveGroup = m_Registry.view<TransformComponent, PrimitiveComponent>();
