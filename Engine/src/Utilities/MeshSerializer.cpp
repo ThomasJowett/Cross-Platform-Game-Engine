@@ -1,58 +1,12 @@
 #include "MeshSerializer.h"
+#include "Scene/AssetManager.h"
 
 #include <fstream>
 
 #define MESH_MAGIC 0x4D455348 // "MESH"
 #define MESH_VERSION 1
 
-static void SerializeBufferLayout(std::ostream& out, const BufferLayout& layout)
-{
-	uint32_t elementCount = static_cast<uint32_t>(layout.GetElements().size());
-	out.write((char*)&elementCount, sizeof(uint32_t));
-
-	for (const auto& element : layout.GetElements())
-	{
-		uint32_t nameLength = static_cast<uint32_t>(element.name.size());
-		out.write((char*)&nameLength, sizeof(uint32_t));
-		out.write(element.name.data(), nameLength);
-
-		uint32_t type = static_cast<uint32_t>(element.type);
-		out.write((char*)&type, sizeof(uint32_t));
-
-		out.write((char*)&element.normalized, sizeof(bool));
-	}
-}
-
-static BufferLayout DeserializeBufferLayout(std::istream& in)
-{
-	uint32_t elementCount;
-	in.read((char*)&elementCount, sizeof(uint32_t));
-
-	std::vector<BufferElement> elements;
-	elements.reserve(elementCount);
-
-	for (uint32_t i = 0; i < elementCount; ++i)
-	{
-		uint32_t nameLength;
-		in.read((char*)&nameLength, sizeof(uint32_t));
-
-		std::string name(nameLength, '\0');
-		in.read(name.data(), nameLength);
-
-		uint32_t typeInt;
-		in.read((char*)&typeInt, sizeof(uint32_t));
-		ShaderDataType type = static_cast<ShaderDataType>(typeInt);
-
-		bool normalized = false;
-		in.read((char*)&normalized, sizeof(bool));
-
-		elements.emplace_back(type, name, normalized);
-	}
-
-	return BufferLayout(elements);
-}
-
-bool MeshSerializer::Serialize(const std::filesystem::path& filepath, const Ref<Mesh>& mesh)
+bool MeshSerializer::Serialize(const std::filesystem::path& filepath, const Ref<Mesh>& mesh, MeshLayout layoutType)
 {
     std::ofstream out(filepath, std::ios::binary);
     if (!out.is_open())
@@ -100,7 +54,29 @@ bool MeshSerializer::Serialize(const std::filesystem::path& filepath, const Ref<
 		out.write(reinterpret_cast<const char*>(&max), sizeof(Vector3f));
 	}
 
-	SerializeBufferLayout(out, mesh->GetVertexLayout());
+	out.write(reinterpret_cast<const char*>(&layoutType), sizeof(layoutType));
+
+	// Materials
+	const auto& materials = mesh->GetMaterials();
+	uint32_t materialCount = static_cast<uint32_t>(materials.size());
+	out.write(reinterpret_cast<const char*>(&materialCount), sizeof(materialCount));
+	for (const auto& material : materials)
+	{
+		if (material != Material::GetDefaultMaterial())
+		{
+			std::string name = material->GetFilepath().string();
+			uint32_t nameLength = static_cast<uint32_t>(name.size());
+			out.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+			out.write(name.data(), nameLength);
+		}
+		else
+		{
+			std::string defaultMaterialName = "DefaultMaterial";
+			uint32_t nameLength = static_cast<uint32_t>(defaultMaterialName.size());
+			out.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
+			out.write(defaultMaterialName.data(), nameLength);
+		}
+	}
 
 	out.close();
 
@@ -151,9 +127,49 @@ static Ref<Mesh> DeserializeFromStream(std::istream& in)
 		sm.boundingBox = BoundingBox(min, max);
 	}
 
-	std::vector<Ref<Material>> materials; //TODO: Deserialize materials from file or use a default material
+	// Read layout type
+	MeshLayout layoutType;
+	in.read(reinterpret_cast<char*>(&layoutType), sizeof(layoutType));
 
-	BufferLayout layout = DeserializeBufferLayout(in);
+	BufferLayout layout;
+	switch (layoutType)
+	{
+	case MeshLayout::StaticMesh:
+		layout = s_StaticMeshLayout;
+		break;
+	case MeshLayout::SkinnedMesh:
+		layout = s_SkinnedMeshLayout;
+		break;
+	default:
+		CLIENT_ERROR("Unsupported mesh layout type: {0}", static_cast<int>(layoutType));
+		break;
+	}
+
+	// Read materials
+	std::vector<Ref<Material>> materials;
+	uint32_t materialCount = 0;
+	in.read(reinterpret_cast<char*>(&materialCount), sizeof(materialCount));
+	materials.resize(materialCount);
+	for (uint32_t i = 0; i < materialCount; ++i)
+	{
+		uint32_t nameLength = 0;
+		in.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
+		std::string materialName(nameLength, '\0');
+		in.read(materialName.data(), nameLength);
+		if (materialName == "DefaultMaterial")
+		{
+			materials[i] = Material::GetDefaultMaterial();
+		}
+		else
+		{
+			materials[i] = AssetManager::GetAsset<Material>(materialName);
+			if (!materials[i])
+			{
+				CLIENT_ERROR("Failed to load material: {0}", materialName);
+				return nullptr;
+			}
+		}
+	}
 
 	return CreateRef<Mesh>(vertices, indices, submeshes, materials, layout);
 }

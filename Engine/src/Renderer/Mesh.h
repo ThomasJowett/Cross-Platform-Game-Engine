@@ -9,6 +9,11 @@
 #include "Core/BoundingBox.h"
 #include "Asset/Material.h"
 
+enum class MeshLayout : uint8_t {
+	StaticMesh = 0,
+	SkinnedMesh = 1
+};
+
 struct Vertex
 {
 	Vector3f position;
@@ -60,6 +65,15 @@ static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float3, "a_Normal"},
 		{ShaderDataType::Float3, "a_Tangent"},
 		{ShaderDataType::Float2, "a_TexCoord"}
+};
+
+static BufferLayout s_SkinnedMeshLayout = {
+		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float3, "a_Normal" },
+		{ ShaderDataType::Float3, "a_Tangent" },
+		{ ShaderDataType::Float2, "a_TexCoord" },
+		{ ShaderDataType::Int4,   "a_JointIndices" },
+		{ ShaderDataType::Float4, "a_JointWeights" }
 };
 
 static BufferLayout s_FullscreenLayout = {
