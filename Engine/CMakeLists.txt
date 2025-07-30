@@ -110,6 +110,7 @@ target_include_directories(Engine PUBLIC
                             vendor/EnTT
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
+                            vendor/sol/include
                             ${CMAKE_SOURCE_DIR}/Editor/vendor/OpenFBX/src
         )
 
