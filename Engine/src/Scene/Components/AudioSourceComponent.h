@@ -1,6 +1,7 @@
 #include "cereal/cereal.hpp"
 #include "Asset/AudioClip.h"
 #include "Utilities/SerializationUtils.h"
+#include "Utilities/BundleAudioStream.h"
 
 struct ma_sound;
 
@@ -25,6 +26,7 @@ struct AudioSourceComponent
 	bool playOnStart = false;
 
 	Ref<ma_sound> sound;
+	Ref<BundleAudioStream> bundleStream;
 
 	void Play() { play = true; }
 	void Pause() { pause = true; }

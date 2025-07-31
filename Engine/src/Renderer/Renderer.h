@@ -5,9 +5,12 @@
 #include "Asset/Shader.h"
 #include "Asset/Material.h"
 #include "Mesh.h"
+#include "PostProcess.h"
 
 #include "Scene/Components/StaticMeshComponent.h"
 
+class Scene;
+class FrameBuffer;
 class Renderer
 {
 public:
@@ -22,6 +25,15 @@ public:
 	static void Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform = Matrix4x4(), int entityId = -1, uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0);
 	static void Submit(const Ref<Mesh> mesh, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);
 	static void Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& materials, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);
+
+	static void RenderScene(Scene* scene);
+	static void RenderScene(Scene* scene, const Matrix4x4& view, const Matrix4x4& projection, Ref<FrameBuffer> finalOutputTarget = nullptr);
+
+	static Ref<Shader> GetShader(const std::string& name, bool postProcess = false);
+
+	static void AddPostProcessEffect(const Ref<PostProcessEffect>& effect);
+	static void RemovePostProcessEffect(const Ref<PostProcessEffect>& effect);
+	static void ClearPostProcessEffects();
 
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
 };

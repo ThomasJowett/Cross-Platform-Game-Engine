@@ -19,75 +19,57 @@ Tileset::Tileset(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+Tileset::Tileset(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	m_Texture = CreateRef<SubTexture2D>();
+	Load(filepath, data);
+}
+
 bool Tileset::Load(const std::filesystem::path& filepath)
 {
-	if (!std::filesystem::exists(filepath))
+	PROFILE_FUNCTION();
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	if (!std::filesystem::exists(absolutePath))
 	{
-		ENGINE_ERROR("Could not load Tileset: {0}, File does not exist!", filepath);
+		ENGINE_ERROR("Could not load Tileset: {0}, File does not exist!", absolutePath);
 		return false;
 	}
 	tinyxml2::XMLDocument doc;
 
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
-		
-		tinyxml2::XMLElement* pRoot;
-
-		pRoot = doc.FirstChildElement("Tileset");
-
-		if (!pRoot)
+		if (!LoadXML(&doc))
 		{
-			ENGINE_ERROR("Tileset does not have a Tileset node");
+			ENGINE_ERROR("Could not load tileset file: {0}", absolutePath);
 			return false;
-		}
-
-		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
-			ENGINE_WARN("Tileset created with a different version of the engine");
-		}
-
-		m_Filepath = filepath;
-
-		m_Tiles.clear();
-		Ref<Texture2D> texture;
-
-		SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
-
-		if (texture)
-		{
-			uint32_t tileWidth, tileHeight;
-			pRoot->QueryUnsignedAttribute("TileWidth", &tileWidth);
-			pRoot->QueryUnsignedAttribute("TileHeight", &tileHeight);
-
-			m_Texture = CreateRef<SubTexture2D>(texture, tileWidth, tileHeight);
-			m_Tiles.resize(m_Texture->GetNumberOfCells());
-		}
-		else
-			m_Texture = CreateRef<SubTexture2D>();
-
-		tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("Tile");
-
-		while (pTile)
-		{
-			int tileId = atoi(pTile->Attribute("Id"));
-			const char* probability = pTile->Attribute("Probability");
-			if (probability != nullptr)
-				m_Tiles[tileId].SetProbability(atof(probability));
-			const char* shape = pTile->Attribute("Shape");
-			if (shape)
-			{
-				m_Tiles[tileId].SetCollisionShape((Tile::CollisionShape)atoi(shape));
-				m_HasCollision = true;
-			}
-
-			pTile = pTile->NextSiblingElement("Tile");
 		}
 	}
 	else
 	{
-		ENGINE_ERROR("Could not load tileset {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		ENGINE_ERROR("Could not load tileset {0}. {1} on line {2}", absolutePath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
 	}
+	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
+}
+
+bool Tileset::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
+	{
+		if (!LoadXML(&doc))
+		{
+			ENGINE_ERROR("Could not load tileset from memory: {0}", filepath);
+			return false;
+		}
+	}
+	m_Filepath = filepath;
+	m_Filepath.make_preferred();
+	return false;
 }
 
 bool Tileset::Save() const
@@ -128,7 +110,9 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 		}
 	}
 
-	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	tinyxml2::XMLError error = doc.SaveFile(absolutePath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
 
@@ -219,4 +203,57 @@ uint32_t Tileset::CoordsToIndex(uint32_t x, uint32_t y) const
 	if(m_Texture)
 		return std::clamp((y * m_Texture->GetCellsWide()) + x, 0U, m_Texture->GetNumberOfCells() - 1);
 	return 0;
+}
+
+bool Tileset::LoadXML(tinyxml2::XMLDocument* doc)
+{
+	tinyxml2::XMLElement* pRoot;
+
+	pRoot = doc->FirstChildElement("Tileset");
+
+	if (!pRoot)
+	{
+		ENGINE_ERROR("Tileset does not have a Tileset node");
+		return false;
+	}
+
+	if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION) {
+		ENGINE_WARN("Tileset created with a different version of the engine");
+	}
+
+	m_Tiles.clear();
+	Ref<Texture2D> texture;
+
+	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
+
+	if (texture)
+	{
+		uint32_t tileWidth, tileHeight;
+		pRoot->QueryUnsignedAttribute("TileWidth", &tileWidth);
+		pRoot->QueryUnsignedAttribute("TileHeight", &tileHeight);
+
+		m_Texture = CreateRef<SubTexture2D>(texture, tileWidth, tileHeight);
+		m_Tiles.resize(m_Texture->GetNumberOfCells());
+	}
+	else
+		m_Texture = CreateRef<SubTexture2D>();
+
+	tinyxml2::XMLElement* pTile = pRoot->FirstChildElement("Tile");
+
+	while (pTile)
+	{
+		int tileId = atoi(pTile->Attribute("Id"));
+		const char* probability = pTile->Attribute("Probability");
+		if (probability != nullptr)
+			m_Tiles[tileId].SetProbability(atof(probability));
+		const char* shape = pTile->Attribute("Shape");
+		if (shape)
+		{
+			m_Tiles[tileId].SetCollisionShape((Tile::CollisionShape)atoi(shape));
+			m_HasCollision = true;
+		}
+
+		pTile = pTile->NextSiblingElement("Tile");
+	}
+	return true;
 }

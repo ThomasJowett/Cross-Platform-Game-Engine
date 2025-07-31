@@ -8,20 +8,28 @@ StaticMesh::StaticMesh(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+StaticMesh::StaticMesh(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	Load(filepath, data);
+}
+
 bool StaticMesh::Load(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
 
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
 	std::ifstream file;
-	file.open(filepath, std::ios::in | std::ios::binary);
+	file.open(absolutePath, std::ios::in | std::ios::binary);
 
 	if (!file.good())
 	{
-		ENGINE_ERROR("Failed to load staticmesh from {0}", filepath.string());
+		ENGINE_ERROR("Failed to load staticmesh from {0}", absolutePath.string());
 		return false;
 	}
 
 	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 
 	std::filesystem::path assetDirectory = filepath;
 	assetDirectory.remove_filename();
@@ -93,4 +101,10 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 	file.close();
 
 	return true;
+}
+
+bool StaticMesh::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	//TODO: implement loading static mesh from memory
+	return false;
 }

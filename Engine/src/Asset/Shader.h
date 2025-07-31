@@ -6,7 +6,7 @@
 
 #include "Core/Application.h"
 
-#define SHADER_DIRECTORY Application::GetWorkingDirectory() / "data" / "Shaders"
+#define SHADER_DIRECTORY "data/Shaders"
 
 class Shader
 {
@@ -19,7 +19,7 @@ public:
 	virtual std::string GetName() const = 0;
 
 	// Create Shader from file
-	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
+	static Ref<Shader> Create(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY, bool postProcess = false);
 
 	enum class ShaderTypes
 	{
@@ -36,7 +36,7 @@ class ShaderLibrary
 {
 public:
 	void Add(const Ref<Shader>& shader);
-	Ref<Shader> Load(const std::string& name, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
+	Ref<Shader> Load(const std::string& name, bool postProcess = false, const std::filesystem::path& fileDirectory = SHADER_DIRECTORY);
 	Ref<Shader> Get(const std::string& name);
 
 	bool Exists(const std::string& name) const;

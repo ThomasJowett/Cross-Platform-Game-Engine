@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "SceneManager.h"
+#include "SceneGraph.h"
 #include "Events/SceneEvent.h"
 #include "Core/Application.h"
 #include "AssetManager.h"
@@ -21,6 +22,11 @@ Scene* SceneManager::CurrentScene()
 bool SceneManager::ChangeScene(std::filesystem::path filepath)
 {
 	std::filesystem::path finalpath = filepath;
+	if (filepath.empty())
+	{
+		s_NextFilepath.clear();
+		return FinalChangeScene();
+	}
 	if (finalpath.is_relative())
 	{
 		if (!Application::GetOpenDocument().empty())
@@ -98,7 +104,7 @@ bool SceneManager::FinalChangeScene()
 {
 	if (IsSceneLoaded())
 	{
-		if (s_CurrentScene->IsDirty())
+		if (s_CurrentScene->IsDirty() && s_SceneState == SceneState::Edit)
 		{
 			s_CurrentScene->Save();
 		}
@@ -116,8 +122,18 @@ bool SceneManager::FinalChangeScene()
 
 	if (!s_NextFilepath.empty())
 		s_CurrentScene = CreateScope<Scene>(s_NextFilepath);
+	else {
+		s_CurrentScene.reset();
+		return false;
+	}
 
-	if (!s_CurrentScene->Load())
+	if (s_NextFilepath.is_relative() && AssetManager::HasBundle()) {
+		std::vector<uint8_t> data;
+		AssetManager::GetFileData(s_NextFilepath.string(), data);
+		if (!s_CurrentScene->Load(data))
+			s_CurrentScene.reset();
+	}
+	else if (!s_CurrentScene->Load())
 		s_CurrentScene.reset();
 
 	SceneChangedEvent event(s_NextFilepath);
@@ -130,7 +146,7 @@ bool SceneManager::FinalChangeScene()
 	s_NextFilepath.clear();
 
 	if ((s_SceneState == SceneState::Play || s_SceneState == SceneState::Simulate) && IsSceneLoaded())
-		s_CurrentScene->OnRuntimeStart();
+		s_CurrentScene->OnRuntimeStart(false);
 
 	AssetManager::CleanUp();
 
@@ -154,12 +170,14 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 {
 	if (sceneState != s_SceneState)
 	{
+		auto event = SceneStateChangedEvent(sceneState);
+		Application::CallEvent(event);
 		if (IsSceneLoaded())
 		{
 			if (s_SceneState != SceneState::Pause && s_SceneState != SceneState::SimulatePause)
 			{
 				if (sceneState == SceneState::Play || sceneState == SceneState::Simulate)
-					s_CurrentScene->OnRuntimeStart();
+					s_CurrentScene->OnRuntimeStart(s_SceneState == SceneState::Edit);
 			}
 			if (s_SceneState != SceneState::Edit && sceneState == SceneState::Edit)
 				s_CurrentScene->OnRuntimeStop();
@@ -173,15 +191,17 @@ bool SceneManager::ChangeSceneState(SceneState sceneState)
 			ChangeScene(s_EditingScene);
 			s_EditingScene.clear();
 		}
-		ImGuiIO& io = ImGui::GetIO();
-		if (sceneState == SceneState::Play) {
-			io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
-			io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
-		}
-		else {
-			Application::GetWindow()->EnableCursor();
-			io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
-			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		if (ImGui::GetCurrentContext()) {
+			ImGuiIO& io = ImGui::GetIO();
+			if (sceneState == SceneState::Play) {
+				io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+				io.ConfigFlags &= ~ImGuiConfigFlags_NavEnableKeyboard;
+			}
+			else {
+				Application::GetWindow()->EnableCursor();
+				io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+				io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+			}
 		}
 		return true;
 	}
@@ -207,7 +227,8 @@ void SceneManager::Restart()
 	if (IsSceneLoaded())
 	{
 		s_CurrentScene->OnRuntimeStop();
-		s_CurrentScene->OnRuntimeStart();
+		SceneGraph::Traverse(s_CurrentScene->GetRegistry());
+		s_CurrentScene->OnRuntimeStart(true);
 	}
 }
 

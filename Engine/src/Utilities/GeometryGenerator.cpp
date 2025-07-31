@@ -7,6 +7,46 @@
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+std::vector<float> GeometryGenerator::FlattenVertices(const std::vector<Vertex>& vertices)
+{
+	PROFILE_FUNCTION();
+	std::vector<float> flatVertices;
+	flatVertices.reserve(vertices.size() * 11);
+	for (const auto& vertex : vertices)
+	{
+		flatVertices.push_back(vertex.position.x);
+		flatVertices.push_back(vertex.position.y);
+		flatVertices.push_back(vertex.position.z);
+		flatVertices.push_back(vertex.normal.x);
+		flatVertices.push_back(vertex.normal.y);
+		flatVertices.push_back(vertex.normal.z);
+		flatVertices.push_back(vertex.tangent.x);
+		flatVertices.push_back(vertex.tangent.y);
+		flatVertices.push_back(vertex.tangent.z);
+		flatVertices.push_back(vertex.texcoord.x);
+		flatVertices.push_back(vertex.texcoord.y);
+	}
+	return flatVertices;
+}
+
+std::vector<float> FlattenFullscreenVertices(const std::vector<FullScreenVertex>& vertices)
+{
+	PROFILE_FUNCTION();
+	std::vector<float> data;
+	data.reserve(vertices.size() * 5); // 3 (position) + 2 (uv)
+
+	for (const auto& v : vertices)
+	{
+		data.push_back(v.position.x);
+		data.push_back(v.position.y);
+		data.push_back(v.position.z);
+		data.push_back(v.texcoord.x);
+		data.push_back(v.texcoord.y);
+	}
+
+	return data;
+}
+
 Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 {
 	PROFILE_FUNCTION();
@@ -70,7 +110,7 @@ Ref<Mesh> GeometryGenerator::CreateCube(float width, float height, float depth)
 		20, 22, 23
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -150,7 +190,7 @@ Ref<Mesh> GeometryGenerator::CreateSphere(float radius, uint32_t longitudeLines,
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -234,7 +274,7 @@ Ref<Mesh> GeometryGenerator::CreateGrid(float width, float length, uint32_t widt
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -243,11 +283,11 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 {
 	PROFILE_FUNCTION();
 
-	std::vector<Vertex> vertices = {
-		Vertex({Vector3f(-1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 1.0f)}),
-		Vertex({Vector3f(-1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(0.0f, 0.0f)}),
-		Vertex({Vector3f(+1.0f, +1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 0.0f)}),
-		Vertex({Vector3f(+1.0f, -1.0f, 0.0f),  Vector3f(0.0f, 0.0f, -1.0f),  Vector3f(1.0f, 0.0f, 0.0f),  Vector2f(1.0f, 1.0f)})
+	std::vector<FullScreenVertex> vertices = {
+		FullScreenVertex({Vector3f(-1.0f, -1.0f, 0.0f),  Vector2f(0.0f, 1.0f)}),
+		FullScreenVertex({Vector3f(-1.0f, +1.0f, 0.0f),  Vector2f(0.0f, 0.0f)}),
+		FullScreenVertex({Vector3f(+1.0f, +1.0f, 0.0f),  Vector2f(1.0f, 0.0f)}),
+		FullScreenVertex({Vector3f(+1.0f, -1.0f, 0.0f),  Vector2f(1.0f, 1.0f)})
 	};
 
 	std::vector<uint32_t> indices =
@@ -256,7 +296,7 @@ Ref<Mesh> GeometryGenerator::CreateFullScreenQuad()
 		0,2,3
 	};
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenFullscreenVertices(vertices), indices, Material::GetDefaultMaterial(), s_FullscreenLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -397,7 +437,7 @@ Ref<Mesh> GeometryGenerator::CreateCylinder(float bottomRadius, float topRadius,
 		indices.push_back(baseIndex + i + 1);
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -455,5 +495,5 @@ Ref<Mesh> GeometryGenerator::CreateTorus(float diameter, float thickness, uint32
 		}
 	}
 
-	return CreateRef<Mesh>(vertices, indices, Material::GetDefaultMaterial());
+	return CreateRef<Mesh>(FlattenVertices(vertices), indices, Material::GetDefaultMaterial(), s_StaticMeshLayout);
 }

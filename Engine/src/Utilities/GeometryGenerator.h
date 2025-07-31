@@ -21,4 +21,6 @@ Ref<Mesh> CreateCylinder(float bottomRadius, float topRadius, float height, uint
 
 // Create a Torus mesh
 Ref<Mesh> CreateTorus(float diameter, float thickness, uint32_t segments);
+
+std::vector<float> FlattenVertices(const std::vector<Vertex>& vertices);
 }

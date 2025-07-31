@@ -2,14 +2,21 @@
 
 #include "Core/Asset.h"
 
+namespace tinyxml2
+{
+class XMLDocument;
+}
+
 class PhysicsMaterial : public Asset
 {
 public:
 	PhysicsMaterial() = default;
 	PhysicsMaterial(const std::filesystem::path& filepath);
+	PhysicsMaterial(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
 	PhysicsMaterial(float density, float friction, float restitution);
 	// Inherited via Asset
 	virtual bool Load(const std::filesystem::path& filepath) override;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 
 	bool SaveAs(const std::filesystem::path& filepath) const;
 	bool Save() const;
@@ -32,4 +39,6 @@ private:
 	float m_Restitution = 0.0f;
 
 	static Ref<PhysicsMaterial> s_DefaultPhysicsMaterial;
+
+	bool LoadXML(tinyxml2::XMLDocument* doc);
 };

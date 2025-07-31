@@ -308,6 +308,34 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 	return extensions;
 }
 
+template<size_t N>
+void AppendExtensions(std::vector<std::string>& extensions, const char* (&extensionsArray)[N])
+{
+	for (size_t i = 0; i < N; ++i)
+	{
+		extensions.push_back(extensionsArray[i]);
+	}
+}
+
+std::vector<std::string> ViewerManager::GetAllExtensions()
+{
+	std::vector<std::string> result;
+	AppendExtensions(result, TextExtensions);
+	AppendExtensions(result, ImageExtensions);
+	AppendExtensions(result, MeshExtensions);
+	AppendExtensions(result, AudioExtensions);
+	AppendExtensions(result, FontExtensions);
+	result.push_back(".scene");
+	result.push_back(".material");
+	result.push_back(".physicsmaterial");
+	result.push_back(".tileset");
+	result.push_back(".spritesheet");
+	result.push_back(".behaviourtree");
+	result.push_back(".statemachine");
+	result.push_back(".visualscript");
+	return result;
+}
+
 void ViewerManager::SaveAll()
 {
 	for (auto&& [path, viewer] : s_AssetViewers)

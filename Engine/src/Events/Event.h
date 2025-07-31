@@ -36,8 +36,11 @@ enum class EventType
 	SCENE_CHANGED,
 	SCENE_SAVED,
 	SCENE_LOADED,
+	SCENE_STATE_CHANGED,
 
-	FILE_DROP
+	FILE_DROP,
+
+	LUA_ERROR
 };
 
 enum class EventCategory

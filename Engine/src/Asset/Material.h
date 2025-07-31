@@ -10,11 +10,17 @@
 
 #include "Utilities/FileUtils.h"
 
+namespace tinyxml2
+{
+class XMLDocument;
+}
+
 class Material : public Asset
 {
 public:
 	Material();
 	Material(const std::filesystem::path& filepath);
+	Material(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
 	Material(const std::string& shader, Colour tint = Colours::WHITE);
 
 	const std::string& GetShader() const { return m_Shader; }
@@ -28,6 +34,7 @@ public:
 	Colour GetTint() const { return m_Tint; }
 
 	virtual bool Load(const std::filesystem::path& filepath) override;
+	virtual bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override;
 
 	bool SaveMaterial(const std::filesystem::path& filepath) const;
 	bool SaveMaterial() const;
@@ -65,4 +72,6 @@ private:
 	Vector2f m_TextureOffset;
 
 	static Ref<Material> s_DefaultMaterial;
+
+	bool LoadXML(tinyxml2::XMLDocument* doc);
 };

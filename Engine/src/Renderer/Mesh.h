@@ -45,11 +45,26 @@ struct SkinnedVertex
 	}
 };
 
+struct FullScreenVertex
+{
+	Vector3f position;
+	Vector2f texcoord;
+	bool operator==(const FullScreenVertex& other) const
+	{
+		return position == other.position && texcoord == other.texcoord;
+	}
+};
+
 static BufferLayout s_StaticMeshLayout = {
 		{ShaderDataType::Float3, "a_Position"},
 		{ShaderDataType::Float3, "a_Normal"},
 		{ShaderDataType::Float3, "a_Tangent"},
 		{ShaderDataType::Float2, "a_TexCoord"}
+};
+
+static BufferLayout s_FullscreenLayout = {
+	{ShaderDataType::Float3, "a_Position"},
+	{ShaderDataType::Float2, "a_TexCoord"}
 };
 
 struct Submesh
@@ -72,17 +87,19 @@ class Mesh
 {
 public:
 	Mesh() = default;
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material);
-	Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials);
+	Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout);
+	Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials, const BufferLayout& layout);
 	virtual ~Mesh() = default;
 
 	Ref<VertexBuffer> GetVertexBuffer() { return m_VertexBuffer; }
 	Ref<IndexBuffer> GetIndexBuffer() { return m_IndexBuffer; }
 
-	const std::vector<Vertex>& GetVertexList()const { return m_Vertices; }
+	const std::vector<float>& GetVertexList()const { return m_Vertices; }
 	const std::vector<uint32_t>& GetIndexList()const { return m_Indices; }
-	std::vector<Vertex>& GetVertexList() { return m_Vertices; }
+	std::vector<float>& GetVertexList() { return m_Vertices; }
 	std::vector<uint32_t>& GetIndexList() { return m_Indices; }
+
+	const BufferLayout& GetVertexLayout() const { return m_VertexLayout; }
 
 	const std::vector<Submesh>& GetSubmeshes() { return m_Submeshes; }
 
@@ -98,8 +115,10 @@ private:
 	std::vector<Submesh> m_Submeshes;
 	std::vector<Ref<Material>> m_Materials;
 
-	std::vector<Vertex> m_Vertices;
+	std::vector<float> m_Vertices;
 	std::vector<uint32_t> m_Indices;
 
 	BoundingBox m_Bounds;
+
+	BufferLayout m_VertexLayout;
 };

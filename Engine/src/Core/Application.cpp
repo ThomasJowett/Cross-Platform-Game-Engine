@@ -43,7 +43,6 @@ Application::Application()
 	_CrtSetDbgFlag(_CRTDBG_LEAK_CHECK_DF | _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG));
 #endif
 
-	PROFILE_BEGIN_SESSION("Startup", "Profile-Startup.json");
 	PROFILE_FUNCTION();
 	CORE_ASSERT(!s_Instance, "Application already exists! Cannot create multiple applications");
 	s_Instance = this;
@@ -56,7 +55,6 @@ Application::Application()
 Application::~Application()
 {
 	PROFILE_FUNCTION();
-	PROFILE_BEGIN_SESSION("Shutdown", "Profile-Shutdown.json");
 	m_LayerStack.PushPop();
 	SceneManager::Shutdown();
 	Settings::SaveSettings();
@@ -67,7 +65,6 @@ Application::~Application()
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
-	PROFILE_END_SESSION("Shutdown");
 }
 
 int Application::Init(int argc, char* argv[])
@@ -96,7 +93,6 @@ int Application::Init(int argc, char* argv[])
 
 	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
 	{
-		Instrumentor::Enable();
 	}
 
 	Settings::Init();
@@ -122,8 +118,6 @@ int Application::Init(int argc, char* argv[])
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 
 	ENGINE_INFO("Engine Initialised");
-	PROFILE_END_SESSION("Startup");
-
 	return -1;
 }
 
@@ -166,7 +160,6 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 
 void Application::Run()
 {
-	PROFILE_BEGIN_SESSION("Run", "Profile-Run.json");
 	PROFILE_FUNCTION();
 
 	if (IsRunning()) {
@@ -180,13 +173,15 @@ void Application::Run()
 
 	while (m_Running)
 	{
-		PROFILE_SCOPE("Run Loop");
+		PROFILE_FRAME();
 
 		double newTime = GetTime();
 		double frameTime = newTime - currentTime;
 		currentTime = newTime;
 
 		accumulator += frameTime;
+
+		m_DeltaTime = (float)frameTime;
 
 		// On Fixed update
 		while (accumulator >= m_FixedUpdateInterval)
@@ -238,8 +233,6 @@ void Application::Run()
 
 		Input::ClearInputData();
 	}
-
-	PROFILE_END_SESSION("Run");
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -346,6 +339,9 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 
 		m_OpenDocumentDirectory = fileDirectory;
 
+		if (filepath.extension() != ".proj")
+			return true;
+
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
@@ -368,6 +364,9 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 			recentFiles.append(filepath.string() + ',');
 			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
 		}
+
+		AssetManager::CleanUp();
+		AssetManager::Init(m_OpenDocumentDirectory);
 
 		if (s_Instance)
 		{
@@ -398,7 +397,7 @@ void Application::SetDefaultSettings()
 
 double Application::GetTime() const
 {
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 	static LARGE_INTEGER s_frequency;
 	//check to see if the application can read the frequency
 	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
@@ -414,7 +413,7 @@ double Application::GetTime() const
 		//same value but only updates 64 times a second
 		return (double)GetTickCount64();
 	}
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 	return glfwGetTime();
 }

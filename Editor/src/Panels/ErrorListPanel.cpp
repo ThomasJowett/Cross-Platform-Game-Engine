@@ -9,6 +9,7 @@
 
 #include "MainDockSpace.h"
 #include "Viewers/ViewerManager.h"
+#include <Events/SceneEvent.h>
 
 ErrorListPanel::ErrorListPanel(bool* show)
 	: m_Show(show), Layer("ErrorList")
@@ -21,24 +22,6 @@ void ErrorListPanel::OnAttach()
 
 void ErrorListPanel::OnUpdate(float deltaTime)
 {
-	m_CurrentTime += deltaTime;
-	if (m_CurrentTime > m_UpdateInterval && SceneManager::GetSceneState() == SceneState::Edit && SceneManager::IsSceneLoaded())
-	{
-		m_ErrorList.clear();
-		auto view = SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>();
-		for (auto entity : view)
-		{
-			auto [luaScriptComp] = view.get(entity);
-
-			std::optional<std::pair<int, std::string>> result = luaScriptComp.ParseScript(Entity(entity, SceneManager::CurrentScene()));
-			if (result.has_value())
-			{
-				m_ErrorList.push_back(std::make_pair(Error(luaScriptComp.absoluteFilepath, result.value().first, result.value().second), false));
-			}
-		}
-		m_CurrentTime = 0.0f;
-		LuaManager::CleanUp();
-	}
 }
 
 void ErrorListPanel::OnImGuiRender()
@@ -126,12 +109,37 @@ void ErrorListPanel::OnImGuiRender()
 	ImGui::End();
 }
 
+void ErrorListPanel::OnEvent(Event& event)
+{
+	PROFILE_FUNCTION();
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<LuaErrorEvent>([this](LuaErrorEvent& luaErrorEvent)
+		{
+			auto error = Error(luaErrorEvent.GetFile(), luaErrorEvent.GetLine(), luaErrorEvent.GetErrorMessage());
+			AddError(error);
+			return false;
+		});
+	dispatcher.Dispatch<SceneStateChangedEvent>([this](SceneStateChangedEvent& sceneStateChangedEvent)
+		{
+			if (sceneStateChangedEvent.GetSceneState() == SceneState::Play
+				|| sceneStateChangedEvent.GetSceneState() == SceneState::Simulate)
+			{
+				ClearAllErrors();
+			}
+			return false;
+		});
+}
+
 void ErrorListPanel::AddError(Error& error)
 {
-	m_ErrorList.push_back(std::make_pair(error, false));
+	auto it = std::find_if(m_ErrorList.begin(), m_ErrorList.end(),
+		[&error](const std::pair<Error, bool>& e) { return e.first.filepath == error.filepath && e.first.lineNumber == error.lineNumber; });
+	if (it == m_ErrorList.end())
+		m_ErrorList.push_back(std::make_pair(error, false));
 }
 
 void ErrorListPanel::ClearAllErrors()
 {
 	m_ErrorList.clear();
+	m_NumberSelected = 0;
 }

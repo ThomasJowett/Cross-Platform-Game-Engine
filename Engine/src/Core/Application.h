@@ -59,6 +59,8 @@ public:
 	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
 
+	static float GetDeltaTime() { return Get().m_DeltaTime; }
+
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
@@ -92,6 +94,8 @@ private:
 	std::filesystem::path m_WorkingDirectory;
 
 	static EventCallbackFn s_EventCallback;
+
+	float m_DeltaTime = 0.0f;
 };
 
 // To be defined in CLIENT

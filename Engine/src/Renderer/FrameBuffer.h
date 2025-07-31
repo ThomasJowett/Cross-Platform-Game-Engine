@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/core.h"
+#include "Asset/Texture.h"
 
 enum class FrameBufferTextureFormat
 {
@@ -15,6 +16,16 @@ enum class FrameBufferTextureFormat
 
 	Depth = DEPTH24STENCIL8
 };
+
+static Texture::Format FrameBufferFormatToTextureFormat(FrameBufferTextureFormat format) {
+	switch (format)
+	{
+	case FrameBufferTextureFormat::RGBA8: return Texture::Format::RGBA;
+	case FrameBufferTextureFormat::RED_INTEGER: return Texture::Format::RED32UI;
+	case FrameBufferTextureFormat::DEPTH24STENCIL8: return Texture::Format::DEPTH24STENCIL8;
+	default: return Texture::Format::None;
+	}
+}
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -67,7 +78,11 @@ public:
 
 	virtual int ReadPixel(uint32_t attachmentIndex, int x, int y) = 0;
 
-	virtual uint32_t GetColourAttachment(size_t index = 0) = 0;
+	virtual Ref<Texture> GetColourAttachment(size_t index = 0) = 0;
+	virtual Ref<Texture> GetDepthAttachment() = 0;
+
+	virtual void BlitDepthTo(Ref<FrameBuffer> target) = 0;
+	virtual void BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex) = 0;
 
 	virtual const FrameBufferSpecification& GetSpecification() const = 0;
 

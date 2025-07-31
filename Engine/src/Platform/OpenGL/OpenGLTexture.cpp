@@ -41,7 +41,20 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	}
 }
 
-OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
+std::pair<GLenum, GLenum> GetDataFormatType(int channels)
+{
+	switch (channels)
+	{
+	case 1: return { GL_RED, GL_R8 };
+	case 3: return { GL_RGB, GL_RGB8 };
+	case 4: return { GL_RGBA, GL_RGBA8 };
+	default:
+		CORE_ASSERT(false, "Unsupported number of channels");
+		return { GL_FALSE, GL_FALSE };
+	}
+}
+
+OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
@@ -67,13 +80,23 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
 	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
+	
 
-	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
-	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+	bool multisampled = samples > 1;
+
+	glCreateTextures(multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D, 1, &m_RendererID);
+
 	if (pixels)
+	{
+		if (multisampled)
+			glTextureStorage2DMultisample(m_RendererID, samples, m_InternalFormat, m_Width, m_Height, GL_FALSE);
+		else
+			glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
+
 		SetData(pixels);
 
-	SetFilteringAndWrappingMethod();
+		SetFilteringAndWrappingMethod();
+	}
 }
 
 OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
@@ -83,15 +106,22 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 
 	m_Filepath = path;
 
-	bool isValid = std::filesystem::exists(path);
-
-	CORE_ASSERT(isValid, "Image does not exist! " + path.string());
-
-	if (isValid){
-		isValid = LoadTextureFromFile();
-	} else {
+	bool isValid = LoadTextureFromFile();
+	if (!isValid){
 		NullTexture();
 	}
+}
+
+OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData)
+{
+	PROFILE_FUNCTION();
+	bool isValid = LoadTextureFromMemory(imageData);
+	if (!isValid)
+	{
+		NullTexture();
+	}
+	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 }
 
 OpenGLTexture2D::~OpenGLTexture2D()
@@ -116,22 +146,21 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 	glBindTextureUnit(slot, m_RendererID);
 }
 
-std::string OpenGLTexture2D::GetName() const
-{
-	return m_Filepath.filename().string();
-}
-
-void* OpenGLTexture2D::GetRendererID() const
+uint32_t OpenGLTexture2D::GetRendererID() const
 {
 	return (void*)m_RendererID;
 }
 
-void OpenGLTexture2D::Reload()
+bool OpenGLTexture2D::Reload()
 {
 	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 	{
 		glDeleteTextures(1, &m_RendererID);
-		LoadTextureFromFile();
+		return LoadTextureFromFile();
+	}
+	else {
+		NullTexture();
+		return false;
 	}
 }
 
@@ -184,15 +213,23 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 {
 	PROFILE_FUNCTION();
 
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
+
+	if (!std::filesystem::exists(absolutePath))
+	{
+		ENGINE_ERROR("Image does not exist! {0}", absolutePath.string());
+		return false;
+	}
+
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::string&)");
-		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(absolutePath.string().c_str(), &width, &height, &channels, 0);
 	}
 
-	CORE_ASSERT(data, "Failed to load image! " + m_Filepath.string());
+	CORE_ASSERT(data, "Failed to load image! " + absolutePath.string());
 
 	if (!data)
 	{
@@ -203,22 +240,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
 
-	GLenum internalFormat = 0, dataFormat = 0;
-	if (channels == 4)
-	{
-		internalFormat = GL_RGBA8;
-		dataFormat = GL_RGBA;
-	}
-	else if (channels == 3)
-	{
-		internalFormat = GL_RGB8;
-		dataFormat = GL_RGB;
-	}
-	else if (channels == 1)
-	{
-		internalFormat = GL_R8;
-		dataFormat = GL_RED;
-	}
+	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 
 	CORE_ASSERT(internalFormat && dataFormat, "Format not supported");
 	if (!(internalFormat && dataFormat))
@@ -231,6 +253,51 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
 	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 
+	SetFilteringAndWrappingMethod();
+
+	if (m_Width % 8 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+	else if (m_Width % 4 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+	else if (m_Width % 2 == 0)
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+	else
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+	glTextureSubImage2D(m_RendererID, 0, 0, 0, m_Width, m_Height, m_DataFormat, m_Type, data);
+
+	stbi_image_free(data);
+
+	return true;
+}
+
+bool OpenGLTexture2D::LoadTextureFromMemory(const std::vector<uint8_t>& imageData)
+{
+	PROFILE_FUNCTION();
+
+	int width, height, channels;
+	stbi_set_flip_vertically_on_load(1);
+	stbi_uc* data = nullptr;
+	{
+		PROFILE_SCOPE("stbi Load Image OpenGLTexture2D(const std::vector<uint8_t>&)");
+		data = stbi_load_from_memory(imageData.data(), (int)imageData.size(), &width, &height, &channels, 0);
+	}
+
+	m_Width = (uint32_t)width;
+	m_Height = (uint32_t)height;
+
+	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
+
+	CORE_ASSERT(internalFormat && dataFormat, "Format not supported");
+	if (!(internalFormat && dataFormat))
+		return false;
+
+	m_InternalFormat = internalFormat;
+	m_DataFormat = dataFormat;
+	m_Type = GL_UNSIGNED_BYTE;
+
+	glCreateTextures(GL_TEXTURE_2D, 1, &m_RendererID);
+	glTextureStorage2D(m_RendererID, 1, m_InternalFormat, m_Width, m_Height);
 	SetFilteringAndWrappingMethod();
 
 	if (m_Width % 8 == 0)

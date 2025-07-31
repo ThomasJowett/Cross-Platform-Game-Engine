@@ -3,8 +3,14 @@
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Entity.h"
+#include "Scene/AssetManager.h"
 #include "box2d/box2d.h"
 #include "Logging/Instrumentor.h"
+
+LuaScriptComponent::LuaScriptComponent(const std::filesystem::path& filepath)
+{
+	script = AssetManager::GetAsset<LuaScript>(filepath);
+}
 
 LuaScriptComponent::~LuaScriptComponent()
 {
@@ -14,37 +20,30 @@ LuaScriptComponent::~LuaScriptComponent()
 	}
 }
 
-std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entity entity)
+bool LuaScriptComponent::ParseScript(Entity entity)
 {
-	LuaManager::GetState().collect_garbage();
-	if (absoluteFilepath.empty())
-	{
-		return std::make_pair(0, "No file loaded");
-	}
+	PROFILE_FUNCTION();
 
-	if (!std::filesystem::exists(absoluteFilepath))
+	LuaManager::GetState().collect_garbage();
+	if (!script)
 	{
-		return std::make_pair(0, "File does not exist");
+		return false;
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
-	sol::protected_function_result result = LuaManager::GetState().script_file(absoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+	sol::protected_function_result result = LuaManager::GetState().script(script->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
 	if (!result.valid())
 	{
 		sol::error error = result;
 
-		std::string errorStr = error.what();
-		int line = 1;
-		auto linepos = errorStr.find(".lua:");
-		std::string errorLine = errorStr.substr(linepos + 5); //+4 .lua: + 1
-		auto lineposEnd = errorLine.find(":");
-		errorLine = errorLine.substr(0, lineposEnd);
-		line = std::stoi(errorLine);
-		errorStr = errorStr.substr(linepos + errorLine.size() + lineposEnd + 4); //+4 .lua:
+		auto [line, file, errorStr] = ParseLuaError(error.what());
 
-		return std::make_pair(line, errorStr);
+		auto event = LuaErrorEvent(line, file, errorStr);
+		Application::CallEvent(event);
+
+		return false;
 	}
 
 	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
@@ -79,7 +78,7 @@ std::optional<std::pair<int, std::string>> LuaScriptComponent::ParseScript(Entit
 		m_OnEndContactFunc.reset();
 
 	LuaManager::GetState().collect_garbage();
-	return std::nullopt;
+	return true;
 }
 
 void LuaScriptComponent::OnCreate()
@@ -92,6 +91,10 @@ void LuaScriptComponent::OnCreate()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnCreate': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -106,6 +109,9 @@ void LuaScriptComponent::OnDestroy()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnDestroy': {0}", error.what());
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -120,6 +126,10 @@ void LuaScriptComponent::OnUpdate(float deltaTime)
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnUpdate': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -134,6 +144,10 @@ void LuaScriptComponent::OnFixedUpdate()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnFixedUpdate': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -148,6 +162,10 @@ void LuaScriptComponent::OnDebugRender()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnDebugRender': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -165,6 +183,10 @@ void LuaScriptComponent::OnBeginContact(b2Fixture* fixture, Vector2f normal, Vec
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnBeginContact': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -182,6 +204,10 @@ void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnEndContact': {0}", error.what());
+
+			auto [line, file, errorStr] = ParseLuaError(error.what());
+			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -189,4 +215,31 @@ void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
 bool LuaScriptComponent::IsContactListener()
 {
 	return m_OnBeginContactFunc || m_OnEndContactFunc;
+}
+
+std::tuple<int, std::string, std::string> LuaScriptComponent::ParseLuaError(const std::string& errorMessage)
+{
+	PROFILE_FUNCTION();
+	std::string errorStr = errorMessage;
+	int line = 1;
+	size_t chunkStart = errorStr.find("[string ");
+	if (chunkStart != std::string::npos) {
+		// Example: [string "chunk"]:3:
+		size_t closeQuote = errorStr.find("\"]:", chunkStart);
+		if (closeQuote != std::string::npos) {
+			size_t lineNumStart = closeQuote + 3;
+			size_t lineNumEnd = errorStr.find(':', lineNumStart);
+			if (lineNumEnd != std::string::npos) {
+				std::string lineStr = errorStr.substr(lineNumStart, lineNumEnd - lineNumStart);
+				try {
+					line = std::stoi(lineStr);
+				}
+				catch (...) {
+					line = 1;
+				}
+				errorStr = errorStr.substr(lineNumEnd + 1);
+			}
+		}
+	}
+	return std::make_tuple(line, script->GetFilepath().string(), errorStr);
 }

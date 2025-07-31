@@ -1,8 +1,8 @@
 #include "MainDockSpace.h"
 
-#ifdef __WINDOWS__
+#ifdef _WINDOWS
 #include <shellapi.h>
-#endif // __WINDOWS__
+#endif // _WINDOWS
 
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
@@ -32,7 +32,7 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
-#include "RuntimeExporter.h"
+#include "FileSystem/AssetPacker.h"
 
 #include "Engine.h"
 
@@ -278,13 +278,10 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
-
 				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
 				if (exportLocation.has_value())
 				{
-					RuntimeExporter exporter;
-					exporter.Init(exportLocation.value());
-					exporter.ExportGame();
+					Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory(), exportLocation.value()));
 				}
 			}
 			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
@@ -436,7 +433,10 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
+	if (!data.defaultScene.empty())
+		SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
+	else
+		SceneManager::ChangeScene("");
 }
 
 bool MainDockSpace::OnOpenProject(AppOpenDocumentChangedEvent& event)

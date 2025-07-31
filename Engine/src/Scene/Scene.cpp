@@ -67,6 +67,7 @@ Entity Scene::CreateEntity(const std::string& name)
 
 Entity Scene::CreateEntity(Uuid id, const std::string& name)
 {
+	PROFILE_FUNCTION();
 	Entity entity(m_Registry.create(), this, name);
 	entity.AddComponent<IDComponent>(id);
 	entity.AddComponent<NameComponent>(name.empty() ? "Unnamed Entity" : name);
@@ -91,6 +92,7 @@ void Scene::InstantiateScene(const Ref<Scene> prefab, const Vector3f& position)
 
 Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 {
+	PROFILE_FUNCTION();
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
 	doc.InsertFirstChild(pEntityElement);
@@ -108,10 +110,10 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
 	{
-		std::optional<std::pair<int, std::string>> result = scriptComponent->ParseScript(newEntity);
-		if (result.has_value())
+		bool result = scriptComponent->ParseScript(newEntity);
+		if (!result)
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent->absoluteFilepath, result.value().first, result.value().second);
+			ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
 		}
 	}
 	return Entity();
@@ -119,8 +121,13 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 
 bool Scene::RemoveEntity(Entity& entity)
 {
+	PROFILE_FUNCTION();
 	if (entity.BelongsToScene(this))
 	{
+		if (entity.HasComponent<LuaScriptComponent>())
+		{
+			LuaManager::GetSignalBus().Disconnect(entity);
+		}
 		if (m_IsUpdating) {
 			if (!m_Registry.any_of<DestroyMarker>(entity))
 				m_Registry.emplace<DestroyMarker>(entity);
@@ -136,6 +143,7 @@ bool Scene::RemoveEntity(Entity& entity)
 
 Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 {
+	PROFILE_FUNCTION();
 	std::string name = entity.GetName();
 	Entity newEntity = CreateEntity(name);
 
@@ -169,30 +177,32 @@ Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::OnRuntimeStart()
+void Scene::OnRuntimeStart(bool createSnapshot)
 {
 	PROFILE_FUNCTION();
 
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
-
-	std::stringstream().swap(m_Snapshot);
-	cereal::BinaryOutputArchive output(m_Snapshot);
-	entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+	if (createSnapshot)
+	{
+		std::stringstream().swap(m_Snapshot);
+		cereal::BinaryOutputArchive output(m_Snapshot);
+		entt::snapshot(m_Registry).entities(output).component<COMPONENTS>(output);
+	}
 
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
 		{
-			std::optional<std::pair<int, std::string>> result = scriptComponent.ParseScript(Entity{ entity, this });
-			if (result.has_value())
-			{
-				ENGINE_ERROR("Failed to parse lua script {0}({1}): {2}", scriptComponent.absoluteFilepath, result.value().first, result.value().second);
-			}
-			else
+			bool result = scriptComponent.ParseScript(Entity{ entity, this });
+			if (result)
 			{
 				scriptComponent.OnCreate();
 				scriptComponent.created = true;
+			}
+			else
+			{
+				ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent.script->GetFilepath().string());
 			}
 		});
 
@@ -215,13 +225,27 @@ void Scene::OnRuntimeStart()
 				ma_uint32 flags = audioSourceComponent.stream ? MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM : MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
 				if (audioSourceComponent.loop)
 					flags |= MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING;
-				if (ma_sound_init_from_file(
-					m_AudioEngine.get(), audioSourceComponent.audioClip->GetFilepath().string().c_str(),
+				if (AssetManager::HasBundle())
+				{
+					std::vector<uint8_t> data;
+					AssetManager::GetFileData(audioSourceComponent.audioClip->GetFilepath(), data);
+					audioSourceComponent.bundleStream = CreateRef<BundleAudioStream>();
+					audioSourceComponent.bundleStream->Init(audioSourceComponent.audioClip->GetFilepath(), audioSourceComponent.stream);
+
+					if (ma_sound_init_from_data_source(m_AudioEngine.get(), audioSourceComponent.bundleStream->GetDataSource(), flags, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+					{
+						ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
+					}
+				}
+				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath()); 
+					ma_sound_init_from_file(
+					m_AudioEngine.get(), absolutePath.string().c_str(),
 					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
 				{
 					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 				}
-				else
+				
+				if(audioSourceComponent.sound)
 				{
 					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
 					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
@@ -238,10 +262,10 @@ void Scene::OnRuntimeStart()
 					else {
 						ma_sound_set_spatialization_enabled(audioSourceComponent.sound.get(), false);
 					}
-				}
 
-				if (audioSourceComponent.playOnStart)
-					audioSourceComponent.play = true;
+					if (audioSourceComponent.playOnStart)
+						audioSourceComponent.play = true;
+				}
 			}
 		});
 }
@@ -284,11 +308,12 @@ void Scene::OnRuntimeStop()
 	std::stringstream().swap(m_Snapshot);
 	m_Dirty = false;
 	AssetManager::CleanUp();
+	Renderer::ClearPostProcessEffects();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection)
+void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection)
 {
 	PROFILE_FUNCTION();
 
@@ -320,8 +345,6 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	}
 
 	SceneGraph::Traverse(m_Registry);
-	if (renderTarget != nullptr)
-		renderTarget->Bind();
 
 	Renderer::BeginScene(cameraTransform, projection);
 
@@ -398,10 +421,11 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 
 	Renderer::EndScene();
 
-	if (renderTarget != nullptr)
-		RenderCommand::ClearDepth();
-
-	SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+	//TODO: UI Traverse
+	return;
+	/*
+		SceneGraph::TraverseUI(m_Registry, renderTarget->GetSpecification().width, renderTarget->GetSpecification().height);
+	}
 
 	float halfWidth = renderTarget->GetSpecification().width / 2.0f;
 	float halfHeight = renderTarget->GetSpecification().height / 2.0f;
@@ -431,13 +455,12 @@ void Scene::Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransfo
 	}
 	Renderer::EndScene();
 
-	if (renderTarget != nullptr)
-		renderTarget->UnBind();
+		*/
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Scene::Render(Ref<FrameBuffer> renderTarget)
+void Scene::Render()
 {
 	PROFILE_FUNCTION();
 
@@ -453,7 +476,7 @@ void Scene::Render(Ref<FrameBuffer> renderTarget)
 		projection = cameraComp.camera.GetProjectionMatrix();
 	}
 
-	Render(renderTarget, view, projection);
+	Render(view, projection);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -623,22 +646,26 @@ void Scene::OnFixedUpdate()
 
 		m_Registry.view<TransformComponent, BoxCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				if (colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
 		m_Registry.view<TransformComponent, CircleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				if (colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
 		m_Registry.view<TransformComponent, PolygonCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				if (colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
 		m_Registry.view<TransformComponent, CapsuleCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
 			{
-				colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				if (colliderComp.runtimeBody)
+					colliderComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
 		m_Registry.view<TransformComponent, TilemapComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
@@ -778,6 +805,23 @@ bool Scene::Load(bool binary)
 	return true;
 }
 
+bool Scene::Load(const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+
+	SceneSerializer sceneSerializer = SceneSerializer(this);
+	if (!sceneSerializer.Deserialize(m_Filepath, data))
+	{
+		ENGINE_ERROR("Failed to load scene from memory. {0}", m_Filepath.string());
+	}
+
+	m_Dirty = false;
+	SceneLoadedEvent event(m_Filepath);
+	Application::CallEvent(event);
+
+	return true;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::SetFilepath(std::filesystem::path filepath)
@@ -789,10 +833,12 @@ void Scene::SetFilepath(std::filesystem::path filepath)
 		if (std::filesystem::exists(Application::GetWorkingDirectory() / filepath))
 		{
 			m_Filepath = filepath;
+			m_Filepath.make_preferred();
 		}
 		else if (std::filesystem::exists(Application::GetOpenDocumentDirectory() / filepath))
 		{
 			m_Filepath = filepath;
+			m_Filepath.make_preferred();
 		}
 	}
 }
@@ -855,6 +901,19 @@ Entity Scene::GetEntityByPath(const std::string& path)
 		else
 			return Entity();
 	}
+}
+
+std::tuple<Matrix4x4, Matrix4x4> Scene::GetPrimaryCameraViewProjection()
+{
+	Entity cameraEntity = GetPrimaryCameraEntity();
+	if (cameraEntity)
+	{
+		auto [cameraComp, transformComp] = cameraEntity.GetComponents<CameraComponent, TransformComponent>();
+		Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate(Quaternion(transformComp.rotation));
+		Matrix4x4 projection = cameraComp.camera.GetProjectionMatrix();
+		return std::make_tuple(view, projection);
+	}
+	return std::tuple<Matrix4x4, Matrix4x4>();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

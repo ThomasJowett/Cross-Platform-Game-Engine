@@ -12,6 +12,7 @@ void BindInput(sol::state& state);
 void BindMath(sol::state& state);
 void BindCommonTypes(sol::state& state);
 void BindDebug(sol::state& state);
+void BindSignaling(sol::state& state);
 
 template<typename T, typename... Args>
 void SetFunction(T& type, const std::string& name, const std::string& description, Args&&... args)

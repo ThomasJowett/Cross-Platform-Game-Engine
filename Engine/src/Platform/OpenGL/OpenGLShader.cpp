@@ -3,6 +3,7 @@
 #include "Logging/Instrumentor.h"
 #include "Core/core.h"
 #include <glad/glad.h>
+#include "Scene/AssetManager.h"
 
 #include <fstream>
 #include <filesystem>
@@ -24,11 +25,36 @@ static GLenum ShaderTypeToGLShaderType(const Shader::ShaderTypes& type)
 	}
 }
 
-OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory)
+OpenGLShader::OpenGLShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
-	Compile(LoadShaderSources(fileDirectory / name));
+
+	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
+
+	if (!LoadShaderSourcesFromDisk(Application::GetWorkingDirectory() / fileDirectory / name, shaderSources))
+		LoadShaderSourcesFromBundle(fileDirectory / name, shaderSources);
+
+	if (postProcess && shaderSources.find(Shader::ShaderTypes::VERTEX) == shaderSources.end())
+	{
+		// load default vertex shader for post processing
+		shaderSources[Shader::ShaderTypes::VERTEX] = R"(
+			#version 330 core
+			layout(location = 0) in vec2 a_Position;
+			layout(location = 1) in vec2 a_TexCoord;
+			out vec2 v_TexCoord;
+			void main()
+			{
+				gl_Position = vec4(a_Position, 0.0, 1.0);
+				v_TexCoord = vec2(a_TexCoord.x, 1.0 - a_TexCoord.y);
+			}
+		)";
+	}
+
+
+	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
+
+	Compile(shaderSources);
 }
 
 OpenGLShader::OpenGLShader(const std::string& name, const std::string& vertexSource, const std::string& fragmentSource)
@@ -62,13 +88,12 @@ void OpenGLShader::UnBind() const
 	glUseProgram(0);
 }
 
-std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSources(const std::filesystem::path& filepath)
+bool OpenGLShader::LoadShaderSourcesFromDisk(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources)
 {
 	PROFILE_FUNCTION();
-	std::unordered_map<Shader::ShaderTypes, std::string> shaderSources;
 
 	if (filepath.empty())
-		return shaderSources;
+		return false;
 
 	std::filesystem::path shaderPath = filepath;
 
@@ -104,9 +129,58 @@ std::unordered_map<Shader::ShaderTypes, std::string> OpenGLShader::LoadShaderSou
 		shaderSources[Shader::ShaderTypes::COMPUTE] = ReadFile(shaderPath);
 	}
 
-	CORE_ASSERT(shaderSources.size() != 0, "No shader files found!");
+	return !shaderSources.empty();
+}
 
-	return shaderSources;
+bool OpenGLShader::LoadShaderSourcesFromBundle(const std::filesystem::path& filepath, std::unordered_map<Shader::ShaderTypes, std::string>& shaderSources)
+{
+	PROFILE_FUNCTION();
+	if (!AssetManager::HasBundle())
+	{
+		ENGINE_ERROR("No Asset Bundle loaded");
+		return false;
+	}
+	std::vector<uint8_t> data;
+
+	std::filesystem::path shaderPath = filepath;
+
+	shaderPath.replace_extension(".vert");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::VERTEX] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".tesc");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::TESS_HULL] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".tese");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::TESS_DOMAIN] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".geom");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::GEOMETRY] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".frag");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::PIXEL] = shaderSource;
+	}
+
+	shaderPath.replace_extension(".comp");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+		shaderSources[Shader::ShaderTypes::COMPUTE] = shaderSource;
+	}
+
+	return !shaderSources.empty();
 }
 
 std::string OpenGLShader::ReadFile(const std::filesystem::path& filepath)

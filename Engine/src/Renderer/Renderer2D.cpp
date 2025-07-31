@@ -268,9 +268,8 @@ bool Renderer2D::Init()
 
 	// Textures & Shaders -------------------------------------------------------------------------------
 
-	s_Data.whiteTexture = Texture2D::Create(1, 1);
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_Data.whiteTexture->SetData(&whiteTextureData);
+	s_Data.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &whiteTextureData);
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
@@ -967,7 +966,7 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	for (uint32_t i = 1; i < s_Data.fontAtlasSlotIndex; i++)
 	{
-		if (*s_Data.fontAtlasSlots[i].get() == *fontAtlas.get())
+		if (s_Data.fontAtlasSlots[i]->GetFilepath() == fontAtlas->GetFilepath())
 		{
 			textureIndex = (float)i;
 			break;
@@ -976,6 +975,9 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 	if (textureIndex == 0.0f)
 	{
+		if (s_Data.fontAtlasSlotIndex >= Renderer2DData::maxTexturesSlots)
+			NextTextBatch();
+
 		textureIndex = (float)s_Data.fontAtlasSlotIndex;
 		s_Data.fontAtlasSlots[s_Data.fontAtlasSlotIndex] = fontAtlas;
 		s_Data.fontAtlasSlotIndex++;

@@ -6,8 +6,9 @@
 class OpenGLTexture2D : public Texture2D
 {
 public:
-	OpenGLTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels);
+	OpenGLTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels);
 	OpenGLTexture2D(const std::filesystem::path& filepath);
+	OpenGLTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData);
 	virtual ~OpenGLTexture2D();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
@@ -17,11 +18,9 @@ public:
 
 	virtual void Bind(uint32_t slot) const override;
 
-	virtual std::string GetName() const override;
+	virtual uint32_t GetRendererID() const override;
 
-	virtual void* GetRendererID() const override;
-
-	virtual void Reload() override;
+	virtual bool Reload() override;
 
 	virtual bool operator==(const Texture& other) const override;
 
@@ -32,6 +31,8 @@ private:
 	void NullTexture();
 
 	bool LoadTextureFromFile();
+
+	bool LoadTextureFromMemory(const std::vector<uint8_t>& imageData);
 
 	void SetFilteringAndWrappingMethod();
 	uint32_t m_Width, m_Height;

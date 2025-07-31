@@ -80,6 +80,8 @@ add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
 add_subdirectory(Engine/vendor/box2d)
 add_subdirectory(Engine/vendor/glfw3webgpu)
+add_subdirectory(Engine/vendor/tracy)
+add_subdirectory(Engine/vendor/sol)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 
@@ -96,3 +98,6 @@ set_target_properties(msdf-atlas-gen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msd
 set_target_properties(msdfgen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msdfgen)
 set_target_properties(OpenFBX PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
 set_target_properties(miniaudio PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+set_target_properties(TracyClient PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+
+

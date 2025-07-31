@@ -16,6 +16,11 @@ Material::Material(const std::filesystem::path& filepath)
 	Load(filepath);
 }
 
+Material::Material(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	Load(filepath, data);
+}
+
 Material::Material(const std::string& shader, Colour tint)
 	:m_Shader(shader), m_Tint(tint), Asset()
 {
@@ -52,63 +57,50 @@ void Material::AddTexture(Ref<Texture2D> texture, uint32_t slot)
 
 bool Material::Load(const std::filesystem::path& filepath)
 {
-	if (!std::filesystem::exists(filepath))
+	PROFILE_FUNCTION();
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+	if (!std::filesystem::exists(absolutePath))
 	{
 		return false;
 	}
 
 	tinyxml2::XMLDocument doc;
 
-	if (doc.LoadFile(filepath.string().c_str()) == tinyxml2::XML_SUCCESS)
+	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
-		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Material");
-
-		if (!pRoot)
+		if (!LoadXML(&doc))
 		{
-			ENGINE_ERROR("Could not read material file, no material node {0}", filepath);
+			ENGINE_ERROR("Could not load material file: {0}", absolutePath);
 			return false;
-		}
-
-		m_Filepath = filepath;
-		m_Textures.clear();
-
-		SerializationUtils::Decode(pRoot->FirstChildElement("Tint"), m_Tint);
-
-		m_TwoSided = pRoot->BoolAttribute("IsTwoSided", false);
-		m_Transparent = pRoot->BoolAttribute("Transparent", false);
-		m_CastShadows = pRoot->BoolAttribute("CastShadows", true);
-
-		const char* shaderChar = pRoot->Attribute("Shader");
-
-		if(shaderChar)
-			m_Shader = shaderChar;
-
-		tinyxml2::XMLElement* pTextureElement = pRoot->FirstChildElement("Texture");
-
-		while (pTextureElement)
-		{
-			Ref<Texture2D> texture;
-			SerializationUtils::Decode(pTextureElement, texture);
-
-			if (!texture)
-			{
-				texture = Texture2D::Create("");
-			}
-
-			uint32_t slot = 1;
-
-			pTextureElement->QueryUnsignedAttribute("Slot", &slot);
-
-			AddTexture(texture, slot);
-			pTextureElement = pTextureElement->NextSiblingElement("Texture");
 		}
 	}
 	else
 	{
-		ENGINE_ERROR("Could not load material {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		ENGINE_ERROR("Could not load material {0}. {1} on line {2}", absolutePath, doc.ErrorName(), doc.ErrorLineNum());
 		return false;
 	}
 
+	m_Filepath = filepath;
+	m_Filepath.make_preferred();
+
+	return true;
+}
+
+bool Material::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
+	{
+		if (!LoadXML(&doc))
+		{
+			ENGINE_ERROR("Could not load material from memory: {0}", filepath);
+			return false;
+		}
+	}
+
+	m_Filepath = filepath;
+	m_Filepath.make_preferred();
 	return true;
 }
 
@@ -116,6 +108,7 @@ bool Material::Load(const std::filesystem::path& filepath)
 
 bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 {
+	PROFILE_FUNCTION();
 	tinyxml2::XMLDocument doc;
 	tinyxml2::XMLElement* pRoot = doc.NewElement("Material");
 
@@ -138,7 +131,9 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 		SerializationUtils::Encode(pTextureElement, texture);
 	}
 
-	tinyxml2::XMLError error = doc.SaveFile(filepath.string().c_str());
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+
+	tinyxml2::XMLError error = doc.SaveFile(absolutePath.string().c_str());
 	return error == tinyxml2::XML_SUCCESS;
 }
 
@@ -151,6 +146,7 @@ bool Material::SaveMaterial() const
 
 Ref<Material> Material::GetDefaultMaterial()
 {
+	PROFILE_FUNCTION();
 	if (!s_DefaultMaterial)
 	{
 		s_DefaultMaterial = CreateRef<Material>();
@@ -168,9 +164,55 @@ Ref<Material> Material::GetDefaultMaterial()
 			}
 		}
 
-		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, &textureData);
+		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, false, &textureData);
 
 		s_DefaultMaterial->AddTexture(texture, 0);
 	}
 	return s_DefaultMaterial;
+}
+
+bool Material::LoadXML(tinyxml2::XMLDocument* doc)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLElement* pRoot = doc->FirstChildElement("Material");
+
+	if (!pRoot)
+	{
+		ENGINE_ERROR("Could not read material file, no material node");
+		return false;
+	}
+
+	m_Textures.clear();
+
+	SerializationUtils::Decode(pRoot->FirstChildElement("Tint"), m_Tint);
+
+	m_TwoSided = pRoot->BoolAttribute("IsTwoSided", false);
+	m_Transparent = pRoot->BoolAttribute("Transparent", false);
+	m_CastShadows = pRoot->BoolAttribute("CastShadows", true);
+
+	const char* shaderChar = pRoot->Attribute("Shader");
+
+	if (shaderChar)
+		m_Shader = shaderChar;
+
+	tinyxml2::XMLElement* pTextureElement = pRoot->FirstChildElement("Texture");
+
+	while (pTextureElement)
+	{
+		Ref<Texture2D> texture;
+		SerializationUtils::Decode(pTextureElement, texture);
+
+		if (!texture)
+		{
+			texture = Texture2D::Create("");
+		}
+
+		uint32_t slot = 1;
+
+		pTextureElement->QueryUnsignedAttribute("Slot", &slot);
+
+		AddTexture(texture, slot);
+		pTextureElement = pTextureElement->NextSiblingElement("Texture");
+	}
+	return true;
 }

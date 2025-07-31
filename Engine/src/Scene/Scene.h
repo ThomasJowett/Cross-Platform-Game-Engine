@@ -31,15 +31,17 @@ public:
 
 	Entity DuplicateEntity(Entity entity, Entity parent);
 
-	void OnRuntimeStart();
+	void OnRuntimeStart(bool createSnapshot = true);
 	void OnRuntimePause();
 	void OnRuntimeStop();
 
 	// Render the scene to the render target from the camera transform and projection
-	void Render(Ref<FrameBuffer> renderTarget, const Matrix4x4& cameraTransform, const Matrix4x4& projection);
+	void Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection);
 
 	// Render the scene to the render target from the primary camera entity in the scene
-	void Render(Ref<FrameBuffer> renderTarget);
+	void Render();
+
+	void RenderUI(uint32_t canvasWidth, uint32_t canvasHeight);
 
 	// Called once per frame
 	void OnUpdate(float deltaTime);
@@ -54,6 +56,7 @@ public:
 	void Save(bool binary = false);
 	void Save(std::filesystem::path filepath, bool binary = false);
 	bool Load(bool binary = false);
+	bool Load(const std::vector<uint8_t>& data);
 
 	void MakeDirty() { m_Dirty = true; }
 	bool IsDirty() const { return m_Dirty; }
@@ -69,6 +72,8 @@ public:
 	Entity GetPrimaryListenerEntity();
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
+
+	std::tuple<Matrix4x4, Matrix4x4> GetPrimaryCameraViewProjection();
 
 	void SetShowDebug(bool show);
 

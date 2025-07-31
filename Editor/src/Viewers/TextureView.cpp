@@ -39,7 +39,8 @@ void TextureView::OnImGuiRender()
 
 		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());
 		ImGui::TextUnformatted(size.c_str());
-		ImGui::TextUnformatted(m_Texture->GetFilepath().string().c_str());
+		auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Texture->GetFilepath());
+		ImGui::TextUnformatted(absolutePath.string().c_str());
 
 		const bool is_selected = false;
 		bool edited = false;

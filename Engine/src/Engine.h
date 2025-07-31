@@ -22,7 +22,7 @@
 
 // Imgui
 #include "ImGui/ImGuiManager.h"
-#include "ImGui/ImGuiUtilites.h"
+#include "ImGui/ImGuiUtilities.h"
 
 // Renderer
 #include "Renderer/Camera.h"

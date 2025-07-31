@@ -2,10 +2,14 @@
 #include "Renderer.h"
 #include "Renderer2D.h"
 #include "RenderCommand.h"
+#include "RenderPipeline.h"
+
 
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
 #include "Asset/Texture.h"
+#include "Scene/Entity.h"
+#include "Scene/Components/CameraComponent.h"
 
 #include "Core/core.h"
 
@@ -58,6 +62,7 @@ struct SceneData
 RendererData s_RendererData;
 SceneData s_SceneData;
 ShaderLibrary s_ShaderLibrary;
+Scope<RenderPipeline> s_RenderPipeline;
 
 std::vector<Command> s_OpaqueRenderQueue;
 std::vector<Command> s_TransparentRenderQueue;
@@ -112,15 +117,15 @@ bool Renderer::Init()
 	s_SceneData.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
 
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
-	s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, &whiteTextureData);
+	s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &whiteTextureData);
 
-	s_RendererData.normalTexture = Texture2D::Create(1, 1);
 	uint32_t normalTextureData = Colour(0.5f, 0.5f, 1.0f, 1.0f).HexValue();
-	s_RendererData.normalTexture->SetData(&normalTextureData);
+	s_RendererData.normalTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &normalTextureData);
 
-	s_RendererData.mixMapTexture = Texture2D::Create(1, 1);
 	uint32_t mixMapTextureData = Colour(0.5f, 0.0f, 0.5f, 1.0f).HexValue();
-	s_RendererData.mixMapTexture->SetData(&mixMapTextureData);
+	s_RendererData.mixMapTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, false, &mixMapTextureData);
+
+	s_RenderPipeline = CreateScope<RenderPipeline>();
 
 	if (RenderCommand::Init())
 		return Renderer2D::Init();
@@ -132,6 +137,7 @@ bool Renderer::Init()
 void Renderer::Shutdown()
 {
 	Renderer2D::Shutdown();
+	s_RenderPipeline.reset();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -139,6 +145,8 @@ void Renderer::Shutdown()
 void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 {
 	RenderCommand::SetViewport(0, 0, width, height);
+	if (s_RenderPipeline)
+		s_RenderPipeline->Resize(width, height);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -191,6 +199,8 @@ void Renderer::SetDrawMode(DrawMode drawMode)
 
 void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform, int entityId, uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset)
 {
+	if (!mesh)
+		return;
 	Command command;
 	command.entityId = entityId;
 	command.indexCount = indexCount ? indexCount : mesh->GetIndexCount();
@@ -224,4 +234,40 @@ void Renderer::Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& ma
 	{
 		Submit(mesh, materials[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
 	}
+}
+
+void Renderer::RenderScene(Scene* scene)
+{
+	PROFILE_FUNCTION();
+	auto [view, projection] = scene->GetPrimaryCameraViewProjection();
+	s_RenderPipeline->Render(scene, view, projection, nullptr);
+}
+
+void Renderer::RenderScene(Scene* scene, const Matrix4x4& view, const Matrix4x4& projection, Ref<FrameBuffer> finalOutputTarget)
+{
+	PROFILE_FUNCTION();
+	s_RenderPipeline->Render(scene, view, projection, finalOutputTarget);
+}
+
+Ref<Shader> Renderer::GetShader(const std::string& name, bool postProcess)
+{
+	return s_ShaderLibrary.Load(name, postProcess);
+}
+
+void Renderer::AddPostProcessEffect(const Ref<PostProcessEffect>& effect)
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->AddPostProcessEffect(effect);
+}
+
+void Renderer::RemovePostProcessEffect(const Ref<PostProcessEffect>& effect)
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->RemovePostProcessEffect(effect);
+}
+
+void Renderer::ClearPostProcessEffects()
+{
+	if (s_RenderPipeline)
+		s_RenderPipeline->ClearPostProcessEffects();
 }

@@ -34,9 +34,10 @@ void AudioView::OnAttach()
 
 	m_Sound = CreateRef<ma_sound>();
 	ma_uint32 flags = MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
-	if (ma_sound_init_from_file(m_AudioEngine.get(), m_Filepath.string().c_str(), flags, NULL, NULL, m_Sound.get()) != MA_SUCCESS)
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
+	if (ma_sound_init_from_file(m_AudioEngine.get(), absolutePath.string().c_str(), flags, NULL, NULL, m_Sound.get()) != MA_SUCCESS)
 	{
-		ENGINE_ERROR("Failed to create sound for audio file: {0}", m_Filepath);
+		ENGINE_ERROR("Failed to create sound for audio file: {0}", absolutePath);
 		return;
 	}
 
@@ -46,9 +47,9 @@ void AudioView::OnAttach()
 	ma_sound_get_cursor_in_seconds(m_Sound.get(), &m_PlaybackTime);
 
 	ma_decoder decoder;
-	if (ma_decoder_init_file(m_Filepath.string().c_str(), NULL, &decoder) != MA_SUCCESS)
+	if (ma_decoder_init_file(absolutePath.string().c_str(), NULL, &decoder) != MA_SUCCESS)
 	{
-		ENGINE_ERROR("Failed to decode audio file: {0}", m_Filepath);
+		ENGINE_ERROR("Failed to decode audio file: {0}", absolutePath);
 		return;
 	}
 

@@ -4,6 +4,7 @@
 #include "Contact2D.h"
 
 #include "Scene/Entity.h"
+#include "Scene/SceneGraph.h"
 #include "Scene/Components/RigidBody2DComponent.h"
 #include "Scene/Components/BoxCollider2DComponent.h"
 #include "Scene/Components/CircleCollider2DComponent.h"
@@ -12,10 +13,12 @@
 #include "Scene/Components/TilemapComponent.h"
 #include "Scene/Components/LuaScriptComponent.h"
 #include "Scene/Components/HierarchyComponent.h"
+#include "Scene/Components/WeldJoint2DComponent.h"
 #include "Renderer/Renderer2D.h"
 #include "box2d/box2d.h"
 #include "Utilities/Box2DDebugDraw.h"
 #include "Utilities/Triangulation.h"
+#include "Logging/Instrumentor.h"
 
 #define COLLIDER_COMPONENTS	\
 BoxCollider2DComponent,		\
@@ -24,8 +27,12 @@ PolygonCollider2DComponent,	\
 CapsuleCollider2DComponent,	\
 TilemapComponent			\
 
+#define JOINT_COMPONENTS \
+WeldJoint2DComponent	 \
+
 uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 {
+	PROFILE_FUNCTION();
 	switch (type)
 	{
 	case RigidBody2DComponent::BodyType::STATIC:
@@ -40,6 +47,7 @@ uint32_t GetRigidBodyBox2DType(RigidBody2DComponent::BodyType type)
 
 void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMaterial)
 {
+	PROFILE_FUNCTION();
 	if (physicsMaterial)
 	{
 		fixtureDef.density = physicsMaterial->GetDensity();
@@ -58,30 +66,35 @@ void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMa
 PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	:m_Scene(scene)
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld = CreateScope<b2World>(b2Vec2(gravity.x, gravity.y));
 	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
 
-	m_Scene->GetRegistry().view<TransformComponent>().each(
+	b2BodyDef worldBodyDef;
+	worldBodyDef.position.Set(0.0f, 0.0f);
+	worldBodyDef.type = b2_staticBody;
+
+	m_WorldBody = m_Box2DWorld->CreateBody(&worldBodyDef);
+
+	m_Scene->GetRegistry().view<TransformComponent>(entt::exclude<HierarchyComponent>).each(
 		[this](const auto physicsEntity, auto& transformComp)
 		{
-			Entity entity = { physicsEntity, m_Scene };
-
-			// if an entity has physics it must not have a parent for the physics position to work correctly
-			if (entity.HasComponent<HierarchyComponent>() && entity.HasComponent<RigidBody2DComponent>())
-			{
-				Vector3f position;
-				Vector3f rotation;
-				Vector3f scale;
-				transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
-				//SceneGraph::Unparent(entity, m_Registry);
-				//transformComp.position = position;
-				//transformComp.rotation = rotation;
-				//transformComp.scale = scale;
-			}
-
-			InitializeEntity(entity);
+			InitializeEntity({ physicsEntity, m_Scene });
 		});
+
+	auto& registry = m_Scene->GetRegistry();
+
+	auto view = registry.view<TransformComponent, HierarchyComponent>();
+
+	for (auto entityHandle : view)
+	{
+		auto& hierarchyComp = view.get<HierarchyComponent>(entityHandle);
+		if (hierarchyComp.parent == entt::null && hierarchyComp.isActive)
+		{
+			InitializeEntity({ entityHandle, m_Scene });
+		}
+	}
 }
 
 PhysicsEngine2D::~PhysicsEngine2D()
@@ -90,6 +103,7 @@ PhysicsEngine2D::~PhysicsEngine2D()
 
 void PhysicsEngine2D::OnFixedUpdate()
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), m_VelocityIterations, m_PositionIterations);
 
 	m_Scene->GetRegistry().view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
@@ -116,19 +130,45 @@ void PhysicsEngine2D::OnFixedUpdate()
 
 void PhysicsEngine2D::OnRender()
 {
+	PROFILE_FUNCTION();
 	if (m_Box2DDraw)
 		m_Box2DWorld->DebugDraw();
 }
 
 void PhysicsEngine2D::RemoveOldContacts()
 {
+	PROFILE_FUNCTION();
 	m_ContactListener->RemoveOld();
 }
 
 void PhysicsEngine2D::InitializeEntity(Entity entity)
 {
+	PROFILE_FUNCTION();
 	b2Body* body = nullptr;
 	TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
+
+	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+
+	entt::entity parent = entt::null;
+	entt::entity firstChild = entt::null;
+	entt::entity nextSibling = entt::null;
+
+	if (hierarchyComp && hierarchyComp->parent != entt::null)
+	{
+		parent = hierarchyComp->parent;
+		firstChild = hierarchyComp->firstChild;
+		nextSibling = hierarchyComp->nextSibling;
+		Vector3f position;
+		Vector3f rotation;
+		Vector3f scale;
+		Matrix4x4 transform = transformComp.GetWorldMatrix();
+
+		transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
+		SceneGraph::Unparent(entity);
+		transformComp.position = position;
+		transformComp.rotation = rotation;
+		transformComp.scale = scale;
+	}
 
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 	{
@@ -170,6 +210,13 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 	if (entity.HasComponent<BoxCollider2DComponent>())
 	{
 		auto& boxColliderComp = entity.GetComponent<BoxCollider2DComponent>();
+
+		constexpr float MinBoxSize = 0.001f;
+
+		if(std::abs(boxColliderComp.size.x) <= MinBoxSize)
+			boxColliderComp.size.x = MinBoxSize;
+		if (std::abs(boxColliderComp.size.y) <= MinBoxSize)
+			boxColliderComp.size.y = MinBoxSize;
 
 		b2PolygonShape boxShape;
 		boxShape.SetAsBox(abs(boxColliderComp.size.x * transformComp.scale.x), abs(boxColliderComp.size.y * transformComp.scale.y),
@@ -408,10 +455,57 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 
 		tilemapComp->runtimeBody = body;
 	}
+
+	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
+	{
+		b2WeldJointDef jointDef;
+		weldJointComp->bodyA = body;
+		weldJointComp->entityA = entity.GetHandle();
+		weldJointComp->entityB = parent;
+
+		if (weldJointComp->entityB != entt::null) {
+			if (RigidBody2DComponent* rigidBodyComp = m_Scene->GetRegistry().try_get<RigidBody2DComponent>(weldJointComp->entityB)) {
+				weldJointComp->bodyB = rigidBodyComp->runtimeBody;
+			}
+			else if (TilemapComponent* tilemapComp = m_Scene->GetRegistry().try_get<TilemapComponent>(weldJointComp->entityB)) {
+				weldJointComp->bodyB = tilemapComp->runtimeBody;
+			}
+			else {
+				weldJointComp->bodyB = m_WorldBody;
+			}
+		} else {
+			weldJointComp->bodyB = m_WorldBody;
+		}
+		b2Vec2 worldAnchor = weldJointComp->bodyB->GetWorldCenter();
+
+		jointDef.bodyA = weldJointComp->bodyA;
+		jointDef.bodyB = weldJointComp->bodyB;
+		jointDef.localAnchorA = weldJointComp->bodyA->GetLocalPoint(worldAnchor);
+		jointDef.localAnchorB = weldJointComp->bodyB->GetLocalPoint(worldAnchor);
+		jointDef.referenceAngle = jointDef.bodyB->GetAngle() - jointDef.bodyA->GetAngle();
+		jointDef.collideConnected = weldJointComp->collideConnected;
+		jointDef.damping = weldJointComp->damping;
+		jointDef.stiffness = weldJointComp->stiffness;
+		jointDef.userData.pointer = (uintptr_t)entity.GetHandle();
+		weldJointComp->joint = (b2WeldJoint*)m_Box2DWorld->CreateJoint(&jointDef);
+	}
+
+	// Initialize the first child
+	if (firstChild != entt::null)
+	{
+		InitializeEntity({ firstChild, m_Scene });
+	}
+
+	// Initialize the next sibling
+	if (nextSibling != entt::null)
+	{
+		InitializeEntity({ nextSibling, m_Scene });
+	}
 }
 
 void PhysicsEngine2D::DestroyEntity(Entity entity)
 {
+	PROFILE_FUNCTION();
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 		m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
 	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
@@ -424,15 +518,20 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
 	else if (TilemapComponent* colliderComp = entity.TryGetComponent<TilemapComponent>())
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+
+	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
+		m_Box2DWorld->DestroyJoint(weldJointComp->joint);
 }
 
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
 {
+	PROFILE_FUNCTION();
 	m_Box2DWorld->SetGravity(b2Vec2(gravity.x, gravity.y));
 }
 
 HitResult2D PhysicsEngine2D::RayCast(Vector2f begin, Vector2f end)
 {
+	PROFILE_FUNCTION();
 	HitResult2D callback;
 	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
 
@@ -449,6 +548,7 @@ HitResult2D PhysicsEngine2D::RayCast(Vector2f begin, Vector2f end)
 
 std::vector<HitResult2D> PhysicsEngine2D::MultiRayCast2D(Vector2f begin, Vector2f end)
 {
+	PROFILE_FUNCTION();
 	RayCastMultipleCallback callback;
 	m_Box2DWorld->RayCast(&callback, b2Vec2(begin.x, begin.y), b2Vec2(end.x, end.y));
 
@@ -457,6 +557,7 @@ std::vector<HitResult2D> PhysicsEngine2D::MultiRayCast2D(Vector2f begin, Vector2
 
 void PhysicsEngine2D::ShowDebugDraw(bool show)
 {
+	PROFILE_FUNCTION();
 	if (show) {
 		m_Box2DDraw = CreateScope<Box2DDebugDraw>();
 		m_Box2DDraw->SetFlags(b2Draw::e_shapeBit);

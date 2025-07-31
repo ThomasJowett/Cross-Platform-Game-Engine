@@ -14,7 +14,7 @@ void RuntimeLayer::OnAttach()
 void RuntimeLayer::OnUpdate(float deltaTime)
 {
 	RenderCommand::Clear();
-	SceneManager::CurrentScene()->Render(nullptr);
+	Renderer::RenderScene(SceneManager::CurrentScene());
 }
 
 void RuntimeLayer::OnEvent(Event& event)

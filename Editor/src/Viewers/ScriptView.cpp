@@ -15,11 +15,14 @@ ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 
 void ScriptView::OnAttach()
 {
-	if (!std::filesystem::exists(m_FilePath))
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath);
+	if (!std::filesystem::exists(absolutePath))
 	{
 		ViewerManager::CloseViewer(m_FilePath);
 		return;
 	}
+
+	m_Script = AssetManager::GetAsset<LuaScript>(m_FilePath);
 
 	m_WindowName = ICON_FA_FILE_CODE + std::string(" " + m_FilePath.filename().string());
 
@@ -37,14 +40,14 @@ void ScriptView::OnAttach()
 
 	m_TextEditor.SetLanguageDefinition(lang);
 
-	std::ifstream file(m_FilePath);
+	std::ifstream file(absolutePath);
 
 	if (file.good())
 	{
 		std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
 
 		m_TextEditor.SetText(str);
-		m_TextEditor.SetFilePath(m_FilePath);
+		m_TextEditor.SetFilePath(absolutePath);
 	}
 	Settings::SetDefaultBool("TextEditor", "ShowWhiteSpace", true);
 	m_TextEditor.SetShowWhitespaces(Settings::GetBool("TextEditor", "ShowWhiteSpace"));
@@ -73,7 +76,7 @@ void ScriptView::OnImGuiRender()
 			ImGui::TextUnformatted("Save unsaved changes?");
 			if (ImGui::Button("Save"))
 			{
-				m_TextEditor.SaveTextToFile(m_FilePath);
+				Save();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::SameLine();
@@ -173,15 +176,34 @@ void ScriptView::OnImGuiRender()
 	ImGui::End();
 }
 
+void ScriptView::OnEvent(Event& event)
+{
+	PROFILE_FUNCTION();
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<LuaErrorEvent>([this](LuaErrorEvent& luaErrorEvent)
+		{
+			if (luaErrorEvent.GetFile() == m_Script->GetFilepath()) {
+				TextEditor::ErrorMarkers errorMarkers;
+				errorMarkers.emplace(luaErrorEvent.GetLine(), luaErrorEvent.GetErrorMessage());
+				m_TextEditor.SetErrorMarkers(errorMarkers);
+			}
+			return false;
+		});
+}
+
 void ScriptView::Save()
 {
-	if (!IsReadOnly())
-		m_TextEditor.SaveTextToFile(m_FilePath);
+	if (!IsReadOnly()) {
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath);
+		m_TextEditor.SaveTextToFile(absolutePath);
+	}
 
 	if (m_FilePath.extension() == ".lua")
 	{
 		ParseLuaScript();
 	}
+
+	m_Script->Load(m_FilePath);
 }
 
 void ScriptView::SaveAs()
@@ -221,17 +243,12 @@ TextEditor::LanguageDefinition ScriptView::DetermineLanguageDefinition()
 
 void ScriptView::ParseLuaScript()
 {
+	TextEditor::ErrorMarkers errorMarkers;
+	m_TextEditor.SetErrorMarkers(errorMarkers);
 	Scene testScene("");
 	
 	Entity entity = testScene.CreateEntity("lua script");
 	
 	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
-	auto results = luaComp.ParseScript(entity);
-	
-	TextEditor::ErrorMarkers errorMarkers;
-	if (results.has_value())
-	{
-		errorMarkers.emplace(results.value().first, results.value().second);
-	}
-	m_TextEditor.SetErrorMarkers(errorMarkers);
+	luaComp.ParseScript(entity);
 }

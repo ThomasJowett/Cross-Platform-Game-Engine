@@ -76,15 +76,15 @@ void PropertiesPanel::OnImGuiRender()
 						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 						{
 							StaticMeshComponent comp = entity.GetOrAddComponent<StaticMeshComponent>();
-							comp.mesh->Load(*file);
+							comp.mesh->Load(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 						}
 					}
 					else if (file->extension() == ".lua")
 					{
 						if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 						{
-							LuaScriptComponent comp = entity.GetOrAddComponent<LuaScriptComponent>();
-							comp.absoluteFilepath = *file;
+							LuaScriptComponent& comp = entity.GetOrAddComponent<LuaScriptComponent>();
+							comp.script = AssetManager::GetAsset<LuaScript>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 							comp.ParseScript(entity);
 						}
 					}
@@ -442,7 +442,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 				static std::filesystem::file_time_type currentFileTime;
 
-				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(sprite.spriteSheet->GetFilepath());
+				std::filesystem::path absoluteSpriteSheetPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / sprite.spriteSheet->GetFilepath());
+				std::filesystem::file_time_type lastWrittenTime = std::filesystem::last_write_time(absoluteSpriteSheetPath);
 
 				if (lastWrittenTime != currentFileTime)
 				{
@@ -477,7 +478,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						if (file->extension().string() == ext)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
-								sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(*file);
+								sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 						}
 					}
 				}
@@ -649,7 +650,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 						{
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 							{
-								tilemap.tileset = AssetManager::GetAsset<Tileset>(*file);
+								tilemap.tileset = AssetManager::GetAsset<Tileset>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
 								tilemap.mesh->GetMaterials()[0]->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
 								SceneManager::CurrentScene()->MakeDirty();
 							}
@@ -1071,6 +1072,14 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
+	// Weld Joint 2D -----------------------------------------------------------------------------------------------------------------
+	DrawComponent<WeldJoint2DComponent>(ICON_FA_LINK" Weld Joint 2D", entity, [=](auto& weldJoint2D)
+		{
+			Dirty(ImGui::DragFloat("Damping", &weldJoint2D.damping, 0.01f, 0.0f, 1.0f));
+			Dirty(ImGui::DragFloat("Stiffness", &weldJoint2D.stiffness, 0.01f, 0.0f, 100.0f));
+			Dirty(ImGui::Checkbox("Collide Connected", &weldJoint2D.collideConnected));
+		});
+
 	// Point Light --------------------------------------------------------------------------------------------------------------------
 	DrawComponent<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity, [](auto& pointLight)
 		{
@@ -1146,7 +1155,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Lua Script ---------------------------------------------------------------------------------------------------------------------
 	DrawComponent<LuaScriptComponent>(ICON_FA_FILE_CODE" Lua Script", entity, [&entity](auto& luaScript)
 		{
-			if (ImGui::BeginCombo("##luaScript", luaScript.absoluteFilepath.filename().string().c_str()))
+			std::string scriptName = luaScript.script ? luaScript.script->GetFilepath().filename().string() : "";
+
+			if (ImGui::BeginCombo("##luaScript", scriptName.c_str()))
 			{
 				for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCRIPT)))
 				{
@@ -1154,7 +1165,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
 						Ref<EditComponentCommand<LuaScriptComponent>> editLuaCommand = CreateRef<EditComponentCommand<LuaScriptComponent>>(entity);
-						luaScript.absoluteFilepath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / file);
+						luaScript.script = AssetManager::GetAsset<LuaScript>(file);
 						SceneManager::CurrentScene()->MakeDirty();
 						HistoryManager::AddHistoryRecord(editLuaCommand);
 						break;
@@ -1166,7 +1177,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##LuaScript"))
 			{
-				ViewerManager::OpenViewer(luaScript.absoluteFilepath);
+				ViewerManager::OpenViewer(luaScript.script->GetFilepath());
 			}
 			ImGui::Tooltip("Edit script");
 		});
@@ -1205,6 +1216,17 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		AddComponentMenuItem<PointLightComponent>(ICON_FA_LIGHTBULB" Point Light", entity);
 		AddComponentMenuItem<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity);
 		AddComponentMenuItem<AudioListenerComponent>(ICON_FA_MICROPHONE" Audio Listener", entity);
+
+		if (ImGui::BeginMenu("Joints"))
+		{
+			//AddComponentMenuItem<DistanceJoint2DComponent>(ICON_FA_LINK" Distance Joint 2D", entity);
+			AddComponentMenuItem<WeldJoint2DComponent>(ICON_FA_LINK" Weld Joint 2D", entity);
+			//AddComponentMenuItem<PrismaticJoint2DComponent>(ICON_FA_LINK" Prismatic Joint 2D", entity);
+			//AddComponentMenuItem<RevoluteJoint2DComponent>(ICON_FA_LINK" Revolute Joint 2D", entity);
+			//AddComponentMenuItem<WheelJoint2DComponent>(ICON_FA_LINK" Wheel Joint 2D", entity);
+			//AddComponentMenuItem<TargetJoint2DComponent>(ICON_FA_LINK" Target Joint 2D", entity);
+			ImGui::EndMenu();
+		}
 
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);

@@ -52,6 +52,7 @@ public:
 	static FileType GetFileType(const std::filesystem::path& assetPath);
 
 	static std::vector<std::string> GetExtensions(FileType fileType);
+	static std::vector<std::string> GetAllExtensions();
 
 	static void SaveAll();
 };

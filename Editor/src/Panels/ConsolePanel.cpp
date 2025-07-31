@@ -1,7 +1,7 @@
 #include "stdafx.h"
 #include "ConsolePanel.h"
 
-#include "ImGui/ImGuiUtilites.h"
+#include "ImGui/ImGuiUtilities.h"
 #include "imgui/imgui.h"
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"

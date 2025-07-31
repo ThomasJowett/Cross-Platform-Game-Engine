@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "Triangulation.h"
+#include "Logging/Logger.h"
 #include "Logging/Instrumentor.h"
 
 template<typename T>
@@ -29,12 +30,12 @@ bool Triangulation::Triangulate(const std::vector<Vector2f>& vertices, std::vect
 
 	if (!IsSimplePolygon(vertices))
 	{
-		ENGINE_ERROR("Could not triangulate polygon! Not a simple polygon.")
+		ENGINE_ERROR("Could not triangulate polygon! Not a simple polygon.");
 	}
 
 	if (ContainsColinearEdges(vertices))
 	{
-		ENGINE_ERROR("Could not triangulate polygon! Vertices contains colinear edges.")
+		ENGINE_ERROR("Could not triangulate polygon! Vertices contains colinear edges.");
 	}
 
 	std::vector<uint32_t> indexList(vertices.size());

@@ -7,6 +7,7 @@
 
 Scope<sol::state> LuaManager::s_State = nullptr;
 static std::vector<std::string> s_Modules;
+SignalBus LuaManager::s_SignalBus;
 
 static sol::function s_UnrequireFunction;
 
@@ -16,7 +17,7 @@ std::vector<std::pair<std::string, std::string>> LuaManager::s_Identifiers = {
 };
 
 int LoadFileRequire(lua_State* L) {
-
+	PROFILE_FUNCTION();
 	// use sol2 stack API to pull
 	// "first argument"
 	std::string path = sol::stack::get<std::string>(L, 1);
@@ -32,7 +33,7 @@ int LoadFileRequire(lua_State* L) {
 		filepath /= std::string(path + ".lua");
 	}
 
-	if(!filepath.empty())
+	if (!filepath.empty())
 	{
 		luaL_loadfile(L, filepath.string().c_str());
 		s_Modules.push_back(path);
@@ -48,6 +49,7 @@ int LoadFileRequire(lua_State* L) {
 
 void UnloadModules()
 {
+	PROFILE_FUNCTION();
 	for (std::string& mod : s_Modules)
 	{
 		s_UnrequireFunction(mod);
@@ -61,11 +63,11 @@ void LuaManager::Init()
 	s_State = CreateScope<sol::state>(nullptr);
 
 	s_State->open_libraries(
-		sol::lib::base, 
-		sol::lib::package, 
-		sol::lib::math, 
-		sol::lib::table, 
-		sol::lib::coroutine, 
+		sol::lib::base,
+		sol::lib::package,
+		sol::lib::math,
+		sol::lib::table,
+		sol::lib::coroutine,
 		sol::lib::os,
 		sol::lib::string,
 		sol::lib::io);
@@ -78,9 +80,10 @@ void LuaManager::Init()
 	Lua::BindMath(*s_State);
 	Lua::BindCommonTypes(*s_State);
 	Lua::BindDebug(*s_State);
+	Lua::BindSignaling(*s_State);
 
-	const char* lua_function_script = 
-	R"(
+	const char* lua_function_script =
+		R"(
 		function unrequire(m) 
 			package.loaded[m] = nil 
 			_G[m] = nil 
@@ -96,16 +99,22 @@ void LuaManager::Init()
 
 void LuaManager::Shutdown()
 {
+	PROFILE_FUNCTION();
+	s_SignalBus.Shutdown();
 	s_UnrequireFunction.abandon();
 	CleanUp();
-	s_State->clear_package_loaders();
-	s_State.reset();
+	if (s_State) {
+		s_State->clear_package_loaders();
+		s_State.reset();
+	}
 }
 
 void LuaManager::CleanUp()
 {
+	PROFILE_FUNCTION();
 	if (s_State)
 	{
+		s_SignalBus.Shutdown();
 		UnloadModules();
 		s_State->stack_clear();
 		s_State->collect_garbage();

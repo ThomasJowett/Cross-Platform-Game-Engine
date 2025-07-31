@@ -40,27 +40,27 @@ std::filesystem::path AbsolutePath(const char* path);
 template<typename Archive>
 void SaveAssetToArchive(Archive& archive, const Ref<Asset>& asset)
 {
-    std::string relativePath;
-    if (asset && !asset->GetFilepath().empty())
-    {
-        relativePath = FileUtils::RelativePath(asset->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
-    }
-    archive(relativePath);
+	std::string relativePath;
+	if (asset && !asset->GetFilepath().empty())
+	{
+		relativePath = asset->GetFilepath().string();
+	}
+	archive(relativePath);
 }
 
 template<typename Archive, typename Asset>
 void LoadAssetFromArchive(Archive& archive, Ref<Asset>& asset)
 {
-    std::string relativePath;
-    archive(relativePath);
-    if (!relativePath.empty())
-    {
-        asset = AssetManager::GetAsset<Asset>(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
-    }
-    else
-    {
-        asset.reset();
-    }
+	std::string relativePath;
+	archive(relativePath);
+	if (!relativePath.empty())
+	{
+		asset = AssetManager::GetAsset<Asset>(relativePath);
+	}
+	else
+	{
+		asset.reset();
+	}
 }
 
 template<typename Archive>
@@ -69,7 +69,7 @@ void SaveTextureToArchive(Archive& archive, const Ref<Texture2D>& texture)
 	std::string relativePath;
 	if (texture && !texture->GetFilepath().empty())
 	{
-		relativePath = FileUtils::RelativePath(texture->GetFilepath(), Application::GetOpenDocumentDirectory()).string();
+		relativePath = texture->GetFilepath().string();
 	}
 	archive(relativePath);
 	if (!relativePath.empty())
@@ -86,7 +86,7 @@ void LoadTextureFromArchive(Archive& archive, Ref<Texture2D>& texture)
 	archive(relativePath);
 	if (!relativePath.empty())
 	{
-		texture = AssetManager::GetTexture(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / relativePath));
+		texture = AssetManager::GetTexture(relativePath);
 		int filterMethod, wrapMethod;
 		archive(filterMethod);
 		archive(wrapMethod);

@@ -6,6 +6,8 @@
 
 #include "ProjectData.h"
 
+#include <filesystem>
+
 class ProjectSettingsPanel
 	:public Layer
 {
@@ -28,6 +30,7 @@ private:
 
 	ProjectData m_ProjectData;
 
-	char m_DefaultSceneBuffer[1024] = "";
+	std::filesystem::path m_DefaultScenePath;
+
 	char m_DescriptionBuffer[1024] = "";
 };

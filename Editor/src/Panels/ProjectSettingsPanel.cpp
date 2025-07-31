@@ -5,6 +5,8 @@
 
 #include "cereal/archives/json.hpp"
 #include "MainDockSpace.h"
+#include "ImGui/ImGuiFileEdit.h"
+#include "FileSystem/Directory.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")
@@ -25,7 +27,27 @@ void ProjectSettingsPanel::OnImGuiRender()
 		{
 			MainDockSpace::SetFocussedWindow(this);
 		}
-		ImGui::InputText("Default Scene", m_DefaultSceneBuffer, sizeof(m_DefaultSceneBuffer));
+		if (ImGui::BeginCombo("Default Scene", m_DefaultScenePath.filename().string().c_str()))
+		{
+			for (std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(FileType::SCENE)))
+			{
+				const bool is_selected = false;
+				if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
+				{
+					m_DefaultScenePath = file;
+					break;
+				}
+				ImGui::Tooltip(file.string().c_str());
+			}
+			ImGui::EndCombo();
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FOLDER_OPEN"##OpenScene"))
+		{
+			SceneManager::ChangeScene(m_DefaultScenePath);
+		}
+		ImGui::Tooltip("Open Scene");
+
 		ImGui::InputTextMultiline("Description", m_DescriptionBuffer, sizeof(m_DescriptionBuffer));
 		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))
 		{
@@ -63,14 +85,9 @@ void ProjectSettingsPanel::ReadProjectFile()
 
 	file.close();
 
-	memset(m_DefaultSceneBuffer, 0, sizeof(m_DefaultSceneBuffer));
+	m_DefaultScenePath = m_ProjectData.defaultScene;
+
 	memset(m_DescriptionBuffer, 0, sizeof(m_DescriptionBuffer));
-
-	for (int i = 0; i < m_ProjectData.defaultScene.length(); i++)
-	{
-		m_DefaultSceneBuffer[i] = m_ProjectData.defaultScene[i];
-	}
-
 	for (int i = 0; i < m_ProjectData.description.length(); i++)
 	{
 		m_DescriptionBuffer[i] = m_ProjectData.description[i];
@@ -79,7 +96,7 @@ void ProjectSettingsPanel::ReadProjectFile()
 
 void ProjectSettingsPanel::SaveProjectFile()
 {
-	m_ProjectData.defaultScene = m_DefaultSceneBuffer;
+	m_ProjectData.defaultScene = m_DefaultScenePath.string();
 	m_ProjectData.description = m_DescriptionBuffer;
 
 	const std::filesystem::path& projectFile = Application::GetOpenDocument();

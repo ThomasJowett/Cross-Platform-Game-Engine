@@ -18,6 +18,7 @@ public:
 	virtual void OnAttach() override;
 	virtual void OnDetach() override;
 	virtual void OnImGuiRender() override;
+	virtual void OnEvent(Event& event) override;
 
 	virtual void Copy() override { m_TextEditor.Copy(); }
 	virtual void Cut() override { m_TextEditor.Cut(); }
@@ -45,6 +46,8 @@ private:
 	bool* m_Show;
 
 	std::filesystem::path m_FilePath;
+
+	Ref<LuaScript> m_Script;
 
 	TextEditor m_TextEditor;
 };

@@ -219,6 +219,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 
 	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
 	m_History.SwitchTo(m_CurrentPath);
+	m_FileWatcher.SetPathToWatch(m_CurrentPath);
 	m_ForceRescan = true;
 }
 
@@ -457,10 +458,6 @@ void ContentExplorerPanel::RightClickMenu()
 			CreateNewMaterial();
 			m_Renaming = true;
 		}
-		if (ImGui::Selectable("Prefab"))
-		{
-			CLIENT_DEBUG("new prefab");
-		}
 		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
 		{
 			CreateNewLuaScript();
@@ -539,15 +536,17 @@ void ContentExplorerPanel::OpenAllSelectedItems()
 
 void ContentExplorerPanel::OpenItem(size_t index)
 {
+	std::filesystem::path relativePath = FileUtils::RelativePath(m_Files[index], Application::GetOpenDocumentDirectory());
 	if (m_Files[index].extension() == ".scene") {
-		if (SceneManager::CurrentScene()->IsDirty()) {
+		SceneManager::ChangeSceneState(SceneState::Edit);
+		if (SceneManager::IsSceneLoaded() && SceneManager::CurrentScene()->IsDirty()) {
 			m_TryingToChangeScene = true;
 		}
 		else
-			SceneManager::ChangeScene(m_Files[index]);
+			SceneManager::ChangeScene(relativePath);
 	}
 	else
-		ViewerManager::OpenViewer(m_Files[index]);
+		ViewerManager::OpenViewer(relativePath);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -796,8 +795,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		if (m_TextureLibrary.Size() > 100)
 			m_TextureLibrary.Clear();
-
-		m_FileWatcher.SetPathToWatch(m_CurrentPath);
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
@@ -1370,7 +1367,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						// try to get the image to display the thumbnail
 						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
 						{
-							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i]);
+							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i], nullptr);
 							uint32_t textureHeight = icon->GetHeight();
 							uint32_t textureWidth = icon->GetWidth();
 
@@ -1695,8 +1692,8 @@ void ContentExplorerPanel::OnImGuiRender()
 			ImGui::SameLine();
 			if (ImGui::Button("Don't Save"))
 			{
-				//HistoryManager::Undo(HistoryManager::GetUndoSteps());
-				//HistoryManager::Reset();
+				SceneManager::CurrentScene()->MakeClean();
+				SceneManager::ChangeScene(m_CurrentSelectedPath);
 				OpenAllSelectedItems();
 				m_TryingToChangeScene = false;
 				ImGui::CloseCurrentPopup();

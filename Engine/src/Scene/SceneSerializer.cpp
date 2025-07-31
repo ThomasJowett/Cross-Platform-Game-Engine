@@ -98,6 +98,50 @@ bool SceneSerializer::Deserialize(const std::filesystem::path& filepath)
 	}
 }
 
+bool SceneSerializer::Deserialize(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+
+	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
+	{
+		m_Scene->SetFilepath(filepath);
+		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Scene");
+
+		if (!pRoot)
+		{
+			ENGINE_ERROR("Not a valid scene file. Could not find Scene node");
+			return false;
+		}
+
+		Vector2f gravity = m_Scene->GetGravity();
+		SerializationUtils::Decode(pRoot->FirstChildElement("Gravity"), gravity);
+		m_Scene->SetGravity(gravity);
+
+		// Version
+
+		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
+			ENGINE_WARN("Loading scene created with a different version of the engine");
+
+		// Entities
+		tinyxml2::XMLElement* pEntityElement = pRoot->LastChildElement("Entity");
+
+		while (pEntityElement)
+		{
+			DeserializeEntity(m_Scene, pEntityElement);
+			pEntityElement = pEntityElement->PreviousSiblingElement("Entity");
+		}
+
+		return true;
+	}
+	else
+	{
+		ENGINE_ERROR("Could not load scene {0}. {1} on line {2}", filepath, doc.ErrorName(), doc.ErrorLineNum());
+		return false;
+	}
+	return false;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity entity, tinyxml2::XMLElement* pParentNode)
@@ -404,6 +448,15 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCapsuleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
 	}
 
+	if (entity.HasComponent<WeldJoint2DComponent>())
+	{
+		WeldJoint2DComponent const& component = entity.GetComponent<WeldJoint2DComponent>();
+		tinyxml2::XMLElement* pWeldJointElement = pElement->InsertNewChildElement("WeldJoint2D");
+		pWeldJointElement->SetAttribute("CollideConnected", component.collideConnected);
+		pWeldJointElement->SetAttribute("Damping", component.damping);
+		pWeldJointElement->SetAttribute("Stiffness", component.stiffness);
+	}
+
 	if (entity.HasComponent<CircleRendererComponent>())
 	{
 		CircleRendererComponent const& component = entity.GetComponent<CircleRendererComponent>();
@@ -437,7 +490,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pLuaScriptElement = pElement->InsertNewChildElement("LuaScript");
 
-		SerializationUtils::Encode(pLuaScriptElement, component.absoluteFilepath);
+		if (component.script)
+			SerializationUtils::Encode(pLuaScriptElement, component.script->GetFilepath());
 	}
 
 	if (entity.HasComponent<PointLightComponent>())
@@ -655,7 +709,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (tilesetChar)
 			{
-				if (std::filesystem::path tilesetFilepath = SerializationUtils::AbsolutePath(tilesetChar);
+				if (std::filesystem::path tilesetFilepath = tilesetChar;
 					!tilesetFilepath.empty())
 				{
 					component.spriteSheet = AssetManager::GetAsset<SpriteSheet>(tilesetFilepath);
@@ -687,7 +741,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 			if (meshFilepathChar)
 			{
-				if (std::filesystem::path meshFilepath = SerializationUtils::AbsolutePath(meshFilepathChar);
+				if (std::filesystem::path meshFilepath = meshFilepathChar;
 					!meshFilepath.empty())
 				{
 					component.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
@@ -819,7 +873,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		if (const char* tilesetChar = pTilemapComponentElement->Attribute("Filepath"))
 		{
-			std::filesystem::path tilesetfilepath = SerializationUtils::AbsolutePath(tilesetChar);
+			std::filesystem::path tilesetfilepath = tilesetChar;
 			if (!tilesetfilepath.empty())
 			{
 				component.tileset = AssetManager::GetAsset<Tileset>(tilesetfilepath);
@@ -951,6 +1005,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.isTrigger = pPolygonCollider2DComponentElement->BoolAttribute("IsTrigger", false);
 	}
 
+	// CapsuleCollider2D --------------------------------------------------------------------------------------------
 	if (tinyxml2::XMLElement* pCapsuleColliderComponentElement = pEntityElement->FirstChildElement("CapsuleCollider2D"))
 	{
 		CapsuleCollider2DComponent& component = entity.AddComponent<CapsuleCollider2DComponent>();
@@ -971,6 +1026,15 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
 
 		component.isTrigger = pCapsuleColliderComponentElement->BoolAttribute("IsTrigger", false);
+	}
+
+	// WeldJoint2D ---------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement* pWeldJoint2DColliderComponentElement = pEntityElement->FirstChildElement("WeldJoint2D"))
+	{
+		WeldJoint2DComponent& component = entity.AddComponent<WeldJoint2DComponent>();
+		pWeldJoint2DColliderComponentElement->QueryBoolAttribute("CollideConnected", &component.collideConnected);
+		pWeldJoint2DColliderComponentElement->QueryFloatAttribute("Damping", &component.damping);
+		pWeldJoint2DColliderComponentElement->QueryFloatAttribute("Stiffness", &component.stiffness);
 	}
 
 	// CircleRenderer -----------------------------------------------------------------------------------------------
@@ -1024,8 +1088,12 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pLuaScriptComponentElement = pEntityElement->FirstChildElement("LuaScript"))
 	{
 		LuaScriptComponent& component = entity.AddComponent<LuaScriptComponent>();
-
-		SerializationUtils::Decode(pLuaScriptComponentElement, component.absoluteFilepath);
+		std::filesystem::path scriptPath;
+		SerializationUtils::Decode(pLuaScriptComponentElement, scriptPath);
+		if (!scriptPath.empty())
+			component.script = AssetManager::GetAsset<LuaScript>(scriptPath);
+		else
+			component.script = nullptr;
 	}
 
 	// Point Light --------------------------------------------------------------------------------------------------

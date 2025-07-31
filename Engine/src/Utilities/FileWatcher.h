@@ -93,7 +93,8 @@ public:
 	void Stop()
 	{
 		m_Running = false;
-		m_CheckThread.join();
+		if (m_CheckThread.joinable())
+			m_CheckThread.join();
 	}
 	
 private:
