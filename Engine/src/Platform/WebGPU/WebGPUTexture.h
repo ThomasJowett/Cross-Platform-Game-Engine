@@ -19,8 +19,6 @@ public:
 
 	virtual void Bind(uint32_t slot) const override;
 
-	virtual std::string GetName() const override;
-
 	virtual void* GetRendererID() const override;
 
 	virtual bool Reload() override;

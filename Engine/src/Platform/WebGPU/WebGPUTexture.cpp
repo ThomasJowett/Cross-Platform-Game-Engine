@@ -336,11 +336,6 @@ void WebGPUTexture2D::Bind(uint32_t slot) const
 	// TODO: set Bind group
 }
 
-std::string WebGPUTexture2D::GetName() const
-{
-	return m_Filepath.filename().string();
-}
-
 void* WebGPUTexture2D::GetRendererID() const
 {
 	return m_BindGroup;
