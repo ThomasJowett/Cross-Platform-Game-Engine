@@ -244,7 +244,7 @@ void* WebGPUTexture2D::GetRendererID() const
 	return m_BindGroup;
 }
 
-void WebGPUTexture2D::Reload()
+bool WebGPUTexture2D::Reload()
 {
 	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
 	{
@@ -252,7 +252,11 @@ void WebGPUTexture2D::Reload()
 		m_Texture.release();
 		m_Sampler.release();
 		m_TextureView.release();
-		LoadTextureFromFile();
+		return LoadTextureFromFile();
+	}
+	else {
+		NullTexture();
+		return false;
 	}
 }
 
