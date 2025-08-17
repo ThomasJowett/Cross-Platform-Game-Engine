@@ -55,7 +55,7 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const st
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(filepath, imageData);
 	case RendererAPI::API::WebGPU:
-		return CreateRef<OpenGLTexture2D>(filepaht, imageData);
+		return CreateRef<WebGPUTexture2D>(filepath, imageData);
 
 	default:
 		break;
@@ -144,7 +144,7 @@ Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path, Ref<Vir
 		}
 	}
 
-	if(texture)
+	if (texture)
 		Add(texture);
 	return texture;
 }
