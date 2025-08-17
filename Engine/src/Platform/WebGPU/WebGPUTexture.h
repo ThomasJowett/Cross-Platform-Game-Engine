@@ -1,14 +1,15 @@
 #pragma once
 
-#include "Renderer/Texture.h"
+#include "Asset/Texture.h"
 #include "WebGPUContext.h"
 #include <webgpu/webgpu.hpp>
 
 class WebGPUTexture2D : public Texture2D
 {
 public:
-	WebGPUTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels);
+	WebGPUTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels);
 	WebGPUTexture2D(const std::filesystem::path& filepath);
+	WebGPUTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData);
 	virtual ~WebGPUTexture2D();
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
