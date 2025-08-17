@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Renderer/Shader.h"
+#include "Asset/Shader.h"
 
 #include <webgpu/webgpu.hpp>
 
 class WebGPUShader : public Shader
 {
 public:
-	WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory);
+	WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess);
 	~WebGPUShader();
 
 	virtual void Bind() const override;

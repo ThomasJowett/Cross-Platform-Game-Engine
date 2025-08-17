@@ -7,7 +7,7 @@
 #include <fstream>
 #include <filesystem>
 
-WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory)
+WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory, postProcess)
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
