@@ -143,6 +143,108 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& path)
 	m_TextureView = m_Texture.createView(m_TextureViewDesc);
 }
 
+WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData)
+{
+	PROFILE_FUNCTION();
+	m_Filepath = filepath;
+
+	int width = 0, height = 0, channels = 0;
+	stbi_set_flip_vertically_on_load(1);
+	stbi_uc* data = stbi_load_from_memory(imageData.data(), (int)imageData.size(), &width, &height, &channels, 0);
+
+	CORE_ASSERT(data, "Failed to load image from memory! " + filepath.string());
+	if (!data)
+	{
+		ENGINE_ERROR("stb image failure: {0}", stbi_failure_reason());
+		return;
+	}
+
+	m_Width = (uint32_t)width;
+	m_Height = (uint32_t)height;
+
+	if (channels == 4)
+	{
+		m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+	}
+	else if (channels == 3)
+	{
+		m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;
+
+		//WebGPU does not support 3 channel textures so we must convert into 4
+
+		ENGINE_WARN("Converting RGB to RGBA for compatibility with WebGPU");
+
+		stbi_uc* rgbaData = new stbi_uc[m_Width * m_Height * 4];
+		for (uint32_t i = 0; i < m_Width * m_Height; ++i) {
+			rgbaData[i * 4 + 0] = data[i * 3 + 0];
+			rgbaData[i * 4 + 1] = data[i * 3 + 1];
+			rgbaData[i * 4 + 2] = data[i * 3 + 2];
+			rgbaData[i * 4 + 3] = 255;
+		}
+
+		channels = 4;
+
+		stbi_image_free(data);
+		data = rgbaData;
+	}
+	else if (channels == 1)
+	{
+		m_TextureFormat = wgpu::TextureFormat::R8Unorm;
+	}
+	else {
+		ENGINE_ERROR("Texture format not supported");
+		stbi_image_free(data);
+		NullTexture();
+		return;
+	}
+
+	m_TextureDesc.size.width = m_Width;
+	m_TextureDesc.size.height = m_Height;
+	m_TextureDesc.size.depthOrArrayLayers = 1;
+	m_TextureDesc.mipLevelCount = 1; //TODO: implement mipmap generation
+	m_TextureDesc.sampleCount = 1;
+	m_TextureDesc.dimension = wgpu::TextureDimension::_2D;
+	m_TextureDesc.format = m_TextureFormat;
+	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment;
+
+	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	auto queue = m_WebGPUContext->GetQueue();
+
+	m_Texture = device.createTexture(m_TextureDesc);
+
+	wgpu::ImageCopyTexture imageCopyTexture{};
+	imageCopyTexture.texture = m_Texture;
+	imageCopyTexture.mipLevel = 0;
+	imageCopyTexture.origin = { 0,0,0 };
+
+	wgpu::TextureDataLayout dataLayout{};
+	dataLayout.offset = 0;
+	dataLayout.bytesPerRow = m_Width * channels;
+	dataLayout.rowsPerImage = m_Height;
+
+	wgpu::Extent3D textureSize{};
+	textureSize.width = m_Width;
+	textureSize.height = m_Height;
+	textureSize.depthOrArrayLayers = 1;
+
+	queue.writeTexture(imageCopyTexture, data, m_Width * m_Height * channels, dataLayout, textureSize);
+
+	m_TextureViewDesc.format = m_TextureFormat;
+	m_TextureViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+	m_TextureViewDesc.baseMipLevel = 0;
+	m_TextureViewDesc.mipLevelCount = 1;
+	m_TextureViewDesc.baseArrayLayer = 0;
+	m_TextureViewDesc.arrayLayerCount = 1;
+	m_TextureView = m_Texture.createView(m_TextureViewDesc);
+
+	CreateSampler();
+
+	stbi_image_free(data);
+}
+
 WebGPUTexture2D::~WebGPUTexture2D()
 {
 	PROFILE_FUNCTION();
@@ -398,7 +500,7 @@ bool WebGPUTexture2D::LoadTextureFromFile()
 	auto queue = m_WebGPUContext->GetQueue();
 
 	m_Texture = device.createTexture(m_TextureDesc);
-	
+
 	wgpu::ImageCopyTexture imageCopyTexture{};
 	imageCopyTexture.texture = m_Texture;
 	imageCopyTexture.mipLevel = 0;
