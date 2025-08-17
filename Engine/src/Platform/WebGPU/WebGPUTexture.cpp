@@ -51,7 +51,7 @@ void WebGPUTexture2D::CreateSampler()
 	m_Sampler = device.createSampler(samplerDesc);
 }
 
-WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format, const void* pixels)
+WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 	:m_Width(width), m_Height(height)
 {
 	PROFILE_FUNCTION();
@@ -82,7 +82,7 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	m_TextureDesc.size.height = height;
 	m_TextureDesc.size.depthOrArrayLayers = 1;
 	m_TextureDesc.mipLevelCount = 1;
-	m_TextureDesc.sampleCount = 1;
+	m_TextureDesc.sampleCount = samples;
 	m_TextureDesc.dimension = wgpu::TextureDimension::_2D;
 	m_TextureDesc.format = m_TextureFormat;
 	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment;
