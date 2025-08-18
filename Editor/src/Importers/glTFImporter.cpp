@@ -1,15 +1,19 @@
 #include "glTFImporter.h"
 
+#include "Utilities/MeshSerializer.h"
+#include "Utilities/GeometryGenerator.h"
+
 #define TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
 
 #include "Engine.h"
 
 struct LoaderInfo {
-	uint32_t* indexBuffer;
-	Vertex* vertexBuffer;
+	std::vector<uint32_t> indexBuffer;
+	std::vector<Vertex> vertexBuffer;
 	size_t indexPos = 0;
 	size_t vertexPos = 0;
+	std::filesystem::path destination;
 };
 
 struct Node
@@ -96,23 +100,33 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 	if (node.mesh > -1)
 	{
 		const tinygltf::Mesh mesh = model.meshes[node.mesh];
-		Ref<StaticMesh> newMesh = CreateRef<StaticMesh>();
+
+		std::vector<Submesh> submeshes;
+		std::vector<Ref<Material>> materials;
+
+		bool hasSkin = false;
+
+		size_t vertexStart = loaderInfo.vertexPos;
+		size_t indexStart = loaderInfo.indexPos;
+
 		for (size_t j = 0; j < mesh.primitives.size(); j++)
 		{
 			const tinygltf::Primitive& primitive = mesh.primitives[j];
-			size_t vertexStart = loaderInfo.vertexPos;
-			size_t indesxStart = loaderInfo.indexPos;
+
+			size_t submeshFirstIndex = loaderInfo.indexPos;
+			size_t submeshVertexStart = loaderInfo.vertexPos;
 			size_t indexCount = 0;
 			size_t vertexCount = 0;
 			Vector3f posMin{};
 			Vector3f posMax{};
-			bool hasSkin = false;
+			
 			bool hasIndices = primitive.indices > -1;
 
 			//vertices
 			{
 				const float* bufferPos = nullptr;
 				const float* bufferNormals = nullptr;
+				const float* bufferTangents = nullptr;
 				const float* bufferTexCoordSet0 = nullptr;
 				const float* bufferTexCoordSet1 = nullptr;
 				const float* bufferColorSet0 = nullptr;
@@ -121,6 +135,7 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 
 				int posByteStride;
 				int normByteStride;
+				int tangentByteStride;
 				int uv0ByteStride;
 				int uv1ByteStride;
 				int color0ByteStride;
@@ -146,6 +161,13 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 					normByteStride = normAccessor.ByteStride(normView) ? (normAccessor.ByteStride(normView) / sizeof(float)) : tinygltf::GetNumComponentsInType(TINYGLTF_TYPE_VEC3);
 				}
 
+				if (primitive.attributes.find("TANGENT") != primitive.attributes.end()) {
+					const tinygltf::Accessor& tangentAccessor = model.accessors[primitive.attributes.find("TANGENT")->second];
+					const tinygltf::BufferView& tangentView = model.bufferViews[tangentAccessor.bufferView];
+					bufferTangents = reinterpret_cast<const float*>(&(model.buffers[tangentView.buffer].data[tangentAccessor.byteOffset + tangentView.byteOffset]));
+					tangentByteStride = tangentAccessor.ByteStride(tangentView) ? (tangentAccessor.ByteStride(tangentView) / sizeof(float)) : tinygltf::GetNumComponentsInType(TINYGLTF_TYPE_VEC3);
+				}
+
 				// UVs
 				if (primitive.attributes.find("TEXCOORD_0") != primitive.attributes.end()) {
 					const tinygltf::Accessor& uvAccessor = model.accessors[primitive.attributes.find("TEXCOORD_0")->second];
@@ -160,7 +182,7 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 					uv1ByteStride = uvAccessor.ByteStride(uvView) ? (uvAccessor.ByteStride(uvView) / sizeof(float)) : tinygltf::GetNumComponentsInType(TINYGLTF_TYPE_VEC2);
 				}
 
-				hasSkin = (bufferJoints && bufferWeights);
+				hasSkin |= (bufferJoints && bufferWeights);
 
 				for (size_t v = 0; v < posAccessor.count; v++)
 				{
@@ -169,7 +191,9 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 						Vertex& vert = loaderInfo.vertexBuffer[loaderInfo.vertexPos];
 						vert.position = Vector3f(bufferPos[v * posByteStride], bufferPos[v * posByteStride + 1], bufferPos[v * posByteStride + 2]);
 						vert.normal = bufferNormals ? Vector3f(bufferNormals[v * normByteStride], bufferNormals[v * normByteStride + 1], bufferNormals[v * normByteStride + 2]) : Vector3f();
-						vert.texcoord = bufferTexCoordSet0 ? Vector2f(bufferTexCoordSet0[v * uv0ByteStride], bufferTexCoordSet0[v * uv0ByteStride + 1]) : Vector2f();
+						//vert.tangent = bufferTangents ? Vector3f(bufferTangents[v * tangentByteStride], bufferTangents[v * tangentByteStride + 1], bufferTangents[v * tangentByteStride + 2]) : Vector3f();
+						vert.tangent = Vector3f(1,1,1);
+						vert.texcoord = bufferTexCoordSet0 ? Vector2f(bufferTexCoordSet0[v * uv0ByteStride], 1.0f - bufferTexCoordSet0[v * uv0ByteStride + 1]) : Vector2f();
 					}
 
 					loaderInfo.vertexPos++;
@@ -220,39 +244,52 @@ void LoadNode(Node* parent, const tinygltf::Node& node, uint32_t nodeIndex, cons
 						break;
 					}
 				}
-				//Ref<Mesh> newPrimitive = CreateRef<Mesh>();
-				//newPrimitive->SetBounds(BoundingBox(posMin, posMax));
-				//
-				//Ref<VertexBuffer> vertexBuffer = VertexBuffer::Create(&loaderInfo.vertexBuffer->position[0], vertexCount);
-				//
-				//Ref<IndexBuffer> indexBuffer = IndexBuffer::Create(loaderInfo.indexBuffer + vertexStart, indexCount);
-				//
-				//Ref<VertexArray> vertexArray = VertexArray::Create();
-				//vertexArray->AddVertexBuffer(vertexBuffer);
-				//vertexArray->SetIndexBuffer(indexBuffer);
-				//
-				//newPrimitive->LoadModel(vertexArray);
-				//
-				//newMesh->AddMesh(newPrimitive);
+				
 			}
-			//for (auto& p : newMesh->GetMeshes())
-			//{
-			//	if (p->GetBounds().IsValid() && !newMesh->GetBounds().IsValid())
-			//	{
-			//		newMesh->SetBounds(p->GetBounds());
-			//	}
-			//	BoundingBox bounds = newMesh->GetBounds();
-			//	bounds.Merge(p->GetBounds());
-			//	newMesh->SetBounds(bounds);
-			//}
-			//newNode->mesh = newMesh;
+
+			Submesh submesh;
+			submesh.firstIndex = static_cast<uint32_t>(submeshFirstIndex);
+			submesh.indexCount = static_cast<uint32_t>(indexCount);
+			submesh.vertexOffset = static_cast<uint32_t>(submeshVertexStart);
+			submesh.vertexCount = static_cast<uint32_t>(vertexCount);
+			submesh.materialIndex = 0; // (primitive.material >= 0) ? primitive.material : 0; // TODO: load materials in first and the create a list of the ones used in this mesh and assign the correct index
+			submesh.localTransform = Matrix4x4();
+			submesh.transform = newNode->matrix;
+			submesh.SetBoundingBox(posMin, posMax);
+
+			submeshes.push_back(submesh);
 		}
+
+		//  TODO: Handle materials
+		materials.resize(submeshes.size());
+		for (size_t i = 0; i < materials.size(); i++)
+		{
+			if (!materials[i])
+				materials[i] = Material::GetDefaultMaterial();
+		}
+
+		std::vector<Vertex> submeshVertices(loaderInfo.vertexBuffer.begin() + vertexStart, loaderInfo.vertexBuffer.begin() + loaderInfo.vertexPos);
+
+		std::vector<float> finalVertexBuffer = GeometryGenerator::FlattenVertices(submeshVertices);
+
+		std::vector<uint32_t> finalIndexBuffer(loaderInfo.indexBuffer.begin() + indexStart, loaderInfo.indexBuffer.begin() + loaderInfo.indexPos);
+
+		Ref<Mesh> finalMesh = CreateRef<Mesh>(finalVertexBuffer, finalIndexBuffer, submeshes, materials, s_StaticMeshLayout);
+
+		std::string meshName = mesh.name.empty() ? "Mesh_" + std::to_string(nodeIndex) : mesh.name;
+
+		std::filesystem::path meshPath = (loaderInfo.destination / meshName).string() + ".staticmesh";
+
+		MeshSerializer::Serialize(meshPath, finalMesh, hasSkin ? MeshLayout::SkinnedMesh : MeshLayout::StaticMesh);
 	}
 }
 
 void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination)
 {
+	PROFILE_FUNCTION();
+
 	LoaderInfo loaderInfo;
+	loaderInfo.destination = destination;
 
 	float globalScale = 1.0f;
 
@@ -283,8 +320,8 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 			GetNodeProps(gltfModel.nodes[node], gltfModel, vertexCount, indexCount);
 		}
 
-		loaderInfo.vertexBuffer = new Vertex[vertexCount];
-		loaderInfo.indexBuffer = new uint32_t[indexCount];
+		loaderInfo.vertexBuffer.resize(vertexCount);
+		loaderInfo.indexBuffer.resize(indexCount);
 
 		for (size_t i = 0; i < scene.nodes.size(); i++)
 		{
@@ -303,9 +340,6 @@ void glTFImporter::ImportAssets(const std::filesystem::path& filepath, const std
 		/*for (auto node : linearNodes)
 		{
 		}*/
-
-		delete[] loaderInfo.vertexBuffer;
-		delete[] loaderInfo.indexBuffer;
 	}
 	else
 	{
