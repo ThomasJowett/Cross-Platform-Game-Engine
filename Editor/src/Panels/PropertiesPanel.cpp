@@ -683,7 +683,8 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 			{
-				staticMesh.SetMesh(AssetManager::GetAsset<StaticMesh>(meshFilepath));
+				std::filesystem::path relativePath = FileUtils::RelativePath(meshFilepath, Application::GetOpenDocumentDirectory());
+				staticMesh.SetMesh(AssetManager::GetAsset<StaticMesh>(relativePath));
 
 				SceneManager::CurrentScene()->MakeDirty();
 			}
