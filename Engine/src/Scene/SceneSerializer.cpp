@@ -218,8 +218,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		if (component.mesh)
 			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
-		for (const auto& materialOverride : component.materialOverrides)
-			SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
+		for (const auto& materialOverride : component.materialOverrides) {
+			if(materialOverride != Material::GetDefaultMaterial())
+				SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
+		}
 	}
 
 	if (entity.HasComponent<PrimitiveComponent>())
@@ -735,27 +737,26 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	{
 		StaticMeshComponent& component = entity.AddComponent<StaticMeshComponent>();
 
-		if (tinyxml2::XMLElement const* pMeshElement = pStaticMeshComponentElement->FirstChildElement("StaticMesh"))
-		{
-			const char* meshFilepathChar = pMeshElement->Attribute("Filepath");
+		const char* meshFilepathChar = pStaticMeshComponentElement->Attribute("Filepath");
 
-			if (meshFilepathChar)
+		if (meshFilepathChar)
+		{
+			if (std::filesystem::path meshFilepath = meshFilepathChar;
+				!meshFilepath.empty())
 			{
-				if (std::filesystem::path meshFilepath = meshFilepathChar;
-					!meshFilepath.empty())
-				{
-					component.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
-				}
+				component.SetMesh(AssetManager::GetAsset<StaticMesh>(meshFilepath));
 			}
 		}
 
+		uint32_t materialIndex = 0;
 		for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
 			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
 		{
 			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
 			{
-				component.materialOverrides.push_back(AssetManager::GetAsset<Material>(materialFilepathChar));
+				component.materialOverrides.at(materialIndex) = AssetManager::GetAsset<Material>(materialFilepathChar);
 			}
+			materialIndex++;
 		}
 	}
 
