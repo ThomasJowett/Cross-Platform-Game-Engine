@@ -77,6 +77,7 @@ add_subdirectory(Engine/vendor/GLFW)
 add_subdirectory(Engine/vendor/TinyXml2)
 add_subdirectory(Engine/vendor/box2d)
 add_subdirectory(Engine/vendor/tracy)
+add_subdirectory(Engine/vendor/sol)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 
