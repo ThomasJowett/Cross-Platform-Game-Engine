@@ -412,12 +412,14 @@ bool Window::Init(const WindowProps& props)
 				{
 					MouseButtonPressedEvent event(button);
 					data.eventCallback(event);
+					Input::SetMousePressed(button);
 					break;
 				}
 				case GLFW_RELEASE:
 				{
 					MouseButtonReleasedEvent event(button);
 					data.eventCallback(event);
+					Input::SetMouseReleased(button);
 					break;
 				}
 				}

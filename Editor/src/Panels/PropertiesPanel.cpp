@@ -683,13 +683,17 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
 			{
-				staticMesh.mesh = AssetManager::GetAsset<StaticMesh>(meshFilepath);
+				std::filesystem::path relativePath = FileUtils::RelativePath(meshFilepath, Application::GetOpenDocumentDirectory());
+				staticMesh.SetMesh(AssetManager::GetAsset<StaticMesh>(relativePath));
+
 				SceneManager::CurrentScene()->MakeDirty();
 			}
-			for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
-			{
-				Dirty(ImGui::AssetEdit<Material>(std::string("Material " + std::to_string(i)).c_str(), staticMesh.materialOverrides[i],
-					staticMesh.mesh->GetMesh()->GetMaterials()[staticMesh.mesh->GetMesh()->GetSubmeshes()[i].materialIndex], FileType::MATERIAL));
+			if (staticMesh.mesh) {
+				for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
+				{
+					Dirty(ImGui::AssetEdit<Material>(std::string("Material " + std::to_string(i)).c_str(), staticMesh.materialOverrides[i],
+						staticMesh.mesh->GetMesh()->GetMaterials()[staticMesh.mesh->GetMesh()->GetSubmeshes()[i].materialIndex], FileType::MATERIAL));
+				}
 			}
 		});
 
