@@ -454,7 +454,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)))
+	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
 	{
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 		{
@@ -469,64 +469,64 @@ void MainDockSpace::HandleKeyBoardInputs()
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 			iSave->SaveAs();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_N))
 	{
 		m_ContentExplorer->CreateNewScene();
 	}
-	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_N))
 	{
 		Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_O))
 	{
 		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
 		if (fileToOpen)
 			Application::Get().SetOpenDocument(fileToOpen.value());
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Z))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
 			if (iUndo->CanUndo())
 				iUndo->Undo();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Y))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
 			if (iUndo->CanRedo())
 				iUndo->Redo();
 	}
-	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Delete))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Delete();
 	}
-	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
-		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_C))
+		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Copy();
 	}
-	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
-		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_V))
+		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			iCopy->Paste();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_X))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Cut();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_D))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Duplicate();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_A))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())

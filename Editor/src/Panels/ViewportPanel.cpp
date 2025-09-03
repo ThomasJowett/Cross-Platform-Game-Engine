@@ -1191,18 +1191,18 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+	if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 	{
 		SceneManager::ChangeSceneState(SceneState::Edit);
 	}
 
-	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F11)))
+	if (ImGui::IsKeyPressed(ImGuiKey_F11))
 	{
 		m_Fullscreen = !m_Fullscreen;
 	}
 
 	if (SceneManager::GetSceneState() == SceneState::Play) {
-		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
+		if (shift && ImGui::IsKeyPressed(ImGuiKey_Tab))
 		{
 			Application::GetWindow()->EnableCursor();
 			ImGuiIO& io = ImGui::GetIO();
@@ -1211,22 +1211,22 @@ void ViewportPanel::HandleKeyboardInputs()
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		}
 	}
-	else if (alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P)))
+	else if (alt && ImGui::IsKeyPressed(ImGuiKey_P))
 	{
 		SceneManager::ChangeSceneState(SceneState::Play);
 	}
 
 	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
-		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q)))
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Q))
 			m_Operation = OperationMode::Select;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_W)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_W))
 			m_Operation = OperationMode::Move;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_E)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_E))
 			m_Operation = OperationMode::Rotate;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_R))
 			m_Operation = OperationMode::Scale;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_T)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_T))
 			m_Operation = OperationMode::Universal;
 	}
 }
