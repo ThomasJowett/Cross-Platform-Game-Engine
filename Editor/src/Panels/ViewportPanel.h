@@ -92,7 +92,7 @@ private:
 	Ref<HierarchyPanel> m_HierarchyPanel;
 	Entity m_HoveredEntity;
 
-	int m_PixelData;
+	int m_PixelData = -1;
 
 	Ref<TilemapEditor> m_TilemapEditor;
 	bool m_RightClickMenuOpen = false;

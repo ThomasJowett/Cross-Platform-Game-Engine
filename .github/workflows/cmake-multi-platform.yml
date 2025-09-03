@@ -35,7 +35,8 @@ jobs:
       - name: Install dependencies
         if: matrix.os == 'ubuntu-latest'
         run: |
-          sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev
+          sudo apt-get update -y
+          sudo apt-get install -y --fix-missing libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev
 
       - name: Configure CMake
         run: >
