@@ -18,7 +18,7 @@ void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_c
 {
 	if (texture)
 	{
-		ImTextureID my_tex_id = (void*)(uintptr_t)texture->GetRendererID();
+		ImTextureID my_tex_id = (ImTextureID)texture->GetRendererID();
 		ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
 	}
 }
@@ -29,7 +29,7 @@ void ImGui::Image(Ref<SubTexture2D> subtexture, const ImVec2& size, const ImVec4
 {
 	if (subtexture && subtexture->GetTexture())
 	{
-		ImTextureID my_tex_id = (void*)(uintptr_t)subtexture->GetTexture()->GetRendererID();
+		ImTextureID my_tex_id = (ImTextureID)subtexture->GetTexture()->GetRendererID();
 		const Vector2f* coords = subtexture->GetTextureCoordinates();
 		ImGui::Image(my_tex_id, size, ImVec2(coords[0].x, coords[2].y), ImVec2(coords[2].x, coords[0].y), tint_col, border_col);
 	}
@@ -37,10 +37,12 @@ void ImGui::Image(Ref<SubTexture2D> subtexture, const ImVec2& size, const ImVec4
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, int frame_padding, const ImVec4& bg_col, const ImVec4& tint_col)
+IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, const ImVec4& bg_col, const ImVec4& tint_col)
 {
-	ImTextureID my_tex_id = (void*)(uintptr_t)texture->GetRendererID();
-	return ImGui::ImageButton(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), frame_padding, bg_col, tint_col);
+	ImTextureID my_tex_id = (ImTextureID)texture->GetRendererID();
+	char str_id[32];
+	ImFormatString(str_id, sizeof(str_id), "##ImageButton_%p", my_tex_id);
+	return ImGui::ImageButton(str_id, my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), bg_col, tint_col);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -200,7 +202,7 @@ bool ImGui::LoadStyle(const std::filesystem::path& filename, ImGuiStyle& style)
 				if (sscanf(line_start, "%f %f %f %f", &x, &y, &z, &w) == npf) {
 					*pf[0] = x; *pf[1] = y; *pf[2] = z; *pf[3] = w;
 				}
-				else 
+				else
 				{
 					ENGINE_WARN("ImGui::LoadStyle({0}): skipped [{1}] (parsing error)", filename, name);
 				}
