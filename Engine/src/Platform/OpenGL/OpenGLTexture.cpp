@@ -80,7 +80,6 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
 	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
-	
 
 	bool multisampled = samples > 1;
 
@@ -107,7 +106,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 	m_Filepath = path;
 
 	bool isValid = LoadTextureFromFile();
-	if (!isValid){
+	if (!isValid) {
 		NullTexture();
 	}
 }
@@ -146,7 +145,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 	glBindTextureUnit(slot, m_RendererID);
 }
 
-uint32_t OpenGLTexture2D::GetRendererID() const
+void* OpenGLTexture2D::GetRendererID() const
 {
 	return (void*)m_RendererID;
 }
@@ -176,8 +175,8 @@ void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
 }
 
 void OpenGLTexture2D::SetWrapMethod(WrapMethod wrapMethod)
-{ 
-	m_WrapMethod = wrapMethod; 
+{
+	m_WrapMethod = wrapMethod;
 	SetFilteringAndWrappingMethod();
 }
 

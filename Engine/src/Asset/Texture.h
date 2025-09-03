@@ -58,7 +58,7 @@ public:
 
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
-	virtual uint32_t GetRendererID() const = 0;
+	virtual void* GetRendererID() const = 0;
 
 	virtual bool Reload() = 0;
 
