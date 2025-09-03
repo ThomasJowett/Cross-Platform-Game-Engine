@@ -45,7 +45,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 				if (ImGui::MenuItem("Load Style"))
 				{
 					std::optional<std::wstring> stylePath = FileDialog::Open(L"Choose style...", L"Style Files\0*.style\0Any File\0*.*\0");
-					if(stylePath)
+					if (stylePath)
 					{
 						ImGui::LoadStyle(stylePath.value(), m_Style);
 
@@ -58,7 +58,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 				if (ImGui::MenuItem("Save Style As"))
 				{
 					std::optional<std::wstring> stylePath = FileDialog::SaveAs(L"Save style as...", L"Style Files\0*.style\0Any File\0*.*\0");
-					if(stylePath)
+					if (stylePath)
 						ImGui::SaveStyle(stylePath.value(), m_Style);
 				}
 				ImGui::EndMenu();
@@ -156,7 +156,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			ImGui::SliderFloat2("WindowTitleAlign", (float*)&style.WindowTitleAlign, 0.0f, 1.0f, "%.2f");
 			int window_menu_button_position = style.WindowMenuButtonPosition + 1;
 			if (ImGui::Combo("WindowMenuButtonPosition", (int*)&window_menu_button_position, "None\0Left\0Right\0"))
-				style.WindowMenuButtonPosition = window_menu_button_position - 1;
+				style.WindowMenuButtonPosition = (ImGuiDir)(window_menu_button_position - 1);
 			ImGui::Combo("ColorButtonPosition", (int*)&style.ColorButtonPosition, "Left\0Right\0");
 			ImGui::SliderFloat2("ButtonTextAlign", (float*)&style.ButtonTextAlign, 0.0f, 1.0f, "%.2f");
 			//ImGui::SameLine(); HelpMarker("Alignment applies when a button is larger than its text content.");
