@@ -34,15 +34,6 @@ Engine/vendor/GLAD/include
 
 find_package(OpenGL REQUIRED)
 
-include(FetchContent)
-
-FetchContent_Declare(
-  webgpu
-  GIT_REPOSITORY https://github.com/eliemichel/WebGPU-distribution
-  GIT_TAG        main
-)
-FetchContent_MakeAvailable(webgpu)
-
 include_directories(${OPENGL_INCLUDE_DIRS})
 
 IF(UNIX AND NOT APPLE)
@@ -82,6 +73,7 @@ add_subdirectory(Engine/vendor/box2d)
 add_subdirectory(Engine/vendor/glfw3webgpu)
 add_subdirectory(Engine/vendor/tracy)
 add_subdirectory(Engine/vendor/sol)
+add_subdirectory(Engine/vendor/WebGPU-Distribution)
 
 set(THIRD_PARTY_FOLDER "ThirdParty")
 

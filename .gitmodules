@@ -52,3 +52,6 @@
 [submodule "Engine/vendor/glfw3webgpu"]
 	path = Engine/vendor/glfw3webgpu
 	url = git@github.com:eliemichel/glfw3webgpu.git
+[submodule "Engine/vendor/WebGPU-distribution"]
+	path = Engine/vendor/WebGPU-distribution
+	url = https://github.com/eliemichel/WebGPU-distribution.git
