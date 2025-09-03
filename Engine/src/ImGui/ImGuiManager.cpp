@@ -63,7 +63,13 @@ void ImGuiManager::Init()
 			auto device = webGPUContext->GetWebGPUDevice();
 			auto format = webGPUContext->GetSwapchainFormat();
 
-			m_UsingImGui = ImGui_ImplWGPU_Init(device, 3, format);//TODO: get the device, swapchain format and depth texture format
+			ImGui_ImplWGPU_InitInfo init_info = {};
+			init_info.Device = device;
+			init_info.NumFramesInFlight = 3;
+			init_info.RenderTargetFormat = format;
+			init_info.DepthStencilFormat = WGPUTextureFormat_Undefined;
+
+			m_UsingImGui = ImGui_ImplWGPU_Init(&init_info);
 		}
 	}
 	else
