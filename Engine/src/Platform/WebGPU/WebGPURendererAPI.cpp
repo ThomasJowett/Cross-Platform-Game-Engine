@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "WebGPURendererAPI.h"
 #include "Logging/Instrumentor.h"
+#include "Core/Application.h"
 
 bool WebGPURendererAPI::Init()
 {
