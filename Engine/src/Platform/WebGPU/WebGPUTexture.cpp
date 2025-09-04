@@ -406,10 +406,8 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 	queue.submit(cmd);
 
 	bool done = false;
-	readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, bufferSize, nullptr, [](WGPUBufferMapAsyncStatus status, void* userdata) {
-		bool* done = (bool*)userdata;
-		*done = true;
-		});
+	readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, bufferSize,
+		[&](wgpu::BufferMapAsyncStatus status) { done = (status == wgpu::BufferMapAsyncStatus::Success); });
 
 	while (!done)
 	{
