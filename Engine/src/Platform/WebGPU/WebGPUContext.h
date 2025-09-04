@@ -21,7 +21,9 @@ public:
 	wgpu::Device GetWebGPUDevice();
 	wgpu::TextureFormat GetSwapchainFormat();
 	wgpu::Queue GetQueue();
-    
+
+	void PollEvents();
+
 private:
 	GLFWwindow* m_WindowHandle;
 	wgpu::Instance m_Instance;

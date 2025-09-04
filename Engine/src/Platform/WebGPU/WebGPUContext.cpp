@@ -72,11 +72,7 @@ void WebGPUContext::SwapBuffers()
 {
 	PROFILE_FUNCTION();
 	m_Surface.present();
-#if defined(WEBGPU_BACKEND_DAWN)
-	m_Device.tick();
-#elif defined(WEBGPU_BACKEND_WGPU)
-	m_Device.poll(false);
-#endif
+	PollEvents();
 }
 
 void WebGPUContext::SetSwapInterval(uint32_t interval)
@@ -102,4 +98,13 @@ wgpu::TextureFormat WebGPUContext::GetSwapchainFormat()
 wgpu::Queue WebGPUContext::GetQueue()
 {
 	return m_Queue;
+}
+
+void WebGPUContext::PollEvents()
+{
+#if defined(WEBGPU_BACKEND_DAWN)
+	m_Device.tick();
+#elif defined(WEBGPU_BACKEND_WGPU)
+	m_Device.poll(false);
+#endif
 }
