@@ -374,6 +374,54 @@ void WebGPUTexture2D::SetWrapMethod(WrapMethod wrapMethod)
 	CreateSampler();
 }
 
+int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
+{
+	PROFILE_FUNCTION();
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	auto queue = m_WebGPUContext->GetQueue();
+
+	uint32_t bpp = 4;
+	uint32_t bufferSize = bpp;
+
+	wgpu::BufferDescriptor bufferDesc = {};
+	bufferDesc.size = bufferSize;
+	bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+	wgpu::Buffer readbackBuffer = device.createBuffer(bufferDesc);
+
+	wgpu::ImageCopyTexture src{};
+	src.texture = m_Texture;
+	src.origin = { x, y, 0 };
+
+	wgpu::ImageCopyBuffer dst{};
+	dst.buffer = readbackBuffer;
+	dst.layout.bytesPerRow = 256;
+	dst.layout.rowsPerImage = 1;
+
+	wgpu::Extent3D size{ 1, 1, 1 };
+
+	wgpu::CommandEncoder encoder = device.createCommandEncoder();
+	encoder.copyTextureToBuffer(src, dst, size);
+	wgpu::CommandBuffer cmd = encoder.finish();
+	queue.submit(cmd);
+
+	bool done = false;
+	readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, bufferSize, nullptr, [](WGPUBufferMapAsyncStatus status, void* userdata) {
+		bool* done = (bool*)userdata;
+		*done = true;
+		});
+
+	while (!done)
+	{
+		m_WebGPUContext->PollEvents();
+	}
+
+	const uint8_t* data = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, bufferSize));
+	uint32_t value = *reinterpret_cast<const uint32_t*>(data);
+	readbackBuffer.unmap();
+	return static_cast<int>(value);
+}
+
 void WebGPUTexture2D::NullTexture()
 {
 	m_Filepath = "NULL";

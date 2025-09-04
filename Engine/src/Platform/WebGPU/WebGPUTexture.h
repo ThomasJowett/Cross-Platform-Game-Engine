@@ -27,6 +27,12 @@ public:
 
 	virtual void SetFilterMethod(FilterMethod filterMethod) override;
 	virtual void SetWrapMethod(WrapMethod wrapMethod) override;
+
+	int ReadPixel(uint32_t x, uint32_t y);
+
+	inline const wgpu::Texture& GetTexture() const { return m_Texture; }
+	inline const wgpu::TextureView& GetTextureView() const { return m_TextureView; }
+	inline const wgpu::Sampler& GetSampler() const { return m_Sampler; }
 private:
 	// sets the texture to be the null texture
 	void NullTexture();
