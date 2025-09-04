@@ -1317,8 +1317,10 @@ void ContentExplorerPanel::OnImGuiRender()
 						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 						ImGui::BeginGroup();
 
+						std::string id = ICON_FA_FOLDER_OPEN "##dir" + std::to_string(i);
+
 						ImGui::PushFont(Fonts::Icons);
-						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
+						if (ImGui::Button(id.c_str(), {thumbnailSize, thumbnailSize}))
 						{
 							if (!ImGui::GetIO().KeyCtrl)
 							{
