@@ -8,21 +8,18 @@
 #include "sol/sol.hpp"
 
 BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::filesystem::path& filepath)
-	:Leaf(behaviourTree), m_AbsoluteFilepath(filepath)
+	:Leaf(behaviourTree)
 {
-	if (m_AbsoluteFilepath.empty())
-	{
-		return;
-	}
+	m_LuaScript = CreateRef<LuaScript>(filepath);
 
-	if (!std::filesystem::exists(m_AbsoluteFilepath))
+	if (!m_LuaScript)
 	{
 		ENGINE_ERROR("could not find custom task lua script");
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
-	sol::protected_function_result result = LuaManager::GetState().script_file(m_AbsoluteFilepath.string(), *m_SolEnvironment, sol::script_pass_on_error);
+	sol::protected_function_result result = LuaManager::GetState().script_file(m_LuaScript->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
 	if (!result.valid())
 	{
