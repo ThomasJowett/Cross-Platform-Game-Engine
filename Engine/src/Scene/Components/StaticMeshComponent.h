@@ -34,19 +34,20 @@ private:
 	void save(Archive& archive) const
 	{
 		std::string relativeMeshPath;
+		std::vector<std::string> relativeMaterials;
 		if (mesh)
 		{
 			if (!mesh->GetFilepath().empty())
 				relativeMeshPath = mesh->GetFilepath().string();
-			std::vector<std::string> relativeMaterials;
+			
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
 				relativeMaterials.push_back(materialOverrides[i]->GetFilepath().string());
 			}
-			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
+			
 		}
-
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 	}
 
 	template<typename Archive>
@@ -56,7 +57,7 @@ private:
 		std::vector<std::string> relativeMaterials;
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
 
-		if (!relativeMeshPath.empty())
+		if (!relativeMeshPath.empty() && relativeMeshPath != "#")
 		{
 			mesh = AssetManager::GetAsset<StaticMesh>(relativeMeshPath);
 			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
