@@ -12,6 +12,8 @@
 #include "Logging/Logger.h"
 #include "math/Vector2f.h"
 #include "math/Vector3f.h"
+#include "Core/Asset.h"
+#include "BehaviourTreeSerializer.h"
 
 #include <iostream>
 
@@ -220,10 +222,12 @@ protected:
 
 //--------------------------------------------------------------------------------------------------------------------
 
-class BehaviourTree : public Node
+class BehaviourTree : public Node, public Asset
 {
 public:
 	BehaviourTree() : m_Blackboard(CreateRef<Blackboard>()) {}
+	BehaviourTree(const std::filesystem::path& filepath) { Load(filepath); }
+	BehaviourTree(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) { Load(filepath, data); }
 	explicit BehaviourTree(const Ref<Node>& rootNode) : BehaviourTree() { m_Root = rootNode; }
 
 	Status update(float deltaTime) override
@@ -241,6 +245,33 @@ public:
 private:
 	Ref<Node> m_Root = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
+
+	// Inherited via Asset
+	bool Load(const std::filesystem::path& filepath) override {
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+		if (!std::filesystem::exists(absolutePath)) return false;
+		auto temp = Serializer::Deserialize(absolutePath);
+		if (temp) {
+			m_Root = temp->getRoot();
+			m_Blackboard = temp->getBlackboard();
+			m_Filepath = filepath;
+			return true;
+		}
+		return false;
+	}
+	bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override
+	{
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
+		if (!std::filesystem::exists(absolutePath)) return false;
+		auto temp = Serializer::Deserialize(absolutePath, data);
+		if (temp) {
+			m_Root = temp->getRoot();
+			m_Blackboard = temp->getBlackboard();
+			m_Filepath = filepath;
+			return true;
+		}
+		return false;
+	}
 };
 
 //--------------------------------------------------------------------------------------------------------------------
