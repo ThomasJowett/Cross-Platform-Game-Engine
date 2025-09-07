@@ -4,12 +4,16 @@
 #include "Scripting/Lua/LuaManager.h"
 
 #include "Logging/Instrumentor.h"
+#include "Scene/SceneManager.h"
+#include "Scripting/Lua/LuaErrorEvent.h"
 
 #include "sol/sol.hpp"
 
 BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::filesystem::path& filepath)
 	:Leaf(behaviourTree)
 {
+	PROFILE_FUNCTION();
+
 	m_LuaScript = CreateRef<LuaScript>(filepath);
 
 	if (!m_LuaScript)
@@ -19,15 +23,17 @@ BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::f
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 
-	sol::protected_function_result result = LuaManager::GetState().script_file(m_LuaScript->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
+	sol::protected_function_result result = LuaManager::GetState().script(m_LuaScript->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
 	if (!result.valid())
 	{
 		sol::error error = result;
 
-		std::string errorStr = error.what();
-
+		auto event = LuaErrorEvent(filepath.string(), error.what());
+		Application::CallEvent(event);
 	}
+
+	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
 
 	m_OnStateEntryFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnStateEntry"]);
 	if (!m_OnStateEntryFunc->valid())
@@ -58,6 +64,8 @@ void BehaviourTree::CustomTask::initialize()
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateEntry': {0}", error.what());
+			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
@@ -73,6 +81,8 @@ BehaviourTree::Node::Status BehaviourTree::CustomTask::update(float deltaTime)
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateUpdate': {0}", error.what());
+			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
 			return Status::Invalid;
 		}
 		if (result.get_type() == sol::type::number) {
@@ -96,6 +106,8 @@ void BehaviourTree::CustomTask::terminate(Status s)
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateExit': {0}", error.what());
+			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
 		}
 	}
 }
