@@ -46,10 +46,6 @@ if (MSVC)
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${DEFAULT_STARTUP_TARGET})
 endif()
 
-add_subdirectory(Engine)
-add_subdirectory(Editor)
-add_subdirectory(Runtime)
-
 set(BOX2D_USER_SETTINGS OFF CACHE INTERNAL "")
 set(BOX2D_BUILD_TESTBED OFF CACHE INTERNAL "")
 set(BOX2D_BUILD_DOCS OFF CACHE INTERNAL "")
@@ -77,6 +73,10 @@ add_subdirectory(Engine/vendor/tracy)
 add_subdirectory(Engine/vendor/sol)
 add_subdirectory(Engine/vendor/WebGPU-Distribution)
 
+add_subdirectory(Engine)
+add_subdirectory(Editor)
+add_subdirectory(Runtime)
+
 set(THIRD_PARTY_FOLDER "ThirdParty")
 
 set_target_properties(glfw PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/GLFW)
@@ -93,5 +93,6 @@ set_target_properties(msdfgen PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/msdfgen)
 set_target_properties(OpenFBX PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
 set_target_properties(miniaudio PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
 set_target_properties(TracyClient PROPERTIES FOLDER ${THIRD_PARTY_FOLDER})
+set_target_properties(glfw3webgpu PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/GLFW)
 
 
