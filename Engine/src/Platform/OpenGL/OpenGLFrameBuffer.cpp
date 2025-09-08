@@ -130,14 +130,15 @@ void OpenGLFrameBuffer::Generate()
 
 			m_ColourAttachments[i] = Texture2D::Create(m_Specification.width, m_Specification.height, format, m_Specification.samples);
 
-			BindTexture(multisample, (uint32_t)m_ColourAttachments[i]->GetRendererID());
+			uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_ColourAttachments[i]->GetRendererID()));
+			BindTexture(multisample, id);
 			switch (m_ColourAttachmentSpecifications[i].textureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				AttachColourTexture((uint32_t)m_ColourAttachments[i]->GetRendererID(), m_Specification.samples, GL_RGBA8, GL_RGBA, m_Specification.width, m_Specification.height, i);
+				AttachColourTexture(id, m_Specification.samples, GL_RGBA8, GL_RGBA, m_Specification.width, m_Specification.height, i);
 				break;
 			case FrameBufferTextureFormat::RED_INTEGER:
-				AttachColourTexture((uint32_t)m_ColourAttachments[i]->GetRendererID(), m_Specification.samples, GL_R32I, GL_RED_INTEGER, m_Specification.width, m_Specification.height, i);
+				AttachColourTexture(id, m_Specification.samples, GL_R32I, GL_RED_INTEGER, m_Specification.width, m_Specification.height, i);
 				break;
 			default:
 				break;
@@ -147,17 +148,18 @@ void OpenGLFrameBuffer::Generate()
 			m_ColourAttachments[i]->SetWrapMethod(Texture::WrapMethod::Clamp);
 		}
 	}
-	
+
 	if (m_DepthAttachmentSpecification.textureFormat != FrameBufferTextureFormat::None)
 	{
 		auto format = FrameBufferFormatToTextureFormat(m_DepthAttachmentSpecification.textureFormat);
 		m_DepthAttachment = Texture2D::Create(m_Specification.width, m_Specification.height, format, m_Specification.samples);
-	
-		BindTexture(multisample, (uint32_t)m_DepthAttachment->GetRendererID());
+
+		uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_DepthAttachment->GetRendererID()));
+		BindTexture(multisample, id);
 		switch (m_DepthAttachmentSpecification.textureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			AttachDepthTexture((uint32_t)m_DepthAttachment->GetRendererID(), m_Specification.samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.width, m_Specification.height);
+			AttachDepthTexture(id, m_Specification.samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.width, m_Specification.height);
 			break;
 		default:
 			break;
@@ -259,5 +261,7 @@ void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 
 	GLenum textureFormat = TextureFormatToOpenGlTextureFormat(spec.textureFormat);
 
-	glClearTexImage((uint32_t)m_ColourAttachments[index]->GetRendererID(), 0, textureFormat, GL_INT, &value);
+	uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_ColourAttachments[index]->GetRendererID()));
+
+	glClearTexImage(id, 0, textureFormat, GL_INT, &value);
 }

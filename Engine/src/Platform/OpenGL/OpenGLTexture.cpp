@@ -147,7 +147,7 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 
 void* OpenGLTexture2D::GetRendererID() const
 {
-	return (void*)m_RendererID;
+	return reinterpret_cast<void*>(static_cast<uintptr_t>(m_RendererID));
 }
 
 bool OpenGLTexture2D::Reload()
@@ -165,7 +165,9 @@ bool OpenGLTexture2D::Reload()
 
 bool OpenGLTexture2D::operator==(const Texture& other) const
 {
-	return m_RendererID == (uint32_t)((OpenGLTexture2D&)other).GetRendererID();
+	auto& glOther = (const OpenGLTexture2D&)other;
+	uint32_t otherID = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(glOther.GetRendererID()));
+	return m_RendererID == otherID;
 }
 
 void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
