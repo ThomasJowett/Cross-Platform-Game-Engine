@@ -739,7 +739,7 @@ void TextEditor::HandleKeyboardInputs()
 	{
 		if (ImGui::IsWindowHovered())
 			ImGui::SetMouseCursor(ImGuiMouseCursor_TextInput);
-		//ImGui::CaptureKeyboardFromApp(true);
+		ImGui::SetNextFrameWantCaptureKeyboard(true);
 
 		io.WantCaptureKeyboard = true;
 		io.WantTextInput = true;
