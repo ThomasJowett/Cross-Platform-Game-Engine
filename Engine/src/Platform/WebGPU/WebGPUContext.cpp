@@ -17,7 +17,7 @@ void WebGPUContext::Init()
 	glfwMakeContextCurrent(m_WindowHandle);
 
 	m_Instance = wgpuCreateInstance(nullptr);
-	m_Surface = glfwCreateWindowWGPUSurface(m_Instance, m_WindowHandle);
+	m_Surface = glfwGetWGPUSurface(m_Instance, m_WindowHandle);
 
 	wgpu::RequestAdapterOptions adapterOpts{};
 	adapterOpts.compatibleSurface = m_Surface;
