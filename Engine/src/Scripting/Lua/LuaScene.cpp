@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "LuaBindings.h"
 
 #include "Logging/Instrumentor.h"
@@ -118,9 +117,9 @@ void BindScene(sol::state& state)
 		sol::constructors<GaussianBlurEffect(float)>(),
 		sol::base_classes, sol::bases<PostProcessEffect>()
 	);
-	
+
 	sol::table postProcess = state.create_table("PostProcess");
-	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect> 
+	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect>
 		{
 			if (name == "GaussianBlur") {
 				if (args.size() == 1) {

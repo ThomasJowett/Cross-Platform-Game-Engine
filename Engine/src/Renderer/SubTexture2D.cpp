@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SubTexture2D.h"
 
 SubTexture2D::SubTexture2D()

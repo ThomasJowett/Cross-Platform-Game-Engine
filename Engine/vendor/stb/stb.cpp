@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 
 #ifdef __linux__
 #define STBI_NO_SIMD

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Box2DDebugDraw.h"
 #include "Renderer/Renderer2D.h"
 

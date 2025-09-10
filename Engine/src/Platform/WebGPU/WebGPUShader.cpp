@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUShader.h"
 #include "WebGPUContext.h"
 #include "Logging/Instrumentor.h"

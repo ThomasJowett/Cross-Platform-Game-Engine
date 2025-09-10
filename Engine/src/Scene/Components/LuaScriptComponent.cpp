@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "LuaScriptComponent.h"
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"

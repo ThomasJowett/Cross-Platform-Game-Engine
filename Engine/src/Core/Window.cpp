@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Window.h"
 
 #include "Events/ApplicationEvent.h"

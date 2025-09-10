@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLRendererAPI.h"
 #include "Logging/Instrumentor.h"
 

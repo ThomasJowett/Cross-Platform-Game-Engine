@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "FrameBuffer.h"
 
 #include "Renderer.h"

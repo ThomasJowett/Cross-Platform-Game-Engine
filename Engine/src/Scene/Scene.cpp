@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Scene.h"
 #include "Entity.h"
 
@@ -238,15 +237,15 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 						ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 					}
 				}
-				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath()); 
+				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath());
 					ma_sound_init_from_file(
-					m_AudioEngine.get(), absolutePath.string().c_str(),
-					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+						m_AudioEngine.get(), absolutePath.string().c_str(),
+						flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
 				{
 					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 				}
-				
-				if(audioSourceComponent.sound)
+
+				if (audioSourceComponent.sound)
 				{
 					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
 					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);

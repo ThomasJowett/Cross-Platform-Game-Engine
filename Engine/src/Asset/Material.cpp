@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Material.h"
 
 #include "TinyXml2/tinyxml2.h"

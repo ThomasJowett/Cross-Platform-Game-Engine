@@ -1,5 +1,3 @@
-#include "stdafx.h"
-
 #pragma warning(disable:4996)
 
 #define IMGUI_IMPL_WEBGPU_BACKEND_WGPU

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneManager.h"
 #include "SceneGraph.h"
 #include "Events/SceneEvent.h"

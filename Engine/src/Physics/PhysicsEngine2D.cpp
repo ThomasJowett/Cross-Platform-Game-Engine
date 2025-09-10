@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PhysicsEngine2D.h"
 #include "HitResult2D.h"
 #include "Contact2D.h"
@@ -213,7 +212,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 
 		constexpr float MinBoxSize = 0.001f;
 
-		if(std::abs(boxColliderComp.size.x) <= MinBoxSize)
+		if (std::abs(boxColliderComp.size.x) <= MinBoxSize)
 			boxColliderComp.size.x = MinBoxSize;
 		if (std::abs(boxColliderComp.size.y) <= MinBoxSize)
 			boxColliderComp.size.y = MinBoxSize;
@@ -473,7 +472,8 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			else {
 				weldJointComp->bodyB = m_WorldBody;
 			}
-		} else {
+		}
+		else {
 			weldJointComp->bodyB = m_WorldBody;
 		}
 		b2Vec2 worldAnchor = weldJointComp->bodyB->GetWorldCenter();
@@ -509,7 +509,7 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 		m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
 	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body *)boxColliderComp->runtimeBody);
+		m_Box2DWorld->DestroyBody((b2Body*)boxColliderComp->runtimeBody);
 	else if (CircleCollider2DComponent* colliderComp = entity.TryGetComponent<CircleCollider2DComponent>())
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
 	else if (PolygonCollider2DComponent* colliderComp = entity.TryGetComponent<PolygonCollider2DComponent>())

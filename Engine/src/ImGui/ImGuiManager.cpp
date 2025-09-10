@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "ImGuiManager.h"
 
 #include "Core/Application.h"

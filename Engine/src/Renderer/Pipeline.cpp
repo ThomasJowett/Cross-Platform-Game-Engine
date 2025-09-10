@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Pipeline.h"
 #include "Renderer.h"
 

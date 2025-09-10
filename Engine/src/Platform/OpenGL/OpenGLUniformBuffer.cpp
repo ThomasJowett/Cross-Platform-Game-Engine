@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLUniformBuffer.h"
 #include "Core/Application.h"
 

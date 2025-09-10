@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "TilemapComponent.h"
 #include "Scene/SceneManager.h"
 #include "Utilities/GeometryGenerator.h"

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Application.h"
 
 #include "GLFW/glfw3.h"
@@ -108,11 +107,11 @@ int Application::Init(int argc, char* argv[])
 		std::cerr << "Not a valid input parameter" << std::endl;
 		return EXIT_FAILURE;
 	}
-	
+
 	Random::Init();
 	LuaManager::Init();
 
-	if(RenderCommand::CreateRendererAPI() != 0)
+	if (RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);

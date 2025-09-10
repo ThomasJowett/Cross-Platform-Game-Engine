@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Input.h"
 #include "Renderer/RendererAPI.h"
 
@@ -20,7 +19,7 @@ void Input::Init(GLFWwindow* windowHandle)
 
 void Input::SetMouseWheel(double X, double Y)
 {
-	s_Instance->m_MouseWheelX += X; 
+	s_Instance->m_MouseWheelX += X;
 	s_Instance->m_MouseWheelY += Y;
 }
 

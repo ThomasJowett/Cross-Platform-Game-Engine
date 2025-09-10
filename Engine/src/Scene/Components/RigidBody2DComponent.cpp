@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "RigidBody2DComponent.h"
 
 #include "Scene/SceneManager.h"

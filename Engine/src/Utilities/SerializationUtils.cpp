@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SerializationUtils.h"
 #include "FileUtils.h"
 #include "Scene/AssetManager.h"

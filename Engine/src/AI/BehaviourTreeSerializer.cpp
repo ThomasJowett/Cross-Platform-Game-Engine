@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "BehaviourTreeSerializer.h"
 
 #include "BehaviourTree.h"
@@ -19,12 +18,12 @@ void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> n
 	pElement->SetAttribute("y", editorPosition.y);
 
 	auto SerializeCompositeNode = [&](tinyxml2::XMLElement* pElement, Ref<Composite> composite)
-	{
-		for (const auto child : *composite)
 		{
-			SerializeNode(pElement, child);
-		}
-	};
+			for (const auto child : *composite)
+			{
+				SerializeNode(pElement, child);
+			}
+		};
 
 	// Composites -----------------------------------------
 	if (Ref<StatefulSelector> statefulSelector = std::dynamic_pointer_cast<StatefulSelector>(node)) {
@@ -101,27 +100,27 @@ Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourT
 	pElement->QueryFloatAttribute("y", &position.y);
 
 	auto DeserializeCompositeNode = [&](tinyxml2::XMLElement* pElement, Ref<Composite> composite)
-	{
-		composite->SetEditorPosition(position);
-		tinyxml2::XMLElement* pChildElement = pElement->FirstChildElement();
-		while (pChildElement) {
-			composite->addChild(DeserializeNode(pChildElement, behaviourTree));
-			pChildElement = pChildElement->NextSiblingElement();
-		}
-	};
+		{
+			composite->SetEditorPosition(position);
+			tinyxml2::XMLElement* pChildElement = pElement->FirstChildElement();
+			while (pChildElement) {
+				composite->addChild(DeserializeNode(pChildElement, behaviourTree));
+				pChildElement = pChildElement->NextSiblingElement();
+			}
+		};
 
 	auto DeserializeDecorator = [&](tinyxml2::XMLElement* pElement, Ref<Decorator> decorator)
-	{
-		decorator->SetEditorPosition(position);
-		tinyxml2::XMLElement* child = pElement->FirstChildElement();
-		if (child)
-			decorator->setChild(DeserializeNode(child, behaviourTree));
-		else
-			ENGINE_ERROR("Decorator must have child node!");
+		{
+			decorator->SetEditorPosition(position);
+			tinyxml2::XMLElement* child = pElement->FirstChildElement();
+			if (child)
+				decorator->setChild(DeserializeNode(child, behaviourTree));
+			else
+				ENGINE_ERROR("Decorator must have child node!");
 
-		if (child->NextSibling())
-			ENGINE_ERROR("Decorator can only have one child!");
-	};
+			if (child->NextSibling())
+				ENGINE_ERROR("Decorator can only have one child!");
+		};
 
 	std::string name = pElement->Name();
 

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneSerializer.h"
 
 #include "Scene/Entity.h"
@@ -34,7 +33,7 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	m_Scene->m_Registry.each([this, &pRoot](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene};
+			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
 				return;
@@ -219,7 +218,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
 		for (const auto& materialOverride : component.materialOverrides) {
-			if(materialOverride != Material::GetDefaultMaterial())
+			if (materialOverride != Material::GetDefaultMaterial())
 				SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
 		}
 	}
@@ -725,7 +724,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			component.animation = animation;
 			if (component.spriteSheet) {
 				Animation* animationRef = component.spriteSheet->GetAnimation(animation);
-				if(animationRef)
+				if (animationRef)
 					component.currentFrame = animationRef->GetStartFrame();
 
 			}
@@ -1075,7 +1074,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
 
 		SerializationUtils::Decode(pBehaviourTreeComponentElement, component.filepath);
-		if(!component.filepath.empty())
+		if (!component.filepath.empty())
 			component.behaviourTree = BehaviourTree::Serializer::Deserialize(component.filepath);
 	}
 
@@ -1147,7 +1146,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pWidgetComponent->QueryFloatAttribute("MarginRight", &component.marginRight);
 		pWidgetComponent->QueryFloatAttribute("MarginTop", &component.marginTop);
 		pWidgetComponent->QueryFloatAttribute("MarginBottom", &component.marginBottom);
-		
+
 		pWidgetComponent->QueryFloatAttribute("rotation", &component.rotation);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Position"), component.position);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Size"), component.size);

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "UniformBuffer.h"
 
 #include "Renderer.h"

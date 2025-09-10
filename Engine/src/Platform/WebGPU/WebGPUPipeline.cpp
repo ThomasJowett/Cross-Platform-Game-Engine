@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUPipeline.h"
 
 WebGPUPipeline::WebGPUPipeline(const Spec& spec)

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SpriteSheet.h"
 
 #include "TinyXml2/tinyxml2.h"

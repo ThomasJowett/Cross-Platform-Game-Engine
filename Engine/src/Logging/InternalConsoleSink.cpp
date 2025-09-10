@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "InternalConsoleSink.h"
 
 uint16_t InternalConsole::s_MessageBufferCapacity = 256;

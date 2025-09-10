@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUTexture.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"

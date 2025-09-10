@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "AnimatedSpriteComponent.h"
 
 void AnimatedSpriteComponent::Animate(float deltaTime)
@@ -18,7 +18,7 @@ void AnimatedSpriteComponent::Animate(float deltaTime)
 	m_CurrentFrameTime += deltaTime;
 	while (m_CurrentFrameTime >= animationRef->GetHoldTime() && animationRef->GetHoldTime() > 0.0f)
 	{
-		if(++currentFrame >= animationRef->GetEndFrame()){
+		if (++currentFrame >= animationRef->GetEndFrame()) {
 			currentFrame = animationRef->GetStartFrame();
 		}
 		m_CurrentFrameTime -= animationRef->GetHoldTime();

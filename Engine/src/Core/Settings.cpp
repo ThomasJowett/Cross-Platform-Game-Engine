@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Settings.h"
 
 #include "simpleini.h"

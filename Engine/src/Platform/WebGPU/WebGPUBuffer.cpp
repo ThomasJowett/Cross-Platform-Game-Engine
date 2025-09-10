@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUBuffer.h"
 
 #include "Core/Application.h"
@@ -29,7 +28,7 @@ WebGPUVertexBuffer::WebGPUVertexBuffer(void* vertices, uint32_t size)
 	bufferDesc.size = size;
 	bufferDesc.usage = wgpu::BufferUsage::Vertex | wgpu::BufferUsage::CopyDst;
 	bufferDesc.mappedAtCreation = true;
-	
+
 	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLShader.h"
 #include "Logging/Instrumentor.h"
 #include "Core/core.h"

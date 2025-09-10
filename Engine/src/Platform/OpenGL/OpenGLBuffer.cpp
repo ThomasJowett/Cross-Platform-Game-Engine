@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLBuffer.h"
 
 #include "Core/Application.h"
@@ -9,9 +8,9 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
+	glGenBuffers(1, &m_RendererID);
+	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 	m_VertexArray = CreateRef<OpenGLVertexArray>();
 }
 
@@ -19,7 +18,7 @@ OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
+	glGenBuffers(1, &m_RendererID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
 	m_VertexArray = CreateRef<OpenGLVertexArray>();
@@ -65,7 +64,7 @@ OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 	:m_Count(count)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
+	glGenBuffers(1, &m_RendererID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	glBufferData(GL_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 }

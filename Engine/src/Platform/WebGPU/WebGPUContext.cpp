@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUContext.h"
 #include "Logging/Instrumentor.h"
 #include <glad/glad.h>
@@ -35,18 +34,18 @@ void WebGPUContext::Init()
 	deviceDesc.nextInChain = nullptr;
 	deviceDesc.defaultQueue.label = "The Default queue";
 	deviceDesc.deviceLostCallback = [](WGPUDeviceLostReason reason, char const* message, void* /*pUserData*/)
-	{
-		ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message);
-	};
+		{
+			ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message);
+		};
 
 	m_Device = m_Adapter.requestDevice(deviceDesc);
 
 	auto onDeviceError = [](wgpu::ErrorType type, char const* message)
-	{
-		ENGINE_ERROR("Uncaptured device error: type {0}", (int)type);
-		if (message)
-			ENGINE_ERROR(message);
-	};
+		{
+			ENGINE_ERROR("Uncaptured device error: type {0}", (int)type);
+			if (message)
+				ENGINE_ERROR(message);
+		};
 
 	m_ErrorCallbackHandle = m_Device.setUncapturedErrorCallback(std::move(onDeviceError));
 	m_Queue = m_Device.getQueue();

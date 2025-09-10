@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Tasks.h"
 
 #include "Scripting/Lua/LuaManager.h"

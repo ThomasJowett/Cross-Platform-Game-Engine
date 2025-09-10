@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "RenderCommand.h"
 #include "Core/Settings.h"
 #include "Logging/Instrumentor.h"

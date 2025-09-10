@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "GeometryGenerator.h"
 
 #include "math/Quaternion.h"

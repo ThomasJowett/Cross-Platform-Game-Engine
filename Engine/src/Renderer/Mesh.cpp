@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Mesh.h"
 #include "Scene/AssetManager.h"
 

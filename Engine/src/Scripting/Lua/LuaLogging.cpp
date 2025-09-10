@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "LuaBindings.h"
 
 #include "Logging/Logger.h"

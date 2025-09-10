@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLVertexArray.h"
 #include "Renderer/Buffer.h"
 #include "Core/Application.h"

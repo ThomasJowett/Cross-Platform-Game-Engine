@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLTexture.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"

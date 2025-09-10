@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Font.h"
 
 #include "Renderer/UI/MSDFData.h"
@@ -78,7 +77,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 		msdfgen::destroyFont(fontHandle);
 		msdfgen::deinitializeFreetype(ftHandle);
 		return false;
-	}	
+	}
 
 	m_Filepath = filepath;
 	m_Filepath.make_preferred();

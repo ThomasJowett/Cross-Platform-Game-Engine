@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "FileUtils.h"
 
 std::filesystem::path FileUtils::RelativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to)

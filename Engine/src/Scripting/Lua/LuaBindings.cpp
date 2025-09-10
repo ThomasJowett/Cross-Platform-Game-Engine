@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "LuaBindings.h"
 
 #include "Logging/Instrumentor.h"
@@ -41,19 +40,19 @@ void BindEntity(sol::state& state)
 
 	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
 		sol::constructors<
-			Entity(),
-			Entity(const Entity&),
-			sol::types<entt::entity, Scene*>
+		Entity(),
+		Entity(const Entity&),
+		sol::types<entt::entity, Scene*>
 		>()
 	);
-	SetFunction(entity_type, "IsSceneValid", "Is Valid", & Entity::IsSceneValid);
-	SetFunction(entity_type, "GetName", "Get Name", & Entity::GetName);
-	SetFunction(entity_type, "SetName", "Set Name", & Entity::SetName);
-	SetFunction(entity_type, "AddChild", "Add Child", & Entity::AddChild);
-	SetFunction(entity_type, "Destroy", "Destroy", & Entity::Destroy);
-	SetFunction(entity_type, "GetParent", "Get Parent", & Entity::GetParent);
-	SetFunction(entity_type, "GetSibling", "Get Sibling", & Entity::GetSibling);
-	SetFunction(entity_type, "GetChild", "Get first Child", & Entity::GetChild);
+	SetFunction(entity_type, "IsSceneValid", "Is Valid", &Entity::IsSceneValid);
+	SetFunction(entity_type, "GetName", "Get Name", &Entity::GetName);
+	SetFunction(entity_type, "SetName", "Set Name", &Entity::SetName);
+	SetFunction(entity_type, "AddChild", "Add Child", &Entity::AddChild);
+	SetFunction(entity_type, "Destroy", "Destroy", &Entity::Destroy);
+	SetFunction(entity_type, "GetParent", "Get Parent", &Entity::GetParent);
+	SetFunction(entity_type, "GetSibling", "Get Sibling", &Entity::GetSibling);
+	SetFunction(entity_type, "GetChild", "Get first Child", &Entity::GetChild);
 
 	RegisterAllComponents<COMPONENTS>(state);
 
@@ -226,7 +225,7 @@ void BindCommonTypes(sol::state& state)
 		"g", &Colour::g,
 		"b", &Colour::b,
 		"a", &Colour::a
-		);
+	);
 	colour_type.set_function("SetHexCode", static_cast<void(Colour::*)(const std::string&)>(&Colour::SetColour));
 	colour_type.set_function("SetHexValue", static_cast<void(Colour::*)(const uint32_t&)>(&Colour::SetColour));
 	colour_type.set_function("HexCode", &Colour::HexCode);
@@ -281,12 +280,12 @@ void BindCommonTypes(sol::state& state)
 		"GetString", &BehaviourTree::Blackboard::getString,
 		"GetVec2", &BehaviourTree::Blackboard::getVector2,
 		"GetVec3", &BehaviourTree::Blackboard::getVector3
-		);
+	);
 
 	sol::usertype<BehaviourTree::BehaviourTree> behaviourTree_type = state.new_usertype<BehaviourTree::BehaviourTree>(
 		"BehaviourTree",
 		"GetBlackboard", &BehaviourTree::BehaviourTree::getBlackboard
-		);
+	);
 
 	std::initializer_list<std::pair<sol::string_view, int>> nodeStatusItems = {
 		{ "Success", (int)BehaviourTree::Node::Status::Success },

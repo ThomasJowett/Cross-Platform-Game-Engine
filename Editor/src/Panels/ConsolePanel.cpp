@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "ConsolePanel.h"
 
 #include "ImGui/ImGuiUtilities.h"

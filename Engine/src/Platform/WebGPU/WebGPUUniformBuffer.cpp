@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "WebGPUUniformBuffer.h"
 
 #include "Core/Application.h"

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Animation.h"
 
 Animation::Animation(int startFrame, int frameCount, float holdTime)

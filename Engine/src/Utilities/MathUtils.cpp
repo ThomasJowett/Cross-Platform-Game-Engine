@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "MathUtils.h"
 
 Line3D MathUtils::ComputeCameraRay(const Matrix4x4& viewMat, const Matrix4x4& projectionMat, const Vector2f& screenPosition, const Vector2f& viewportSize)

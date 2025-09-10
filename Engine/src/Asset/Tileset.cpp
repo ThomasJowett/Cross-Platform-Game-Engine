@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "Tileset.h"
+﻿#include "Tileset.h"
 
 #include "TinyXml2/tinyxml2.h"
 #include "Logging/Instrumentor.h"
@@ -128,7 +127,7 @@ void Tileset::SetCurrentTile(uint32_t x, uint32_t y)
 {
 	if (m_Texture)
 	{
-		m_Texture->SetCurrentCell(CoordsToIndex(x,y));
+		m_Texture->SetCurrentCell(CoordsToIndex(x, y));
 	}
 }
 
@@ -143,7 +142,7 @@ void Tileset::SetSubTexture(Ref<SubTexture2D> subTexture)
 	m_Texture = subTexture;
 	if (m_Texture && m_Tiles.size() != m_Texture->GetNumberOfCells())
 	{
-			m_Tiles.resize(m_Texture->GetNumberOfCells());
+		m_Tiles.resize(m_Texture->GetNumberOfCells());
 	}
 }
 
@@ -174,7 +173,7 @@ void Tileset::AddBitmask(Bitmask type)
 		m_BitmaskMap.clear();
 		m_BitmaskMap.resize(16);
 	}
-	else if( type == Bitmask::ThreeByThree && m_BitmaskMap.size() != 48)
+	else if (type == Bitmask::ThreeByThree && m_BitmaskMap.size() != 48)
 	{
 		m_BitmaskMap.clear();
 		m_BitmaskMap.resize(48);
@@ -200,7 +199,7 @@ void Tileset::SetTileBitmask(Tile* tile, uint16_t bitmask)
 
 uint32_t Tileset::CoordsToIndex(uint32_t x, uint32_t y) const
 {
-	if(m_Texture)
+	if (m_Texture)
 		return std::clamp((y * m_Texture->GetCellsWide()) + x, 0U, m_Texture->GetNumberOfCells() - 1);
 	return 0;
 }
