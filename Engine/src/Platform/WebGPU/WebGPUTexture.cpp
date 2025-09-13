@@ -14,11 +14,13 @@ void WebGPUTexture2D::CreateSampler()
 		samplerDesc.minFilter = wgpu::FilterMode::Linear;
 		samplerDesc.magFilter = wgpu::FilterMode::Linear;
 		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
+		samplerDesc.maxAnisotropy = 8;
 		break;
 	case Texture::FilterMethod::Nearest:
 		samplerDesc.minFilter = wgpu::FilterMode::Nearest;
 		samplerDesc.magFilter = wgpu::FilterMode::Nearest;
 		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Nearest;
+		samplerDesc.maxAnisotropy = 1;
 		break;
 	default:
 		break;
