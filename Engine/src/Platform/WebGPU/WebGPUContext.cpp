@@ -13,7 +13,6 @@ WebGPUContext::WebGPUContext(GLFWwindow* windowHandle)
 void WebGPUContext::Init()
 {
 	PROFILE_FUNCTION();
-	glfwMakeContextCurrent(m_WindowHandle);
 
 	m_Instance = wgpuCreateInstance(nullptr);
 	m_Surface = glfwGetWGPUSurface(m_Instance, m_WindowHandle);
