@@ -120,18 +120,12 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& path)
 
 	m_Filepath = path;
 
-	bool isValid = std::filesystem::exists(path);
-
-	CORE_ASSERT(isValid, "Image does not exist! " + path.string());
-
 	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
 
-	if (isValid) {
-		isValid = LoadTextureFromFile();
-	}
-	else {
+	bool isValid = LoadTextureFromFile();
+	if (!isValid) {
 		NullTexture();
 	}
 
@@ -476,12 +470,20 @@ bool WebGPUTexture2D::LoadTextureFromFile()
 {
 	PROFILE_FUNCTION();
 
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath);
+
+	if (!std::filesystem::exists(absolutePath))
+	{
+		ENGINE_ERROR("Image does not exist! {0}", absolutePath.string());
+		return false;
+	}
+
 	int width, height, channels;
 	stbi_set_flip_vertically_on_load(1);
 	stbi_uc* data = nullptr;
 	{
 		PROFILE_SCOPE("stbi Load Image WebGPUTexture2D(const std::string&)");
-		data = stbi_load(m_Filepath.string().c_str(), &width, &height, &channels, 0);
+		data = stbi_load(absolutePath.string().c_str(), &width, &height, &channels, 0);
 	}
 
 	CORE_ASSERT(data, "Failed to load image! " + m_Filepath.string());
