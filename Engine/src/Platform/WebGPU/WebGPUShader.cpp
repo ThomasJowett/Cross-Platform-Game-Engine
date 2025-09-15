@@ -2,6 +2,7 @@
 #include "WebGPUContext.h"
 #include "Logging/Instrumentor.h"
 #include "Core/core.h"
+#include "Scene/AssetManager.h"
 
 #include <fstream>
 #include <filesystem>
@@ -10,8 +11,11 @@ WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path&
 	:m_Name(name)
 {
 	PROFILE_FUNCTION();
-	if (!LoadShader(fileDirectory / name)) {
-		ENGINE_ERROR("Could not load shader from file: {0}", (fileDirectory / name).string());
+	if (!LoadShaderFromDisk(fileDirectory / name)) {
+		if (!LoadShaderFromBundle(fileDirectory / name))
+		{
+			ENGINE_ERROR("Could not load shader from file: {0}", (fileDirectory / name).string());
+		}
 	}
 }
 
@@ -31,7 +35,7 @@ void WebGPUShader::UnBind() const
 	PROFILE_FUNCTION();
 }
 
-bool WebGPUShader::LoadShader(const std::filesystem::path& filepath)
+bool WebGPUShader::LoadShaderFromDisk(const std::filesystem::path& filepath)
 {
 	PROFILE_FUNCTION();
 
@@ -63,6 +67,40 @@ bool WebGPUShader::LoadShader(const std::filesystem::path& filepath)
 	}
 
 	return m_Shader;
+}
+
+bool WebGPUShader::LoadShaderFromBundle(const std::filesystem::path& filepath)
+{
+	PROFILE_FUNCTION();
+	if (!AssetManager::HasBundle())
+	{
+		ENGINE_ERROR("No Asset Bundle loaded");
+		return false;
+	}
+
+	std::vector<uint8_t> data;
+	std::filesystem::path shaderPath = filepath;
+
+	shaderPath.replace_extension(".wgsl");
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+		std::string shaderSource(data.begin(), data.end());
+
+		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc{};
+		shaderCodeDesc.chain.next = nullptr;
+		shaderCodeDesc.chain.sType = wgpu::SType::ShaderModuleWGSLDescriptor;
+		shaderCodeDesc.code = shaderSource.c_str();
+		wgpu::ShaderModuleDescriptor shaderDesc{};
+		shaderDesc.hintCount = 0;
+		shaderDesc.hints = nullptr;
+		shaderDesc.nextInChain = &shaderCodeDesc.chain;
+
+		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+		auto webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+		auto device = webGPUContext->GetWebGPUDevice();
+		m_Shader = device.createShaderModule(shaderDesc);
+	}
+	return false;
 }
 
 std::string WebGPUShader::ReadFile(const std::filesystem::path& filepath)

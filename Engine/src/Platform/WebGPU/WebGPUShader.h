@@ -15,7 +15,8 @@ public:
 
 	virtual std::string GetName() const override { return m_Name; }
 private:
-	bool LoadShader(const std::filesystem::path& filepath);
+	bool LoadShaderFromDisk(const std::filesystem::path& filepath);
+	bool LoadShaderFromBundle(const std::filesystem::path& filepath);
 	std::string ReadFile(const std::filesystem::path& filepath);
 private:
 	wgpu::ShaderModule m_Shader;
