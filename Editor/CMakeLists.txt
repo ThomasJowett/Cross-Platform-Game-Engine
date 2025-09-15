@@ -44,6 +44,13 @@ if(APPLE)
         MACOSX_PACKAGE_LOCATION "Resources")
     add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON})
 
+    file(GLOB_RECURSE DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+    foreach(file ${DATA_FILES})
+        file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/data" ${file})
+        set_source_files_properties(${file} PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources/data/${rel_path}")
+    endforeach()
+
     set_target_properties(Editor PROPERTIES 
         BUNDLE True
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.Jowett.Thomas.Editor"
@@ -81,19 +88,31 @@ add_definitions(
     -DUNICODE
 )
 
-add_custom_command(
-    TARGET Editor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-    "${CMAKE_CURRENT_SOURCE_DIR}/data"
-    "$<TARGET_FILE_DIR:Editor>/data"
-)
-
-add_custom_command(
-    TARGET Editor POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy
-    ${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini
-    "$<TARGET_FILE_DIR:Editor>"
-)
+if(APPLE)
+        add_custom_command(
+        TARGET Editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Editor>/../Resources/data"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/data"
+            "$<TARGET_FILE_DIR:Editor>/../Resources/data"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini"
+            "$<TARGET_FILE_DIR:Editor>/../Resources"
+        COMMENT "Copying data folder and imgui.ini into app bundle Resources"
+    )
+else()
+    add_custom_command(
+        TARGET Editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Editor>/data"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/data"
+            "$<TARGET_FILE_DIR:Editor>/data"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            ${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini
+            "$<TARGET_FILE_DIR:Editor>"
+        COMMENT "Copying data folder and imgui.ini to binary dir"
+    )
+endif()
 
 set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
