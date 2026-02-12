@@ -5,6 +5,7 @@ project(Cross-Platform-Game-Engine)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CMAKE_BUILD_TYPE "Debug")
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 function(group_files_by_directory FILE_LIST)
     foreach(file IN LISTS ${FILE_LIST})
