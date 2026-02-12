@@ -1,18 +1,32 @@
-add_executable(Runtime src/main.cpp
-                src/RuntimeLayer.cpp
-                src/RuntimeLayer.h)
+file(GLOB SOURCES
+    src/main.cpp 
+    src/RuntimeLayer.cpp 
+    src/RuntimeLayer.h
+)
+
+if(APPLE)
+    add_executable(Runtime MACOSX_BUNDLE ${SOURCES})
+    set_target_properties(Runtime PROPERTIES
+        BUNDLE True
+        MACOSX_BUNDLE_BUNDLE_NAME "Runtime"
+        MACOSX_BUNDLE_EXECUTABLE_NAME "Runtime"
+    )
+else()
+    add_executable(Runtime ${SOURCES})
+endif()
 
 target_link_libraries(Runtime PRIVATE Engine)
 
-get_target_property(EDITOR_BINARY_DIR Editor RUNTIME_OUTPUT_DIRECTORY)
+if(NOT APPLE)
+    get_target_property(EDITOR_BINARY_DIR Editor RUNTIME_OUTPUT_DIRECTORY)
 
-# Define the output directory base path
-set(OUTPUT_DIRECTORY_BASE "${EDITOR_BINARY_DIR}")
-
-# Loop over each configuration type and set the output directory to inside the editor directory
-foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
-    string(TOUPPER ${CONFIG} CONFIG_UPPER)
-    set_target_properties(Runtime PROPERTIES
-        RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${OUTPUT_DIRECTORY_BASE}/${CONFIG}/runtime"
-    )
-endforeach()
+    # Define the output directory base path
+    set(OUTPUT_DIRECTORY_BASE "${EDITOR_BINARY_DIR}")
+    # Loop over each configuration type and set the output directory to inside the editor directory
+    foreach(CONFIG ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER ${CONFIG} CONFIG_UPPER)
+        set_target_properties(Runtime PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${OUTPUT_DIRECTORY_BASE}/${CONFIG}/runtime"
+        )
+    endforeach()
+endif()
