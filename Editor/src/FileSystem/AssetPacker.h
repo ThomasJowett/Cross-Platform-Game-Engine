@@ -15,13 +15,14 @@ class AssetPacker : public Layer
 		Done
 	};
 
-	struct AssetNode {
+	struct AssetNode
+	{
 		std::string name;
 		std::filesystem::path fullPath;
 		bool isDirectory = false;
 		std::vector<Ref<AssetNode>> children;
 	};
-	
+
 public:
 	AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory);
 

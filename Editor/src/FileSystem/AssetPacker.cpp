@@ -12,7 +12,8 @@
 
 #include <miniz.h>
 
-struct AssetBundleFooter {
+struct AssetBundleFooter
+{
 	uint64_t zipSize;
 	uint64_t gameTitleSize;
 	uint64_t defaultSceneSize;
@@ -22,7 +23,7 @@ struct AssetBundleFooter {
 constexpr const char* BUNDLE_MAGIC = "GMBUNDLE";
 
 AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory)
-	: Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
+    : Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
 {
 	DiscoverAssets();
 
@@ -40,7 +41,8 @@ AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirecto
 
 	std::ifstream file(Application::GetOpenDocument());
 
-	if (!file.is_open()) return;
+	if (!file.is_open())
+		return;
 
 	cereal::JSONInputArchive input(file);
 	input(m_Data);
@@ -62,7 +64,8 @@ void AssetPacker::OnImGuiRender()
 
 	if (ImGui::BeginPopupModal("Pack Assets", &m_Show, ImGuiWindowFlags_NoResize))
 	{
-		if (m_CurrentStage == Stage::DiscoveringAssets) {
+		if (m_CurrentStage == Stage::DiscoveringAssets)
+		{
 			ImGui::Text("Select assets to pack into the bundle:");
 			ImGui::Separator();
 
@@ -78,11 +81,13 @@ void AssetPacker::OnImGuiRender()
 
 			if (ImGui::Button("Pack Selected Assets"))
 			{
-				m_PackThread = std::thread([this]() {
-					m_CurrentStage = Stage::PackingAssets;
-					m_Progress.store(0.0f);
-					PackAssets();
-					});
+				m_PackThread = std::thread(
+				    [this]()
+				    {
+					    m_CurrentStage = Stage::PackingAssets;
+					    m_Progress.store(0.0f);
+					    PackAssets();
+				    });
 			}
 
 			ImGui::SameLine();
@@ -93,15 +98,18 @@ void AssetPacker::OnImGuiRender()
 				Application::GetLayerStack().RemoveLayer(shared_from_this());
 			}
 		}
-		else if (m_CurrentStage == Stage::PackingAssets) {
+		else if (m_CurrentStage == Stage::PackingAssets)
+		{
 			ImGui::Text("Packing assets...");
 			ImGui::ProgressBar(m_Progress.load(), ImVec2(0.0f, 0.0f));
 		}
-		else if (m_CurrentStage == Stage::ExportingGame) {
+		else if (m_CurrentStage == Stage::ExportingGame)
+		{
 			ImGui::Text("Exporting game...");
 			ImGui::ProgressBar(m_Progress.load(), ImVec2(0.0f, 0.0f));
 		}
-		else if (m_CurrentStage == Stage::Done) {
+		else if (m_CurrentStage == Stage::Done)
+		{
 			ImGui::Text("Game exported successfully!");
 			if (ImGui::Button("Close"))
 			{
@@ -110,7 +118,7 @@ void AssetPacker::OnImGuiRender()
 				Application::GetLayerStack().RemoveLayer(shared_from_this());
 			}
 
-			if(m_PackThread.joinable())
+			if (m_PackThread.joinable())
 			{
 				m_PackThread.join();
 			}
@@ -131,7 +139,8 @@ void AssetPacker::DiscoverAssets()
 
 	m_AssetTree = CreateRef<AssetNode>();
 
-	for (const auto& asset : m_DiscoveredAssets) {
+	for (const auto& asset : m_DiscoveredAssets)
+	{
 		AddAssetToTree(asset, m_AssetTree);
 	}
 }
@@ -141,18 +150,20 @@ void AssetPacker::AddAssetToTree(const std::filesystem::path& assetPath, Ref<Ass
 	PROFILE_FUNCTION();
 	auto current = root;
 	std::filesystem::path relativePath = std::filesystem::relative(assetPath, m_ProjectDirectory);
-	for (const auto& part : relativePath.parent_path()) {
-		auto it = std::find_if(current->children.begin(), current->children.end(),
-			[&](const auto& node) { return node->name == part.string() && node->isDirectory; });
+	for (const auto& part : relativePath.parent_path())
+	{
+		auto it = std::find_if(current->children.begin(), current->children.end(), [&](const auto& node) { return node->name == part.string() && node->isDirectory; });
 
-		if (it == current->children.end()) {
+		if (it == current->children.end())
+		{
 			auto folder = std::make_shared<AssetNode>();
 			folder->name = part.string();
 			folder->isDirectory = true;
 			current->children.push_back(folder);
 			current = folder;
 		}
-		else {
+		else
+		{
 			current = *it;
 		}
 	}
@@ -170,13 +181,14 @@ void AssetPacker::PackAssets()
 	PROFILE_FUNCTION();
 
 	m_CurrentStage = Stage::PackingAssets;
-	
+
 	mz_zip_archive zip = {};
 	memset(&zip, 0, sizeof(zip));
 
 	std::filesystem::path outputZipPath = m_ExportDirectory / "packed_assets.zip";
 
-	if (!mz_zip_writer_init_file(&zip, outputZipPath.string().c_str(), 0)) {
+	if (!mz_zip_writer_init_file(&zip, outputZipPath.string().c_str(), 0))
+	{
 		ENGINE_ERROR("Failed to initialize zip writer: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
 		return;
 	}
@@ -184,7 +196,8 @@ void AssetPacker::PackAssets()
 	std::vector<std::filesystem::path> filesToPack;
 	filesToPack.insert(filesToPack.end(), m_SelectedAssets.begin(), m_SelectedAssets.end());
 
-	auto collectFilesFromDir = [&](const std::filesystem::path& dir) {
+	auto collectFilesFromDir = [&](const std::filesystem::path& dir)
+	{
 		if (std::filesystem::exists(dir) && std::filesystem::is_directory(dir))
 		{
 			for (const auto& entry : std::filesystem::directory_iterator(dir))
@@ -204,11 +217,12 @@ void AssetPacker::PackAssets()
 	for (const auto& asset : filesToPack)
 	{
 		std::string relativePath;
-		if(asset.string().compare(0, m_ProjectDirectory.string().length(), m_ProjectDirectory.string()) == 0)
+		if (asset.string().compare(0, m_ProjectDirectory.string().length(), m_ProjectDirectory.string()) == 0)
 			relativePath = std::filesystem::relative(asset, m_ProjectDirectory).string();
 		else
 			relativePath = std::filesystem::relative(asset, dataPath).string();
-		std::replace(relativePath.begin(), relativePath.end(), '\\', '/'); // Ensure forward slashes for zip
+		std::replace(relativePath.begin(), relativePath.end(), '\\',
+		             '/'); // Ensure forward slashes for zip
 		if (!mz_zip_writer_add_file(&zip, relativePath.c_str(), asset.string().c_str(), nullptr, 0, MZ_BEST_SPEED))
 		{
 			ENGINE_ERROR("Failed to add file to zip: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
@@ -226,8 +240,11 @@ void AssetPacker::PackAssets()
 	}
 
 	mz_zip_writer_end(&zip);
-
-	ExportGame();
+#ifdef __APPLE__
+	ExportGameToAppBundle();
+#else
+	ExportGameToExecutable();
+#endif
 }
 
 void AssetPacker::ExportGame()
@@ -294,8 +311,10 @@ void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
 	{
 		bool allSelected = true;
 		bool anySelected = false;
-		for (const auto& child : node->children) {
-			if (!child->isDirectory) {
+		for (const auto& child : node->children)
+		{
+			if (!child->isDirectory)
+			{
 				bool selected = m_SelectedAssets.find(child->fullPath) != m_SelectedAssets.end();
 				anySelected |= selected;
 				allSelected &= selected;
@@ -305,25 +324,29 @@ void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
 		ImGui::PushID(node->fullPath.string().c_str());
 		if (ImGui::Checkbox(("##checkbox_" + node->name).c_str(), &folderSelected))
 		{
-			std::function<void(const Ref<AssetNode>&)> toggleSelection = [&](const Ref<AssetNode>& childNode) {
-				if (childNode->isDirectory) {
-					for (const auto& child : childNode->children) {
+			std::function<void(const Ref<AssetNode>&)> toggleSelection = [&](const Ref<AssetNode>& childNode)
+			{
+				if (childNode->isDirectory)
+				{
+					for (const auto& child : childNode->children)
+					{
 						toggleSelection(child);
 					}
 				}
-				else {
+				else
+				{
 					if (folderSelected)
 						m_SelectedAssets.insert(childNode->fullPath);
 					else
 						m_SelectedAssets.erase(childNode->fullPath);
 				}
-				};
+			};
 			toggleSelection(node);
 		}
 		ImGui::SameLine();
 		ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_DefaultOpen;
 		bool opened = ImGui::TreeNodeEx(node->name.c_str(), flags);
-		
+
 		if (opened)
 		{
 			for (const auto& child : node->children)
