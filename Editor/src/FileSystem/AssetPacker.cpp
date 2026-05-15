@@ -1,8 +1,10 @@
 #include "AssetPacker.h"
 
 #include "Directory.h"
+#include "Logging/Logger.h"
 #include "Viewers/ViewerManager.h"
 #include <Logging/Instrumentor.h>
+#include <filesystem>
 #include <imgui.h>
 
 #include "Core/Application.h"
@@ -10,6 +12,7 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
+#include <iterator>
 #include <miniz.h>
 
 struct AssetBundleFooter
@@ -247,7 +250,7 @@ void AssetPacker::PackAssets()
 #endif
 }
 
-void AssetPacker::ExportGame()
+void AssetPacker::ExportGameToExecutable()
 {
 	PROFILE_FUNCTION();
 
@@ -302,6 +305,62 @@ void AssetPacker::ExportGame()
 	m_Progress.store(1.0f);
 
 	ENGINE_INFO("Exported game to {0}", executableName);
+}
+
+void AssetPacker::ExportGameToAppBundle()
+{
+	PROFILE_FUNCTION();
+	m_CurrentStage = Stage::ExportingGame;
+	m_Progress.store(0.0f);
+
+	std::filesystem::path editorResources = Application::GetWorkingDirectory() / "Resources"; // TODO: check if this is correct
+	std::filesystem::path runtimeTemplate = editorResources / "Runtime.app";
+	std::filesystem::path destinationBundle = m_ExportDirectory / (m_GameName.stem().string() + ".app");
+
+	if (!std::filesystem::exists(runtimeTemplate))
+	{
+		ENGINE_ERROR("Runtime template not found at {0}", runtimeTemplate);
+		m_CurrentStage = Stage::Done;
+		return;
+	}
+
+	std::error_code ec;
+	if (std::filesystem::exists(destinationBundle))
+	{
+		std::filesystem::remove_all(destinationBundle, ec);
+	}
+
+	std::filesystem::copy(runtimeTemplate, destinationBundle, std::filesystem::copy_options::recursive | std::filesystem::copy_options::overwrite_existing, ec);
+
+	if (ec)
+	{
+		ENGINE_ERROR("Could not copy bundle: {0}", ec.message());
+		m_CurrentStage = Stage::Done;
+		return;
+	}
+
+	std::filesystem::path signaturePath = destinationBundle / "Contents" / "_CodeSignature";
+	if (std::filesystem::exists(signaturePath))
+	{
+		std::filesystem::remove_all(signaturePath);
+	}
+
+	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
+	std::ifstream zipFile(zipPath, std::ios::binary);
+	std::vector<char> zipData((std::istreambuf_iterator<char>(zipFile)), {});
+	zipFile.close();
+
+	AssetBundleFooter footer;
+	footer.zipSize = zipData.size();
+	footer.gameTitleSize = m_GameName.string().size();
+	footer.defaultSceneSize = m_Data.defaultScene.size();
+	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
+
+	std::filesystem::path resourcesPath = destinationBundle / "Contents" / "Resources";
+	if (!std::filesystem::exists(resourcesPath))
+	{
+		std::filesystem::create_directories(resourcesPath);
+	}
 }
 
 void AssetPacker::DrawAssetTree(Ref<AssetNode> node)

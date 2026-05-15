@@ -32,7 +32,8 @@ private:
 	void DiscoverAssets();
 	void AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root);
 	void PackAssets();
-	void ExportGame();
+	void ExportGameToExecutable();
+	void ExportGameToAppBundle();
 
 	void DrawAssetTree(Ref<AssetNode> node);
 
