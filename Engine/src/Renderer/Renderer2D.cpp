@@ -286,7 +286,7 @@ bool Renderer2D::Init()
 
 	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
 
-	return s_Data.quadShader == nullptr;
+	return s_Data.quadShader != nullptr;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
