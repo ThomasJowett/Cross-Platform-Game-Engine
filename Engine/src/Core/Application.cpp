@@ -69,6 +69,12 @@ Application::~Application()
 int Application::Init(int argc, char* argv[])
 {
 	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+#ifdef __APPLE__
+	if (m_WorkingDirectory.filename() == "MacOS")
+	{
+		m_WorkingDirectory = m_WorkingDirectory.parent_path() / "Resources";
+	}
+#endif
 	std::filesystem::current_path(m_WorkingDirectory);
 	Logger::Init();
 
