@@ -83,6 +83,8 @@ target_include_directories(Editor PUBLIC
                             Engine/vendor/stb
         )
 
+target_precompile_headers(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.hpp)
+
 add_definitions(
     -D_CRT_SECURE_NO_WARNINGS
     -DUNICODE
@@ -118,3 +120,12 @@ set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURREN
 
 add_dependencies(Editor Runtime)
 target_copy_webgpu_binaries(Editor)
+
+if(APPLE)
+    add_custom_command(TARGET Editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_BINARY_DIR}/Runtime/Runtime.app"
+        "$<TARGET_BUNDLE_CONTENT_DIR:Editor>/Resources/Runtime.app"
+        COMMENT "Copying Runtime.app into Editor.app bundle"
+    )
+endif()

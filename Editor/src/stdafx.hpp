@@ -1,0 +1,28 @@
+#pragma once
+
+#include <algorithm>
+#include <array>
+#include <cassert>
+#include <cstdint>
+#include <filesystem>
+#include <functional>
+#include <iostream>
+#include <iterator>
+#include <limits>
+#include <memory>
+#include <optional>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <string>
+#include <string_view>
+#include <tuple>
+#include <type_traits>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
+#include <variant>
+#include <vector>
+
+#include "cereal/cereal.hpp"
+#include "imgui/imgui.h"
