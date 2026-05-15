@@ -73,6 +73,16 @@ void WebGPUContext::SwapBuffers()
 	PollEvents();
 }
 
+void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
+{
+	if (width > 0 && height > 0)
+	{
+		m_SurfaceConfig.width = width;
+		m_SurfaceConfig.height = height;
+		m_NeedsResize = true;
+	}
+}
+
 void WebGPUContext::SetSwapInterval(uint32_t interval)
 {
 	m_SurfaceConfig.presentMode = interval == 1 ? wgpu::PresentMode::Fifo : wgpu::PresentMode::Immediate;
