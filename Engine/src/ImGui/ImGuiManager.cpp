@@ -1,9 +1,11 @@
 #include "ImGuiManager.h"
 
+#include "Asset/Texture.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
-#include "Asset/Texture.h"
 #include "Renderer/RendererAPI.h"
+#include <memory>
+#include <webgpu/webgpu.hpp>
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -16,10 +18,7 @@
 
 #include "GLFW/glfw3.h"
 
-ImGuiManager::ImGuiManager()
-	:m_UsingImGui(false)
-{
-}
+ImGuiManager::ImGuiManager() : m_UsingImGui(false) {}
 
 void ImGuiManager::Init()
 {
@@ -29,7 +28,8 @@ void ImGuiManager::Init()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
+	(void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
@@ -41,7 +41,7 @@ void ImGuiManager::Init()
 
 	io.IniFilename = m_IniFile.c_str();
 
-	//Setup Platform/Renderer bindings
+	// Setup Platform/Renderer bindings
 	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::OpenGL)
 	{
@@ -54,7 +54,8 @@ void ImGuiManager::Init()
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
 
-		if (ImGui_ImplGlfw_InitForOther(window, true)) {
+		if (ImGui_ImplGlfw_InitForOther(window, true))
+		{
 			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 			Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
@@ -128,7 +129,7 @@ void ImGuiManager::End()
 	Application& app = Application::Get();
 	io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
 
-	//Rendering
+	// Rendering
 	ImGui::Render();
 
 	RendererAPI::API api = RendererAPI::GetAPI();
@@ -138,7 +139,38 @@ void ImGuiManager::End()
 	}
 	else if (api == RendererAPI::API::WebGPU)
 	{
-		//ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);//TODO: pass the render pass to this function
+		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+		Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+		wgpu::TextureView targetView = webGPUContext->GetCurrentTextureView();
+		if (!targetView)
+			return;
+
+		wgpu::RenderPassColorAttachment colourAttachment = {};
+		colourAttachment.view = targetView;
+		colourAttachment.loadOp = wgpu::LoadOp::Clear;
+		colourAttachment.storeOp = wgpu::StoreOp::Store;
+		colourAttachment.clearValue = {0.1f, 0.1f, 0.1f, 1.0f}; // TODO: set the clear colour properly
+
+		wgpu::RenderPassDescriptor renderPassDesc = {};
+		renderPassDesc.colorAttachmentCount = 1;
+		renderPassDesc.colorAttachments = &colourAttachment;
+		renderPassDesc.depthStencilAttachment = nullptr;
+
+		auto device = webGPUContext->GetWebGPUDevice();
+		wgpu::CommandEncoderDescriptor encoderDesc = {};
+		encoderDesc.label = "ImGui Command Encoder";
+		wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
+
+		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDesc);
+		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
+		renderPass.end();
+
+		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};
+		cmdBufferDescriptor.label = "ImGui Command Buffer";
+		wgpu::CommandBuffer command = encoder.finish(cmdBufferDescriptor);
+
+		webGPUContext->GetQueue().submit(1, &command);
 	}
 
 	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
