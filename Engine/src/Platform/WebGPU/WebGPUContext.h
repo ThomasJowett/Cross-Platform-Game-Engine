@@ -40,4 +40,7 @@ private:
 
 	wgpu::SurfaceTexture m_CurrentSurfaceTexture;
 	wgpu::TextureView m_CurrentTextureView;
+
+	bool m_SurfaceAcquired = false;
+	bool m_NeedsResize = false;
 };

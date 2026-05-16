@@ -3,12 +3,9 @@
 #include <glad/glad.h>
 
 #include <glfw3webgpu.h>
+#include <webgpu/webgpu.hpp>
 
-WebGPUContext::WebGPUContext(GLFWwindow* windowHandle)
-	:m_WindowHandle(windowHandle)
-{
-	CORE_ASSERT(windowHandle, "Window Handle is null")
-}
+WebGPUContext::WebGPUContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle) { CORE_ASSERT(windowHandle, "Window Handle is null") }
 
 void WebGPUContext::Init()
 {
@@ -32,19 +29,16 @@ void WebGPUContext::Init()
 	deviceDesc.requiredFeatureCount = 0;
 	deviceDesc.nextInChain = nullptr;
 	deviceDesc.defaultQueue.label = "The Default queue";
-	deviceDesc.deviceLostCallback = [](WGPUDeviceLostReason reason, char const* message, void* /*pUserData*/)
-		{
-			ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message);
-		};
+	deviceDesc.deviceLostCallback = [](WGPUDeviceLostReason reason, char const* message, void* /*pUserData*/) { ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message); };
 
 	m_Device = m_Adapter.requestDevice(deviceDesc);
 
 	auto onDeviceError = [](wgpu::ErrorType type, char const* message)
-		{
-			ENGINE_ERROR("Uncaptured device error: type {0}", (int)type);
-			if (message)
-				ENGINE_ERROR(message);
-		};
+	{
+		ENGINE_ERROR("Uncaptured device error: type {0}", (int)type);
+		if (message)
+			ENGINE_ERROR(message);
+	};
 
 	m_ErrorCallbackHandle = m_Device.setUncapturedErrorCallback(std::move(onDeviceError));
 	m_Queue = m_Device.getQueue();
@@ -63,7 +57,8 @@ void WebGPUContext::Init()
 	m_SurfaceConfig.presentMode = wgpu::PresentMode::Fifo;
 	m_SurfaceConfig.alphaMode = wgpu::CompositeAlphaMode::Auto;
 
-	m_Surface.configure(m_SurfaceConfig);
+	if (width > 0 && height > 0)
+		m_Surface.configure(m_SurfaceConfig);
 }
 
 void WebGPUContext::SwapBuffers()
@@ -105,22 +100,16 @@ void WebGPUContext::SetSwapInterval(uint32_t interval)
 	m_Surface.configure(m_SurfaceConfig);
 }
 
-void WebGPUContext::MakeCurrent()
-{
-}
+void WebGPUContext::MakeCurrent() {}
 
-wgpu::Device WebGPUContext::GetWebGPUDevice()
-{
-	return m_Device;
-}
+wgpu::Device WebGPUContext::GetWebGPUDevice() { return m_Device; }
 
-wgpu::TextureFormat WebGPUContext::GetSwapchainFormat()
-{
-	return m_Surface.getPreferredFormat(m_Adapter);
-}
 wgpu::Surface WebGPUContext::GetSurface() { return m_Surface; }
 
-wgpu::Queue WebGPUContext::GetQueue()
+wgpu::TextureFormat WebGPUContext::GetSwapchainFormat() { return m_Surface.getPreferredFormat(m_Adapter); }
+
+wgpu::Queue WebGPUContext::GetQueue() { return m_Queue; }
+
 wgpu::TextureView WebGPUContext::GetCurrentTextureView()
 {
 	if (!m_SurfaceAcquired)
