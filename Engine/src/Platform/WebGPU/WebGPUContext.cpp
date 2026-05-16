@@ -104,8 +104,27 @@ wgpu::TextureFormat WebGPUContext::GetSwapchainFormat()
 }
 
 wgpu::Queue WebGPUContext::GetQueue()
+wgpu::TextureView WebGPUContext::GetCurrentTextureView()
 {
-	return m_Queue;
+	if (!m_SurfaceAcquired)
+	{
+		m_Surface.getCurrentTexture(&m_CurrentSurfaceTexture);
+		if (m_CurrentSurfaceTexture.status != wgpu::SurfaceGetCurrentTextureStatus::Success)
+			return nullptr;
+
+		wgpu::TextureViewDescriptor viewDescriptor;
+		viewDescriptor.format = GetSwapchainFormat();
+		viewDescriptor.dimension = wgpu::TextureViewDimension::_2D;
+		viewDescriptor.baseMipLevel = 0;
+		viewDescriptor.baseArrayLayer = 0;
+		viewDescriptor.mipLevelCount = 1;
+		viewDescriptor.aspect = wgpu::TextureAspect::All;
+		wgpu::Texture texture = m_CurrentSurfaceTexture.texture;
+		m_CurrentTextureView = texture.createView(viewDescriptor);
+		m_SurfaceAcquired = true;
+	}
+
+	return m_CurrentTextureView;
 }
 
 void WebGPUContext::PollEvents()

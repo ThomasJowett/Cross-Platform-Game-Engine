@@ -21,6 +21,7 @@ public:
 	wgpu::Device GetWebGPUDevice();
 	wgpu::TextureFormat GetSwapchainFormat();
 	wgpu::Queue GetQueue();
+	wgpu::TextureView GetCurrentTextureView();
 
 	void PollEvents();
 
@@ -35,4 +36,7 @@ private:
 	wgpu::SurfaceConfiguration m_SurfaceConfig;
 
 	std::unique_ptr<wgpu::ErrorCallback> m_ErrorCallbackHandle;
+
+	wgpu::SurfaceTexture m_CurrentSurfaceTexture;
+	wgpu::TextureView m_CurrentTextureView;
 };
