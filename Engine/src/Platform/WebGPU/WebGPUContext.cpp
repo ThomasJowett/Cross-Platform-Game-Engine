@@ -69,7 +69,23 @@ void WebGPUContext::Init()
 void WebGPUContext::SwapBuffers()
 {
 	PROFILE_FUNCTION();
-	m_Surface.present();
+	if (m_SurfaceAcquired)
+	{
+		if (m_CurrentTextureView)
+		{
+			m_CurrentTextureView.release();
+			m_CurrentTextureView = nullptr;
+		}
+
+		m_Surface.present();
+		m_SurfaceAcquired = true;
+	}
+	if (m_NeedsResize)
+	{
+		m_Surface.configure(m_SurfaceConfig);
+		m_NeedsResize = false;
+	}
+
 	PollEvents();
 }
 
