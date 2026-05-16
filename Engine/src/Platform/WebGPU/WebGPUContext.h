@@ -19,6 +19,7 @@ public:
 	virtual void MakeCurrent() override;
 
 	wgpu::Device GetWebGPUDevice();
+	wgpu::Surface GetSurface();
 	wgpu::TextureFormat GetSwapchainFormat();
 	wgpu::Queue GetQueue();
 	wgpu::TextureView GetCurrentTextureView();

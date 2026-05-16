@@ -102,6 +102,7 @@ wgpu::TextureFormat WebGPUContext::GetSwapchainFormat()
 {
 	return m_Surface.getPreferredFormat(m_Adapter);
 }
+wgpu::Surface WebGPUContext::GetSurface() { return m_Surface; }
 
 wgpu::Queue WebGPUContext::GetQueue()
 wgpu::TextureView WebGPUContext::GetCurrentTextureView()
