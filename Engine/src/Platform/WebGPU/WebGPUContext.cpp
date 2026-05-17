@@ -44,7 +44,7 @@ void WebGPUContext::Init()
 	m_Queue = m_Device.getQueue();
 
 	int width, height;
-	glfwGetWindowSize(m_WindowHandle, &width, &height);
+	glfwGetFramebufferSize(m_WindowHandle, &width, &height);
 	m_SurfaceConfig.width = width;
 	m_SurfaceConfig.height = height;
 	m_SurfaceConfig.usage = wgpu::TextureUsage::RenderAttachment;
@@ -73,7 +73,7 @@ void WebGPUContext::SwapBuffers()
 		}
 
 		m_Surface.present();
-		m_SurfaceAcquired = true;
+		m_SurfaceAcquired = false;
 	}
 	if (m_NeedsResize)
 	{
@@ -123,6 +123,7 @@ wgpu::TextureView WebGPUContext::GetCurrentTextureView()
 		viewDescriptor.dimension = wgpu::TextureViewDimension::_2D;
 		viewDescriptor.baseMipLevel = 0;
 		viewDescriptor.baseArrayLayer = 0;
+		viewDescriptor.arrayLayerCount = 1;
 		viewDescriptor.mipLevelCount = 1;
 		viewDescriptor.aspect = wgpu::TextureAspect::All;
 		wgpu::Texture texture = m_CurrentSurfaceTexture.texture;
