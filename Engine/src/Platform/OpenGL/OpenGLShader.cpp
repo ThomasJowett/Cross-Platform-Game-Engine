@@ -136,7 +136,7 @@ bool OpenGLShader::LoadShaderSourcesFromBundle(const std::filesystem::path& file
 	PROFILE_FUNCTION();
 	if (!AssetManager::HasBundle())
 	{
-		ENGINE_ERROR("No Asset Bundle loaded");
+		ENGINE_ERROR("Trying to load shader from bundle, but no Asset Bundle loaded");
 		return false;
 	}
 	std::vector<uint8_t> data;

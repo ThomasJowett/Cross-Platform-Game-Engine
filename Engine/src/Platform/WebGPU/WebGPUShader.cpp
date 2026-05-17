@@ -74,7 +74,7 @@ bool WebGPUShader::LoadShaderFromBundle(const std::filesystem::path& filepath)
 	PROFILE_FUNCTION();
 	if (!AssetManager::HasBundle())
 	{
-		ENGINE_ERROR("No Asset Bundle loaded");
+		ENGINE_ERROR("Trying to load shader from bundle, but no Asset Bundle loaded");
 		return false;
 	}
 
