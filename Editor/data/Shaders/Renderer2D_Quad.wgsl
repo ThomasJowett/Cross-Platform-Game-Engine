@@ -46,8 +46,8 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 @fragment
 fn fs_main(input: VertexOutput) -> FragmentOutput {
     var output: FragmentOutput;
-    let texIndex = f32(input.texIndex);
-    output.frag_colour = textureSample(u_Textures, u_Sampler, vec3f(input.texCoord, texIndex)) * input.colour;
+    //let texIndex = f32(input.texIndex);
+    output.frag_colour = textureSample(u_Textures, u_Sampler, input.texCoord) * input.colour;
 
     if(output.frag_colour.a <= 0.0001) {
         discard;
