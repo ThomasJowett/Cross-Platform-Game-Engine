@@ -1,12 +1,10 @@
 #include "SubTexture2D.h"
+#include "math/Vector2f.h"
 
-SubTexture2D::SubTexture2D()
-	:m_SpriteWidth(32), m_SpriteHeight(32), m_CurrentCell(0)
-{
-}
+SubTexture2D::SubTexture2D() : m_SpriteWidth(32), m_SpriteHeight(32), m_CurrentCell(0) {}
 
 SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, uint32_t spriteHeight, uint32_t currentCell)
-	: m_Texture(texture), m_SpriteWidth(spriteWidth), m_SpriteHeight(spriteHeight)
+    : m_Texture(texture), m_SpriteWidth(spriteWidth), m_SpriteHeight(spriteHeight)
 {
 	if (m_Texture)
 	{
@@ -20,7 +18,30 @@ SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, 
 	SetCurrentCell(currentCell);
 }
 
+SubTexture2D::SubTexture2D(const Ref<Texture2D>& texture, const Vector2f& min, const Vector2f& max)
+    : m_Texture(texture), m_CurrentCell(0), m_SpriteHeight(0), m_SpriteWidth(0), m_CellsWide(0), m_CellsTall(0)
+{
+	m_TexCoords[0] = {min.x, min.y};
+	m_TexCoords[1] = {max.x, min.y};
+	m_TexCoords[2] = {max.x, max.y};
+	m_TexCoords[3] = {min.x, max.y};
+
+	if (m_Texture)
+	{
+		m_SpriteWidth = (uint32_t)std::round((max.x - min.x) * m_Texture->GetWidth());
+		m_SpriteHeight = (uint32_t)std::round((max.y - min.y) * m_Texture->GetHeight());
+	}
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+Ref<SubTexture2D> SubTexture2D::CreateFromCoords(const Ref<Texture2D>& texture, const Vector2f& pixelCoords, const Vector2f& spriteSize)
+{
+	Vector2f minUV = {pixelCoords.x / static_cast<float>(texture->GetWidth()), pixelCoords.y / static_cast<float>(texture->GetHeight())};
+	Vector2f maxUV = {(pixelCoords.x + spriteSize.x) / static_cast<float>(texture->GetWidth()), (pixelCoords.y + spriteSize.y) / static_cast<float>(texture->GetHeight())};
+
+	return CreateRef<SubTexture2D>(texture, minUV, maxUV);
+}
 
 void SubTexture2D::SetCurrentCell(const uint32_t cell)
 {
@@ -93,9 +114,9 @@ void SubTexture2D::CalculateTextureCoordinates()
 		float minY = (float)(((cellCoordY * m_SpriteHeight) + m_PaddingBottom) / (float)m_Texture->GetHeight() + m_Margin.y);
 		float maxX = (float)((cellCoordX + 1) * m_SpriteWidth) / (float)m_Texture->GetWidth() - m_Margin.x;
 		float maxY = (float)(((cellCoordY + 1) * m_SpriteHeight) + m_PaddingBottom) / (float)m_Texture->GetHeight() - m_Margin.y;
-		m_TexCoords[0] = { minX, minY };
-		m_TexCoords[1] = { maxX, minY };
-		m_TexCoords[2] = { maxX, maxY };
-		m_TexCoords[3] = { minX, maxY };
+		m_TexCoords[0] = {minX, minY};
+		m_TexCoords[1] = {maxX, minY};
+		m_TexCoords[2] = {maxX, maxY};
+		m_TexCoords[3] = {minX, maxY};
 	}
 }
