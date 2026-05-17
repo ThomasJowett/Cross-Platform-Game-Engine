@@ -1,6 +1,7 @@
 #include "WebGPUPipeline.h"
 #include "Core/Application.h"
 #include "Renderer/Buffer.h"
+#include "Renderer/RenderCommand.h"
 #include "WebGPURendererAPI.h"
 #include "WebGPUShader.h"
 #include <memory>
@@ -144,5 +145,6 @@ void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t
 
 void WebGPUPipeline::Bind()
 {
-	// renderPass.setPipeline(m_Pipeline);
+	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	rendererAPI.GetRenderPass().setPipeline(m_Pipeline);
 }
