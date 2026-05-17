@@ -14,10 +14,13 @@ public:
 	virtual void UnBind() const override;
 
 	virtual std::string GetName() const override { return m_Name; }
+	wgpu::ShaderModule GetShaderModule() const { return m_Shader; }
+
 private:
 	bool LoadShaderFromDisk(const std::filesystem::path& filepath);
 	bool LoadShaderFromBundle(const std::filesystem::path& filepath);
 	std::string ReadFile(const std::filesystem::path& filepath);
+
 private:
 	wgpu::ShaderModule m_Shader;
 	std::string m_Name;
