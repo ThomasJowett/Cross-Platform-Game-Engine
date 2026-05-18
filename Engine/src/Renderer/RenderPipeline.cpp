@@ -51,9 +51,11 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	}
 
 	m_SceneFrameBuffer->Bind();
+	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 	m_SceneFrameBuffer->ClearAttachment(1, -1);
 	scene->Render(view, projection);
+	RenderCommand::EndRenderPass();
 	m_SceneFrameBuffer->UnBind();
 
 	Ref<Texture> sceneTexture = m_SceneFrameBuffer->GetColourAttachment(0);
@@ -65,6 +67,7 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	if (finalOutputTarget) {
 		finalOutputTarget->Bind();
 	}
+	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
 	m_FinalPassShader->Bind();
@@ -81,6 +84,7 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	m_FullscreenQuad->GetVertexBuffer()->UnBind();
 
 	scene->RenderUI(width, height);
+	RenderCommand::EndRenderPass();
 
 	if (finalOutputTarget) {
 		m_SceneFrameBuffer->BlitDepthTo(finalOutputTarget);
