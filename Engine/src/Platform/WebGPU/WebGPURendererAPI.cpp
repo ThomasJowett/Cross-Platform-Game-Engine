@@ -118,11 +118,20 @@ void WebGPURendererAPI::StartRenderPass()
 
 void WebGPURendererAPI::EndRenderPass()
 {
+	PROFILE_FUNCTION();
 	if (m_RenderPass)
 	{
 		m_RenderPass.end();
-		m_RenderPass.release();
 		m_RenderPass = nullptr;
+	}
+
+	if (m_CommandEncoder)
+	{
+		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};
+		cmdBufferDescriptor.label = "Renderer Command Buffer";
+		wgpu::CommandBuffer command = m_CommandEncoder.finish(cmdBufferDescriptor);
+		m_WebGPUContext->GetQueue().submit(1, &command);
+		m_CommandEncoder = nullptr;
 	}
 }
 
