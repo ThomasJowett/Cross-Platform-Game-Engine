@@ -3,6 +3,12 @@ cmake_policy(VERSION 3.8)
 project(Cross-Platform-Game-Engine)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+option(ENABLE_UNITY_BUILD "Enable unity build" OFF)
+if(ENABLE_UNITY_BUILD)
+  set(CMAKE_UNITY_BUILD ON)
+endif()
 
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)

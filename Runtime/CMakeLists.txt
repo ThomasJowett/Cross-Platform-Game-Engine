@@ -1,7 +1,6 @@
 file(GLOB SOURCES
-    src/main.cpp 
-    src/RuntimeLayer.cpp 
-    src/RuntimeLayer.h
+    src/*.cpp
+    src/*.h
 )
 
 if(APPLE)
