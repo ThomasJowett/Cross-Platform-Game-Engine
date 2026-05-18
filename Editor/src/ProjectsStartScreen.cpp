@@ -8,6 +8,7 @@
 
 #include "ProjectData.h"
 #include "cereal/archives/json.hpp"
+#include "imgui.h"
 
 ProjectsStartScreen::ProjectsStartScreen(bool createProject)
 	:m_CreateProject(createProject), Layer("Project Start Screen")
@@ -27,13 +28,11 @@ void ProjectsStartScreen::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(popupSizeX, popupSizeY));
 
-	int windowPosX = Application::GetWindow()->GetPosX();
-	int windowPosY = Application::GetWindow()->GetPosY();
-
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	// Find the middle of the screen
 	ImGui::SetNextWindowPos(ImVec2(
-		(float)(windowSizeX / 2.0f) + windowPosX - (float)(popupSizeX / 2.0f),
-		(float)(windowSizeY / 2.0f) + windowPosY - (float)(popupSizeY / 2.0f))
+		viewport->Pos.x + (viewport->Size.x * 0.5f) - (float)(popupSizeX * 0.5f),
+		viewport->Pos.y + (viewport->Size.y * 0.5f) - (float)(popupSizeY * 0.5f))
 	);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_Modal |
