@@ -1,6 +1,9 @@
 #include "WebGPURendererAPI.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
+#include "WebGPUFrameBuffer.h"
+#include <cstdint>
+#include <webgpu/webgpu.hpp>
 
 bool WebGPURendererAPI::Init()
 {
@@ -32,22 +35,85 @@ void WebGPURendererAPI::ClearDepth() {}
 
 void WebGPURendererAPI::StartRenderPass()
 {
-	// TODO: Implement this function
-	// TODO: Pass the target view to this function and get the command encoder
-	/*
+	PROFILE_FUNCTION();
+
 	wgpu::RenderPassDescriptor renderPassDesc = {};
 
+	std::vector<wgpu::RenderPassColorAttachment> colourAttachments;
+	wgpu::RenderPassDepthStencilAttachment depthAttachment = {};
+
+	WebGPUFrameBuffer* currentFrameBuffer = WebGPUFrameBuffer::GetCurrent();
+	bool hasDepth = false;
+
+	if (currentFrameBuffer)
+	{
+		const auto& colourViews = currentFrameBuffer->GetColourViews();
+		if (colourViews.empty())
+			return;
+
+		for (const auto& view : colourViews)
+		{
+			wgpu::RenderPassColorAttachment attachment = {};
+			attachment.view = view;
+			attachment.loadOp = wgpu::LoadOp::Clear;
+			attachment.storeOp = wgpu::StoreOp::Store;
+			attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
+			colourAttachments.push_back(attachment);
+		}
+
+		wgpu::TextureView depthView = currentFrameBuffer->GetDepthView();
+		if (depthView)
+		{
+			hasDepth = true;
+			depthAttachment.view = depthView;
+			depthAttachment.depthLoadOp = wgpu::LoadOp::Clear;
+			depthAttachment.depthStoreOp = wgpu::StoreOp::Store;
+			depthAttachment.depthClearValue = 1.0f;
+		}
+	}
+	else
+	{
+		wgpu::TextureView targetView = m_WebGPUContext->GetCurrentTextureView();
+		if (!targetView)
+			return;
+
+		wgpu::RenderPassColorAttachment attachment = {};
+		attachment.view = targetView;
+		attachment.loadOp = wgpu::LoadOp::Clear;
+		attachment.storeOp = wgpu::StoreOp::Store;
+		attachment.clearValue = wgpu::Color{m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a};
+		colourAttachments.push_back(attachment);
+	}
+
+	if (colourAttachments.empty() && !hasDepth)
+		return;
+
+	renderPassDesc.colorAttachmentCount = static_cast<uint32_t>(colourAttachments.size());
+	renderPassDesc.colorAttachments = colourAttachments.data();
+	if (hasDepth)
+	{
+		renderPassDesc.depthStencilAttachment = &depthAttachment;
+	}
+	else
+	{
+		renderPassDesc.depthStencilAttachment = nullptr;
+	}
+
+	if (!m_WebGPUContext)
+		return;
+
 	auto device = m_WebGPUContext->GetWebGPUDevice();
+	if (!device)
+		return;
 
 	wgpu::CommandEncoderDescriptor encoderDesc = {};
 	encoderDesc.label = "Command encoder";
 
 	wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
-
-	//TODO: render pass descriptor
+	if (!m_CommandEncoder)
+		return;
 
 	m_RenderPass = encoder.beginRenderPass(renderPassDesc);
-	*/
 }
 
 void WebGPURendererAPI::EndRenderPass()

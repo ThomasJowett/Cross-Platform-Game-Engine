@@ -25,6 +25,7 @@ public:
 private:
 	Colour m_ClearColour = Colours::NAVY;
 	wgpu::RenderPassEncoder m_RenderPass;
+	wgpu::CommandEncoder m_CommandEncoder;
 
 	Ref<WebGPUContext> m_WebGPUContext;
 };
