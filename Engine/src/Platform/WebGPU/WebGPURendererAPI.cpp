@@ -109,11 +109,11 @@ void WebGPURendererAPI::StartRenderPass()
 	wgpu::CommandEncoderDescriptor encoderDesc = {};
 	encoderDesc.label = "Command encoder";
 
-	wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
+	m_CommandEncoder = device.createCommandEncoder(encoderDesc);
 	if (!m_CommandEncoder)
 		return;
 
-	m_RenderPass = encoder.beginRenderPass(renderPassDesc);
+	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
 }
 
 void WebGPURendererAPI::EndRenderPass()
