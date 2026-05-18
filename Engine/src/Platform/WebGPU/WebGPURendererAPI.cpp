@@ -137,6 +137,7 @@ void WebGPURendererAPI::EndRenderPass()
 
 void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
+	PROFILE_FUNCTION();
 	m_RenderPass.drawIndexed(indexCount, 1, indexStart, vertexOffset, 0);
 }
 
