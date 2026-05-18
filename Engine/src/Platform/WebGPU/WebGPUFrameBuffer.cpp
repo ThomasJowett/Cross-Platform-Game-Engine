@@ -4,6 +4,8 @@
 
 #include <webgpu/webgpu.hpp>
 
+WebGPUFrameBuffer* WebGPUFrameBuffer::s_Current = nullptr;
+
 WebGPUFrameBuffer::WebGPUFrameBuffer(const FrameBufferSpecification& specification)
 	:m_Specification(specification), m_DepthAttachment(0)
 {
@@ -20,10 +22,17 @@ WebGPUFrameBuffer::~WebGPUFrameBuffer()
 
 void WebGPUFrameBuffer::Bind()
 {
+	s_Current = this;
 }
 
 void WebGPUFrameBuffer::UnBind()
 {
+	if (s_Current == this)
+		s_Current = nullptr;
+}
+
+WebGPUFrameBuffer* WebGPUFrameBuffer::GetCurrent() {
+	return s_Current;
 }
 
 void WebGPUFrameBuffer::Generate()

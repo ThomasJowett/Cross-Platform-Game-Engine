@@ -28,6 +28,7 @@ public:
 	virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 	virtual void ClearAttachment(size_t index, int value) override;
+	static WebGPUFrameBuffer* GetCurrent();
 private:
 	FrameBufferSpecification m_Specification;
 
@@ -38,4 +39,6 @@ private:
 	wgpu::TextureView m_DepthView;
 
 	wgpu::Device m_Device;
+
+	static WebGPUFrameBuffer* s_Current;
 };
