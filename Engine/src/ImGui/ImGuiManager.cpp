@@ -33,7 +33,10 @@ void ImGuiManager::Init()
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::OpenGL)
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
@@ -42,7 +45,6 @@ void ImGuiManager::Init()
 	io.IniFilename = m_IniFile.c_str();
 
 	// Setup Platform/Renderer bindings
-	RendererAPI::API api = RendererAPI::GetAPI();
 	if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
@@ -173,7 +175,7 @@ void ImGuiManager::End()
 		webGPUContext->GetQueue().submit(1, &command);
 	}
 
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+	if (api == RendererAPI::API::OpenGL && (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
 	{
 		GLFWwindow* backup_current_context = nullptr;
 		backup_current_context = glfwGetCurrentContext();
