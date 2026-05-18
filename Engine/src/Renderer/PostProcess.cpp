@@ -50,11 +50,13 @@ void PostProcessStack::Execute(Ref<Texture> colourTexture, Ref<Texture> depthTex
 		Ref<FrameBuffer> outputTarget = pingIsSource ? pong : ping;
 
 		outputTarget->Bind();
+		RenderCommand::StartRenderPass();
 
 		effect->Apply(currentColour, depthTexture, entityIdTexture,
 			pingIsSource ? ping : pong, pingIsSource ? pong : ping,
 			fullscreenQuad, m_PostProcessData, m_PostProcessUniformBuffer);
 
+		RenderCommand::EndRenderPass();
 		outputTarget->UnBind();
 
 		currentColour = outputTarget->GetColourAttachment(0);
