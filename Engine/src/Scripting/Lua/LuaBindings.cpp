@@ -207,7 +207,6 @@ void BindEntity(sol::state& state)
 	text_type["MaxWidth"] = sol::property([](TextComponent& c) { return c.maxWidth; }, [](TextComponent& c, float v) { c.maxWidth = v; });
 	text_type["Colour"] = sol::property([](TextComponent& c) { return c.colour; }, [](TextComponent& c, const Colour& v) { c.colour = v; });
 	text_type["Font"] = sol::property([](TextComponent& c) { return c.font; }, [](TextComponent& c, const Ref<Font>& v) { c.font = v; });
-	text_type["Font"] = &TextComponent::font;
 
 	auto audio_source_type = state["AudioSourceComponent"].get_or_create<sol::usertype<AudioSourceComponent>>();
 	audio_source_type["Clip"] = sol::property([](AudioSourceComponent& c) { return c.audioClip; }, [](AudioSourceComponent& c, const Ref<AudioClip>& v) { c.audioClip = v; });
