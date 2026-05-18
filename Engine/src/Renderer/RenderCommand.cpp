@@ -10,7 +10,11 @@ Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 int RenderCommand::CreateRendererAPI()
 {
 	PROFILE_FUNCTION();
+#ifdef __APPLE__
+	Settings::SetDefaultValue("Renderer", "API", "WebGPU");
+#else
 	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
+#endif
 
 	std::string api = Settings::GetValue("Renderer", "API");
 	if (api == "OpenGL")
