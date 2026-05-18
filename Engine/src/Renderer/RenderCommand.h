@@ -26,6 +26,8 @@ public:
 
 	inline static void StartRenderPass() { s_RendererAPI->StartRenderPass(); }
 
+	inline static void EndRenderPass() { s_RendererAPI->EndRenderPass(); }
+
 	// Draws primitives from the vertex array
 	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL)
 	{
