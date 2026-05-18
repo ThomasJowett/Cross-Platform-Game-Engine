@@ -7,7 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(ENABLE_UNITY_BUILD "Enable unity build" OFF)
 if(ENABLE_UNITY_BUILD)
-  set(CMAKE_UNITY_BUILD ON)
+    set(CMAKE_UNITY_BUILD ON)
 endif()
 
 set(CMAKE_BUILD_TYPE "Debug")
