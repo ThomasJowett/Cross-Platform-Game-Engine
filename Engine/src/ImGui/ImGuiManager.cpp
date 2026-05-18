@@ -142,17 +142,25 @@ void ImGuiManager::End()
 	else if (api == RendererAPI::API::WebGPU)
 	{
 		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+		if (!context)
+			return;
 		Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+		if (!webGPUContext)
+			return;
 
 		wgpu::TextureView targetView = webGPUContext->GetCurrentTextureView();
 		if (!targetView)
+			return;
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData)
 			return;
 
 		wgpu::RenderPassColorAttachment colourAttachment = {};
 		colourAttachment.view = targetView;
 		colourAttachment.loadOp = wgpu::LoadOp::Clear;
 		colourAttachment.storeOp = wgpu::StoreOp::Store;
-		colourAttachment.clearValue = {0.1f, 0.1f, 0.1f, 1.0f}; // TODO: set the clear colour properly
+		colourAttachment.clearValue = { 0.1f, 0.1f, 0.1f, 1.0f }; // TODO: set the clear colour properly
 
 		wgpu::RenderPassDescriptor renderPassDesc = {};
 		renderPassDesc.colorAttachmentCount = 1;
@@ -160,19 +168,26 @@ void ImGuiManager::End()
 		renderPassDesc.depthStencilAttachment = nullptr;
 
 		auto device = webGPUContext->GetWebGPUDevice();
+		if (!device)
+			return;
 		wgpu::CommandEncoderDescriptor encoderDesc = {};
 		encoderDesc.label = "ImGui Command Encoder";
 		wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
+		if (!encoder)
+			return;
 
 		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDesc);
-		ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
-		renderPass.end();
+		if (renderPass) {
+			ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
+			renderPass.end();
+		}
 
 		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};
 		cmdBufferDescriptor.label = "ImGui Command Buffer";
 		wgpu::CommandBuffer command = encoder.finish(cmdBufferDescriptor);
 
-		webGPUContext->GetQueue().submit(1, &command);
+		if (command)
+			webGPUContext->GetQueue().submit(1, &command);
 	}
 
 	if (api == RendererAPI::API::OpenGL && (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
