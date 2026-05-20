@@ -1,4 +1,5 @@
 #include "WebGPUContext.h"
+#include "GLFW/glfw3.h"
 #include "Logging/Instrumentor.h"
 #include <glad/glad.h>
 
@@ -86,10 +87,12 @@ void WebGPUContext::SwapBuffers()
 
 void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 {
-	if (width > 0 && height > 0)
+	int32_t fbWidth, fbHeight;
+	glfwGetFramebufferSize(m_WindowHandle, &fbWidth, &fbHeight);
+	if (fbWidth > 0 && fbHeight > 0)
 	{
-		m_SurfaceConfig.width = width;
-		m_SurfaceConfig.height = height;
+		m_SurfaceConfig.width = fbWidth;
+		m_SurfaceConfig.height = fbHeight;
 		m_NeedsResize = true;
 	}
 }
