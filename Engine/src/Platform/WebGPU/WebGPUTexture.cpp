@@ -335,7 +335,7 @@ void WebGPUTexture2D::Bind(uint32_t slot) const
 
 void* WebGPUTexture2D::GetRendererID() const
 {
-	return m_BindGroup;
+	return (void*)static_cast<WGPUTextureView>(m_TextureView);
 }
 
 bool WebGPUTexture2D::Reload()
