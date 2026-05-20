@@ -76,7 +76,9 @@ void Window::SetIcon(const std::filesystem::path& path)
 	images[0].width = width;
 	images[0].height = height;
 	images[0].pixels = data;
+#ifndef __APPLE__
 	glfwSetWindowIcon(m_Window, 1, images);
+#endif
 	stbi_image_free(data);
 }
 
