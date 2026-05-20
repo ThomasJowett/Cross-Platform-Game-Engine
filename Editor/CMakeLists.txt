@@ -39,6 +39,12 @@ endif()
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
 if(APPLE)
+    file(GLOB MAC_SOURCES "src/**.mm")
+    list(APPEND SOURCES ${MAC_SOURCES})
+
+    set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+    set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
     set(EDITOR_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Icon.icns)
     set_source_files_properties(${EDITOR_ICON} PROPERTIES 
         MACOSX_PACKAGE_LOCATION "Resources")
