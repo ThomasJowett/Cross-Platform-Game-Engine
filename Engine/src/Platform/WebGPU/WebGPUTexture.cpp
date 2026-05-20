@@ -88,7 +88,7 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	m_TextureDesc.sampleCount = samples;
 	m_TextureDesc.dimension = wgpu::TextureDimension::_2D;
 	m_TextureDesc.format = m_TextureFormat;
-	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment;
+	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 
 	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
@@ -202,7 +202,7 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const st
 	m_TextureDesc.sampleCount = 1;
 	m_TextureDesc.dimension = wgpu::TextureDimension::_2D;
 	m_TextureDesc.format = m_TextureFormat;
-	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment;
+	m_TextureDesc.usage = wgpu::TextureUsage::TextureBinding | wgpu::TextureUsage::CopyDst | wgpu::TextureUsage::RenderAttachment | wgpu::TextureUsage::CopySrc;
 
 	Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
