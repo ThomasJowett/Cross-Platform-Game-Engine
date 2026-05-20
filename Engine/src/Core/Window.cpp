@@ -444,13 +444,14 @@ bool Window::Init(const WindowProps& props)
 				data.eventCallback(event);
 			});
 	}
-	{
+	if (false) {
 		PROFILE_SCOPE("Joysticks");
-		std::thread joystickThread([]()
+		auto initJoysticks(
+			[]()
 			{
 				for (int jid = GLFW_JOYSTICK_1; jid <= GLFW_JOYSTICK_LAST; jid++)
 				{
-					PROFILE_SCOPE("Joystick Thread");
+					PROFILE_SCOPE("Joystick Init");
 					if (glfwJoystickPresent(jid))
 					{
 						GLFWgamepadstate state;
@@ -465,35 +466,41 @@ bool Window::Init(const WindowProps& props)
 					}
 				}
 			});
-		joystickThread.detach();
-		std::thread joystickCallbackThread([]()
+
+		glfwSetJoystickCallback(
+			[](int jid, int e)
 			{
-				PROFILE_SCOPE("Joystick Callback");
-				glfwSetJoystickCallback([](int jid, int e)
-					{
-						if (e == GLFW_CONNECTED)
-						{
-							GLFWgamepadstate state;
-							Joysticks::Joystick joystick;
-							joystick.id = jid;
-							joystick.name = glfwGetJoystickName(joystick.id);
-							joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
-							glfwGetJoystickAxes(joystick.id, &joystick.axes);
-							glfwGetJoystickButtons(joystick.id, &joystick.buttons);
-							glfwGetJoystickHats(joystick.id, &joystick.hats);
-							Joysticks::AddJoystick(joystick);
-							JoystickConnected event(jid);
-							Application::CallEvent(event);
-						}
-						else if (e == GLFW_DISCONNECTED)
-						{
-							Joysticks::RemoveJoystick(jid);
-							JoystickDisconnected event(jid);
-							Application::CallEvent(event);
-						}
-					});
+				if (e == GLFW_CONNECTED)
+				{
+					GLFWgamepadstate state;
+					Joysticks::Joystick joystick;
+					joystick.id = jid;
+					joystick.name = glfwGetJoystickName(joystick.id);
+					joystick.isMapped = glfwGetGamepadState(joystick.id, &state);
+					glfwGetJoystickAxes(joystick.id, &joystick.axes);
+					glfwGetJoystickButtons(joystick.id, &joystick.buttons);
+					glfwGetJoystickHats(joystick.id, &joystick.hats);
+					Joysticks::AddJoystick(joystick);
+					JoystickConnected event(jid);
+					Application::CallEvent(event);
+				}
+				else if (e == GLFW_DISCONNECTED)
+				{
+					Joysticks::RemoveJoystick(jid);
+					JoystickDisconnected event(jid);
+					Application::CallEvent(event);
+				}
 			});
-		joystickCallbackThread.detach();
+
+		if (glfwGetPlatform() == GLFW_PLATFORM_WIN32)
+		{
+			std::thread joystickThread(initJoysticks);
+			joystickThread.detach();
+		}
+		else
+		{
+			initJoysticks();
+		}
 	}
 	{
 		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int numDropped, const char** filenames)
