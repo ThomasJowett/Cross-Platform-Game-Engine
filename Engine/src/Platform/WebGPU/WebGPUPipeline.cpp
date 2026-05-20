@@ -126,7 +126,7 @@ void WebGPUPipeline::Invalidate()
 	wgpu::DepthStencilState depthStencil;
 	if (m_Specification.depthTest)
 	{
-		depthStencil.format = wgpu::TextureFormat::Depth24Plus;
+		depthStencil.format = wgpu::TextureFormat::Depth24PlusStencil8;
 		depthStencil.depthWriteEnabled = true;
 		depthStencil.depthCompare = wgpu::CompareFunction::Less;
 		pipelineDesc.depthStencil = &depthStencil;
