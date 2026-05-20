@@ -184,6 +184,8 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 
 		ENGINE_DEBUG(outputString);
 
+		pclose(f);
+
 		if(!outputString.empty())
 			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
 	}
@@ -215,6 +217,8 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 			}
 		}
 
+		pclose(f);
+
 		if(!files.empty())
 			return files;
 	}
@@ -243,6 +247,8 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 				rtrim(outputString);
 			}
 		}
+
+		pclose(f);
 
 		if(!outputString.empty())
 			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
