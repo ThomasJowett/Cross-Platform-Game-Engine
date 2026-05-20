@@ -4,6 +4,7 @@
 
 #include <stb/stb_image.h>
 #include <filesystem>
+#include <webgpu/webgpu.h>
 
 void WebGPUTexture2D::CreateSampler()
 {
@@ -76,6 +77,7 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RGBA:     m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;   break;
 	case Texture::Format::RGBA16F:  m_TextureFormat = wgpu::TextureFormat::RGBA16Float;  break;
 	case Texture::Format::RGBA32F:  m_TextureFormat = wgpu::TextureFormat::RGBA16Float;  break;
+	case Texture::Format::DEPTH24STENCIL8: m_TextureFormat = wgpu::TextureFormat::Depth24PlusStencil8; break;
 	default: m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;	break;
 	}
 
