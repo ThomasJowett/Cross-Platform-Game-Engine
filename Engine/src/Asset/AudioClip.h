@@ -1,3 +1,4 @@
+#pragma once
 #include "Core/Asset.h"
 
 class AudioClip : public Asset
