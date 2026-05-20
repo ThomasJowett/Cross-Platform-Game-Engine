@@ -817,7 +817,7 @@ void ViewportPanel::OnImGuiRender()
 
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
-			ImGuizmo::SetID(0);
+			ImGuizmo::PushID(0);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 
@@ -1071,6 +1071,7 @@ void ViewportPanel::OnImGuiRender()
 					drawList->AddCircleFilled(topRight, 3, IM_COL32(255, 255, 255, 255));
 				}
 			}
+			ImGuizmo::PopID();
 		}
 
 		ImVec2 statsBoxPosition = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
