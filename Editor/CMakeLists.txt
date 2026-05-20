@@ -62,6 +62,9 @@ else()
     add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES})
 endif()
 
+file(GLOB FONT_SOURCES "src/Fonts/*.cpp")
+set_source_files_properties(${FONT_SOURCES} PROPERTIES SKIP_UNITY_BUILD_INCLUSION ON)
+
 group_files_by_directory("SOURCES")
 group_files_by_directory("HEADERS")
 
