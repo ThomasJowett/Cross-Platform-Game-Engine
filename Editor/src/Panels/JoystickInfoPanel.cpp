@@ -6,7 +6,9 @@
 
 #include "MainDockSpace.h"
 
-#include "Engine.h"
+#include "Core/Joysticks.h"
+#include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
 
 JoystickInfoPanel::JoystickInfoPanel(bool* show)
 	:m_Show(show), Layer("JoystickInfo")

@@ -7,6 +7,9 @@
 #include "Core/Settings.h"
 #include "ViewerManager.h"
 #include "Scripting/Lua/LuaManager.h"
+#include "Scene/Entity.h"
+#include "Scene/Components/LuaScriptComponent.h"
+#include "Scene/AssetManager.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("ScriptView"), m_Show(show), m_FilePath(filepath)

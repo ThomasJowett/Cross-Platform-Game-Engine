@@ -6,7 +6,11 @@
 
 #include "MainDockSpace.h"
 
-#include "Engine.h"
+#include "Utilities/GeometryGenerator.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/Renderer.h"
+#include "Asset/Texture.h"
+#include "ImGui/ImGuiUtilities.h"
 
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	:View("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)

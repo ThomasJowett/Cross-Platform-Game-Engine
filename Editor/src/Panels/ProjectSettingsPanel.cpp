@@ -1,12 +1,13 @@
 #include "ProjectSettingsPanel.h"
 
 #include "IconsFontAwesome6.h"
-#include "Engine.h"
 
 #include "cereal/archives/json.hpp"
 #include "MainDockSpace.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "FileSystem/Directory.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Scene/SceneManager.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")

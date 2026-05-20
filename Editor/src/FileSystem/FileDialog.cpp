@@ -1,6 +1,6 @@
 #include "FileDialog.h"
 
-#include "Engine.h"
+#include "Utilities/StringUtils.h"
 
 #ifdef _WINDOWS
 #include <commdlg.h>

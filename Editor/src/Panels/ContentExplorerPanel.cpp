@@ -6,7 +6,11 @@
 
 #include "imgui/imgui.h"
 
-#include "Engine.h"
+#include "Asset/SpriteSheet.h"
+#include "Asset/PhysicsMaterial.h"
+#include "AI/BehaviourTreeSerializer.h"
+#include "AI/BehaviourTree.h"
+#include "Core/Settings.h"
 
 #include "MainDockSpace.h"
 
@@ -20,6 +24,7 @@
 #include "History/HistoryManager.h"
 
 #include "Fonts/Fonts.h"
+#include "ImGui/ImGuiUtilities.h"
 
 static std::filesystem::path s_IconDirectory;
 

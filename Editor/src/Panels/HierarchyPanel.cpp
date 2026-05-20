@@ -4,7 +4,10 @@
 #include "IconsFontAwesome6.h"
 #include "History/HistoryCommands.h"
 
-#include "Engine.h"
+#include "Scene/SceneGraph.h"
+#include "Scene/SceneSerializer.h"
+#include "Scene/SceneManager.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #include "MainDockSpace.h"
 

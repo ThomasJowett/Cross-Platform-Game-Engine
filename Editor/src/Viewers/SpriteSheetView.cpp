@@ -4,8 +4,7 @@
 #include "FileSystem/FileDialog.h"
 #include "MainDockSpace.h"
 #include "ImGui/ImGuiTextureEdit.h"
-
-#include "Engine.h"
+#include "ImGui/ImGuiUtilities.h"
 
 SpriteSheetView::SpriteSheetView(bool* show, std::filesystem::path filepath)
 	:View("SpriteSheetView"), m_Show(show), m_Filepath(filepath)

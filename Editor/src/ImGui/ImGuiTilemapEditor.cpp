@@ -9,7 +9,11 @@
 #include "Viewers/ViewerManager.h"
 #include "Events/SceneEvent.h"
 
-#include "Engine.h"
+#include "Renderer/Renderer2D.h"
+#include "Core/Input.h"
+#include "Core/KeyCodes.h"
+#include "Core/MouseButtonCodes.h"
+#include "ImGui/ImGuiUtilities.h"
 
 TilemapEditor::TilemapEditor(bool* show)
 	:Layer("Tilemap Editor"), m_Show(show)

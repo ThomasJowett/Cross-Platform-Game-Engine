@@ -1,6 +1,12 @@
 #include "FbxImporter.h"
 
-#include "Engine.h"
+#include "Renderer/Mesh.h"
+#include "Core/BoundingBox.h"
+#include "math/Matrix.h"
+#include "Asset/Material.h"
+#include "Logging/Logger.h"
+#include "Logging/Logger.h"
+#include "Core/Colour.h"
 
 #include "ofbx.h"
 
@@ -347,7 +353,7 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 		ImportMaterial mat;
 		mat.fbx = fbx_mat;
 
-		for (uint8 i = 0; i < ImportTexture::Count; i++)
+		for (uint8_t i = 0; i < ImportTexture::Count; i++)
 		{
 			const ofbx::Texture* texture = mat.fbx->getTexture((ofbx::Texture::TextureType)i);
 			if (!texture) continue;

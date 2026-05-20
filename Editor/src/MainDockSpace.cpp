@@ -34,7 +34,11 @@
 
 #include "FileSystem/AssetPacker.h"
 
-#include "Engine.h"
+#include "Core/Version.h"
+#include "Core/Settings.h"
+#include "Scene/SceneManager.h"
+#include "Renderer/RenderCommand.h"
+#include "Events/SceneEvent.h"
 
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 

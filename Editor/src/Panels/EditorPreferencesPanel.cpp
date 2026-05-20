@@ -1,6 +1,7 @@
 #include "EditorPreferencesPanel.h"
 
-#include "Engine.h"
+#include "Core/Settings.h"
+#include "Core/Application.h"
 
 #include "imgui/imgui.h"
 
@@ -12,6 +13,7 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
+#include "ImGui/ImGuiUtilities.h"
 
 EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	:m_Show(show), Layer("Editor Preferences")

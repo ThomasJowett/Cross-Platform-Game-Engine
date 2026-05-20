@@ -3,8 +3,10 @@
 #include "imgui/imgui.h"
 
 #include "Asset/Material.h"
+#include "Scene/AssetManager.h"
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
+#include "ImGui/ImGuiUtilities.h"
 
 static std::filesystem::file_time_type s_AssetFileTime;
 

@@ -2,7 +2,12 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
-#include "Engine.h"
+#include "Utilities/GeometryGenerator.h"
+#include "Renderer/RenderCommand.h"
+#include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Renderer/Renderer.h"
 
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:View("StaticMeshView"), m_Show(show), m_FilePath(filepath)

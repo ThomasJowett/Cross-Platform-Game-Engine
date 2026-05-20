@@ -1,6 +1,9 @@
 #include "ProjectsStartScreen.h"
 
-#include "Engine.h"
+#include "Core/Application.h"
+#include "Core/Settings.h"
+#include "Scene/Scene.h"
+#include "Utilities/StringUtils.h"
 
 #include "IconsFontAwesome6.h"
 

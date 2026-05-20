@@ -7,8 +7,6 @@
 #include "MainDockSpace.h"
 #include "History/HistoryManager.h"
 
-#include "Engine.h"
-
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
@@ -17,6 +15,8 @@
 
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
+#include "Scene/SceneManager.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
 

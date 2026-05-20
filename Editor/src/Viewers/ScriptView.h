@@ -1,5 +1,5 @@
 #pragma once
-#include "Engine.h"
+#include "Asset/LuaScript.h"
 
 #include "ImGui/ImGuiTextEditor.h"
 

@@ -6,8 +6,6 @@
 #define TINYGLTF_IMPLEMENTATION
 #include "tiny_gltf.h"
 
-#include "Engine.h"
-
 struct LoaderInfo {
 	std::vector<uint32_t> indexBuffer;
 	std::vector<Vertex> vertexBuffer;

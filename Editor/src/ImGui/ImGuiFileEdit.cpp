@@ -4,7 +4,9 @@
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
 
-#include "Engine.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Utilities/StringUtils.h"
+#include "Utilities/FileUtils.h"
 
 bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const wchar_t* filter)
 {

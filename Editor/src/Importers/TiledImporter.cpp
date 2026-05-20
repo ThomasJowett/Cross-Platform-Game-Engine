@@ -1,7 +1,13 @@
 #include "TiledImporter.h"
 #include "TinyXml2/tinyxml2.h"
-#include "Engine.h"
+#include "Utilities/StringUtils.h"
 #include "Utilities/SerializationUtils.h"
+#include "Scene/Entity.h"
+#include "Scene/Components.h"
+#include "Scene/SceneManager.h"
+#include "Asset/Tileset.h"
+#include "Core/Settings.h"
+#include "Logging/Logger.h"
 
 static TilemapComponent::Orientation s_Orientation;
 static std::map<uint32_t, Ref<Tileset>> s_Tilesets;
