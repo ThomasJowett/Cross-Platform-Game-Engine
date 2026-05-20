@@ -107,7 +107,7 @@ void WebGPURendererAPI::StartRenderPass()
 		return;
 
 	wgpu::CommandEncoderDescriptor encoderDesc = {};
-	encoderDesc.label = "Command encoder";
+	encoderDesc.label = "Render Command encoder";
 
 	m_CommandEncoder = device.createCommandEncoder(encoderDesc);
 	if (!m_CommandEncoder)
