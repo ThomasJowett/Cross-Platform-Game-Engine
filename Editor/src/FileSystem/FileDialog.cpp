@@ -257,7 +257,7 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 	return std::nullopt;
 }
 
-#else
+#elif !defined(__APPLE__)
 
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
 {
