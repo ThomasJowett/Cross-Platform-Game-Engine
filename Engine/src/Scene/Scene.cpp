@@ -8,6 +8,7 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/FrameBuffer.h"
 
+#include "Scene/SceneManager.h"
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Box2DDebugDraw.h"
 
@@ -773,6 +774,7 @@ bool Scene::Load(bool binary)
 	if (!std::filesystem::exists(filepath))
 	{
 		ENGINE_ERROR("File not found {0}", filepath);
+		SceneManager::CancelChangeScene();
 		return false;
 	}
 
