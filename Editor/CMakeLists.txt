@@ -39,7 +39,7 @@ endif()
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
 if(APPLE)
-    file(GLOB MAC_SOURCES "src/**.mm")
+    file(GLOB_RECURSE MAC_SOURCES "src/*.mm")
     list(APPEND SOURCES ${MAC_SOURCES})
 
     set_source_files_properties(${MAC_SOURCES} PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
