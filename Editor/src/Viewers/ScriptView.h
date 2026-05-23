@@ -42,6 +42,8 @@ public:
 private:
 	TextEditor::LanguageDefinition DetermineLanguageDefinition();
 	void ParseLuaScript();
+	void FindNext();
+	void FindPrevious();
 private:
 	bool* m_Show;
 
@@ -50,4 +52,8 @@ private:
 	Ref<LuaScript> m_Script;
 
 	TextEditor m_TextEditor;
+
+	char m_SearchBuffer[256] = {0};
+	bool m_ShowSearch = false;
+	bool m_FocusSearch = false;
 };

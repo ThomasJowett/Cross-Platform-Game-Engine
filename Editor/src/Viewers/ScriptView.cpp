@@ -1,5 +1,6 @@
 #include "ScriptView.h"
 #include "Fonts/Fonts.h"
+#include "ImGui/ImGuiTextEditor.h"
 #include "MainDockSpace.h"
 #include "IconsFontAwesome6.h"
 
@@ -11,6 +12,9 @@
 #include "Scene/Components/LuaScriptComponent.h"
 #include "Scene/AssetManager.h"
 #include "imgui.h"
+#include <cstddef>
+#include <cstring>
+#include <string>
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -113,6 +117,26 @@ void ScriptView::OnImGuiRender()
 		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 		{
 			MainDockSpace::SetFocussedWindow(this);
+
+			bool ctrl = ImGui::GetIO().ConfigMacOSXBehaviors ? ImGui::GetIO().KeySuper : ImGui::GetIO().KeyCtrl;
+			bool shift = ImGui::GetIO().KeyShift;
+
+			if (ctrl && ImGui::IsKeyPressed(ImGuiKey_F))
+			{
+				m_ShowSearch = true;
+				m_FocusSearch = true;
+			}
+			else if (ImGui::IsKeyPressed(ImGuiKey_Escape))
+			{
+				m_ShowSearch = false;
+			}
+			else if (m_ShowSearch && ImGui::IsKeyPressed(ImGuiKey_Enter))
+			{
+				if (shift)
+					FindPrevious();
+				else
+				 	FindNext();
+			}
 		}
 
 		bool readOnly = m_TextEditor.IsReadOnly();
@@ -147,7 +171,12 @@ void ScriptView::OnImGuiRender()
 				if (ImGui::MenuItem(ICON_FA_TRASH_CAN" Delete", "Del", nullptr, m_TextEditor.HasSelection() && !readOnly))
 					m_TextEditor.Delete();
 				ImGui::Separator();//---------------------------------------------------------------
-
+				if (ImGui::MenuItem(ICON_FA_MAGNIFYING_GLASS " Find", "Ctrl-F"))
+				{
+					m_ShowSearch = true;
+					m_FocusSearch = true;
+				}
+				ImGui::Separator();//---------------------------------------------------------------
 				if (ImGui::MenuItem(ICON_FA_ARROW_POINTER" Select all", "Ctrl-A", nullptr))
 					m_TextEditor.SetSelection(TextEditor::Coordinates(), TextEditor::Coordinates(m_TextEditor.GetTotalLines(), 0));
 				ImGui::EndMenu();
@@ -171,6 +200,46 @@ void ScriptView::OnImGuiRender()
 			}
 		}
 		ImGui::EndMenuBar();
+
+		if (m_ShowSearch)
+		{
+			if (m_FocusSearch)
+			{
+				ImGui::SetKeyboardFocusHere();
+				m_FocusSearch = false;
+			}
+
+			ImGui::PushItemWidth(300.0f);
+			if (ImGui::InputTextWithHint("##SearchBox", "Find...", m_SearchBuffer, 256, ImGuiInputTextFlags_EnterReturnsTrue))
+			{
+				FindNext();
+			}
+			ImGui::PopItemWidth();
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_ARROW_DOWN))
+			{
+				FindNext();
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Find Next (Enter)");
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_ARROW_UP))
+			{
+				FindPrevious();
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Find Previous (Shift+Enter)");
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_XMARK))
+			{
+				m_ShowSearch = false;
+			}
+
+			ImGui::Separator();
+		}
 
 		ImGui::PushFont(Fonts::Consolas);
 		m_TextEditor.Render("TextEditor");
@@ -260,4 +329,90 @@ void ScriptView::ParseLuaScript()
 	
 	LuaScriptComponent& luaComp = entity.AddComponent<LuaScriptComponent>(m_FilePath);
 	luaComp.ParseScript(entity);
+}
+
+void ScriptView::FindNext() {
+	if (strlen(m_SearchBuffer) == 0)
+		return;
+
+	std::string searchStr = m_SearchBuffer;
+	auto lines = m_TextEditor.GetTextLines();
+	auto cursor = m_TextEditor.GetCursorPosition();
+
+	for (size_t i = cursor.mLine; i < lines.size(); ++i)
+	{
+		size_t startPos = (i == cursor.mLine) ? cursor.mColumn : 0;
+		size_t pos = lines[i].find(searchStr, startPos);
+
+		if (pos != std::string::npos)
+		{
+			m_TextEditor.SetSelection(TextEditor::Coordinates((int)i, (int)pos), TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			m_TextEditor.SetCursorPosition(TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			return;
+		}
+	}
+
+	// wrap around
+	for (size_t i = 0; i <= cursor.mLine && i < lines.size(); ++i)
+	{
+		size_t pos = lines[i].find(searchStr, 0);
+
+		if (pos != std::string::npos)
+		{
+			m_TextEditor.SetSelection(TextEditor::Coordinates((int)i, (int)pos), TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			m_TextEditor.SetCursorPosition(TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			return;
+		}
+	}
+}
+
+void ScriptView::FindPrevious() {
+	if (strlen(m_SearchBuffer) == 0)
+		return;
+
+	std::string searchStr = m_SearchBuffer;
+	auto lines = m_TextEditor.GetTextLines();
+	auto cursor = m_TextEditor.GetCursorPosition();
+
+	if (m_TextEditor.HasSelection())
+	{
+		cursor.mColumn -= searchStr.length();
+		if (cursor.mColumn < 0)
+			cursor.mColumn = 0;
+	}
+
+	if (cursor.mLine < lines.size())
+	{
+		std::string linePrefix = lines[cursor.mLine].substr(0, std::max(0, cursor.mColumn));
+		size_t pos = linePrefix.rfind(searchStr);
+		if (pos != std::string::npos)
+		{
+			m_TextEditor.SetSelection(TextEditor::Coordinates(cursor.mLine, (int)pos), TextEditor::Coordinates(cursor.mLine, (int)(pos + searchStr.length())));
+			m_TextEditor.SetCursorPosition(TextEditor::Coordinates(cursor.mLine, (int)(pos + searchStr.length())));
+			return;
+		}
+	}
+
+	for (int i = cursor.mLine - 1; i >= 0; ++i)
+	{
+		size_t pos = lines[i].rfind(searchStr);
+		if (pos != std::string::npos)
+		{
+			m_TextEditor.SetSelection(TextEditor::Coordinates((int)i, (int)pos), TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			m_TextEditor.SetCursorPosition(TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			return;
+		}
+	}
+
+	// Wrap around to end
+	for (int i = (int)lines.size() - 1; i >= cursor.mLine; --i)
+	{
+		size_t pos = lines[i].rfind(searchStr);
+		if (pos != std::string::npos)
+		{
+			m_TextEditor.SetSelection(TextEditor::Coordinates((int)i, (int)pos), TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			m_TextEditor.SetCursorPosition(TextEditor::Coordinates((int)i, (int)(pos + searchStr.length())));
+			return;
+		}
+	}
 }
