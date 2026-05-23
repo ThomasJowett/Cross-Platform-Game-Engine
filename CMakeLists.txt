@@ -78,7 +78,7 @@ add_subdirectory(Engine/vendor/box2d)
 add_subdirectory(Engine/vendor/glfw3webgpu)
 add_subdirectory(Engine/vendor/tracy)
 add_subdirectory(Engine/vendor/sol)
-add_subdirectory(Engine/vendor/WebGPU-Distribution)
+add_subdirectory(Engine/vendor/WebGPU-distribution)
 
 add_subdirectory(Engine)
 add_subdirectory(Editor)
