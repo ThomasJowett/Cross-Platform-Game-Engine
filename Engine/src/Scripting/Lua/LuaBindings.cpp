@@ -64,9 +64,9 @@ void BindEntity(sol::state& state)
 	RegisterAllComponents<COMPONENTS>(state);
 
 	auto transform_type = state["TransformComponent"].get_or_create<sol::usertype<TransformComponent>>();
-	transform_type["Position"] = sol::property([](TransformComponent& c) { return c.position; }, [](TransformComponent& c, const Vector3f& v) { c.position = v; });
-	transform_type["Rotation"] = sol::property([](TransformComponent& c) { return c.rotation; }, [](TransformComponent& c, const Vector3f& v) { c.rotation = v; });
-	transform_type["Scale"] = sol::property([](TransformComponent& c) { return c.scale; }, [](TransformComponent& c, const Vector3f& v) { c.scale = v; });
+	transform_type["Position"] = sol::property([](TransformComponent& c) -> Vector3f& { return c.position; }, [](TransformComponent& c, const Vector3f& v) { c.position = v; });
+	transform_type["Rotation"] = sol::property([](TransformComponent& c) -> Vector3f& { return c.rotation; }, [](TransformComponent& c, const Vector3f& v) { c.rotation = v; });
+	transform_type["Scale"] = sol::property([](TransformComponent& c) -> Vector3f& { return c.scale; }, [](TransformComponent& c, const Vector3f& v) { c.scale = v; });
 	transform_type.set_function("GetWorldPosition", &TransformComponent::GetWorldPosition);
 
 	sol::usertype<SceneCamera> sceneCamera_type = state.new_usertype<SceneCamera>("Camera");
@@ -92,12 +92,12 @@ void BindEntity(sol::state& state)
 	camera_type["FixedAspectRatio"] = sol::property([](CameraComponent& c) { return c.fixedAspectRatio; }, [](CameraComponent& c, const bool v) { c.fixedAspectRatio = v; });
 
 	auto sprite_type = state["SpriteComponent"].get_or_create<sol::usertype<SpriteComponent>>();
-	sprite_type["Tint"] = sol::property([](SpriteComponent& c) { return c.tint; }, [](SpriteComponent& c, const Colour& v) { c.tint = v; });
+	sprite_type["Tint"] = sol::property([](SpriteComponent& c) -> Colour& { return c.tint; }, [](SpriteComponent& c, const Colour& v) { c.tint = v; });
 	sprite_type["Texture"] = sol::property([](SpriteComponent& c) { return c.texture; }, [](SpriteComponent& c, const Ref<Texture2D>& v) { c.texture = v; });
 	sprite_type["TilingFactor"] = sol::property([](SpriteComponent& c) { return c.tilingFactor; }, [](SpriteComponent& c, const float v) { c.tilingFactor = v; });
 
 	auto animated_sprite_type = state["AnimatedSpriteComponent"].get_or_create<sol::usertype<AnimatedSpriteComponent>>();
-	animated_sprite_type["Tint"] = sol::property([](AnimatedSpriteComponent& c) { return c.tint; }, [](AnimatedSpriteComponent& c, const Colour& v) { c.tint = v; });
+	animated_sprite_type["Tint"] = sol::property([](AnimatedSpriteComponent& c) -> Colour& { return c.tint; }, [](AnimatedSpriteComponent& c, const Colour& v) { c.tint = v; });
 	animated_sprite_type["SpriteSheet"] = sol::property([](AnimatedSpriteComponent& c) { return c.spriteSheet; }, [](AnimatedSpriteComponent& c, const Ref<SpriteSheet>& v) { c.spriteSheet = v; });
 	animated_sprite_type["Animation"] = sol::property([](AnimatedSpriteComponent& c) { return c.animation; }, [](AnimatedSpriteComponent& c, const std::string& v) { c.animation = v; });
 
@@ -135,22 +135,22 @@ void BindEntity(sol::state& state)
 	physicsMaterial_type.set_function("SetRestitution", &PhysicsMaterial::SetRestitution);
 
 	auto boxCollider2D_type = state["BoxCollider2DComponent"].get_or_create<sol::usertype<BoxCollider2DComponent>>();
-	boxCollider2D_type["Offset"] = sol::property([](BoxCollider2DComponent& c) { return c.offset; }, [](BoxCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
-	boxCollider2D_type["Size"] = sol::property([](BoxCollider2DComponent& c) { return c.size; }, [](BoxCollider2DComponent& c, const Vector2f& v) { c.size = v; });
+	boxCollider2D_type["Offset"] = sol::property([](BoxCollider2DComponent& c) -> Vector2f& { return c.offset; }, [](BoxCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
+	boxCollider2D_type["Size"] = sol::property([](BoxCollider2DComponent& c) -> Vector2f& { return c.size; }, [](BoxCollider2DComponent& c, const Vector2f& v) { c.size = v; });
 	boxCollider2D_type["PhysicsMaterial"] = sol::property([](BoxCollider2DComponent& c) { return c.physicsMaterial; }, [](BoxCollider2DComponent& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; });
 
 	auto circleCollider2D_type = state["CircleCollider2DComponent"].get_or_create<sol::usertype<CircleCollider2DComponent>>();
-	circleCollider2D_type["Offset"] = sol::property([](CircleCollider2DComponent& c) { return c.offset; }, [](CircleCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
+	circleCollider2D_type["Offset"] = sol::property([](CircleCollider2DComponent& c) -> Vector2f& { return c.offset; }, [](CircleCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
 	circleCollider2D_type["Radius"] = sol::property([](CircleCollider2DComponent& c) { return c.radius; }, [](CircleCollider2DComponent& c, float v) { c.radius = v; });
 	circleCollider2D_type["PhysicsMaterial"] = sol::property([](CircleCollider2DComponent& c) { return c.physicsMaterial; }, [](CircleCollider2DComponent& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; });
 
 	auto polygonCollider2D_type = state["PolygonCollider2DComponent"].get_or_create<sol::usertype<PolygonCollider2DComponent>>();
-	polygonCollider2D_type["Offset"] = sol::property([](PolygonCollider2DComponent& c) { return c.offset; }, [](PolygonCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
+	polygonCollider2D_type["Offset"] = sol::property([](PolygonCollider2DComponent& c) -> Vector2f& { return c.offset; }, [](PolygonCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
 	polygonCollider2D_type["Vertices"] = sol::property([](PolygonCollider2DComponent& c) { return c.vertices; }, [](PolygonCollider2DComponent& c, const std::vector<Vector2f>& v) { c.vertices = v; });
 	polygonCollider2D_type["PhysicsMaterial"] = sol::property([](PolygonCollider2DComponent& c) { return c.physicsMaterial; }, [](PolygonCollider2DComponent& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; });
 
 	auto capsuleCollider2D_type = state["CapsuleCollider2DComponent"].get_or_create<sol::usertype<CapsuleCollider2DComponent>>();
-	capsuleCollider2D_type["Offset"] = sol::property([](CapsuleCollider2DComponent& c) { return c.offset; }, [](CapsuleCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
+	capsuleCollider2D_type["Offset"] = sol::property([](CapsuleCollider2DComponent& c) -> Vector2f& { return c.offset; }, [](CapsuleCollider2DComponent& c, const Vector2f& v) { c.offset = v; });
 	capsuleCollider2D_type["Radius"] = sol::property([](CapsuleCollider2DComponent& c) { return c.radius; }, [](CapsuleCollider2DComponent& c, float v) { c.radius = v; });
 	capsuleCollider2D_type["Height"] = sol::property([](CapsuleCollider2DComponent& c) { return c.height; }, [](CapsuleCollider2DComponent& c, float v) { c.height = v; });
 	capsuleCollider2D_type["PhysicsMaterial"] = sol::property([](CapsuleCollider2DComponent& c) { return c.physicsMaterial; }, [](CapsuleCollider2DComponent& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; });
@@ -161,7 +161,7 @@ void BindEntity(sol::state& state)
 	weldJoint2D_type["Stiffness"] = sol::property([](WeldJoint2DComponent& c) { return c.stiffness; }, [](WeldJoint2DComponent& c, float v) { c.stiffness = v; });
 
 	auto circleRenderer_type = state["CircleRendererComponent"].get_or_create<sol::usertype<CircleRendererComponent>>();
-	circleRenderer_type["Colour"] = sol::property([](CircleRendererComponent& c) { return c.colour; }, [](CircleRendererComponent& c, const Colour& v) { c.colour = v; });
+	circleRenderer_type["Colour"] = sol::property([](CircleRendererComponent& c) -> Colour&{ return c.colour; }, [](CircleRendererComponent& c, const Colour& v) { c.colour = v; });
 	circleRenderer_type["Radius"] = sol::property([](CircleRendererComponent& c) { return c.radius; }, [](CircleRendererComponent& c, float v) { c.radius = v; });
 	circleRenderer_type["Thickness"] = sol::property([](CircleRendererComponent& c) { return c.thickness; }, [](CircleRendererComponent& c, float v) { c.thickness = v; });
 	circleRenderer_type["Fade"] = sol::property([](CircleRendererComponent& c) { return c.fade; }, [](CircleRendererComponent& c, float v) { c.fade = v; });
@@ -205,7 +205,7 @@ void BindEntity(sol::state& state)
 	auto text_type = state["TextComponent"].get_or_create<sol::usertype<TextComponent>>();
 	text_type["Text"] = sol::property([](TextComponent& c) { return c.text; }, [](TextComponent& c, const std::string& v) { c.text = v; });
 	text_type["MaxWidth"] = sol::property([](TextComponent& c) { return c.maxWidth; }, [](TextComponent& c, float v) { c.maxWidth = v; });
-	text_type["Colour"] = sol::property([](TextComponent& c) { return c.colour; }, [](TextComponent& c, const Colour& v) { c.colour = v; });
+	text_type["Colour"] = sol::property([](TextComponent& c) -> Colour& { return c.colour; }, [](TextComponent& c, const Colour& v) { c.colour = v; });
 	text_type["Font"] = sol::property([](TextComponent& c) { return c.font; }, [](TextComponent& c, const Ref<Font>& v) { c.font = v; });
 
 	auto audio_source_type = state["AudioSourceComponent"].get_or_create<sol::usertype<AudioSourceComponent>>();
