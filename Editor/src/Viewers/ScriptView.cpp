@@ -10,6 +10,7 @@
 #include "Scene/Entity.h"
 #include "Scene/Components/LuaScriptComponent.h"
 #include "Scene/AssetManager.h"
+#include "imgui.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -109,7 +110,7 @@ void ScriptView::OnImGuiRender()
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
-		if (ImGui::IsWindowFocused())
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 		{
 			MainDockSpace::SetFocussedWindow(this);
 		}
@@ -174,6 +175,11 @@ void ScriptView::OnImGuiRender()
 		ImGui::PushFont(Fonts::Consolas);
 		m_TextEditor.Render("TextEditor");
 		ImGui::PopFont();
+
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+		{
+			MainDockSpace::SetFocussedWindow(this);
+		}
 	}
 
 	ImGui::End();
