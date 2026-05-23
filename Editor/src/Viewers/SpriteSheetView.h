@@ -5,7 +5,7 @@
 #include "Interfaces/ISaveable.h"
 #include "Scene/Components/AnimatedSpriteComponent.h"
 
-class SpriteSheetView :
+class SpriteSheetView final :
 	public View, public ISaveable
 {
 public:
