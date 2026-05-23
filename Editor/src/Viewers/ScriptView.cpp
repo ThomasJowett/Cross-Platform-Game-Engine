@@ -217,20 +217,20 @@ void ScriptView::OnImGuiRender()
 			ImGui::PopItemWidth();
 
 			ImGui::SameLine();
-			if (ImGui::Button(ICON_FA_ARROW_DOWN))
-			{
-				FindNext();
-			}
-			if (ImGui::IsItemHovered())
-				ImGui::SetTooltip("Find Next (Enter)");
-
-			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_ARROW_UP))
 			{
 				FindPrevious();
 			}
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("Find Previous (Shift+Enter)");
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_ARROW_DOWN))
+			{
+				FindNext();
+			}
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("Find Next (Enter)");
 
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_XMARK))
@@ -393,7 +393,7 @@ void ScriptView::FindPrevious() {
 		}
 	}
 
-	for (int i = cursor.mLine - 1; i >= 0; ++i)
+	for (int i = cursor.mLine - 1; i >= 0; --i)
 	{
 		size_t pos = lines[i].rfind(searchStr);
 		if (pos != std::string::npos)
