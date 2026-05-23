@@ -138,3 +138,7 @@ if(APPLE)
         COMMENT "Copying Runtime.app into Editor.app bundle"
     )
 endif()
+
+if (MSVC)
+    target_compile_options(Editor PRIVATE "/utf-8")
+endif()

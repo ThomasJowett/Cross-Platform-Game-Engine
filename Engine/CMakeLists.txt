@@ -91,7 +91,7 @@ add_definitions(
 )
 
 if (MSVC)
-    target_compile_options(Engine PRIVATE "/bigobj")
+    target_compile_options(Engine PRIVATE "/bigobj" "/utf-8")
 else ()
   add_compile_options(-Wa,-mbig-obj)
 endif ()

@@ -1,6 +1,7 @@
 #include "FileDialog.h"
 
 #include "Utilities/StringUtils.h"
+#include "Logging/Logger.h"
 
 #ifdef _WINDOWS
 #include <commdlg.h>

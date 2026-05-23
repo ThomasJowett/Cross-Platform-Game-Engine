@@ -27,3 +27,13 @@
 
 #include "cereal/cereal.hpp"
 #include "imgui/imgui.h"
+
+#ifdef _WINDOWS
+#ifdef __MINGW32__
+	#define WIN32_LEAN_AND_MEAN
+#else
+	#define NOMINMAX
+#endif
+#include <Windows.h>
+
+#endif // _WINDOWS
