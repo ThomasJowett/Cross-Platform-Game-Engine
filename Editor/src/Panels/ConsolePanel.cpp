@@ -53,8 +53,6 @@ ConsolePanel::ConsolePanel(bool* show)
 	m_LevelFilter = Level::Trace;
 	m_AllowScrollingToBottom = true;
 
-	m_LastBufferSize = 0;
-
 	m_TextFilter = new ImGuiTextFilter();
 }
 
@@ -157,17 +155,17 @@ void ConsolePanel::ImGuiRenderMessages()
 		ImGui::SetWindowFontScale(m_DisplayScale);
 
 		auto messageStart = InternalConsole::s_MessageBuffer.begin() + InternalConsole::s_MessageBufferBegin;
+		size_t msgId = 0;
 		if (InternalConsole::s_MessageBufferBegin == 0)// If contains old message here
 			for (auto message : InternalConsole::s_MessageBuffer)
-				RenderMessage(message);
+				RenderMessage(message, msgId++);
 		if (InternalConsole::s_MessageBufferBegin != 0) // Skipped first message in vector
 			for (auto message = InternalConsole::s_MessageBuffer.begin(); message != messageStart; message++)
-				RenderMessage(*message);
+				RenderMessage(*message, msgId++);
 
-		if (m_AllowScrollingToBottom && m_LastBufferSize <= InternalConsole::s_MessageBufferSize && ImGui::GetScrollMaxY() > 0)
+		if (m_AllowScrollingToBottom && (ImGui::GetScrollY() >= ImGui::GetScrollMaxY() || ImGui::GetScrollMaxY() == 0))
 		{
-			ImGui::SetScrollY(ImGui::GetScrollMaxY());
-			m_LastBufferSize = InternalConsole::s_MessageBufferSize;
+			ImGui::SetScrollHereY(1.0f);
 		}
 	}
 	ImGui::EndChild();
@@ -184,15 +182,26 @@ std::vector<ConsolePanel::Level> ConsolePanel::s_Levels
 	ConsolePanel::Level::Off
 };
 
-void ConsolePanel::RenderMessage(const InternalConsole::Message& message)
+void ConsolePanel::RenderMessage(const InternalConsole::Message& message, size_t id)
 {
 	Level level = GetMessageLevel(message.second);
 	if (level != Level::Invalid && level >= m_LevelFilter && m_TextFilter->PassFilter(message.first.c_str()))
 	{
 		Colour colour = GetRenderColour(level);
+		ImGui::PushID((int)id);
 		ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + ImGui::GetContentRegionAvail().x);
 		ImGui::TextColored({ colour.r, colour.g, colour.b, colour.a }, "%s", message.first.c_str());
 		ImGui::PopTextWrapPos();
+
+		if (ImGui::BeginPopupContextItem("MessageContext"))
+		{
+			if (ImGui::MenuItem("Copy Message"))
+			{
+				ImGui::SetClipboardText(message.first.c_str());
+			}
+			ImGui::EndPopup();
+		}
+		ImGui::PopID();
 	}
 }
 
