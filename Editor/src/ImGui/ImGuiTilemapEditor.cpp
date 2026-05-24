@@ -152,7 +152,10 @@ void TilemapEditor::OnImGuiRender()
 					size_t cellY = (size_t)std::floor(beginClickPosY / spriteSize.y);
 					if (!ImGui::GetIO().KeyCtrl)
 					{
-						std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
+						for (auto& row : m_SelectedTiles)
+						{
+							std::fill(row.begin(), row.end(), false);
+						}
 					}
 					m_SelectedTiles[cellY][cellX] = !m_SelectedTiles[cellY][cellX];
 					beginClick = true;
@@ -176,7 +179,10 @@ void TilemapEditor::OnImGuiRender()
 
 					if (!ImGui::GetIO().KeyCtrl)
 					{
-						std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
+						for (auto& row : m_SelectedTiles)
+						{
+							std::fill(row.begin(), row.end(), false);
+						}
 					}
 
 					for (size_t i = cellYMin; i < cellYMax; i++)
@@ -253,13 +259,50 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 		m_HoveredCoords[1] = (int)std::floor(coords.y);
 	}
 
-	size_t topRightSelectionIndex = 0;
-	size_t topRightSelectionX = std::numeric_limits<size_t>::max();
-	size_t topRightSelectionY = std::numeric_limits<size_t>::max();
+	size_t topLeftSelectionIndex = 0;
+	size_t topLeftSelectionX = std::numeric_limits<size_t>::max();
+	size_t topLeftSelectionY = std::numeric_limits<size_t>::max();
 
 	if (IsHovered())
 	{
-		if (HasSelection())
+		if (Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && !m_EditTilemapComponent.first && !Input::IsKeyPressed(KEY_LEFT_ALT))
+		{
+			m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
+			m_EditTilemapComponent.first = true;
+			m_RectStartCoords[0] = m_HoveredCoords[0];
+			m_RectStartCoords[1] = m_HoveredCoords[1];
+		}
+		else if (Input::IsKeyPressed(KEY_LEFT_SHIFT) && !m_EditTilemapComponent.first && !Input::IsKeyPressed(KEY_LEFT_ALT))
+		{
+			m_RectStartCoords[0] = m_HoveredCoords[0];
+			m_RectStartCoords[1] = m_HoveredCoords[1];
+		}
+
+		if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
+		{
+			if (m_DrawMode == TilemapEditor::DrawMode::Rect)
+			{
+				int minX = std::max(0, std::min(m_RectStartCoords[0], m_HoveredCoords[0]));
+				int maxX = std::min((int)m_TilemapComp->tilesWide - 1, std::max(m_RectStartCoords[0], m_HoveredCoords[0]));
+				int minY = std::max(0, std::min(m_RectStartCoords[1], m_HoveredCoords[1]));
+				int maxY = std::min((int)m_TilemapComp->tilesHigh - 1, std::max(m_RectStartCoords[1], m_HoveredCoords[1]));
+
+				for (int y = minY; y <= maxY; y++)
+				{
+					for (int x = minX; x <= maxX; x++)
+					{
+						tileTransform = GetTileTransform(x, y);
+						Renderer2D::DrawQuad(tileTransform, Colour(1.0f, 0.0f, 0.0f, 0.6f));
+					}
+				}
+			}
+			else
+			{
+				tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
+				Renderer2D::DrawQuad(tileTransform, Colour(1.0f, 0.0f, 0.0f, 0.6f));
+			}
+		}
+		else if (HasSelection())
 		{
 			for (size_t y = 0; y < m_SelectedTiles.size(); y++)
 			{
@@ -267,44 +310,53 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				{
 					if (m_SelectedTiles[y][x])
 					{
-						if (x < topRightSelectionX)
-							topRightSelectionX = x;
-						if (y < topRightSelectionY)
-							topRightSelectionY = y;
+						if (x < topLeftSelectionX)
+							topLeftSelectionX = x;
+						if (y < topLeftSelectionY)
+							topLeftSelectionY = y;
 					}
 				}
 			}
 
-			topRightSelectionIndex = (topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX) + 1;
-			if (Input::IsKeyPressed(KEY_LEFT_SHIFT)) {
-				tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
-				Renderer2D::DrawQuad(tileTransform, Colour(1.0f, 0.0f, 0.0f, 0.6f));
-			}
-			else {
-				if (m_TilemapComp->tileset) {
-					if (m_DrawMode == TilemapEditor::DrawMode::Stamp)
-					{
-						for (size_t row = topRightSelectionY; row < m_Rows; ++row) {
-							for (size_t col = topRightSelectionX; col < m_Columns; ++col) {
-								if (m_SelectedTiles[row][col])
-								{
-									int tileX = m_HoveredCoords[0] + (int)(col - topRightSelectionX);
-									int tileY = m_HoveredCoords[1] + (int)(row - topRightSelectionY);
-									if (tileX < (int)m_TilemapComp->tilesWide && tileY < (int)m_TilemapComp->tilesHigh) {
-										tileTransform = GetTileTransform(tileX, tileY);
-										m_TilemapComp->tileset->SetCurrentTile((uint32_t)(row * m_Columns + col));
-										Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
-									}
+			topLeftSelectionIndex = (topLeftSelectionY * m_SelectedTiles[topLeftSelectionY].size() + topLeftSelectionX) + 1;
+			if (m_TilemapComp->tileset) {
+				if (m_DrawMode == TilemapEditor::DrawMode::Stamp)
+				{
+					for (size_t row = topLeftSelectionY; row < m_Rows; ++row) {
+						for (size_t col = topLeftSelectionX; col < m_Columns; ++col) {
+							if (m_SelectedTiles[row][col])
+							{
+								int tileX = m_HoveredCoords[0] + (int)(col - topLeftSelectionX);
+								int tileY = m_HoveredCoords[1] + (int)(row - topLeftSelectionY);
+								if (tileX < (int)m_TilemapComp->tilesWide && tileY < (int)m_TilemapComp->tilesHigh) {
+									tileTransform = GetTileTransform(tileX, tileY);
+									m_TilemapComp->tileset->SetCurrentTile((uint32_t)(row * m_Columns + col));
+									Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
 								}
 							}
 						}
 					}
-					else
-					{
-						m_TilemapComp->tileset->SetCurrentTile((uint32_t)(topRightSelectionY * m_SelectedTiles[topRightSelectionY].size() + topRightSelectionX));
-						tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
-						Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+				}
+				else if (m_DrawMode == TilemapEditor::DrawMode::Rect && Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				{
+					int minX = std::min(m_RectStartCoords[0], m_HoveredCoords[0]);
+					int maxX = std::max(m_RectStartCoords[0], m_HoveredCoords[0]);
+					int minY = std::min(m_RectStartCoords[1], m_HoveredCoords[1]);
+					int maxY = std::max(m_RectStartCoords[1], m_HoveredCoords[1]);
+
+					m_TilemapComp->tileset->SetCurrentTile((uint32_t)(topLeftSelectionY * m_SelectedTiles[topLeftSelectionY].size() + topLeftSelectionX));
+					for (int y = minY; y <= maxY; y++) {
+						for (int x = minX; x <= maxX; x++) {
+							tileTransform = GetTileTransform(x, y);
+							Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
+						}
 					}
+				}
+				else
+				{
+					m_TilemapComp->tileset->SetCurrentTile((uint32_t)(topLeftSelectionY * m_SelectedTiles[topLeftSelectionY].size() + topLeftSelectionX));
+					tileTransform = GetTileTransform(m_HoveredCoords[0], m_HoveredCoords[1]);
+					Renderer2D::DrawQuad(tileTransform, m_TilemapComp->tileset->GetSubTexture());
 				}
 			}
 		}
@@ -318,16 +370,15 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 				if (pickedTile > 0)
 				{
 					div_t div = std::div((int)pickedTile - 1, m_Columns);
-					std::fill(m_SelectedTiles.begin(), m_SelectedTiles.end(), std::vector<bool>(m_Columns));
+					for (auto& row : m_SelectedTiles)
+					{
+						std::fill(row.begin(), row.end(), false);
+					}
 					m_SelectedTiles[div.quot][div.rem] = true;
 				}
 			}
 			else if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
 			{
-				if (!m_EditTilemapComponent.first) {
-					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
-					m_EditTilemapComponent.first = true;
-				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
@@ -345,20 +396,16 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 			}
 			else if (HasSelection())
 			{
-				if (!m_EditTilemapComponent.first) {
-					m_EditTilemapComponent.second = CreateRef<EditComponentCommand<TilemapComponent>>(m_TilemapEntity);
-					m_EditTilemapComponent.first = true;
-				}
 				switch (m_DrawMode)
 				{
 				case TilemapEditor::DrawMode::Stamp:
-					ApplyStamp(m_HoveredCoords[0], m_HoveredCoords[1], topRightSelectionX, topRightSelectionY);
+					ApplyStamp(m_HoveredCoords[0], m_HoveredCoords[1], topLeftSelectionX, topLeftSelectionY);
 					break;
 				case TilemapEditor::DrawMode::Random:
 					m_TilemapComp->tiles[m_HoveredCoords[1]][m_HoveredCoords[0]] = GetRandomSelectedTile();
 					break;
 				case TilemapEditor::DrawMode::Fill:
-					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], (uint32_t)topRightSelectionIndex);
+					FloodFillTile(m_HoveredCoords[0], m_HoveredCoords[1], (uint32_t)topLeftSelectionIndex);
 					break;
 				case TilemapEditor::DrawMode::Rect:
 					break;
@@ -372,6 +419,36 @@ void TilemapEditor::OnRender(const Vector3f& mousePosition)
 
 	if (!Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && m_EditTilemapComponent.first)
 	{
+		if (m_DrawMode == DrawMode::Rect)
+		{
+			int minX = std::max(0, std::min(m_RectStartCoords[0], m_HoveredCoords[0]));
+			int maxX = std::min((int)m_TilemapComp->tilesWide - 1, std::max(m_RectStartCoords[0], m_HoveredCoords[0]));
+			int minY = std::max(0, std::min(m_RectStartCoords[1], m_HoveredCoords[1]));
+			int maxY = std::min((int)m_TilemapComp->tilesHigh - 1, std::max(m_RectStartCoords[1], m_HoveredCoords[1]));
+
+			if (Input::IsKeyPressed(KEY_LEFT_SHIFT))
+			{
+				for (int y = minY; y <= maxY; y++)
+				{
+					for (int x = minX; x <= maxX; x++)
+					{
+						m_TilemapComp->tiles[y][x] = 0;
+					}
+				}
+			}
+			else
+			{
+				for (int y = minY; y <= maxY; y++)
+				{
+					for (int x = minX; x <= maxX; x++)
+					{
+						m_TilemapComp->tiles[y][x] = GetRandomSelectedTile();
+					}
+				}
+			}
+			m_TilemapComp->Rebuild();
+		}
+
 		HistoryManager::AddHistoryRecord(m_EditTilemapComponent.second);
 		m_EditTilemapComponent.first = false;
 		m_EditTilemapComponent.second = nullptr;
@@ -392,25 +469,44 @@ void TilemapEditor::Hide()
 void TilemapEditor::FloodFillTile(uint32_t x, uint32_t y, uint32_t newTileType)
 {
 	uint32_t originalTileType = m_TilemapComp->tiles[y][x];
-	if (originalTileType == newTileType)
-		return;
-	FloodFillTileRecursive(x, y, originalTileType, newTileType);
-}
-
-void TilemapEditor::FloodFillTileRecursive(uint32_t x, uint32_t y, uint32_t originalTileType, uint32_t newTileType)
-{
-	if (x < 0 || x >= m_TilemapComp->tilesWide || y < 0 || y >= m_TilemapComp->tilesHigh)
+	if (originalTileType == newTileType && newTileType == 0) // Only skip if erasing and already 0
 		return;
 
-	if (m_TilemapComp->tiles[y][x] != originalTileType)
-		return;
+	// Use iterative approach to avoid stack overflow
+	std::queue<std::pair<uint32_t, uint32_t>> queue;
+	queue.push({ x, y });
 
-	m_TilemapComp->tiles[y][x] = newTileType;
+	std::vector<bool> visited(m_TilemapComp->tilesWide * m_TilemapComp->tilesHigh, false);
+	visited[y * m_TilemapComp->tilesWide + x] = true;
 
-	FloodFillTileRecursive(x + 1, y, originalTileType, GetRandomSelectedTile());
-	FloodFillTileRecursive(x - 1, y, originalTileType, GetRandomSelectedTile());
-	FloodFillTileRecursive(x, y + 1, originalTileType, GetRandomSelectedTile());
-	FloodFillTileRecursive(x, y - 1, originalTileType, GetRandomSelectedTile());
+	bool isErase = (newTileType == 0);
+
+	while (!queue.empty())
+	{
+		auto [currX, currY] = queue.front();
+		queue.pop();
+
+		if (m_TilemapComp->tiles[currY][currX] != originalTileType)
+			continue;
+
+		m_TilemapComp->tiles[currY][currX] = isErase ? 0 : GetRandomSelectedTile();
+
+		auto addNeighbor = [&](int nx, int ny) {
+			if (nx >= 0 && nx < (int)m_TilemapComp->tilesWide && ny >= 0 && ny < (int)m_TilemapComp->tilesHigh)
+			{
+				if (!visited[ny * m_TilemapComp->tilesWide + nx] && m_TilemapComp->tiles[ny][nx] == originalTileType)
+				{
+					visited[ny * m_TilemapComp->tilesWide + nx] = true;
+					queue.push({ (uint32_t)nx, (uint32_t)ny });
+				}
+			}
+		};
+
+		addNeighbor((int)currX + 1, (int)currY);
+		addNeighbor((int)currX - 1, (int)currY);
+		addNeighbor((int)currX, (int)currY + 1);
+		addNeighbor((int)currX, (int)currY - 1);
+	}
 }
 
 uint32_t TilemapEditor::GetRandomSelectedTile()
@@ -426,7 +522,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 	}
 
 	if (selection.empty())
-		return -1;
+		return 0;
 
 	if (selection.size() == 1)
 		return selection.at(0) + 1;
@@ -449,7 +545,7 @@ uint32_t TilemapEditor::GetRandomSelectedTile()
 		}
 	}
 
-	return -1;
+	return 0;
 }
 
 void TilemapEditor::ApplyStamp(uint32_t startX, uint32_t startY, size_t topRightSelectionX, size_t topRightSelectionY)
