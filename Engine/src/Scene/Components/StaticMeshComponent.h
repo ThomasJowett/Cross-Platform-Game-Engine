@@ -56,18 +56,22 @@ private:
 		std::string relativeMeshPath;
 		std::vector<std::string> relativeMaterials;
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 
 		if (!relativeMeshPath.empty() && relativeMeshPath != "#")
 		{
 			mesh = AssetManager::GetAsset<StaticMesh>(relativeMeshPath);
-			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
+			
 			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
-				if (relativeMaterials[i].empty())
-					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
-				else
+				if (i < relativeMaterials.size() && !relativeMaterials[i].empty())
 					materialOverrides[i] = AssetManager::GetAsset<Material>(relativeMaterials[i]);
+				else
+				{
+					auto matIndex = mesh->GetMesh()->GetSubmeshes()[i].materialIndex;
+					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[matIndex];
+				}
 			}
 		}
 		else
