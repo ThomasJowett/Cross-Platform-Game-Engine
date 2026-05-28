@@ -106,6 +106,14 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 			pTile->SetAttribute("Id", (int64_t)i);
 			pTile->SetAttribute("Probability", m_Tiles[i].GetProbability());
 			pTile->SetAttribute("Shape", (int)m_Tiles[i].GetCollisionShape());
+
+			if (m_Tiles[i].GetCollisionShape() == Tile::CollisionShape::Polygon)
+			{
+				for (const auto& vertex : m_Tiles[i].GetVertices())
+				{
+					SerializationUtils::Encode(pTile->InsertNewChildElement("Vertex"), vertex);
+				}
+			}
 		}
 	}
 
@@ -250,6 +258,20 @@ bool Tileset::LoadXML(tinyxml2::XMLDocument* doc)
 		{
 			m_Tiles[tileId].SetCollisionShape((Tile::CollisionShape)atoi(shape));
 			m_HasCollision = true;
+
+			if (m_Tiles[tileId].GetCollisionShape() == Tile::CollisionShape::Polygon)
+			{
+				std::vector<Vector2f> vertices;
+				tinyxml2::XMLElement* pVertex = pTile->FirstChildElement("Vertex");
+				while (pVertex)
+				{
+					Vector2f vertex;
+					SerializationUtils::Decode(pVertex, vertex);
+					vertices.push_back(vertex);
+					pVertex = pVertex->NextSiblingElement("Vertex");
+				}
+				m_Tiles[tileId].SetVertices(vertices);
+			}
 		}
 
 		pTile = pTile->NextSiblingElement("Tile");
