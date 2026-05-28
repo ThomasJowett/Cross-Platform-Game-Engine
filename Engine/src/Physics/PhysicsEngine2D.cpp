@@ -444,6 +444,36 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 								if (luaScriptComponent)
 									luaScriptComponent->m_Fixtures.push_back(fixture);
 							}
+							else if (tile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+							{
+								const std::vector<Vector2f>& vertices = tile.GetVertices();
+								std::vector<uint32_t> polygonIndices;
+								if (Triangulation::Triangulate(vertices, polygonIndices))
+								{
+									for (size_t k = 0; k < polygonIndices.size(); k += 3)
+									{
+										b2PolygonShape polygonShape;
+										b2Vec2* b2Vertices = new b2Vec2[3];
+										for (size_t l = 0; l < 3; l++)
+										{
+											uint32_t vertexIndex = polygonIndices[k + l];
+											b2Vertices[l] = b2Vec2((vertices[vertexIndex].x + j) * tileWidth, -(vertices[vertexIndex].y + i) * tileHeight);
+										}
+										polygonShape.Set(b2Vertices, 3);
+										b2FixtureDef fixtureDef;
+										fixtureDef.shape = &polygonShape;
+										fixtureDef.isSensor = tilemapComp->isTrigger;
+										Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
+										fixtureDef.density = defaultPhysicsMaterial->GetDensity();
+										fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
+										fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
+										fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+										b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+										if (luaScriptComponent)
+											luaScriptComponent->m_Fixtures.push_back(fixture);
+									}
+								}
+							}
 						}
 					}
 				}
