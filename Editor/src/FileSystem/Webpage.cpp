@@ -24,4 +24,11 @@ void Webpage::OpenWebpage(const std::wstring& url)
 
 	system(command.c_str());
 }
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+void Webpage::OpenWebpage(const std::wstring& url)
+{
+	std::string urlString(url.begin(), url.end());
+	emscripten_run_script(("window.open('" + urlString + "', '_blank');").c_str());
+}
 #endif
