@@ -2,6 +2,7 @@
 
 #include "GLFW/glfw3.h"
 
+#include "Logging/Instrumentor.h"
 #include "Settings.h"
 #include "InputParser.h"
 #include "Version.h"
@@ -27,6 +28,10 @@
 
 #if defined(_WIN32)
 #include <crtdbg.h>
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
 #endif
 
 Application* Application::s_Instance = nullptr;
@@ -163,6 +168,69 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 	return nullptr;
 }
 
+void Application::Tick() {
+	PROFILE_FRAME();
+
+	double newTime = GetTime();
+	double frameTime = newTime - m_CurrentTime;
+	m_CurrentTime = newTime;
+
+	m_Accumulator += frameTime;
+
+	m_DeltaTime = (float)frameTime;
+
+	// On Fixed update
+	while (m_Accumulator >= m_FixedUpdateInterval)
+	{
+		PROFILE_SCOPE("Layer Stack Fixed Update");
+
+		if (!m_Minimized)
+		{
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnFixedUpdate();
+			}
+
+			SceneManager::FixedUpdate();
+		}
+
+		m_Accumulator -= m_FixedUpdateInterval;
+	}
+
+	m_Window->GetContext()->MakeCurrent();
+	m_Window->OnUpdate();
+
+	// On Update 
+	{
+		PROFILE_SCOPE("Layer Stack Update");
+
+		if (!m_Minimized)
+		{
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnUpdate((float)frameTime);
+			}
+		}
+
+		SceneManager::Update((float)frameTime);
+	}
+
+	// Render the imgui of each of the layers
+	if (m_ImGuiManager->IsUsing())
+	{
+		m_ImGuiManager->Begin();
+		for (Ref<Layer> layer : m_LayerStack)
+		{
+			layer->OnImGuiRender();
+		}
+		m_ImGuiManager->End();
+	}
+
+	m_LayerStack.PushPop();
+
+	Input::ClearInputData();
+}
+
 void Application::Run()
 {
 	PROFILE_FUNCTION();
@@ -171,73 +239,18 @@ void Application::Run()
 		ENGINE_ERROR("Application is already running");
 	}
 
-	double currentTime = GetTime();
-	double accumulator = 0.0f;
+	m_CurrentTime = GetTime();
+	m_Accumulator = 0.0;
 
 	m_Running = true;
-
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg([](void* arg) { static_cast<Application*>(arg)->Tick(); }, this, 0, 1);
+#else
 	while (m_Running)
 	{
-		PROFILE_FRAME();
-
-		double newTime = GetTime();
-		double frameTime = newTime - currentTime;
-		currentTime = newTime;
-
-		accumulator += frameTime;
-
-		m_DeltaTime = (float)frameTime;
-
-		// On Fixed update
-		while (accumulator >= m_FixedUpdateInterval)
-		{
-			PROFILE_SCOPE("Layer Stack Fixed Update");
-
-			if (!m_Minimized)
-			{
-				for (Ref<Layer> layer : m_LayerStack)
-				{
-					layer->OnFixedUpdate();
-				}
-
-				SceneManager::FixedUpdate();
-			}
-			accumulator -= m_FixedUpdateInterval;
-		}
-
-		m_Window->GetContext()->MakeCurrent();
-		m_Window->OnUpdate();
-
-		// On Update
-		{
-			PROFILE_SCOPE("Layer Stack Update");
-
-			if (!m_Minimized)
-			{
-				for (Ref<Layer> layer : m_LayerStack)
-				{
-					layer->OnUpdate((float)frameTime);
-				}
-			}
-
-			SceneManager::Update((float)frameTime);
-		}
-
-		// Render the imgui of each of the layers
-		if (m_ImGuiManager->IsUsing())
-		{
-			m_ImGuiManager->Begin();
-			for (Ref<Layer> layer : m_LayerStack)
-			{
-				layer->OnImGuiRender();
-			}
-			m_ImGuiManager->End();
-		}
-
-		m_LayerStack.PushPop();
-
-		Input::ClearInputData();
+		Tick();
 	}
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

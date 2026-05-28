@@ -64,6 +64,7 @@ public:
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
+	void Tick();
 	void Run();
 	int Init(int argc, char* argv[]);
 	void OnEvent(Event& e);
@@ -96,6 +97,8 @@ private:
 	static EventCallbackFn s_EventCallback;
 
 	float m_DeltaTime = 0.0f;
+	double m_CurrentTime = 0.0;
+	double m_Accumulator = 0.0;
 };
 
 // To be defined in CLIENT
