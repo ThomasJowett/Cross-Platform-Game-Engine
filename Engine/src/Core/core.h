@@ -21,6 +21,8 @@
 #elif defined(__ANDROID__)
 	#error "Android is not supported!"
 
+#elif defined(__EMSCRIPTEN__)
+	#define PLATFORM_WEB
 #else
 	#error Target platform not supported
 #endif
@@ -37,6 +39,8 @@
 		#endif
 	#elif defined(__APPLE__)
 		#define DEBUGBREAK() __builtin_trap()
+	#elif defined(__EMSCRIPTEN__)
+		#define DEBUGBREAK()
 	#else
 		#define DEBUGBREAK()
 	#endif
