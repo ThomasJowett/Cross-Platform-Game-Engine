@@ -9,6 +9,8 @@
 #include "MainDockSpace.h"
 #include "ViewerManager.h"
 
+#include <cmath>
+
 TilesetView::TilesetView(bool* show, std::filesystem::path filepath)
 	:View("TilesetView"), m_Show(show), m_Filepath(filepath)
 {
@@ -152,8 +154,28 @@ void TilesetView::OnImGuiRender()
 			ImGui::Separator();
 
 			Tile& selectedTile = m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord);
-
-			ImGui::Button(ICON_FA_DRAW_POLYGON"##Add Polygon Collider");
+			
+			bool pushedColor = false;
+			if (m_AddingPolygon)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+				pushedColor = true;
+			}
+			if (ImGui::Button(ICON_FA_DRAW_POLYGON"##Add Polygon Collider"))
+			{
+				m_AddingPolygon = !m_AddingPolygon;
+				if (m_AddingPolygon)
+				{
+					selectedTile.SetCollisionShape(Tile::CollisionShape::Polygon);
+					m_LocalTileset->SetHasCollision(true);
+					m_Dirty = true;
+				}
+			}
+			if (pushedColor)
+			{
+				ImGui::PopStyleColor();
+				pushedColor = false;
+			}
 			ImGui::Tooltip("Add Polygon Collider");
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_VECTOR_SQUARE"##Add Box Collider"))
@@ -161,16 +183,30 @@ void TilesetView::OnImGuiRender()
 				m_Dirty = true;
 				selectedTile.SetCollisionShape(Tile::CollisionShape::Rect);
 				m_LocalTileset->SetHasCollision(true);
+				m_AddingPolygon = false;
 			}
 			ImGui::Tooltip("Add Box Collider");
 			ImGui::SameLine();
-			ImGui::Button(ICON_FA_MAGNET"##Snap");
+
+			if (m_SnapEnabled)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyle().Colors[ImGuiCol_ButtonActive]);
+				pushedColor = true;
+			}
+			if (ImGui::Button(ICON_FA_MAGNET"##Snap"))
+			{
+				m_SnapEnabled = !m_SnapEnabled;
+			}
+			if (pushedColor)
+				ImGui::PopStyleColor();
 			ImGui::Tooltip("Snapping");
 			ImGui::SameLine();
 			if (ImGui::Button(ICON_FA_TRASH"##Delete Collider"))
 			{
 				m_Dirty = true;
 				selectedTile.SetCollisionShape(Tile::CollisionShape::None);
+				selectedTile.SetVertices(std::vector<Vector2f>());
+				m_AddingPolygon = false;
 
 				bool hasCollision = false;
 				for (uint32_t i = 0; i < (uint32_t)(cellsWide * cellsTall); ++i)
@@ -192,12 +228,113 @@ void TilesetView::OnImGuiRender()
 
 			ImGui::Image(m_LocalTileset->GetSubTexture(), previewSize);
 
-			if (m_LocalTileset->GetTile(m_SelectedXCoord, m_SelectedYCoord).GetCollisionShape() == Tile::CollisionShape::Rect)
+			if (selectedTile.GetCollisionShape() == Tile::CollisionShape::Rect)
 			{
 				ImVec2 topLeft(previewPos.x, previewPos.y);
 				ImVec2 bottomRight(previewSize.x + previewPos.x, previewSize.y + previewPos.y);
 
 				ImGui::GetWindowDrawList()->AddRectFilled(previewPos, bottomRight, ImColor(ImVec4(0.3f, 0.3f, 0.5f, 0.5f)));
+			}
+			else if (selectedTile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+			{
+				const std::vector<Vector2f>& vertices = selectedTile.GetVertices();
+				ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+				for (size_t i = 0; i < vertices.size(); i++)
+				{
+					ImVec2 p1 = ImVec2(previewPos.x + vertices[i].x * previewSize.x, previewPos.y + vertices[i].y * previewSize.y);
+					ImVec2 p2 = ImVec2(previewPos.x + vertices[(i + 1) % vertices.size()].x * previewSize.x, previewPos.y + vertices[(i + 1) % vertices.size()].y * previewSize.y);
+					draw_list->AddLine(p1, p2, ImColor(ImVec4(0.0f, 1.0f, 0.0f, 1.0f)), 2.0f);
+					draw_list->AddCircleFilled(p1, 4.0f, ImColor(ImVec4(1.0f, 1.0f, 0.0f, 1.0f)));
+				}
+			}
+
+			if (ImGui::IsItemHovered())
+			{
+				ImVec2 mousePos = ImGui::GetMousePos();
+				Vector2f relativeMousePos = Vector2f((mousePos.x - previewPos.x) / previewSize.x, (mousePos.y - previewPos.y) / previewSize.y);
+
+				if (m_SnapEnabled)
+				{
+					relativeMousePos.x = std::round(relativeMousePos.x * 2.0f) / 2.0f;
+					relativeMousePos.y = std::round(relativeMousePos.y * 2.0f) / 2.0f;
+				}
+
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+				{
+					if (selectedTile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+					{
+						std::vector<Vector2f> vertices = selectedTile.GetVertices();
+
+						// Check if we clicked on a vertex to drag it
+						bool clickedOnVertex = false;
+						for (size_t i = 0; i < vertices.size(); i++)
+						{
+							ImVec2 p = ImVec2(previewPos.x + vertices[i].x * previewSize.x, previewPos.y + vertices[i].y * previewSize.y);
+							float dx = mousePos.x - p.x;
+							float dy = mousePos.y - p.y;
+							if (dx * dx + dy * dy < 64.0f)
+							{
+								m_DraggedPoint = (int)i;
+								clickedOnVertex = true;
+								break;
+							}
+						}
+
+						if (!clickedOnVertex && m_AddingPolygon)
+						{
+							vertices.push_back(relativeMousePos);
+							selectedTile.SetVertices(vertices);
+							m_Dirty = true;
+						}
+					}
+				}
+
+				if (ImGui::IsMouseClicked(ImGuiMouseButton_Right))
+				{
+					if (selectedTile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+					{
+						std::vector<Vector2f> vertices = selectedTile.GetVertices();
+						for (size_t i = 0; i < vertices.size(); i++)
+						{
+							ImVec2 p = ImVec2(previewPos.x + vertices[i].x * previewSize.x, previewPos.y + vertices[i].y * previewSize.y);
+							float dx = mousePos.x - p.x;
+							float dy = mousePos.y - p.y;
+							if (dx * dx + dy * dy < 64.0f)
+							{
+								vertices.erase(vertices.begin() + i);
+								selectedTile.SetVertices(vertices);
+								m_Dirty = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+
+			if (ImGui::IsMouseReleased(ImGuiMouseButton_Left))
+			{
+				m_DraggedPoint = -1;
+			}
+
+			if (m_DraggedPoint != -1)
+			{
+				ImVec2 mousePos = ImGui::GetMousePos();
+				Vector2f relativeMousePos = Vector2f((mousePos.x - previewPos.x) / previewSize.x, (mousePos.y - previewPos.y) / previewSize.y);
+
+				if (m_SnapEnabled)
+				{
+					relativeMousePos.x = std::round(relativeMousePos.x * 2.0f) / 2.0f;
+					relativeMousePos.y = std::round(relativeMousePos.y * 2.0f) / 2.0f;
+				}
+
+				std::vector<Vector2f> vertices = selectedTile.GetVertices();
+				if (m_DraggedPoint < (int)vertices.size())
+				{
+					vertices[m_DraggedPoint] = relativeMousePos;
+					selectedTile.SetVertices(vertices);
+					m_Dirty = true;
+				}
 			}
 
 			if (float probability = (float)selectedTile.GetProbability();
@@ -280,6 +417,10 @@ void TilesetView::OnImGuiRender()
 						uint32_t cellY = (uint32_t)std::floor(beginClickPosY / tileSizeZoomed.y);
 
 						m_LocalTileset->SetCurrentTile(cellX, cellY);
+						if (m_SelectedXCoord != cellX || m_SelectedYCoord != cellY)
+						{
+							m_AddingPolygon = false;
+						}
 						m_SelectedXCoord = cellX;
 						m_SelectedYCoord = cellY;
 						beginClick = true;
