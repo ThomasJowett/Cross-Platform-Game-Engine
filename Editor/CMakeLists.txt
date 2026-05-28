@@ -127,6 +127,11 @@ endif()
 
 set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
+if (EMSCRIPTEN)
+    set_target_properties(Editor PROPERTIES SUFFIX ".html")
+    target_link_options(Editor PRIVATE "--preload-file" "${CMAKE_CURRENT_SOURCE_DIR}/data@/data")
+endif()
+
 add_dependencies(Editor Runtime)
 target_copy_webgpu_binaries(Editor)
 

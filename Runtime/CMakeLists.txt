@@ -16,6 +16,10 @@ endif()
 
 target_link_libraries(Runtime PRIVATE Engine)
 
+if (EMSCRIPTEN)
+    set_target_properties(Runtime PROPERTIES SUFFIX ".html")
+endif()
+
 if(NOT APPLE)
     get_target_property(EDITOR_BINARY_DIR Editor RUNTIME_OUTPUT_DIRECTORY)
 
