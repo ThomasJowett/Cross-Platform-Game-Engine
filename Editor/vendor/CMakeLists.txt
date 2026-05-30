@@ -1,9 +1,9 @@
-add_library(miniz
-    OpenFBX/src/miniz.c
-    OpenFBX/src/miniz.h
+add_library(libdeflate
+    OpenFBX/src/libdeflate.c
+    OpenFBX/src/libdeflate.h
 )
 
-set_target_properties(miniz PROPERTIES
+set_target_properties(libdeflate PROPERTIES
     C_STANDARD 90
     C_STANDARD_REQUIRED ON
 )
@@ -27,5 +27,5 @@ set_target_properties(OpenFBX PROPERTIES
 target_compile_definitions(OpenFBX PRIVATE _LARGEFILE64_SOURCE)
 
 target_link_libraries(OpenFBX PUBLIC
-                    miniz
+                    libdeflate
 )

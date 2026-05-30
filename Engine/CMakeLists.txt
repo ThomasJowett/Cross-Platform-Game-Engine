@@ -84,6 +84,8 @@ target_link_libraries(Engine PRIVATE
                       glfw3webgpu
                       )
 
+target_link_libraries(Engine PUBLIC miniz)
+
 add_definitions(
     -DGLFW_INCLUDE_NONE
     -D_CRT_SECURE_NO_WARNINGS
@@ -119,7 +121,6 @@ target_include_directories(Engine PUBLIC
                             vendor/msdf-atlas-gen/msdf-atlas-gen
                             vendor/msdf-atlas-gen/msdfgen
                             vendor/sol/include
-                            ${CMAKE_SOURCE_DIR}/Editor/vendor/OpenFBX/src
         )
 
 target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.h)

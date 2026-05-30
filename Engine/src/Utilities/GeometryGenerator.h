@@ -23,4 +23,6 @@ Ref<Mesh> CreateCylinder(float bottomRadius, float topRadius, float height, uint
 Ref<Mesh> CreateTorus(float diameter, float thickness, uint32_t segments);
 
 std::vector<float> FlattenVertices(const std::vector<Vertex>& vertices);
+
+void GenerateTangents(Vertex* vertices, uint32_t vertexCount);
 }

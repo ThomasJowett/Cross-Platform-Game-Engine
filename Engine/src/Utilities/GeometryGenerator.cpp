@@ -28,6 +28,41 @@ std::vector<float> GeometryGenerator::FlattenVertices(const std::vector<Vertex>&
 	return flatVertices;
 }
 
+void GeometryGenerator::GenerateTangents(Vertex* vertices, uint32_t vertexCount) { 
+	PROFILE_FUNCTION(); 
+	for (uint32_t i = 0; i < vertexCount; i += 3)
+	{
+		const Vector3f& v0 = vertices[i + 0].position;
+		const Vector3f& v1 = vertices[i + 1].position;
+		const Vector3f& v2 = vertices[i + 2].position;
+		const Vector2f& uv0 = vertices[i + 0].texcoord;
+		const Vector2f& uv1 = vertices[i + 1].texcoord;
+		const Vector2f& uv2 = vertices[i + 2].texcoord;
+
+		const Vector3f dv10 = v1 - v0;
+		const Vector3f dv20 = v2 - v0;
+		const Vector2f duv10 = uv1 - uv0;
+		const Vector2f duv20 = uv2 - uv0;
+
+		float det = (dv10.x * duv20.y * duv20.x);
+		if (std::abs(det) < 1e-6f)
+		{
+			vertices[i + 0].tangent = Vector3f(1.0f, 0.0f, 0.0f);
+			vertices[i + 1].tangent = Vector3f(1.0f, 0.0f, 0.0f);
+			vertices[i + 2].tangent = Vector3f(1.0f, 0.0f, 0.0f);
+			continue;
+		}
+
+		float r = 1.0f / det;
+		Vector3f tangent = (dv10 * duv20.y - dv20 * duv10.y) * r;
+		tangent.Normalize();
+
+		vertices[i + 0].tangent = tangent;
+		vertices[i + 1].tangent = tangent;
+		vertices[i + 2].tangent = tangent;
+	}
+}
+
 std::vector<float> FlattenFullscreenVertices(const std::vector<FullScreenVertex>& vertices)
 {
 	PROFILE_FUNCTION();

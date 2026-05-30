@@ -55,3 +55,6 @@
 [submodule "Engine/vendor/WebGPU-distribution"]
 	path = Engine/vendor/WebGPU-distribution
 	url = https://github.com/eliemichel/WebGPU-distribution.git
+[submodule "Engine/vendor/miniz"]
+	path = Engine/vendor/miniz
+	url = https://github.com/richgel999/miniz.git
