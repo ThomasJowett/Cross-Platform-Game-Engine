@@ -376,7 +376,7 @@ void ScriptView::FindPrevious() {
 
 	if (m_TextEditor.HasSelection())
 	{
-		cursor.mColumn -= searchStr.length();
+		cursor.mColumn -= (int)searchStr.length();
 		if (cursor.mColumn < 0)
 			cursor.mColumn = 0;
 	}
