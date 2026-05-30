@@ -156,7 +156,7 @@ static Ref<Mesh> DeserializeFromStream(std::istream& in)
 		in.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
 		std::string materialName(nameLength, '\0');
 		in.read(materialName.data(), nameLength);
-		if (materialName == "DefaultMaterial")
+		if (materialName == "DefaultMaterial" || materialName.empty())
 		{
 			materials[i] = Material::GetDefaultMaterial();
 		}

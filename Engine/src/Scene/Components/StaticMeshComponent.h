@@ -17,14 +17,23 @@ struct StaticMeshComponent
 
 	void SetMesh(const Ref<StaticMesh> newMesh)
 	{
-		mesh = newMesh;
-		materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
-
-		const auto& materials = mesh->GetMesh()->GetMaterials();
-
-		for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
+		if (!newMesh)
 		{
-			materialOverrides[i] = materials[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
+			mesh.reset();
+			materialOverrides.clear();
+			return;
+		}
+		mesh = newMesh;
+		if (mesh->GetMesh())
+		{
+			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
+
+			const auto& materials = mesh->GetMesh()->GetMaterials();
+
+			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
+			{
+				materialOverrides[i] = materials[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
+			}
 		}
 	}
 
@@ -58,9 +67,14 @@ private:
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
 		archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 
-		if (!relativeMeshPath.empty() && relativeMeshPath != "#")
+		if (!relativeMeshPath.empty())
 		{
 			mesh = AssetManager::GetAsset<StaticMesh>(relativeMeshPath);
+			if (!mesh)
+			{
+				materialOverrides.clear();
+				return;
+			}
 			
 			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)

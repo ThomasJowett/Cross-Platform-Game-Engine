@@ -570,7 +570,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTint"), component->normalTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTint"), component->hoveredTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTint"), component->clickedTint);
-		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("disabledTint"), component->disabledTint);
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
 	}
 
 	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
@@ -746,16 +746,20 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				component.SetMesh(AssetManager::GetAsset<StaticMesh>(meshFilepath));
 			}
 		}
-
-		uint32_t materialIndex = 0;
-		for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
-			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+		if (component.mesh)
 		{
-			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
-			{
-				component.materialOverrides.at(materialIndex) = AssetManager::GetAsset<Material>(materialFilepathChar);
+			uint32_t materialIndex = 0;
+			for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride"); pMaterialElement;
+			     pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+			{	
+				if (component.materialOverrides.size() <= materialIndex)
+					break;
+				if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
+				{
+					component.materialOverrides.at(materialIndex) = AssetManager::GetAsset<Material>(materialFilepathChar);
+				}
+				materialIndex++;
 			}
-			materialIndex++;
 		}
 	}
 
