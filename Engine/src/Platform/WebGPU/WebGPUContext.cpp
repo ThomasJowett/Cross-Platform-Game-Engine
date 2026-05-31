@@ -6,7 +6,15 @@
 #include <glfw3webgpu.h>
 #include <webgpu/webgpu.hpp>
 
-WebGPUContext::WebGPUContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle) { CORE_ASSERT(windowHandle, "Window Handle is null") }
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
+WebGPUContext::WebGPUContext(GLFWwindow* windowHandle) : m_WindowHandle(windowHandle)
+{
+	CORE_ASSERT(windowHandle, "Window Handle is null");
+	m_SurfaceConfig.presentMode = wgpu::PresentMode::Fifo;
+}
 
 void WebGPUContext::Init()
 {
@@ -18,12 +26,68 @@ void WebGPUContext::Init()
 	wgpu::RequestAdapterOptions adapterOpts{};
 	adapterOpts.compatibleSurface = m_Surface;
 
+#ifdef __EMSCRIPTEN__
+	m_Instance.requestAdapter(adapterOpts,
+	                          [this](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter, char const* message)
+	                          {
+		                          if (status != wgpu::RequestAdapterStatus::Success)
+		                          {
+			                          ENGINE_CRITICAL("Failed to request WebGPU adapter: {0}", message);
+			                          m_Initialized = true;
+			                          return;
+		                          }
+
+		                          m_Adapter = adapter;
+
+		                          wgpu::AdapterProperties properties = {};
+		                          m_Adapter.getProperties(&properties);
+
+		                          wgpu::DeviceDescriptor deviceDesc = {};
+		                          deviceDesc.label = "Main Device";
+		                          deviceDesc.requiredFeatureCount = 0;
+		                          deviceDesc.nextInChain = nullptr;
+		                          deviceDesc.defaultQueue.label = "The Default queue";
+		                          deviceDesc.deviceLostCallback = [](WGPUDeviceLostReason reason, char const* message, void* /*pUserData*/)
+		                          { ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message); };
+
+		                          m_Adapter.requestDevice(deviceDesc,
+		                                                  [this](wgpu::RequestDeviceStatus status, wgpu::Device device, char const* message)
+		                                                  {
+			                                                  if (status != wgpu::RequestDeviceStatus::Success)
+			                                                  {
+				                                                  ENGINE_ERROR("Could not create WebGPU device: {0}", message ? message : "Unknown error");
+				                                                  m_Initialized = true;
+				                                                  return;
+			                                                  }
+
+			                                                  m_Device = device;
+
+			                                                  auto OnDeviceError = [](wgpu::ErrorType type, char const* message)
+			                                                  {
+				                                                  ENGINE_ERROR("Uncaptured device error: type {0}", (int)type);
+				                                                  if (message)
+					                                                  ENGINE_ERROR(message);
+			                                                  };
+
+			                                                  m_ErrorCallbackHandle = m_Device.setUncapturedErrorCallback(std::move(OnDeviceError));
+			                                                  m_Queue = m_Device.getQueue();
+
+			                                                  SetupSurface();
+			                                                  m_Initialized = true;
+		                                                  });
+	                          });
+	while (!m_Initialized)
+	{
+		emscripten_sleep(10);
+	}
+#else
 	m_Adapter = m_Instance.requestAdapter(adapterOpts);
 
 	wgpu::AdapterProperties properties = {};
 	m_Adapter.getProperties(&properties);
 
-	ENGINE_INFO("Graphics Card: {0}", properties.name);
+	std::string adapterName = properties.name ? properties.name : "Unknown Adapter";
+	ENGINE_INFO("Graphics Card: {0}", adapterName);
 
 	wgpu::DeviceDescriptor deviceDesc = {};
 	deviceDesc.label = "Main Device";
@@ -44,22 +108,8 @@ void WebGPUContext::Init()
 	m_ErrorCallbackHandle = m_Device.setUncapturedErrorCallback(std::move(onDeviceError));
 	m_Queue = m_Device.getQueue();
 
-	int width, height;
-	glfwGetFramebufferSize(m_WindowHandle, &width, &height);
-	m_SurfaceConfig.width = width;
-	m_SurfaceConfig.height = height;
-	m_SurfaceConfig.usage = wgpu::TextureUsage::RenderAttachment;
-	wgpu::TextureFormat surfaceFormat = m_Surface.getPreferredFormat(m_Adapter);
-	m_SurfaceConfig.format = surfaceFormat;
-
-	m_SurfaceConfig.viewFormatCount = 0;
-	m_SurfaceConfig.viewFormats = nullptr;
-	m_SurfaceConfig.device = m_Device;
-	m_SurfaceConfig.presentMode = wgpu::PresentMode::Fifo;
-	m_SurfaceConfig.alphaMode = wgpu::CompositeAlphaMode::Auto;
-
-	if (width > 0 && height > 0)
-		m_Surface.configure(m_SurfaceConfig);
+	SetupSurface();
+#endif
 }
 
 void WebGPUContext::SwapBuffers()
@@ -72,11 +122,12 @@ void WebGPUContext::SwapBuffers()
 			m_CurrentTextureView.release();
 			m_CurrentTextureView = nullptr;
 		}
-
+#ifndef __EMSCRIPTEN__
 		m_Surface.present();
+#endif
 		m_SurfaceAcquired = false;
 	}
-	if (m_NeedsResize)
+	if (m_NeedsResize && m_Device)
 	{
 		m_Surface.configure(m_SurfaceConfig);
 		m_NeedsResize = false;
@@ -100,7 +151,8 @@ void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 void WebGPUContext::SetSwapInterval(uint32_t interval)
 {
 	m_SurfaceConfig.presentMode = interval == 1 ? wgpu::PresentMode::Fifo : wgpu::PresentMode::Immediate;
-	m_Surface.configure(m_SurfaceConfig);
+	if (m_Device)
+		m_Surface.configure(m_SurfaceConfig);
 }
 
 void WebGPUContext::MakeCurrent() {}
@@ -144,4 +196,23 @@ void WebGPUContext::PollEvents()
 #elif defined(WEBGPU_BACKEND_WGPU)
 	m_Device.poll(false);
 #endif
+}
+
+void WebGPUContext::SetupSurface()
+{
+	int width, height;
+	glfwGetFramebufferSize(m_WindowHandle, &width, &height);
+	m_SurfaceConfig.width = width;
+	m_SurfaceConfig.height = height;
+	m_SurfaceConfig.usage = wgpu::TextureUsage::RenderAttachment;
+	wgpu::TextureFormat surfaceFormat = m_Surface.getPreferredFormat(m_Adapter);
+	m_SurfaceConfig.format = surfaceFormat;
+
+	m_SurfaceConfig.viewFormatCount = 0;
+	m_SurfaceConfig.viewFormats = nullptr;
+	m_SurfaceConfig.device = m_Device;
+	m_SurfaceConfig.alphaMode = wgpu::CompositeAlphaMode::Auto;
+
+	if (width > 0 && height > 0 && m_Device)
+		m_Surface.configure(m_SurfaceConfig);
 }

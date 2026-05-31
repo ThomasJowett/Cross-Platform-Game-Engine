@@ -27,6 +27,8 @@ public:
 	void PollEvents();
 
 private:
+	void SetupSurface();
+
 	GLFWwindow* m_WindowHandle;
 	wgpu::Instance m_Instance;
 	wgpu::Surface m_Surface;
@@ -43,4 +45,5 @@ private:
 
 	bool m_SurfaceAcquired = false;
 	bool m_NeedsResize = false;
+	bool m_Initialized = false;
 };
