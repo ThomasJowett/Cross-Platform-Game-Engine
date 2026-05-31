@@ -575,8 +575,6 @@ void Scene::OnUpdate(float deltaTime)
 	for (auto entity : destroyView)
 	{
 		Entity e = Entity(entity, this);
-		m_PhysicsEngine2D->DestroyEntity(e);
-
 		SceneGraph::Remove(e);
 	}
 }
@@ -673,8 +671,6 @@ void Scene::OnFixedUpdate()
 	for (auto entity : destroyView)
 	{
 		Entity e = Entity(entity, this);
-		m_PhysicsEngine2D->DestroyEntity(e);
-
 		SceneGraph::Remove(e);
 	}
 
@@ -938,3 +934,18 @@ std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::OnEntityDestroyed(Entity entity)
+{
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->DestroyEntity(entity);
+
+	if (entity.HasComponent<AudioSourceComponent>())
+	{
+		auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+		if (audioSourceComponent.sound)
+		{
+			ma_sound_uninit(audioSourceComponent.sound.get());
+		}
+	}
+}

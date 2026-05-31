@@ -228,6 +228,7 @@ void SceneGraph::Remove(Entity entity)
 	Unparent(entity);
 
 	ENGINE_DEBUG("Removed {0}", entity.GetName());
+	entity.GetScene()->OnEntityDestroyed(entity);
 	registry.destroy(entity);
 }
 
