@@ -9,7 +9,7 @@
 #include "Logging/Instrumentor.h"
 
 #include <filesystem>
-
+#include <string>
 
 class Asset
 {
