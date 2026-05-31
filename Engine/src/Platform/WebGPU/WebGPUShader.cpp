@@ -1,17 +1,17 @@
 #include "WebGPUShader.h"
-#include "WebGPUContext.h"
-#include "Logging/Instrumentor.h"
 #include "Core/core.h"
+#include "Logging/Instrumentor.h"
 #include "Scene/AssetManager.h"
+#include "WebGPUContext.h"
 
-#include <fstream>
 #include <filesystem>
+#include <fstream>
 
-WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess)
-	:m_Name(name)
+WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path& fileDirectory, bool postProcess) : m_Name(name)
 {
 	PROFILE_FUNCTION();
-	if (!LoadShaderFromDisk(fileDirectory / name)) {
+	if (!LoadShaderFromDisk(fileDirectory / name))
+	{
 		if (!LoadShaderFromBundle(fileDirectory / name))
 		{
 			ENGINE_ERROR("Could not load shader from file: {0}", (fileDirectory / name).string());
@@ -22,18 +22,14 @@ WebGPUShader::WebGPUShader(const std::string& name, const std::filesystem::path&
 WebGPUShader::~WebGPUShader()
 {
 	PROFILE_FUNCTION();
-	if (Application::Get().IsRunning()) {}
+	if (Application::Get().IsRunning())
+	{
+	}
 }
 
-void WebGPUShader::Bind() const
-{
-	PROFILE_FUNCTION();
-}
+void WebGPUShader::Bind() const { PROFILE_FUNCTION(); }
 
-void WebGPUShader::UnBind() const
-{
-	PROFILE_FUNCTION();
-}
+void WebGPUShader::UnBind() const { PROFILE_FUNCTION(); }
 
 bool WebGPUShader::LoadShaderFromDisk(const std::filesystem::path& filepath)
 {
@@ -55,8 +51,10 @@ bool WebGPUShader::LoadShaderFromDisk(const std::filesystem::path& filepath)
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderModuleWGSLDescriptor;
 		shaderCodeDesc.code = shaderSource.c_str();
 		wgpu::ShaderModuleDescriptor shaderDesc{};
+#ifndef __EMSCRIPTEN__
 		shaderDesc.hintCount = 0;
 		shaderDesc.hints = nullptr;
+#endif
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
 
 		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
@@ -82,7 +80,8 @@ bool WebGPUShader::LoadShaderFromBundle(const std::filesystem::path& filepath)
 	std::filesystem::path shaderPath = filepath;
 
 	shaderPath.replace_extension(".wgsl");
-	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data)) {
+	if (AssetManager::FileExistsInBundle(shaderPath) && AssetManager::GetFileData(shaderPath, data))
+	{
 		std::string shaderSource(data.begin(), data.end());
 
 		wgpu::ShaderModuleWGSLDescriptor shaderCodeDesc{};
@@ -90,8 +89,10 @@ bool WebGPUShader::LoadShaderFromBundle(const std::filesystem::path& filepath)
 		shaderCodeDesc.chain.sType = wgpu::SType::ShaderModuleWGSLDescriptor;
 		shaderCodeDesc.code = shaderSource.c_str();
 		wgpu::ShaderModuleDescriptor shaderDesc{};
+#ifndef __EMSCRIPTEN__
 		shaderDesc.hintCount = 0;
 		shaderDesc.hints = nullptr;
+#endif
 		shaderDesc.nextInChain = &shaderCodeDesc.chain;
 
 		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
