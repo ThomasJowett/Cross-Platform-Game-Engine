@@ -272,7 +272,15 @@ EM_ASYNC_JS(char*, TriggerWebFileDialog, (), {
 		const arrayBuffer = await file.arrayBuffer();
 		const uint8View = new Uint8Array(arrayBuffer);
 
-		const virtualPath = "project/imports/" + file.name;
+		try
+		{
+			FS.mkdir("/project");
+		}
+		catch (e)
+		{
+		}
+
+		const virtualPath = "project/" + file.name;
 		FS.writeFile(virtualPath, uint8View);
 
 		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
