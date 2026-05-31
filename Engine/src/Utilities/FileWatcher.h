@@ -9,6 +9,8 @@
 
 enum class FileStatus { Created, Modified, Erased };
 
+#ifndef __EMSCRIPTEN__
+
 class FileWatcher
 {
 public:
@@ -115,3 +117,24 @@ private:
 
 	std::function<void(std::string, FileStatus)> m_Callback;
 };
+#else
+// ---------------------------------------------------------
+// WEB (EMSCRIPTEN) STUB IMPLEMENTATION
+// ---------------------------------------------------------
+class FileWatcher
+{
+public:
+	FileWatcher(const FileWatcher&) = delete;
+	FileWatcher(std::chrono::duration<int, std::milli> delay) {}
+	~FileWatcher() {}
+
+	void SetPathToWatch(const std::filesystem::path& pathToWatch) {}
+
+	void Start(const std::function<void(std::string, FileStatus)> callback)
+	{
+		// On Web, we do nothing. The thread is never started.
+	}
+
+	void Stop() {}
+};
+#endif
