@@ -59,7 +59,7 @@ void WebGPURendererAPI::StartRenderPass()
 			attachment.storeOp = wgpu::StoreOp::Store;
 			attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
 #ifdef __EMSCRIPTEN__
-			attachment.depthSlice = 0xFFFFFFFF; // Use the default depth slice for WebGL compatibility
+			attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 #endif
 			colourAttachments.push_back(attachment);
 		}
@@ -86,7 +86,7 @@ void WebGPURendererAPI::StartRenderPass()
 		attachment.storeOp = wgpu::StoreOp::Store;
 		attachment.clearValue = wgpu::Color{m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a};
 #ifdef __EMSCRIPTEN__
-		attachment.depthSlice = 0xFFFFFFFF; // Use the default depth slice for WebGL compatibility
+		attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 #endif
 		colourAttachments.push_back(attachment);
 	}

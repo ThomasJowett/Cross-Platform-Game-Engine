@@ -161,6 +161,9 @@ void ImGuiManager::End()
 		colourAttachment.loadOp = wgpu::LoadOp::Clear;
 		colourAttachment.storeOp = wgpu::StoreOp::Store;
 		colourAttachment.clearValue = { 0.1f, 0.1f, 0.1f, 1.0f }; // TODO: set the clear colour properly
+#ifdef __EMSCRIPTEN__
+		colourAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+#endif
 
 		wgpu::RenderPassDescriptor renderPassDesc = {};
 		renderPassDesc.colorAttachmentCount = 1;
