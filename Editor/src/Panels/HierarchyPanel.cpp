@@ -65,6 +65,13 @@ void HierarchyPanel::OnImGuiRender()
 			m_SelectedEntity = {};
 		}
 
+		if (!SceneManager::IsSceneLoaded())
+		{
+			ImGui::TextUnformatted("No scene loaded");
+			ImGui::End();
+			return;
+		}
+
 		// right click on a blank space
 		if (ImGui::BeginPopupContextWindow())
 		{
