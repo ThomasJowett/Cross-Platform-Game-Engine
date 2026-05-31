@@ -4,6 +4,8 @@
 #include <shellapi.h>
 #endif // _WINDOWS
 
+#include <imgui_internal.h> // Required for DockBuilder API
+
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
 #include "IconsFontAwesome5Brands.h"
@@ -240,6 +242,34 @@ void MainDockSpace::OnImGuiRender()
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
 		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+		static bool first_time = true;
+		if (first_time)
+		{
+			first_time = false;
+
+			if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
+			{
+				ImGui::DockBuilderRemoveNode(dockspace_id);
+				ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+				ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+				ImGuiID dock_main_id = dockspace_id;
+				ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+				ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.30f, nullptr, &dock_main_id);
+				ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+
+				ImGui::DockBuilderDockWindow(ICON_FA_SITEMAP" Hierarchy", dock_id_left);
+				ImGui::DockBuilderDockWindow(ICON_FA_SCREWDRIVER_WRENCH" Properties", dock_id_right);
+				ImGui::DockBuilderDockWindow(ICON_FA_FOLDER_OPEN " Content Explorer", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_TERMINAL" Console", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_CIRCLE_XMARK" Error List", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_BORDER_ALL" Viewport", dock_main_id);
+
+				ImGui::DockBuilderFinish(dockspace_id);
+			}
+		}
+
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 	else
