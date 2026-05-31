@@ -72,6 +72,10 @@ void WebGPURendererAPI::StartRenderPass()
 			depthAttachment.depthLoadOp = wgpu::LoadOp::Clear;
 			depthAttachment.depthStoreOp = wgpu::StoreOp::Store;
 			depthAttachment.depthClearValue = 1.0f;
+
+			depthAttachment.stencilLoadOp = wgpu::LoadOp::Clear;
+			depthAttachment.stencilStoreOp = wgpu::StoreOp::Discard;
+			depthAttachment.stencilClearValue = 0;
 		}
 	}
 	else
