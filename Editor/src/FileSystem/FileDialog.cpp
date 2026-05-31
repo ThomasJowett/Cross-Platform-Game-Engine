@@ -258,6 +258,57 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 	return std::nullopt;
 }
 
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#include <codecvt> // Required for std::codecvt_utf8
+#include <locale>  // Required for std::wstring_convert
+
+EM_ASYNC_JS(char*, TriggerWebFileDialog, (), {
+	try
+	{
+		const[fileHandle] = await window.showOpenFilePicker();
+		const file = await fileHandle.getFile();
+
+		const arrayBuffer = await file.arrayBuffer();
+		const uint8View = new Uint8Array(arrayBuffer);
+
+		const virtualPath = "project/imports/" + file.name;
+		FS.writeFile(virtualPath, uint8View);
+
+		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(virtualPath, pointer, byteCount);
+		return pointer;
+	}
+	catch (err)
+	{
+		console.error("File dialog error: ", err);
+		return 0;
+	}
+});
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+{
+	char* virtualPathPtr = TriggerWebFileDialog();
+	if (virtualPathPtr)
+	{
+		std::string virtualPath(virtualPathPtr);
+		free(virtualPathPtr);
+		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(virtualPath);
+	}
+	return std::nullopt;
+}
+
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+{
+	return std::nullopt; // TODO: implement multi open for web
+}
+
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+{
+	return std::nullopt; // TODO: implement save as for web
+}
+
 #elif !defined(__APPLE__)
 
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
