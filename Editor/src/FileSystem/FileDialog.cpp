@@ -266,7 +266,7 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 EM_ASYNC_JS(char*, TriggerWebFileDialog, (), {
 	try
 	{
-		const[fileHandle] = await window.showOpenFilePicker();
+		const [fileHandle] = await window.showOpenFilePicker();
 		const file = await fileHandle.getFile();
 
 		const arrayBuffer = await file.arrayBuffer();
@@ -290,6 +290,36 @@ EM_ASYNC_JS(char*, TriggerWebFileDialog, (), {
 	}
 	catch (err)
 	{
+		if (err.name === 'AbortError') return 0;
+		console.error("File dialog error: ", err);
+		return 0;
+	}
+});
+
+EM_ASYNC_JS(char*, TriggerWebMultiFileDialog, (), {
+	try {
+		const files = await window.showOpenFilePicker({multiple: true});
+		if (!files.length) return 0;
+		
+		try {FS.mkdir("/project"); } catch (e) {}
+
+		const paths = [];
+		for (const fileHandle of files) {
+			const file = await fileHandle.getFile();
+			const arrayBuffer = await file.arrayBuffer();
+			const uint8View = new Uint8Array(arrayBuffer);
+			const virtualPath = "project/" + file.name;
+			FS.writeFile(virtualPath, uint8View);
+			paths.push(virtualPath);
+		}
+
+		const result = paths.join("|");
+		const byteCounter = (new TextEncoder().encode(result)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(result, pointer, byteCount);
+		return pointer;
+	} catch (err) {
+		if (err.name === 'AbortError') return 0;
 		console.error("File dialog error: ", err);
 		return 0;
 	}
@@ -309,7 +339,21 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 
 std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
 {
-	return std::nullopt; // TODO: implement multi open for web
+	char* virtualPathsPtr = TriggerWebMultiFileDialog();
+	if (virtualPathsPtr)
+	{
+		std::string virtualPaths(virtualPathsPtr);
+		free(virtualPathsPtr);
+		
+		std::vector<std::string> pathList = SplitString(virtualPaths, '|');
+		std::vector<std::wstring> results;
+		for (const std::string& path : pathList)
+		{
+			results.push_back(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(path));
+		}
+		return results;
+	}
+	return std::nullopt;
 }
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
