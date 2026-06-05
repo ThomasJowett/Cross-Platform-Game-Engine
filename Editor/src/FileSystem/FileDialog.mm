@@ -4,6 +4,8 @@
 #include <cstddef>
 #include <cstdlib>
 #include <cstring>
+#include <objc/objc.h>
+#include <optional>
 
 #if defined(__APPLE__)
 
@@ -113,11 +115,55 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title,
 
 std::optional<std::vector<std::wstring>>
 FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter) {
+  @autoreleasepool {
+    NSOpenPanel *panel = [NSOpenPanel openPanel];
+    [panel setTitle:WCharToNSString(title)];
+    [panel setCanChooseFiles:YES];
+    [panel setCanChooseDirectories:NO];
+    [panel setAllowsMultipleSelection:YES];
+
+    NSMutableArray<NSString *> *exts = ParseFilter(filter);
+    if (exts.count > 0) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      [panel setAllowedFileTypes:exts];
+#pragma clang diagnostic pop
+    }
+
+    if ([panel runModal] == NSModalResponseOK) {
+      std::vector<std::wstring> files;
+      for (NSURL *url in [panel URLs]) {
+        files.push_back(NSStringToWString([url path]));
+      }
+      if (!files.empty()) {
+        return files;
+      }
+    }
+  }
   return std::nullopt;
 }
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title,
                                                const wchar_t *filter) {
+  @autoreleasepool {
+    NSSavePanel *panel = [NSSavePanel savePanel];
+    [panel setTitle:WCharToNSString(title)];
+
+    NSMutableArray<NSString *> *exts = ParseFilter(filter);
+    if (exts.count > 0) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+      [panel setAllowedFileTypes:exts];
+#pragma clang diagnostic pop
+    }
+
+    if ([panel runModal] == NSModalResponseOK) {
+      NSURL *url = [panel URL];
+      if (url) {
+        return NSStringToWString([url path]);
+      }
+    }
+  }
   return std::nullopt;
 }
 
