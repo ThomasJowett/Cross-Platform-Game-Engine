@@ -222,10 +222,20 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 		m_CurrentPath = str;
 	}
 
-	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
-	m_History.SwitchTo(m_CurrentPath);
-	m_FileWatcher.SetPathToWatch(m_CurrentPath);
-	m_ForceRescan = true;
+	if (m_History.SwitchTo(m_CurrentPath))
+	{
+		m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+		m_FileWatcher.SetPathToWatch(m_CurrentPath);
+		m_ForceRescan = true;
+	}
+	else
+	{
+		// Invalid path or out of bounds, revert to previous valid path
+		m_CurrentPath = *m_History.GetCurrentFolder();
+		m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+		m_ForceRescan = true; // Rescan to update the input buffer UI back to the valid path
+		CLIENT_ERROR("Cannot navigate outside of the project root directory.");
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -721,6 +731,8 @@ void ContentExplorerPanel::OnAttach()
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 
+	m_History.SetRootPath(std::filesystem::absolute(Application::GetOpenDocumentDirectory()));
+
 	m_FileWatcher.Start([this](std::string path, FileStatus status)
 		{
 			m_ForceRescan = true;
@@ -730,6 +742,23 @@ void ContentExplorerPanel::OnAttach()
 void ContentExplorerPanel::OnDetach()
 {
 	m_TextFilter->Clear();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void ContentExplorerPanel::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>([this](AppOpenDocumentChangedEvent& e)
+		{
+			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			m_History.Clear();
+			m_History.SetRootPath(rootPath);
+			m_CurrentPath = rootPath;
+			m_History.SwitchTo(m_CurrentPath);
+			m_ForceRescan = true;
+			return false;
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1007,11 +1036,16 @@ void ContentExplorerPanel::OnImGuiRender()
 		// Split path control
 		else
 		{
+			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			std::vector<std::string> rootSplitPath = SplitString(rootPath.string(), std::filesystem::path::preferred_separator);
+			
 			const int numTabs = (int)m_CurrentSplitPath.size();
+			int startTab = std::min((int)rootSplitPath.size() - 1, numTabs > 0 ? numTabs - 1 : 0);
+			if (startTab < 0) startTab = 0;
 
 			int pushpop = 0;
 
-			for (int t = 0; t < numTabs; t++)
+			for (int t = startTab; t < numTabs; t++)
 			{
 				if (t == numTabs - 1)
 				{
@@ -1024,7 +1058,13 @@ void ContentExplorerPanel::OnImGuiRender()
 				ImGui::SameLine();
 
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
-				const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
+				
+				std::string buttonText = m_CurrentSplitPath[t];
+				if (t == startTab && buttonText == rootSplitPath.back()) {
+					buttonText = ICON_FA_HOUSE " Project";
+				}
+				
+				const bool pressed = ImGui::Button(buttonText.c_str());
 				if (t != numTabs - 1)
 				{
 					ImGui::SameLine();

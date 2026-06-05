@@ -17,7 +17,15 @@ struct History
 protected:
 	std::vector<std::filesystem::path> paths;
 	int currentPathIndex = 0;
+	std::filesystem::path m_RootPath;
 public:
+	History() = default;
+
+	void SetRootPath(const std::filesystem::path& rootPath)
+	{
+		m_RootPath = rootPath;
+	}
+
 	inline bool CanGoBack()
 	{
 		return currentPathIndex > 0;
@@ -29,7 +37,12 @@ public:
 	inline bool CanGoUp()
 	{
 		if (paths.size() > 0)
-			return SplitString(paths[currentPathIndex].string(), std::filesystem::path::preferred_separator).size() > 1;
+		{
+			std::filesystem::path current = paths[currentPathIndex];
+			if (current == m_RootPath || current.string().length() <= m_RootPath.string().length())
+				return false;
+			return SplitString(current.string(), std::filesystem::path::preferred_separator).size() > 1;
+		}
 		return false;
 	}
 
@@ -74,10 +87,21 @@ public:
 	{
 		if (fi.string().empty())
 			return false;
+
+		std::filesystem::path normalizedFi = std::filesystem::absolute(fi);
+		
+		// Ensure the new path is within the root path
+		std::string fiStr = normalizedFi.string();
+		std::string rootStr = m_RootPath.string();
+		if (fiStr.find(rootStr) != 0)
+		{
+			return false;
+		}
+
 		if (currentPathIndex >= 0 && !paths.empty())
 		{
 			const std::filesystem::path& lastPath = paths[currentPathIndex];
-			if (lastPath == fi)
+			if (lastPath == normalizedFi)
 				return false;
 		}
 
@@ -86,9 +110,15 @@ public:
 			paths.erase(paths.begin() + currentPathIndex + 1, paths.end());
 		}
 
-		paths.push_back(fi);
+		paths.push_back(normalizedFi);
 		currentPathIndex = (int)paths.size() - 1;
 		return true;
+	}
+
+	void Clear()
+	{
+		paths.clear();
+		currentPathIndex = 0;
 	}
 };
 
@@ -110,6 +140,7 @@ public:
 	void OnDetach() override;
 	void OnUpdate(float deltaTime) override;
 	void OnImGuiRender() override;
+	void OnEvent(Event& event) override;
 
 	virtual void Copy() override;
 	virtual void Cut() override;
