@@ -46,7 +46,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 			{
 				if (ImGui::MenuItem("Load Style"))
 				{
-					std::optional<std::wstring> stylePath = FileDialog::Open(L"Choose style...", L"Style Files\0*.style\0Any File\0*.*\0");
+					std::optional<std::wstring> stylePath = FileDialog::Open(L"Choose style...", { {L"Style Files", L"*.style"}, {L"Any File", L"*.*"} });
 					if (stylePath)
 					{
 						ImGui::LoadStyle(stylePath.value(), m_Style);
@@ -59,7 +59,7 @@ void EditorPreferencesPanel::OnImGuiRender()
 
 				if (ImGui::MenuItem("Save Style As"))
 				{
-					std::optional<std::wstring> stylePath = FileDialog::SaveAs(L"Save style as...", L"Style Files\0*.style\0Any File\0*.*\0");
+					std::optional<std::wstring> stylePath = FileDialog::SaveAs(L"Save style as...", { {L"Style Files", L"*.style"}, {L"Any File", L"*.*"} });
 					if (stylePath)
 						ImGui::SaveStyle(stylePath.value(), m_Style);
 				}

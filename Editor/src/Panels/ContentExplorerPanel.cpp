@@ -498,11 +498,11 @@ void ContentExplorerPanel::RightClickMenu()
 	if (ImGui::MenuItem(ICON_FA_FILE_IMPORT" Import Assets"))
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
-			L"Any File\0*.*\0"
-			L"Film Box (.fbx)\0*.fbx\0"
-			L"Wavefront OBJ (.obj)\0*.obj\0"
-			L"Tiled Tilemap(.tmx)\0*.tmx\0"
-			L"Tiled Tileset(.tsx)\0*.tsx");
+			{ {L"Any File", L"*.*"},
+			  {L"Film Box (.fbx)", L"*.fbx"},
+			  {L"Wavefront OBJ (.obj)", L"*.obj"},
+			  {L"Tiled Tilemap(.tmx)", L"*.tmx"},
+			  {L"Tiled Tileset(.tsx)", L"*.tsx"} });
 
 		if (assetPaths)
 		{

@@ -83,7 +83,8 @@ void PhysicsMaterialView::Save()
 void PhysicsMaterialView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
-	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", { {L"Physics Material File", std::wstring(L"*") + ConvertToWideChar(m_FilePath.extension().string())} });
+
 	if (dialogPath)
 	{
 		m_FilePath = dialogPath.value();
