@@ -340,16 +340,37 @@ void* WebGPUTexture2D::GetRendererID() const
 
 bool WebGPUTexture2D::Reload()
 {
-	if (!m_Filepath.empty() || m_Filepath != "NO DATA")
+	if (!m_Filepath.empty() && m_Filepath != "NO DATA" && m_Filepath != "NULL")
 	{
-		m_Texture.destroy();
-		m_Texture.release();
-		m_Sampler.release();
-		m_TextureView.release();
-		return LoadTextureFromFile();
+		if (m_Texture) {
+			m_Texture.destroy();
+			m_Texture.release();
+		}
+		if (m_Sampler) m_Sampler.release();
+		if (m_TextureView) m_TextureView.release();
+
+		bool success = LoadTextureFromFile();
+		if (success)
+		{
+			m_TextureViewDesc.format = m_TextureFormat;
+			m_TextureViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+			m_TextureViewDesc.baseMipLevel = 0;
+			m_TextureViewDesc.mipLevelCount = 1;
+			m_TextureViewDesc.baseArrayLayer = 0;
+			m_TextureViewDesc.arrayLayerCount = 1;
+			m_TextureView = m_Texture.createView(m_TextureViewDesc);
+		}
+		return success;
 	}
 	else {
 		NullTexture();
+		m_TextureViewDesc.format = m_TextureFormat;
+		m_TextureViewDesc.dimension = wgpu::TextureViewDimension::_2D;
+		m_TextureViewDesc.baseMipLevel = 0;
+		m_TextureViewDesc.mipLevelCount = 1;
+		m_TextureViewDesc.baseArrayLayer = 0;
+		m_TextureViewDesc.arrayLayerCount = 1;
+		m_TextureView = m_Texture.createView(m_TextureViewDesc);
 		return false;
 	}
 }
