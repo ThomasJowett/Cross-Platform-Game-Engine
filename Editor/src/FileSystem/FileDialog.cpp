@@ -61,16 +61,31 @@ void LogError(DWORD errorCode)
 	}
 }
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+static std::wstring BuildFilterString(const std::vector<DialogFilterItem>& filters)
+{
+	std::wstring result;
+	for (const auto& filter : filters)
+	{
+		result += filter.Name;
+		result.push_back(L'\0');
+		result += filter.Spec;
+		result.push_back(L'\0');
+	}
+	result.push_back(L'\0');
+	return result;
+}
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -87,16 +102,17 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 	return std::wstring(filename);
 }
 
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -130,16 +146,17 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 	return files;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -159,14 +176,30 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 
 #include <linux/limits.h>
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+static std::wstring BuildZenityFilter(const std::vector<DialogFilterItem>& filters)
+{
+	std::wstring result;
+	for (const auto& filter : filters)
+	{
+		result += L"--file-filter=\"";
+		result += filter.Name;
+		result += L" | ";
+		result += filter.Spec;
+		result += L"\" ";
+	}
+	return result;
+}
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
-
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" 2>&1", title, filter);
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\"  2>&1", title);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls 2>&1", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\"  2>&1", title);
 
 	FILE *f = popen(call, "r");
 
@@ -193,12 +226,16 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 	return std::nullopt;
 }
 
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --multiple 2>&l", title, filter);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls --multiple 2>&l", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --multiple 2>&l", title);
 
 	FILE *f = popen(call, "r");
 
@@ -226,13 +263,16 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 	return std::nullopt;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --save", title, filter);
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --save", title);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls --save", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --save", title);
 
 	FILE *f = popen(call, "r");
 
@@ -314,7 +354,7 @@ EM_ASYNC_JS(char*, TriggerWebMultiFileDialog, (), {
 		}
 
 		const result = paths.join("|");
-		const byteCounter = (new TextEncoder().encode(result)).length + 1;
+		const byteCount = (new TextEncoder().encode(result)).length + 1;
 		const pointer = _malloc(byteCount);
 		stringToUTF8(result, pointer, byteCount);
 		return pointer;
@@ -343,7 +383,7 @@ EM_ASYNC_JS(char*, TriggerWebSaveFileDialog, (), {
 	}
 });
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char* virtualPathPtr = TriggerWebFileDialog();
 	if (virtualPathPtr)
@@ -355,7 +395,7 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 	return std::nullopt;
 }
 
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char* virtualPathsPtr = TriggerWebMultiFileDialog();
 	if (virtualPathsPtr)
@@ -374,7 +414,7 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 	return std::nullopt;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char* virtualPathPtr = TriggerWebSaveFileDialog();
 	if (virtualPathPtr)
@@ -388,16 +428,16 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 
 #elif !defined(__APPLE__)
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }

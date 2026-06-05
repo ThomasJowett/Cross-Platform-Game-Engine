@@ -46,23 +46,11 @@ static std::wstring NSStringToWString(NSString *str) {
   return result;
 }
 
-static NSMutableArray<NSString *> *ParseFilter(const wchar_t *filter) {
+static NSMutableArray<NSString *> *ParseFilter(const std::vector<DialogFilterItem>& filters) {
   NSMutableArray<NSString *> *extensions = [NSMutableArray array];
-  if (!filter)
-    return extensions;
-
-  const wchar_t *ptr = filter;
-  while (*ptr != L'\0') {
-    while (*ptr != L'\0')
-      ptr++;
-
-    ptr++;
-
-    if (*ptr == L'\0')
-      break;
-
-    // Parse extensions
-    NSString *extStr = WCharToNSString(ptr);
+  
+  for (const auto& filter : filters) {
+    NSString *extStr = WCharToNSString(filter.Spec.c_str());
     NSArray *components =
         [extStr componentsSeparatedByCharactersInSet:
                     [NSCharacterSet characterSetWithCharactersInString:@";,"]];
@@ -77,17 +65,12 @@ static NSMutableArray<NSString *> *ParseFilter(const wchar_t *filter) {
         [extensions addObject:cleanComp];
       }
     }
-
-    while (*ptr != L'\0')
-      ptr++;
-
-    ptr++;
   }
   return extensions;
 }
 
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title,
-                                             const wchar_t *filter) {
+                                             const std::vector<DialogFilterItem>& filters) {
   @autoreleasepool {
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     [panel setTitle:WCharToNSString(title)];
@@ -95,7 +78,7 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title,
     [panel setCanChooseDirectories:NO];
     [panel setAllowsMultipleSelection:NO];
 
-    NSMutableArray<NSString *> *exts = ParseFilter(filter);
+    NSMutableArray<NSString *> *exts = ParseFilter(filters);
     if (exts.count > 0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -114,7 +97,7 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title,
 }
 
 std::optional<std::vector<std::wstring>>
-FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter) {
+FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters) {
   @autoreleasepool {
     NSOpenPanel *panel = [NSOpenPanel openPanel];
     [panel setTitle:WCharToNSString(title)];
@@ -122,7 +105,7 @@ FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter) {
     [panel setCanChooseDirectories:NO];
     [panel setAllowsMultipleSelection:YES];
 
-    NSMutableArray<NSString *> *exts = ParseFilter(filter);
+    NSMutableArray<NSString *> *exts = ParseFilter(filters);
     if (exts.count > 0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -144,12 +127,12 @@ FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter) {
 }
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title,
-                                               const wchar_t *filter) {
+                                               const std::vector<DialogFilterItem>& filters) {
   @autoreleasepool {
     NSSavePanel *panel = [NSSavePanel savePanel];
     [panel setTitle:WCharToNSString(title)];
 
-    NSMutableArray<NSString *> *exts = ParseFilter(filter);
+    NSMutableArray<NSString *> *exts = ParseFilter(filters);
     if (exts.count > 0) {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
