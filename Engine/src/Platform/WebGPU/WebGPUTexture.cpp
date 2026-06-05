@@ -362,12 +362,14 @@ bool WebGPUTexture2D::operator==(const Texture& other) const
 void WebGPUTexture2D::SetFilterMethod(FilterMethod filterMethod)
 {
 	m_FilterMethod = filterMethod;
+	if (m_Sampler) m_Sampler.release();
 	CreateSampler();
 }
 
 void WebGPUTexture2D::SetWrapMethod(WrapMethod wrapMethod)
 {
 	m_WrapMethod = wrapMethod;
+	if (m_Sampler) m_Sampler.release();
 	CreateSampler();
 }
 
