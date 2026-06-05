@@ -325,6 +325,24 @@ EM_ASYNC_JS(char*, TriggerWebMultiFileDialog, (), {
 	}
 });
 
+EM_ASYNC_JS(char*, TriggerWebSaveFileDialog, (), {
+	try {
+		const fileHandle = await window.showSaveFilePicker();
+
+		const virtualPath = "project/" + fileHandle.name;
+
+		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(virtualPath, pointer, byteCount);
+		return pointer;
+	}
+	catch (err) {
+		if (err.name === 'AbortError') return 0;
+		console.error("File Dialog error: ", err);
+		return 0;
+	}
+});
+
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
 {
 	char* virtualPathPtr = TriggerWebFileDialog();
@@ -358,7 +376,14 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
 {
-	return std::nullopt; // TODO: implement save as for web
+	char* virtualPathPtr = TriggerWebSaveFileDialog();
+	if (virtualPathPtr)
+	{
+		std::string virtualPath(virtualPathPtr);
+		free(virtualPathPtr);
+		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(virtualPath);
+	}
+	return std::nullopt;
 }
 
 #elif !defined(__APPLE__)
