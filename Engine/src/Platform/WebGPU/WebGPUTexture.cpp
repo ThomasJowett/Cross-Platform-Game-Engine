@@ -377,7 +377,7 @@ bool WebGPUTexture2D::Reload()
 
 bool WebGPUTexture2D::operator==(const Texture& other) const
 {
-	return m_BindGroup == ((WebGPUTexture2D&)other).GetRendererID();
+	return (WGPUTexture)m_Texture == (WGPUTexture)((WebGPUTexture2D&)other).m_Texture;
 }
 
 void WebGPUTexture2D::SetFilterMethod(FilterMethod filterMethod)
