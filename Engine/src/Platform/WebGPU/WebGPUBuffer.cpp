@@ -68,8 +68,8 @@ void WebGPUVertexBuffer::SetData(const void* data)
 void WebGPUVertexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
-	//TODO: get the renderpass and call 
-	// renderPass.setVertexBuffer(0, m_Buffer, 0, m_Buffer.getSize());
+	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	rendererAPI.GetRenderPass().setVertexBuffer(0, m_Buffer, 0, m_Size);
 }
 
 void WebGPUVertexBuffer::UnBind() const
@@ -111,8 +111,8 @@ WebGPUIndexBuffer::~WebGPUIndexBuffer()
 void WebGPUIndexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
-	//TODO: get the render pass and call:
-	//renderPass.setIndexBuffer(m_Buffer, wgpu::IndexFormat::Uint16, 0, m_Count * sizeof(uint16_t));
+	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	rendererAPI.GetRenderPass().setIndexBuffer(m_Buffer, wgpu::IndexFormat::Uint32, 0, m_Count * sizeof(uint32_t));
 }
 
 void WebGPUIndexBuffer::UnBind() const
