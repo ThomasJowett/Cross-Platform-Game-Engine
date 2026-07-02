@@ -16,6 +16,7 @@ public:
 		RED8UI,
 		RED16UI,
 		RED32UI,
+		RED32I,
 		RED32F,
 		RG8,
 		RG16F,

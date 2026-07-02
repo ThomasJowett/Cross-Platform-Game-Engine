@@ -69,6 +69,7 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RED8UI:   m_TextureFormat = wgpu::TextureFormat::R8Uint;       break;
 	case Texture::Format::RED16UI:  m_TextureFormat = wgpu::TextureFormat::R16Uint;      break;
 	case Texture::Format::RED32UI:  m_TextureFormat = wgpu::TextureFormat::R32Uint;      break;
+	case Texture::Format::RED32I:   m_TextureFormat = wgpu::TextureFormat::R32Sint;      break;
 	case Texture::Format::RED32F:   m_TextureFormat = wgpu::TextureFormat::R32Float;     break;
 	case Texture::Format::RG8:      m_TextureFormat = wgpu::TextureFormat::RG8Unorm;     break;
 	case Texture::Format::RG16F:    m_TextureFormat = wgpu::TextureFormat::RG16Float;    break;
