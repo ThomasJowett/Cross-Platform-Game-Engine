@@ -21,7 +21,7 @@ static Texture::Format FrameBufferFormatToTextureFormat(FrameBufferTextureFormat
 	switch (format)
 	{
 	case FrameBufferTextureFormat::RGBA8: return Texture::Format::RGBA;
-	case FrameBufferTextureFormat::RED_INTEGER: return Texture::Format::RED32UI;
+	case FrameBufferTextureFormat::RED_INTEGER: return Texture::Format::RED32I;
 	case FrameBufferTextureFormat::DEPTH24STENCIL8: return Texture::Format::DEPTH24STENCIL8;
 	default: return Texture::Format::None;
 	}
