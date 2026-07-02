@@ -38,6 +38,8 @@ endif()
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
 
+file(GLOB_RECURSE DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
+
 if(APPLE)
     file(GLOB_RECURSE MAC_SOURCES "src/*.mm")
     list(APPEND SOURCES ${MAC_SOURCES})
@@ -48,14 +50,15 @@ if(APPLE)
     set(EDITOR_ICON ${CMAKE_CURRENT_SOURCE_DIR}/Icon.icns)
     set_source_files_properties(${EDITOR_ICON} PROPERTIES 
         MACOSX_PACKAGE_LOCATION "Resources")
-    add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON})
 
-    file(GLOB_RECURSE DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/data/*")
     foreach(file ${DATA_FILES})
         file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/data" ${file})
+        get_filename_component(rel_dir "${rel_path}" DIRECTORY)
         set_source_files_properties(${file} PROPERTIES
-            MACOSX_PACKAGE_LOCATION "Resources/data/${rel_path}")
+            MACOSX_PACKAGE_LOCATION "Resources/data/${rel_dir}")
     endforeach()
+
+    add_executable(Editor MACOSX_BUNDLE ${SOURCES} ${HEADERS} ${EDITOR_ICON} ${DATA_FILES})
 
     set_target_properties(Editor PROPERTIES 
         BUNDLE True
@@ -63,9 +66,17 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_NAME "Editor"
         MACOSX_BUNDLE_BUNDLE_VERSION "0.0.1"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "0.0.1"
+        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "entitlements.plist"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "@executable_path"
+    )
+
+    add_custom_command(TARGET Editor POST_BUILD
+        COMMAND codesign --entitlements "${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist" --deep -f -s "-" "$<TARGET_BUNDLE_DIR:Editor>"
+        COMMENT "Codesigning Editor bundle with entitlements"
     )
 else()
-    add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES})
+    add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES} ${DATA_FILES})
 endif()
 
 file(GLOB FONT_SOURCES "src/Fonts/*.cpp")
@@ -73,6 +84,7 @@ set_source_files_properties(${FONT_SOURCES} PROPERTIES SKIP_UNITY_BUILD_INCLUSIO
 
 group_files_by_directory("SOURCES")
 group_files_by_directory("HEADERS")
+source_group("Data" FILES ${DATA_FILES})
 
 target_link_libraries(Editor PRIVATE Engine OpenFBX)
 
@@ -102,14 +114,10 @@ add_definitions(
 if(APPLE)
         add_custom_command(
         TARGET Editor POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Editor>/../Resources/data"
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_CURRENT_SOURCE_DIR}/data"
-            "$<TARGET_FILE_DIR:Editor>/../Resources/data"
         COMMAND ${CMAKE_COMMAND} -E copy
             "${CMAKE_CURRENT_SOURCE_DIR}/imgui.ini"
             "$<TARGET_FILE_DIR:Editor>/../Resources"
-        COMMENT "Copying data folder and imgui.ini into app bundle Resources"
+        COMMENT "Copying imgui.ini into app bundle Resources"
     )
 else()
     add_custom_command(
@@ -136,6 +144,7 @@ add_dependencies(Editor Runtime)
 target_copy_webgpu_binaries(Editor)
 
 if(APPLE)
+    set_target_properties(Editor PROPERTIES INSTALL_RPATH "@executable_path")
     add_custom_command(TARGET Editor POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_BINARY_DIR}/Runtime/Runtime.app"

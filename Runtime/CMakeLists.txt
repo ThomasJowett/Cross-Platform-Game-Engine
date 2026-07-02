@@ -3,21 +3,32 @@ file(GLOB SOURCES
     src/*.h
 )
 
+file(GLOB_RECURSE DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data/*")
+
 if(APPLE)
-    add_executable(Runtime MACOSX_BUNDLE ${SOURCES})
+    foreach(file ${DATA_FILES})
+        file(RELATIVE_PATH rel_path "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data" ${file})
+        get_filename_component(rel_dir "${rel_path}" DIRECTORY)
+        set_source_files_properties(${file} PROPERTIES
+            MACOSX_PACKAGE_LOCATION "Resources/data/${rel_dir}")
+    endforeach()
+    add_executable(Runtime MACOSX_BUNDLE ${SOURCES} ${DATA_FILES})
     set_target_properties(Runtime PROPERTIES
         BUNDLE True
         MACOSX_BUNDLE_BUNDLE_NAME "Runtime"
         MACOSX_BUNDLE_EXECUTABLE_NAME "Runtime"
     )
 else()
-    add_executable(Runtime ${SOURCES})
+    add_executable(Runtime ${SOURCES} ${DATA_FILES})
 endif()
+
+source_group("Data" FILES ${DATA_FILES})
 
 target_link_libraries(Runtime PRIVATE Engine)
 
 if (EMSCRIPTEN)
     set_target_properties(Runtime PROPERTIES SUFFIX ".html")
+    target_link_options(Runtime PRIVATE "--preload-file" "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data@/data")
 endif()
 
 if(NOT APPLE)
@@ -32,6 +43,17 @@ if(NOT APPLE)
             RUNTIME_OUTPUT_DIRECTORY_${CONFIG_UPPER} "${OUTPUT_DIRECTORY_BASE}/${CONFIG}/runtime"
         )
     endforeach()
+endif()
+
+if(NOT APPLE)
+    add_custom_command(
+        TARGET Runtime POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:Runtime>/data"
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+            "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data"
+            "$<TARGET_FILE_DIR:Runtime>/data"
+        COMMENT "Copying data folder to Runtime binary dir"
+    )
 endif()
 
 if (MSVC)
