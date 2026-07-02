@@ -27,7 +27,7 @@ struct VertexOutput {
 struct FragmentOutput {
     @location(0) frag_colour: vec4<f32>,
     @location(1) entityId: i32,
-}
+};
 
 @vertex
 fn vs_main(input: VertexInput) -> VertexOutput {
@@ -37,7 +37,7 @@ fn vs_main(input: VertexInput) -> VertexOutput {
     output.thickness = input.thickness;
     output.fade = input.fade;
     output.entityId = input.entityId;
-    output.position = camera.u_ViewProjection * vec4f(input.worldPosition, 1.0);
+    output.position = camera.u_ViewProjection * vec4<f32>(input.worldPosition, 1.0);
     return output;
 }
 
