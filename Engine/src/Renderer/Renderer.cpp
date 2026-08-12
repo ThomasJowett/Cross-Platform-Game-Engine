@@ -101,10 +101,17 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		}
 
 		if (!shader)
-			return;
+			continue;
 
-		shader->Bind();
-		s_SceneData.modelBuffer.modelMatrix = command.transform.GetTranspose();
+		Ref<Pipeline> pipeline = GetPipeline(shader, command.mesh->GetVertexLayout(), command.material->IsTransparent());
+		if (!pipeline)
+			continue;
+
+		pipeline->Bind();
+		pipeline->SetUniformBuffer(s_SceneData.constantUniformBuffer, 0);
+		pipeline->SetUniformBuffer(s_SceneData.modelUniformBuffer, 1);
+
+		s_SceneData.modelBuffer.modelMatrix = command.transform;
 		s_SceneData.modelBuffer.colour = command.material->GetTint();
 		s_SceneData.modelBuffer.textureOffset = command.material->GetTextureOffset();
 		s_SceneData.modelBuffer.tilingFactor = command.material->GetTilingFactor();
