@@ -402,7 +402,7 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 	auto device = m_WebGPUContext->GetWebGPUDevice();
 	auto queue = m_WebGPUContext->GetQueue();
 
-	uint32_t bpp = 4;
+	uint32_t bpp = 256;
 	uint32_t bufferSize = bpp;
 
 	wgpu::BufferDescriptor bufferDesc = {};
