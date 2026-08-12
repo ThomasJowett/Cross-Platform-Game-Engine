@@ -24,6 +24,7 @@ public:
 		bool backFaceCulling = true;
 		bool depthTest = true;
 		bool transparencyEnabled = false;
+		bool hasDepth = true;
 	};
 public:
 	virtual ~Pipeline() = default;
