@@ -72,6 +72,7 @@ Editor/Editor.args.json
 .Trashes
 *.swp
 *.plist
+!Editor/entitlements.plist
 *.pbxproj
 *.xcuserstate
 *.xcworkspacedata
