@@ -1,7 +1,11 @@
 #pragma once
+#include <memory>
 #include "Asset/Shader.h"
 #include "Buffer.h"
 #include "UniformBuffer.h"
+
+#include <vector>
+#include "FrameBuffer.h"
 
 enum class PrimitiveTopology
 {
@@ -14,7 +18,7 @@ enum class PrimitiveTopology
 	TriangleFan
 };
 
-class Pipeline
+class Pipeline : public std::enable_shared_from_this<Pipeline>
 {
 public:
 	struct Spec
@@ -24,6 +28,7 @@ public:
 		bool backFaceCulling = true;
 		bool depthTest = true;
 		bool transparencyEnabled = false;
+		std::vector<FrameBufferTextureFormat> targetFormats;
 		bool hasDepth = true;
 	};
 public:

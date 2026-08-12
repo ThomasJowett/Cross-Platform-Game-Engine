@@ -248,8 +248,12 @@ void WebGPUPipeline::Bind()
 {
 	if (!m_Pipeline)
 		return;
+
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	rendererAPI.SetCurrentPipeline(std::static_pointer_cast<Pipeline>(shared_from_this()));
 	rendererAPI.GetRenderPass().setPipeline(m_Pipeline);
+}
+
 void WebGPUPipeline::CommitBindGroups()
 {
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
