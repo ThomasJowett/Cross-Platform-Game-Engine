@@ -2,6 +2,7 @@
 
 #include "Renderer/RendererAPI.h"
 #include "WebGPUContext.h"
+#include "Renderer/Pipeline.h"
 #include <webgpu/webgpu.hpp>
 
 class WebGPURendererAPI : public RendererAPI
@@ -20,6 +21,7 @@ public:
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0, bool backFaceCull = false, DrawMode drawMode = DrawMode::FILL) override;
 	virtual void DrawLines(uint32_t vertexCount) override;
 
+	void SetCurrentPipeline(Ref<Pipeline> pipeline) { m_CurrentPipeline = pipeline; }
 	wgpu::RenderPassEncoder GetRenderPass();
 
 private:
@@ -27,5 +29,6 @@ private:
 	wgpu::RenderPassEncoder m_RenderPass;
 	wgpu::CommandEncoder m_CommandEncoder;
 
+	Ref<Pipeline> m_CurrentPipeline;
 	Ref<WebGPUContext> m_WebGPUContext;
 };
