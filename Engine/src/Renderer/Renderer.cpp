@@ -243,7 +243,7 @@ void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const 
 	command.mesh = mesh.get();
 	command.transform = transform;
 
-	if (material->IsTransparent())
+	if (command.material->IsTransparent())
 	{
 		s_TransparentRenderQueue.push_back(command);
 	}
