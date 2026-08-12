@@ -47,10 +47,10 @@ void WebGPURendererAPI::StartRenderPass()
 
 	if (currentFrameBuffer)
 	{
-		const auto& colourViews = currentFrameBuffer->GetColourViews();
-		if (colourViews.empty())
-			return;
+		m_CurrentTargetWidth = currentFrameBuffer->GetSpecification().width;
+		m_CurrentTargetHeight = currentFrameBuffer->GetSpecification().height;
 
+		const auto& colourViews = currentFrameBuffer->GetColourViews();
 		for (const auto& view : colourViews)
 		{
 			wgpu::RenderPassColorAttachment attachment = {};
