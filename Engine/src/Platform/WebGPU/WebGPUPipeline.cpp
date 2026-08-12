@@ -142,6 +142,23 @@ void WebGPUPipeline::Invalidate()
 }
 
 void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set) {}
+void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
+{
+	auto& bindings = m_Bindings[set];
+	bool found = false;
+	for (auto& b : bindings)
+	{
+		if (b.binding == binding)
+		{
+			b.resource = texture;
+			b.type = Binding::Type::Texture;
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+		bindings.push_back({ Binding::Type::Texture, binding, texture });
+}
 
 void WebGPUPipeline::Bind()
 {

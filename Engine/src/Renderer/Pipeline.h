@@ -33,6 +33,7 @@ public:
 
 	virtual void Invalidate() = 0;
 	virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
+	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set = 0) = 0;
 
 	virtual void Bind() = 0;
 
