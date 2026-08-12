@@ -52,7 +52,12 @@ static wgpu::VertexFormat ShaderDataTypeToWebGPU(ShaderDataType type)
 	return wgpu::VertexFormat::Undefined;
 }
 
-WebGPUPipeline::WebGPUPipeline(const Spec& spec) { Invalidate(); }
+WebGPUPipeline::WebGPUPipeline(const Spec& spec)
+{
+	m_Specification = spec;
+	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(Application::GetWindow()->GetContext());
+	Invalidate();
+}
 
 WebGPUPipeline::~WebGPUPipeline()
 {
