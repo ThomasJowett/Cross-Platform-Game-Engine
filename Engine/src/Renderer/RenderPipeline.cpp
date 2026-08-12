@@ -4,6 +4,7 @@
 #include "RenderCommand.h"
 #include "FrameBuffer.h"
 #include "Renderer/Renderer.h"
+#include "Pipeline.h"
 
 #include "PostProcessEffects/GaussianBlurEffect.h"
 
@@ -86,8 +87,8 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 
 	Ref<Texture> outputTexture = m_PostProcessStack.empty() ? sceneTexture : m_PostProcessStack.GetFinalTexture();
 
-	outputTexture->Bind(0);
-	entityIdTexture->Bind(1);
+	m_FinalPassPipeline->SetTexture(outputTexture, 0);
+	m_FinalPassPipeline->SetTexture(entityIdTexture, 2);
 
 	m_FullscreenQuad->GetVertexBuffer()->Bind();
 	m_FullscreenQuad->GetIndexBuffer()->Bind();
