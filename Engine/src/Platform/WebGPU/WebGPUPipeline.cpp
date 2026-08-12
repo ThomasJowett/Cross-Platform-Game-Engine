@@ -64,7 +64,8 @@ void WebGPUPipeline::Invalidate()
 	wgpu::ShaderModule shaderModule = webGPUShader->GetShaderModule();
 	if (!shaderModule)
 	{
-		ENGINE_ERROR("WebGPUPipeline: Shader module is null!");
+		ENGINE_ERROR("WebGPUPipeline: Shader module is null for shader: {0}", webGPUShader->GetName());
+		return;
 	}
 
 	wgpu::RenderPipelineDescriptor pipelineDesc;
@@ -162,14 +163,23 @@ void WebGPUPipeline::Invalidate()
 
 		pipelineDesc.depthStencil = &depthStencil;
 	}
-
-	// Multisample state
+	else
+	{
+		ENGINE_TRACE("WebGPUPipeline: Creating pipeline WITHOUT depth stencil for shader: {0}", webGPUShader->GetName());
+		pipelineDesc.depthStencil = nullptr;
+	}
 	pipelineDesc.multisample.count = 1;
 	pipelineDesc.multisample.mask = 0xFFFFFFFF;
 	pipelineDesc.multisample.alphaToCoverageEnabled = false;
 	pipelineDesc.layout = nullptr;
 
 	m_Pipeline = device.createRenderPipeline(pipelineDesc);
+	if (!m_Pipeline)
+	{
+		ENGINE_ERROR("WebGPUPipeline: Failed to create render pipeline for shader: {0}", webGPUShader->GetName());
+	}
+}
+
 void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
 {
 	auto& bindings = m_Bindings[set];
@@ -208,6 +218,8 @@ void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 
 void WebGPUPipeline::Bind()
 {
+	if (!m_Pipeline)
+		return;
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
 	rendererAPI.GetRenderPass().setPipeline(m_Pipeline);
 void WebGPUPipeline::CommitBindGroups()
