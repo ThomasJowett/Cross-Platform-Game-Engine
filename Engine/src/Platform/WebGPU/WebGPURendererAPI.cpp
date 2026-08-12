@@ -152,6 +152,18 @@ void WebGPURendererAPI::EndRenderPass()
 void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
 {
 	PROFILE_FUNCTION();
+	if (!m_RenderPass)
+	{
+		ENGINE_ERROR("WebGPURendererAPI: DrawIndexed called with null render pass!");
+		return;
+	}
+	ENGINE_TRACE("WebGPURendererAPI: DrawIndexed count={0}", indexCount);
+	if (m_CurrentPipeline)
+	{
+		auto webGPUPipeline = std::dynamic_pointer_cast<WebGPUPipeline>(m_CurrentPipeline);
+		if (webGPUPipeline)
+			webGPUPipeline->CommitBindGroups();
+	}
 	m_RenderPass.drawIndexed(indexCount, 1, indexStart, vertexOffset, 0);
 }
 
