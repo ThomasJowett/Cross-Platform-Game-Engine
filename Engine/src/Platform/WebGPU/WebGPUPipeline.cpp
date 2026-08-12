@@ -91,24 +91,51 @@ void WebGPUPipeline::Invalidate()
 	fragmentState.entryPoint = "fs_main";
 
 	// Colour target state
-	wgpu::ColorTargetState colourTarget;
-	colourTarget.format = m_WebGPUContext->GetSwapchainFormat();
-	colourTarget.writeMask = wgpu::ColorWriteMask::All;
+	std::vector<wgpu::ColorTargetState> colourTargets;
+	std::vector<wgpu::BlendState> blends;
 
-	wgpu::BlendState blend;
-	if (m_Specification.transparencyEnabled)
+	uint32_t targetCount = m_Specification.targetFormats.empty() ? 1 : (uint32_t)m_Specification.targetFormats.size();
+	colourTargets.resize(targetCount);
+	blends.resize(targetCount);
+
+	if (m_Specification.targetFormats.empty())
 	{
-		blend.color.operation = wgpu::BlendOperation::Add;
-		blend.color.srcFactor = wgpu::BlendFactor::SrcAlpha;
-		blend.color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
-		blend.alpha.operation = wgpu::BlendOperation::Add;
-		blend.alpha.srcFactor = wgpu::BlendFactor::One;
-		blend.alpha.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
-		colourTarget.blend = &blend;
+		colourTargets[0].format = m_WebGPUContext->GetSwapchainFormat();
+		colourTargets[0].writeMask = wgpu::ColorWriteMask::All;
+
+		if (m_Specification.transparencyEnabled)
+		{
+			blends[0].color.operation = wgpu::BlendOperation::Add;
+			blends[0].color.srcFactor = wgpu::BlendFactor::SrcAlpha;
+			blends[0].color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
+			blends[0].alpha.operation = wgpu::BlendOperation::Add;
+			blends[0].alpha.srcFactor = wgpu::BlendFactor::One;
+			blends[0].alpha.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
+			colourTargets[0].blend = &blends[0];
+		}
+	}
+	else
+	{
+		for (uint32_t i = 0; i < targetCount; i++)
+		{
+			colourTargets[i].format = FrameBufferFormatToWebGPU(m_Specification.targetFormats[i]);
+			colourTargets[i].writeMask = wgpu::ColorWriteMask::All;
+
+			if (m_Specification.transparencyEnabled && m_Specification.targetFormats[i] != FrameBufferTextureFormat::RED_INTEGER)
+			{
+				blends[i].color.operation = wgpu::BlendOperation::Add;
+				blends[i].color.srcFactor = wgpu::BlendFactor::SrcAlpha;
+				blends[i].color.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
+				blends[i].alpha.operation = wgpu::BlendOperation::Add;
+				blends[i].alpha.srcFactor = wgpu::BlendFactor::One;
+				blends[i].alpha.dstFactor = wgpu::BlendFactor::OneMinusSrcAlpha;
+				colourTargets[i].blend = &blends[i];
+			}
+		}
 	}
 
-	fragmentState.targetCount = 1;
-	fragmentState.targets = &colourTarget;
+	fragmentState.targetCount = targetCount;
+	fragmentState.targets = colourTargets.data();
 	pipelineDesc.fragment = &fragmentState;
 
 	// Primitive state
