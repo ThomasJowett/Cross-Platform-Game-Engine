@@ -23,7 +23,23 @@ void WebGPURendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint
 {
 	if (m_RenderPass)
 	{
-		m_RenderPass.setViewport(static_cast<float>(x), static_cast<float>(y), static_cast<float>(width), static_cast<float>(height), 0.0f, 1.0f);
+		float v_width = static_cast<float>(width);
+		float v_height = static_cast<float>(height);
+
+		ENGINE_TRACE("WebGPURendererAPI: SetViewport {0}, {1}, {2}, {3} (Target: {4}x{5})", x, y, width, height, m_CurrentTargetWidth, m_CurrentTargetHeight);
+
+		if (m_CurrentTargetWidth > 0 && width > m_CurrentTargetWidth)
+		{
+			ENGINE_TRACE("WebGPURendererAPI: Clamping viewport width {0} -> {1}", width, m_CurrentTargetWidth);
+			v_width = static_cast<float>(m_CurrentTargetWidth);
+		}
+		if (m_CurrentTargetHeight > 0 && height > m_CurrentTargetHeight)
+		{
+			ENGINE_TRACE("WebGPURendererAPI: Clamping viewport height {0} -> {1}", height, m_CurrentTargetHeight);
+			v_height = static_cast<float>(m_CurrentTargetHeight);
+		}
+
+		m_RenderPass.setViewport(static_cast<float>(x), static_cast<float>(y), v_width, v_height, 0.0f, 1.0f);
 	}
 }
 
