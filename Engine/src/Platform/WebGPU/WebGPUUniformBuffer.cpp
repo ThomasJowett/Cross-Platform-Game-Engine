@@ -1,6 +1,8 @@
 #include "WebGPUUniformBuffer.h"
 
 #include "Core/Application.h"
+#include "WebGPURendererAPI.h"
+#include "Renderer/RenderCommand.h"
 
 WebGPUUniformBuffer::WebGPUUniformBuffer(uint32_t size, uint32_t binding)
 	: m_Binding(binding)
