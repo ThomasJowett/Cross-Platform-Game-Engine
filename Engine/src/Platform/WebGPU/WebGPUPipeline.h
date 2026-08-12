@@ -3,6 +3,8 @@
 #include "Renderer/Pipeline.h"
 #include "WebGPUContext.h"
 #include <webgpu/webgpu.hpp>
+#include <unordered_map>
+#include <vector>
 
 class WebGPUPipeline : public Pipeline
 {
@@ -18,6 +20,15 @@ public:
 
 	void CommitBindGroups();
 private:
+	struct Binding
+	{
+		enum class Type { UniformBuffer, Texture };
+		Type type;
+		uint32_t binding;
+		Ref<void> resource;
+	};
+	std::unordered_map<uint32_t, std::vector<Binding>> m_Bindings; // set -> bindings
+
 	bool m_TransparencyEnabled = false;
 	//uint32_t m_VertexArray = -1;
 	BufferLayout m_VertexBufferLayout;
