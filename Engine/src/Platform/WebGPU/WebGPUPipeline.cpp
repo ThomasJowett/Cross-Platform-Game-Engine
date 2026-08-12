@@ -123,12 +123,16 @@ void WebGPUPipeline::Invalidate()
 	}
 
 	// Depth stencil state
-	wgpu::DepthStencilState depthStencil;
-	if (m_Specification.depthTest)
+	wgpu::DepthStencilState depthStencil = {};
+	if (m_Specification.hasDepth)
 	{
+		ENGINE_TRACE("WebGPUPipeline: Creating pipeline WITH depth stencil for shader: {0}", webGPUShader->GetName());
 		depthStencil.format = wgpu::TextureFormat::Depth24PlusStencil8;
-		depthStencil.depthWriteEnabled = true;
-		depthStencil.depthCompare = wgpu::CompareFunction::Less;
+		depthStencil.depthWriteEnabled = m_Specification.depthTest;
+		depthStencil.depthCompare = m_Specification.depthTest ? wgpu::CompareFunction::Less : wgpu::CompareFunction::Always;
+		depthStencil.stencilFront.compare = wgpu::CompareFunction::Always;
+		depthStencil.stencilBack.compare = wgpu::CompareFunction::Always;
+
 		pipelineDesc.depthStencil = &depthStencil;
 	}
 
