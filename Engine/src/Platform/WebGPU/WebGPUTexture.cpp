@@ -251,6 +251,8 @@ WebGPUTexture2D::~WebGPUTexture2D()
 		m_Texture.release();
 		m_Sampler.release();
 		m_TextureView.release();
+		if (m_ReadbackBufferCreated)
+			m_ReadbackBuffer.release();
 	}
 }
 
@@ -399,24 +401,33 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 {
 	PROFILE_FUNCTION();
 
+	// A request is already in flight - don't stack another copy on top of it, just hand back
+	// whatever we last resolved. Also protects against the same click being processed multiple
+	// times in one frame (e.g. hovering over overlapping ImGui windows).
+	if (m_ReadPixelPending)
+		return m_LastReadPixelValue;
+
 	auto device = m_WebGPUContext->GetWebGPUDevice();
 	auto queue = m_WebGPUContext->GetQueue();
 
-	uint32_t bpp = 256;
-	uint32_t bufferSize = bpp;
+	constexpr uint32_t bufferSize = 256; // WebGPU requires bytesPerRow to be a multiple of 256 bytes
 
-	wgpu::BufferDescriptor bufferDesc = {};
-	bufferDesc.size = bufferSize;
-	bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
-	wgpu::Buffer readbackBuffer = device.createBuffer(bufferDesc);
+	if (!m_ReadbackBufferCreated)
+	{
+		wgpu::BufferDescriptor bufferDesc = {};
+		bufferDesc.size = bufferSize;
+		bufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+		m_ReadbackBuffer = device.createBuffer(bufferDesc);
+		m_ReadbackBufferCreated = true;
+	}
 
 	wgpu::ImageCopyTexture src{};
 	src.texture = m_Texture;
 	src.origin = { x, y, 0 };
 
 	wgpu::ImageCopyBuffer dst{};
-	dst.buffer = readbackBuffer;
-	dst.layout.bytesPerRow = 256;
+	dst.buffer = m_ReadbackBuffer;
+	dst.layout.bytesPerRow = bufferSize;
 	dst.layout.rowsPerImage = 1;
 
 	wgpu::Extent3D size{ 1, 1, 1 };
@@ -426,19 +437,34 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 	wgpu::CommandBuffer cmd = encoder.finish();
 	queue.submit(cmd);
 
-	bool done = false;
-	readbackBuffer.mapAsync(wgpu::MapMode::Read, 0, bufferSize,
-		[&](wgpu::BufferMapAsyncStatus status) { done = (status == wgpu::BufferMapAsyncStatus::Success); });
+	m_ReadPixelPending = true;
 
-	while (!done)
-	{
-		m_WebGPUContext->PollEvents();
-	}
+	// Guard the callback with a weak_ptr rather than capturing `this` directly - the texture (e.g. the
+	// framebuffer's entity-id attachment) can be destroyed by a resize before this resolves, and the
+	// callback must not touch freed memory when that happens.
+	std::weak_ptr<WebGPUTexture2D> weakSelf = weak_from_this();
+	// The returned handle must outlive the async operation - mapAsync's C callback fires through a raw
+	// pointer into it, so discarding the return value here leaves that pointer dangling (this was the
+	// cause of the crash-on-click: the callback closure was destroyed before wgpu ever invoked it).
+	m_ReadPixelCallbackHandle = m_ReadbackBuffer.mapAsync(wgpu::MapMode::Read, 0, bufferSize,
+		[weakSelf, bufferSize](wgpu::BufferMapAsyncStatus status)
+		{
+			Ref<WebGPUTexture2D> self = weakSelf.lock();
+			if (!self)
+				return;
 
-	const uint8_t* data = static_cast<const uint8_t*>(readbackBuffer.getConstMappedRange(0, bufferSize));
-	uint32_t value = *reinterpret_cast<const uint32_t*>(data);
-	readbackBuffer.unmap();
-	return static_cast<int>(value);
+			if (status == wgpu::BufferMapAsyncStatus::Success)
+			{
+				const uint8_t* data = static_cast<const uint8_t*>(self->m_ReadbackBuffer.getConstMappedRange(0, bufferSize));
+				if (data)
+					self->m_LastReadPixelValue = *reinterpret_cast<const int32_t*>(data);
+				self->m_ReadbackBuffer.unmap();
+			}
+			self->m_ReadPixelPending = false;
+		});
+
+	// Doesn't block: hands back the previous frame's resolved value while this request is in flight.
+	return m_LastReadPixelValue;
 }
 
 void WebGPUTexture2D::NullTexture()

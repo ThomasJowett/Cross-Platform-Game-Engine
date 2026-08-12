@@ -2,9 +2,10 @@
 
 #include "Asset/Texture.h"
 #include "WebGPUContext.h"
+#include <memory>
 #include <webgpu/webgpu.hpp>
 
-class WebGPUTexture2D : public Texture2D
+class WebGPUTexture2D : public Texture2D, public std::enable_shared_from_this<WebGPUTexture2D>
 {
 public:
 	WebGPUTexture2D(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels);
@@ -54,4 +55,13 @@ private:
 	wgpu::BindGroup m_BindGroup;
 
 	Ref<WebGPUContext> m_WebGPUContext;
+
+	// Entity-id picking readback, kept alive and reused across calls instead of leaking a new buffer per ReadPixel() call
+	wgpu::Buffer m_ReadbackBuffer;
+	bool m_ReadbackBufferCreated = false;
+	bool m_ReadPixelPending = false;
+	int m_LastReadPixelValue = -1;
+	// Buffer::mapAsync's callback closure is only kept alive by this handle - letting it go out of scope
+	// before the C callback fires leaves the callback pointing at freed memory.
+	std::unique_ptr<wgpu::BufferMapCallback> m_ReadPixelCallbackHandle;
 };
