@@ -21,6 +21,7 @@ public:
 	static void EndScene();
 
 	static void SetDrawMode(DrawMode drawMode);
+	static Ref<UniformBuffer> GetConstantUniformBuffer();
 
 	static void Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform = Matrix4x4(), int entityId = -1, uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0);
 	static void Submit(const Ref<Mesh> mesh, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);

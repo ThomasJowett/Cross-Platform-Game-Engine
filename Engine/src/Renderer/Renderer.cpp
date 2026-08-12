@@ -187,6 +187,11 @@ void Renderer::EndScene()
 	s_TransparentRenderQueue.clear();
 }
 
+Ref<UniformBuffer> Renderer::GetConstantUniformBuffer()
+{
+	return s_SceneData.constantUniformBuffer;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer::SetDrawMode(DrawMode drawMode)
