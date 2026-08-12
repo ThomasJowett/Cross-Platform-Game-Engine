@@ -20,6 +20,17 @@ RenderPipeline::RenderPipeline()
 	m_PongFrameBuffer = FrameBuffer::Create(pingPongSpec);
 
 	m_FinalPassShader = Renderer::GetShader("FinalPass", true);
+
+	Pipeline::Spec finalPassSpec;
+	finalPassSpec.shader = m_FinalPassShader;
+	finalPassSpec.layout = m_FullscreenQuad->GetVertexLayout();
+	finalPassSpec.backFaceCulling = false;
+	finalPassSpec.depthTest = false;
+	finalPassSpec.transparencyEnabled = true;
+	finalPassSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	finalPassSpec.hasDepth = true;
+	finalPassSpec.depthTest = false;
+	m_FinalPassPipeline = Pipeline::Create(finalPassSpec);
 }
 
 RenderPipeline::~RenderPipeline()
@@ -70,6 +81,7 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
+	m_FinalPassPipeline->Bind();
 	m_FinalPassShader->Bind();
 
 	Ref<Texture> outputTexture = m_PostProcessStack.empty() ? sceneTexture : m_PostProcessStack.GetFinalTexture();

@@ -1,4 +1,5 @@
 #pragma once
+#include "Renderer/Pipeline.h"
 #include "Scene/Scene.h"
 #include "PostProcess.h"
 #include "Mesh.h"
@@ -25,6 +26,7 @@ private:
 
 	Ref<Mesh> m_FullscreenQuad;
 	Ref<Shader> m_FinalPassShader;
+	Ref<Pipeline> m_FinalPassPipeline;
 
 	uint32_t m_WindowWidth = 1920;
 	uint32_t m_WindowHeight = 1080;
