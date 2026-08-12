@@ -4,6 +4,8 @@
 #include "Renderer/RenderCommand.h"
 #include "WebGPURendererAPI.h"
 #include "WebGPUShader.h"
+#include "WebGPUUniformBuffer.h"
+#include "WebGPUTexture.h"
 #include <memory>
 #include <webgpu/webgpu.hpp>
 
