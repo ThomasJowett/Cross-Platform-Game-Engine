@@ -151,6 +151,22 @@ void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, ui
 	m_RenderPass.drawIndexed(indexCount, 1, indexStart, vertexOffset, 0);
 }
 
-void WebGPURendererAPI::DrawLines(uint32_t vertexCount) {}
+void WebGPURendererAPI::DrawLines(uint32_t vertexCount)
+{
+	PROFILE_FUNCTION();
+	if (!m_RenderPass)
+	{
+		ENGINE_ERROR("WebGPURendererAPI: DrawLines called with null render pass!");
+		return;
+	}
+	ENGINE_TRACE("WebGPURendererAPI: DrawLines count={0}", vertexCount);
+	if (m_CurrentPipeline)
+	{
+		auto webGPUPipeline = std::dynamic_pointer_cast<WebGPUPipeline>(m_CurrentPipeline);
+		if (webGPUPipeline)
+			webGPUPipeline->CommitBindGroups();
+	}
+	m_RenderPass.draw(vertexCount, 1, 0, 0);
+}
 
 wgpu::RenderPassEncoder WebGPURendererAPI::GetRenderPass() { return m_RenderPass; }
