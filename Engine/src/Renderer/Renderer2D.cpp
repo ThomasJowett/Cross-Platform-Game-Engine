@@ -92,7 +92,6 @@ struct Renderer2DData
 	Ref<Pipeline> quadPipeline;
 
 	Ref<VertexBuffer> circleVertexBuffer;
-	Ref<IndexBuffer> circleIndexBuffer;
 	Ref<Shader> circleShader;
 	Ref<Pipeline> circlePipeline;
 
@@ -420,11 +419,13 @@ void Renderer2D::FlushCircles()
 	s_Data.circlePipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
 
 	s_Data.circleVertexBuffer->Bind();
-	s_Data.circleIndexBuffer->Bind();
+	// Circles use the same 4-vertex/6-index-per-quad topology as quads, so they share quadIndexBuffer
+	// rather than needing a separate (and identical) index buffer of their own.
+	s_Data.quadIndexBuffer->Bind();
 
 	RenderCommand::DrawIndexed(s_Data.circleIndexCount, 0U, 0U, false);
 
-	s_Data.circleIndexBuffer->UnBind();
+	s_Data.quadIndexBuffer->UnBind();
 	s_Data.circleVertexBuffer->UnBind();
 
 	s_Data.statistics.drawCalls++;
