@@ -177,7 +177,8 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
-	s_SceneData.constantBuffer.viewProjectionMatrix = (projection * Matrix4x4::Inverse(transform)).GetTranspose();
+	ENGINE_TRACE("Renderer: BeginScene");
+	s_SceneData.constantBuffer.viewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
 	s_SceneData.constantBuffer.eyePosition = transform.ExtractTranslation();
 
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
@@ -188,6 +189,7 @@ void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projectio
 
 void Renderer::EndScene()
 {
+	ENGINE_TRACE("Renderer: EndScene (opaque={0}, trans={1})", s_OpaqueRenderQueue.size(), s_TransparentRenderQueue.size());
 	Renderer2D::EndScene();
 	//TODO: frustum culling
 
@@ -230,6 +232,8 @@ void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const 
 {
 	if (!mesh)
 		return;
+
+	ENGINE_TRACE("Renderer: Submit mesh");
 	Command command;
 	command.entityId = entityId;
 	command.indexCount = indexCount ? indexCount : mesh->GetIndexCount();
