@@ -22,6 +22,7 @@ public:
 	wgpu::Surface GetSurface();
 	wgpu::TextureFormat GetSwapchainFormat();
 	wgpu::Queue GetQueue();
+	const wgpu::SurfaceConfiguration& GetSurfaceConfig() const { return m_SurfaceConfig; }
 	wgpu::TextureView GetCurrentTextureView();
 
 	void PollEvents();
