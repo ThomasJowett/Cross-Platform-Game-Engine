@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
 #include "Renderer/RenderCommand.h"
+#include "WebGPURendererAPI.h"
 
 WebGPUVertexBuffer::WebGPUVertexBuffer(uint32_t size)
 	:m_Size(size)
