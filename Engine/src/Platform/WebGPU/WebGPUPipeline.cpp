@@ -143,9 +143,24 @@ void WebGPUPipeline::Invalidate()
 	pipelineDesc.layout = nullptr;
 
 	m_Pipeline = device.createRenderPipeline(pipelineDesc);
+void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
+{
+	auto& bindings = m_Bindings[set];
+	bool found = false;
+	for (auto& b : bindings)
+	{
+		if (b.binding == binding)
+		{
+			b.resource = uniformBuffer;
+			b.type = Binding::Type::UniformBuffer;
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+		bindings.push_back({ Binding::Type::UniformBuffer, binding, uniformBuffer });
 }
 
-void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set) {}
 void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
 {
 	auto& bindings = m_Bindings[set];
