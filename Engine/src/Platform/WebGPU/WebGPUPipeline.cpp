@@ -87,10 +87,8 @@ void WebGPUPipeline::Invalidate()
 	}
 
 	wgpu::RenderPipelineDescriptor pipelineDesc;
-
-	// Vertex state
-	pipelineDesc.vertex.module = shaderModule;
-	pipelineDesc.vertex.entryPoint = "vs_main";
+	std::string shaderName = webGPUShader->GetName();
+	pipelineDesc.label = shaderName.c_str();
 
 	// Vertex attributes
 	std::vector<wgpu::VertexAttribute> vertexAttributes;
