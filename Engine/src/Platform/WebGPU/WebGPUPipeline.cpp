@@ -164,4 +164,60 @@ void WebGPUPipeline::Bind()
 {
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
 	rendererAPI.GetRenderPass().setPipeline(m_Pipeline);
+void WebGPUPipeline::CommitBindGroups()
+{
+	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+
+	for (auto& [set, bindings] : m_Bindings)
+	{
+		std::vector<wgpu::BindGroupEntry> entries;
+		for (auto& b : bindings)
+		{
+			wgpu::BindGroupEntry entry = {};
+			entry.binding = b.binding;
+			if (b.type == Binding::Type::UniformBuffer)
+			{
+				auto ub = std::static_pointer_cast<WebGPUUniformBuffer>(std::static_pointer_cast<UniformBuffer>(b.resource));
+				if (ub)
+				{
+					entry.buffer = ub->GetBuffer();
+					entry.offset = 0;
+					entry.size = ub->GetSize();
+					entries.push_back(entry);
+				}
+			}
+			else if (b.type == Binding::Type::Texture)
+			{
+				auto tex = std::static_pointer_cast<WebGPUTexture2D>(std::static_pointer_cast<Texture>(b.resource));
+				if (tex)
+				{
+					wgpu::BindGroupEntry entry = {};
+					entry.binding = b.binding;
+					entry.textureView = tex->GetTextureView();
+					entries.push_back(entry);
+
+					if (b.binding <= 1)
+					{
+						wgpu::BindGroupEntry samplerEntry = {};
+						samplerEntry.binding = b.binding + 1;
+						samplerEntry.sampler = tex->GetSampler();
+						if (samplerEntry.sampler)
+							entries.push_back(samplerEntry);
+					}
+				}
+			}
+		}
+
+		if (entries.empty())
+			continue;
+
+		wgpu::BindGroupDescriptor bindGroupDesc = {};
+		bindGroupDesc.layout = m_Pipeline.getBindGroupLayout(set);
+		bindGroupDesc.entryCount = (uint32_t)entries.size();
+		bindGroupDesc.entries = entries.data();
+
+		wgpu::BindGroup bindGroup = device.createBindGroup(bindGroupDesc);
+		rendererAPI.GetRenderPass().setBindGroup(set, bindGroup, 0, nullptr);
+	}
 }
