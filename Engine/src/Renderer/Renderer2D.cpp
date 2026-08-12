@@ -1,6 +1,8 @@
 #include "Renderer2D.h"
+#include "Renderer.h"
 
 #include "Buffer.h"
+#include "Pipeline.h"
 #include "Asset/Shader.h"
 
 #include "RenderCommand.h"
@@ -87,21 +89,36 @@ struct Renderer2DData
 	Ref<VertexBuffer> quadVertexBuffer;
 	Ref<IndexBuffer> quadIndexBuffer;
 	Ref<Shader> quadShader;
-	Ref<Texture> whiteTexture;
+	Ref<Pipeline> quadPipeline;
 
 	Ref<VertexBuffer> circleVertexBuffer;
+	Ref<IndexBuffer> circleIndexBuffer;
 	Ref<Shader> circleShader;
+	Ref<Pipeline> circlePipeline;
 
 	Ref<VertexBuffer> lineVertexBuffer;
 	Ref<IndexBuffer> lineIndexBuffer;
 	Ref<Shader> lineShader;
+	Ref<Pipeline> linePipeline;
 
 	Ref<VertexBuffer> textVertexBuffer;
 	Ref<IndexBuffer> textIndexBuffer;
 	Ref<Shader> textShader;
+	Ref<Pipeline> textPipeline;
 
 	Ref<VertexBuffer> hairLineVertexBuffer;
 	Ref<Shader> hairLineShader;
+	Ref<Pipeline> hairLinePipeline;
+
+	Ref<Texture2D> whiteTexture;
+
+	struct CameraData
+	{
+		Matrix4x4 viewProjection;
+		Vector3f eyePosition;
+	};
+	CameraData cameraData;
+	Ref<UniformBuffer> cameraUniformBuffer;
 
 	uint32_t quadIndexCount = 0;
 	QuadVertex* quadVertexBufferBase = nullptr;
@@ -201,7 +218,8 @@ bool Renderer2D::Init()
 		{ShaderDataType::Float4, "a_colour"},
 		{ShaderDataType::Float2, "a_texcoord"},
 		{ShaderDataType::Float, "a_width"},
-		{ShaderDataType::Float, "a_height"}
+		{ShaderDataType::Float, "a_height"},
+		{ShaderDataType::Int,   "a_EntityID"}
 		});
 	s_Data.lineVertexBufferBase = new LineVertex[s_Data.maxLineVertices];
 
@@ -225,14 +243,13 @@ bool Renderer2D::Init()
 
 	// Text ------------------------------------------------------------------------------------------
 	s_Data.textVertexBuffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(TextVertex));
-
 	s_Data.textVertexBuffer->SetLayout({
-		{ShaderDataType::Float3, "a_position"},
-		{ShaderDataType::Float4, "a_colour"},
-		{ShaderDataType::Float2, "a_texcoord"},
-		{ShaderDataType::Float, "a_texIndex"},
-		{ShaderDataType::Int, "a_EntityId"}
-		});
+		{ ShaderDataType::Float3, "a_Position" },
+		{ ShaderDataType::Float4, "a_Colour" },
+		{ ShaderDataType::Float2, "a_TexCoord" },
+		{ ShaderDataType::Float,  "a_TexIndex" },
+		{ ShaderDataType::Int,    "a_EntityID" }
+	});
 	s_Data.textVertexBufferBase = new TextVertex[s_Data.maxVertices];
 
 	uint32_t* textIndices = new uint32_t[s_Data.maxIndices];
@@ -276,6 +293,36 @@ bool Renderer2D::Init()
 	s_Data.hairLineShader = Shader::Create("Renderer2D_HairLine");
 	s_Data.textShader = Shader::Create("Renderer2D_Text");
 
+	Pipeline::Spec quadSpec;
+	quadSpec.shader = s_Data.quadShader;
+	quadSpec.layout = s_Data.quadVertexBuffer->GetLayout();
+	quadSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	s_Data.quadPipeline = Pipeline::Create(quadSpec);
+
+	Pipeline::Spec circleSpec;
+	circleSpec.shader = s_Data.circleShader;
+	circleSpec.layout = s_Data.circleVertexBuffer->GetLayout();
+	circleSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	s_Data.circlePipeline = Pipeline::Create(circleSpec);
+
+	Pipeline::Spec lineSpec;
+	lineSpec.shader = s_Data.lineShader;
+	lineSpec.layout = s_Data.lineVertexBuffer->GetLayout();
+	lineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	s_Data.linePipeline = Pipeline::Create(lineSpec);
+
+	Pipeline::Spec hairLineSpec;
+	hairLineSpec.shader = s_Data.hairLineShader;
+	hairLineSpec.layout = s_Data.hairLineVertexBuffer->GetLayout();
+	hairLineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	s_Data.hairLinePipeline = Pipeline::Create(hairLineSpec);
+
+	Pipeline::Spec textSpec;
+	textSpec.shader = s_Data.textShader;
+	textSpec.layout = s_Data.textVertexBuffer->GetLayout();
+	textSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	s_Data.textPipeline = Pipeline::Create(textSpec);
+
 	// set the texture slot at [0] to white texture
 	s_Data.textureSlots[0] = s_Data.whiteTexture;
 
@@ -285,6 +332,8 @@ bool Renderer2D::Init()
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
 	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
+
+	s_Data.cameraUniformBuffer = Renderer::GetConstantUniformBuffer();
 
 	return s_Data.quadShader != nullptr;
 }
@@ -306,6 +355,7 @@ void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer2D::BeginScene()
 {
 	PROFILE_FUNCTION();
+	ENGINE_TRACE("Renderer2D: BeginScene");
 
 	StartQuadsBatch();
 	StartCirclesBatch();
@@ -319,6 +369,7 @@ void Renderer2D::BeginScene()
 void Renderer2D::EndScene()
 {
 	PROFILE_FUNCTION();
+	ENGINE_TRACE("Renderer2D: EndScene");
 
 	FlushQuads();
 	FlushCircles();
@@ -328,21 +379,26 @@ void Renderer2D::EndScene()
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
 void Renderer2D::FlushQuads()
 {
 	if (s_Data.quadIndexCount == 0)
 		return;
+
+	ENGINE_TRACE("Renderer2D: Flushing {0} indices", s_Data.quadIndexCount);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.quadVertexBufferPtr - (uint8_t*)s_Data.quadVertexBufferBase);
 	s_Data.quadVertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
 
 	for (uint32_t i = 0; i < s_Data.textureSlotIndex; i++)
 	{
-		s_Data.textureSlots[i]->Bind(i);
+		if (i == 0)
+			s_Data.quadPipeline->SetTexture(s_Data.textureSlots[i], 1);
 	}
+
+	s_Data.quadPipeline->Bind();
+	s_Data.quadPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
+
 	s_Data.quadVertexBuffer->Bind();
 	s_Data.quadIndexBuffer->Bind();
-	s_Data.quadShader->Bind();
 
 	RenderCommand::DrawIndexed(s_Data.quadIndexCount, 0U, 0U, false);
 
@@ -355,15 +411,22 @@ void Renderer2D::FlushCircles()
 {
 	if (s_Data.circleIndexCount == 0)
 		return;
+
+	ENGINE_TRACE("Renderer2D: Flushing {0} circles", s_Data.circleIndexCount / 6);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.circleVertexBufferPtr - (uint8_t*)s_Data.circleVertexBufferBase);
 	s_Data.circleVertexBuffer->SetData(s_Data.circleVertexBufferBase, dataSize);
 
+	s_Data.circlePipeline->Bind();
+	s_Data.circlePipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
+
 	s_Data.circleVertexBuffer->Bind();
-	s_Data.quadIndexBuffer->Bind();
-	s_Data.circleShader->Bind();
+	s_Data.circleIndexBuffer->Bind();
+
 	RenderCommand::DrawIndexed(s_Data.circleIndexCount, 0U, 0U, false);
-	s_Data.quadIndexBuffer->UnBind();
+
+	s_Data.circleIndexBuffer->UnBind();
 	s_Data.circleVertexBuffer->UnBind();
+
 	s_Data.statistics.drawCalls++;
 }
 
@@ -371,12 +434,17 @@ void Renderer2D::FlushLines()
 {
 	if (s_Data.lineIndexCount == 0)
 		return;
+
+	ENGINE_TRACE("Renderer2D: Flushing {0} lines", s_Data.lineIndexCount / 6);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.lineVertexBufferPtr - (uint8_t*)s_Data.lineVertexBufferBase);
 	s_Data.lineVertexBuffer->SetData(s_Data.lineVertexBufferBase, dataSize);
 
+	s_Data.linePipeline->Bind();
+	s_Data.linePipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
+
 	s_Data.lineVertexBuffer->Bind();
 	s_Data.lineIndexBuffer->Bind();
-	s_Data.lineShader->Bind();
+
 	RenderCommand::DrawIndexed(s_Data.lineIndexCount, 0U, 0U, false);
 	s_Data.lineVertexBuffer->UnBind();
 	s_Data.lineIndexBuffer->UnBind();
@@ -387,15 +455,17 @@ void Renderer2D::FlushHairLines()
 {
 	if (s_Data.hairLineVertexCount == 0)
 		return;
+
+	ENGINE_TRACE("Renderer2D: Flushing {0} hair lines", s_Data.hairLineVertexCount / 2);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.hairLineVertexBufferPtr - (uint8_t*)s_Data.hairLineVertexBufferBase);
 	s_Data.hairLineVertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
 
+	s_Data.hairLinePipeline->Bind();
+	s_Data.hairLinePipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
+
 	s_Data.hairLineVertexBuffer->Bind();
-	s_Data.quadIndexBuffer->Bind();
-	s_Data.hairLineShader->Bind();
 	RenderCommand::DrawLines(s_Data.hairLineVertexCount);
 	s_Data.hairLineVertexBuffer->UnBind();
-	s_Data.quadIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -403,18 +473,22 @@ void Renderer2D::FlushText()
 {
 	if (s_Data.textIndexCount == 0)
 		return;
+
+	ENGINE_TRACE("Renderer2D: Flushing {0} text indices", s_Data.textIndexCount);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.textVertexBufferPtr - (uint8_t*)s_Data.textVertexBufferBase);
 	s_Data.textVertexBuffer->SetData(s_Data.textVertexBufferBase, dataSize);
 
 	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
 	{
-		if (s_Data.fontAtlasSlots[i])
-			s_Data.fontAtlasSlots[i]->Bind(i);
+		if (i == 0)
+			s_Data.textPipeline->SetTexture(s_Data.fontAtlasSlots[i], 1);
 	}
+
+	s_Data.textPipeline->Bind();
+	s_Data.textPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
 
 	s_Data.textVertexBuffer->Bind();
 	s_Data.textIndexBuffer->Bind();
-	s_Data.textShader->Bind();
 	RenderCommand::DrawIndexed(s_Data.textIndexCount);
 	s_Data.textVertexBuffer->UnBind();
 	s_Data.textIndexBuffer->UnBind();
@@ -578,11 +652,10 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
+	ENGINE_TRACE("Renderer2D: DrawQuad (color)");
 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
-	{
 		NextQuadsBatch();
-	}
 
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
 
@@ -602,13 +675,13 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
-
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
 {
+	PROFILE_FUNCTION();
+	ENGINE_TRACE("Renderer2D: DrawQuad (texture)");
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
-	{
 		NextQuadsBatch();
-	}
 
 	float textureIndex = 0.0f;
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
