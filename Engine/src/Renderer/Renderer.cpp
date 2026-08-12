@@ -2,7 +2,7 @@
 #include "Renderer2D.h"
 #include "RenderCommand.h"
 #include "RenderPipeline.h"
-
+#include "Pipeline.h"
 
 #include "FrameBuffer.h"
 #include "UniformBuffer.h"
@@ -30,6 +30,8 @@ struct RendererData
 	Ref<Texture> mixMapTexture;
 
 	DrawMode drawMode = DrawMode::FILL;
+
+	std::unordered_map<std::string, Ref<Pipeline>> pipelineCache;
 };
 
 struct SceneData
