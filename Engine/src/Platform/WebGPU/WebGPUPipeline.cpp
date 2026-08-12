@@ -103,6 +103,18 @@ void WebGPUPipeline::Invalidate()
 		vertexAttributes.push_back(attr);
 	}
 
+	wgpu::VertexBufferLayout vertexBufferLayout;
+	vertexBufferLayout.arrayStride = layout.GetStride();
+	vertexBufferLayout.attributeCount = (uint32_t)vertexAttributes.size();
+	vertexBufferLayout.attributes = vertexAttributes.data();
+	vertexBufferLayout.stepMode = wgpu::VertexStepMode::Vertex;
+
+	// Vertex state
+	pipelineDesc.vertex.module = shaderModule;
+	pipelineDesc.vertex.entryPoint = "vs_main";
+	pipelineDesc.vertex.bufferCount = 1;
+	pipelineDesc.vertex.buffers = &vertexBufferLayout;
+
 	wgpu::FragmentState fragmentState;
 	fragmentState.module = shaderModule;
 	fragmentState.entryPoint = "fs_main";
