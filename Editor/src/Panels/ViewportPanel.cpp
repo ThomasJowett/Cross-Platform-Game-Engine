@@ -147,15 +147,21 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
+			// Read the hovered entity every frame rather than only on click - WebGPU's readback is
+			// async now (required so it can't block/hang on the web), so a click-gated read always
+			// returned the *previous* frame's stale result, which looked like needing to double-click
+			// to select anything. Keeping m_HoveredEntity continuously up to date means it's already
+			// correct by the time an actual click event below fires.
+			m_Framebuffer->Bind();
+			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
+			m_Framebuffer->UnBind();
+
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
-				m_Framebuffer->Bind();
-				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen
 					&& m_RelativeMousePosition == m_MousePositionBeginClick)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
-				m_Framebuffer->UnBind();
 			}
 		}
 
@@ -180,8 +186,10 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			m_CameraPreview->UnBind();
 		}
 
-		// Debug render pass
+		// Debug render pass - draws gizmo overlays on top of the scene already rendered into
+		// m_Framebuffer above, so this must load (not clear) the existing attachment contents.
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
 		if (selectedEntity && selectedEntity.HasComponent<TransformComponent>())
@@ -523,6 +531,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		}
 
 		Renderer::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 
@@ -530,18 +539,21 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	{
 		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Renderer2D::BeginScene();
 		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
 			{
 				luaScriptComp.OnDebugRender();
 			});
 		Renderer2D::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 	else if (sceneState == SceneState::Play)
 	{
 		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Matrix4x4 view;
 		Matrix4x4 projection;
 		if (Entity cameraEntity = SceneManager::CurrentScene()->GetPrimaryCameraEntity())
@@ -557,6 +569,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				luaScriptComp.OnDebugRender();
 			});
 		Renderer2D::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 }

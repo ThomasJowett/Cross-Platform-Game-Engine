@@ -43,6 +43,11 @@ public:
 
 	virtual void Bind() = 0;
 
+	// False if the underlying graphics-API pipeline object failed to build (e.g. its shader
+	// couldn't be loaded) - callers must skip drawing rather than binding buffers and issuing
+	// a draw call against no bound pipeline, which some backends treat as a fatal error.
+	virtual bool IsValid() const = 0;
+
 	static Ref<Pipeline> Create(const Spec& spec);
 
 protected:

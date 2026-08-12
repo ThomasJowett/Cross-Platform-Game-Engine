@@ -24,7 +24,7 @@ public:
 
 	inline static void ClearDepth() { s_RendererAPI->ClearDepth(); }
 
-	inline static void StartRenderPass() { s_RendererAPI->StartRenderPass(); }
+	inline static void StartRenderPass(bool clear = true) { s_RendererAPI->StartRenderPass(clear); }
 
 	inline static void EndRenderPass() { s_RendererAPI->EndRenderPass(); }
 

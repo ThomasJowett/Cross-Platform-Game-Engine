@@ -17,6 +17,7 @@ public:
 	virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set) override;
 	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set) override;
 	virtual void Bind() override;
+	virtual bool IsValid() const override { return (bool)m_Pipeline; }
 
 	void CommitBindGroups();
 private:

@@ -106,7 +106,11 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 			continue;
 
 		Ref<Pipeline> pipeline = GetPipeline(shader, command.mesh->GetVertexLayout(), command.material->IsTransparent());
-		if (!pipeline)
+		// pipeline is never null here - Pipeline::Create always returns an object even when the
+		// underlying graphics-API pipeline failed to build (e.g. its shader couldn't be loaded, such
+		// as a missing .wgsl file). Binding buffers and drawing against no valid bound pipeline is
+		// what was crashing - skip the whole command instead.
+		if (!pipeline || !pipeline->IsValid())
 			continue;
 
 		pipeline->Bind();
@@ -180,7 +184,18 @@ void Renderer::OnWindowResize(uint32_t width, uint32_t height)
 void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projection)
 {
 	ENGINE_TRACE("Renderer: BeginScene");
-	s_SceneData.constantBuffer.viewProjectionMatrix = projection * Matrix4x4::Inverse(transform);
+
+	// WebGPU's clip-space Y axis points the opposite way to OpenGL's (matching Vulkan/D3D/Metal),
+	// so without this every WebGPU-rendered frame comes out vertically flipped relative to OpenGL -
+	// the whole scene upside down, physics appearing to fall the wrong way, etc. This is the single
+	// point all rendering (3D meshes, Renderer2D sprites, UI, editor gizmo overlays) gets its
+	// view-projection from, so correcting it here fixes all of those consistently in one place
+	// rather than needing a fix in every shader or render target.
+	Matrix4x4 correctedProjection = projection;
+	if (RendererAPI::GetAPI() == RendererAPI::API::WebGPU)
+		correctedProjection = Matrix4x4::Scale(Vector3f(1.0f, -1.0f, 1.0f)) * correctedProjection;
+
+	s_SceneData.constantBuffer.viewProjectionMatrix = (correctedProjection * Matrix4x4::Inverse(transform)).GetTranspose();
 	s_SceneData.constantBuffer.eyePosition = transform.ExtractTranslation();
 
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));

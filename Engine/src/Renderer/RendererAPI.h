@@ -29,7 +29,9 @@ public:
 	virtual void ClearColour() = 0;
 	virtual void ClearDepth() = 0;
 
-	virtual void StartRenderPass() = 0;
+	// clear=false loads the render pass's existing attachment contents instead of clearing them -
+	// needed for passes that draw on top of an already-rendered framebuffer (e.g. editor gizmo overlays).
+	virtual void StartRenderPass(bool clear = true) = 0;
 	virtual void EndRenderPass() = 0;
 
 	virtual void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL) = 0;

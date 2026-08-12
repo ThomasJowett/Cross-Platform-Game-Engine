@@ -50,10 +50,12 @@ void WebGPURendererAPI::ClearColour() {}
 
 void WebGPURendererAPI::ClearDepth() {}
 
-void WebGPURendererAPI::StartRenderPass()
+void WebGPURendererAPI::StartRenderPass(bool clear)
 {
 	PROFILE_FUNCTION();
 	ENGINE_TRACE("WebGPURendererAPI: StartRenderPass");
+
+	wgpu::LoadOp loadOp = clear ? wgpu::LoadOp::Clear : wgpu::LoadOp::Load;
 
 	wgpu::RenderPassDescriptor renderPassDesc = {};
 
@@ -69,13 +71,35 @@ void WebGPURendererAPI::StartRenderPass()
 		m_CurrentTargetHeight = currentFrameBuffer->GetSpecification().height;
 
 		const auto& colourViews = currentFrameBuffer->GetColourViews();
-		for (const auto& view : colourViews)
+		const auto& specAttachments = currentFrameBuffer->GetSpecification().attachments.attachments;
+
+		// colourViews only contains the non-depth attachments, in the same relative order they
+		// appear in specAttachments - walk both together so each view can be matched to its format.
+		size_t colourViewIndex = 0;
+		for (const auto& spec : specAttachments)
 		{
+			if (FrameBuffer::IsDepthFormat(spec.textureFormat))
+				continue;
+			if (colourViewIndex >= colourViews.size())
+				break;
+
 			wgpu::RenderPassColorAttachment attachment = {};
-			attachment.view = view;
-			attachment.loadOp = wgpu::LoadOp::Clear;
+			attachment.view = colourViews[colourViewIndex++];
+			attachment.loadOp = loadOp;
 			attachment.storeOp = wgpu::StoreOp::Store;
-			attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
+
+			if (spec.textureFormat == FrameBufferTextureFormat::RED_INTEGER)
+			{
+				// Entity-id attachment: -1 means "no entity". Clearing it with the RGBA colour meant
+				// for the visible attachment writes nonsense into this integer target (the colour's
+				// R channel, rounded, e.g. 0 - which aliases a real entity index) rather than -1,
+				// which made every pixel that was never drawn to resolve as entity 0.
+				attachment.clearValue = wgpu::Color{ -1.0, 0.0, 0.0, 0.0 };
+			}
+			else
+			{
+				attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
+			}
 #ifdef __EMSCRIPTEN__
 			attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 #endif
@@ -87,11 +111,11 @@ void WebGPURendererAPI::StartRenderPass()
 		{
 			hasDepth = true;
 			depthAttachment.view = depthView;
-			depthAttachment.depthLoadOp = wgpu::LoadOp::Clear;
+			depthAttachment.depthLoadOp = loadOp;
 			depthAttachment.depthStoreOp = wgpu::StoreOp::Store;
 			depthAttachment.depthClearValue = 1.0f;
 
-			depthAttachment.stencilLoadOp = wgpu::LoadOp::Clear;
+			depthAttachment.stencilLoadOp = loadOp;
 			depthAttachment.stencilStoreOp = wgpu::StoreOp::Discard;
 			depthAttachment.stencilClearValue = 0;
 		}
@@ -107,7 +131,7 @@ void WebGPURendererAPI::StartRenderPass()
 		{
 			wgpu::RenderPassColorAttachment attachment = {};
 			attachment.view = targetView;
-			attachment.loadOp = wgpu::LoadOp::Clear;
+			attachment.loadOp = loadOp;
 			attachment.storeOp = wgpu::StoreOp::Store;
 			attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
 #ifdef __EMSCRIPTEN__

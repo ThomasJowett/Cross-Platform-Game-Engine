@@ -169,6 +169,11 @@ void WebGPUPipeline::Invalidate()
 
 	// Primitive state
 	pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+	// Renderer::BeginScene negates Y in the projection matrix to correct for WebGPU's clip-space
+	// convention differing from OpenGL's - that also reverses the apparent winding order of every
+	// triangle, so front becomes back. Flip the expected front face to compensate, otherwise
+	// everything that should be visible gets back-face culled and nothing renders.
+	pipelineDesc.primitive.frontFace = wgpu::FrontFace::CW;
 	if (m_Specification.backFaceCulling)
 	{
 		pipelineDesc.primitive.cullMode = wgpu::CullMode::Back;
@@ -250,6 +255,9 @@ void WebGPUPipeline::Bind()
 		return;
 
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	if (!rendererAPI.GetRenderPass())
+		return;
+
 	rendererAPI.SetCurrentPipeline(std::static_pointer_cast<Pipeline>(shared_from_this()));
 	rendererAPI.GetRenderPass().setPipeline(m_Pipeline);
 }

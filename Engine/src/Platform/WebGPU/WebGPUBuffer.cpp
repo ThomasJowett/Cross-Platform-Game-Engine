@@ -66,6 +66,8 @@ void WebGPUVertexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	if (!rendererAPI.GetRenderPass())
+		return;
 	rendererAPI.GetRenderPass().setVertexBuffer(0, m_Buffer, 0, m_Size);
 }
 
@@ -109,6 +111,8 @@ void WebGPUIndexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
 	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	if (!rendererAPI.GetRenderPass())
+		return;
 	rendererAPI.GetRenderPass().setIndexBuffer(m_Buffer, wgpu::IndexFormat::Uint32, 0, m_Count * sizeof(uint32_t));
 }
 
