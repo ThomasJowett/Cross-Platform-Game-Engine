@@ -80,19 +80,23 @@ void WebGPURendererAPI::StartRenderPass()
 	}
 	else
 	{
-		wgpu::TextureView targetView = m_WebGPUContext->GetCurrentTextureView();
-		if (!targetView)
-			return;
+		// Swapchain
+		m_CurrentTargetWidth = m_WebGPUContext->GetSurfaceConfig().width;
+		m_CurrentTargetHeight = m_WebGPUContext->GetSurfaceConfig().height;
 
-		wgpu::RenderPassColorAttachment attachment = {};
-		attachment.view = targetView;
-		attachment.loadOp = wgpu::LoadOp::Clear;
-		attachment.storeOp = wgpu::StoreOp::Store;
-		attachment.clearValue = wgpu::Color{m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a};
+		wgpu::TextureView targetView = m_WebGPUContext->GetCurrentTextureView();
+		if (targetView)
+		{
+			wgpu::RenderPassColorAttachment attachment = {};
+			attachment.view = targetView;
+			attachment.loadOp = wgpu::LoadOp::Clear;
+			attachment.storeOp = wgpu::StoreOp::Store;
+			attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
 #ifdef __EMSCRIPTEN__
-		attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+			attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
 #endif
-		colourAttachments.push_back(attachment);
+			colourAttachments.push_back(attachment);
+		}
 	}
 
 	if (colourAttachments.empty() && !hasDepth)
