@@ -2,6 +2,7 @@
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
 #include "WebGPUFrameBuffer.h"
+#include "WebGPUPipeline.h"
 #include <cstdint>
 #include <webgpu/webgpu.hpp>
 
