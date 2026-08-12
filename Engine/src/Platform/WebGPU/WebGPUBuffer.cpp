@@ -54,11 +54,7 @@ void WebGPUVertexBuffer::SetData(const void* data, uint32_t size, uint32_t offse
 	CORE_ASSERT(size + offset <= m_Size, "Size must be less than the buffer size");
 
 	PROFILE_FUNCTION();
-	void* mappedMemory = m_Buffer.getMappedRange(offset, size);
-	CORE_ASSERT(mappedMemory, "Failed to map buffer for writing");
-
-	memcpy(mappedMemory, data, size);
-	m_Buffer.unmap();
+	m_WebGPUContext->GetQueue().writeBuffer(m_Buffer, offset, data, size);
 }
 
 void WebGPUVertexBuffer::SetData(const void* data)
