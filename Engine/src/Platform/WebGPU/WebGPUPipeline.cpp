@@ -9,6 +9,17 @@
 #include <memory>
 #include <webgpu/webgpu.hpp>
 
+static wgpu::TextureFormat FrameBufferFormatToWebGPU(FrameBufferTextureFormat format)
+{
+	switch (format)
+	{
+	case FrameBufferTextureFormat::RGBA8:       return wgpu::TextureFormat::RGBA8Unorm;
+	case FrameBufferTextureFormat::RED_INTEGER: return wgpu::TextureFormat::R32Sint;
+	case FrameBufferTextureFormat::Depth:       return wgpu::TextureFormat::Depth24PlusStencil8;
+	default:									return wgpu::TextureFormat::Undefined;
+	}
+}
+
 static wgpu::VertexFormat ShaderDataTypeToWebGPU(ShaderDataType type)
 {
 	switch (type)
