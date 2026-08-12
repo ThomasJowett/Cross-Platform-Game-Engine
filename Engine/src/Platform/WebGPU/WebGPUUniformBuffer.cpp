@@ -3,6 +3,7 @@
 #include "Core/Application.h"
 
 WebGPUUniformBuffer::WebGPUUniformBuffer(uint32_t size, uint32_t binding)
+	: m_Binding(binding)
 {
 	m_BufferDesc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::Uniform;
 	m_BufferDesc.size = size;
@@ -28,4 +29,8 @@ WebGPUUniformBuffer::~WebGPUUniformBuffer()
 void WebGPUUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offset)
 {
 	m_WebGPUContext->GetQueue().writeBuffer(m_UniformBuffer, offset, data, size);
+}
+
+void WebGPUUniformBuffer::Bind() const
+{
 }

@@ -20,3 +20,7 @@ void OpenGLUniformBuffer::SetData(const void* data, uint32_t size, uint32_t offs
 {
 	glNamedBufferSubData(m_RendererID, offset, size, data);
 }
+
+void OpenGLUniformBuffer::Bind() const
+{
+}
