@@ -68,6 +68,24 @@ std::vector<Command> s_TransparentRenderQueue;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& layout, bool transparent)
+{
+	std::string key = shader->GetName() + (transparent ? "_trans" : "_opaque");
+	if (s_RendererData.pipelineCache.find(key) != s_RendererData.pipelineCache.end())
+		return s_RendererData.pipelineCache[key];
+
+	Pipeline::Spec spec;
+	spec.shader = shader;
+	spec.layout = layout;
+	spec.transparencyEnabled = transparent;
+	spec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	spec.hasDepth = true;
+
+	Ref<Pipeline> pipeline = Pipeline::Create(spec);
+	s_RendererData.pipelineCache[key] = pipeline;
+	return pipeline;
+}
+
 void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 {
 	for (const auto& command : renderQueue)
