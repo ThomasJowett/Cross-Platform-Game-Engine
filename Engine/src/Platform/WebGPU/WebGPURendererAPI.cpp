@@ -36,6 +36,7 @@ void WebGPURendererAPI::ClearDepth() {}
 void WebGPURendererAPI::StartRenderPass()
 {
 	PROFILE_FUNCTION();
+	ENGINE_TRACE("WebGPURendererAPI: StartRenderPass");
 
 	wgpu::RenderPassDescriptor renderPassDesc = {};
 
@@ -133,6 +134,7 @@ void WebGPURendererAPI::StartRenderPass()
 void WebGPURendererAPI::EndRenderPass()
 {
 	PROFILE_FUNCTION();
+	ENGINE_TRACE("WebGPURendererAPI: EndRenderPass");
 	if (m_RenderPass)
 	{
 		m_RenderPass.end();
