@@ -29,6 +29,9 @@ private:
 	wgpu::RenderPassEncoder m_RenderPass;
 	wgpu::CommandEncoder m_CommandEncoder;
 
+	uint32_t m_CurrentTargetWidth = 0;
+	uint32_t m_CurrentTargetHeight = 0;
+
 	Ref<Pipeline> m_CurrentPipeline;
 	Ref<WebGPUContext> m_WebGPUContext;
 };
