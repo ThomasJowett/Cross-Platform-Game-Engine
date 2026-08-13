@@ -692,7 +692,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SpriteComponent& component = entity.AddComponent<SpriteComponent>();
 
 		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Tint"), component.tint);
-		pSpriteComponentElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
+		pSpriteComponentElement->QueryFloatAttribute("TilingFactor", &component.tilingFactor);
 
 		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Texture"), component.texture);
 	}
