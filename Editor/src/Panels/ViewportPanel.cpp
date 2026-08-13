@@ -147,11 +147,17 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
-			// Read the hovered entity every frame rather than only on click - WebGPU's readback is
-			// async now (required so it can't block/hang on the web), so a click-gated read always
-			// returned the *previous* frame's stale result, which looked like needing to double-click
-			// to select anything. Keeping m_HoveredEntity continuously up to date means it's already
-			// correct by the time an actual click event below fires.
+			// Read the hovered entity when it might have changed rather than only on click - WebGPU's
+			// readback is async (required so it can't block/hang on the web), so a click-gated read
+			// always returned the *previous* frame's stale result, which looked like needing to
+			// double-click to select anything. Keeping m_HoveredEntity up to date as the mouse moves
+			// means it's already correct by the time an actual click event below fires.
+			//
+			// Gated on the mouse position actually changing, not just re-issued every frame - a
+			// stationary mouse can't have a different entity under it, and each read is a real
+			// GPU round trip (copyTextureToBuffer + mapAsync); doing that unconditionally every frame
+			// while merely hovering was a major (avoidable) cost on Emscripten specifically, where
+			// -sASYNCIFY adds real per-call overhead to every async JS/WASM round trip.
 			//
 			// m_ViewportHovered alone isn't enough to bound this read - it stays true for the whole
 			// duration of a right-click camera drag even once the hidden, unbounded cursor position
@@ -159,13 +165,18 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.x < m_ViewportSize.x
 				&& m_RelativeMousePosition.y >= 0.0f && m_RelativeMousePosition.y < m_ViewportSize.y)
 			{
-				m_Framebuffer->Bind();
-				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				m_Framebuffer->UnBind();
+				if (m_RelativeMousePosition != m_LastEntityPickMousePosition)
+				{
+					m_LastEntityPickMousePosition = m_RelativeMousePosition;
+					m_Framebuffer->Bind();
+					m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+					m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
+					m_Framebuffer->UnBind();
+				}
 			}
 			else
 			{
+				m_LastEntityPickMousePosition = { -1.0f, -1.0f };
 				m_HoveredEntity = Entity();
 			}
 
