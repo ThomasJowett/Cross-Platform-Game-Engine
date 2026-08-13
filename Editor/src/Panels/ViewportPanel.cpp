@@ -152,10 +152,22 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			// returned the *previous* frame's stale result, which looked like needing to double-click
 			// to select anything. Keeping m_HoveredEntity continuously up to date means it's already
 			// correct by the time an actual click event below fires.
-			m_Framebuffer->Bind();
-			m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-			m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-			m_Framebuffer->UnBind();
+			//
+			// m_ViewportHovered alone isn't enough to bound this read - it stays true for the whole
+			// duration of a right-click camera drag even once the hidden, unbounded cursor position
+			// drifts outside the viewport, so the pixel coordinates below need their own bounds check.
+			if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.x < m_ViewportSize.x
+				&& m_RelativeMousePosition.y >= 0.0f && m_RelativeMousePosition.y < m_ViewportSize.y)
+			{
+				m_Framebuffer->Bind();
+				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
+				m_Framebuffer->UnBind();
+			}
+			else
+			{
+				m_HoveredEntity = Entity();
+			}
 
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
