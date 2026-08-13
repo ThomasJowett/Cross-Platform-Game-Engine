@@ -462,12 +462,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.camera.GetProjectionMatrix());
-				projection.Transpose();
 
-				Vector4f frontTopLeft_4 = Vector4f(-1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontTopRight_4 = Vector4f(1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontBottomLeft_4 = Vector4f(-1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontBottomRight_4 = Vector4f(1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontTopLeft_4 = Vector4f(-1.0f, 1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontTopRight_4 = Vector4f(1.0f, 1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontBottomLeft_4 = Vector4f(-1.0f, -1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontBottomRight_4 = Vector4f(1.0f, -1.0f, 0.0f, 1.0f) * projection * view;
 
 				Vector4f backTopLeft_4 = Vector4f(-1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
 				Vector4f backTopRight_4 = Vector4f(1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
@@ -849,6 +848,7 @@ void ViewportPanel::OnImGuiRender()
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 			cameraViewMat.Transpose();
+			cameraProjectionMat.Transpose();
 
 			if (m_HierarchyPanel->GetSelectedEntity().IsSceneValid())
 			{
