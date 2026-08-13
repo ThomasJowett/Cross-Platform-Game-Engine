@@ -948,7 +948,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_ARROW_DOWN_WIDE_SHORT "\tSize\0"
 			ICON_FA_ARROW_DOWN_SHORT_WIDE "\tSize Reverse\0"
 			ICON_FA_SORT_DOWN "\tType\0"
-			ICON_FA_SORT_UP "\tType Reverse"))
+			ICON_FA_SORT_UP "\tType Reverse\0"))
 		{
 			m_ForceRescan = true;
 			Settings::SetInt("ContentExplorer", "SortingMode", (int)m_SortingMode);

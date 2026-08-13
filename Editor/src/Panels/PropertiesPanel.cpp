@@ -578,7 +578,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				"Orthogonal\0"
 				"Isometric\0"
 				"Isometric (staggered)\0"
-				"Hexagonal (staggered)"))
+				"Hexagonal (staggered)\0"))
 			{
 				tilemap.Rebuild();
 				SceneManager::CurrentScene()->MakeDirty();
@@ -708,7 +708,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
 			if (ImGui::Combo("Projection", (int*)&projectionType,
 				"Perspective\0"
-				"Orthographic"))
+				"Orthographic\0"))
 			{
 				camera.SetProjection(projectionType);
 				SceneManager::CurrentScene()->MakeDirty();

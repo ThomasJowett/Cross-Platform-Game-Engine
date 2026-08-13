@@ -275,7 +275,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 bool EditorPreferencesPanel::ShowStyleSelector()
 {
 	static int style_idx = -1;
-	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark"))
+	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark\0"))
 	{
 		bool isDarkTheme = true;
 		switch (style_idx)
