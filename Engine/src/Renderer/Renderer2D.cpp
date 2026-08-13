@@ -389,11 +389,7 @@ void Renderer2D::FlushQuads()
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.quadVertexBufferPtr - (uint8_t*)s_Data.quadVertexBufferBase);
 	s_Data.quadVertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
 
-	for (uint32_t i = 0; i < s_Data.textureSlotIndex; i++)
-	{
-		if (i == 0)
-			s_Data.quadPipeline->SetTexture(s_Data.textureSlots[i], 1);
-	}
+	s_Data.quadPipeline->SetTexture(s_Data.textureSlots[s_Data.textureSlotIndex - 1], 1);
 
 	s_Data.quadPipeline->Bind();
 	s_Data.quadPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
