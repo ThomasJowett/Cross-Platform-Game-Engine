@@ -40,6 +40,8 @@ private:
 	wgpu::SurfaceConfiguration m_SurfaceConfig;
 
 	std::unique_ptr<wgpu::ErrorCallback> m_ErrorCallbackHandle;
+	std::unique_ptr<wgpu::RequestAdapterCallback> m_RequestAdapterCallbackHandle;
+	std::unique_ptr<wgpu::RequestDeviceCallback> m_RequestDeviceCallbackHandle;
 
 	wgpu::SurfaceTexture m_CurrentSurfaceTexture;
 	wgpu::TextureView m_CurrentTextureView;

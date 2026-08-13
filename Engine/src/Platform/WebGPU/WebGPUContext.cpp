@@ -27,7 +27,7 @@ void WebGPUContext::Init()
 	adapterOpts.compatibleSurface = m_Surface;
 
 #ifdef __EMSCRIPTEN__
-	m_Instance.requestAdapter(adapterOpts,
+	m_RequestAdapterCallbackHandle = m_Instance.requestAdapter(adapterOpts,
 	                          [this](wgpu::RequestAdapterStatus status, wgpu::Adapter adapter, char const* message)
 	                          {
 		                          if (status != wgpu::RequestAdapterStatus::Success)
@@ -50,7 +50,7 @@ void WebGPUContext::Init()
 		                          deviceDesc.deviceLostCallback = [](WGPUDeviceLostReason reason, char const* message, void* /*pUserData*/)
 		                          { ENGINE_CRITICAL("Device lost: Reason: {0} Message: {1}", (int)reason, message); };
 
-		                          m_Adapter.requestDevice(deviceDesc,
+		                          m_RequestDeviceCallbackHandle = m_Adapter.requestDevice(deviceDesc,
 		                                                  [this](wgpu::RequestDeviceStatus status, wgpu::Device device, char const* message)
 		                                                  {
 			                                                  if (status != wgpu::RequestDeviceStatus::Success)
