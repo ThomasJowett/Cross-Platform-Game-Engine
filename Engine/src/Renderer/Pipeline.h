@@ -30,6 +30,7 @@ public:
 		bool transparencyEnabled = false;
 		std::vector<FrameBufferTextureFormat> targetFormats;
 		bool hasDepth = true;
+		PrimitiveTopology topology = PrimitiveTopology::Triangles;
 	};
 public:
 	virtual ~Pipeline() = default;

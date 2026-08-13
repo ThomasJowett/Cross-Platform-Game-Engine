@@ -314,6 +314,8 @@ bool Renderer2D::Init()
 	hairLineSpec.shader = s_Data.hairLineShader;
 	hairLineSpec.layout = s_Data.hairLineVertexBuffer->GetLayout();
 	hairLineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	hairLineSpec.topology = PrimitiveTopology::Lines;
+	hairLineSpec.depthTest = false;
 	s_Data.hairLinePipeline = Pipeline::Create(hairLineSpec);
 
 	Pipeline::Spec textSpec;

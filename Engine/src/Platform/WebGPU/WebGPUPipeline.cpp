@@ -9,6 +9,19 @@
 #include <memory>
 #include <webgpu/webgpu.hpp>
 
+static wgpu::PrimitiveTopology PrimitiveTopologyToWebGPU(PrimitiveTopology topology)
+{
+	switch (topology)
+	{
+	case PrimitiveTopology::Points:        return wgpu::PrimitiveTopology::PointList;
+	case PrimitiveTopology::Lines:          return wgpu::PrimitiveTopology::LineList;
+	case PrimitiveTopology::LineStrip:      return wgpu::PrimitiveTopology::LineStrip;
+	case PrimitiveTopology::Triangles:      return wgpu::PrimitiveTopology::TriangleList;
+	case PrimitiveTopology::TriangleStrip:  return wgpu::PrimitiveTopology::TriangleStrip;
+	default:                                return wgpu::PrimitiveTopology::TriangleList;
+	}
+}
+
 static wgpu::TextureFormat FrameBufferFormatToWebGPU(FrameBufferTextureFormat format)
 {
 	switch (format)
@@ -168,7 +181,7 @@ void WebGPUPipeline::Invalidate()
 	pipelineDesc.fragment = &fragmentState;
 
 	// Primitive state
-	pipelineDesc.primitive.topology = wgpu::PrimitiveTopology::TriangleList;
+	pipelineDesc.primitive.topology = PrimitiveTopologyToWebGPU(m_Specification.topology);
 	// Renderer::BeginScene negates Y in the projection matrix to correct for WebGPU's clip-space
 	// convention differing from OpenGL's - that also reverses the apparent winding order of every
 	// triangle, so front becomes back. Flip the expected front face to compensate, otherwise
