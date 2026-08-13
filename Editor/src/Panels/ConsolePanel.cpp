@@ -50,7 +50,7 @@ ConsolePanel::ConsolePanel(bool* show)
 {
 	m_DisplayScale = 1.0f;
 
-	m_LevelFilter = Level::Trace;
+	m_LevelFilter = Level::Info;
 	m_AllowScrollingToBottom = true;
 
 	m_TextFilter = new ImGuiTextFilter();
