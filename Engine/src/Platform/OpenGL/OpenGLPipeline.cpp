@@ -24,4 +24,14 @@ void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 
 void OpenGLPipeline::Bind()
 {
+	if (m_Specification.hasDepth)
+	{
+		glEnable(GL_DEPTH_TEST);
+		glDepthFunc(m_Specification.depthTest ? GL_LESS : GL_ALWAYS);
+		glDepthMask(m_Specification.depthTest ? GL_TRUE : GL_FALSE);
+	}
+	else
+	{
+		glDisable(GL_DEPTH_TEST);
+	}
 }
