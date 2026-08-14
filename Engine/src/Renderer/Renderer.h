@@ -37,4 +37,13 @@ public:
 	static void ClearPostProcessEffects();
 
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+
+	struct Stats
+	{
+		uint32_t drawCalls = 0;
+		uint32_t meshCount = 0;
+	};
+
+	static const Stats& GetStats();
+	static void ResetStats();
 };

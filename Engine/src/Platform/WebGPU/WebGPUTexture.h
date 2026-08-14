@@ -34,6 +34,7 @@ public:
 	inline const wgpu::Texture& GetTexture() const { return m_Texture; }
 	inline const wgpu::TextureView& GetTextureView() const { return m_TextureView; }
 	inline const wgpu::Sampler& GetSampler() const { return m_Sampler; }
+	inline wgpu::TextureFormat GetTextureFormat() const { return m_TextureFormat; }
 private:
 	// sets the texture to be the null texture
 	void NullTexture();

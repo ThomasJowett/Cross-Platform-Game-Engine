@@ -143,7 +143,15 @@ void WebGPUPipeline::Invalidate()
 	if (m_Specification.targetFormats.empty())
 	{
 		colourTargets[0].format = m_WebGPUContext->GetSwapchainFormat();
-		colourTargets[0].writeMask = wgpu::ColorWriteMask::All;
+		// With blending disabled, whatever alpha the shader happens to compute (e.g. a partially
+		// transparent texture on an otherwise-opaque material) would still land in the framebuffer's
+		// alpha channel - meaningless for this draw since nothing blends against it, but not harmless
+		// if something downstream (an ImGui::Image preview, a later compositing pass) reads that
+		// channel and treats the surviving value as real transparency. Masking it out of the write
+		// entirely leaves it at whatever the clear value set it to (opaque) for the whole pass.
+		colourTargets[0].writeMask = m_Specification.transparencyEnabled
+			? wgpu::ColorWriteMask::All
+			: (wgpu::ColorWriteMask::Red | wgpu::ColorWriteMask::Green | wgpu::ColorWriteMask::Blue);
 
 		if (m_Specification.transparencyEnabled)
 		{
@@ -161,9 +169,15 @@ void WebGPUPipeline::Invalidate()
 		for (uint32_t i = 0; i < targetCount; i++)
 		{
 			colourTargets[i].format = FrameBufferFormatToWebGPU(m_Specification.targetFormats[i]);
-			colourTargets[i].writeMask = wgpu::ColorWriteMask::All;
 
-			if (m_Specification.transparencyEnabled && m_Specification.targetFormats[i] != FrameBufferTextureFormat::RED_INTEGER)
+			bool isColourTarget = m_Specification.targetFormats[i] != FrameBufferTextureFormat::RED_INTEGER;
+			// See the comment in the single-target branch above - an opaque draw's alpha shouldn't
+			// survive into the framebuffer even though nothing here blends against it.
+			colourTargets[i].writeMask = (isColourTarget && !m_Specification.transparencyEnabled)
+				? (wgpu::ColorWriteMask::Red | wgpu::ColorWriteMask::Green | wgpu::ColorWriteMask::Blue)
+				: wgpu::ColorWriteMask::All;
+
+			if (m_Specification.transparencyEnabled && isColourTarget)
 			{
 				blends[i].color.operation = wgpu::BlendOperation::Add;
 				blends[i].color.srcFactor = wgpu::BlendFactor::SrcAlpha;
@@ -308,7 +322,13 @@ void WebGPUPipeline::CommitBindGroups()
 					entry.textureView = tex->GetTextureView();
 					entries.push_back(entry);
 
-					if (b.binding <= 1)
+					// Integer textures (e.g. the entity-id attachment) are read in WGSL via
+					// textureLoad(), which - unlike textureSample() - takes no sampler and requires
+					// none to be bound; adding one there would be a validation error, not just unused.
+					wgpu::TextureFormat format = tex->GetTextureFormat();
+					bool isIntegerFormat = format == wgpu::TextureFormat::R8Uint || format == wgpu::TextureFormat::R16Uint
+						|| format == wgpu::TextureFormat::R32Uint || format == wgpu::TextureFormat::R32Sint;
+					if (!isIntegerFormat)
 					{
 						wgpu::BindGroupEntry samplerEntry = {};
 						samplerEntry.binding = b.binding + 1;

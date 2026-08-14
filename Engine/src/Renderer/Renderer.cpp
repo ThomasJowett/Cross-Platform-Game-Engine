@@ -32,6 +32,8 @@ struct RendererData
 	DrawMode drawMode = DrawMode::FILL;
 
 	std::unordered_map<std::string, Ref<Pipeline>> pipelineCache;
+
+	Renderer::Stats stats;
 };
 
 struct SceneData
@@ -55,7 +57,16 @@ struct SceneData
 	ModelBuffer modelBuffer;
 
 	Ref<UniformBuffer> constantUniformBuffer;
-	Ref<UniformBuffer> modelUniformBuffer;
+
+	// One shared modelUniformBuffer, rewritten per draw via queue.writeBuffer(), does not work on
+	// WebGPU: writeBuffer calls apply immediately relative to the queue, but every draw in a render
+	// pass is recorded into one command encoder and only submitted once, as a batch, at the end - by
+	// the time any of them actually execute on the GPU every earlier writeBuffer call has already
+	// landed, so all draws in the batch end up reading whichever draw's data was written last. Each
+	// draw needs its own buffer object instead; this pool hands out (creating on demand) a fresh one
+	// per draw and is reset to reuse from the start once per frame.
+	std::vector<Ref<UniformBuffer>> modelUniformBufferPool;
+	size_t modelUniformBufferPoolIndex = 0;
 };
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -70,9 +81,19 @@ std::vector<Command> s_TransparentRenderQueue;
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& layout, bool transparent)
+static Ref<UniformBuffer> NextModelUniformBuffer()
 {
-	std::string key = shader->GetName() + (transparent ? "_trans" : "_opaque");
+	if (s_SceneData.modelUniformBufferPoolIndex >= s_SceneData.modelUniformBufferPool.size())
+		s_SceneData.modelUniformBufferPool.push_back(UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1));
+
+	return s_SceneData.modelUniformBufferPool[s_SceneData.modelUniformBufferPoolIndex++];
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& layout, bool transparent, bool twoSided)
+{
+	std::string key = shader->GetName() + (transparent ? "_trans" : "_opaque") + (twoSided ? "_twosided" : "_cull");
 	if (s_RendererData.pipelineCache.find(key) != s_RendererData.pipelineCache.end())
 		return s_RendererData.pipelineCache[key];
 
@@ -80,6 +101,11 @@ static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& 
 	spec.shader = shader;
 	spec.layout = layout;
 	spec.transparencyEnabled = transparent;
+	// WebGPU bakes cull mode into the pipeline at creation time rather than allowing it to be
+	// toggled per draw call (unlike OpenGL, where DrawIndexed's backFaceCull parameter can flip
+	// glEnable/glDisable(GL_CULL_FACE) on the fly) - so a two-sided material needs its own pipeline
+	// variant here, since setting Material::SetTwoSided() alone has no effect on WebGPU otherwise.
+	spec.backFaceCulling = !twoSided;
 	spec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	spec.hasDepth = true;
 
@@ -105,7 +131,7 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		if (!shader)
 			continue;
 
-		Ref<Pipeline> pipeline = GetPipeline(shader, command.mesh->GetVertexLayout(), command.material->IsTransparent());
+		Ref<Pipeline> pipeline = GetPipeline(shader, command.mesh->GetVertexLayout(), command.material->IsTransparent(), command.material->IsTwoSided());
 		// pipeline is never null here - Pipeline::Create always returns an object even when the
 		// underlying graphics-API pipeline failed to build (e.g. its shader couldn't be loaded, such
 		// as a missing .wgsl file). Binding buffers and drawing against no valid bound pipeline is
@@ -113,16 +139,18 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		if (!pipeline || !pipeline->IsValid())
 			continue;
 
+		Ref<UniformBuffer> modelUniformBuffer = NextModelUniformBuffer();
+
 		pipeline->Bind();
 		pipeline->SetUniformBuffer(s_SceneData.constantUniformBuffer, 0);
-		pipeline->SetUniformBuffer(s_SceneData.modelUniformBuffer, 1);
+		pipeline->SetUniformBuffer(modelUniformBuffer, 1);
 
-		s_SceneData.modelBuffer.modelMatrix = command.transform;
+		s_SceneData.modelBuffer.modelMatrix = command.transform.GetTranspose();
 		s_SceneData.modelBuffer.colour = command.material->GetTint();
 		s_SceneData.modelBuffer.textureOffset = command.material->GetTextureOffset();
 		s_SceneData.modelBuffer.tilingFactor = command.material->GetTilingFactor();
 		s_SceneData.modelBuffer.entityId = command.entityId;
-		s_SceneData.modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
+		modelUniformBuffer->SetData(&s_SceneData.modelBuffer, sizeof(SceneData::ModelBuffer));
 
 		s_RendererData.whiteTexture->Bind(0);
 		s_RendererData.normalTexture->Bind(1);
@@ -131,11 +159,20 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		if (s_RendererData.drawMode == DrawMode::FILL)
 			command.material->BindTextures();
 
+		// Texture::Bind() above only does anything on OpenGL (WebGPU has no global texture-unit
+		// binding - it's always relative to a specific pipeline's bind group), so WebGPU also needs
+		// this explicit, pipeline-scoped equivalent.
+		Ref<Texture> albedo = command.material->GetTexture(0);
+		pipeline->SetTexture(albedo ? albedo : s_RendererData.whiteTexture, 2);
+
 		command.mesh->GetVertexBuffer()->Bind();
 		command.mesh->GetIndexBuffer()->Bind();
 		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, !command.material->IsTwoSided(), s_RendererData.drawMode);
 		command.mesh->GetIndexBuffer()->UnBind();
 		command.mesh->GetVertexBuffer()->UnBind();
+
+		s_RendererData.stats.drawCalls++;
+		s_RendererData.stats.meshCount++;
 	}
 }
 
@@ -144,7 +181,6 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 bool Renderer::Init()
 {
 	s_SceneData.constantUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ConstantBuffer), 0);
-	s_SceneData.modelUniformBuffer = UniformBuffer::Create(sizeof(SceneData::ModelBuffer), 1);
 
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
 	s_RendererData.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, 1u, &whiteTextureData);
@@ -224,6 +260,7 @@ void Renderer::EndScene()
 				Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, b.transform.ExtractTranslation());
 		});
 
+	s_SceneData.modelUniformBufferPoolIndex = 0;
 	RenderCommandForQueue(s_OpaqueRenderQueue);
 	RenderCommandForQueue(s_TransparentRenderQueue);
 
@@ -234,6 +271,16 @@ void Renderer::EndScene()
 Ref<UniformBuffer> Renderer::GetConstantUniformBuffer()
 {
 	return s_SceneData.constantUniformBuffer;
+}
+
+const Renderer::Stats& Renderer::GetStats()
+{
+	return s_RendererData.stats;
+}
+
+void Renderer::ResetStats()
+{
+	s_RendererData.stats = Renderer::Stats();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
