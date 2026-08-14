@@ -1138,14 +1138,39 @@ void ViewportPanel::OnImGuiRender()
 
 		if (m_ShowStats)
 		{
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, window_pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(window_pos.x + 250, window_pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
-			ImGui::Text("Draw Calls: %i", Renderer2D::GetStats().drawCalls);
-			ImGui::Text("Quad Count: %i", Renderer2D::GetStats().quadCount);
-			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);
-			ImGui::Text("Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
+			char statsLines[5][32];
+			snprintf(statsLines[0], sizeof(statsLines[0]), "Draw Calls: %i", Renderer2D::GetStats().drawCalls + Renderer::GetStats().drawCalls);
+			snprintf(statsLines[1], sizeof(statsLines[1]), "Quad Count: %i", Renderer2D::GetStats().quadCount);
+			snprintf(statsLines[2], sizeof(statsLines[2]), "Line Count: %i", Renderer2D::GetStats().lineCount);
+			snprintf(statsLines[3], sizeof(statsLines[3]), "Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
+			snprintf(statsLines[4], sizeof(statsLines[4]), "Mesh Count: %i", Renderer::GetStats().meshCount);
+
+			ImVec2 statsBoxSize(0.0f, 0.0f);
+			for (const char* line : statsLines)
+			{
+				ImVec2 lineSize = ImGui::CalcTextSize(line);
+				statsBoxSize.x = std::max(statsBoxSize.x, lineSize.x);
+				statsBoxSize.y += ImGui::GetTextLineHeightWithSpacing();
+			}
+
+			// The frame-rate box above shares this same top-left corner and, when shown, has already
+			// pushed the actual stats text down by one line via the auto-advancing cursor started at
+			// statsBoxPosition - the background rect needs to start below it too, or it ends up
+			// short/overlapping rather than framing the text it's meant to sit behind.
+			float statsBoxStartY = window_pos.y + ImGui::GetStyle().ItemSpacing.y;
+			if (m_ShowFrameRate)
+				statsBoxStartY += ImGui::GetTextLineHeightWithSpacing();
+
+			ImVec2 padding = ImGui::GetStyle().ItemSpacing;
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, statsBoxStartY),
+				ImVec2(window_pos.x + statsBoxSize.x + padding.x * 2.0f, statsBoxStartY + statsBoxSize.y), IM_COL32(0, 0, 0, 30), 3.0f);
+
+			for (const char* line : statsLines)
+				ImGui::Text("%s", line);
 		}
 
 		Renderer2D::ResetStats();
+		Renderer::ResetStats();
 	}
 	if (!shown)
 		ImGui::PopStyleVar();
