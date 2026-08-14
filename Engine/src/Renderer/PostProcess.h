@@ -24,6 +24,10 @@ public:
 
 	Ref<Shader> GetShader() const;
 
+	// Responsible for its own FrameBuffer::Bind()/RenderCommand::StartRenderPass()/EndRenderPass()/
+	// UnBind() around every framebuffer it writes to (ping, pong, or both) - PostProcessStack::Execute()
+	// only tracks which of ping/pong holds the result, it doesn't open a render pass itself, since only
+	// the effect knows how many internal passes it needs.
 	virtual void Apply(Ref<Texture> colourTexture, Ref<Texture> depthTexture, Ref<Texture> entityIdTexture,
 		const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong,
 		Ref<Mesh> fullscreenQuad,
