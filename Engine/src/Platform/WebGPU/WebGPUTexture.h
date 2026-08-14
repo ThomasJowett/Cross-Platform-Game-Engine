@@ -62,6 +62,12 @@ private:
 	bool m_ReadbackBufferCreated = false;
 	bool m_ReadPixelPending = false;
 	int m_LastReadPixelValue = -1;
+	// Coordinates the most recent request (pending or already resolved) was for - lets ReadPixel()
+	// be called every frame cheaply once settled, only kicking off a new GPU round trip when the
+	// caller actually asks for a different pixel.
+	bool m_HasRequestedPixel = false;
+	uint32_t m_LastRequestedX = 0;
+	uint32_t m_LastRequestedY = 0;
 	// Buffer::mapAsync's callback closure is only kept alive by this handle - letting it go out of scope
 	// before the C callback fires leaves the callback pointing at freed memory.
 	std::unique_ptr<wgpu::BufferMapCallback> m_ReadPixelCallbackHandle;
