@@ -407,6 +407,16 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 	if (m_ReadPixelPending)
 		return m_LastReadPixelValue;
 
+	// Already have a settled answer for this exact pixel - calling this every frame while the mouse
+	// sits still must stay cheap, but it also must not freeze on a stale value from whatever pixel
+	// was hovered *before* this one; skip the GPU round trip only once we're actually caught up.
+	if (m_HasRequestedPixel && x == m_LastRequestedX && y == m_LastRequestedY)
+		return m_LastReadPixelValue;
+
+	m_HasRequestedPixel = true;
+	m_LastRequestedX = x;
+	m_LastRequestedY = y;
+
 	auto device = m_WebGPUContext->GetWebGPUDevice();
 	auto queue = m_WebGPUContext->GetQueue();
 

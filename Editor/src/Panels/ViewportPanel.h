@@ -93,7 +93,6 @@ private:
 	Entity m_HoveredEntity;
 
 	int m_PixelData = -1;
-	Vector2f m_LastEntityPickMousePosition = { -1.0f, -1.0f };
 
 	Ref<TilemapEditor> m_TilemapEditor;
 	bool m_RightClickMenuOpen = false;
