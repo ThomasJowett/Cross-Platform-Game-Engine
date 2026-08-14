@@ -15,16 +15,14 @@ struct VertexInput {
     @location(0) position: vec3<f32>,
     @location(1) colour: vec4<f32>,
     @location(2) texCoord: vec2<f32>,
-    @location(3) texIndex: f32,
-    @location(4) entityId: i32,
+    @location(3) entityId: i32,
 };
 
 struct VertexOutput {
     @builtin(position) position: vec4<f32>,
     @location(0) colour: vec4<f32>,
     @location(1) texCoord: vec2<f32>,
-    @location(2) @interpolate(flat) texIndex: f32,
-    @location(3) @interpolate(flat) entityId: i32,
+    @location(2) @interpolate(flat) entityId: i32,
 };
 
 struct FragmentOutput {
@@ -38,7 +36,6 @@ fn vs_main(input: VertexInput) -> VertexOutput {
     output.position = camera.u_ViewProjection * vec4<f32>(input.position, 1.0);
     output.colour = input.colour;
     output.texCoord = input.texCoord;
-    output.texIndex = input.texIndex;
     output.entityId = input.entityId;
     return output;
 }
@@ -46,7 +43,6 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 @fragment
 fn fs_main(input: VertexOutput) -> FragmentOutput {
     var output: FragmentOutput;
-    //let texIndex = f32(input.texIndex);
     output.frag_colour = textureSample(u_Textures, u_Sampler, input.texCoord) * input.colour;
 
     if(output.frag_colour.a <= 0.0001) {

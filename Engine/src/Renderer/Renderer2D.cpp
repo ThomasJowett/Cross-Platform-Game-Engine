@@ -16,7 +16,6 @@ struct QuadVertex
 	Vector3f position;
 	Colour colour;
 	Vector2f texCoords;
-	float texIndex;
 
 	// Editor only
 	int EntityId;
@@ -139,8 +138,14 @@ struct Renderer2DData
 	HairLineVertex* hairLineVertexBufferBase = nullptr;
 	HairLineVertex* hairLineVertexBufferPtr = nullptr;
 
-	std::array<Ref<Texture>, maxTexturesSlots> textureSlots;
-	uint32_t textureSlotIndex = 1;
+	Ref<Texture> currentBatchTexture;
+
+	// A batch-per-flush pool, not a single reused buffer: on WebGPU, queue.writeBuffer() calls
+	// within one render pass all land before that pass's single batched command buffer executes,
+	// so reusing one buffer across multiple flushes (now common since a texture change forces an
+	// early flush) would leave every draw reading whichever batch's data was written last.
+	std::vector<Ref<VertexBuffer>> quadVertexBufferPool;
+	size_t quadVertexBufferPoolIndex = 0;
 
 	std::array<Ref<Texture>, maxTexturesSlots> fontAtlasSlots;
 	uint32_t fontAtlasSlotIndex = 1;
@@ -168,7 +173,6 @@ bool Renderer2D::Init()
 			{ShaderDataType::Float3, "a_Position"},
 			{ShaderDataType::Float4, "a_Colour"},
 			{ShaderDataType::Float2, "a_Texcoord"},
-			{ShaderDataType::Float, "a_TexIndex"},
 			{ShaderDataType::Int, "a_EntityId"}
 		});
 
@@ -324,8 +328,7 @@ bool Renderer2D::Init()
 	textSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	s_Data.textPipeline = Pipeline::Create(textSpec);
 
-	// set the texture slot at [0] to white texture
-	s_Data.textureSlots[0] = s_Data.whiteTexture;
+	s_Data.currentBatchTexture = s_Data.whiteTexture;
 
 	s_Data.quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f };
 	s_Data.quadVertexPositions[1] = { 0.5f, -0.5f, 0.0f };
@@ -358,6 +361,8 @@ void Renderer2D::BeginScene()
 	PROFILE_FUNCTION();
 	ENGINE_TRACE("Renderer2D: BeginScene");
 
+	s_Data.quadVertexBufferPoolIndex = 0;
+
 	StartQuadsBatch();
 	StartCirclesBatch();
 	StartLinesBatch();
@@ -380,6 +385,19 @@ void Renderer2D::EndScene()
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+static Ref<VertexBuffer> NextQuadVertexBuffer()
+{
+	if (s_Data.quadVertexBufferPoolIndex >= s_Data.quadVertexBufferPool.size())
+	{
+		Ref<VertexBuffer> buffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(QuadVertex));
+		buffer->SetLayout(s_Data.quadVertexBuffer->GetLayout());
+		s_Data.quadVertexBufferPool.push_back(buffer);
+	}
+
+	return s_Data.quadVertexBufferPool[s_Data.quadVertexBufferPoolIndex++];
+}
+
 void Renderer2D::FlushQuads()
 {
 	if (s_Data.quadIndexCount == 0)
@@ -387,19 +405,21 @@ void Renderer2D::FlushQuads()
 
 	ENGINE_TRACE("Renderer2D: Flushing {0} indices", s_Data.quadIndexCount);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.quadVertexBufferPtr - (uint8_t*)s_Data.quadVertexBufferBase);
-	s_Data.quadVertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
 
-	s_Data.quadPipeline->SetTexture(s_Data.textureSlots[s_Data.textureSlotIndex - 1], 1);
+	Ref<VertexBuffer> vertexBuffer = NextQuadVertexBuffer();
+	vertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
+
+	s_Data.quadPipeline->SetTexture(s_Data.currentBatchTexture, 1);
 
 	s_Data.quadPipeline->Bind();
 	s_Data.quadPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
 
-	s_Data.quadVertexBuffer->Bind();
+	vertexBuffer->Bind();
 	s_Data.quadIndexBuffer->Bind();
 
 	RenderCommand::DrawIndexed(s_Data.quadIndexCount, 0U, 0U, false);
 
-	s_Data.quadVertexBuffer->UnBind();
+	vertexBuffer->UnBind();
 	s_Data.quadIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
@@ -501,7 +521,7 @@ void Renderer2D::StartQuadsBatch()
 	s_Data.quadIndexCount = 0;
 	s_Data.quadVertexBufferPtr = s_Data.quadVertexBufferBase;
 
-	s_Data.textureSlotIndex = 1;
+	s_Data.currentBatchTexture = s_Data.whiteTexture;
 }
 
 void Renderer2D::StartCirclesBatch()
@@ -656,6 +676,10 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
+	if (s_Data.currentBatchTexture != s_Data.whiteTexture)
+		NextQuadsBatch();
+	s_Data.currentBatchTexture = s_Data.whiteTexture;
+
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
 
 	for (size_t i = 0; i < 4; i++)
@@ -663,7 +687,6 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
-		s_Data.quadVertexBufferPtr->texIndex = 0.0f;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
@@ -682,36 +705,18 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
-	float textureIndex = 0.0f;
+	Ref<Texture> batchTexture = texture ? texture : Ref<Texture>(s_Data.whiteTexture);
+	if (batchTexture != s_Data.currentBatchTexture)
+		NextQuadsBatch();
+	s_Data.currentBatchTexture = batchTexture;
+
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
-
-	if (texture) {
-		for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
-		{
-			if (*s_Data.textureSlots[i].get() == *texture.get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
-				NextQuadsBatch();
-
-			textureIndex = (float)s_Data.textureSlotIndex;
-			s_Data.textureSlots[s_Data.textureSlotIndex] = texture;
-			s_Data.textureSlotIndex++;
-		}
-	}
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = tilingFactor * texCoords[i];
-		s_Data.quadVertexBufferPtr->texIndex = textureIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
@@ -735,37 +740,18 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 		NextQuadsBatch();
 	}
 
-	float textureIndex = 0.0f;
 	const Vector2f* texCoords = subtexture->GetTextureCoordinates();
 
-	if (subtexture->GetTexture())
-	{
-		for (uint32_t i = 1; i < s_Data.textureSlotIndex; i++)
-		{
-			if (*s_Data.textureSlots[i].get() == *subtexture->GetTexture().get())
-			{
-				textureIndex = (float)i;
-				break;
-			}
-		}
-
-		if (textureIndex == 0.0f)
-		{
-			if (s_Data.textureSlotIndex >= Renderer2DData::maxTexturesSlots)
-				NextQuadsBatch();
-
-			textureIndex = (float)s_Data.textureSlotIndex;
-			s_Data.textureSlots[s_Data.textureSlotIndex] = subtexture->GetTexture();
-			s_Data.textureSlotIndex++;
-		}
-	}
+	Ref<Texture> batchTexture = subtexture->GetTexture() ? Ref<Texture>(subtexture->GetTexture()) : Ref<Texture>(s_Data.whiteTexture);
+	if (batchTexture != s_Data.currentBatchTexture)
+		NextQuadsBatch();
+	s_Data.currentBatchTexture = batchTexture;
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
-		s_Data.quadVertexBufferPtr->texIndex = textureIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
