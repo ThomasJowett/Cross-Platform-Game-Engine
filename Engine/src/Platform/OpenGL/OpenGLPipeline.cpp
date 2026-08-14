@@ -20,7 +20,11 @@ void OpenGLPipeline::Invalidate()
 void OpenGLPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set)
 {
 }
-void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set) {}
+void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
+{
+	if (texture)
+		texture->Bind(binding);
+}
 
 void OpenGLPipeline::Bind()
 {
