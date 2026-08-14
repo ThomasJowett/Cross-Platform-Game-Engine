@@ -17,7 +17,7 @@ FontView::FontView(bool* show, std::filesystem::path filepath)
 	:View("FontView"), m_Show(show), m_Filepath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 512, 256 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 
 	m_String = "The quick brown fox jumps over the lazy dog\n\n!\"#$%&\'()*+,-./0123456789:;<=>?@ ABCDEFGHIJKLMNOPQRSTUVWXYZ [\\]^_`abcdefghijklmnopqrstuvwxyz{ | }~'";
@@ -46,10 +46,12 @@ void FontView::OnImGuiRender()
 		}
 
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass();
 		RenderCommand::Clear();
 		Renderer::BeginScene(Matrix4x4::Translate(Vector3f( 10.0f, -2.5f, 0.0f)), m_Camera->GetProjectionMatrix());
 		Renderer2D::DrawString(m_String, m_Font, 20, Vector3f(0, 0, 0), 0);
 		Renderer::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 
 		ImGui::Image(m_Framebuffer->GetColourAttachment(), ImVec2(512.0f, 256.0f));

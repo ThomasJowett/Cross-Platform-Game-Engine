@@ -18,7 +18,7 @@ MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	m_Mesh = GeometryGenerator::CreateSphere(1.0f, 50, 50);
 
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 , FrameBufferTextureFormat::Depth };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -190,6 +190,7 @@ void MaterialView::OnUpdate(float deltaTime)
 	}
 
 	m_Framebuffer->Bind();
+	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
@@ -197,6 +198,7 @@ void MaterialView::OnUpdate(float deltaTime)
 	Renderer::Submit(m_Mesh, m_LocalMaterial);
 
 	Renderer::EndScene();
+	RenderCommand::EndRenderPass();
 	m_Framebuffer->UnBind();
 }
 
