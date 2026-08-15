@@ -97,7 +97,7 @@ void PropertiesPanel::OnImGuiRender()
 		else if (SceneManager::IsSceneLoaded())
 		{
 			Vector2f gravity = SceneManager::CurrentScene()->GetGravity();
-			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Gravity Scale", gravity, ImGui::GetContentRegionAvail().x))
 			{
 				SceneManager::CurrentScene()->SetGravity(gravity);
 				SceneManager::CurrentScene()->MakeDirty();
