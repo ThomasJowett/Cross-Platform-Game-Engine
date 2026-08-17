@@ -143,7 +143,11 @@ void OpenGLFrameBuffer::Generate()
 				break;
 			}
 
-			m_ColourAttachments[i]->SetFilterMethod(Texture::FilterMethod::Linear);
+			// Integer attachments (e.g. the entity-ID buffer) can't use linear filtering - GLSL
+			// only allows nearest-filtered sampling of integer samplers, so forcing Linear here
+			// would make sampling it undefined behaviour.
+			bool isIntegerFormat = m_ColourAttachmentSpecifications[i].textureFormat == FrameBufferTextureFormat::RED_INTEGER;
+			m_ColourAttachments[i]->SetFilterMethod(isIntegerFormat ? Texture::FilterMethod::Nearest : Texture::FilterMethod::Linear);
 			m_ColourAttachments[i]->SetWrapMethod(Texture::WrapMethod::Clamp);
 		}
 	}
