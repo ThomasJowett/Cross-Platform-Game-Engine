@@ -49,6 +49,13 @@ void OpenGLPipeline::Bind()
 
 void OpenGLPipeline::ConfigureVertexBuffer(const VertexBuffer* vertexBuffer)
 {
+	// The VAO must always be (re)bound here, even when the attribute setup below is skipped -
+	// something else (another pipeline's draw, ImGui's own rendering interleaved with ours)
+	// may have bound a different VAO since this pipeline was last used, and skipping this
+	// bind would silently draw against whatever VAO happens to be current instead of this
+	// pipeline's own.
+	m_VertexArray->Bind();
+
 	if (vertexBuffer == m_LastConfiguredVertexBuffer)
 		return;
 
