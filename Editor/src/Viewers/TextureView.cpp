@@ -4,6 +4,8 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 	:View("TextureView"), m_Show(show), m_FilePath(filepath)
@@ -41,6 +43,29 @@ void TextureView::OnImGuiRender()
 		ImGui::TextUnformatted(size.c_str());
 		auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Texture->GetFilepath());
 		ImGui::TextUnformatted(absolutePath.string().c_str());
+
+		if (m_Texture->GetChannels() == 3)
+		{
+			if(ImGui::Button("Convert to 4 channel image"))
+			{
+				int width, height, original_channels;
+				stbi_set_flip_vertically_on_load(1);
+				unsigned char* data = stbi_load(absolutePath.c_str(), &width, &height, &original_channels, STBI_rgb_alpha);
+
+				if (data == nullptr) {
+					CLIENT_ERROR("Failed to load image: {0}", stbi_failure_reason());
+				}
+
+				//TODO: change the extension to .png and change the file path of all assets pointing to it
+
+				stbi_flip_vertically_on_write(1);
+				int success = stbi_write_png(absolutePath.c_str(), width, height, 4, data, width * 4);
+
+				stbi_image_free(data);
+				m_Texture->Reload();
+			}
+			ImGui::Tooltip("3 channels images are not supported by WebGPU");
+		}
 
 		const bool is_selected = false;
 		bool edited = false;
