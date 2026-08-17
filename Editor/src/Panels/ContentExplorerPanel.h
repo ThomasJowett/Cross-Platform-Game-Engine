@@ -172,7 +172,7 @@ private:
 
 	void OpenAllSelectedItems();
 	void OpenItem(size_t index);
-	void PerformDelete(const std::vector<std::filesystem::path>& targets);
+	void PerformDelete(const std::vector<std::filesystem::path>& targets, const std::vector<std::filesystem::path>& affectedReferences);
 
 	void ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName);
 	void CreateDragDropSource(size_t index);

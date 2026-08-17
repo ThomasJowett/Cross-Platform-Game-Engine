@@ -18,7 +18,17 @@ void ProjectSettingsPanel::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
+		m_WasShown = false;
 		return;
+	}
+
+	// The .proj file can change on disk without an AppOpenDocumentChangedEvent firing (e.g. a
+	// scene rename updating the Default Scene field) - re-read on every hidden-to-shown
+	// transition so reopening this window reflects that instead of showing stale cached data.
+	if (!m_WasShown)
+	{
+		ReadProjectFile();
+		m_WasShown = true;
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);

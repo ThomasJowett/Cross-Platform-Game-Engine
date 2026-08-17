@@ -159,14 +159,31 @@ void ContentExplorerPanel::Delete()
 	}
 	else
 	{
-		PerformDelete(targets);
+		PerformDelete(targets, references);
 	}
 }
 
-void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path>& targets)
+void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path>& targets, const std::vector<std::filesystem::path>& affectedReferences)
 {
 	for (const std::filesystem::path& target : targets)
+	{
+		// The deleted file is gone, but anything that referenced it (e.g. a scene's
+		// SpriteComponent holding a live Ref<Texture2D>) still has the old, now-broken
+		// reference in memory - clear it directly, since FindReferences/UpdateReferences
+		// only see what's saved to disk and the current scene might not be.
+		if (std::filesystem::is_regular_file(target))
+		{
+			std::filesystem::path relativePath = FileUtils::RelativePath(target, Application::GetOpenDocumentDirectory());
+			AssetReferenceUtils::UpdateCurrentSceneTextureReferences(relativePath);
+		}
+
 		std::filesystem::remove_all(target);
+	}
+
+	// Reload any already-cached Material/SpriteSheet/Tileset that referenced the just-deleted
+	// file(s), so it reflects the now-missing reference - must happen after the deletion above,
+	// since reloading before it would just re-read the (still intact) pre-delete state.
+	AssetReferenceUtils::ReloadAffectedNonSceneAssets(affectedReferences);
 
 	m_ForceRescan = true;
 }
@@ -262,7 +279,8 @@ void ContentExplorerPanel::UpdateReferencesAfterRename(const std::filesystem::pa
 
 	std::vector<std::filesystem::path> updatedFiles = AssetReferenceUtils::UpdateReferences(oldRelative, newRelative);
 	AssetManager::RemoveAsset(oldRelative);
-	AssetReferenceUtils::ReloadCurrentSceneIfAffected(updatedFiles);
+	AssetReferenceUtils::UpdateCurrentSceneTextureReferences(oldRelative, newRelative);
+	AssetReferenceUtils::ReloadAffectedNonSceneAssets(updatedFiles);
 
 	// The project's "Default Scene" setting is a cereal-serialized field in the .proj file,
 	// not an XML Filepath attribute, so it's outside what AssetReferenceUtils scans.
@@ -1845,21 +1863,29 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		if (m_ShowDeleteConfirmation)
 		{
+			// ImGuiWindowFlags_AlwaysAutoResize recomputes the window's actual size from its
+			// content after the position below is chosen, so pivot-based centering against a
+			// size that isn't final yet doesn't land in the middle of the screen - give it a
+			// fixed size instead so what's centered matches what's actually rendered.
+			ImGui::SetNextWindowSize(ImVec2(450, 220), ImGuiCond_Appearing);
+			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 			ImGui::OpenPopup("Confirm Delete");
 			m_ShowDeleteConfirmation = false;
 		}
 
-		if (ImGui::BeginPopupModal("Confirm Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		if (ImGui::BeginPopupModal("Confirm Delete"))
 		{
 			ImGui::TextWrapped("The following file(s) still reference what you're about to delete:");
+			ImGui::BeginChild("##References", ImVec2(0, 100), true);
 			for (const std::filesystem::path& reference : m_PendingDeleteReferences)
 				ImGui::BulletText("%s", reference.filename().string().c_str());
+			ImGui::EndChild();
 			ImGui::Separator();
 			ImGui::TextWrapped("Delete anyway?");
 
 			if (ImGui::Button("Delete"))
 			{
-				PerformDelete(m_PendingDeletePaths);
+				PerformDelete(m_PendingDeletePaths, m_PendingDeleteReferences);
 				m_PendingDeletePaths.clear();
 				m_PendingDeleteReferences.clear();
 				ImGui::CloseCurrentPopup();
