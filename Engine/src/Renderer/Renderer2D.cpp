@@ -498,10 +498,7 @@ void Renderer2D::FlushText()
 	s_Data.textVertexBuffer->SetData(s_Data.textVertexBufferBase, dataSize);
 
 	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
-	{
-		if (i == 0)
-			s_Data.textPipeline->SetTexture(s_Data.fontAtlasSlots[i], 1);
-	}
+		s_Data.textPipeline->SetTexture(s_Data.fontAtlasSlots[i], i);
 
 	s_Data.textPipeline->Bind();
 	s_Data.textPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
