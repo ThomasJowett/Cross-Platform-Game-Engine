@@ -67,6 +67,21 @@ public:
 		return AssetManager::Get().m_Textures.Load(filepath, AssetManager::Get().m_VFS);
 	}
 
+	// Evicts a stale cache entry after an asset has been renamed/moved on disk - tries
+	// both caches since the caller doesn't need to know which type of asset this is.
+	// Both AssetLibrary::Remove/TextureLibrary2D::Remove log an error on a cache miss
+	// (their only other caller always checks Exists() first), so this must too, or
+	// nearly every rename logs spurious "not found" errors for whichever cache (or
+	// both, e.g. for a renamed scene, which lives in neither) never had the path.
+	static void RemoveAsset(const std::filesystem::path& filepath)
+	{
+		PROFILE_FUNCTION();
+		if (AssetManager::Get().m_Assets.Exists(filepath))
+			AssetManager::Get().m_Assets.Remove(filepath);
+		if (AssetManager::Get().m_Textures.Exists(filepath))
+			AssetManager::Get().m_Textures.Remove(filepath);
+	}
+
 	static void CleanUp()
 	{
 		PROFILE_FUNCTION();
