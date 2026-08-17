@@ -58,8 +58,14 @@ void OpenGLVertexArray::AddVertexBuffer(const VertexBuffer* vertexBuffer, const 
 {
 	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
-	vertexBuffer->Bind();
 
+	// Deliberately not calling vertexBuffer->Bind() here (unlike the old version of this
+	// function) - the only caller now is OpenGLPipeline::ConfigureVertexBuffer(), itself only
+	// ever called from OpenGLVertexBuffer::Bind() after it has already bound GL_ARRAY_BUFFER
+	// to this exact buffer. Calling vertexBuffer->Bind() again here would re-enter that same
+	// Bind()/ConfigureVertexBuffer() chain - since m_LastConfiguredVertexBuffer below is only
+	// set after this function returns, every re-entrant call would see another cache miss,
+	// recursing indefinitely instead of ever bottoming out.
 	CORE_ASSERT(layout.GetElements().size(), "Vertex Buffer Layout has no elements");
 
 	// Reset per call - this VAO now gets reconfigured for whichever vertex buffer is
