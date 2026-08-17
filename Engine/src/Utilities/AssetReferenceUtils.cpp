@@ -5,6 +5,13 @@
 #include "TinyXml2/tinyxml2.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Scene.h"
+#include "Scene/AssetManager.h"
+#include "Scene/Components/SpriteComponent.h"
+#include "Scene/Components/UIWidgets/ButtonComponent.h"
+#include "Utilities/FileUtils.h"
+#include "Asset/Material.h"
+#include "Asset/SpriteSheet.h"
+#include "Asset/Tileset.h"
 
 namespace
 {
@@ -115,36 +122,70 @@ namespace AssetReferenceUtils
 		return updatedFiles;
 	}
 
-	void ReloadCurrentSceneIfAffected(const std::vector<std::filesystem::path>& updatedFiles)
+	void UpdateCurrentSceneTextureReferences(const std::filesystem::path& oldPath, const std::filesystem::path& newPath)
 	{
 		PROFILE_FUNCTION();
 
 		Scene* currentScene = SceneManager::CurrentScene();
-		if (!currentScene || currentScene->GetFilepath().empty())
+		if (!currentScene)
 			return;
 
-		std::filesystem::path currentSceneAbsolute = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / currentScene->GetFilepath());
+		std::string oldPathString = NormalisePath(oldPath);
+		Ref<Texture2D> replacement = newPath.empty() ? nullptr : AssetManager::GetTexture(newPath);
 
-		bool affected = false;
-		for (const std::filesystem::path& updated : updatedFiles)
+		auto matches = [&](const Ref<Texture2D>& texture)
 		{
-			std::error_code errorCode;
-			if (std::filesystem::equivalent(updated, currentSceneAbsolute, errorCode))
+			return texture && NormalisePath(texture->GetFilepath()) == oldPathString;
+		};
+
+		bool changed = false;
+
+		currentScene->GetRegistry().view<SpriteComponent>().each([&](SpriteComponent& sprite)
 			{
-				affected = true;
-				break;
+				if (matches(sprite.texture))
+				{
+					sprite.texture = replacement;
+					changed = true;
+				}
+			});
+
+		currentScene->GetRegistry().view<ButtonComponent>().each([&](ButtonComponent& button)
+			{
+				if (matches(button.icon)) { button.icon = replacement; changed = true; }
+				if (matches(button.normalTexture)) { button.normalTexture = replacement; changed = true; }
+				if (matches(button.hoveredTexture)) { button.hoveredTexture = replacement; changed = true; }
+				if (matches(button.clickedTexture)) { button.clickedTexture = replacement; changed = true; }
+				if (matches(button.disabledTexture)) { button.disabledTexture = replacement; changed = true; }
+			});
+
+		if (changed)
+			currentScene->MakeDirty();
+	}
+
+	void ReloadAffectedNonSceneAssets(const std::vector<std::filesystem::path>& affectedFiles)
+	{
+		PROFILE_FUNCTION();
+
+		for (const std::filesystem::path& file : affectedFiles)
+		{
+			std::filesystem::path relativePath = FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory());
+			std::filesystem::path extension = file.extension();
+
+			if (extension == ".material")
+			{
+				if (Ref<Material> material = AssetManager::GetAsset<Material>(relativePath))
+					material->Reload();
+			}
+			else if (extension == ".spritesheet")
+			{
+				if (Ref<SpriteSheet> spriteSheet = AssetManager::GetAsset<SpriteSheet>(relativePath))
+					spriteSheet->Reload();
+			}
+			else if (extension == ".tileset")
+			{
+				if (Ref<Tileset> tileset = AssetManager::GetAsset<Tileset>(relativePath))
+					tileset->Reload();
 			}
 		}
-
-		if (!affected)
-			return;
-
-		if (currentScene->IsDirty())
-		{
-			ENGINE_WARN("'{0}' references a renamed/converted asset but has unsaved changes - save and reopen it to pick up the update.", currentSceneAbsolute.filename().string());
-			return;
-		}
-
-		SceneManager::ChangeScene(currentScene->GetFilepath());
 	}
 }

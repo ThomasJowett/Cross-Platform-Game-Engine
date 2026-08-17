@@ -18,10 +18,21 @@ namespace AssetReferenceUtils
 	// files that were updated.
 	std::vector<std::filesystem::path> UpdateReferences(const std::filesystem::path& oldPath, const std::filesystem::path& newPath);
 
-	// If the currently loaded scene is one of the given files, reloads it so its live
-	// in-memory component data (e.g. a SpriteComponent's cached texture Ref) picks up
-	// the update - otherwise a later save would silently re-serialize the stale
-	// reference and undo it. No-op (with a warning) if the scene has unsaved changes,
-	// so this never silently discards the user's other edits.
-	void ReloadCurrentSceneIfAffected(const std::vector<std::filesystem::path>& updatedFiles);
+	// Directly repoints (or, with newPath empty, clears) any texture reference to oldPath
+	// held by the currently loaded scene's live entities (SpriteComponent, ButtonComponent).
+	// This works regardless of whether the scene has been saved - FindReferences/
+	// UpdateReferences only see what's on disk, but a texture can be assigned to a sprite
+	// in an unsaved scene, in which case the disk scan can't find or fix that reference at
+	// all. Marks the scene dirty if anything changed, never touches unrelated entities/data,
+	// so it's always safe to call even on a scene with other unsaved edits.
+	void UpdateCurrentSceneTextureReferences(const std::filesystem::path& oldPath, const std::filesystem::path& newPath = {});
+
+	// Reloads any already-cached Material/SpriteSheet/Tileset among the given files (as
+	// returned by FindReferences/UpdateReferences), so a live in-memory texture reference
+	// (e.g. a Material's texture slot) picks up whatever was just rewritten - or, for a
+	// straight delete, now-missing - on disk. Materials/SpriteSheets/Tilesets are always
+	// backed by the AssetManager cache (unlike a scene's live entity data, which can diverge
+	// from disk), so re-reading from disk is always correct here. Scenes are excluded - see
+	// UpdateCurrentSceneTextureReferences for those.
+	void ReloadAffectedNonSceneAssets(const std::vector<std::filesystem::path>& affectedFiles);
 }
