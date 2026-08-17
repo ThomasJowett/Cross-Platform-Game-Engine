@@ -16,21 +16,47 @@
  <img src="Resources/Linux Screenshot.png">
 </div>
 
-To clone this repository run: `git clone --recursive https://github.com/ThomasJowett/Cross-Platform-Game-Engine`
+## Features
 
-Build using cmake
+* Cross-platform rendering backend, supporting OpenGL with a WebGPU backend in progress
+* Entity-component system (ECS) based scene model, backed by [Entt](https://github.com/skypjack/entt)
+* Editor with a content browser, scene viewport, and asset pipeline (textures, meshes, materials, tilesets, audio)
+* 2D and 3D rendering, including sprites, text (MSDF font atlases), and static meshes
+* Built-in 2D physics via LiquidFun/Box2D
+* Lua scripting support
+* Scene and asset serialization
 
-### Windows
-Use cmake to generate Visual studio project files.
-### Mac
-Use cmake to generate xcode or make files.
-### Linux
-First install dependencies by opening a console window and running the following command:
-```
+## Getting Started
+
+### Prerequisites
+Ensure you have these installed:
+* A **C++17** compiler (MSVC, Clang, or GCC)
+* **CMake** 3.10 or newer
+
+> ⚠️ **Warning**: This repository uses Git submodules. When cloning, make sure to use the `--recursive` flag:
+> ```bash
+> git clone --recursive https://github.com/ThomasJowett/Cross-Platform-Game-Engine
+> ```
+> If you've already cloned without `--recursive`, initialize the submodules afterwards with:
+> ```bash
+> git submodule update --init --recursive
+> ```
+
+### Building
+
+**Windows**: Use CMake to generate Visual Studio project files, then build the `Editor` or `Runtime` target.
+
+**Mac**: Use CMake to generate Xcode project files or Makefiles.
+
+**Linux**: First install dependencies:
+```bash
 sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev g++ make
 ```
-Use cmake to generate make files.
-The engine can be built using `make`.
+Then use CMake to generate Makefiles and build with `make`.
+
+### Running
+Once built, run the `Editor` executable to open the editor, or `Runtime` to launch a project standalone.
+
 ## Example Projects
 If you would like to check out some example projects they can be downloaded from [here](https://github.com/ThomasJowett/ExampleGameProjects)
 ## Dependencies
