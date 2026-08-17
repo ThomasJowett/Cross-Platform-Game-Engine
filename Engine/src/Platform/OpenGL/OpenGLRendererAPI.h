@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer/RendererAPI.h"
+#include "Renderer/Pipeline.h"
 
 class OpenGLRendererAPI : public RendererAPI
 {
@@ -17,4 +18,10 @@ public:
 
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0, bool backFaceCull = false, DrawMode drawMode = DrawMode::FILL) override;
 	virtual void DrawLines(uint32_t vertexCount) override;
+
+	void SetCurrentPipeline(Ref<Pipeline> pipeline) { m_CurrentPipeline = pipeline; }
+	Ref<Pipeline> GetCurrentPipeline() const { return m_CurrentPipeline; }
+
+private:
+	Ref<Pipeline> m_CurrentPipeline;
 };

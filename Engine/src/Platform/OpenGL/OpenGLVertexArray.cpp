@@ -54,15 +54,20 @@ void OpenGLVertexArray::UnBind() const
 	glBindVertexArray(0);
 }
 
-void OpenGLVertexArray::AddVertexBuffer(const VertexBuffer* vertexBuffer)
+void OpenGLVertexArray::AddVertexBuffer(const VertexBuffer* vertexBuffer, const BufferLayout& layout)
 {
 	PROFILE_FUNCTION();
 	glBindVertexArray(m_RendererID);
 	vertexBuffer->Bind();
 
-	CORE_ASSERT(vertexBuffer->GetLayout().GetElements().size(), "Vertex Buffer Layout has no elements");
+	CORE_ASSERT(layout.GetElements().size(), "Vertex Buffer Layout has no elements");
 
-	const BufferLayout& layout = vertexBuffer->GetLayout();
+	// Reset per call - this VAO now gets reconfigured for whichever vertex buffer is
+	// currently bound (see OpenGLPipeline::ConfigureVertexBuffer), not set up once for a
+	// single buffer for its whole lifetime, so attribute locations must restart at 0 each
+	// time or they'd keep climbing past GL_MAX_VERTEX_ATTRIBS after a handful of rebinds.
+	m_VertexBufferIndex = 0;
+
 	for (const BufferElement& element : layout)
 	{
 		switch (element.type)

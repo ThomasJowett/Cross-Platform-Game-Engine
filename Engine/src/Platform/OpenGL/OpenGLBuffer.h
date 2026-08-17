@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Renderer/Buffer.h"
-#include "OpenGLVertexArray.h"
 
 class OpenGLVertexBuffer : public VertexBuffer
 {
@@ -10,7 +9,12 @@ public:
 	OpenGLVertexBuffer(void* vertices, uint32_t size);
 	~OpenGLVertexBuffer();
 
-	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; m_VertexArray->AddVertexBuffer(this); }
+	// Just records the layout this buffer's bytes conform to (used to seed a Pipeline::Spec
+	// at pipeline-creation time, e.g. Renderer2D.cpp's quadSpec.layout = quadVertexBuffer->
+	// GetLayout()) - actual GL vertex-attribute setup now happens lazily, per the currently
+	// bound pipeline's own Spec::layout, via OpenGLPipeline::ConfigureVertexBuffer() (called
+	// from Bind() below), not here.
+	virtual void SetLayout(const BufferLayout& layout) override { m_Layout = layout; }
 	virtual const BufferLayout& GetLayout() const override { return m_Layout; }
 
 	virtual void SetData(const void* data, uint32_t size, uint32_t offset = 0) override;
@@ -24,8 +28,6 @@ private:
 	uint32_t m_RendererID;
 	BufferLayout m_Layout;
 	uint32_t m_Size;
-
-	Ref<OpenGLVertexArray> m_VertexArray;
 };
 
 class OpenGLIndexBuffer : public IndexBuffer
