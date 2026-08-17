@@ -26,7 +26,6 @@ private:
 	bool m_TransparencyEnabled = false;
 	bool m_BackfaceCull = true;
 
-	Ref<Shader> m_Shader = nullptr;
 	Ref<OpenGLVertexArray> m_VertexArray;
 	const VertexBuffer* m_LastConfiguredVertexBuffer = nullptr;
 };

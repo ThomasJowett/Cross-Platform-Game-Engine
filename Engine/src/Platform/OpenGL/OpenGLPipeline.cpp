@@ -35,6 +35,11 @@ void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 
 void OpenGLPipeline::Bind()
 {
+	// GL_CURRENT_PROGRAM is global, sticky GL state - without this, every draw silently kept
+	// using whichever shader program was last bound (e.g. the post-process composite pass's
+	// shader from the previous frame), since nothing else in this class ever calls glUseProgram.
+	m_Specification.shader->Bind();
+
 	if (m_Specification.hasDepth)
 	{
 		glEnable(GL_DEPTH_TEST);
