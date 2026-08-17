@@ -168,9 +168,11 @@ private:
 	void HandleKeyboardInputs();
 	void RightClickMenu();
 	bool Rename();
+	void UpdateReferencesAfterRename(const std::filesystem::path& oldPath, const std::filesystem::path& newPath);
 
 	void OpenAllSelectedItems();
 	void OpenItem(size_t index);
+	void PerformDelete(const std::vector<std::filesystem::path>& targets);
 
 	void ItemContextMenu(size_t index, bool isDirectory, const std::string& itemName);
 	void CreateDragDropSource(size_t index);
@@ -221,4 +223,8 @@ private:
 
 	bool m_TryingToChangeScene = false;
 	bool m_Renaming = false;
+
+	bool m_ShowDeleteConfirmation = false;
+	std::vector<std::filesystem::path> m_PendingDeletePaths;
+	std::vector<std::filesystem::path> m_PendingDeleteReferences;
 };

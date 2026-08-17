@@ -11,6 +11,11 @@
 #include "AI/BehaviourTreeSerializer.h"
 #include "AI/BehaviourTree.h"
 #include "Core/Settings.h"
+#include "Utilities/AssetReferenceUtils.h"
+#include "Utilities/FileUtils.h"
+#include "Scene/AssetManager.h"
+#include "ProjectData.h"
+#include "cereal/archives/json.hpp"
 
 #include "MainDockSpace.h"
 
@@ -115,22 +120,53 @@ void ContentExplorerPanel::Duplicate()
 
 void ContentExplorerPanel::Delete()
 {
+	std::vector<std::filesystem::path> targets;
 	if (m_NumberSelected == 1)
-		std::filesystem::remove_all(m_CurrentSelectedPath);
+		targets.push_back(m_CurrentSelectedPath);
 	else
 	{
 		for (size_t i = 0; i < m_SelectedFiles.size(); i++)
 		{
 			if (m_SelectedFiles[i])
-				std::filesystem::remove(m_Files[i]);
+				targets.push_back(m_Files[i]);
 		}
 
 		for (size_t i = 0; i < m_SelectedDirs.size(); i++)
 		{
 			if (m_SelectedDirs[i])
-				std::filesystem::remove_all(m_Dirs[i]);
+				targets.push_back(m_Dirs[i]);
 		}
 	}
+
+	std::vector<std::filesystem::path> references;
+	for (const std::filesystem::path& target : targets)
+	{
+		// Reference-fixup only makes sense for individual asset files - a directory delete
+		// would need to check every file inside it, which isn't handled here.
+		if (!std::filesystem::is_regular_file(target))
+			continue;
+
+		std::filesystem::path relativePath = FileUtils::RelativePath(target, Application::GetOpenDocumentDirectory());
+		std::vector<std::filesystem::path> found = AssetReferenceUtils::FindReferences(relativePath);
+		references.insert(references.end(), found.begin(), found.end());
+	}
+
+	if (!references.empty())
+	{
+		m_PendingDeletePaths = targets;
+		m_PendingDeleteReferences = references;
+		m_ShowDeleteConfirmation = true;
+	}
+	else
+	{
+		PerformDelete(targets);
+	}
+}
+
+void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path>& targets)
+{
+	for (const std::filesystem::path& target : targets)
+		std::filesystem::remove_all(target);
 
 	m_ForceRescan = true;
 }
@@ -178,7 +214,16 @@ bool ContentExplorerPanel::Rename()
 	{
 		if (!std::filesystem::exists(m_CurrentPath / m_RenameInputBuffer))
 		{
-			std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / m_RenameInputBuffer);
+			std::filesystem::path newPath = m_CurrentPath / m_RenameInputBuffer;
+			bool wasFile = std::filesystem::is_regular_file(m_CurrentSelectedPath);
+
+			std::filesystem::rename(m_CurrentSelectedPath, newPath);
+
+			// Reference-fixup only makes sense for individual asset files - renaming a
+			// directory would need to remap every file inside it, which isn't handled here.
+			if (wasFile)
+				UpdateReferencesAfterRename(m_CurrentSelectedPath, newPath);
+
 			m_ForceRescan = true;
 		}
 		else
@@ -206,6 +251,50 @@ bool ContentExplorerPanel::Rename()
 		once = true;
 	}
 	return false;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void ContentExplorerPanel::UpdateReferencesAfterRename(const std::filesystem::path& oldPath, const std::filesystem::path& newPath)
+{
+	std::filesystem::path oldRelative = FileUtils::RelativePath(oldPath, Application::GetOpenDocumentDirectory());
+	std::filesystem::path newRelative = FileUtils::RelativePath(newPath, Application::GetOpenDocumentDirectory());
+
+	std::vector<std::filesystem::path> updatedFiles = AssetReferenceUtils::UpdateReferences(oldRelative, newRelative);
+	AssetManager::RemoveAsset(oldRelative);
+	AssetReferenceUtils::ReloadCurrentSceneIfAffected(updatedFiles);
+
+	// The project's "Default Scene" setting is a cereal-serialized field in the .proj file,
+	// not an XML Filepath attribute, so it's outside what AssetReferenceUtils scans.
+	if (oldRelative.extension() == ".scene")
+	{
+		std::string oldRelativeString = oldRelative.string();
+		std::replace(oldRelativeString.begin(), oldRelativeString.end(), '\\', '/');
+
+		ProjectData projectData;
+		{
+			std::ifstream file(Application::GetOpenDocument());
+			if (!file.is_open())
+				return;
+			cereal::JSONInputArchive input(file);
+			input(projectData);
+		}
+
+		std::string defaultScene = projectData.defaultScene;
+		std::replace(defaultScene.begin(), defaultScene.end(), '\\', '/');
+
+		if (defaultScene == oldRelativeString)
+		{
+			std::string newRelativeString = newRelative.string();
+			std::replace(newRelativeString.begin(), newRelativeString.end(), '\\', '/');
+			projectData.defaultScene = newRelativeString;
+
+			const std::filesystem::path& projectFile = Application::GetOpenDocument();
+			std::ofstream outFile(projectFile);
+			cereal::JSONOutputArchive output(outFile);
+			output(cereal::make_nvp(projectFile.filename().string(), projectData));
+		}
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1749,6 +1838,37 @@ void ContentExplorerPanel::OnImGuiRender()
 			if (ImGui::Button("Cancel"))
 			{
 				m_TryingToChangeScene = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		if (m_ShowDeleteConfirmation)
+		{
+			ImGui::OpenPopup("Confirm Delete");
+			m_ShowDeleteConfirmation = false;
+		}
+
+		if (ImGui::BeginPopupModal("Confirm Delete", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+		{
+			ImGui::TextWrapped("The following file(s) still reference what you're about to delete:");
+			for (const std::filesystem::path& reference : m_PendingDeleteReferences)
+				ImGui::BulletText("%s", reference.filename().string().c_str());
+			ImGui::Separator();
+			ImGui::TextWrapped("Delete anyway?");
+
+			if (ImGui::Button("Delete"))
+			{
+				PerformDelete(m_PendingDeletePaths);
+				m_PendingDeletePaths.clear();
+				m_PendingDeleteReferences.clear();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				m_PendingDeletePaths.clear();
+				m_PendingDeleteReferences.clear();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
