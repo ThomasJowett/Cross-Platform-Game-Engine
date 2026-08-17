@@ -159,6 +159,7 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const st
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	if (channels == 4)
 	{
@@ -558,6 +559,7 @@ bool WebGPUTexture2D::LoadTextureFromFile()
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	if (channels == 4)
 	{

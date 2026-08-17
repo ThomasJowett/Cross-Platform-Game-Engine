@@ -239,6 +239,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 
@@ -285,6 +286,7 @@ bool OpenGLTexture2D::LoadTextureFromMemory(const std::vector<uint8_t>& imageDat
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 

@@ -13,6 +13,7 @@ public:
 
 	virtual uint32_t GetWidth() const override { return m_Width; }
 	virtual uint32_t GetHeight() const override { return m_Height; }
+	virtual uint32_t GetChannels() const override { return m_Channels; }
 
 	virtual void SetData(const void* data) override;
 
@@ -36,6 +37,7 @@ private:
 
 	void SetFilteringAndWrappingMethod();
 	uint32_t m_Width, m_Height;
+	uint32_t m_Channels;
 
 	uint32_t m_RendererID;
 
