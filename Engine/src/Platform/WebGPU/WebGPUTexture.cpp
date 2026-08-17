@@ -176,7 +176,7 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const st
 
 		//WebGPU does not support 3 channel textures so we must convert into 4
 
-		ENGINE_WARN("Converting RGB to RGBA for compatibility with WebGPU");
+		ENGINE_WARN("Converting RGB to RGBA for compatibility with WebGPU ({0})", m_Filepath);
 
 		stbi_uc* rgbaData = new stbi_uc[m_Width * m_Height * 4];
 		for (uint32_t i = 0; i < m_Width * m_Height; ++i) {
@@ -576,7 +576,7 @@ bool WebGPUTexture2D::LoadTextureFromFile()
 
 		//WebGPU does not support 3 channel textures so we must convert into 4
 
-		ENGINE_WARN("Converting RGB to RGBA for compatibility with WebGPU");
+		ENGINE_WARN("Converting RGB to RGBA for compatibility with WebGPU ({0})", m_Filepath);
 
 		stbi_uc* rgbaData = new stbi_uc[m_Width * m_Height * 4];
 		for (uint32_t i = 0; i < m_Width * m_Height; ++i) {
