@@ -127,9 +127,14 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& path)
 
 	m_WebGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
 
-	bool isValid = LoadTextureFromFile();
-	if (!isValid) {
+	if (m_Filepath.empty()) {
 		NullTexture();
+	}
+	else {
+	bool isValid = LoadTextureFromFile();
+		if (!isValid) {
+			NullTexture();
+		}
 	}
 
 	m_TextureViewDesc.format = m_TextureFormat;

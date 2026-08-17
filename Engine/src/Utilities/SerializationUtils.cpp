@@ -99,6 +99,8 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Textur
 	{
 		std::filesystem::path filepath;
 		Decode(pElement, filepath);
+		if (filepath.empty())
+			return;
 		texture = AssetManager::GetTexture(filepath);
 		if (texture)
 		{
