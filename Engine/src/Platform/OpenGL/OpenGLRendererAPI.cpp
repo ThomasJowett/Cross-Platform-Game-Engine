@@ -34,6 +34,11 @@ bool OpenGLRendererAPI::Init()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.5f);
+
+	// Matches WebGPU/D3D/Metal's [0,1] clip-space Z convention, which the projection matrices
+	// (Matrix4x4::OrthographicRH/PerspectiveRH) already produce unconditionally for every backend.
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
 	return true;
 }
 
