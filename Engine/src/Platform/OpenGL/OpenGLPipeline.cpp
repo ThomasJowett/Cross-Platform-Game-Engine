@@ -59,6 +59,11 @@ void OpenGLPipeline::Bind()
 		glDisable(GL_DEPTH_TEST);
 	}
 
+	if (m_Specification.backFaceCulling)
+		glEnable(GL_CULL_FACE);
+	else
+		glDisable(GL_CULL_FACE);
+
 	static_cast<OpenGLRendererAPI&>(RenderCommand::Get()).SetCurrentPipeline(shared_from_this());
 }
 

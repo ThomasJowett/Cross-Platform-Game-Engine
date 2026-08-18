@@ -192,7 +192,7 @@ void WebGPURendererAPI::EndRenderPass()
 	}
 }
 
-void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
+void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, DrawMode drawMode)
 {
 	PROFILE_FUNCTION();
 	if (!m_RenderPass)

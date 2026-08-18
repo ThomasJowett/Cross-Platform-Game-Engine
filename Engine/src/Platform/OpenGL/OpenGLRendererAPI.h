@@ -16,7 +16,7 @@ public:
 	virtual void StartRenderPass(bool clear = true) override;
 	virtual void EndRenderPass() override;
 
-	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0, bool backFaceCull = false, DrawMode drawMode = DrawMode::FILL) override;
+	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0, DrawMode drawMode = DrawMode::FILL) override;
 	virtual void DrawLines(uint32_t vertexCount) override;
 
 	void SetCurrentPipeline(Ref<Pipeline> pipeline) { m_CurrentPipeline = pipeline; }

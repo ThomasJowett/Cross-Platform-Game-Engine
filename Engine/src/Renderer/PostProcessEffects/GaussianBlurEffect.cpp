@@ -45,7 +45,7 @@ void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTex
 	m_Pipeline->SetUniformBuffer(postProcessBuffer, 3);
 	fullscreenQuad->GetVertexBuffer()->Bind();
 	fullscreenQuad->GetIndexBuffer()->Bind();
-	RenderCommand::DrawIndexed(fullscreenQuad->GetIndexCount(), 0, 0, false);
+	RenderCommand::DrawIndexed(fullscreenQuad->GetIndexCount());
 	fullscreenQuad->GetIndexBuffer()->UnBind();
 	fullscreenQuad->GetVertexBuffer()->UnBind();
 	RenderCommand::EndRenderPass();
@@ -62,7 +62,7 @@ void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTex
 	m_Pipeline->SetUniformBuffer(postProcessBuffer, 3);
 	fullscreenQuad->GetVertexBuffer()->Bind();
 	fullscreenQuad->GetIndexBuffer()->Bind();
-	RenderCommand::DrawIndexed(fullscreenQuad->GetIndexCount(), 0, 0, false);
+	RenderCommand::DrawIndexed(fullscreenQuad->GetIndexCount());
 	fullscreenQuad->GetIndexBuffer()->UnBind();
 	fullscreenQuad->GetVertexBuffer()->UnBind();
 	RenderCommand::EndRenderPass();

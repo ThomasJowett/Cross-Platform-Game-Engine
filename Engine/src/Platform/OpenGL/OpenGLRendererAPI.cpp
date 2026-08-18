@@ -80,11 +80,8 @@ void OpenGLRendererAPI::EndRenderPass()
 {
 }
 
-void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
+void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, DrawMode drawMode)
 {
-	if (!backFaceCull)
-		glDisable(GL_CULL_FACE);
-
 	GLuint mode;
 	switch (drawMode)
 	{
@@ -95,8 +92,6 @@ void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, ui
 	}
 
 	glDrawRangeElementsBaseVertex(mode, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
-	if (!backFaceCull)
-		glEnable(GL_CULL_FACE);
 }
 
 void OpenGLRendererAPI::DrawLines(uint32_t vertexCount)

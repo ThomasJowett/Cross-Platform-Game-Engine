@@ -303,6 +303,7 @@ bool Renderer2D::Init()
 	quadSpec.shader = s_Data.quadShader;
 	quadSpec.layout = s_Data.quadVertexBuffer->GetLayout();
 	quadSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	quadSpec.backFaceCulling = false;
 	s_Data.quadPipeline = Pipeline::Create(quadSpec);
 
 	Pipeline::Spec circleSpec;
@@ -315,6 +316,7 @@ bool Renderer2D::Init()
 	lineSpec.shader = s_Data.lineShader;
 	lineSpec.layout = s_Data.lineVertexBuffer->GetLayout();
 	lineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	lineSpec.backFaceCulling = false;
 	s_Data.linePipeline = Pipeline::Create(lineSpec);
 
 	Pipeline::Spec hairLineSpec;
@@ -424,7 +426,7 @@ void Renderer2D::FlushQuads()
 	vertexBuffer->Bind();
 	s_Data.quadIndexBuffer->Bind();
 
-	RenderCommand::DrawIndexed(s_Data.quadIndexCount, 0U, 0U, false);
+	RenderCommand::DrawIndexed(s_Data.quadIndexCount);
 
 	vertexBuffer->UnBind();
 	s_Data.quadIndexBuffer->UnBind();
@@ -448,7 +450,7 @@ void Renderer2D::FlushCircles()
 	// rather than needing a separate (and identical) index buffer of their own.
 	s_Data.quadIndexBuffer->Bind();
 
-	RenderCommand::DrawIndexed(s_Data.circleIndexCount, 0U, 0U, false);
+	RenderCommand::DrawIndexed(s_Data.circleIndexCount);
 
 	s_Data.quadIndexBuffer->UnBind();
 	s_Data.circleVertexBuffer->UnBind();
@@ -471,7 +473,7 @@ void Renderer2D::FlushLines()
 	s_Data.lineVertexBuffer->Bind();
 	s_Data.lineIndexBuffer->Bind();
 
-	RenderCommand::DrawIndexed(s_Data.lineIndexCount, 0U, 0U, false);
+	RenderCommand::DrawIndexed(s_Data.lineIndexCount);
 	s_Data.lineVertexBuffer->UnBind();
 	s_Data.lineIndexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;

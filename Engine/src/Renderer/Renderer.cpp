@@ -188,7 +188,7 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 
 		command.mesh->GetVertexBuffer()->Bind();
 		command.mesh->GetIndexBuffer()->Bind();
-		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, !command.material->IsTwoSided(), s_RendererData.drawMode);
+		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, s_RendererData.drawMode);
 		command.mesh->GetIndexBuffer()->UnBind();
 		command.mesh->GetVertexBuffer()->UnBind();
 

@@ -34,7 +34,7 @@ public:
 	virtual void StartRenderPass(bool clear = true) = 0;
 	virtual void EndRenderPass() = 0;
 
-	virtual void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, bool backFaceCull = true, DrawMode drawMode = DrawMode::FILL) = 0;
+	virtual void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, DrawMode drawMode = DrawMode::FILL) = 0;
 	virtual void DrawLines(uint32_t vertexCount = 0) = 0;
 
 	inline static API GetAPI() { return s_API; }

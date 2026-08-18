@@ -92,7 +92,7 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 
 	m_FullscreenQuad->GetVertexBuffer()->Bind();
 	m_FullscreenQuad->GetIndexBuffer()->Bind();
-	RenderCommand::DrawIndexed(m_FullscreenQuad->GetIndexCount(), 0, 0, false);
+	RenderCommand::DrawIndexed(m_FullscreenQuad->GetIndexCount());
 	m_FullscreenQuad->GetIndexBuffer()->UnBind();
 	m_FullscreenQuad->GetVertexBuffer()->UnBind();
 
