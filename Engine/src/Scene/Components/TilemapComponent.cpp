@@ -203,22 +203,20 @@ void TilemapComponent::Rebuild()
 	if (verticesList.size() == 0)
 		return;
 
-	uint32_t index = 0;
-
-	for (size_t i = 0; i < tilesHigh; i++)
+	// One quad (4 vertices) per non-empty tile actually pushed above - looping over the tile
+	// grid again here (instead of verticesList.size()) would drift out of sync whenever any
+	// tile was skipped (empty, or an out-of-range index reset to 0), producing indices past
+	// the end of the vertex buffer.
+	indicesList.reserve((verticesList.size() / 4) * 6);
+	for (uint32_t index = 0; index < (uint32_t)verticesList.size(); index += 4)
 	{
-		for (size_t j = 0; j < tilesWide; j++)
-		{
-			indicesList.push_back(index);
-			indicesList.push_back(index + 1);
-			indicesList.push_back(index + 2);
+		indicesList.push_back(index);
+		indicesList.push_back(index + 1);
+		indicesList.push_back(index + 2);
 
-			indicesList.push_back(index);
-			indicesList.push_back(index + 2);
-			indicesList.push_back(index + 3);
-
-			index += 4;
-		}
+		indicesList.push_back(index);
+		indicesList.push_back(index + 2);
+		indicesList.push_back(index + 3);
 	}
 
 	Ref<Material> material = CreateRef<Material>("Standard", tint);
