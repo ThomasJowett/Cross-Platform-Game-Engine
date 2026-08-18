@@ -91,12 +91,28 @@ static Ref<UniformBuffer> NextModelUniformBuffer()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+// Built from the actual Spec that will be used to create the pipeline (rather than just the
+// handful of parameters GetPipeline happens to take today), so the key can never silently miss
+// a field that affects pipeline identity - if Spec grows a new field, it either doesn't change
+// per-call here (harmless) or needs adding below, but it can't cause two distinct pipelines to
+// collide on the same cache entry the way key-by-convention did.
+static std::string BuildPipelineCacheKey(const Pipeline::Spec& spec)
+{
+	std::string key = spec.shader->GetName();
+	key += spec.transparencyEnabled ? "_trans" : "_opaque";
+	key += spec.backFaceCulling ? "_cull" : "_twosided";
+	key += spec.depthTest ? "_depthtest" : "_nodepthtest";
+	key += spec.hasDepth ? "_hasdepth" : "_nodepth";
+	key += "_topology" + std::to_string((int)spec.topology);
+	key += "_stride" + std::to_string(spec.layout.GetStride());
+	key += "_elems" + std::to_string(spec.layout.GetElements().size());
+	for (FrameBufferTextureFormat format : spec.targetFormats)
+		key += "_fmt" + std::to_string((int)format);
+	return key;
+}
+
 static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& layout, bool transparent, bool twoSided)
 {
-	std::string key = shader->GetName() + (transparent ? "_trans" : "_opaque") + (twoSided ? "_twosided" : "_cull");
-	if (s_RendererData.pipelineCache.find(key) != s_RendererData.pipelineCache.end())
-		return s_RendererData.pipelineCache[key];
-
 	Pipeline::Spec spec;
 	spec.shader = shader;
 	spec.layout = layout;
@@ -108,6 +124,11 @@ static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& 
 	spec.backFaceCulling = !twoSided;
 	spec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	spec.hasDepth = true;
+
+	std::string key = BuildPipelineCacheKey(spec);
+	auto it = s_RendererData.pipelineCache.find(key);
+	if (it != s_RendererData.pipelineCache.end())
+		return it->second;
 
 	Ref<Pipeline> pipeline = Pipeline::Create(spec);
 	s_RendererData.pipelineCache[key] = pipeline;
