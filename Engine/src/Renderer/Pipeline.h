@@ -42,6 +42,11 @@ public:
 	virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
 	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set = 0) = 0;
 
+	// Binds textures[i] at firstBinding+i, for shaders that select among several textures
+	// per-fragment (e.g. multiple font atlases). All textures must use equivalent sampler
+	// settings - samplerSource supplies them for backends that bind one shared sampler.
+	virtual void SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set = 0) = 0;
+
 	virtual void Bind() = 0;
 
 	// False if the underlying graphics-API pipeline object failed to build (e.g. its shader

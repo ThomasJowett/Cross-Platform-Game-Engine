@@ -33,6 +33,14 @@ void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 		texture->Bind(binding);
 }
 
+void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
+{
+	// samplerSource unused - GLSL's combined sampler2D needs no separate sampler binding.
+	for (size_t i = 0; i < textures.size(); i++)
+		if (textures[i])
+			textures[i]->Bind(firstBinding + (uint32_t)i);
+}
+
 void OpenGLPipeline::Bind()
 {
 	// GL_CURRENT_PROGRAM is global, sticky GL state - without this, every draw silently kept

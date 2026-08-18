@@ -11,6 +11,8 @@
 
 #include "Renderer/UI/MSDFData.h"
 
+#include <algorithm>
+
 struct QuadVertex
 {
 	Vector3f position;
@@ -79,7 +81,8 @@ struct Renderer2DData
 	const uint32_t maxQuads = 10000;
 	const uint32_t maxVertices = maxQuads * 4;
 	const uint32_t maxIndices = maxQuads * 6;
-	static const size_t maxTexturesSlots = 32; //TODO query the hardware to calculate the maximum number of textures
+	// Max simultaneous font atlases per text batch (see fontAtlasSlots below).
+	static const size_t maxTexturesSlots = 8;
 
 	const uint32_t maxLines = 10000;
 	const uint32_t maxLineVertices = maxLines * 4;
@@ -363,6 +366,11 @@ void Renderer2D::BeginScene()
 
 	s_Data.quadVertexBufferPoolIndex = 0;
 
+	// Reset atlas slots each frame; unused slots default to whiteTexture so SetTextureArray
+	// always has a valid texture for every binding.
+	s_Data.fontAtlasSlotIndex = 1;
+	std::fill(s_Data.fontAtlasSlots.begin(), s_Data.fontAtlasSlots.end(), s_Data.whiteTexture);
+
 	StartQuadsBatch();
 	StartCirclesBatch();
 	StartLinesBatch();
@@ -497,8 +505,10 @@ void Renderer2D::FlushText()
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.textVertexBufferPtr - (uint8_t*)s_Data.textVertexBufferBase);
 	s_Data.textVertexBuffer->SetData(s_Data.textVertexBufferBase, dataSize);
 
-	for (uint32_t i = 0; i < s_Data.fontAtlasSlotIndex; i++)
-		s_Data.textPipeline->SetTexture(s_Data.fontAtlasSlots[i], i);
+	// Binding 0 is Camera below, so atlases start at 1. Prefer a real (Linear-filtered) atlas
+	// as the sampler source over whiteTexture (Nearest) when one is active.
+	Ref<Texture> samplerSource = s_Data.fontAtlasSlotIndex > 1 ? s_Data.fontAtlasSlots[1] : s_Data.fontAtlasSlots[0];
+	s_Data.textPipeline->SetTextureArray({ s_Data.fontAtlasSlots.begin(), s_Data.fontAtlasSlots.end() }, 1, samplerSource);
 
 	s_Data.textPipeline->Bind();
 	s_Data.textPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);

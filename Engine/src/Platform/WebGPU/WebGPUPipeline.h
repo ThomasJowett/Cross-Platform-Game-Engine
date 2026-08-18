@@ -16,6 +16,7 @@ public:
 	virtual void Invalidate() override;
 	virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set) override;
 	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set) override;
+	virtual void SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set) override;
 	virtual void Bind() override;
 	virtual bool IsValid() const override { return (bool)m_Pipeline; }
 
@@ -23,7 +24,9 @@ public:
 private:
 	struct Binding
 	{
-		enum class Type { UniformBuffer, Texture };
+		// TextureArrayElement: a Texture with no implicit sampler entry. Sampler: an explicit
+		// standalone sampler. Used together by SetTextureArray for multi-texture batches.
+		enum class Type { UniformBuffer, Texture, TextureArrayElement, Sampler };
 		Type type;
 		uint32_t binding;
 		Ref<void> resource;

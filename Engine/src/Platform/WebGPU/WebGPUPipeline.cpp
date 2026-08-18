@@ -276,6 +276,30 @@ void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 		bindings.push_back({ Binding::Type::Texture, binding, texture });
 }
 
+void WebGPUPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
+{
+	auto& bindings = m_Bindings[set];
+
+	auto upsert = [&bindings](Binding::Type type, uint32_t binding, Ref<void> resource)
+	{
+		for (auto& b : bindings)
+		{
+			if (b.binding == binding)
+			{
+				b.type = type;
+				b.resource = resource;
+				return;
+			}
+		}
+		bindings.push_back({ type, binding, resource });
+	};
+
+	for (size_t i = 0; i < textures.size(); i++)
+		upsert(Binding::Type::TextureArrayElement, firstBinding + (uint32_t)i, textures[i]);
+
+	upsert(Binding::Type::Sampler, firstBinding + (uint32_t)textures.size(), samplerSource);
+}
+
 void WebGPUPipeline::Bind()
 {
 	if (!m_Pipeline)
@@ -336,6 +360,28 @@ void WebGPUPipeline::CommitBindGroups()
 						if (samplerEntry.sampler)
 							entries.push_back(samplerEntry);
 					}
+				}
+			}
+			else if (b.type == Binding::Type::TextureArrayElement)
+			{
+				auto tex = std::static_pointer_cast<WebGPUTexture2D>(std::static_pointer_cast<Texture>(b.resource));
+				if (tex)
+				{
+					wgpu::BindGroupEntry arrayEntry = {};
+					arrayEntry.binding = b.binding;
+					arrayEntry.textureView = tex->GetTextureView();
+					entries.push_back(arrayEntry);
+				}
+			}
+			else if (b.type == Binding::Type::Sampler)
+			{
+				auto tex = std::static_pointer_cast<WebGPUTexture2D>(std::static_pointer_cast<Texture>(b.resource));
+				if (tex && tex->GetSampler())
+				{
+					wgpu::BindGroupEntry samplerEntry = {};
+					samplerEntry.binding = b.binding;
+					samplerEntry.sampler = tex->GetSampler();
+					entries.push_back(samplerEntry);
 				}
 			}
 		}
