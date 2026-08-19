@@ -131,7 +131,20 @@ namespace AssetReferenceUtils
 			return;
 
 		std::string oldPathString = NormalisePath(oldPath);
-		Ref<Texture2D> replacement = newPath.empty() ? nullptr : AssetManager::GetTexture(newPath);
+
+		// Resolved lazily, only once a real match is found - loading newPath as a texture up front
+		// meant renaming any non-texture asset tried to load it as an image regardless.
+		bool replacementResolved = false;
+		Ref<Texture2D> replacement;
+		auto getReplacement = [&]() -> Ref<Texture2D>
+		{
+			if (!replacementResolved)
+			{
+				replacement = newPath.empty() ? nullptr : AssetManager::GetTexture(newPath);
+				replacementResolved = true;
+			}
+			return replacement;
+		};
 
 		auto matches = [&](const Ref<Texture2D>& texture)
 		{
@@ -144,18 +157,18 @@ namespace AssetReferenceUtils
 			{
 				if (matches(sprite.texture))
 				{
-					sprite.texture = replacement;
+					sprite.texture = getReplacement();
 					changed = true;
 				}
 			});
 
 		currentScene->GetRegistry().view<ButtonComponent>().each([&](ButtonComponent& button)
 			{
-				if (matches(button.icon)) { button.icon = replacement; changed = true; }
-				if (matches(button.normalTexture)) { button.normalTexture = replacement; changed = true; }
-				if (matches(button.hoveredTexture)) { button.hoveredTexture = replacement; changed = true; }
-				if (matches(button.clickedTexture)) { button.clickedTexture = replacement; changed = true; }
-				if (matches(button.disabledTexture)) { button.disabledTexture = replacement; changed = true; }
+				if (matches(button.icon)) { button.icon = getReplacement(); changed = true; }
+				if (matches(button.normalTexture)) { button.normalTexture = getReplacement(); changed = true; }
+				if (matches(button.hoveredTexture)) { button.hoveredTexture = getReplacement(); changed = true; }
+				if (matches(button.clickedTexture)) { button.clickedTexture = getReplacement(); changed = true; }
+				if (matches(button.disabledTexture)) { button.disabledTexture = getReplacement(); changed = true; }
 			});
 
 		if (changed)
