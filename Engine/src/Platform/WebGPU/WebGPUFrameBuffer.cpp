@@ -87,8 +87,13 @@ void WebGPUFrameBuffer::Destroy()
 	// the same address, which ImGui's WebGPU backend would otherwise mistake for the destroyed
 	// one and reuse its now-invalid cached bind group, causing a validation error at that
 	// point. Drop those cache entries first, before the views actually go away.
+	//
+	// Guarded: the macro only exists with the local, uncommitted imgui patch applied - keeps this
+	// compiling against the real, unpatched submodule (CI, fresh clones).
+#ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
 	if (!m_ColourAttachments.empty() || m_DepthAttachment)
 		ImGui_ImplWGPU_InvalidateImageBindGroups();
+#endif
 
 	m_ColourAttachments.clear();
 	m_DepthAttachment.reset();
