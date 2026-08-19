@@ -74,10 +74,10 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RG8:      m_TextureFormat = wgpu::TextureFormat::RG8Unorm;     break;
 	case Texture::Format::RG16F:    m_TextureFormat = wgpu::TextureFormat::RG16Float;    break;
 	case Texture::Format::RG32F:    m_TextureFormat = wgpu::TextureFormat::RG32Float;    break;
-	case Texture::Format::RGB:      m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;   break;//TODO: check this
+	case Texture::Format::RGB:      m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;   break;
 	case Texture::Format::RGBA:     m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;   break;
 	case Texture::Format::RGBA16F:  m_TextureFormat = wgpu::TextureFormat::RGBA16Float;  break;
-	case Texture::Format::RGBA32F:  m_TextureFormat = wgpu::TextureFormat::RGBA16Float;  break;
+	case Texture::Format::RGBA32F:  m_TextureFormat = wgpu::TextureFormat::RGBA32Float;  break;
 	case Texture::Format::DEPTH24STENCIL8: m_TextureFormat = wgpu::TextureFormat::Depth24PlusStencil8; break;
 	default: m_TextureFormat = wgpu::TextureFormat::RGBA8Unorm;	break;
 	}
@@ -111,7 +111,27 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	m_TextureView = m_Texture.createView(m_TextureViewDesc);
 
 	if (pixels)
-		SetData(pixels);
+	{
+		if (format == Texture::Format::RGB)
+		{
+			// WebGPU has no 3-channel format - repack to RGBA before upload, matching the
+			// conversion already done for file-loaded textures.
+			const uint8_t* rgb = static_cast<const uint8_t*>(pixels);
+			std::vector<uint8_t> rgbaData(width * height * 4);
+			for (uint32_t i = 0; i < width * height; ++i)
+			{
+				rgbaData[i * 4 + 0] = rgb[i * 3 + 0];
+				rgbaData[i * 4 + 1] = rgb[i * 3 + 1];
+				rgbaData[i * 4 + 2] = rgb[i * 3 + 2];
+				rgbaData[i * 4 + 3] = 255;
+			}
+			SetData(rgbaData.data());
+		}
+		else
+		{
+			SetData(pixels);
+		}
+	}
 
 	CreateSampler();
 }
@@ -280,6 +300,7 @@ void WebGPUTexture2D::SetData(const void* data)
 		bytesPerPixel = 2;
 		break;
 	case wgpu::TextureFormat::R32Uint:
+	case wgpu::TextureFormat::R32Sint:
 	case wgpu::TextureFormat::R32Float:
 	case wgpu::TextureFormat::RG16Float:
 	case wgpu::TextureFormat::RGBA8Unorm:

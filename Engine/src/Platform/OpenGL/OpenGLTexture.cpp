@@ -12,10 +12,12 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	case Texture::FilterMethod::Linear:
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 8.0f);
 		break;
 	case Texture::FilterMethod::Nearest:
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
 		break;
 	default:
 		break;
