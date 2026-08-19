@@ -163,7 +163,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				&& m_RelativeMousePosition.y >= 0.0f && m_RelativeMousePosition.y < m_ViewportSize.y)
 			{
 				m_Framebuffer->Bind();
-				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
+				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - 1.0f - m_RelativeMousePosition.y));
 				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 				m_Framebuffer->UnBind();
 			}
