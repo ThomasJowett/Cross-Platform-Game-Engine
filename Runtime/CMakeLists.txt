@@ -3,7 +3,7 @@ file(GLOB SOURCES
     src/*.h
 )
 
-file(GLOB_RECURSE DATA_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data/*")
+file(GLOB_RECURSE DATA_FILES CONFIGURE_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data/*")
 
 if(APPLE)
     foreach(file ${DATA_FILES})
