@@ -212,10 +212,16 @@ bool ContentExplorerPanel::HasSelection() const
 
 bool ContentExplorerPanel::Rename()
 {
+	// Only files have an extension worth protecting - stripping "the part after the last dot" from
+	// a folder name (e.g. "v1.2") would mangle it instead.
+	bool isFile = std::filesystem::is_regular_file(m_CurrentSelectedPath);
+	std::string extension = isFile ? m_CurrentSelectedPath.extension().string() : "";
+	std::string nameToEdit = isFile ? m_CurrentSelectedPath.stem().string() : m_CurrentSelectedPath.filename().string();
+
 	memset(m_RenameInputBuffer, 0, sizeof(m_RenameInputBuffer));
-	for (int i = 0; i < m_CurrentSelectedPath.filename().string().length(); i++)
+	for (int i = 0; i < nameToEdit.length(); i++)
 	{
-		m_RenameInputBuffer[i] = m_CurrentSelectedPath.filename().string()[i];
+		m_RenameInputBuffer[i] = nameToEdit[i];
 	}
 	static bool hasFocus = false;
 	static bool once = false;
@@ -226,13 +232,25 @@ bool ContentExplorerPanel::Rename()
 		hasFocus = true;
 	}
 
-	if (ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
-		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+	bool confirmed = ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
+		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+	// Read right after InputText - IsItemActive() targets the last-submitted widget, and the
+	// TextDisabled() label below would otherwise become "the last item" instead.
+	bool inputActive = ImGui::IsItemActive();
+
+	if (!extension.empty())
 	{
-		if (!std::filesystem::exists(m_CurrentPath / m_RenameInputBuffer))
+		ImGui::SameLine(0.0f, 0.0f);
+		ImGui::TextDisabled("%s", extension.c_str());
+	}
+
+	if (confirmed)
+	{
+		std::string newFilename = std::string(m_RenameInputBuffer) + extension;
+		if (!std::filesystem::exists(m_CurrentPath / newFilename))
 		{
-			std::filesystem::path newPath = m_CurrentPath / m_RenameInputBuffer;
-			bool wasFile = std::filesystem::is_regular_file(m_CurrentSelectedPath);
+			std::filesystem::path newPath = m_CurrentPath / newFilename;
+			bool wasFile = isFile;
 
 			std::filesystem::rename(m_CurrentSelectedPath, newPath);
 
@@ -255,7 +273,7 @@ bool ContentExplorerPanel::Rename()
 		return true;
 	}
 
-	if (!ImGui::IsItemActive())
+	if (!inputActive)
 	{
 		if (once)
 		{
