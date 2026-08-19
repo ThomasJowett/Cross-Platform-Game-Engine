@@ -10,7 +10,6 @@
 #include "Utilities/GeometryGenerator.h"
 
 #include <webgpu/webgpu.hpp>
-#include "imgui/backends/imgui_impl_wgpu.h"
 
 WebGPUFrameBuffer* WebGPUFrameBuffer::s_Current = nullptr;
 
@@ -81,14 +80,6 @@ void WebGPUFrameBuffer::Generate()
 void WebGPUFrameBuffer::Destroy()
 {
 	PROFILE_FUNCTION();
-
-	// Any of these colour attachments may have been displayed via ImGui::Image() (e.g. the
-	// Editor viewport) - destroying their texture views here can hand a later-allocated view
-	// the same address, which ImGui's WebGPU backend would otherwise mistake for the destroyed
-	// one and reuse its now-invalid cached bind group, causing a validation error at that
-	// point. Drop those cache entries first, before the views actually go away.
-	if (!m_ColourAttachments.empty() || m_DepthAttachment)
-		ImGui_ImplWGPU_InvalidateImageBindGroups();
 
 	m_ColourAttachments.clear();
 	m_DepthAttachment.reset();
