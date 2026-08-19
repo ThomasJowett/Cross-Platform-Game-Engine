@@ -81,6 +81,7 @@ struct Renderer2DData
 	const uint32_t maxQuads = 10000;
 	const uint32_t maxVertices = maxQuads * 4;
 	const uint32_t maxIndices = maxQuads * 6;
+	uint32_t targetSamples = 1;
 	// Max simultaneous font atlases per text batch (see fontAtlasSlots below).
 	static const size_t maxTexturesSlots = 8;
 
@@ -299,37 +300,44 @@ bool Renderer2D::Init()
 	s_Data.hairLineShader = Shader::Create("Renderer2D_HairLine");
 	s_Data.textShader = Shader::Create("Renderer2D_Text");
 
+	std::vector<FrameBufferTextureFormat> targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+
 	Pipeline::Spec quadSpec;
 	quadSpec.shader = s_Data.quadShader;
 	quadSpec.layout = s_Data.quadVertexBuffer->GetLayout();
-	quadSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	quadSpec.targetFormats = targetFormats;
 	quadSpec.backFaceCulling = false;
+	quadSpec.samples = s_Data.targetSamples;
 	s_Data.quadPipeline = Pipeline::Create(quadSpec);
 
 	Pipeline::Spec circleSpec;
 	circleSpec.shader = s_Data.circleShader;
 	circleSpec.layout = s_Data.circleVertexBuffer->GetLayout();
-	circleSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	circleSpec.targetFormats = targetFormats;
+	circleSpec.samples = s_Data.targetSamples;
 	s_Data.circlePipeline = Pipeline::Create(circleSpec);
 
 	Pipeline::Spec lineSpec;
 	lineSpec.shader = s_Data.lineShader;
 	lineSpec.layout = s_Data.lineVertexBuffer->GetLayout();
-	lineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	lineSpec.targetFormats = targetFormats;
 	lineSpec.backFaceCulling = false;
+	lineSpec.samples = s_Data.targetSamples;
 	s_Data.linePipeline = Pipeline::Create(lineSpec);
 
 	Pipeline::Spec hairLineSpec;
 	hairLineSpec.shader = s_Data.hairLineShader;
 	hairLineSpec.layout = s_Data.hairLineVertexBuffer->GetLayout();
-	hairLineSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	hairLineSpec.targetFormats = targetFormats;
 	hairLineSpec.topology = PrimitiveTopology::Lines;
+	hairLineSpec.samples = s_Data.targetSamples;
 	s_Data.hairLinePipeline = Pipeline::Create(hairLineSpec);
 
 	Pipeline::Spec textSpec;
 	textSpec.shader = s_Data.textShader;
 	textSpec.layout = s_Data.textVertexBuffer->GetLayout();
-	textSpec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
+	textSpec.targetFormats = targetFormats;
+	textSpec.samples = s_Data.targetSamples;
 	s_Data.textPipeline = Pipeline::Create(textSpec);
 
 	s_Data.currentBatchTexture = s_Data.whiteTexture;
@@ -350,6 +358,13 @@ bool Renderer2D::Init()
 
 void Renderer2D::Shutdown()
 {
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Renderer2D::SetTargetSamples(uint32_t samples)
+{
+	s_Data.targetSamples = samples;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

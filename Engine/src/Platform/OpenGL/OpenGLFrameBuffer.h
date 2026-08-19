@@ -24,6 +24,8 @@ public:
 	virtual void BlitDepthTo(Ref<FrameBuffer> target) override;
 	virtual void BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex) override;
 
+	virtual void ResolveTo(Ref<FrameBuffer> target) override;
+
 	virtual const FrameBufferSpecification& GetSpecification() const override { return m_Specification; }
 
 	virtual void ClearAttachment(size_t index, int value) override;

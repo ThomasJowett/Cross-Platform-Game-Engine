@@ -18,7 +18,12 @@ public:
 	virtual void StartRenderPass(bool clear = true) override;
 	virtual void EndRenderPass() override;
 
-	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0, DrawMode drawMode = DrawMode::FILL) override;
+	// A minimal render pass targeting exactly one explicit colour view, bypassing
+	// WebGPUFrameBuffer::GetCurrent()'s full attachment set - used for the entity-id resolve
+	// pass, which must write only the entity-id attachment without touching colour/depth.
+	void StartSingleAttachmentRenderPass(wgpu::TextureView colourView, uint32_t width, uint32_t height);
+
+	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0) override;
 	virtual void DrawLines(uint32_t vertexCount) override;
 
 	void SetCurrentPipeline(Ref<Pipeline> pipeline) { m_CurrentPipeline = pipeline; }

@@ -31,6 +31,7 @@ public:
 		std::vector<FrameBufferTextureFormat> targetFormats;
 		bool hasDepth = true;
 		PrimitiveTopology topology = PrimitiveTopology::Triangles;
+		uint32_t samples = 1;
 	};
 public:
 	virtual ~Pipeline() = default;

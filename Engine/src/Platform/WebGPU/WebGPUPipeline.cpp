@@ -228,7 +228,7 @@ void WebGPUPipeline::Invalidate()
 		ENGINE_TRACE("WebGPUPipeline: Creating pipeline WITHOUT depth stencil for shader: {0}", webGPUShader->GetName());
 		pipelineDesc.depthStencil = nullptr;
 	}
-	pipelineDesc.multisample.count = 1;
+	pipelineDesc.multisample.count = m_Specification.samples;
 	pipelineDesc.multisample.mask = 0xFFFFFFFF;
 	pipelineDesc.multisample.alphaToCoverageEnabled = false;
 	pipelineDesc.layout = nullptr;

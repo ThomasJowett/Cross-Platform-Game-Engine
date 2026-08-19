@@ -29,9 +29,9 @@ public:
 	inline static void EndRenderPass() { s_RendererAPI->EndRenderPass(); }
 
 	// Draws primitives from the vertex array
-	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0, DrawMode drawMode = DrawMode::FILL)
+	inline static void DrawIndexed(uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0)
 	{
-		s_RendererAPI->DrawIndexed(indexCount, startIndex, vertexOffset, drawMode);
+		s_RendererAPI->DrawIndexed(indexCount, startIndex, vertexOffset);
 	}
 
 	inline static void DrawLines(uint32_t vertexCount = 0) { s_RendererAPI->DrawLines(vertexCount); }

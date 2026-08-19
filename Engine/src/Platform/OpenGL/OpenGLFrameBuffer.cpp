@@ -256,6 +256,19 @@ void OpenGLFrameBuffer::BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttach
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void OpenGLFrameBuffer::ResolveTo(Ref<FrameBuffer> target)
+{
+	if (m_Specification.samples <= 1)
+		return;
+
+	// glBlitFramebuffer between mismatched sample counts is itself the resolve - averaging for
+	// normalized/float colour formats, selecting one representative sample for integer ones
+	// (linear filtering is disallowed on integer formats anyway) - regardless of the GL_NEAREST
+	// passed to BlitColourTo, which the spec ignores for resolve blits.
+	for (uint32_t i = 0; i < (uint32_t)m_ColourAttachments.size(); i++)
+		BlitColourTo(target, i, i);
+}
+
 void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 {
 	CORE_ASSERT(index < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");

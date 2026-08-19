@@ -16,6 +16,10 @@ public:
 	static bool Init();
 	static void Shutdown();
 
+	// Sample count the quad/circle/line/text/hairline pipelines are created with - must be set
+	// before Init() to take effect.
+	static void SetTargetSamples(uint32_t samples);
+
 	static void OnWindowResize(uint32_t width, uint32_t height);
 	static void BeginScene();
 	static void EndScene();

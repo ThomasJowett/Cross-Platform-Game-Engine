@@ -21,6 +21,9 @@ private:
 	PostProcessStack m_PostProcessStack;
 
 	Ref<FrameBuffer> m_SceneFrameBuffer;
+	// Always samples=1, same attachments as m_SceneFrameBuffer - what the scene actually resolves
+	// into, and what everything downstream (post-process, final pass) reads from.
+	Ref<FrameBuffer> m_ResolvedSceneFrameBuffer;
 	Ref<FrameBuffer> m_PingFrameBuffer;
 	Ref<FrameBuffer> m_PongFrameBuffer;
 

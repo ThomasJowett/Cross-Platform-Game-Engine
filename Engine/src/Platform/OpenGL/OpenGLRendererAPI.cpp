@@ -32,6 +32,7 @@ bool OpenGLRendererAPI::Init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
+	glEnable(GL_MULTISAMPLE);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.5f);
 
@@ -80,18 +81,9 @@ void OpenGLRendererAPI::EndRenderPass()
 {
 }
 
-void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, DrawMode drawMode)
+void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset)
 {
-	GLuint mode;
-	switch (drawMode)
-	{
-	case DrawMode::POINTS: mode = GL_POINTS; break;
-	case DrawMode::WIREFRAME: mode = GL_LINES; break;
-	case DrawMode::FILL: mode = GL_TRIANGLES; break;
-	default: mode = GL_TRIANGLES; break;
-	}
-
-	glDrawRangeElementsBaseVertex(mode, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
+	glDrawRangeElementsBaseVertex(GL_TRIANGLES, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
 }
 
 void OpenGLRendererAPI::DrawLines(uint32_t vertexCount)

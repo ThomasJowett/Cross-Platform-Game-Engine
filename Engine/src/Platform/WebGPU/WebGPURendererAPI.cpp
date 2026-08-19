@@ -73,6 +73,13 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 		const auto& colourViews = currentFrameBuffer->GetColourViews();
 		const auto& specAttachments = currentFrameBuffer->GetSpecification().attachments.attachments;
 
+		// Colour resolves as part of ending this pass, via resolveTarget - WebGPU has no native
+		// resolve for integer formats (RED_INTEGER), so that one is left genuinely multisampled
+		// here and resolved separately afterward (WebGPUFrameBuffer::ResolveTo).
+		auto resolveTargetWebGPU = std::dynamic_pointer_cast<WebGPUFrameBuffer>(currentFrameBuffer->GetResolveTarget());
+		bool shouldResolve = currentFrameBuffer->GetSpecification().samples > 1 && resolveTargetWebGPU;
+		const auto& resolveViews = resolveTargetWebGPU ? resolveTargetWebGPU->GetColourViews() : colourViews;
+
 		// colourViews only contains the non-depth attachments, in the same relative order they
 		// appear in specAttachments - walk both together so each view can be matched to its format.
 		size_t colourViewIndex = 0;
@@ -83,6 +90,7 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 			if (colourViewIndex >= colourViews.size())
 				break;
 
+			size_t thisColourIndex = colourViewIndex;
 			wgpu::RenderPassColorAttachment attachment = {};
 			attachment.view = colourViews[colourViewIndex++];
 			attachment.loadOp = loadOp;
@@ -99,6 +107,8 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 			else
 			{
 				attachment.clearValue = wgpu::Color{ m_ClearColour.r, m_ClearColour.g, m_ClearColour.b, m_ClearColour.a };
+				if (shouldResolve && thisColourIndex < resolveViews.size())
+					attachment.resolveTarget = resolveViews[thisColourIndex];
 			}
 #ifdef __EMSCRIPTEN__
 			attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
@@ -172,6 +182,43 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
 }
 
+void WebGPURendererAPI::StartSingleAttachmentRenderPass(wgpu::TextureView colourView, uint32_t width, uint32_t height)
+{
+	PROFILE_FUNCTION();
+
+	if (!m_WebGPUContext)
+		return;
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	if (!device)
+		return;
+
+	m_CurrentTargetWidth = width;
+	m_CurrentTargetHeight = height;
+
+	wgpu::RenderPassColorAttachment attachment = {};
+	attachment.view = colourView;
+	attachment.loadOp = wgpu::LoadOp::Load;
+	attachment.storeOp = wgpu::StoreOp::Store;
+#ifdef __EMSCRIPTEN__
+	attachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+#endif
+
+	wgpu::RenderPassDescriptor renderPassDesc = {};
+	renderPassDesc.colorAttachmentCount = 1;
+	renderPassDesc.colorAttachments = &attachment;
+	renderPassDesc.depthStencilAttachment = nullptr;
+
+	wgpu::CommandEncoderDescriptor encoderDesc = {};
+	encoderDesc.label = "Entity-id resolve command encoder";
+
+	m_CommandEncoder = device.createCommandEncoder(encoderDesc);
+	if (!m_CommandEncoder)
+		return;
+
+	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
+}
+
 void WebGPURendererAPI::EndRenderPass()
 {
 	PROFILE_FUNCTION();
@@ -192,7 +239,7 @@ void WebGPURendererAPI::EndRenderPass()
 	}
 }
 
-void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, DrawMode drawMode)
+void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset)
 {
 	PROFILE_FUNCTION();
 	if (!m_RenderPass)

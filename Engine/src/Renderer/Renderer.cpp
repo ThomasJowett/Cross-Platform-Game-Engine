@@ -29,7 +29,7 @@ struct RendererData
 	Ref<Texture> normalTexture;
 	Ref<Texture> mixMapTexture;
 
-	DrawMode drawMode = DrawMode::FILL;
+	uint32_t targetSamples = 1;
 
 	std::unordered_map<std::string, Ref<Pipeline>> pipelineCache;
 
@@ -108,6 +108,7 @@ static std::string BuildPipelineCacheKey(const Pipeline::Spec& spec)
 	key += "_elems" + std::to_string(spec.layout.GetElements().size());
 	for (FrameBufferTextureFormat format : spec.targetFormats)
 		key += "_fmt" + std::to_string((int)format);
+	key += "_samples" + std::to_string(spec.samples);
 	return key;
 }
 
@@ -117,13 +118,12 @@ static Ref<Pipeline> GetPipeline(const Ref<Shader>& shader, const BufferLayout& 
 	spec.shader = shader;
 	spec.layout = layout;
 	spec.transparencyEnabled = transparent;
-	// WebGPU bakes cull mode into the pipeline at creation time rather than allowing it to be
-	// toggled per draw call (unlike OpenGL, where DrawIndexed's backFaceCull parameter can flip
-	// glEnable/glDisable(GL_CULL_FACE) on the fly) - so a two-sided material needs its own pipeline
-	// variant here, since setting Material::SetTwoSided() alone has no effect on WebGPU otherwise.
+	// Cull mode is baked into the pipeline at creation time on both backends, not toggled per
+	// draw call - so a two-sided material needs its own pipeline variant here.
 	spec.backFaceCulling = !twoSided;
 	spec.targetFormats = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER };
 	spec.hasDepth = true;
+	spec.samples = s_RendererData.targetSamples;
 
 	std::string key = BuildPipelineCacheKey(spec);
 	auto it = s_RendererData.pipelineCache.find(key);
@@ -139,16 +139,7 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 {
 	for (const auto& command : renderQueue)
 	{
-		Ref<Shader> shader;
-		if (s_RendererData.drawMode == DrawMode::WIREFRAME)
-		{
-			//TODO write wireframe geometry shader
-			//shader = s_ShaderLibrary.Load("Wireframe");
-		}
-		else {
-			shader = s_ShaderLibrary.Load(command.material->GetShader());
-		}
-
+		Ref<Shader> shader = s_ShaderLibrary.Load(command.material->GetShader());
 		if (!shader)
 			continue;
 
@@ -177,8 +168,7 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		s_RendererData.normalTexture->Bind(1);
 		s_RendererData.mixMapTexture->Bind(2);
 
-		if (s_RendererData.drawMode == DrawMode::FILL)
-			command.material->BindTextures();
+		command.material->BindTextures();
 
 		// Texture::Bind() above only does anything on OpenGL (WebGPU has no global texture-unit
 		// binding - it's always relative to a specific pipeline's bind group), so WebGPU also needs
@@ -188,7 +178,7 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 
 		command.mesh->GetVertexBuffer()->Bind();
 		command.mesh->GetIndexBuffer()->Bind();
-		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset, s_RendererData.drawMode);
+		RenderCommand::DrawIndexed(command.indexCount, command.startIndex, command.vertexOffset);
 		command.mesh->GetIndexBuffer()->UnBind();
 		command.mesh->GetVertexBuffer()->UnBind();
 
@@ -306,9 +296,9 @@ void Renderer::ResetStats()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::SetDrawMode(DrawMode drawMode)
+void Renderer::SetTargetSamples(uint32_t samples)
 {
-	s_RendererData.drawMode = drawMode;
+	s_RendererData.targetSamples = samples;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
