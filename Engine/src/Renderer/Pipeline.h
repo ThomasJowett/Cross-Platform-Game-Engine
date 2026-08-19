@@ -32,6 +32,8 @@ public:
 		bool hasDepth = true;
 		PrimitiveTopology topology = PrimitiveTopology::Triangles;
 		uint32_t samples = 1;
+		// No colour targets - fragment shader only writes @builtin(frag_depth), always (depthTest ignored).
+		bool depthOnly = false;
 	};
 public:
 	virtual ~Pipeline() = default;

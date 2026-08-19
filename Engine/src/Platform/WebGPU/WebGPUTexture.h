@@ -34,6 +34,9 @@ public:
 
 	inline const wgpu::Texture& GetTexture() const { return m_Texture; }
 	inline const wgpu::TextureView& GetTextureView() const { return m_TextureView; }
+	// Only valid for a DEPTH24STENCIL8 texture - an aspect = DepthOnly view for texture_depth_2d
+	// sampling, separate from GetTextureView()'s "all aspect" render-attachment view.
+	inline const wgpu::TextureView& GetDepthSampleView() const { return m_DepthSampleView; }
 	inline const wgpu::Sampler& GetSampler() const { return m_Sampler; }
 	inline wgpu::TextureFormat GetTextureFormat() const { return m_TextureFormat; }
 private:
@@ -52,6 +55,8 @@ private:
 
 	wgpu::TextureViewDescriptor m_TextureViewDesc;
 	wgpu::TextureView m_TextureView;
+	// Only created for a DEPTH24STENCIL8 texture - see GetDepthSampleView().
+	wgpu::TextureView m_DepthSampleView;
 
 	wgpu::Sampler m_Sampler;
 

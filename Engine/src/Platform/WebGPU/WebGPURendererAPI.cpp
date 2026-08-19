@@ -219,6 +219,44 @@ void WebGPURendererAPI::StartSingleAttachmentRenderPass(wgpu::TextureView colour
 	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
 }
 
+void WebGPURendererAPI::StartDepthOnlyRenderPass(wgpu::TextureView depthView, uint32_t width, uint32_t height)
+{
+	PROFILE_FUNCTION();
+
+	if (!m_WebGPUContext)
+		return;
+
+	auto device = m_WebGPUContext->GetWebGPUDevice();
+	if (!device)
+		return;
+
+	m_CurrentTargetWidth = width;
+	m_CurrentTargetHeight = height;
+
+	wgpu::RenderPassDepthStencilAttachment depthAttachment = {};
+	depthAttachment.view = depthView;
+	depthAttachment.depthLoadOp = wgpu::LoadOp::Load;
+	depthAttachment.depthStoreOp = wgpu::StoreOp::Store;
+	depthAttachment.depthClearValue = 1.0f;
+	depthAttachment.stencilLoadOp = wgpu::LoadOp::Load;
+	depthAttachment.stencilStoreOp = wgpu::StoreOp::Store;
+	depthAttachment.stencilClearValue = 0;
+
+	wgpu::RenderPassDescriptor renderPassDesc = {};
+	renderPassDesc.colorAttachmentCount = 0;
+	renderPassDesc.colorAttachments = nullptr;
+	renderPassDesc.depthStencilAttachment = &depthAttachment;
+
+	wgpu::CommandEncoderDescriptor encoderDesc = {};
+	encoderDesc.label = "Depth blit command encoder";
+
+	m_CommandEncoder = device.createCommandEncoder(encoderDesc);
+	if (!m_CommandEncoder)
+		return;
+
+	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
+}
+
 void WebGPURendererAPI::EndRenderPass()
 {
 	PROFILE_FUNCTION();

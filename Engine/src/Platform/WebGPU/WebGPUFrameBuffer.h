@@ -62,5 +62,9 @@ private:
 	Ref<Pipeline> m_EntityIdResolvePipeline;
 	Ref<Mesh> m_ResolveFullscreenQuad;
 
+	// Lazily built the first time BlitDepthTo() actually needs to copy a depth buffer.
+	Ref<Pipeline> m_DepthBlitPipeline;
+	Ref<Mesh> m_DepthBlitFullscreenQuad;
+
 	static WebGPUFrameBuffer* s_Current;
 };

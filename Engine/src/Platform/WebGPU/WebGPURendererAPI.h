@@ -23,6 +23,10 @@ public:
 	// pass, which must write only the entity-id attachment without touching colour/depth.
 	void StartSingleAttachmentRenderPass(wgpu::TextureView colourView, uint32_t width, uint32_t height);
 
+	// Render pass with no colour attachments - used by WebGPUFrameBuffer::BlitDepthTo's
+	// @builtin(frag_depth) copy pass.
+	void StartDepthOnlyRenderPass(wgpu::TextureView depthView, uint32_t width, uint32_t height);
+
 	virtual void DrawIndexed(uint32_t indexCount, uint32_t indexStart = 0, uint32_t vertexOffset = 0) override;
 	virtual void DrawLines(uint32_t vertexCount) override;
 

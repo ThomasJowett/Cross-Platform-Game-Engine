@@ -10,6 +10,7 @@
 #include "Utilities/GeometryGenerator.h"
 
 #include <webgpu/webgpu.hpp>
+#include "imgui/backends/imgui_impl_wgpu.h"
 
 WebGPUFrameBuffer* WebGPUFrameBuffer::s_Current = nullptr;
 
@@ -81,6 +82,14 @@ void WebGPUFrameBuffer::Destroy()
 {
 	PROFILE_FUNCTION();
 
+	// Any of these colour attachments may have been displayed via ImGui::Image() (e.g. the
+	// Editor viewport) - destroying their texture views here can hand a later-allocated view
+	// the same address, which ImGui's WebGPU backend would otherwise mistake for the destroyed
+	// one and reuse its now-invalid cached bind group, causing a validation error at that
+	// point. Drop those cache entries first, before the views actually go away.
+	if (!m_ColourAttachments.empty() || m_DepthAttachment)
+		ImGui_ImplWGPU_InvalidateImageBindGroups();
+
 	m_ColourAttachments.clear();
 	m_DepthAttachment.reset();
 
@@ -119,7 +128,45 @@ Ref<Texture> WebGPUFrameBuffer::GetDepthAttachment()
 void WebGPUFrameBuffer::BlitDepthTo(Ref<FrameBuffer> target)
 {
 	PROFILE_FUNCTION();
-	// Not natively supported in WebGPU, so we use a shader to copy the depth buffer
+	// WebGPU has no depth-to-depth copy/blit, so a fullscreen-quad pass reads the source depth
+	// texture and writes it through via @builtin(frag_depth) instead.
+	if (!m_DepthAttachment)
+		return;
+
+	auto targetWebGPU = std::dynamic_pointer_cast<WebGPUFrameBuffer>(target);
+	if (!targetWebGPU || !targetWebGPU->GetDepthView())
+		return;
+
+	if (!m_DepthBlitPipeline)
+	{
+		Ref<Shader> shader = Renderer::GetShader("DepthBlit", true);
+		m_DepthBlitFullscreenQuad = GeometryGenerator::CreateFullScreenQuad();
+
+		Pipeline::Spec spec;
+		spec.shader = shader;
+		spec.layout = m_DepthBlitFullscreenQuad->GetVertexLayout();
+		spec.backFaceCulling = false;
+		spec.hasDepth = true;
+		spec.depthOnly = true;
+		spec.transparencyEnabled = false;
+		spec.samples = 1;
+		m_DepthBlitPipeline = Pipeline::Create(spec);
+	}
+
+	auto& rendererAPI = static_cast<WebGPURendererAPI&>(RenderCommand::Get());
+	rendererAPI.StartDepthOnlyRenderPass(targetWebGPU->GetDepthView(),
+		target->GetSpecification().width, target->GetSpecification().height);
+
+	m_DepthBlitPipeline->Bind();
+	m_DepthBlitPipeline->SetTexture(m_DepthAttachment, 0);
+
+	m_DepthBlitFullscreenQuad->GetVertexBuffer()->Bind();
+	m_DepthBlitFullscreenQuad->GetIndexBuffer()->Bind();
+	RenderCommand::DrawIndexed(m_DepthBlitFullscreenQuad->GetIndexCount(), 0, 0);
+	m_DepthBlitFullscreenQuad->GetIndexBuffer()->UnBind();
+	m_DepthBlitFullscreenQuad->GetVertexBuffer()->UnBind();
+
+	RenderCommand::EndRenderPass();
 }
 
 void WebGPUFrameBuffer::BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttachmentIndex, uint32_t dstAttachmentIndex)

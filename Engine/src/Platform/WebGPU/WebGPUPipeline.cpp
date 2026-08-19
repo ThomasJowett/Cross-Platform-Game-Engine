@@ -136,11 +136,16 @@ void WebGPUPipeline::Invalidate()
 	std::vector<wgpu::ColorTargetState> colourTargets;
 	std::vector<wgpu::BlendState> blends;
 
-	uint32_t targetCount = m_Specification.targetFormats.empty() ? 1 : (uint32_t)m_Specification.targetFormats.size();
+	uint32_t targetCount = m_Specification.depthOnly ? 0
+		: (m_Specification.targetFormats.empty() ? 1 : (uint32_t)m_Specification.targetFormats.size());
 	colourTargets.resize(targetCount);
 	blends.resize(targetCount);
 
-	if (m_Specification.targetFormats.empty())
+	if (m_Specification.depthOnly)
+	{
+		// Nothing to do - no colour attachments at all, see the fragmentState assignment below.
+	}
+	else if (m_Specification.targetFormats.empty())
 	{
 		colourTargets[0].format = m_WebGPUContext->GetSwapchainFormat();
 		// With blending disabled, whatever alpha the shader happens to compute (e.g. a partially
@@ -191,7 +196,7 @@ void WebGPUPipeline::Invalidate()
 	}
 
 	fragmentState.targetCount = targetCount;
-	fragmentState.targets = colourTargets.data();
+	fragmentState.targets = targetCount > 0 ? colourTargets.data() : nullptr;
 	pipelineDesc.fragment = &fragmentState;
 
 	// Primitive state
@@ -216,8 +221,10 @@ void WebGPUPipeline::Invalidate()
 	{
 		ENGINE_TRACE("WebGPUPipeline: Creating pipeline WITH depth stencil for shader: {0}", webGPUShader->GetName());
 		depthStencil.format = wgpu::TextureFormat::Depth24PlusStencil8;
-		depthStencil.depthWriteEnabled = m_Specification.depthTest;
-		depthStencil.depthCompare = m_Specification.depthTest ? wgpu::CompareFunction::Less : wgpu::CompareFunction::Always;
+		// depthOnly always writes, ignoring depthTest - it exists purely to overwrite every pixel.
+		depthStencil.depthWriteEnabled = m_Specification.depthOnly || m_Specification.depthTest;
+		depthStencil.depthCompare = m_Specification.depthOnly ? wgpu::CompareFunction::Always
+			: (m_Specification.depthTest ? wgpu::CompareFunction::Less : wgpu::CompareFunction::Always);
 		depthStencil.stencilFront.compare = wgpu::CompareFunction::Always;
 		depthStencil.stencilBack.compare = wgpu::CompareFunction::Always;
 
@@ -341,18 +348,21 @@ void WebGPUPipeline::CommitBindGroups()
 				auto tex = std::static_pointer_cast<WebGPUTexture2D>(std::static_pointer_cast<Texture>(b.resource));
 				if (tex)
 				{
+					wgpu::TextureFormat format = tex->GetTextureFormat();
+					bool isDepthFormat = format == wgpu::TextureFormat::Depth24PlusStencil8;
+
 					wgpu::BindGroupEntry entry = {};
 					entry.binding = b.binding;
-					entry.textureView = tex->GetTextureView();
+					// texture_depth_2d needs an aspect = DepthOnly view, not the "all aspect" one used
+					// as the render pass's depth attachment.
+					entry.textureView = isDepthFormat ? tex->GetDepthSampleView() : tex->GetTextureView();
 					entries.push_back(entry);
 
-					// Integer textures (e.g. the entity-id attachment) are read in WGSL via
-					// textureLoad(), which - unlike textureSample() - takes no sampler and requires
-					// none to be bound; adding one there would be a validation error, not just unused.
-					wgpu::TextureFormat format = tex->GetTextureFormat();
+					// Integer/depth textures are read via textureLoad(), which takes no sampler -
+					// binding one anyway is a validation error, not just unused.
 					bool isIntegerFormat = format == wgpu::TextureFormat::R8Uint || format == wgpu::TextureFormat::R16Uint
 						|| format == wgpu::TextureFormat::R32Uint || format == wgpu::TextureFormat::R32Sint;
-					if (!isIntegerFormat)
+					if (!isIntegerFormat && !isDepthFormat)
 					{
 						wgpu::BindGroupEntry samplerEntry = {};
 						samplerEntry.binding = b.binding + 1;

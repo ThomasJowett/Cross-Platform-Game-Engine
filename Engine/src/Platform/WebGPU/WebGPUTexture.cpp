@@ -110,6 +110,15 @@ WebGPUTexture2D::WebGPUTexture2D(uint32_t width, uint32_t height, Format format,
 	m_TextureViewDesc.arrayLayerCount = 1;
 	m_TextureView = m_Texture.createView(m_TextureViewDesc);
 
+	if (m_TextureFormat == wgpu::TextureFormat::Depth24PlusStencil8)
+	{
+		// An aspect-restricted view needs that aspect's own single-plane format, not the combined one.
+		wgpu::TextureViewDescriptor depthSampleViewDesc = m_TextureViewDesc;
+		depthSampleViewDesc.format = wgpu::TextureFormat::Depth24Plus;
+		depthSampleViewDesc.aspect = wgpu::TextureAspect::DepthOnly;
+		m_DepthSampleView = m_Texture.createView(depthSampleViewDesc);
+	}
+
 	if (pixels)
 	{
 		if (format == Texture::Format::RGB)
@@ -277,6 +286,8 @@ WebGPUTexture2D::~WebGPUTexture2D()
 		m_Texture.release();
 		m_Sampler.release();
 		m_TextureView.release();
+		if (m_DepthSampleView)
+			m_DepthSampleView.release();
 		if (m_ReadbackBufferCreated)
 			m_ReadbackBuffer.release();
 	}
