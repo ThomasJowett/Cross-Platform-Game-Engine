@@ -14,6 +14,21 @@ if(ENABLE_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD ON)
 endif()
 
+# Local fix for a stale ImGui WebGPU bind-group cache bug (ocornut/imgui#7765) that the
+# vendored imgui version doesn't have yet - see the patch file for details. Applied here,
+# rather than committed directly into the submodule checkout, so it survives fresh clones/CI
+# without anyone needing to remember a manual step.
+execute_process(
+    COMMAND ${CMAKE_COMMAND}
+        -DPATCH_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/imgui_wgpu_bindgroup_invalidate.patch
+        -DWORKING_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/Engine/vendor/imgui
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/apply_patch_idempotent.cmake
+    RESULT_VARIABLE IMGUI_PATCH_RESULT
+)
+if (NOT IMGUI_PATCH_RESULT EQUAL 0)
+    message(FATAL_ERROR "Failed to apply imgui WebGPU bind-group patch")
+endif()
+
 set(CMAKE_BUILD_TYPE "Debug")
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
