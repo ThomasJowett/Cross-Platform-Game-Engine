@@ -5,6 +5,7 @@
 #include <stb/stb_image.h>
 #include <filesystem>
 #include <webgpu/webgpu.h>
+#include "imgui/backends/imgui_impl_wgpu.h"
 
 void WebGPUTexture2D::CreateSampler()
 {
@@ -282,7 +283,19 @@ WebGPUTexture2D::~WebGPUTexture2D()
 {
 	PROFILE_FUNCTION();
 	if (Application::Get().IsRunning()) {
-		m_Texture.destroy();
+		// This texture's view may have been shown via ImGui::Image() (e.g. a Content Explorer
+		// thumbnail). Destroying it here can hand a later-allocated view the same address, which
+		// ImGui's WebGPU backend would otherwise mistake for this one and reuse its now-invalid
+		// cached bind group - the same hazard WebGPUFrameBuffer::Destroy() guards against, just
+		// triggered by an asset texture being reloaded/freed (e.g. on scene change) instead of a
+		// framebuffer resize. See the macro's own header comment for why this is guarded.
+#ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
+		ImGui_ImplWGPU_InvalidateImageBindGroups();
+#endif
+		// destroy() forces immediate GPU-side invalidation, even for a command buffer that was
+		// already submitted but not yet executed by the GPU - exactly what happens here, since a
+		// scene change can free a texture the same frame its old sprite draw call was submitted.
+		// release() alone lets wgpu-native defer the actual free until the GPU is done with it.
 		m_Texture.release();
 		m_Sampler.release();
 		m_TextureView.release();
@@ -383,8 +396,13 @@ bool WebGPUTexture2D::Reload()
 {
 	if (!m_Filepath.empty() && m_Filepath != "NO DATA" && m_Filepath != "NULL")
 	{
+		// Same hazards as ~WebGPUTexture2D() - a stale ImGui bind-group cache entry if the new
+		// view reuses this address, and destroy() forcing invalidation of a texture a still-in-
+		// flight command buffer might reference. See that destructor for the full explanation.
+#ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
+		ImGui_ImplWGPU_InvalidateImageBindGroups();
+#endif
 		if (m_Texture) {
-			m_Texture.destroy();
 			m_Texture.release();
 		}
 		if (m_Sampler) m_Sampler.release();
