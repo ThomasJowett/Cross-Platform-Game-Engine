@@ -156,6 +156,11 @@ void MainDockSpace::OnAttach()
 	}
 
 	SceneManager::ChangeSceneState(SceneState::Edit);
+
+	// --auto-play: for scripted/headless testing that needs the scene running without a manual
+	// Play click - applied after the Edit-state default above so it isn't immediately overridden.
+	if (Application::ShouldAutoPlay())
+		SceneManager::ChangeSceneState(SceneState::Play);
 }
 
 void MainDockSpace::OnDetach()

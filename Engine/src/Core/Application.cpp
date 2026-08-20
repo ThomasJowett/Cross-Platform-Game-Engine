@@ -91,6 +91,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--help] "
 			<< " [--version] "
 			<< " [--profile] "
+			<< " [--auto-play] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -104,6 +105,9 @@ int Application::Init(int argc, char* argv[])
 	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
 	{
 	}
+
+	// Scripted/headless testing flags - see the matching getters in Application.h.
+	m_AutoPlay = input.CmdOptionExists("--auto-play");
 
 	Settings::Init();
 	SetDefaultSettings();
