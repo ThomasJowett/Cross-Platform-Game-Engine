@@ -31,6 +31,16 @@ public:
 	virtual void DrawLines(uint32_t vertexCount = 0) = 0;
 
 	inline static API GetAPI() { return s_API; }
+
+	inline static const char* GetAPIName()
+	{
+		switch (s_API)
+		{
+		case API::OpenGL: return "OpenGL";
+		case API::WebGPU: return "WebGPU";
+		default:          return "None";
+		}
+	}
 protected:
 	static API s_API;
 };

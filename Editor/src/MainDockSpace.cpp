@@ -443,6 +443,7 @@ void MainDockSpace::OnImGuiRender()
 	{
 		ImGui::Text("Version: %i.%i.%i", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		ImGui::Text("Built on: %s", __DATE__);
+		ImGui::Text("Renderer: %s", RendererAPI::GetAPIName());
 		ImGui::Separator();
 		ImGui::Text("Dear ImGui version: %s", ImGui::GetVersion());
 		ImGui::Text("spd log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
