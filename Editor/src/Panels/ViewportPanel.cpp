@@ -46,8 +46,9 @@ ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref
 
 	m_Framebuffer->ClearAttachment(1, -1);
 
-	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colour(0.2f, 0.2f, 0.2f, 1.0f));
 	gridMaterial->SetTwoSided(true);
+	gridMaterial->SetTilingFactor(100.0f);
 	gridMaterial->SetTransparency(true);
 
 	m_GridMesh = GeometryGenerator::CreateGrid(1000.0f, 1000.0f, 2, 2, 1.0f, 1.0f);
