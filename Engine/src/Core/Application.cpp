@@ -93,6 +93,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--profile] "
 			<< " [--auto-play] "
 			<< " [--exit-after <seconds>] "
+			<< " [--scene <path>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -115,6 +116,13 @@ int Application::Init(int argc, char* argv[])
 		const std::string& value = input.GetCmdOption("--exit-after");
 		if (!value.empty())
 			m_ExitAfterSeconds = std::stod(value);
+	}
+
+	if (input.CmdOptionExists("--scene"))
+	{
+		const std::string& value = input.GetCmdOption("--scene");
+		if (!value.empty())
+			m_SceneOverride = value;
 	}
 
 	Settings::Init();

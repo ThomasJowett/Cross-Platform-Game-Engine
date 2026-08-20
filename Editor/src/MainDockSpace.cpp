@@ -472,8 +472,12 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	if (!data.defaultScene.empty())
-		SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
+	// --scene: overrides the project's own default scene, for testing a specific scene directly.
+	const std::string& sceneOverride = Application::GetSceneOverride();
+	const std::string& sceneToLoad = !sceneOverride.empty() ? sceneOverride : data.defaultScene;
+
+	if (!sceneToLoad.empty())
+		SceneManager::ChangeScene(std::filesystem::path(sceneToLoad));
 	else
 		SceneManager::ChangeScene("");
 }
