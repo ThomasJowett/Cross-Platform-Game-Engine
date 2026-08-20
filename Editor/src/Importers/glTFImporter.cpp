@@ -136,7 +136,9 @@ void LoadNode(const Matrix4x4& parentTransform, const tinygltf::Node& node, uint
 
 				if (bufferNormals) vert.normal = (rotationMatrix * Vector3f(bufferNormals[v * normByteStride], bufferNormals[v * normByteStride + 1], bufferNormals[v * normByteStride + 2])).GetNormalized();
 				if (bufferTangents) vert.tangent = (rotationMatrix * Vector3f(bufferTangents[v * tangentByteStride], bufferTangents[v * tangentByteStride + 1], bufferTangents[v * tangentByteStride + 2])).GetNormalized();
-				if (bufferUVs) vert.texcoord = Vector2f(bufferUVs[v * uvByteStride], bufferUVs[v * uvByteStride + 1]);
+				// glTF UVs have (0,0) at the top-left of the image; this engine's textures are loaded
+				// with stbi_set_flip_vertically_on_load(1), i.e. (0,0) at the bottom-left - flip V to match.
+				if (bufferUVs) vert.texcoord = Vector2f(bufferUVs[v * uvByteStride], 1.0f - bufferUVs[v * uvByteStride + 1]);
 
 				loaderInfo.vertexBuffer.push_back(vert);
 				loaderInfo.vertexPos++;
