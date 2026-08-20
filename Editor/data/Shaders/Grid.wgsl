@@ -7,7 +7,10 @@ struct ModelBuffer {
 	modelMatrix: mat4x4<f32>,
 	colour: vec4<f32>,
 	textureOffset: vec2<f32>,
-	tilingFactor: f32, // matches Renderer.cpp's ModelBuffer layout - unused here
+	// Doubles as the fade-to-horizon radius (Material::SetTilingFactor()) - there's no dedicated
+	// per-material float slot in the shared ModelBuffer layout, and this needs to be tunable per
+	// material/object (scale and position vary), not a fixed constant.
+	tilingFactor: f32,
 	entityId: i32,
 };
 
@@ -60,8 +63,8 @@ fn fs_main(input: VertexOutput) -> FragmentOutput {
 	let isFlatAxis = deriv < vec3<f32>(0.00001);
 	let derivEpsilon = vec3<f32>(0.0001);
 
-	// Fade-to-horizon distance - fixed to this mesh's own extent, not a material property.
-	let fadeRadius = 500.0;
+	// See the tilingFactor field comment above - this is a per-material setting, not a constant.
+	let fadeRadius = u_Model.tilingFactor;
 
 	// Minor grid lines
 	let gridFrac = select(abs(fract(coord - 0.5) - 0.5) / max(deriv, derivEpsilon), vec3<f32>(1000.0), isFlatAxis);
