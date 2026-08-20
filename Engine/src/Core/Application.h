@@ -105,6 +105,10 @@ private:
 	double m_Accumulator = 0.0;
 
 	bool m_AutoPlay = false;
+	// Duration in seconds from --exit-after; negative means disabled. m_ExitDeadline is the
+	// absolute GetTime() value computed from it once Run() starts.
+	double m_ExitAfterSeconds = -1.0;
+	double m_ExitDeadline = -1.0;
 };
 
 // To be defined in CLIENT

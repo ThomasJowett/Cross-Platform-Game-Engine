@@ -92,6 +92,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--version] "
 			<< " [--profile] "
 			<< " [--auto-play] "
+			<< " [--exit-after <seconds>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -108,6 +109,13 @@ int Application::Init(int argc, char* argv[])
 
 	// Scripted/headless testing flags - see the matching getters in Application.h.
 	m_AutoPlay = input.CmdOptionExists("--auto-play");
+
+	if (input.CmdOptionExists("--exit-after"))
+	{
+		const std::string& value = input.GetCmdOption("--exit-after");
+		if (!value.empty())
+			m_ExitAfterSeconds = std::stod(value);
+	}
 
 	Settings::Init();
 	SetDefaultSettings();
@@ -179,6 +187,10 @@ void Application::Tick() {
 	double frameTime = newTime - m_CurrentTime;
 	m_CurrentTime = newTime;
 
+	// --exit-after: let this frame finish normally, just don't schedule another one.
+	if (m_ExitDeadline >= 0.0 && m_CurrentTime >= m_ExitDeadline)
+		Close();
+
 	m_Accumulator += frameTime;
 
 	m_DeltaTime = (float)frameTime;
@@ -245,6 +257,9 @@ void Application::Run()
 
 	m_CurrentTime = GetTime();
 	m_Accumulator = 0.0;
+
+	if (m_ExitAfterSeconds >= 0.0)
+		m_ExitDeadline = m_CurrentTime + m_ExitAfterSeconds;
 
 	m_Running = true;
 #ifdef __EMSCRIPTEN__
