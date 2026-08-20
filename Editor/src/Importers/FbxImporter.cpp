@@ -164,7 +164,10 @@ void FbxImporter::ImportAssets(const std::filesystem::path& filepath, const std:
 			submesh.vertexOffset = (uint32_t)allVertices.size();
 			submesh.indexCount = partition.triangles_count * 3;
 			submesh.vertexCount = partition.triangles_count * 3;
-			submesh.transform = transformf;
+			// Vertex positions below are already baked into world space via transformf, and
+			// Renderer::Submit combines submesh.transform with the entity's own transform at draw
+			// time - storing transformf here too would apply it a second time.
+			submesh.transform = Matrix4x4();
 			submesh.localTransform = Matrix4x4();
 
 			const ofbx::Material* fbx_mat = fbxMesh->getMaterialCount() > 0 ? fbxMesh->getMaterial(p) : nullptr;
