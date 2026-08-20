@@ -2,10 +2,13 @@
 
 #include "Utilities/MeshSerializer.h"
 #include "Utilities/GeometryGenerator.h"
+#include "Utilities/FileUtils.h"
 #include "math/Matrix.h"
 #include "math/Quaternion.h"
 #include "Core/Colour.h"
+#include "Core/Application.h"
 #include "Asset/Material.h"
+#include "Scene/AssetManager.h"
 #include "Logging/Logger.h"
 
 #include <cfloat>
@@ -61,7 +64,8 @@ void LoadNode(const Matrix4x4& parentTransform, const tinygltf::Node& node, uint
 		Vector3f scale(1.0f, 1.0f, 1.0f);
 
 		if (node.translation.size() == 3) translation = Vector3f((float)node.translation[0], (float)node.translation[1], (float)node.translation[2]);
-		if (node.rotation.size() == 4) rotation = Quaternion((float)node.rotation[0], (float)node.rotation[1], (float)node.rotation[2], (float)node.rotation[3]);
+		// glTF stores quaternions as [x, y, z, w]; Quaternion's constructor takes (r, i, j, k) i.e. (w, x, y, z).
+		if (node.rotation.size() == 4) rotation = Quaternion((float)node.rotation[3], (float)node.rotation[0], (float)node.rotation[1], (float)node.rotation[2]);
 		if (node.scale.size() == 3) scale = Vector3f((float)node.scale[0], (float)node.scale[1], (float)node.scale[2]);
 
 		localTransform = Matrix4x4::Translate(translation) * Matrix4x4::Rotate(rotation) * Matrix4x4::Scale(scale);
@@ -153,39 +157,63 @@ void LoadNode(const Matrix4x4& parentTransform, const tinygltf::Node& node, uint
 					if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_INT) idx = static_cast<const uint32_t*>(dataPtr)[i];
 					else if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_SHORT) idx = static_cast<const uint16_t*>(dataPtr)[i];
 					else if (accessor.componentType == TINYGLTF_PARAMETER_TYPE_UNSIGNED_BYTE) idx = static_cast<const uint8_t*>(dataPtr)[i];
-					loaderInfo.indexBuffer.push_back(idx + (uint32_t)submeshVertexOffset);
+					// Local to this primitive's own vertex block - submesh.vertexOffset below supplies
+					// the offset once, at draw time. Baking it in here too double-offset everything
+					// past the first submesh; and since the mesh's own vertex/index arrays get sliced
+					// out relative to meshVertexStart/meshIndexStart further down, a scene-wide-absolute
+					// value here would be wrong for every mesh after the first in the scene anyway.
+					loaderInfo.indexBuffer.push_back(idx);
 					loaderInfo.indexPos++;
 				}
 			}
 
 			Submesh submesh;
-			submesh.firstIndex = static_cast<uint32_t>(submeshFirstIndex);
+			submesh.firstIndex = static_cast<uint32_t>(submeshFirstIndex - meshIndexStart);
 			submesh.indexCount = static_cast<uint32_t>(indexCount);
-			submesh.vertexOffset = static_cast<uint32_t>(submeshVertexOffset);
+			submesh.vertexOffset = static_cast<uint32_t>(submeshVertexOffset - meshVertexStart);
 			submesh.vertexCount = static_cast<uint32_t>(vertexCount);
-			submesh.transform = worldTransform;
-			submesh.localTransform = localTransform;
+			// Vertex positions above are already baked into world space via worldTransform, and
+			// Renderer::Submit combines submesh.transform with the entity's own transform at draw
+			// time - storing worldTransform here too would apply it a second time.
+			submesh.transform = Matrix4x4();
+			submesh.localTransform = Matrix4x4();
 			submesh.SetBoundingBox(subMin, subMax);
 
 			if (primitive.material >= 0 && primitive.material < (int)importMaterials.size())
 			{
 				const GltfImportMaterial& imat = importMaterials[primitive.material];
 				std::filesystem::path matPath = loaderInfo.destination / (imat.name + ".material");
+				// Relative to the project - matches how every other asset reference is stored, and is
+				// what ends up in this submesh's serialized material name (Mesh::GetMaterials(),
+				// MeshSerializer::Serialize). Using the absolute matPath directly would still "work"
+				// via Material::Load's own absolute() fallback, but bakes this machine's exact folder
+				// layout into the saved .staticmesh instead of a portable, relative reference.
+				std::filesystem::path matRelPath = FileUtils::RelativePath(matPath, Application::GetOpenDocumentDirectory());
 				Ref<Material> engineMat;
-				if (std::filesystem::exists(matPath))
+				if (!std::filesystem::exists(matPath))
 				{
-					engineMat = CreateRef<Material>(matPath);
+					Ref<Material> newMat = CreateRef<Material>();
+					newMat->SetShader("Standard");
+					newMat->SetTint(imat.baseColorFactor);
+					// imat.textures[*].path is absolute (needed for the copy_file call in
+					// ProcessTexture, which isn't relative-to-project aware) - but Texture2D::Create
+					// stores whatever path it's given as the texture's own filepath, and that ends up
+					// serialized into this .material file, so pass it a project-relative path instead
+					// or every texture reference bakes in this machine's exact folder layout.
+					auto toProjectRelative = [](const std::filesystem::path& absolutePath)
+					{
+						return FileUtils::RelativePath(absolutePath, Application::GetOpenDocumentDirectory());
+					};
+					if (imat.textures[0].is_valid) newMat->AddTexture(Texture2D::Create(toProjectRelative(imat.textures[0].path)), 0);
+					if (imat.textures[1].is_valid) newMat->AddTexture(Texture2D::Create(toProjectRelative(imat.textures[1].path)), 1);
+					if (imat.textures[2].is_valid) newMat->AddTexture(Texture2D::Create(toProjectRelative(imat.textures[2].path)), 2);
+					newMat->SaveMaterial(matRelPath);
 				}
-				else
-				{
-					engineMat = CreateRef<Material>();
-					engineMat->SetShader("Standard");
-					engineMat->SetTint(imat.baseColorFactor);
-					if (imat.textures[0].is_valid) engineMat->AddTexture(Texture2D::Create(imat.textures[0].path), 0);
-					if (imat.textures[1].is_valid) engineMat->AddTexture(Texture2D::Create(imat.textures[1].path), 1);
-					if (imat.textures[2].is_valid) engineMat->AddTexture(Texture2D::Create(imat.textures[2].path), 2);
-					engineMat->SaveMaterial(matPath);
-				}
+				// SaveMaterial() is const and never sets the saved material's own filepath - reload
+				// through AssetManager (also lets primitives sharing one material reuse the same
+				// cached instance) so this submesh's material actually has a filepath to serialize,
+				// rather than silently collapsing to the default material on the next load.
+				engineMat = AssetManager::GetAsset<Material>(matRelPath);
 				submesh.materialIndex = (uint32_t)engineMaterials.size();
 				engineMaterials.push_back(engineMat);
 			}
