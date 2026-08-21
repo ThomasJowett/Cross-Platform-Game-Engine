@@ -286,10 +286,6 @@ void MainDockSpace::OnImGuiRender()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
-			{
-				m_ContentExplorer->CreateNewScene();
-			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N"))
 			{
 				Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
