@@ -165,8 +165,12 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				m_Framebuffer->Bind();
 				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - 1.0f - m_RelativeMousePosition.y));
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
 				m_Framebuffer->UnBind();
+
+				// m_PixelData can be a stale entity id left over from a previously loaded scene - validate it.
+				Scene* currentScene = SceneManager::CurrentScene();
+				bool validHoveredEntity = m_PixelData != -1 && currentScene && currentScene->GetRegistry().valid((entt::entity)m_PixelData);
+				m_HoveredEntity = validHoveredEntity ? Entity((entt::entity)m_PixelData, currentScene) : Entity();
 			}
 			else
 			{
