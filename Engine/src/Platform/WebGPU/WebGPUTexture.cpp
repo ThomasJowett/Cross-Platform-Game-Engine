@@ -174,6 +174,8 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& path)
 	m_TextureViewDesc.baseArrayLayer = 0;
 	m_TextureViewDesc.arrayLayerCount = 1;
 	m_TextureView = m_Texture.createView(m_TextureViewDesc);
+
+	CreateSampler();
 }
 
 WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const std::vector<uint8_t>& imageData)

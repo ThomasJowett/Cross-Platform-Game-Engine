@@ -1,4 +1,6 @@
 #include "ImGuiUtilities.h"
+#include "Renderer/RendererAPI.h"
+#include "imgui/backends/imgui_impl_wgpu.h"
 
 static size_t ImFormatString(char* buf, size_t buf_size, const char* fmt, ...)
 {
@@ -17,7 +19,22 @@ void ImGui::Image(Ref<Texture> texture, const ImVec2& size, const ImVec4& tint_c
 	if (texture)
 	{
 		ImTextureID my_tex_id = (ImTextureID)texture->GetRendererID();
+
+		// WebGPU's ImGui backend samples every ImGui::Image() through one hardcoded bind group,
+		// ignoring each texture's own configured filtering - switch to a nearest sampler for the
+		// draw call and back to linear straight after, so a pixel-art texture (e.g. a tileset/
+		// spritesheet preview) actually renders crisp instead of blurred. OpenGL doesn't need this:
+		// filtering lives on the texture object itself there and is already applied on bind.
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+		bool useNearest = texture->GetFilterMethod() == Texture::FilterMethod::Nearest && RendererAPI::GetAPI() == RendererAPI::API::WebGPU;
+		if (useNearest)
+			ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerNearest, nullptr);
+#endif
 		ImGui::Image(my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), tint_col, border_col);
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+		if (useNearest)
+			ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerLinear, nullptr);
+#endif
 	}
 }
 
@@ -29,7 +46,18 @@ void ImGui::Image(Ref<SubTexture2D> subtexture, const ImVec2& size, const ImVec4
 	{
 		ImTextureID my_tex_id = (ImTextureID)subtexture->GetTexture()->GetRendererID();
 		const Vector2f* coords = subtexture->GetTextureCoordinates();
+
+		// See the Ref<Texture> overload above for why this is needed on WebGPU only.
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+		bool useNearest = subtexture->GetTexture()->GetFilterMethod() == Texture::FilterMethod::Nearest && RendererAPI::GetAPI() == RendererAPI::API::WebGPU;
+		if (useNearest)
+			ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerNearest, nullptr);
+#endif
 		ImGui::Image(my_tex_id, size, ImVec2(coords[0].x, coords[2].y), ImVec2(coords[2].x, coords[0].y), tint_col, border_col);
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+		if (useNearest)
+			ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerLinear, nullptr);
+#endif
 	}
 }
 

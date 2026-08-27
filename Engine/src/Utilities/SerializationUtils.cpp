@@ -104,7 +104,7 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Textur
 		texture = AssetManager::GetTexture(filepath);
 		if (texture)
 		{
-			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Linear);
+			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Nearest);
 			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
 
 			int wrapMethod = pElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);

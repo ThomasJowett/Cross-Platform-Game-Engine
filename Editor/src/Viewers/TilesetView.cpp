@@ -226,6 +226,7 @@ void TilesetView::OnImGuiRender()
 
 			ImVec2 previewSize = ImVec2(ImGui::GetContentRegionAvail().x, tileSize[1] * ratio);
 
+			m_LocalTileset->SetCurrentTile(m_SelectedXCoord, m_SelectedYCoord);
 			ImGui::Image(m_LocalTileset->GetSubTexture(), previewSize);
 
 			if (selectedTile.GetCollisionShape() == Tile::CollisionShape::Rect)
