@@ -576,7 +576,7 @@ void ContentExplorerPanel::RightClickMenu()
 			{ {L"Any File", L"*.*"},
 			  {L"Film Box (.fbx)", L"*.fbx"},
 			  {L"Wavefront OBJ (.obj)", L"*.obj"},
-			  {L"gltf (.gltf, .glb)", L"*.gltf, *.glb"},
+			  {L"gltf (.gltf, .glb)", L"*.gltf;*.glb"},
 			  {L"Tiled Tilemap(.tmx)", L"*.tmx"},
 			  {L"Tiled Tileset(.tsx)", L"*.tsx"} });
 
@@ -1283,7 +1283,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		if (ImGui::Button(ICON_FA_FOLDER_PLUS " Create New"))
 			ImGui::OpenPopup("Create New");
 
-		if (ImGui::BeginPopupContextItem("Create New"))
+		if (ImGui::BeginPopup("Create New"))
 		{
 			CreateNewMenu();
 			ImGui::EndPopup();
