@@ -115,6 +115,7 @@ void WebGPUContext::Init()
 void WebGPUContext::SwapBuffers()
 {
 	PROFILE_FUNCTION();
+	m_SwapchainRenderedThisFrame = false;
 	if (m_SurfaceAcquired)
 	{
 		if (m_CurrentTextureView)

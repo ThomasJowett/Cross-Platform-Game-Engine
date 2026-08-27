@@ -25,6 +25,13 @@ public:
 	const wgpu::SurfaceConfiguration& GetSurfaceConfig() const { return m_SurfaceConfig; }
 	wgpu::TextureView GetCurrentTextureView();
 
+	// Tracks whether anything has already rendered to the swapchain surface this frame, so a
+	// later pass (e.g. ImGui's own hand-rolled one) knows to load rather than clear - otherwise
+	// whichever of a scene render and an ImGui overlay runs second would erase the other's
+	// output instead of compositing over it. Reset once per frame in SwapBuffers().
+	bool HasSwapchainBeenRenderedThisFrame() const { return m_SwapchainRenderedThisFrame; }
+	void MarkSwapchainRenderedThisFrame() { m_SwapchainRenderedThisFrame = true; }
+
 	void PollEvents();
 
 private:
@@ -49,4 +56,5 @@ private:
 	bool m_SurfaceAcquired = false;
 	bool m_NeedsResize = false;
 	bool m_Initialized = false;
+	bool m_SwapchainRenderedThisFrame = false;
 };

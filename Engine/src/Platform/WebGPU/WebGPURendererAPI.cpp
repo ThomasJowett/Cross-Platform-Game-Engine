@@ -64,6 +64,7 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 
 	WebGPUFrameBuffer* currentFrameBuffer = WebGPUFrameBuffer::GetCurrent();
 	bool hasDepth = false;
+	bool targetingSwapchain = false;
 
 	if (currentFrameBuffer)
 	{
@@ -133,6 +134,7 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 	else
 	{
 		// Swapchain
+		targetingSwapchain = true;
 		m_CurrentTargetWidth = m_WebGPUContext->GetSurfaceConfig().width;
 		m_CurrentTargetHeight = m_WebGPUContext->GetSurfaceConfig().height;
 
@@ -180,6 +182,9 @@ void WebGPURendererAPI::StartRenderPass(bool clear)
 		return;
 
 	m_RenderPass = m_CommandEncoder.beginRenderPass(renderPassDesc);
+
+	if (targetingSwapchain && m_RenderPass)
+		m_WebGPUContext->MarkSwapchainRenderedThisFrame();
 }
 
 void WebGPURendererAPI::StartSingleAttachmentRenderPass(wgpu::TextureView colourView, uint32_t width, uint32_t height)

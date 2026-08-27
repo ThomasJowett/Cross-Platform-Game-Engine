@@ -156,9 +156,14 @@ void ImGuiManager::End()
 		if (!drawData)
 			return;
 
+		// If a scene has already rendered to the swapchain this frame (a shipped game using
+		// ImGui as an in-game overlay, as opposed to the Editor where ImGui is the only thing
+		// that ever draws here), clearing would erase it - load and draw on top instead.
+		bool alreadyRendered = webGPUContext->HasSwapchainBeenRenderedThisFrame();
+
 		wgpu::RenderPassColorAttachment colourAttachment = {};
 		colourAttachment.view = targetView;
-		colourAttachment.loadOp = wgpu::LoadOp::Clear;
+		colourAttachment.loadOp = alreadyRendered ? wgpu::LoadOp::Load : wgpu::LoadOp::Clear;
 		colourAttachment.storeOp = wgpu::StoreOp::Store;
 		colourAttachment.clearValue = { 0.1f, 0.1f, 0.1f, 1.0f }; // TODO: set the clear colour properly
 #ifdef __EMSCRIPTEN__
@@ -183,6 +188,7 @@ void ImGuiManager::End()
 		if (renderPass) {
 			ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
 			renderPass.end();
+			webGPUContext->MarkSwapchainRenderedThisFrame();
 		}
 
 		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};

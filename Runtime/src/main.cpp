@@ -101,9 +101,11 @@ int main(int argc, char* argv[])
 	if (!window)
 		return EXIT_FAILURE;
 
-	// ImGuiManager::End() always issues its own render pass straight to the swapchain with
-	// LoadOp::Clear, which would wipe whatever RenderPipeline::Render already composited there -
-	// shipped games have no ImGui UI to draw, so skip that pass entirely.
+	// ImGui now composites over an already-rendered scene rather than clearing it (see
+	// ImGuiManager::End()), so this isn't required for correctness - but with no windows ever
+	// submitted, an enabled ImGui still pays for a NewFrame/Render/EndFrame cycle and input
+	// hooking every frame for nothing visible, so shipped games opt out by default and enable
+	// this only if they actually want an in-game debug UI.
 	Application::ShowImGui(false);
 
 	RenderCommand::SetClearColour(Colours::GREY);
