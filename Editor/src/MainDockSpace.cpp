@@ -313,7 +313,13 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
+#ifdef _WINDOWS
 				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Executable", L"*.exe"} });
+#elif defined(__APPLE__)
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Application", L"*.app"} });
+#else
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Any File", L"*.*"} });
+#endif
 				if (exportLocation.has_value())
 				{
 					Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory(), exportLocation.value()));
