@@ -63,6 +63,11 @@ int main(int argc, char* argv[])
 	if (!window)
 		return EXIT_FAILURE;
 
+	// ImGuiManager::End() always issues its own render pass straight to the swapchain with
+	// LoadOp::Clear, which would wipe whatever RenderPipeline::Render already composited there -
+	// shipped games have no ImGui UI to draw, so skip that pass entirely.
+	Application::ShowImGui(false);
+
 	RenderCommand::SetClearColour(Colours::GREY);
 
 	Application::SetOpenDocument(argv[0]);
