@@ -145,12 +145,32 @@ target_copy_webgpu_binaries(Editor)
 
 if(APPLE)
     set_target_properties(Editor PROPERTIES INSTALL_RPATH "@executable_path")
-    add_custom_command(TARGET Editor POST_BUILD
+
+    # A POST_BUILD command on the Editor target only reruns when Editor's own sources change,
+    # not when Runtime's do - a Runtime-only rebuild used to leave a stale Runtime.app sitting
+    # inside Editor.app. A stamp file tracked as this custom command's OUTPUT, depending on
+    # Runtime's actual binary as an input, reruns the copy whenever Runtime.app itself is newer,
+    # regardless of what triggered the build. Editor.app's own location is written as a plain
+    # path (matching MACOSX_BUNDLE_BUNDLE_NAME/RUNTIME_OUTPUT_DIRECTORY above) rather than via
+    # $<TARGET_BUNDLE_CONTENT_DIR:Editor> - referencing Editor's target here at all, genex or
+    # not, makes CMake add an implicit dependency on it, which cycles against Editor depending
+    # on this copy target below.
+    set(RUNTIME_COPY_STAMP "${CMAKE_CURRENT_BINARY_DIR}/RuntimeCopied.stamp")
+    add_custom_command(
+        OUTPUT "${RUNTIME_COPY_STAMP}"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_BINARY_DIR}/Runtime/Runtime.app"
-        "$<TARGET_BUNDLE_CONTENT_DIR:Editor>/Resources/Runtime.app"
+            "${CMAKE_BINARY_DIR}/Runtime/Runtime.app"
+            "${CMAKE_CURRENT_BINARY_DIR}/Editor.app/Contents/Resources/Runtime.app"
+        COMMAND ${CMAKE_COMMAND} -E touch "${RUNTIME_COPY_STAMP}"
+        DEPENDS Runtime "$<TARGET_FILE:Runtime>"
         COMMENT "Copying Runtime.app into Editor.app bundle"
     )
+    # copy_directory creates its destination as needed, so this doesn't need Editor.app to exist
+    # first - Editor depending on this target (rather than the other way around) just guarantees
+    # it's present by the time a build of Editor finishes, however Editor is invoked (`--target
+    # Editor` alone included, not just a default/"all" build).
+    add_custom_target(CopyRuntimeIntoEditorBundle DEPENDS "${RUNTIME_COPY_STAMP}")
+    add_dependencies(Editor CopyRuntimeIntoEditorBundle)
 endif()
 
 if (MSVC)
