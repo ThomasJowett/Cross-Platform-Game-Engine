@@ -28,6 +28,10 @@ public:
 
 	void OnImGuiRender();
 
+	// Packs+exports synchronously, on the calling thread, bypassing the ImGui progress UI - for
+	// CLI/automated testing.
+	void RunHeadlessExport() { PackAssets(); }
+
 private:
 	void DiscoverAssets();
 	void AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root);
