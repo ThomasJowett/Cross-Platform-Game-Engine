@@ -14,19 +14,21 @@ if(ENABLE_UNITY_BUILD)
     set(CMAKE_UNITY_BUILD ON)
 endif()
 
-# Local fix for a stale ImGui WebGPU bind-group cache bug (ocornut/imgui#7765) that the
-# vendored imgui version doesn't have yet - see the patch file for details. Applied here,
-# rather than committed directly into the submodule checkout, so it survives fresh clones/CI
-# without anyone needing to remember a manual step.
+# Local fixes for the vendored imgui WebGPU backend that aren't reachable via a submodule version
+# bump yet (see the patch file for why - it covers two logically separate fixes, kept in one file
+# because they touch adjacent insertion points and splitting them broke the idempotency check below
+# on a second configure: reverse-applying just the first fix failed once the second fix's content
+# was sitting immediately next to it). Applied here, rather than committed directly into the
+# submodule checkout, so it survives fresh clones/CI without anyone needing a manual step.
 execute_process(
     COMMAND ${CMAKE_COMMAND}
-        -DPATCH_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/imgui_wgpu_bindgroup_invalidate.patch
+        -DPATCH_FILE=${CMAKE_CURRENT_SOURCE_DIR}/cmake/patches/imgui_wgpu_local_fixes.patch
         -DWORKING_DIRECTORY=${CMAKE_CURRENT_SOURCE_DIR}/Engine/vendor/imgui
         -P ${CMAKE_CURRENT_SOURCE_DIR}/cmake/apply_patch_idempotent.cmake
     RESULT_VARIABLE IMGUI_PATCH_RESULT
 )
 if (NOT IMGUI_PATCH_RESULT EQUAL 0)
-    message(FATAL_ERROR "Failed to apply imgui WebGPU bind-group patch")
+    message(FATAL_ERROR "Failed to apply imgui WebGPU patch")
 endif()
 
 set(CMAKE_BUILD_TYPE "Debug")
