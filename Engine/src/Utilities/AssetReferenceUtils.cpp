@@ -7,6 +7,7 @@
 #include "Scene/Scene.h"
 #include "Scene/AssetManager.h"
 #include "Scene/Components/SpriteComponent.h"
+#include "Scene/Components/AnimatedSpriteComponent.h"
 #include "Scene/Components/UIWidgets/ButtonComponent.h"
 #include "Utilities/FileUtils.h"
 #include "Asset/Material.h"
@@ -169,6 +170,29 @@ namespace AssetReferenceUtils
 				if (matches(button.hoveredTexture)) { button.hoveredTexture = getReplacement(); changed = true; }
 				if (matches(button.clickedTexture)) { button.clickedTexture = getReplacement(); changed = true; }
 				if (matches(button.disabledTexture)) { button.disabledTexture = getReplacement(); changed = true; }
+			});
+
+		if (changed)
+			currentScene->MakeDirty();
+	}
+
+	void UpdateCurrentSceneAnimationReferences(const Ref<SpriteSheet>& spriteSheet, const std::string& oldName, const std::string& newName)
+	{
+		PROFILE_FUNCTION();
+
+		Scene* currentScene = SceneManager::CurrentScene();
+		if (!currentScene || !spriteSheet)
+			return;
+
+		bool changed = false;
+
+		currentScene->GetRegistry().view<AnimatedSpriteComponent>().each([&](AnimatedSpriteComponent& animatedSprite)
+			{
+				if (animatedSprite.spriteSheet == spriteSheet && animatedSprite.animation == oldName)
+				{
+					animatedSprite.animation = newName;
+					changed = true;
+				}
 			});
 
 		if (changed)

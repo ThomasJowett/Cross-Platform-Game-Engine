@@ -47,4 +47,7 @@ private:
 	std::vector<std::pair<std::string, Animation*>> m_AnimationsSorted;
 
 	char m_InputBuffer[1024] = "";
+
+	// Animation renames (old name, new name) not yet propagated to the scene - applied in Save().
+	std::vector<std::pair<std::string, std::string>> m_PendingAnimationRenames;
 };

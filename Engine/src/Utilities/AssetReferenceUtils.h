@@ -1,7 +1,12 @@
 #pragma once
 
 #include <filesystem>
+#include <string>
 #include <vector>
+
+#include "Core/core.h"
+
+class SpriteSheet;
 
 // Every asset that can reference another asset by path does so via the same
 // Filepath="..." XML attribute convention (SerializationUtils::Encode/Decode).
@@ -26,6 +31,9 @@ namespace AssetReferenceUtils
 	// all. Marks the scene dirty if anything changed, never touches unrelated entities/data,
 	// so it's always safe to call even on a scene with other unsaved edits.
 	void UpdateCurrentSceneTextureReferences(const std::filesystem::path& oldPath, const std::filesystem::path& newPath = {});
+
+	// Repoints any live AnimatedSpriteComponent using spriteSheet + oldName to newName instead.
+	void UpdateCurrentSceneAnimationReferences(const Ref<SpriteSheet>& spriteSheet, const std::string& oldName, const std::string& newName);
 
 	// Reloads any already-cached Material/SpriteSheet/Tileset among the given files (as
 	// returned by FindReferences/UpdateReferences), so a live in-memory texture reference

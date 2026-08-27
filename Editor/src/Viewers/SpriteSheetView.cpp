@@ -5,6 +5,7 @@
 #include "MainDockSpace.h"
 #include "ImGui/ImGuiTextureEdit.h"
 #include "ImGui/ImGuiUtilities.h"
+#include "Utilities/AssetReferenceUtils.h"
 
 SpriteSheetView::SpriteSheetView(bool* show, std::filesystem::path filepath)
 	:View("SpriteSheetView"), m_Show(show), m_Filepath(filepath)
@@ -185,8 +186,6 @@ void SpriteSheetView::OnImGuiRender()
 					ImGui::TableSetupScrollFreeze(0, 1);
 					ImGui::TableHeadersRow();
 
-					m_ActiveIndex = -1;
-
 					std::string deletedAnimation;
 
 					if (ImGuiTableSortSpecs* sort_specs = ImGui::TableGetSortSpecs())
@@ -243,10 +242,14 @@ void SpriteSheetView::OnImGuiRender()
 						std::string radioBtnId = "##selected" + std::to_string(index);
 						if (ImGui::RadioButton(radioBtnId.c_str(), &m_SelectedAnimation, index))
 							m_PreviewSprite.animation = name;
-						memset(m_InputBuffer, 0, sizeof(m_InputBuffer));
-						for (int i = 0; i < name.length(); i++)
+
+						if (m_ActiveIndex != index)
 						{
-							m_InputBuffer[i] = name[i];
+							memset(m_InputBuffer, 0, sizeof(m_InputBuffer));
+							for (int i = 0; i < name.length(); i++)
+							{
+								m_InputBuffer[i] = name[i];
+							}
 						}
 						ImGui::TableSetColumnIndex(1);
 						ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x);
@@ -265,9 +268,11 @@ void SpriteSheetView::OnImGuiRender()
 							if (m_PreviewSprite.animation == name)
 								m_PreviewSprite.animation = m_InputBuffer;
 							m_LocalSpriteSheet->RenameAnimation(name, m_InputBuffer);
-							GetListOfAnimations();
+							m_PendingAnimationRenames.emplace_back(name, m_InputBuffer);
 							m_Dirty = true;
 							m_ActiveIndex = -1;
+							GetListOfAnimations();
+							break;
 						}
 
 						int frameStart = (int)animation->GetStartFrame();
@@ -406,6 +411,11 @@ void SpriteSheetView::Save()
 {
 	m_LocalSpriteSheet->Save();
 	m_SpriteSheet->Load(m_Filepath);
+
+	for (auto&& [oldName, newName] : m_PendingAnimationRenames)
+		AssetReferenceUtils::UpdateCurrentSceneAnimationReferences(m_SpriteSheet, oldName, newName);
+	m_PendingAnimationRenames.clear();
+
 	m_Dirty = false;
 }
 
