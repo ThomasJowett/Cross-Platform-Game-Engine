@@ -147,19 +147,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
-			// Read the hovered entity every frame rather than only on click - WebGPU's readback is
-			// async (required so it can't block/hang on the web), so a click-gated read always
-			// returned the *previous* frame's stale result, which looked like needing to double-click
-			// to select anything. Keeping m_HoveredEntity continuously up to date means it's already
-			// correct by the time an actual click event below fires.
-			//
-			// Calling this every frame is cheap: WebGPUTexture2D::ReadPixel() only kicks off a new GPU
-			// round trip when the requested pixel coordinates actually change, so a stationary mouse
-			// costs nothing beyond this bounds check and a cached-value return.
-			//
-			// m_ViewportHovered alone isn't enough to bound this read - it stays true for the whole
-			// duration of a right-click camera drag even once the hidden, unbounded cursor position
-			// drifts outside the viewport, so the pixel coordinates below need their own bounds check.
+			// Read the hovered entity every frame, calling this every frame is cheap
 			if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.x < m_ViewportSize.x
 				&& m_RelativeMousePosition.y >= 0.0f && m_RelativeMousePosition.y < m_ViewportSize.y)
 			{
