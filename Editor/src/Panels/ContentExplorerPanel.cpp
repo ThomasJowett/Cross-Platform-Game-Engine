@@ -564,69 +564,9 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
-	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" New"))
+	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" Create New"))
 	{
-		if (ImGui::Selectable(ICON_FA_FOLDER"\tFolder"))
-		{
-			std::string newFolderName = (m_CurrentPath / "New folder").string();
-			int suffix = 1;
-
-			if (std::filesystem::exists(newFolderName))
-			{
-				while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
-				{
-					suffix++;
-				}
-
-				newFolderName += " (" + std::to_string(suffix) + ')';
-			}
-
-			std::filesystem::create_directory(newFolderName);
-
-			m_ForceRescan = true;
-			m_Renaming = true;
-
-			m_CurrentSelectedPath = newFolderName;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
-		{
-			CreateNewScene();
-			m_Renaming = true;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
-		{
-			CreateNewMaterial();
-			m_Renaming = true;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
-		{
-			CreateNewLuaScript();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
-		{
-			CreateNewTileset();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
-		{
-			CreateNewSpriteSheet();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
-		{
-			CreateNewPhysicsMaterial();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
-		{
-			CreateNewBehaviourTree();
-			m_Renaming = true;
-		}
+		CreateNewMenu();
 		ImGui::EndMenu();
 	}
 
@@ -660,6 +600,71 @@ void ContentExplorerPanel::RightClickMenu()
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleVar(2);
+}
+
+void ContentExplorerPanel::CreateNewMenu()
+{
+	if (ImGui::Selectable(ICON_FA_FOLDER"\tFolder"))
+	{
+		std::string newFolderName = (m_CurrentPath / "New folder").string();
+		int suffix = 1;
+
+		if (std::filesystem::exists(newFolderName))
+		{
+			while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
+			{
+				suffix++;
+			}
+
+			newFolderName += " (" + std::to_string(suffix) + ')';
+		}
+
+		std::filesystem::create_directory(newFolderName);
+
+		m_ForceRescan = true;
+		m_Renaming = true;
+
+		m_CurrentSelectedPath = newFolderName;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
+	{
+		CreateNewScene();
+		m_Renaming = true;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
+	{
+		CreateNewMaterial();
+		m_Renaming = true;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
+	{
+		CreateNewLuaScript();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
+	{
+		CreateNewTileset();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
+	{
+		CreateNewSpriteSheet();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
+	{
+		CreateNewPhysicsMaterial();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
+	{
+		CreateNewBehaviourTree();
+		m_Renaming = true;
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -1272,6 +1277,16 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_VOLLEYBALL "\tPhysics Material\0"
 			ICON_FA_FONT "\tFont\0"))
 		{
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FOLDER_PLUS " Create New"))
+			ImGui::OpenPopup("Create New");
+
+		if (ImGui::BeginPopupContextItem("Create New"))
+		{
+			CreateNewMenu();
+			ImGui::EndPopup();
 		}
 
 		ImGui::SameLine();

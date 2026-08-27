@@ -167,6 +167,7 @@ private:
 	void CalculateBrowsingDataTableSizes(const ImVec2& childWindowSize = ImVec2(-1, -1));
 	void HandleKeyboardInputs();
 	void RightClickMenu();
+	void CreateNewMenu();
 	bool Rename();
 	void UpdateReferencesAfterRename(const std::filesystem::path& oldPath, const std::filesystem::path& newPath);
 
