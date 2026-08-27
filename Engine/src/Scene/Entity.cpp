@@ -16,7 +16,8 @@ Entity::Entity(entt::entity handle, Scene* scene)
 	ASSERT(IsSceneValid(), "This entity is not valid!")
 
 #ifdef DEBUG
-		m_DebugName = m_Scene->GetRegistry().get<NameComponent>(handle);
+	if (NameComponent* name = m_Scene->GetRegistry().try_get<NameComponent>(handle))
+		m_DebugName = *name;
 #endif // DEBUG
 }
 
