@@ -161,7 +161,7 @@ wgpu::Device WebGPUContext::GetWebGPUDevice() { return m_Device; }
 
 wgpu::Surface WebGPUContext::GetSurface() { return m_Surface; }
 
-wgpu::TextureFormat WebGPUContext::GetSwapchainFormat() { return m_Surface.getPreferredFormat(m_Adapter); }
+wgpu::TextureFormat WebGPUContext::GetSwapchainFormat() { return m_SurfaceConfig.format; }
 
 wgpu::Queue WebGPUContext::GetQueue() { return m_Queue; }
 
@@ -206,6 +206,17 @@ void WebGPUContext::SetupSurface()
 	m_SurfaceConfig.height = height;
 	m_SurfaceConfig.usage = wgpu::TextureUsage::RenderAttachment;
 	wgpu::TextureFormat surfaceFormat = m_Surface.getPreferredFormat(m_Adapter);
+
+	// The rest of the pipeline (offscreen scene/post-process/final-pass targets, materials,
+	// UI) treats colour data as already-final RGBA8, with no colour management anywhere - an
+	// *Srgb surface format makes the GPU gamma-encode that data a second time on write,
+	// washing everything out. The preferred format's non-sRGB twin is always present as a
+	// valid surface format alongside it, so drop the "Srgb" suffix rather than accepting it.
+	if (surfaceFormat == wgpu::TextureFormat::BGRA8UnormSrgb)
+		surfaceFormat = wgpu::TextureFormat::BGRA8Unorm;
+	else if (surfaceFormat == wgpu::TextureFormat::RGBA8UnormSrgb)
+		surfaceFormat = wgpu::TextureFormat::RGBA8Unorm;
+
 	m_SurfaceConfig.format = surfaceFormat;
 
 	m_SurfaceConfig.viewFormatCount = 0;
