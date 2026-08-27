@@ -1,5 +1,7 @@
 #pragma once
 
+#include <fstream>
+
 #include "Core/core.h"
 #include "Core/Application.h"
 #include "Core/Asset.h"
@@ -15,9 +17,39 @@ public:
 	static void LoadBundle(const void* zipData, size_t zipSize)
 	{
 		PROFILE_FUNCTION();
-		AssetManager::Get().m_VFS = CreateRef<VirtualFileSystem>();
-		AssetManager::Get().m_VFS->Mount(zipData, zipSize);
+		// VirtualFileSystem::Mount() (mz_zip_reader_init_mem) keeps a pointer into this data
+		// rather than copying it - store our own persistent copy so the VFS stays valid
+		// regardless of how long the caller's own buffer lives.
+		AssetManager& instance = AssetManager::Get();
+		const uint8_t* bytes = static_cast<const uint8_t*>(zipData);
+		instance.m_BundleData.assign(bytes, bytes + zipSize);
+		instance.m_VFS = CreateRef<VirtualFileSystem>();
+		instance.m_VFS->Mount(instance.m_BundleData.data(), instance.m_BundleData.size());
 		ENGINE_INFO("Asset Bundle Loaded");
+	}
+
+	static bool LoadBundleFromFile(const std::filesystem::path& path)
+	{
+		PROFILE_FUNCTION();
+		std::ifstream file(path, std::ios::binary | std::ios::ate);
+		if (!file.is_open())
+		{
+			ENGINE_ERROR("Failed to open asset bundle: {0}", path.string());
+			return false;
+		}
+
+		std::streamoff size = file.tellg();
+		file.seekg(0, std::ios::beg);
+
+		std::vector<uint8_t> data(static_cast<size_t>(size));
+		if (!file.read(reinterpret_cast<char*>(data.data()), size))
+		{
+			ENGINE_ERROR("Failed to read asset bundle: {0}", path.string());
+			return false;
+		}
+
+		LoadBundle(data.data(), data.size());
+		return true;
 	}
 
 	static bool HasBundle()
@@ -143,6 +175,7 @@ public:
 		if(AssetManager::Get().m_VFS)
 			AssetManager::Get().m_VFS->Unmount();
 		AssetManager::Get().m_VFS.reset();
+		AssetManager::Get().m_BundleData.clear();
 	}
 
 private:
@@ -153,6 +186,7 @@ private:
 	AssetLibrary m_Assets;
 	TextureLibrary2D m_Textures;
 	Ref<VirtualFileSystem> m_VFS;
+	std::vector<uint8_t> m_BundleData;
 
 	FileWatcher m_FileWatcher;
 
