@@ -45,7 +45,7 @@ Ref<SubTexture2D> SubTexture2D::CreateFromCoords(const Ref<Texture2D>& texture, 
 
 void SubTexture2D::SetCurrentCell(const uint32_t cell)
 {
-	if (cell != m_CurrentCell && cell < GetNumberOfCells())
+	if (cell < GetNumberOfCells())
 	{
 		m_CurrentCell = cell;
 		CalculateTextureCoordinates();
