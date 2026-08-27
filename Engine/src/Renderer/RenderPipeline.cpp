@@ -61,6 +61,18 @@ RenderPipeline::RenderPipeline()
 	finalPassSpec.hasDepth = true;
 	finalPassSpec.depthTest = false;
 	m_FinalPassPipeline = Pipeline::Create(finalPassSpec);
+
+	m_FinalPassShaderSwapchain = Renderer::GetShader("FinalPassSwapchain", true);
+
+	Pipeline::Spec finalPassSwapchainSpec;
+	finalPassSwapchainSpec.shader = m_FinalPassShaderSwapchain;
+	finalPassSwapchainSpec.layout = m_FullscreenQuad->GetVertexLayout();
+	finalPassSwapchainSpec.backFaceCulling = false;
+	finalPassSwapchainSpec.depthTest = false;
+	finalPassSwapchainSpec.transparencyEnabled = true;
+	finalPassSwapchainSpec.targetFormats = { FrameBufferTextureFormat::SWAPCHAIN };
+	finalPassSwapchainSpec.hasDepth = false;
+	m_FinalPassPipelineSwapchain = Pipeline::Create(finalPassSwapchainSpec);
 }
 
 RenderPipeline::~RenderPipeline()
@@ -116,13 +128,21 @@ void RenderPipeline::Render(Scene* scene, const Matrix4x4& view, const Matrix4x4
 	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
-	m_FinalPassPipeline->Bind();
-	m_FinalPassShader->Bind();
-
 	Ref<Texture> outputTexture = m_PostProcessStack.empty() ? sceneTexture : m_PostProcessStack.GetFinalTexture();
 
-	m_FinalPassPipeline->SetTexture(outputTexture, 0);
-	m_FinalPassPipeline->SetTexture(entityIdTexture, 2);
+	if (finalOutputTarget)
+	{
+		m_FinalPassPipeline->Bind();
+		m_FinalPassShader->Bind();
+		m_FinalPassPipeline->SetTexture(outputTexture, 0);
+		m_FinalPassPipeline->SetTexture(entityIdTexture, 2);
+	}
+	else
+	{
+		m_FinalPassPipelineSwapchain->Bind();
+		m_FinalPassShaderSwapchain->Bind();
+		m_FinalPassPipelineSwapchain->SetTexture(outputTexture, 0);
+	}
 
 	m_FullscreenQuad->GetVertexBuffer()->Bind();
 	m_FullscreenQuad->GetIndexBuffer()->Bind();

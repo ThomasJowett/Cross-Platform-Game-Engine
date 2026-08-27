@@ -6,6 +6,7 @@
 #include "WebGPUShader.h"
 #include "WebGPUUniformBuffer.h"
 #include "WebGPUTexture.h"
+#include "WebGPUContext.h"
 #include <memory>
 #include <webgpu/webgpu.hpp>
 
@@ -29,6 +30,13 @@ static wgpu::TextureFormat FrameBufferFormatToWebGPU(FrameBufferTextureFormat fo
 	case FrameBufferTextureFormat::RGBA8:       return wgpu::TextureFormat::RGBA8Unorm;
 	case FrameBufferTextureFormat::RED_INTEGER: return wgpu::TextureFormat::R32Sint;
 	case FrameBufferTextureFormat::Depth:       return wgpu::TextureFormat::Depth24PlusStencil8;
+	case FrameBufferTextureFormat::SWAPCHAIN:
+	{
+		auto context = std::dynamic_pointer_cast<WebGPUContext>(Application::GetWindow()->GetContext());
+		if (!context)
+			return wgpu::TextureFormat::Undefined;
+		return context->GetSwapchainFormat();
+	}
 	default:									return wgpu::TextureFormat::Undefined;
 	}
 }

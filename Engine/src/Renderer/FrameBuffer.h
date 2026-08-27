@@ -10,6 +10,8 @@ enum class FrameBufferTextureFormat
 	// Colour
 	RGBA8,
 	RED_INTEGER,
+	SWAPCHAIN, // Matches whatever the window's presentation surface format actually is - for a
+	           // pipeline's targetFormats only, never an owned/allocated framebuffer attachment.
 
 	//Depth/stencil
 	DEPTH24STENCIL8,

@@ -31,6 +31,13 @@ private:
 	Ref<Shader> m_FinalPassShader;
 	Ref<Pipeline> m_FinalPassPipeline;
 
+	// Used instead of m_FinalPassPipeline when rendering straight to the window's swapchain
+	// (finalOutput == nullptr) - a presentation surface only has one colour attachment, in a
+	// format the OS/windowing system chooses, so it can't use the same dual-attachment
+	// (colour + entity-id) pipeline built for an offscreen target.
+	Ref<Shader> m_FinalPassShaderSwapchain;
+	Ref<Pipeline> m_FinalPassPipelineSwapchain;
+
 	uint32_t m_WindowWidth = 1920;
 	uint32_t m_WindowHeight = 1080;
 };
