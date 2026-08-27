@@ -42,6 +42,7 @@ private:
 	std::filesystem::path m_ProjectDirectory;
 	std::filesystem::path m_ExportDirectory;
 	std::filesystem::path m_GameName;
+	bool m_EmbedBundle = true;
 	std::vector<std::filesystem::path> m_DiscoveredAssets;
 	std::unordered_set<std::filesystem::path> m_SelectedAssets;
 

@@ -20,6 +20,7 @@ struct AssetBundleFooter
 	uint64_t zipSize;
 	uint64_t gameTitleSize;
 	uint64_t defaultSceneSize;
+	uint64_t externalBundle; // 0 = zip is embedded before this footer, 1 = zip is a separate ".pak" file next to the executable
 	char magic[8];
 };
 
@@ -70,6 +71,11 @@ void AssetPacker::OnImGuiRender()
 		if (m_CurrentStage == Stage::DiscoveringAssets)
 		{
 			ImGui::Text("Select assets to pack into the bundle:");
+#ifndef __APPLE__
+			ImGui::Checkbox("Embed asset bundle in executable", &m_EmbedBundle);
+			if (ImGui::IsItemHovered())
+				ImGui::SetTooltip("When disabled, the asset bundle is exported as a separate .pak file next to the executable instead of being appended to it.");
+#endif
 			ImGui::Separator();
 
 			float footerHeight = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing();
@@ -269,19 +275,25 @@ void AssetPacker::ExportGameToExecutable()
 	m_Progress.store(0.1f);
 
 	std::ifstream exeFile(exePath, std::ios::binary);
-	std::ifstream zipFile(zipPath, std::ios::binary);
 	std::ofstream outFile(executableName, std::ios::binary);
 	m_Progress.store(0.2f);
 
 	std::vector<char> exeData((std::istreambuf_iterator<char>(exeFile)), {});
 	m_Progress.store(0.3f);
-	std::vector<char> zipData((std::istreambuf_iterator<char>(zipFile)), {});
+
+	std::vector<char> zipData;
+	if (m_EmbedBundle)
+	{
+		std::ifstream zipFile(zipPath, std::ios::binary);
+		zipData.assign((std::istreambuf_iterator<char>(zipFile)), {});
+	}
 
 	m_Progress.store(0.4f);
 
 	outFile.write(exeData.data(), exeData.size());
 	m_Progress.store(0.5f);
-	outFile.write(zipData.data(), zipData.size());
+	if (m_EmbedBundle)
+		outFile.write(zipData.data(), zipData.size());
 	m_Progress.store(0.7f);
 	outFile.write(m_GameName.string().c_str(), m_GameName.string().size());
 	m_Progress.store(0.8f);
@@ -289,18 +301,29 @@ void AssetPacker::ExportGameToExecutable()
 
 	// Write the footer
 	AssetBundleFooter footer;
-	footer.zipSize = zipData.size();
+	footer.zipSize = m_EmbedBundle ? zipData.size() : 0;
 	footer.gameTitleSize = m_GameName.string().size();
 	footer.defaultSceneSize = m_Data.defaultScene.size();
+	footer.externalBundle = m_EmbedBundle ? 0 : 1;
 	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
 
 	outFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
 	m_Progress.store(0.9f);
 
 	exeFile.close();
-	zipFile.close();
+	outFile.close();
 
-	std::filesystem::remove(zipPath);
+	if (m_EmbedBundle)
+	{
+		std::filesystem::remove(zipPath);
+	}
+	else
+	{
+		std::filesystem::path externalBundlePath = executableName;
+		externalBundlePath.replace_extension(".pak");
+		std::filesystem::rename(zipPath, externalBundlePath);
+	}
+
 	m_CurrentStage = Stage::Done;
 	m_Progress.store(1.0f);
 
@@ -313,8 +336,10 @@ void AssetPacker::ExportGameToAppBundle()
 	m_CurrentStage = Stage::ExportingGame;
 	m_Progress.store(0.0f);
 
-	std::filesystem::path editorResources = Application::GetWorkingDirectory() / "Resources"; // TODO: check if this is correct
-	std::filesystem::path runtimeTemplate = editorResources / "Runtime.app";
+	// Application::GetWorkingDirectory() already resolves to Editor.app/Contents/Resources on
+	// macOS, and Editor/CMakeLists.txt copies the built Runtime.app straight into that directory
+	// (see "Copying Runtime.app into Editor.app bundle") - no extra "Resources" path segment.
+	std::filesystem::path runtimeTemplate = Application::GetWorkingDirectory() / "Runtime.app";
 	std::filesystem::path destinationBundle = m_ExportDirectory / (m_GameName.stem().string() + ".app");
 
 	if (!std::filesystem::exists(runtimeTemplate))
@@ -323,6 +348,7 @@ void AssetPacker::ExportGameToAppBundle()
 		m_CurrentStage = Stage::Done;
 		return;
 	}
+	m_Progress.store(0.1f);
 
 	std::error_code ec;
 	if (std::filesystem::exists(destinationBundle))
@@ -338,6 +364,7 @@ void AssetPacker::ExportGameToAppBundle()
 		m_CurrentStage = Stage::Done;
 		return;
 	}
+	m_Progress.store(0.3f);
 
 	std::filesystem::path signaturePath = destinationBundle / "Contents" / "_CodeSignature";
 	if (std::filesystem::exists(signaturePath))
@@ -345,22 +372,71 @@ void AssetPacker::ExportGameToAppBundle()
 		std::filesystem::remove_all(signaturePath);
 	}
 
-	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
-	std::ifstream zipFile(zipPath, std::ios::binary);
-	std::vector<char> zipData((std::istreambuf_iterator<char>(zipFile)), {});
-	zipFile.close();
-
-	AssetBundleFooter footer;
-	footer.zipSize = zipData.size();
-	footer.gameTitleSize = m_GameName.string().size();
-	footer.defaultSceneSize = m_Data.defaultScene.size();
-	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
-
 	std::filesystem::path resourcesPath = destinationBundle / "Contents" / "Resources";
 	if (!std::filesystem::exists(resourcesPath))
 	{
 		std::filesystem::create_directories(resourcesPath);
 	}
+	m_Progress.store(0.4f);
+
+	// A signed .app bundle can't have data appended to its executable the way a flat Windows/
+	// Linux exe can - the asset archive and the small footer/title/scene metadata both ship as
+	// separate files in Resources instead. Runtime/main.cpp knows to look here when it detects
+	// it's running from inside a .app bundle.
+	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
+	std::filesystem::rename(zipPath, resourcesPath / "packed_assets.pak", ec);
+	if (ec)
+	{
+		ENGINE_ERROR("Could not move asset bundle into app bundle: {0}", ec.message());
+		m_CurrentStage = Stage::Done;
+		return;
+	}
+	m_Progress.store(0.6f);
+
+	std::ofstream metadataFile(resourcesPath / "game.meta", std::ios::binary);
+	metadataFile.write(m_GameName.string().c_str(), m_GameName.string().size());
+	metadataFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
+
+	AssetBundleFooter footer;
+	footer.zipSize = 0;
+	footer.gameTitleSize = m_GameName.string().size();
+	footer.defaultSceneSize = m_Data.defaultScene.size();
+	footer.externalBundle = 1;
+	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
+	metadataFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+	metadataFile.close();
+	m_Progress.store(0.7f);
+
+	// The template's Info.plist still names the bundle/executable "Runtime" - give the exported
+	// game its own display name in Finder/Dock (the underlying executable itself stays "Runtime").
+	std::filesystem::path infoPlistPath = destinationBundle / "Contents" / "Info.plist";
+	{
+		std::ifstream plistIn(infoPlistPath);
+		std::string plistContents((std::istreambuf_iterator<char>(plistIn)), {});
+		plistIn.close();
+
+		const std::string oldNameTag = "<key>CFBundleName</key>\n\t<string>Runtime</string>";
+		const std::string newNameTag = "<key>CFBundleName</key>\n\t<string>" + m_GameName.stem().string() + "</string>";
+		size_t pos = plistContents.find(oldNameTag);
+		if (pos != std::string::npos)
+		{
+			plistContents.replace(pos, oldNameTag.size(), newNameTag);
+			std::ofstream plistOut(infoPlistPath, std::ios::binary | std::ios::trunc);
+			plistOut << plistContents;
+		}
+	}
+	m_Progress.store(0.8f);
+
+	std::string signCommand = "codesign --deep -f -s \"-\" \"" + destinationBundle.string() + "\"";
+	if (std::system(signCommand.c_str()) != 0)
+	{
+		ENGINE_ERROR("Failed to codesign exported app bundle at {0}", destinationBundle.string());
+	}
+	m_Progress.store(1.0f);
+
+	m_CurrentStage = Stage::Done;
+
+	ENGINE_INFO("Exported game to {0}", destinationBundle.string());
 }
 
 void AssetPacker::DrawAssetTree(Ref<AssetNode> node)

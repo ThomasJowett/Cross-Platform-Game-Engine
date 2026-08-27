@@ -19,6 +19,8 @@ if(APPLE)
         BUNDLE True
         MACOSX_BUNDLE_BUNDLE_NAME "Runtime"
         MACOSX_BUNDLE_EXECUTABLE_NAME "Runtime"
+        BUILD_WITH_INSTALL_RPATH TRUE
+        INSTALL_RPATH "@executable_path"
     )
 else()
     add_executable(Runtime ${SOURCES} ${DATA_FILES})
@@ -27,6 +29,15 @@ endif()
 source_group("Data" FILES ${DATA_FILES})
 
 target_link_libraries(Runtime PRIVATE Engine)
+target_copy_webgpu_binaries(Runtime)
+
+if(APPLE AND NOT EMSCRIPTEN)
+    set_target_properties(Runtime PROPERTIES INSTALL_RPATH "@executable_path")
+    add_custom_command(TARGET Runtime POST_BUILD
+        COMMAND codesign --entitlements "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/entitlements.plist" --deep -f -s "-" "$<TARGET_BUNDLE_DIR:Runtime>"
+        COMMENT "Codesigning Runtime bundle with entitlements"
+    )
+endif()
 
 if (EMSCRIPTEN)
     set_target_properties(Runtime PROPERTIES SUFFIX ".html")
