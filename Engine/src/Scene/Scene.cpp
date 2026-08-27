@@ -182,6 +182,9 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 {
 	PROFILE_FUNCTION();
 
+	// Lets SceneManager::ChangeScene() defer instead of destroying this Scene mid-iteration.
+	m_IsUpdating = true;
+
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
@@ -269,6 +272,8 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 				}
 			}
 		});
+
+	m_IsUpdating = false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
