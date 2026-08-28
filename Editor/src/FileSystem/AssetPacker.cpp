@@ -384,7 +384,7 @@ void AssetPacker::ExportGameToAppBundle()
 	// separate files in Resources instead. Runtime/main.cpp knows to look here when it detects
 	// it's running from inside a .app bundle.
 	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
-	std::filesystem::rename(zipPath, resourcesPath / "packed_assets.pak", ec);
+	std::filesystem::rename(zipPath, resourcesPath / "assets.pak", ec);
 	if (ec)
 	{
 		ENGINE_ERROR("Could not move asset bundle into app bundle: {0}", ec.message());

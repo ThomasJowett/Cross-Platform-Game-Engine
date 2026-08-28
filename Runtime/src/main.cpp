@@ -29,7 +29,7 @@ int main(int argc, char* argv[])
 
 	// A signed macOS .app can't have data appended to its executable the way a flat Windows/
 	// Linux exe can - AssetPacker::ExportGameToAppBundle() instead ships a "game.meta" (the same
-	// footer/title/scene layout, just in its own file) and "packed_assets.pak" in Contents/
+	// footer/title/scene layout, just in its own file) and "assets.pak" in Contents/
 	// Resources next to the executable in Contents/MacOS.
 	std::filesystem::path metadataSource = argv[0];
 	bool isAppBundle = false;
@@ -71,7 +71,7 @@ int main(int argc, char* argv[])
 	{
 		std::filesystem::path bundlePath;
 		if (isAppBundle)
-			bundlePath = resourcesDir / "packed_assets.pak";
+			bundlePath = resourcesDir / "assets.pak";
 		else
 		{
 			bundlePath = std::filesystem::path(argv[0]);
