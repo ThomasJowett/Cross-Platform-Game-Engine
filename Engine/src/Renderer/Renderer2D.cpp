@@ -308,6 +308,7 @@ bool Renderer2D::Init()
 	quadSpec.targetFormats = targetFormats;
 	quadSpec.backFaceCulling = false;
 	quadSpec.samples = s_Data.targetSamples;
+	quadSpec.transparencyEnabled = true;
 	s_Data.quadPipeline = Pipeline::Create(quadSpec);
 
 	Pipeline::Spec circleSpec;
@@ -315,6 +316,7 @@ bool Renderer2D::Init()
 	circleSpec.layout = s_Data.circleVertexBuffer->GetLayout();
 	circleSpec.targetFormats = targetFormats;
 	circleSpec.samples = s_Data.targetSamples;
+	circleSpec.transparencyEnabled = true;
 	s_Data.circlePipeline = Pipeline::Create(circleSpec);
 
 	Pipeline::Spec lineSpec;
@@ -338,6 +340,7 @@ bool Renderer2D::Init()
 	textSpec.layout = s_Data.textVertexBuffer->GetLayout();
 	textSpec.targetFormats = targetFormats;
 	textSpec.samples = s_Data.targetSamples;
+	textSpec.transparencyEnabled = true;
 	s_Data.textPipeline = Pipeline::Create(textSpec);
 
 	s_Data.currentBatchTexture = s_Data.whiteTexture;
