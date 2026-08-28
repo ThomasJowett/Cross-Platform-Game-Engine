@@ -1,7 +1,9 @@
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/Renderer2D.h"
 #include "Scene/SceneManager.h"
 #include "Scene/AssetManager.h"
+#include "Asset/SpriteAtlas.h"
 
 #include "RuntimeLayer.h"
 
@@ -101,16 +103,14 @@ int main(int argc, char* argv[])
 	if (!window)
 		return EXIT_FAILURE;
 
-	// ImGui now composites over an already-rendered scene rather than clearing it (see
-	// ImGuiManager::End()), so this isn't required for correctness - but with no windows ever
-	// submitted, an enabled ImGui still pays for a NewFrame/Render/EndFrame cycle and input
-	// hooking every frame for nothing visible, so shipped games opt out by default and enable
-	// this only if they actually want an in-game debug UI.
 	Application::ShowImGui(false);
 
 	RenderCommand::SetClearColour(Colours::GREY);
 
 	Application::SetOpenDocument(argv[0]);
+
+	if (Ref<SpriteAtlas> atlas = AssetManager::GetAsset<SpriteAtlas>("Generated/SpriteAtlas/Manifest.atlas"))
+		Renderer2D::SetSpriteAtlas(atlas);
 
 	SceneManager::ChangeScene(std::filesystem::path(defaultScene));
 
