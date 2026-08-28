@@ -459,7 +459,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(file);
+						sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						SceneManager::CurrentScene()->MakeDirty();
 						m_EditAnimatedSpriteCommand.first = true;
 					}
@@ -630,7 +630,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (ImGui::Selectable(file.filename().string().c_str()))
 					{
-						tilemap.tileset = AssetManager::GetAsset<Tileset>(file);
+						tilemap.tileset = AssetManager::GetAsset<Tileset>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						tilemap.Rebuild();
 						SceneManager::CurrentScene()->MakeDirty();
 					}
@@ -1169,7 +1169,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
 						Ref<EditComponentCommand<LuaScriptComponent>> editLuaCommand = CreateRef<EditComponentCommand<LuaScriptComponent>>(entity);
-						luaScript.script = AssetManager::GetAsset<LuaScript>(file);
+						luaScript.script = AssetManager::GetAsset<LuaScript>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						SceneManager::CurrentScene()->MakeDirty();
 						HistoryManager::AddHistoryRecord(editLuaCommand);
 						break;
@@ -1246,7 +1246,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 			{
 				if (ImGui::MenuItem(file.filename().string().c_str()))
 				{
-					entity.AddComponent<LuaScriptComponent>(file);
+					entity.AddComponent<LuaScriptComponent>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 					break;
 				}
 			}
