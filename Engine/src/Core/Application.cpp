@@ -189,6 +189,7 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 }
 
 void Application::Tick() {
+	PROFILE_FUNCTION();
 	PROFILE_FRAME();
 
 	double newTime = GetTime();
@@ -243,9 +244,12 @@ void Application::Tick() {
 	if (m_ImGuiManager->IsUsing())
 	{
 		m_ImGuiManager->Begin();
-		for (Ref<Layer> layer : m_LayerStack)
 		{
-			layer->OnImGuiRender();
+			PROFILE_SCOPE("Layer Stack ImGui Render");
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnImGuiRender();
+			}
 		}
 		m_ImGuiManager->End();
 	}

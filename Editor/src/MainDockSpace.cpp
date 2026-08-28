@@ -206,6 +206,7 @@ void MainDockSpace::OnUpdate(float deltaTime)
 
 void MainDockSpace::OnImGuiRender()
 {
+	PROFILE_FUNCTION();
 #ifdef DEBUG
 	if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 #endif // DEBUG

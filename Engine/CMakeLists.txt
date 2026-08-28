@@ -128,7 +128,9 @@ target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.
 set(ENABLE_PROFILING OFF CACHE BOOL "Enable Profiling with Tracy")
 
 if(ENABLE_PROFILING)
-    add_compile_definitions(ATCP_ENABLE_TRACY)
+    # PUBLIC, not add_compile_definitions (directory-scoped, wouldn't reach Editor/Runtime's own
+    # CMakeLists.txt) - so PROFILE_* zones in Editor/Runtime code are real Tracy calls too.
+    target_compile_definitions(Engine PUBLIC ATCP_ENABLE_TRACY)
     target_include_directories(Engine PUBLIC "${CMAKE_SOURCE_DIR}/Engine/vendor/tracy/public/tracy")
     target_link_libraries(Engine PUBLIC Tracy::TracyClient)
     message("enabling profiling")

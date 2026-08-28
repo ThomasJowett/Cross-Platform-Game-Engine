@@ -168,6 +168,7 @@ wgpu::Queue WebGPUContext::GetQueue() { return m_Queue; }
 
 wgpu::TextureView WebGPUContext::GetCurrentTextureView()
 {
+	PROFILE_FUNCTION();
 	if (!m_SurfaceAcquired)
 	{
 		m_Surface.getCurrentTexture(&m_CurrentSurfaceTexture);
