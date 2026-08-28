@@ -60,6 +60,12 @@ void ProjectSettingsPanel::OnImGuiRender()
 		ImGui::Tooltip("Open Scene");
 
 		ImGui::InputTextMultiline("Description", m_DescriptionBuffer, sizeof(m_DescriptionBuffer));
+
+		int pageSize = (int)m_ProjectData.spriteAtlasPageSize;
+		if (ImGui::InputInt("Sprite Atlas Page Size", &pageSize, 256, 1024))
+			m_ProjectData.spriteAtlasPageSize = (uint32_t)std::clamp(pageSize, 256, 8192);
+		ImGui::Tooltip("Dimensions (square, pixels) of each packed sprite atlas page. Larger pages\nmean fewer pages but more VRAM per page - changing this only takes effect\non the next atlas rebuild.");
+
 		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))
 		{
 			SaveProjectFile();

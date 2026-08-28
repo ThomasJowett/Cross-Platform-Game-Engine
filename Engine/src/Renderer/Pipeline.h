@@ -48,6 +48,8 @@ public:
 	// Binds textures[i] at firstBinding+i, for shaders that select among several textures
 	// per-fragment (e.g. multiple font atlases). All textures must use equivalent sampler
 	// settings - samplerSource supplies them for backends that bind one shared sampler.
+	// TODO(texture-array-cleanup): "N separate bindings" is a stand-in for a real array texture -
+	// see WebGPUPipeline::SetTextureArray.
 	virtual void SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set = 0) = 0;
 
 	virtual void Bind() = 0;

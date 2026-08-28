@@ -18,6 +18,7 @@ struct QuadVertex
 	Vector3f position;
 	Colour colour;
 	Vector2f texCoords;
+	float texIndex;
 
 	// Editor only
 	int EntityId;
@@ -142,8 +143,6 @@ struct Renderer2DData
 	HairLineVertex* hairLineVertexBufferBase = nullptr;
 	HairLineVertex* hairLineVertexBufferPtr = nullptr;
 
-	Ref<Texture> currentBatchTexture;
-
 	// A batch-per-flush pool, not a single reused buffer: on WebGPU, queue.writeBuffer() calls
 	// within one render pass all land before that pass's single batched command buffer executes,
 	// so reusing one buffer across multiple flushes (now common since a texture change forces an
@@ -154,9 +153,14 @@ struct Renderer2DData
 	std::array<Ref<Texture>, maxTexturesSlots> fontAtlasSlots;
 	uint32_t fontAtlasSlotIndex = 1;
 
+	std::array<Ref<Texture>, maxTexturesSlots> quadTextureSlots;
+	uint32_t quadTextureSlotIndex = 1;
+
 	Vector3f quadVertexPositions[4];
 
 	uint32_t screenWidth = 1920, screenHeight = 1080;
+
+	Ref<SpriteAtlas> activeAtlas;
 
 	Renderer2D::Stats statistics;
 };
@@ -177,6 +181,7 @@ bool Renderer2D::Init()
 			{ShaderDataType::Float3, "a_Position"},
 			{ShaderDataType::Float4, "a_Colour"},
 			{ShaderDataType::Float2, "a_Texcoord"},
+			{ShaderDataType::Float, "a_TexIndex"},
 			{ShaderDataType::Int, "a_EntityId"}
 		});
 
@@ -343,13 +348,12 @@ bool Renderer2D::Init()
 	textSpec.transparencyEnabled = true;
 	s_Data.textPipeline = Pipeline::Create(textSpec);
 
-	s_Data.currentBatchTexture = s_Data.whiteTexture;
-
 	s_Data.quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f };
 	s_Data.quadVertexPositions[1] = { 0.5f, -0.5f, 0.0f };
 	s_Data.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f };
 	s_Data.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f };
 
+	s_Data.quadTextureSlots[0] = s_Data.whiteTexture;
 	s_Data.fontAtlasSlots[0] = s_Data.whiteTexture;
 
 	s_Data.cameraUniformBuffer = Renderer::GetConstantUniformBuffer();
@@ -436,7 +440,10 @@ void Renderer2D::FlushQuads()
 	Ref<VertexBuffer> vertexBuffer = NextQuadVertexBuffer();
 	vertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
 
-	s_Data.quadPipeline->SetTexture(s_Data.currentBatchTexture, 1);
+	// Binding 0 is Camera below, so textures start at 1. Prefer a real texture as the sampler
+	// source over whiteTexture (Nearest) when one is active - matches FlushText's rationale.
+	Ref<Texture> samplerSource = s_Data.quadTextureSlotIndex > 1 ? s_Data.quadTextureSlots[1] : s_Data.quadTextureSlots[0];
+	s_Data.quadPipeline->SetTextureArray({ s_Data.quadTextureSlots.begin(), s_Data.quadTextureSlots.end() }, 1, samplerSource);
 
 	s_Data.quadPipeline->Bind();
 	s_Data.quadPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
@@ -547,7 +554,8 @@ void Renderer2D::StartQuadsBatch()
 	s_Data.quadIndexCount = 0;
 	s_Data.quadVertexBufferPtr = s_Data.quadVertexBufferBase;
 
-	s_Data.currentBatchTexture = s_Data.whiteTexture;
+	s_Data.quadTextureSlotIndex = 1;
+	std::fill(s_Data.quadTextureSlots.begin(), s_Data.quadTextureSlots.end(), s_Data.whiteTexture);
 }
 
 void Renderer2D::StartCirclesBatch()
@@ -694,6 +702,29 @@ void Renderer2D::DrawQuad(const Vector3f& position, const Vector2f& size, const 
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+float Renderer2D::AssignQuadTextureSlot(const Ref<Texture>& texture)
+{
+	Ref<Texture> target = texture ? texture : Ref<Texture>(s_Data.whiteTexture);
+	if (target == s_Data.whiteTexture)
+		return 0.0f;
+
+	for (uint32_t i = 1; i < s_Data.quadTextureSlotIndex; i++)
+	{
+		if (s_Data.quadTextureSlots[i] == target)
+			return (float)i;
+	}
+
+	if (s_Data.quadTextureSlotIndex >= Renderer2DData::maxTexturesSlots)
+		NextQuadsBatch();
+
+	float index = (float)s_Data.quadTextureSlotIndex;
+	s_Data.quadTextureSlots[s_Data.quadTextureSlotIndex] = target;
+	s_Data.quadTextureSlotIndex++;
+	return index;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
@@ -702,9 +733,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
-	if (s_Data.currentBatchTexture != s_Data.whiteTexture)
-		NextQuadsBatch();
-	s_Data.currentBatchTexture = s_Data.whiteTexture;
+	float texIndex = AssignQuadTextureSlot(s_Data.whiteTexture);
 
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
 
@@ -713,6 +742,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
+		s_Data.quadVertexBufferPtr->texIndex = texIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
@@ -731,10 +761,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
-	Ref<Texture> batchTexture = texture ? texture : Ref<Texture>(s_Data.whiteTexture);
-	if (batchTexture != s_Data.currentBatchTexture)
-		NextQuadsBatch();
-	s_Data.currentBatchTexture = batchTexture;
+	float texIndex = AssignQuadTextureSlot(texture);
 
 	const Vector2f texCoords[] = { {0.0f, 0.0f}, {1.0f, 0.0f}, {1.0f,1.0f} , {0.0f,1.0f} };
 
@@ -743,6 +770,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = tilingFactor * texCoords[i];
+		s_Data.quadVertexBufferPtr->texIndex = texIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
@@ -768,16 +796,45 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 	const Vector2f* texCoords = subtexture->GetTextureCoordinates();
 
-	Ref<Texture> batchTexture = subtexture->GetTexture() ? Ref<Texture>(subtexture->GetTexture()) : Ref<Texture>(s_Data.whiteTexture);
-	if (batchTexture != s_Data.currentBatchTexture)
-		NextQuadsBatch();
-	s_Data.currentBatchTexture = batchTexture;
+	float texIndex = AssignQuadTextureSlot(subtexture->GetTexture());
 
 	for (size_t i = 0; i < 4; i++)
 	{
 		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
+		s_Data.quadVertexBufferPtr->texIndex = texIndex;
+		s_Data.quadVertexBufferPtr->EntityId = entityId;
+		s_Data.quadVertexBufferPtr++;
+	}
+
+	s_Data.quadIndexCount += 6;
+
+	s_Data.statistics.quadCount++;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId)
+{
+	PROFILE_FUNCTION();
+
+	if (!texture)
+		return;
+
+	if (s_Data.quadIndexCount >= s_Data.maxIndices)
+		NextQuadsBatch();
+
+	float texIndex = AssignQuadTextureSlot(texture);
+
+	const Vector2f texCoords[] = { uvMin, {uvMax.x, uvMin.y}, uvMax, {uvMin.x, uvMax.y} };
+
+	for (size_t i = 0; i < 4; i++)
+	{
+		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
+		s_Data.quadVertexBufferPtr->colour = colour;
+		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
+		s_Data.quadVertexBufferPtr->texIndex = texIndex;
 		s_Data.quadVertexBufferPtr->EntityId = entityId;
 		s_Data.quadVertexBufferPtr++;
 	}
@@ -791,14 +848,25 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId)
 {
+	// A tiled sprite would wrap into neighbouring packed sprites, so it skips the atlas.
+	if (s_Data.activeAtlas && spriteComp.tilingFactor == 1.0f)
+	{
+		if (const SpriteAtlas::Region* region = s_Data.activeAtlas->GetRegion(spriteComp.texturePath))
+		{
+			DrawQuadWithUVRect(transform, s_Data.activeAtlas->GetPage(region->page), region->uvMin, region->uvMax, spriteComp.tint, entityId);
+			return;
+		}
+	}
+
 	if (spriteComp.texture)
-	{
 		DrawQuad(transform, spriteComp.texture, spriteComp.tint, spriteComp.tilingFactor, entityId);
-	}
 	else
-	{
 		DrawQuad(transform, spriteComp.tint, entityId);
-	}
+}
+
+void Renderer2D::SetSpriteAtlas(Ref<SpriteAtlas> atlas)
+{
+	s_Data.activeAtlas = atlas;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

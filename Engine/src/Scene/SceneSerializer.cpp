@@ -694,7 +694,11 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Tint"), component.tint);
 		pSpriteComponentElement->QueryFloatAttribute("TilingFactor", &component.tilingFactor);
 
-		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Texture"), component.texture);
+		tinyxml2::XMLElement* pTextureElement = pSpriteComponentElement->FirstChildElement("Texture");
+		SerializationUtils::Decode(pTextureElement, component.texture);
+
+		if (const char* filepath = pTextureElement ? pTextureElement->Attribute("Filepath") : nullptr)
+			component.texturePath = filepath;
 	}
 
 	// Animated Sprite ---------------------------------------------------------------------------------------------------

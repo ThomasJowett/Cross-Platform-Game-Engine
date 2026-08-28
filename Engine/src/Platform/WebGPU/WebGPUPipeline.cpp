@@ -291,6 +291,11 @@ void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 		bindings.push_back({ Binding::Type::Texture, binding, texture });
 }
 
+// TODO(texture-array-cleanup): binds each texture to its own slot since WGSL can't dynamically
+// index separate bindings - shaders work around it with an if/else chain by texIndex, capped at
+// 8. Proper fix is a real texture_2d_array, which needs font atlases/sprite atlas pages
+// allocated as array layers instead of independent Texture2D objects (Texture.h,
+// WebGPUTexture.cpp, OpenGLTexture.cpp, Font.cpp, SpriteAtlas.cpp) - a real restructuring.
 void WebGPUPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
 {
 	auto& bindings = m_Bindings[set];

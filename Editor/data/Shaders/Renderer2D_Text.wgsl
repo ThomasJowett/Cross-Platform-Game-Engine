@@ -49,6 +49,8 @@ fn vs_main(input: VertexInput) -> VertexOutput {
     return output;
 }
 
+// TODO(texture-array-cleanup): 8-slot if-chain workaround for WGSL's lack of dynamic indexing -
+// see the TODO on WebGPUPipeline::SetTextureArray.
 fn sampleFontAtlas(index: i32, uv: vec2<f32>) -> vec3<f32> {
     if (index == 0) { return textureSample(u_FontAtlas0, u_FontAtlasSampler, uv).rgb; }
     else if (index == 1) { return textureSample(u_FontAtlas1, u_FontAtlasSampler, uv).rgb; }

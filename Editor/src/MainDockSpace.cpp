@@ -35,6 +35,8 @@
 #include "cereal/types/string.hpp"
 
 #include "FileSystem/AssetPacker.h"
+#include "FileSystem/SpriteAtlasBuilder.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #include "Core/Version.h"
 #include "Core/Settings.h"
@@ -325,6 +327,11 @@ void MainDockSpace::OnImGuiRender()
 					Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory(), exportLocation.value()));
 				}
 			}
+			if (ImGui::MenuItem(ICON_FA_ARROWS_ROTATE" Rebuild Sprite Atlas"))
+			{
+				SpriteAtlasBuilder::Rebuild();
+			}
+			ImGui::Tooltip("Forces a full repack even if nothing looks stale - use after adding\nsprites the automatic per-project-open check hasn't caught up with yet.");
 			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
@@ -474,6 +481,8 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	ProjectData data;
 	input(data);
 	file.close();
+
+	SpriteAtlasBuilder::EnsureUpToDate();
 
 	// --scene: overrides the project's own default scene, for testing a specific scene directly.
 	const std::string& sceneOverride = Application::GetSceneOverride();
