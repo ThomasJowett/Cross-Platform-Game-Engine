@@ -425,7 +425,8 @@ void ContentExplorerPanel::CreateNewTileset(const std::filesystem::path* path)
 	Tileset tileset;
 	if (path)
 	{
-		tileset.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+		std::filesystem::path relativePath = FileUtils::RelativePath(*path, Application::GetOpenDocumentDirectory());
+		tileset.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(relativePath), 32, 32));
 	}
 
 	tileset.SaveAs(newTilesetPath);
@@ -444,7 +445,8 @@ void ContentExplorerPanel::CreateNewSpriteSheet(const std::filesystem::path* pat
 
 	if (path)
 	{
-		spritesheet.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+		std::filesystem::path relativePath = FileUtils::RelativePath(*path, Application::GetOpenDocumentDirectory());
+		spritesheet.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(relativePath), 32, 32));
 	}
 	spritesheet.SaveAs(newSpriteSheetPath);
 	m_ForceRescan = true;
