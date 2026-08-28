@@ -33,11 +33,8 @@ bool OpenGLRendererAPI::Init()
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glEnable(GL_MULTISAMPLE);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.5f);
-
-	// Matches WebGPU/D3D/Metal's [0,1] clip-space Z convention, which the projection matrices
-	// (Matrix4x4::OrthographicRH/PerspectiveRH) already produce unconditionally for every backend.
 	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
 
 	return true;
@@ -55,15 +52,14 @@ void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint
 
 void OpenGLRendererAPI::Clear()
 {
-	// A pipeline bound earlier in the frame (e.g. a depthTest=false overlay/post-process pass)
-	// may have left the depth mask disabled - glClear respects it, so force it on or the depth
-	// buffer silently fails to clear here.
 	glDepthMask(GL_TRUE);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRendererAPI::ClearColour()
 {
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 

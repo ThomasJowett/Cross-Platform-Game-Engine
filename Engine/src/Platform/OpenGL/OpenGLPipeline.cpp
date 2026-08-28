@@ -6,8 +6,6 @@
 
 OpenGLPipeline::OpenGLPipeline(const Spec& spec)
 {
-	m_TransparencyEnabled = spec.transparencyEnabled;
-	m_BackfaceCull = spec.backFaceCulling;
 	m_Specification = spec;
 	Invalidate();
 }
@@ -33,6 +31,8 @@ void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 		texture->Bind(binding);
 }
 
+// TODO(texture-array-cleanup): GLSL's sampler2D[8] already dynamically indexes fine - this would
+// only need to change if SetTextureArray moves to a true array texture (see the WebGPU TODO).
 void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
 {
 	// samplerSource unused - GLSL's combined sampler2D needs no separate sampler binding.
@@ -43,9 +43,6 @@ void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, 
 
 void OpenGLPipeline::Bind()
 {
-	// GL_CURRENT_PROGRAM is global, sticky GL state - without this, every draw silently kept
-	// using whichever shader program was last bound (e.g. the post-process composite pass's
-	// shader from the previous frame), since nothing else in this class ever calls glUseProgram.
 	m_Specification.shader->Bind();
 
 	if (m_Specification.hasDepth)
@@ -64,16 +61,22 @@ void OpenGLPipeline::Bind()
 	else
 		glDisable(GL_CULL_FACE);
 
+	if (m_Specification.transparencyEnabled)
+	{
+		glEnable(GL_BLEND);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	}
+	else
+	{
+		glDisable(GL_BLEND);
+		glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_FALSE);
+	}
+
 	static_cast<OpenGLRendererAPI&>(RenderCommand::Get()).SetCurrentPipeline(shared_from_this());
 }
 
 void OpenGLPipeline::ConfigureVertexBuffer(const VertexBuffer* vertexBuffer)
 {
-	// The VAO must always be (re)bound here, even when the attribute setup below is skipped -
-	// something else (another pipeline's draw, ImGui's own rendering interleaved with ours)
-	// may have bound a different VAO since this pipeline was last used, and skipping this
-	// bind would silently draw against whatever VAO happens to be current instead of this
-	// pipeline's own.
 	m_VertexArray->Bind();
 
 	if (vertexBuffer == m_LastConfiguredVertexBuffer)
