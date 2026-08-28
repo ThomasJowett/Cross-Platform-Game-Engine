@@ -34,6 +34,8 @@ public:
 
 private:
 	void DiscoverAssets();
+	std::unordered_set<std::filesystem::path> GetAtlasCoveredPaths() const;
+	std::unordered_set<std::filesystem::path> GetTexturePathsStillNeededAsFiles() const;
 	void AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root);
 	void PackAssets();
 	void ExportGameToExecutable();

@@ -3,6 +3,9 @@
 #include "Directory.h"
 #include "Logging/Logger.h"
 #include "Viewers/ViewerManager.h"
+#include "SpriteAtlasBuilder.h"
+#include "Asset/SpriteAtlas.h"
+#include "TinyXml2/tinyxml2.h"
 #include <Logging/Instrumentor.h>
 #include <filesystem>
 #include <imgui.h>
@@ -12,6 +15,7 @@
 #include "cereal/archives/json.hpp"
 #include "cereal/types/string.hpp"
 
+#include <algorithm>
 #include <iterator>
 #include <miniz.h>
 
@@ -29,6 +33,8 @@ constexpr const char* BUNDLE_MAGIC = "GMBUNDLE";
 AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory)
     : Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
 {
+	SpriteAtlasBuilder::EnsureUpToDate();
+
 	DiscoverAssets();
 
 	for (const auto& asset : m_DiscoveredAssets)
@@ -146,12 +152,119 @@ void AssetPacker::DiscoverAssets()
 	// Get all files in the project directory
 	m_DiscoveredAssets = Directory::GetFilesRecursive(m_ProjectDirectory, wantedExtensions);
 
+	std::filesystem::path generatedDir = m_ProjectDirectory / "Generated";
+	m_DiscoveredAssets.erase(std::remove_if(m_DiscoveredAssets.begin(), m_DiscoveredAssets.end(),
+		[&generatedDir](const std::filesystem::path& path)
+		{
+			auto [end, unused] = std::mismatch(generatedDir.begin(), generatedDir.end(), path.begin(), path.end());
+			return end == generatedDir.end();
+		}), m_DiscoveredAssets.end());
+
+	std::unordered_set<std::filesystem::path> atlasCovered = GetAtlasCoveredPaths();
+	if (!atlasCovered.empty())
+	{
+		std::unordered_set<std::filesystem::path> stillNeeded = GetTexturePathsStillNeededAsFiles();
+		m_DiscoveredAssets.erase(std::remove_if(m_DiscoveredAssets.begin(), m_DiscoveredAssets.end(),
+			[&](const std::filesystem::path& path)
+			{
+				std::filesystem::path normalized = path.lexically_normal();
+				return atlasCovered.count(normalized) && !stillNeeded.count(normalized);
+			}), m_DiscoveredAssets.end());
+	}
+
 	m_AssetTree = CreateRef<AssetNode>();
 
 	for (const auto& asset : m_DiscoveredAssets)
 	{
 		AddAssetToTree(asset, m_AssetTree);
 	}
+}
+
+std::unordered_set<std::filesystem::path> AssetPacker::GetAtlasCoveredPaths() const
+{
+	SpriteAtlas atlas;
+	if (!atlas.Load(SpriteAtlasBuilder::GetManifestPath()))
+		return {};
+
+	std::unordered_set<std::filesystem::path> paths;
+	for (const SpriteAtlas::SourceRecord& source : atlas.GetSources())
+		paths.insert((m_ProjectDirectory / source.path).lexically_normal());
+
+	return paths;
+}
+
+std::unordered_set<std::filesystem::path> AssetPacker::GetTexturePathsStillNeededAsFiles() const
+{
+	std::unordered_set<std::filesystem::path> paths;
+
+	auto addFilepathAttribute = [&](const tinyxml2::XMLElement* pElement)
+	{
+		if (pElement)
+		{
+			if (const char* filepath = pElement->Attribute("Filepath"))
+				paths.insert((m_ProjectDirectory / filepath).lexically_normal());
+		}
+	};
+
+	for (const std::filesystem::path& materialFile : Directory::GetFilesRecursive(m_ProjectDirectory, ViewerManager::GetExtensions(FileType::MATERIAL)))
+	{
+		tinyxml2::XMLDocument doc;
+		if (doc.LoadFile(materialFile.string().c_str()) != tinyxml2::XML_SUCCESS)
+			continue;
+
+		if (tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Material"))
+		{
+			for (tinyxml2::XMLElement* pTexture = pRoot->FirstChildElement("Texture"); pTexture; pTexture = pTexture->NextSiblingElement("Texture"))
+				addFilepathAttribute(pTexture);
+		}
+	}
+
+	for (FileType fileType : { FileType::TILESET, FileType::SPRITESHEET })
+	{
+		const char* rootName = fileType == FileType::TILESET ? "Tileset" : "SpriteSheet";
+		for (const std::filesystem::path& file : Directory::GetFilesRecursive(m_ProjectDirectory, ViewerManager::GetExtensions(fileType)))
+		{
+			tinyxml2::XMLDocument doc;
+			if (doc.LoadFile(file.string().c_str()) != tinyxml2::XML_SUCCESS)
+				continue;
+
+			if (tinyxml2::XMLElement* pRoot = doc.FirstChildElement(rootName))
+				addFilepathAttribute(pRoot->FirstChildElement("Texture"));
+		}
+	}
+
+	for (const std::filesystem::path& sceneFile : Directory::GetFilesRecursive(m_ProjectDirectory, ViewerManager::GetExtensions(FileType::SCENE)))
+	{
+		tinyxml2::XMLDocument doc;
+		if (doc.LoadFile(sceneFile.string().c_str()) != tinyxml2::XML_SUCCESS)
+			continue;
+
+		tinyxml2::XMLElement* pSceneRoot = doc.FirstChildElement("Scene");
+		if (!pSceneRoot)
+			continue;
+
+		for (tinyxml2::XMLElement* pEntity = pSceneRoot->FirstChildElement("Entity"); pEntity; pEntity = pEntity->NextSiblingElement("Entity"))
+		{
+			if (tinyxml2::XMLElement* pSprite = pEntity->FirstChildElement("Sprite"))
+			{
+				float tilingFactor = 1.0f;
+				pSprite->QueryFloatAttribute("TilingFactor", &tilingFactor);
+				if (tilingFactor != 1.0f)
+					addFilepathAttribute(pSprite->FirstChildElement("Texture"));
+			}
+
+			tinyxml2::XMLElement* pButton = pEntity->FirstChildElement("Button");
+			if (!pButton)
+				continue;
+
+			addFilepathAttribute(pButton->FirstChildElement("NormalTexture"));
+			addFilepathAttribute(pButton->FirstChildElement("HoveredTexture"));
+			addFilepathAttribute(pButton->FirstChildElement("ClickedTexture"));
+			addFilepathAttribute(pButton->FirstChildElement("DisabledTexture"));
+		}
+	}
+
+	return paths;
 }
 
 void AssetPacker::AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root)
@@ -219,6 +332,8 @@ void AssetPacker::PackAssets()
 	std::filesystem::path dataPath = Application::GetWorkingDirectory();
 	collectFilesFromDir(dataPath / "data" / "Shaders");
 	collectFilesFromDir(dataPath / "data" / "Fonts");
+
+	collectFilesFromDir(m_ProjectDirectory / "Generated" / "SpriteAtlas");
 
 	const size_t totalFiles = filesToPack.size();
 	size_t filesPacked = 0;
