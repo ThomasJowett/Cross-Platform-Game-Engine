@@ -378,6 +378,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 
 			if (ImGui::Texture2DEdit("Texture", sprite.texture)) {
+				sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
 				m_EditSpriteCommand.first = true;
 				SceneManager::CurrentScene()->MakeDirty();
 			}

@@ -93,7 +93,7 @@ void BindEntity(sol::state& state)
 
 	auto sprite_type = state["SpriteComponent"].get_or_create<sol::usertype<SpriteComponent>>();
 	sprite_type["Tint"] = sol::property([](SpriteComponent& c) -> Colour& { return c.tint; }, [](SpriteComponent& c, const Colour& v) { c.tint = v; });
-	sprite_type["Texture"] = sol::property([](SpriteComponent& c) { return c.texture; }, [](SpriteComponent& c, const Ref<Texture2D>& v) { c.texture = v; });
+	sprite_type["Texture"] = sol::property([](SpriteComponent& c) { return c.texture; }, [](SpriteComponent& c, const Ref<Texture2D>& v) { c.texture = v; c.texturePath = v ? v->GetFilepath() : std::filesystem::path(); });
 	sprite_type["TilingFactor"] = sol::property([](SpriteComponent& c) { return c.tilingFactor; }, [](SpriteComponent& c, const float v) { c.tilingFactor = v; });
 
 	auto animated_sprite_type = state["AnimatedSpriteComponent"].get_or_create<sol::usertype<AnimatedSpriteComponent>>();

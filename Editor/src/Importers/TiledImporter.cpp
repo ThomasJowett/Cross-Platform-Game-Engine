@@ -71,6 +71,7 @@ Entity LoadImageLayer(tinyxml2::XMLElement* pImageLayer)
 		texturePath.remove_filename();
 		texturePath = texturePath / textureSource;
 		spriteComp.texture = AssetManager::GetTexture(texturePath);
+		spriteComp.texturePath = spriteComp.texture ? spriteComp.texture->GetFilepath() : std::filesystem::path();
 	}
 
 	if (tintColour)

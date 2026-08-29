@@ -159,6 +159,7 @@ namespace AssetReferenceUtils
 				if (matches(sprite.texture))
 				{
 					sprite.texture = getReplacement();
+					sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
 					changed = true;
 				}
 			});
