@@ -929,6 +929,9 @@ void ContentExplorerPanel::OnImGuiRender()
 			m_History.SwitchTo(m_CurrentPath);
 		}
 
+		// Keeps the watcher pointed at whatever folder is actually displayed.
+		m_FileWatcher.SetPathToWatch(m_CurrentPath);
+
 		//set the input buffer as the current path
 		memset(m_CurrentPathInputBuffer, 0, sizeof(m_CurrentPathInputBuffer));
 		for (int i = 0; i < m_CurrentPath.string().length(); i++)
