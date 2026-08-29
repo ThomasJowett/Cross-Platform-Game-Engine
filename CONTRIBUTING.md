@@ -1,4 +1,4 @@
-# Cross-Platform Game Engine - Gemini Instructions
+# Contributing to Cross-Platform Game Engine
 
 This document provides foundational mandates and architectural guidance for working on the Cross-Platform Game Engine. Adhere to these instructions to ensure consistency and maintainability across the codebase.
 
