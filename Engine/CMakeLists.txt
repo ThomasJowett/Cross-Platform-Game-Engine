@@ -89,8 +89,9 @@ target_link_libraries(Engine PUBLIC miniz)
 add_definitions(
     -DGLFW_INCLUDE_NONE
     -D_CRT_SECURE_NO_WARNINGS
-    -DUNICODE
 )
+
+target_compile_definitions(Engine PUBLIC UNICODE _UNICODE)
 
 if (MSVC)
     target_compile_options(Engine PRIVATE "/bigobj" "/utf-8")
@@ -128,8 +129,6 @@ target_precompile_headers(Engine PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/stdafx.
 set(ENABLE_PROFILING OFF CACHE BOOL "Enable Profiling with Tracy")
 
 if(ENABLE_PROFILING)
-    # PUBLIC, not add_compile_definitions (directory-scoped, wouldn't reach Editor/Runtime's own
-    # CMakeLists.txt) - so PROFILE_* zones in Editor/Runtime code are real Tracy calls too.
     target_compile_definitions(Engine PUBLIC ATCP_ENABLE_TRACY)
     target_include_directories(Engine PUBLIC "${CMAKE_SOURCE_DIR}/Engine/vendor/tracy/public/tracy")
     target_link_libraries(Engine PUBLIC Tracy::TracyClient)
