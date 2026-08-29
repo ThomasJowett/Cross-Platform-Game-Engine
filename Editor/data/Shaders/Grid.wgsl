@@ -56,9 +56,6 @@ fn fs_main(input: VertexOutput) -> FragmentOutput {
 	let coord = input.worldPos;
 	let dist = length(coord - u_Constants.eyePosition);
 
-	// The mesh is flat along one axis (world Y in 3D, Z in 2D), sitting at that axis's origin - both
-	// fwidth() and the numerator below are exactly 0 there, so 0/epsilon wins every min() instead of
-	// being ignored. select() forces that axis to a large value so it's excluded, not dominant.
 	let deriv = fwidth(coord);
 	let isFlatAxis = deriv < vec3<f32>(0.00001);
 	let derivEpsilon = vec3<f32>(0.0001);

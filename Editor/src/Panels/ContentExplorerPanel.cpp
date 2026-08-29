@@ -167,10 +167,6 @@ void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path
 {
 	for (const std::filesystem::path& target : targets)
 	{
-		// The deleted file is gone, but anything that referenced it (e.g. a scene's
-		// SpriteComponent holding a live Ref<Texture2D>) still has the old, now-broken
-		// reference in memory - clear it directly, since FindReferences/UpdateReferences
-		// only see what's saved to disk and the current scene might not be.
 		if (std::filesystem::is_regular_file(target))
 		{
 			std::filesystem::path relativePath = FileUtils::RelativePath(target, Application::GetOpenDocumentDirectory());
@@ -180,9 +176,6 @@ void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path
 		std::filesystem::remove_all(target);
 	}
 
-	// Reload any already-cached Material/SpriteSheet/Tileset that referenced the just-deleted
-	// file(s), so it reflects the now-missing reference - must happen after the deletion above,
-	// since reloading before it would just re-read the (still intact) pre-delete state.
 	AssetReferenceUtils::ReloadAffectedNonSceneAssets(affectedReferences);
 
 	m_ForceRescan = true;
@@ -212,8 +205,6 @@ bool ContentExplorerPanel::HasSelection() const
 
 bool ContentExplorerPanel::Rename()
 {
-	// Only files have an extension worth protecting - stripping "the part after the last dot" from
-	// a folder name (e.g. "v1.2") would mangle it instead.
 	bool isFile = std::filesystem::is_regular_file(m_CurrentSelectedPath);
 	std::string extension = isFile ? m_CurrentSelectedPath.extension().string() : "";
 	std::string nameToEdit = isFile ? m_CurrentSelectedPath.stem().string() : m_CurrentSelectedPath.filename().string();
@@ -234,8 +225,7 @@ bool ContentExplorerPanel::Rename()
 
 	bool confirmed = ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
 		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
-	// Read right after InputText - IsItemActive() targets the last-submitted widget, and the
-	// TextDisabled() label below would otherwise become "the last item" instead.
+
 	bool inputActive = ImGui::IsItemActive();
 
 	if (!extension.empty())
@@ -358,7 +348,7 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 		// Invalid path or out of bounds, revert to previous valid path
 		m_CurrentPath = *m_History.GetCurrentFolder();
 		m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
-		m_ForceRescan = true; // Rescan to update the input buffer UI back to the valid path
+		m_ForceRescan = true;
 		CLIENT_ERROR("Cannot navigate outside of the project root directory.");
 	}
 }
@@ -1902,10 +1892,6 @@ void ContentExplorerPanel::OnImGuiRender()
 
 		if (m_ShowDeleteConfirmation)
 		{
-			// ImGuiWindowFlags_AlwaysAutoResize recomputes the window's actual size from its
-			// content after the position below is chosen, so pivot-based centering against a
-			// size that isn't final yet doesn't land in the middle of the screen - give it a
-			// fixed size instead so what's centered matches what's actually rendered.
 			ImGui::SetNextWindowSize(ImVec2(450, 220), ImGuiCond_Appearing);
 			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
 			ImGui::OpenPopup("Confirm Delete");

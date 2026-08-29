@@ -31,15 +31,10 @@ layout(location = 0)in VertexOutput Input;
 
 void main()
 {
-    // The mesh is flat along one axis (world Y in 3D, Z in 2D), sitting at that axis's origin -
-    // both fwidth() and the numerator below are exactly 0 there, so 0/epsilon wins every min()
-    // instead of being ignored. mix() forces that axis to a large value so it's excluded, not
-    // dominant.
     vec3 deriv = fwidth(Input.world.xyz);
     bvec3 isFlatAxis = lessThan(deriv, vec3(0.00001));
     vec3 derivEpsilon = vec3(0.0001);
 
-    // See the u_TilingFactor field comment above - this is a per-material setting, not a constant.
     float fadeRadius = u_TilingFactor;
 
     // Minor grid lines

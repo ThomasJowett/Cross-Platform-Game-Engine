@@ -85,8 +85,6 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 	if (assetName != "Default")
 	{
 		ImGui::SameLine();
-		// Scoped by label, same as comboId above - without it, every AssetEdit call in the same
-		// window (e.g. one per submesh material override) shared the same button ID.
 		std::string editId = std::string(ICON_FA_PEN_TO_SQUARE "##EditAsset") + label;
 		if (ImGui::Button(editId.c_str()))
 		{

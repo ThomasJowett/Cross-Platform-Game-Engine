@@ -1147,10 +1147,6 @@ void ViewportPanel::OnImGuiRender()
 				statsBoxSize.y += ImGui::GetTextLineHeightWithSpacing();
 			}
 
-			// The frame-rate box above shares this same top-left corner and, when shown, has already
-			// pushed the actual stats text down by one line via the auto-advancing cursor started at
-			// statsBoxPosition - the background rect needs to start below it too, or it ends up
-			// short/overlapping rather than framing the text it's meant to sit behind.
 			float statsBoxStartY = window_pos.y + ImGui::GetStyle().ItemSpacing.y;
 			if (m_ShowFrameRate)
 				statsBoxStartY += ImGui::GetTextLineHeightWithSpacing();
