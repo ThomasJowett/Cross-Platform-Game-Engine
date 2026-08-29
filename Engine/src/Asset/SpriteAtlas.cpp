@@ -312,6 +312,9 @@ Ref<SpriteAtlas> SpriteAtlas::Build(const std::vector<std::filesystem::path>& so
 		std::filesystem::path absolutePagePath = absoluteOutputDir / pageFileName;
 		stbi_write_png(absolutePagePath.string().c_str(), (int)pageSize, (int)pageSize, 4, flipped.data(), (int)rowBytes);
 
+		// Evict the cached texture for this page - a rebuild overwrites it with new pixels.
+		AssetManager::RemoveAsset(outputDir / pageFileName);
+
 		tinyxml2::XMLElement* pPage = pRoot->InsertNewChildElement("Page");
 		pPage->SetAttribute("Index", page);
 		pPage->SetAttribute("File", pageFileName.c_str());
@@ -339,6 +342,9 @@ Ref<SpriteAtlas> SpriteAtlas::Build(const std::vector<std::filesystem::path>& so
 		ENGINE_ERROR("Sprite atlas: failed to write manifest {0}", absoluteManifestPath);
 		return nullptr;
 	}
+
+	// Same as above, but for the manifest itself.
+	AssetManager::RemoveAsset(manifestPath);
 
 	Ref<SpriteAtlas> atlas = CreateRef<SpriteAtlas>();
 	if (!atlas->Load(manifestPath))
