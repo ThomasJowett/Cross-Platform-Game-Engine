@@ -1,6 +1,9 @@
 #pragma once
 
 #include <fstream>
+#include <mutex>
+#include <vector>
+#include <utility>
 
 #include "Core/core.h"
 #include "Core/Application.h"
@@ -129,42 +132,60 @@ public:
 
 		AssetManager::Get().m_FileWatcher.SetPathToWatch(directory);
 		AssetManager::Get().m_FileWatcher.Stop();
+		// Just queues the event - Reload()/Remove() touch the GPU, not safe off the main thread.
 		AssetManager::Get().m_FileWatcher.Start([=](std::string path, FileStatus status)
 			{
 				std::filesystem::path relativePath = FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory());
-				switch (status)
-				{
-				case FileStatus::Created:
-					break;
-				case FileStatus::Modified:
-					if (AssetManager::Get().m_Assets.Exists(relativePath))
-					{
-						ENGINE_DEBUG("Reloading asset {0}", path);
-						AssetManager::Get().m_Assets.Get(relativePath)->Reload();
-					}
-					else if (AssetManager::Get().m_Textures.Exists(relativePath))
-					{
-						ENGINE_DEBUG("Reloading texture {0}", path);
-						AssetManager::Get().m_Textures.Get(relativePath)->Reload();
-					}
-					break;
-				case FileStatus::Erased:
-					if (AssetManager::Get().m_Assets.Exists(relativePath))
-					{
-						ENGINE_ERROR("An asset in use has been deleted! {0}", path);
-						AssetManager::Get().m_Assets.Remove(relativePath);
-					}
-					else if (AssetManager::Get().m_Textures.Exists(relativePath))
-					{
-						ENGINE_ERROR("A texture in use has been deleted! {0}", path);
-						AssetManager::Get().m_Textures.Get(relativePath)->Reload();
-					}
-
-					break;
-				default:
-					break;
-				}
+				std::lock_guard<std::mutex> lock(AssetManager::Get().m_PendingEventsMutex);
+				AssetManager::Get().m_PendingEvents.push_back({ relativePath, status });
 			});
+	}
+
+	// Called once per frame from the main thread (Application::Tick).
+	static void ProcessPendingFileEvents()
+	{
+		PROFILE_FUNCTION();
+
+		std::vector<std::pair<std::filesystem::path, FileStatus>> events;
+		{
+			std::lock_guard<std::mutex> lock(AssetManager::Get().m_PendingEventsMutex);
+			events.swap(AssetManager::Get().m_PendingEvents);
+		}
+
+		for (const auto& [relativePath, status] : events)
+		{
+			switch (status)
+			{
+			case FileStatus::Created:
+				break;
+			case FileStatus::Modified:
+				if (AssetManager::Get().m_Assets.Exists(relativePath))
+				{
+					ENGINE_DEBUG("Reloading asset {0}", relativePath);
+					AssetManager::Get().m_Assets.Get(relativePath)->Reload();
+				}
+				else if (AssetManager::Get().m_Textures.Exists(relativePath))
+				{
+					ENGINE_DEBUG("Reloading texture {0}", relativePath);
+					AssetManager::Get().m_Textures.Get(relativePath)->Reload();
+				}
+				break;
+			case FileStatus::Erased:
+				if (AssetManager::Get().m_Assets.Exists(relativePath))
+				{
+					ENGINE_ERROR("An asset in use has been deleted! {0}", relativePath);
+					AssetManager::Get().m_Assets.Remove(relativePath);
+				}
+				else if (AssetManager::Get().m_Textures.Exists(relativePath))
+				{
+					ENGINE_ERROR("A texture in use has been deleted! {0}", relativePath);
+					AssetManager::Get().m_Textures.Get(relativePath)->Reload();
+				}
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	static void Shutdown()
@@ -189,6 +210,8 @@ private:
 	std::vector<uint8_t> m_BundleData;
 
 	FileWatcher m_FileWatcher;
+	std::mutex m_PendingEventsMutex;
+	std::vector<std::pair<std::filesystem::path, FileStatus>> m_PendingEvents;
 
 	static AssetManager* s_Instance;
 };

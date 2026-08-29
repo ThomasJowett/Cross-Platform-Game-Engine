@@ -15,6 +15,7 @@
 #include "Events/SceneEvent.h"
 
 #include "Scene/SceneManager.h"
+#include "Scene/AssetManager.h"
 
 #include "Logging/Logger.h"
 #include "Core/Input.h"
@@ -191,6 +192,8 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 void Application::Tick() {
 	PROFILE_FUNCTION();
 	PROFILE_FRAME();
+
+	AssetManager::ProcessPendingFileEvents();
 
 	double newTime = GetTime();
 	double frameTime = newTime - m_CurrentTime;
