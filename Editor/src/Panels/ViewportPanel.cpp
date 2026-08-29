@@ -167,8 +167,10 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
-				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen
-					&& m_RelativeMousePosition == m_MousePositionBeginClick)
+				// Only trust IsOver()/IsUsing() when the gizmo was actually drawn this frame -
+				// otherwise it's stale and still sits over the last selected entity.
+				bool overGizmo = m_HierarchyPanel->GetSelectedEntity().IsSceneValid() && (ImGuizmo::IsUsing() || ImGuizmo::IsOver());
+				if (!overGizmo && !m_RightClickMenuOpen && m_RelativeMousePosition == m_MousePositionBeginClick)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 			}
 		}
