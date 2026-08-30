@@ -383,6 +383,15 @@ void AssetPacker::ExportGameToExecutable()
 	{
 		exePath = Application::GetWorkingDirectory() / "runtime" / "Runtime";
 	}
+
+	// target_copy_webgpu_binaries() puts this next to Runtime.exe in the build tree, but nothing
+	// carried it into an export - the exported .exe couldn't find it and failed to start.
+	std::filesystem::path wgpuLib = exePath.parent_path() / "wgpu_native.dll";
+	if (!std::filesystem::exists(wgpuLib))
+		wgpuLib = exePath.parent_path() / "libwgpu_native.so";
+	if (std::filesystem::exists(wgpuLib))
+		std::filesystem::copy_file(wgpuLib, m_ExportDirectory / wgpuLib.filename(), std::filesystem::copy_options::overwrite_existing);
+
 	std::filesystem::path zipPath = m_ExportDirectory / "packed_assets.zip";
 
 	std::filesystem::path executableName = m_ExportDirectory / m_GameName;
