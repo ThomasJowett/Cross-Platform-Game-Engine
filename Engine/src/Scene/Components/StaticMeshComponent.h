@@ -17,14 +17,23 @@ struct StaticMeshComponent
 
 	void SetMesh(const Ref<StaticMesh> newMesh)
 	{
-		mesh = newMesh;
-		materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
-
-		const auto& materials = mesh->GetMesh()->GetMaterials();
-
-		for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
+		if (!newMesh)
 		{
-			materialOverrides[i] = materials[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
+			mesh.reset();
+			materialOverrides.clear();
+			return;
+		}
+		mesh = newMesh;
+		if (mesh->GetMesh())
+		{
+			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
+
+			const auto& materials = mesh->GetMesh()->GetMaterials();
+
+			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
+			{
+				materialOverrides[i] = materials[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
+			}
 		}
 	}
 
@@ -34,19 +43,20 @@ private:
 	void save(Archive& archive) const
 	{
 		std::string relativeMeshPath;
+		std::vector<std::string> relativeMaterials;
 		if (mesh)
 		{
 			if (!mesh->GetFilepath().empty())
 				relativeMeshPath = mesh->GetFilepath().string();
-			std::vector<std::string> relativeMaterials;
+			
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
 				relativeMaterials.push_back(materialOverrides[i]->GetFilepath().string());
 			}
-			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
+			
 		}
-
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 	}
 
 	template<typename Archive>
@@ -55,18 +65,27 @@ private:
 		std::string relativeMeshPath;
 		std::vector<std::string> relativeMaterials;
 		archive(cereal::make_nvp("Mesh", relativeMeshPath));
+		archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
 
 		if (!relativeMeshPath.empty())
 		{
 			mesh = AssetManager::GetAsset<StaticMesh>(relativeMeshPath);
-			archive(cereal::make_nvp("MaterialOverrides", relativeMaterials));
+			if (!mesh)
+			{
+				materialOverrides.clear();
+				return;
+			}
+			
 			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
 			{
-				if (relativeMaterials[i].empty())
-					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[mesh->GetMesh()->GetSubmeshes()[i].materialIndex];
-				else
+				if (i < relativeMaterials.size() && !relativeMaterials[i].empty())
 					materialOverrides[i] = AssetManager::GetAsset<Material>(relativeMaterials[i]);
+				else
+				{
+					auto matIndex = mesh->GetMesh()->GetSubmeshes()[i].materialIndex;
+					materialOverrides[i] = mesh->GetMesh()->GetMaterials()[matIndex];
+				}
 			}
 		}
 		else

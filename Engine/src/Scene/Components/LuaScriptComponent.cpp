@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include "LuaScriptComponent.h"
 #include "Scripting/Lua/LuaManager.h"
 #include "Scene/SceneManager.h"
@@ -38,9 +38,7 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	{
 		sol::error error = result;
 
-		auto [line, file, errorStr] = ParseLuaError(error.what());
-
-		auto event = LuaErrorEvent(line, file, errorStr);
+		auto event = LuaErrorEvent(script->GetFilepath().string(), error.what());
 		Application::CallEvent(event);
 
 		return false;
@@ -92,8 +90,7 @@ void LuaScriptComponent::OnCreate()
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnCreate': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -109,8 +106,7 @@ void LuaScriptComponent::OnDestroy()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnDestroy': {0}", error.what());
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -127,8 +123,7 @@ void LuaScriptComponent::OnUpdate(float deltaTime)
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnUpdate': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -145,8 +140,7 @@ void LuaScriptComponent::OnFixedUpdate()
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnFixedUpdate': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -163,8 +157,7 @@ void LuaScriptComponent::OnDebugRender()
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnDebugRender': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -184,8 +177,7 @@ void LuaScriptComponent::OnBeginContact(b2Fixture* fixture, Vector2f normal, Vec
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnBeginContact': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -205,8 +197,7 @@ void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnEndContact': {0}", error.what());
 
-			auto [line, file, errorStr] = ParseLuaError(error.what());
-			LuaErrorEvent luaErrorEvent(line, file, errorStr);
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -215,31 +206,4 @@ void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
 bool LuaScriptComponent::IsContactListener()
 {
 	return m_OnBeginContactFunc || m_OnEndContactFunc;
-}
-
-std::tuple<int, std::string, std::string> LuaScriptComponent::ParseLuaError(const std::string& errorMessage)
-{
-	PROFILE_FUNCTION();
-	std::string errorStr = errorMessage;
-	int line = 1;
-	size_t chunkStart = errorStr.find("[string ");
-	if (chunkStart != std::string::npos) {
-		// Example: [string "chunk"]:3:
-		size_t closeQuote = errorStr.find("\"]:", chunkStart);
-		if (closeQuote != std::string::npos) {
-			size_t lineNumStart = closeQuote + 3;
-			size_t lineNumEnd = errorStr.find(':', lineNumStart);
-			if (lineNumEnd != std::string::npos) {
-				std::string lineStr = errorStr.substr(lineNumStart, lineNumEnd - lineNumStart);
-				try {
-					line = std::stoi(lineStr);
-				}
-				catch (...) {
-					line = 1;
-				}
-				errorStr = errorStr.substr(lineNumEnd + 1);
-			}
-		}
-	}
-	return std::make_tuple(line, script->GetFilepath().string(), errorStr);
 }

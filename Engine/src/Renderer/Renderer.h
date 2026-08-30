@@ -20,7 +20,11 @@ public:
 	static void BeginScene(const Matrix4x4& transform, const Matrix4x4& projection);
 	static void EndScene();
 
-	static void SetDrawMode(DrawMode drawMode);
+	static Ref<UniformBuffer> GetConstantUniformBuffer();
+
+	// Sample count new mesh pipelines are created with - callers must set this before submitting
+	// any draws that need it (it does not retroactively rebuild already-cached pipelines).
+	static void SetTargetSamples(uint32_t samples);
 
 	static void Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform = Matrix4x4(), int entityId = -1, uint32_t indexCount = 0, uint32_t startIndex = 0, uint32_t vertexOffset = 0);
 	static void Submit(const Ref<Mesh> mesh, const Matrix4x4& transform = Matrix4x4(), int entityId = -1);
@@ -36,4 +40,13 @@ public:
 	static void ClearPostProcessEffects();
 
 	inline static RendererAPI::API GetAPI() { return RendererAPI::GetAPI(); }
+
+	struct Stats
+	{
+		uint32_t drawCalls = 0;
+		uint32_t meshCount = 0;
+	};
+
+	static const Stats& GetStats();
+	static void ResetStats();
 };

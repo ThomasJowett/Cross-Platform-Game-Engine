@@ -1,5 +1,4 @@
-﻿#include "stdafx.h"
-#include "Tileset.h"
+﻿#include "Tileset.h"
 
 #include "TinyXml2/tinyxml2.h"
 #include "Logging/Instrumentor.h"
@@ -107,6 +106,14 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 			pTile->SetAttribute("Id", (int64_t)i);
 			pTile->SetAttribute("Probability", m_Tiles[i].GetProbability());
 			pTile->SetAttribute("Shape", (int)m_Tiles[i].GetCollisionShape());
+
+			if (m_Tiles[i].GetCollisionShape() == Tile::CollisionShape::Polygon)
+			{
+				for (const auto& vertex : m_Tiles[i].GetVertices())
+				{
+					SerializationUtils::Encode(pTile->InsertNewChildElement("Vertex"), vertex);
+				}
+			}
 		}
 	}
 
@@ -128,7 +135,7 @@ void Tileset::SetCurrentTile(uint32_t x, uint32_t y)
 {
 	if (m_Texture)
 	{
-		m_Texture->SetCurrentCell(CoordsToIndex(x,y));
+		m_Texture->SetCurrentCell(CoordsToIndex(x, y));
 	}
 }
 
@@ -143,7 +150,7 @@ void Tileset::SetSubTexture(Ref<SubTexture2D> subTexture)
 	m_Texture = subTexture;
 	if (m_Texture && m_Tiles.size() != m_Texture->GetNumberOfCells())
 	{
-			m_Tiles.resize(m_Texture->GetNumberOfCells());
+		m_Tiles.resize(m_Texture->GetNumberOfCells());
 	}
 }
 
@@ -174,7 +181,7 @@ void Tileset::AddBitmask(Bitmask type)
 		m_BitmaskMap.clear();
 		m_BitmaskMap.resize(16);
 	}
-	else if( type == Bitmask::ThreeByThree && m_BitmaskMap.size() != 48)
+	else if (type == Bitmask::ThreeByThree && m_BitmaskMap.size() != 48)
 	{
 		m_BitmaskMap.clear();
 		m_BitmaskMap.resize(48);
@@ -200,7 +207,7 @@ void Tileset::SetTileBitmask(Tile* tile, uint16_t bitmask)
 
 uint32_t Tileset::CoordsToIndex(uint32_t x, uint32_t y) const
 {
-	if(m_Texture)
+	if (m_Texture)
 		return std::clamp((y * m_Texture->GetCellsWide()) + x, 0U, m_Texture->GetNumberOfCells() - 1);
 	return 0;
 }
@@ -251,6 +258,20 @@ bool Tileset::LoadXML(tinyxml2::XMLDocument* doc)
 		{
 			m_Tiles[tileId].SetCollisionShape((Tile::CollisionShape)atoi(shape));
 			m_HasCollision = true;
+
+			if (m_Tiles[tileId].GetCollisionShape() == Tile::CollisionShape::Polygon)
+			{
+				std::vector<Vector2f> vertices;
+				tinyxml2::XMLElement* pVertex = pTile->FirstChildElement("Vertex");
+				while (pVertex)
+				{
+					Vector2f vertex;
+					SerializationUtils::Decode(pVertex, vertex);
+					vertices.push_back(vertex);
+					pVertex = pVertex->NextSiblingElement("Vertex");
+				}
+				m_Tiles[tileId].SetVertices(vertices);
+			}
 		}
 
 		pTile = pTile->NextSiblingElement("Tile");

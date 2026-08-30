@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PhysicsEngine2D.h"
 #include "HitResult2D.h"
 #include "Contact2D.h"
@@ -213,7 +212,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 
 		constexpr float MinBoxSize = 0.001f;
 
-		if(std::abs(boxColliderComp.size.x) <= MinBoxSize)
+		if (std::abs(boxColliderComp.size.x) <= MinBoxSize)
 			boxColliderComp.size.x = MinBoxSize;
 		if (std::abs(boxColliderComp.size.y) <= MinBoxSize)
 			boxColliderComp.size.y = MinBoxSize;
@@ -445,6 +444,36 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 								if (luaScriptComponent)
 									luaScriptComponent->m_Fixtures.push_back(fixture);
 							}
+							else if (tile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+							{
+								const std::vector<Vector2f>& vertices = tile.GetVertices();
+								std::vector<uint32_t> polygonIndices;
+								if (Triangulation::Triangulate(vertices, polygonIndices))
+								{
+									for (size_t k = 0; k < polygonIndices.size(); k += 3)
+									{
+										b2PolygonShape polygonShape;
+										b2Vec2* b2Vertices = new b2Vec2[3];
+										for (size_t l = 0; l < 3; l++)
+										{
+											uint32_t vertexIndex = polygonIndices[k + l];
+											b2Vertices[l] = b2Vec2((vertices[vertexIndex].x + j) * tileWidth, -(vertices[vertexIndex].y + i) * tileHeight);
+										}
+										polygonShape.Set(b2Vertices, 3);
+										b2FixtureDef fixtureDef;
+										fixtureDef.shape = &polygonShape;
+										fixtureDef.isSensor = tilemapComp->isTrigger;
+										Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
+										fixtureDef.density = defaultPhysicsMaterial->GetDensity();
+										fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
+										fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
+										fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+										b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+										if (luaScriptComponent)
+											luaScriptComponent->m_Fixtures.push_back(fixture);
+									}
+								}
+							}
 						}
 					}
 				}
@@ -473,7 +502,8 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			else {
 				weldJointComp->bodyB = m_WorldBody;
 			}
-		} else {
+		}
+		else {
 			weldJointComp->bodyB = m_WorldBody;
 		}
 		b2Vec2 worldAnchor = weldJointComp->bodyB->GetWorldCenter();
@@ -509,7 +539,7 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
 		m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
 	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body *)boxColliderComp->runtimeBody);
+		m_Box2DWorld->DestroyBody((b2Body*)boxColliderComp->runtimeBody);
 	else if (CircleCollider2DComponent* colliderComp = entity.TryGetComponent<CircleCollider2DComponent>())
 		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
 	else if (PolygonCollider2DComponent* colliderComp = entity.TryGetComponent<PolygonCollider2DComponent>())

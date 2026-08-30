@@ -1,8 +1,8 @@
-#include "stdafx.h"
 #include "Application.h"
 
 #include "GLFW/glfw3.h"
 
+#include "Logging/Instrumentor.h"
 #include "Settings.h"
 #include "InputParser.h"
 #include "Version.h"
@@ -15,6 +15,7 @@
 #include "Events/SceneEvent.h"
 
 #include "Scene/SceneManager.h"
+#include "Scene/AssetManager.h"
 
 #include "Logging/Logger.h"
 #include "Core/Input.h"
@@ -28,6 +29,10 @@
 
 #if defined(_WIN32)
 #include <crtdbg.h>
+#endif
+
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
 #endif
 
 Application* Application::s_Instance = nullptr;
@@ -70,6 +75,12 @@ Application::~Application()
 int Application::Init(int argc, char* argv[])
 {
 	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+#ifdef __APPLE__
+	if (m_WorkingDirectory.filename() == "MacOS")
+	{
+		m_WorkingDirectory = m_WorkingDirectory.parent_path() / "Resources";
+	}
+#endif
 	std::filesystem::current_path(m_WorkingDirectory);
 	Logger::Init();
 
@@ -81,6 +92,9 @@ int Application::Init(int argc, char* argv[])
 			<< " [--help] "
 			<< " [--version] "
 			<< " [--profile] "
+			<< " [--auto-play] "
+			<< " [--exit-after <seconds>] "
+			<< " [--scene <path>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -93,6 +107,23 @@ int Application::Init(int argc, char* argv[])
 
 	if (input.CmdOptionExists("-p") || input.CmdOptionExists("--profile"))
 	{
+	}
+
+	// Scripted/headless testing flags - see the matching getters in Application.h.
+	m_AutoPlay = input.CmdOptionExists("--auto-play");
+
+	if (input.CmdOptionExists("--exit-after"))
+	{
+		const std::string& value = input.GetCmdOption("--exit-after");
+		if (!value.empty())
+			m_ExitAfterSeconds = std::stod(value);
+	}
+
+	if (input.CmdOptionExists("--scene"))
+	{
+		const std::string& value = input.GetCmdOption("--scene");
+		if (!value.empty())
+			m_SceneOverride = value;
 	}
 
 	Settings::Init();
@@ -108,11 +139,11 @@ int Application::Init(int argc, char* argv[])
 		std::cerr << "Not a valid input parameter" << std::endl;
 		return EXIT_FAILURE;
 	}
-	
+
 	Random::Init();
 	LuaManager::Init();
 
-	if(RenderCommand::CreateRendererAPI() != 0)
+	if (RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
 
 	ENGINE_INFO("Engine Version: {0}.{1}.{2}", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
@@ -158,6 +189,79 @@ Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 	return nullptr;
 }
 
+void Application::Tick() {
+	PROFILE_FUNCTION();
+	PROFILE_FRAME();
+
+	AssetManager::ProcessPendingFileEvents();
+
+	double newTime = GetTime();
+	double frameTime = newTime - m_CurrentTime;
+	m_CurrentTime = newTime;
+
+	// --exit-after: let this frame finish normally, just don't schedule another one.
+	if (m_ExitDeadline >= 0.0 && m_CurrentTime >= m_ExitDeadline)
+		Close();
+
+	m_Accumulator += frameTime;
+
+	m_DeltaTime = (float)frameTime;
+
+	// On Fixed update
+	while (m_Accumulator >= m_FixedUpdateInterval)
+	{
+		PROFILE_SCOPE("Layer Stack Fixed Update");
+
+		if (!m_Minimized)
+		{
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnFixedUpdate();
+			}
+
+			SceneManager::FixedUpdate();
+		}
+
+		m_Accumulator -= m_FixedUpdateInterval;
+	}
+
+	m_Window->GetContext()->MakeCurrent();
+	m_Window->OnUpdate();
+
+	// On Update 
+	{
+		PROFILE_SCOPE("Layer Stack Update");
+
+		if (!m_Minimized)
+		{
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnUpdate((float)frameTime);
+			}
+		}
+
+		SceneManager::Update((float)frameTime);
+	}
+
+	// Render the imgui of each of the layers
+	if (m_ImGuiManager->IsUsing())
+	{
+		m_ImGuiManager->Begin();
+		{
+			PROFILE_SCOPE("Layer Stack ImGui Render");
+			for (Ref<Layer> layer : m_LayerStack)
+			{
+				layer->OnImGuiRender();
+			}
+		}
+		m_ImGuiManager->End();
+	}
+
+	m_LayerStack.PushPop();
+
+	Input::ClearInputData();
+}
+
 void Application::Run()
 {
 	PROFILE_FUNCTION();
@@ -166,73 +270,21 @@ void Application::Run()
 		ENGINE_ERROR("Application is already running");
 	}
 
-	double currentTime = GetTime();
-	double accumulator = 0.0f;
+	m_CurrentTime = GetTime();
+	m_Accumulator = 0.0;
+
+	if (m_ExitAfterSeconds >= 0.0)
+		m_ExitDeadline = m_CurrentTime + m_ExitAfterSeconds;
 
 	m_Running = true;
-
+#ifdef __EMSCRIPTEN__
+	emscripten_set_main_loop_arg([](void* arg) { static_cast<Application*>(arg)->Tick(); }, this, 0, 1);
+#else
 	while (m_Running)
 	{
-		PROFILE_FRAME();
-
-		double newTime = GetTime();
-		double frameTime = newTime - currentTime;
-		currentTime = newTime;
-
-		accumulator += frameTime;
-
-		m_DeltaTime = (float)frameTime;
-
-		// On Fixed update
-		while (accumulator >= m_FixedUpdateInterval)
-		{
-			PROFILE_SCOPE("Layer Stack Fixed Update");
-
-			if (!m_Minimized)
-			{
-				for (Ref<Layer> layer : m_LayerStack)
-				{
-					layer->OnFixedUpdate();
-				}
-
-				SceneManager::FixedUpdate();
-			}
-			accumulator -= m_FixedUpdateInterval;
-		}
-
-		m_Window->GetContext()->MakeCurrent();
-		m_Window->OnUpdate();
-
-		// On Update
-		{
-			PROFILE_SCOPE("Layer Stack Update");
-
-			if (!m_Minimized)
-			{
-				for (Ref<Layer> layer : m_LayerStack)
-				{
-					layer->OnUpdate((float)frameTime);
-				}
-			}
-
-			SceneManager::Update((float)frameTime);
-		}
-
-		// Render the imgui of each of the layers
-		if (m_ImGuiManager->IsUsing())
-		{
-			m_ImGuiManager->Begin();
-			for (Ref<Layer> layer : m_LayerStack)
-			{
-				layer->OnImGuiRender();
-			}
-			m_ImGuiManager->End();
-		}
-
-		m_LayerStack.PushPop();
-
-		Input::ClearInputData();
+		Tick();
 	}
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -332,12 +384,7 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 	if (std::filesystem::exists(filepath))
 	{
 		m_OpenDocument = filepath;
-
-		std::string fileDirectory = filepath.string();
-
-		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of(std::filesystem::path::preferred_separator));
-
-		m_OpenDocumentDirectory = fileDirectory;
+		m_OpenDocumentDirectory = filepath.parent_path();
 
 		if (filepath.extension() != ".proj")
 			return true;

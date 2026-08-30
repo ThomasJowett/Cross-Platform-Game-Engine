@@ -1,8 +1,10 @@
-#include "stdafx.h"
 #include "LuaBindings.h"
 
 #include "Logging/Instrumentor.h"
 #include "LuaManager.h"
+#include "math/Quaternion.h"
+#include "math/Vector2f.h"
+#include "sol/property.hpp"
 
 namespace Lua
 {
@@ -13,8 +15,8 @@ void BindMath(sol::state& state)
 	sol::usertype<Vector2f> vector2_type = state.new_usertype<Vector2f>(
 		"Vec2",
 		sol::constructors<Vector2f(float, float), Vector2f()>(),
-		"x", &Vector2f::x,
-		"y", &Vector2f::y,
+		"x", sol::property([](Vector2f& v) { return v.x; }, [](Vector2f& v, float value) { v.x = value; }),
+		"y", sol::property([](Vector2f& v) { return v.y; }, [](Vector2f& v, float value) { v.y = value; }),
 		sol::meta_function::addition, [](const Vector2f& a, const Vector2f& b) { return a + b; },
 		sol::meta_function::subtraction, [](const Vector2f& a, const Vector2f& b) { return a - b; },
 		sol::meta_function::multiplication, [](const Vector2f& a, const float& b) {return a * b; },
@@ -39,9 +41,9 @@ void BindMath(sol::state& state)
 	sol::usertype<Vector3f> vector3_type = state.new_usertype<Vector3f>(
 		"Vec3",
 		sol::constructors<Vector3f(float, float, float), Vector3f()>(),
-		"x", &Vector3f::x,
-		"y", &Vector3f::y,
-		"z", &Vector3f::z,
+		"x", sol::property([](Vector3f& v) { return v.x; }, [](Vector3f& v, float value) { v.x = value; }),
+		"y", sol::property([](Vector3f& v) { return v.y; }, [](Vector3f& v, float value) { v.y = value; }),
+		"z", sol::property([](Vector3f& v) { return v.z; }, [](Vector3f& v, float value) { v.z = value; }),
 		sol::meta_function::addition, [](const Vector3f& a, const Vector3f& b) { return a + b; },
 		sol::meta_function::subtraction, [](const Vector3f& a, const Vector3f& b) { return a - b; },
 		sol::meta_function::multiplication, [](const Vector3f& a, const float& b) {return a * b; },
@@ -62,10 +64,10 @@ void BindMath(sol::state& state)
 	sol::usertype<Quaternion> quaternion_type = state.new_usertype<Quaternion>(
 		"Quaternion",
 		sol::constructors<Quaternion(float, float, float), Quaternion()>(),
-		"w", &Quaternion::w,
-		"x", &Quaternion::x,
-		"y", &Quaternion::y,
-		"z", &Quaternion::z,
+		"w", sol::property([](Quaternion& q) { return q.w; }, [](Quaternion& q, float value) { q.w = value; }),
+		"x", sol::property([](Quaternion& q) { return q.x; }, [](Quaternion& q, float value) { q.x = value; }),
+		"y", sol::property([](Quaternion& q) { return q.y; }, [](Quaternion& q, float value) { q.y = value; }),
+		"z", sol::property([](Quaternion& q) { return q.z; }, [](Quaternion& q, float value) { q.z = value; }),
 		sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a + b; },
 		sol::meta_function::addition, [](const Quaternion& a, const Quaternion& b) { return a - b; }
 	);

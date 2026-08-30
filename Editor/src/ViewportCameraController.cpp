@@ -1,6 +1,12 @@
 #include "ViewportCameraController.h"
 
-#include "Engine.h"
+#include "Core/Input.h"
+#include "Core/KeyCodes.h"
+#include "Core/MouseButtonCodes.h"
+
+#include "Logging/Instrumentor.h"
+#include "Core/Application.h"
+#include "Core/Cursor.h"
 
 ViewportCameraController::ViewportCameraController()
 	:m_2DCamera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel),

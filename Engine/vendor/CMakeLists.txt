@@ -187,6 +187,7 @@ add_library(msdfgen STATIC
 set_target_properties(msdfgen PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
+    UNITY_BUILD OFF
 )
 
 target_include_directories(msdfgen PUBLIC
@@ -215,6 +216,7 @@ add_library(msdf-atlas-gen STATIC
 set_target_properties(msdf-atlas-gen PROPERTIES
     CXX_STANDARD 17
     CXX_STANDARD_REQUIRED ON
+    UNITY_BUILD OFF
 )
 
 target_include_directories(msdf-atlas-gen PUBLIC

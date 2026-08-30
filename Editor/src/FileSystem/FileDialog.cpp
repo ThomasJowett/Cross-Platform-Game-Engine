@@ -1,6 +1,7 @@
 #include "FileDialog.h"
 
-#include "Engine.h"
+#include "Utilities/StringUtils.h"
+#include "Logging/Logger.h"
 
 #ifdef _WINDOWS
 #include <commdlg.h>
@@ -60,16 +61,31 @@ void LogError(DWORD errorCode)
 	}
 }
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+static std::wstring BuildFilterString(const std::vector<DialogFilterItem>& filters)
+{
+	std::wstring result;
+	for (const auto& filter : filters)
+	{
+		result += filter.Name;
+		result.push_back(L'\0');
+		result += filter.Spec;
+		result.push_back(L'\0');
+	}
+	result.push_back(L'\0');
+	return result;
+}
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -86,16 +102,17 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 	return std::wstring(filename);
 }
 
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -129,16 +146,17 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 	return files;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	wchar_t filename[MAX_PATH];
+	std::wstring filterStr = BuildFilterString(filters);
 
 	OPENFILENAME ofn;
 	ZeroMemory(&filename, sizeof(filename));
 	ZeroMemory(&ofn, sizeof(ofn));
 	ofn.lStructSize = sizeof(ofn);
 	ofn.hwndOwner = GetActiveWindow();
-	ofn.lpstrFilter = filter;
+	ofn.lpstrFilter = filterStr.c_str();
 	ofn.lpstrFile = filename;
 	ofn.nMaxFile = MAX_PATH;
 	ofn.lpstrTitle = title;
@@ -158,14 +176,30 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 
 #include <linux/limits.h>
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+static std::wstring BuildZenityFilter(const std::vector<DialogFilterItem>& filters)
+{
+	std::wstring result;
+	for (const auto& filter : filters)
+	{
+		result += L"--file-filter=\"";
+		result += filter.Name;
+		result += L" | ";
+		result += filter.Spec;
+		result += L"\" ";
+	}
+	return result;
+}
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
-
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" 2>&1", title, filter);
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\"  2>&1", title);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls 2>&1", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\"  2>&1", title);
 
 	FILE *f = popen(call, "r");
 
@@ -184,18 +218,24 @@ std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t
 
 		ENGINE_DEBUG(outputString);
 
+		pclose(f);
+
 		if(!outputString.empty())
 			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
 	}
 	return std::nullopt;
 }
 
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --multiple 2>&l", title, filter);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls --multiple 2>&l", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --multiple 2>&l", title);
 
 	FILE *f = popen(call, "r");
 
@@ -215,19 +255,24 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 			}
 		}
 
+		pclose(f);
+
 		if(!files.empty())
 			return files;
 	}
 	return std::nullopt;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	char call[2048];
 	std::string outputString;
+	std::wstring filterStr = BuildZenityFilter(filters);
 
-	//sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --file-filter=\"%ls\" --save", title, filter);
-	sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --save", title);
+	if (!filters.empty())
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" %ls --save", title, filterStr.c_str());
+	else
+		sprintf(call, "zenity --file-selection --modal --title=\"%ls\" --save", title);
 
 	FILE *f = popen(call, "r");
 
@@ -244,6 +289,8 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 			}
 		}
 
+		pclose(f);
+
 		if(!outputString.empty())
 			return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(outputString);
 	}
@@ -251,18 +298,146 @@ std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar
 	return std::nullopt;
 }
 
-#else
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#include <codecvt> // Required for std::codecvt_utf8
+#include <locale>  // Required for std::wstring_convert
 
-std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const wchar_t *filter)
+EM_ASYNC_JS(char*, TriggerWebFileDialog, (), {
+	try
+	{
+		const [fileHandle] = await window.showOpenFilePicker();
+		const file = await fileHandle.getFile();
+
+		const arrayBuffer = await file.arrayBuffer();
+		const uint8View = new Uint8Array(arrayBuffer);
+
+		try
+		{
+			FS.mkdir("/project");
+		}
+		catch (e)
+		{
+		}
+
+		const virtualPath = "project/" + file.name;
+		FS.writeFile(virtualPath, uint8View);
+
+		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(virtualPath, pointer, byteCount);
+		return pointer;
+	}
+	catch (err)
+	{
+		if (err.name === 'AbortError') return 0;
+		console.error("File dialog error: ", err);
+		return 0;
+	}
+});
+
+EM_ASYNC_JS(char*, TriggerWebMultiFileDialog, (), {
+	try {
+		const files = await window.showOpenFilePicker({multiple: true});
+		if (!files.length) return 0;
+		
+		try {FS.mkdir("/project"); } catch (e) {}
+
+		const paths = [];
+		for (const fileHandle of files) {
+			const file = await fileHandle.getFile();
+			const arrayBuffer = await file.arrayBuffer();
+			const uint8View = new Uint8Array(arrayBuffer);
+			const virtualPath = "project/" + file.name;
+			FS.writeFile(virtualPath, uint8View);
+			paths.push(virtualPath);
+		}
+
+		const result = paths.join("|");
+		const byteCount = (new TextEncoder().encode(result)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(result, pointer, byteCount);
+		return pointer;
+	} catch (err) {
+		if (err.name === 'AbortError') return 0;
+		console.error("File dialog error: ", err);
+		return 0;
+	}
+});
+
+EM_ASYNC_JS(char*, TriggerWebSaveFileDialog, (), {
+	try {
+		const fileHandle = await window.showSaveFilePicker();
+
+		const virtualPath = "project/" + fileHandle.name;
+
+		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
+		const pointer = _malloc(byteCount);
+		stringToUTF8(virtualPath, pointer, byteCount);
+		return pointer;
+	}
+	catch (err) {
+		if (err.name === 'AbortError') return 0;
+		console.error("File Dialog error: ", err);
+		return 0;
+	}
+});
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
+{
+	char* virtualPathPtr = TriggerWebFileDialog();
+	if (virtualPathPtr)
+	{
+		std::string virtualPath(virtualPathPtr);
+		free(virtualPathPtr);
+		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(virtualPath);
+	}
+	return std::nullopt;
+}
+
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
+{
+	char* virtualPathsPtr = TriggerWebMultiFileDialog();
+	if (virtualPathsPtr)
+	{
+		std::string virtualPaths(virtualPathsPtr);
+		free(virtualPathsPtr);
+		
+		std::vector<std::string> pathList = SplitString(virtualPaths, '|');
+		std::vector<std::wstring> results;
+		for (const std::string& path : pathList)
+		{
+			results.push_back(std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(path));
+		}
+		return results;
+	}
+	return std::nullopt;
+}
+
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
+{
+	char* virtualPathPtr = TriggerWebSaveFileDialog();
+	if (virtualPathPtr)
+	{
+		std::string virtualPath(virtualPathPtr);
+		free(virtualPathPtr);
+		return std::wstring_convert<std::codecvt_utf8<wchar_t>>().from_bytes(virtualPath);
+	}
+	return std::nullopt;
+}
+
+#elif !defined(__APPLE__)
+
+std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }
-std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const wchar_t *filter)
+std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }
 
-std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const wchar_t *filter)
+std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
 	return std::nullopt;
 }

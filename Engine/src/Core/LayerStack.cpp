@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "LayerStack.h"
 #include "Logging/Instrumentor.h"
 
@@ -10,7 +9,7 @@ LayerStack::LayerStack()
 
 LayerStack::~LayerStack()
 {
-	for(std::vector<Ref<Layer>>::reverse_iterator it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
+	for (std::vector<Ref<Layer>>::reverse_iterator it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 	{
 		(*it)->OnDetach();
 		(*it).reset();

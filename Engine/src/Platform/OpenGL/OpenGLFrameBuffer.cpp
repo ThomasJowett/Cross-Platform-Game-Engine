@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLFrameBuffer.h"
 #include "Logging/Instrumentor.h"
 
@@ -130,34 +129,40 @@ void OpenGLFrameBuffer::Generate()
 
 			m_ColourAttachments[i] = Texture2D::Create(m_Specification.width, m_Specification.height, format, m_Specification.samples);
 
-			BindTexture(multisample, m_ColourAttachments[i]->GetRendererID());
+			uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_ColourAttachments[i]->GetRendererID()));
+			BindTexture(multisample, id);
 			switch (m_ColourAttachmentSpecifications[i].textureFormat)
 			{
 			case FrameBufferTextureFormat::RGBA8:
-				AttachColourTexture(m_ColourAttachments[i]->GetRendererID(), m_Specification.samples, GL_RGBA8, GL_RGBA, m_Specification.width, m_Specification.height, i);
+				AttachColourTexture(id, m_Specification.samples, GL_RGBA8, GL_RGBA, m_Specification.width, m_Specification.height, i);
 				break;
 			case FrameBufferTextureFormat::RED_INTEGER:
-				AttachColourTexture(m_ColourAttachments[i]->GetRendererID(), m_Specification.samples, GL_R32I, GL_RED_INTEGER, m_Specification.width, m_Specification.height, i);
+				AttachColourTexture(id, m_Specification.samples, GL_R32I, GL_RED_INTEGER, m_Specification.width, m_Specification.height, i);
 				break;
 			default:
 				break;
 			}
 
-			m_ColourAttachments[i]->SetFilterMethod(Texture::FilterMethod::Linear);
+			// Integer attachments (e.g. the entity-ID buffer) can't use linear filtering - GLSL
+			// only allows nearest-filtered sampling of integer samplers, so forcing Linear here
+			// would make sampling it undefined behaviour.
+			bool isIntegerFormat = m_ColourAttachmentSpecifications[i].textureFormat == FrameBufferTextureFormat::RED_INTEGER;
+			m_ColourAttachments[i]->SetFilterMethod(isIntegerFormat ? Texture::FilterMethod::Nearest : Texture::FilterMethod::Linear);
 			m_ColourAttachments[i]->SetWrapMethod(Texture::WrapMethod::Clamp);
 		}
 	}
-	
+
 	if (m_DepthAttachmentSpecification.textureFormat != FrameBufferTextureFormat::None)
 	{
 		auto format = FrameBufferFormatToTextureFormat(m_DepthAttachmentSpecification.textureFormat);
 		m_DepthAttachment = Texture2D::Create(m_Specification.width, m_Specification.height, format, m_Specification.samples);
-	
-		BindTexture(multisample, m_DepthAttachment->GetRendererID());
+
+		uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_DepthAttachment->GetRendererID()));
+		BindTexture(multisample, id);
 		switch (m_DepthAttachmentSpecification.textureFormat)
 		{
 		case FrameBufferTextureFormat::DEPTH24STENCIL8:
-			AttachDepthTexture(m_DepthAttachment->GetRendererID(), m_Specification.samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.width, m_Specification.height);
+			AttachDepthTexture(id, m_Specification.samples, GL_DEPTH24_STENCIL8, GL_DEPTH_STENCIL_ATTACHMENT, m_Specification.width, m_Specification.height);
 			break;
 		default:
 			break;
@@ -251,6 +256,19 @@ void OpenGLFrameBuffer::BlitColourTo(Ref<FrameBuffer> target, uint32_t srcAttach
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
+void OpenGLFrameBuffer::ResolveTo(Ref<FrameBuffer> target)
+{
+	if (m_Specification.samples <= 1)
+		return;
+
+	// glBlitFramebuffer between mismatched sample counts is itself the resolve - averaging for
+	// normalized/float colour formats, selecting one representative sample for integer ones
+	// (linear filtering is disallowed on integer formats anyway) - regardless of the GL_NEAREST
+	// passed to BlitColourTo, which the spec ignores for resolve blits.
+	for (uint32_t i = 0; i < (uint32_t)m_ColourAttachments.size(); i++)
+		BlitColourTo(target, i, i);
+}
+
 void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 {
 	CORE_ASSERT(index < m_ColourAttachments.size(), "Trying to access attachment that does not exist!");
@@ -259,6 +277,7 @@ void OpenGLFrameBuffer::ClearAttachment(size_t index, int value)
 
 	GLenum textureFormat = TextureFormatToOpenGlTextureFormat(spec.textureFormat);
 
-	glClearTexImage(m_ColourAttachments[index]->GetRendererID(), 0, textureFormat, GL_INT, &value);
-}
+	uint32_t id = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(m_ColourAttachments[index]->GetRendererID()));
 
+	glClearTexImage(id, 0, textureFormat, GL_INT, &value);
+}

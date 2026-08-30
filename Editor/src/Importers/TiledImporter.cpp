@@ -1,7 +1,13 @@
 #include "TiledImporter.h"
 #include "TinyXml2/tinyxml2.h"
-#include "Engine.h"
+#include "Utilities/StringUtils.h"
 #include "Utilities/SerializationUtils.h"
+#include "Scene/Entity.h"
+#include "Scene/Components.h"
+#include "Scene/SceneManager.h"
+#include "Asset/Tileset.h"
+#include "Core/Settings.h"
+#include "Logging/Logger.h"
 
 static TilemapComponent::Orientation s_Orientation;
 static std::map<uint32_t, Ref<Tileset>> s_Tilesets;
@@ -65,6 +71,7 @@ Entity LoadImageLayer(tinyxml2::XMLElement* pImageLayer)
 		texturePath.remove_filename();
 		texturePath = texturePath / textureSource;
 		spriteComp.texture = AssetManager::GetTexture(texturePath);
+		spriteComp.texturePath = spriteComp.texture ? spriteComp.texture->GetFilepath() : std::filesystem::path();
 	}
 
 	if (tintColour)

@@ -3,8 +3,10 @@
 #include "imgui/imgui.h"
 
 #include "Asset/Material.h"
+#include "Scene/AssetManager.h"
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
+#include "ImGui/ImGuiUtilities.h"
 
 static std::filesystem::file_time_type s_AssetFileTime;
 
@@ -41,9 +43,7 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 	if (assetName.empty())
 		assetName = "Default";
 
-	std::string comboId = "##Combo";
-
-	std::strcat(comboId.data(), label);
+	std::string comboId = std::string("##Combo") + label;
 
 	if (ImGui::BeginCombo(comboId.c_str(), assetName.c_str()))
 	{
@@ -85,14 +85,16 @@ bool AssetEdit(const char* label, Ref<T>& asset, Ref<T> defaultAsset, FileType t
 	if (assetName != "Default")
 	{
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_PEN_TO_SQUARE"##EditAsset"))
+		std::string editId = std::string(ICON_FA_PEN_TO_SQUARE "##EditAsset") + label;
+		if (ImGui::Button(editId.c_str()))
 		{
 			ViewerManager::OpenViewer(asset->GetFilepath());
 		}
 		ImGui::Tooltip("Open Asset Viewer");
 
 		ImGui::SameLine();
-		if (ImGui::Button(ICON_FA_XMARK))
+		std::string clearId = std::string(ICON_FA_XMARK "##ClearAsset") + label;
+		if (ImGui::Button(clearId.c_str()))
 		{
 			asset = defaultAsset;
 		}

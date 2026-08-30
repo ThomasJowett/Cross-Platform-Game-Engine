@@ -1,28 +1,28 @@
-#include "stdafx.h"
 #include "OpenGLBuffer.h"
+#include "OpenGLPipeline.h"
+#include "OpenGLRendererAPI.h"
 
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
+#include "Renderer/RenderCommand.h"
 #include <glad/glad.h>
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
-    glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-    glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
-	m_VertexArray = CreateRef<OpenGLVertexArray>();
+	glGenBuffers(1, &m_RendererID);
+	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
+	glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
 }
 
 OpenGLVertexBuffer::OpenGLVertexBuffer(void* vertices, uint32_t size)
 	:m_Size(size)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
+	glGenBuffers(1, &m_RendererID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW);
-	m_VertexArray = CreateRef<OpenGLVertexArray>();
 }
 
 OpenGLVertexBuffer::~OpenGLVertexBuffer()
@@ -50,7 +50,10 @@ void OpenGLVertexBuffer::Bind() const
 {
 	PROFILE_FUNCTION();
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
-	m_VertexArray->Bind();
+
+	Ref<Pipeline> currentPipeline = static_cast<OpenGLRendererAPI&>(RenderCommand::Get()).GetCurrentPipeline();
+	if (Ref<OpenGLPipeline> pipeline = std::dynamic_pointer_cast<OpenGLPipeline>(currentPipeline))
+		pipeline->ConfigureVertexBuffer(this);
 }
 
 void OpenGLVertexBuffer::UnBind() const
@@ -65,7 +68,7 @@ OpenGLIndexBuffer::OpenGLIndexBuffer(uint32_t* indices, uint32_t count)
 	:m_Count(count)
 {
 	PROFILE_FUNCTION();
-    glGenBuffers(1, &m_RendererID);
+	glGenBuffers(1, &m_RendererID);
 	glBindBuffer(GL_ARRAY_BUFFER, m_RendererID);
 	glBufferData(GL_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW);
 }

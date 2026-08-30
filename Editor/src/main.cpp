@@ -4,6 +4,7 @@
 
 #include "ProjectsStartScreen.h"
 #include "MainDockSpace.h"
+#include "FileSystem/AssetPacker.h"
 
 int main(int argc, char* argv[])
 {
@@ -19,7 +20,17 @@ int main(int argc, char* argv[])
 	if (rCode != -1)
 		return rCode;
 
-	Window* window = app->CreateDesktopWindow(WindowProps("Editor", 1920, 1080, 100, 100));
+	if (argc > 2 && std::string(argv[2]) == "--export-game" && argc > 3)
+	{
+		bool show = true;
+		AssetPacker packer(&show, Application::GetOpenDocumentDirectory(), std::filesystem::path(argv[3]));
+		packer.RunHeadlessExport();
+		std::cout << "OK" << std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	std::string windowTitle = std::string("Editor - ") + RendererAPI::GetAPIName();
+	Window* window = app->CreateDesktopWindow(WindowProps(windowTitle, 1920, 1080, 100, 100));
 
 	if (!window)
 		return EXIT_FAILURE;

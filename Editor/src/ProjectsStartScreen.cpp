@@ -1,6 +1,9 @@
 #include "ProjectsStartScreen.h"
 
-#include "Engine.h"
+#include "Core/Application.h"
+#include "Core/Settings.h"
+#include "Scene/Scene.h"
+#include "Utilities/StringUtils.h"
 
 #include "IconsFontAwesome6.h"
 
@@ -8,6 +11,7 @@
 
 #include "ProjectData.h"
 #include "cereal/archives/json.hpp"
+#include "imgui.h"
 
 ProjectsStartScreen::ProjectsStartScreen(bool createProject)
 	:m_CreateProject(createProject), Layer("Project Start Screen")
@@ -27,13 +31,11 @@ void ProjectsStartScreen::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(popupSizeX, popupSizeY));
 
-	int windowPosX = Application::GetWindow()->GetPosX();
-	int windowPosY = Application::GetWindow()->GetPosY();
-
+	ImGuiViewport* viewport = ImGui::GetMainViewport();
 	// Find the middle of the screen
 	ImGui::SetNextWindowPos(ImVec2(
-		(float)(windowSizeX / 2.0f) + windowPosX - (float)(popupSizeX / 2.0f),
-		(float)(windowSizeY / 2.0f) + windowPosY - (float)(popupSizeY / 2.0f))
+		viewport->Pos.x + (viewport->Size.x * 0.5f) - (float)(popupSizeX * 0.5f),
+		viewport->Pos.y + (viewport->Size.y * 0.5f) - (float)(popupSizeY * 0.5f))
 	);
 
 	ImGuiWindowFlags flags = ImGuiWindowFlags_Modal |
@@ -63,7 +65,7 @@ void ProjectsStartScreen::OnImGuiRender()
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
-				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*|0");
+				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
 				if (fileToOpen.has_value())
 					OpenProject(fileToOpen.value());
 			}
@@ -94,7 +96,7 @@ void ProjectsStartScreen::OnImGuiRender()
 
 			if (ImGui::Button("Blank Project"))
 			{
-				std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Choose Project Location...", L"Project File (*.proj)\0*.proj");
+				std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Choose Project Location...", { {L"Project File (*.proj)", L"*.proj"} });
 
 				if (!dialogPath)
 				{

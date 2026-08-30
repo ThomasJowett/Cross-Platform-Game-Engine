@@ -1,6 +1,8 @@
 #include "OBJImporter.h"
-
-#include "Engine.h"
+#include "math/Vector2f.h"
+#include "math/Vector3f.h"
+#include "Logging/Logger.h"
+#include "Logging/Instrumentor.h"
 
 void OBJImporter::ImportAssets(const std::filesystem::path& filepath, const std::filesystem::path& destination)
 {

@@ -1,44 +1,39 @@
-#include "stdafx.h"
 #include "RenderCommand.h"
 #include "Core/Settings.h"
 #include "Logging/Instrumentor.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
-#ifdef _WINDOWS
-#include "Platform/DirectX/DirectX11RendererAPI.h"
-#endif // _WINDOWS
+#include "Platform/WebGPU/WebGPURendererAPI.h"
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
 int RenderCommand::CreateRendererAPI()
 {
 	PROFILE_FUNCTION();
+#if defined(__APPLE__) || defined(__EMSCRIPTEN__)
+	Settings::SetDefaultValue("Renderer", "API", "WebGPU");
+#else
 	Settings::SetDefaultValue("Renderer", "API", "OpenGL");
+#endif
 
 	std::string api = Settings::GetValue("Renderer", "API");
+
+#ifdef __EMSCRIPTEN__
+	api = "WebGPU";
+#endif
+
 	if (api == "OpenGL")
 	{
 		RendererAPI::s_API = RendererAPI::API::OpenGL;
 		s_RendererAPI = CreateScope<OpenGLRendererAPI>();
 		return 0;
 	}
-#ifdef _WINDOWS
-	else if (api == "DirectX11")
+	else if (api == "WebGPU")
 	{
-		RendererAPI::s_API = RendererAPI::API::Directx11;
-		s_RendererAPI = CreateScope<DirectX11RendererAPI>();
+		RendererAPI::s_API = RendererAPI::API::WebGPU;
+		s_RendererAPI = CreateScope<WebGPURendererAPI>();
 		return 0;
 	}
-#endif // _WINDOWS
-#ifdef __APPLE__
-	else if (api == "Metal")
-	{
-		RendererAPI::s_API = RendererAPI::API::Metal;
-		CORE_ASSERT(false, "Metal not yet supported!");
-		s_RendererAPI = nullptr;
-		return 1;
-	}
-#endif // __APPLE__
 	else if (api == "None")
 	{
 		RendererAPI::s_API = RendererAPI::API::None;

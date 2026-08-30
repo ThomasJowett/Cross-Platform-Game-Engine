@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "PhysicsMaterial.h"
 #include "Core/Application.h"
 
@@ -55,7 +54,7 @@ bool PhysicsMaterial::Load(const std::filesystem::path& filepath)
 	tinyxml2::XMLDocument doc;
 	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
-		if(!LoadXML(&doc))
+		if (!LoadXML(&doc))
 		{
 			ENGINE_ERROR("Could not load physics material file: {0}", absolutePath);
 			return false;

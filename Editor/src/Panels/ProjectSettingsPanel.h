@@ -27,6 +27,7 @@ private:
 private:
 
 	bool* m_Show;
+	bool m_WasShown = false;
 
 	ProjectData m_ProjectData;
 

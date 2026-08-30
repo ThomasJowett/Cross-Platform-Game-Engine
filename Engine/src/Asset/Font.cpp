@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Font.h"
 
 #include "Renderer/UI/MSDFData.h"
@@ -78,7 +77,7 @@ bool Font::Load(const std::filesystem::path& filepath)
 		msdfgen::destroyFont(fontHandle);
 		msdfgen::deinitializeFreetype(ftHandle);
 		return false;
-	}	
+	}
 
 	m_Filepath = filepath;
 	m_Filepath.make_preferred();
@@ -130,7 +129,11 @@ bool Font::Load(const std::filesystem::path& filepath)
 	generatorAttributes.config.overlapSupport = true;
 	generatorAttributes.scanlinePass = true;
 	generator.setAttributes(generatorAttributes);
+#ifdef __EMSCRIPTEN__
+	generator.setThreadCount(1);
+#else
 	generator.setThreadCount(8);
+#endif
 	generator.generate(m_MSDFData->glyphs.data(), (int)m_MSDFData->glyphs.size());
 
 	msdfgen::BitmapConstRef<float, bytes> bitmap = (msdfgen::BitmapConstRef<float, bytes>)generator.atlasStorage();

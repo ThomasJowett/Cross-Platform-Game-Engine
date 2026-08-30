@@ -1,9 +1,12 @@
 #include "TextureView.h"
 
-#include "Engine.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
+#include "stb_image.h"
+#include "stb_image_write.h"
+#include "Utilities/AssetReferenceUtils.h"
 
 TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 	:View("TextureView"), m_Show(show), m_FilePath(filepath)
@@ -12,9 +15,9 @@ TextureView::TextureView(bool* show, const std::filesystem::path& filepath)
 }
 void TextureView::OnAttach()
 {
-	m_Texture = AssetManager::GetTexture(m_FilePath.string());
+	m_Texture = AssetManager::GetTexture(m_FilePath);
 
-	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + std::to_string(m_Texture->GetRendererID());
+	m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + m_Texture->GetUUID().to_string();
 
 	if (m_Texture->GetWidth() <= 32 || m_Texture->GetHeight() <= 32)
 		m_Zoom = 2.0f;
@@ -41,6 +44,52 @@ void TextureView::OnImGuiRender()
 		ImGui::TextUnformatted(size.c_str());
 		auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Texture->GetFilepath());
 		ImGui::TextUnformatted(absolutePath.string().c_str());
+
+		if (m_Texture->GetChannels() == 3)
+		{
+			if(ImGui::Button("Convert to 4 channel image"))
+			{
+				int width, height, original_channels;
+				stbi_set_flip_vertically_on_load(1);
+				unsigned char* data = stbi_load(absolutePath.string().c_str(), &width, &height, &original_channels, STBI_rgb_alpha);
+
+				if (data == nullptr) {
+					CLIENT_ERROR("Failed to load image: {0}", stbi_failure_reason());
+				}
+				else
+				{
+					std::filesystem::path oldRelativePath = m_Texture->GetFilepath();
+					std::filesystem::path newRelativePath = oldRelativePath;
+					newRelativePath.replace_extension(".png");
+					std::filesystem::path newAbsolutePath = absolutePath;
+					newAbsolutePath.replace_extension(".png");
+
+					stbi_flip_vertically_on_write(1);
+					int success = stbi_write_png(newAbsolutePath.string().c_str(), width, height, 4, data, width * 4);
+
+					stbi_image_free(data);
+
+					if (success && newRelativePath != oldRelativePath)
+					{
+						std::filesystem::remove(absolutePath);
+
+						std::vector<std::filesystem::path> updatedFiles = AssetReferenceUtils::UpdateReferences(oldRelativePath, newRelativePath);
+						AssetManager::RemoveAsset(oldRelativePath);
+						AssetReferenceUtils::UpdateCurrentSceneTextureReferences(oldRelativePath, newRelativePath);
+						AssetReferenceUtils::ReloadAffectedNonSceneAssets(updatedFiles);
+
+						m_FilePath = newRelativePath;
+						m_Texture = AssetManager::GetTexture(m_FilePath);
+						m_WindowName = ICON_FA_IMAGE + std::string(" ") + m_FilePath.filename().string() + "##" + m_Texture->GetUUID().to_string();
+					}
+					else
+					{
+						m_Texture->Reload();
+					}
+				}
+			}
+			ImGui::Tooltip("3 channels images are not supported by WebGPU");
+		}
 
 		const bool is_selected = false;
 		bool edited = false;

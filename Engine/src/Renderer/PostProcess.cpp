@@ -1,7 +1,5 @@
-
 #include "PostProcess.h"
 #include "Logging/Instrumentor.h"
-#include "Renderer/RenderCommand.h"
 
 PostProcessStack::PostProcessStack()
 {
@@ -50,13 +48,9 @@ void PostProcessStack::Execute(Ref<Texture> colourTexture, Ref<Texture> depthTex
 		auto& effect = m_Effects[i];
 		Ref<FrameBuffer> outputTarget = pingIsSource ? pong : ping;
 
-		outputTarget->Bind();
-
 		effect->Apply(currentColour, depthTexture, entityIdTexture,
 			pingIsSource ? ping : pong, pingIsSource ? pong : ping,
 			fullscreenQuad, m_PostProcessData, m_PostProcessUniformBuffer);
-
-		outputTarget->UnBind();
 
 		currentColour = outputTarget->GetColourAttachment(0);
 		pingIsSource = !pingIsSource;

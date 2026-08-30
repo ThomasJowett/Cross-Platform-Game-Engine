@@ -1,6 +1,7 @@
 #pragma once
 
 class VertexBuffer;
+class BufferLayout;
 
 class OpenGLVertexArray
 {
@@ -11,7 +12,11 @@ public:
 	virtual void Bind() const;
 	virtual void UnBind() const;
 
-	virtual void AddVertexBuffer(const VertexBuffer* vertexBuffer);
+	// layout is passed explicitly (rather than read from vertexBuffer->GetLayout()) so the
+	// caller - OpenGLPipeline - can drive this from its own Spec::layout, the single source
+	// of truth already used to build the WebGPU vertex layout, instead of whatever this
+	// specific buffer happened to be told last.
+	virtual void AddVertexBuffer(const VertexBuffer* vertexBuffer, const BufferLayout& layout);
 	//virtual void SetIndexBuffer(const Ref<IndexBuffer>& indexBuffer);
 
 	//virtual const std::vector<Ref<VertexBuffer>>& GetVertexBuffers() const;

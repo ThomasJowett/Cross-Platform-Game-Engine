@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLRendererAPI.h"
 #include "Logging/Instrumentor.h"
 
@@ -33,8 +32,11 @@ bool OpenGLRendererAPI::Init()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glEnable(GL_MULTISAMPLE);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(1.5f);
+	glClipControl(GL_LOWER_LEFT, GL_ZERO_TO_ONE);
+
 	return true;
 }
 
@@ -50,36 +52,34 @@ void OpenGLRendererAPI::SetViewport(uint32_t x, uint32_t y, uint32_t width, uint
 
 void OpenGLRendererAPI::Clear()
 {
+	glDepthMask(GL_TRUE);
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void OpenGLRendererAPI::ClearColour()
 {
+	glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 	glClear(GL_COLOR_BUFFER_BIT);
 }
 
 void OpenGLRendererAPI::ClearDepth()
 {
+	glDepthMask(GL_TRUE);
 	glClear(GL_DEPTH_BUFFER_BIT);
 }
 
-void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset, bool backFaceCull, DrawMode drawMode)
+void OpenGLRendererAPI::StartRenderPass(bool clear)
 {
-	if (!backFaceCull)
-		glDisable(GL_CULL_FACE);
+}
 
-	GLuint mode;
-	switch (drawMode)
-	{
-	case DrawMode::POINTS: mode = GL_POINTS; break;
-	case DrawMode::WIREFRAME: mode = GL_LINES; break;
-	case DrawMode::FILL: mode = GL_TRIANGLES; break;
-	default: mode = GL_TRIANGLES; break;
-	}
+void OpenGLRendererAPI::EndRenderPass()
+{
+}
 
-	glDrawRangeElementsBaseVertex(mode, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
-	if (!backFaceCull)
-		glEnable(GL_CULL_FACE);
+void OpenGLRendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset)
+{
+	glDrawRangeElementsBaseVertex(GL_TRIANGLES, indexStart, indexStart + indexCount, indexCount, GL_UNSIGNED_INT, nullptr, vertexOffset);
 }
 
 void OpenGLRendererAPI::DrawLines(uint32_t vertexCount)

@@ -6,7 +6,16 @@
 
 #include "imgui/imgui.h"
 
-#include "Engine.h"
+#include "Asset/SpriteSheet.h"
+#include "Asset/PhysicsMaterial.h"
+#include "AI/BehaviourTreeSerializer.h"
+#include "AI/BehaviourTree.h"
+#include "Core/Settings.h"
+#include "Utilities/AssetReferenceUtils.h"
+#include "Utilities/FileUtils.h"
+#include "Scene/AssetManager.h"
+#include "ProjectData.h"
+#include "cereal/archives/json.hpp"
 
 #include "MainDockSpace.h"
 
@@ -20,6 +29,7 @@
 #include "History/HistoryManager.h"
 
 #include "Fonts/Fonts.h"
+#include "ImGui/ImGuiUtilities.h"
 
 static std::filesystem::path s_IconDirectory;
 
@@ -110,22 +120,63 @@ void ContentExplorerPanel::Duplicate()
 
 void ContentExplorerPanel::Delete()
 {
+	std::vector<std::filesystem::path> targets;
 	if (m_NumberSelected == 1)
-		std::filesystem::remove_all(m_CurrentSelectedPath);
+		targets.push_back(m_CurrentSelectedPath);
 	else
 	{
 		for (size_t i = 0; i < m_SelectedFiles.size(); i++)
 		{
 			if (m_SelectedFiles[i])
-				std::filesystem::remove(m_Files[i]);
+				targets.push_back(m_Files[i]);
 		}
 
 		for (size_t i = 0; i < m_SelectedDirs.size(); i++)
 		{
 			if (m_SelectedDirs[i])
-				std::filesystem::remove_all(m_Dirs[i]);
+				targets.push_back(m_Dirs[i]);
 		}
 	}
+
+	std::vector<std::filesystem::path> references;
+	for (const std::filesystem::path& target : targets)
+	{
+		// Reference-fixup only makes sense for individual asset files - a directory delete
+		// would need to check every file inside it, which isn't handled here.
+		if (!std::filesystem::is_regular_file(target))
+			continue;
+
+		std::filesystem::path relativePath = FileUtils::RelativePath(target, Application::GetOpenDocumentDirectory());
+		std::vector<std::filesystem::path> found = AssetReferenceUtils::FindReferences(relativePath);
+		references.insert(references.end(), found.begin(), found.end());
+	}
+
+	if (!references.empty())
+	{
+		m_PendingDeletePaths = targets;
+		m_PendingDeleteReferences = references;
+		m_ShowDeleteConfirmation = true;
+	}
+	else
+	{
+		PerformDelete(targets, references);
+	}
+}
+
+void ContentExplorerPanel::PerformDelete(const std::vector<std::filesystem::path>& targets, const std::vector<std::filesystem::path>& affectedReferences)
+{
+	for (const std::filesystem::path& target : targets)
+	{
+		if (std::filesystem::is_regular_file(target))
+		{
+			std::filesystem::path relativePath = FileUtils::RelativePath(target, Application::GetOpenDocumentDirectory());
+			AssetReferenceUtils::UpdateCurrentSceneTextureReferences(relativePath);
+		}
+
+		std::filesystem::remove_all(target);
+	}
+
+	AssetReferenceUtils::ReloadAffectedNonSceneAssets(affectedReferences);
 
 	m_ForceRescan = true;
 }
@@ -154,10 +205,14 @@ bool ContentExplorerPanel::HasSelection() const
 
 bool ContentExplorerPanel::Rename()
 {
+	bool isFile = std::filesystem::is_regular_file(m_CurrentSelectedPath);
+	std::string extension = isFile ? m_CurrentSelectedPath.extension().string() : "";
+	std::string nameToEdit = isFile ? m_CurrentSelectedPath.stem().string() : m_CurrentSelectedPath.filename().string();
+
 	memset(m_RenameInputBuffer, 0, sizeof(m_RenameInputBuffer));
-	for (int i = 0; i < m_CurrentSelectedPath.filename().string().length(); i++)
+	for (int i = 0; i < nameToEdit.length(); i++)
 	{
-		m_RenameInputBuffer[i] = m_CurrentSelectedPath.filename().string()[i];
+		m_RenameInputBuffer[i] = nameToEdit[i];
 	}
 	static bool hasFocus = false;
 	static bool once = false;
@@ -168,12 +223,32 @@ bool ContentExplorerPanel::Rename()
 		hasFocus = true;
 	}
 
-	if (ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
-		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue))
+	bool confirmed = ImGui::InputText("##RenameBox", m_RenameInputBuffer, sizeof(m_RenameInputBuffer),
+		ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
+
+	bool inputActive = ImGui::IsItemActive();
+
+	if (!extension.empty())
 	{
-		if (!std::filesystem::exists(m_CurrentPath / m_RenameInputBuffer))
+		ImGui::SameLine(0.0f, 0.0f);
+		ImGui::TextDisabled("%s", extension.c_str());
+	}
+
+	if (confirmed)
+	{
+		std::string newFilename = std::string(m_RenameInputBuffer) + extension;
+		if (!std::filesystem::exists(m_CurrentPath / newFilename))
 		{
-			std::filesystem::rename(m_CurrentSelectedPath, m_CurrentPath / m_RenameInputBuffer);
+			std::filesystem::path newPath = m_CurrentPath / newFilename;
+			bool wasFile = isFile;
+
+			std::filesystem::rename(m_CurrentSelectedPath, newPath);
+
+			// Reference-fixup only makes sense for individual asset files - renaming a
+			// directory would need to remap every file inside it, which isn't handled here.
+			if (wasFile)
+				UpdateReferencesAfterRename(m_CurrentSelectedPath, newPath);
+
 			m_ForceRescan = true;
 		}
 		else
@@ -188,7 +263,7 @@ bool ContentExplorerPanel::Rename()
 		return true;
 	}
 
-	if (!ImGui::IsItemActive())
+	if (!inputActive)
 	{
 		if (once)
 		{
@@ -205,6 +280,51 @@ bool ContentExplorerPanel::Rename()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void ContentExplorerPanel::UpdateReferencesAfterRename(const std::filesystem::path& oldPath, const std::filesystem::path& newPath)
+{
+	std::filesystem::path oldRelative = FileUtils::RelativePath(oldPath, Application::GetOpenDocumentDirectory());
+	std::filesystem::path newRelative = FileUtils::RelativePath(newPath, Application::GetOpenDocumentDirectory());
+
+	std::vector<std::filesystem::path> updatedFiles = AssetReferenceUtils::UpdateReferences(oldRelative, newRelative);
+	AssetManager::RemoveAsset(oldRelative);
+	AssetReferenceUtils::UpdateCurrentSceneTextureReferences(oldRelative, newRelative);
+	AssetReferenceUtils::ReloadAffectedNonSceneAssets(updatedFiles);
+
+	// The project's "Default Scene" setting is a cereal-serialized field in the .proj file,
+	// not an XML Filepath attribute, so it's outside what AssetReferenceUtils scans.
+	if (oldRelative.extension() == ".scene")
+	{
+		std::string oldRelativeString = oldRelative.string();
+		std::replace(oldRelativeString.begin(), oldRelativeString.end(), '\\', '/');
+
+		ProjectData projectData;
+		{
+			std::ifstream file(Application::GetOpenDocument());
+			if (!file.is_open())
+				return;
+			cereal::JSONInputArchive input(file);
+			input(projectData);
+		}
+
+		std::string defaultScene = projectData.defaultScene;
+		std::replace(defaultScene.begin(), defaultScene.end(), '\\', '/');
+
+		if (defaultScene == oldRelativeString)
+		{
+			std::string newRelativeString = newRelative.string();
+			std::replace(newRelativeString.begin(), newRelativeString.end(), '\\', '/');
+			projectData.defaultScene = newRelativeString;
+
+			const std::filesystem::path& projectFile = Application::GetOpenDocument();
+			std::ofstream outFile(projectFile);
+			cereal::JSONOutputArchive output(outFile);
+			output(cereal::make_nvp(projectFile.filename().string(), projectData));
+		}
+	}
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 {
 	m_CurrentPath = path;
@@ -217,10 +337,20 @@ void ContentExplorerPanel::SwitchTo(const std::filesystem::path& path)
 		m_CurrentPath = str;
 	}
 
-	m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
-	m_History.SwitchTo(m_CurrentPath);
-	m_FileWatcher.SetPathToWatch(m_CurrentPath);
-	m_ForceRescan = true;
+	if (m_History.SwitchTo(m_CurrentPath))
+	{
+		m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+		m_FileWatcher.SetPathToWatch(m_CurrentPath);
+		m_ForceRescan = true;
+	}
+	else
+	{
+		// Invalid path or out of bounds, revert to previous valid path
+		m_CurrentPath = *m_History.GetCurrentFolder();
+		m_CurrentSplitPath = SplitString(m_CurrentPath.string(), std::filesystem::path::preferred_separator);
+		m_ForceRescan = true;
+		CLIENT_ERROR("Cannot navigate outside of the project root directory.");
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -285,7 +415,8 @@ void ContentExplorerPanel::CreateNewTileset(const std::filesystem::path* path)
 	Tileset tileset;
 	if (path)
 	{
-		tileset.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+		std::filesystem::path relativePath = FileUtils::RelativePath(*path, Application::GetOpenDocumentDirectory());
+		tileset.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(relativePath), 32, 32));
 	}
 
 	tileset.SaveAs(newTilesetPath);
@@ -304,7 +435,8 @@ void ContentExplorerPanel::CreateNewSpriteSheet(const std::filesystem::path* pat
 
 	if (path)
 	{
-		spritesheet.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(*path), 32, 32));
+		std::filesystem::path relativePath = FileUtils::RelativePath(*path, Application::GetOpenDocumentDirectory());
+		spritesheet.SetSubTexture(CreateRef<SubTexture2D>(AssetManager::GetTexture(relativePath), 32, 32));
 	}
 	spritesheet.SaveAs(newSpriteSheetPath);
 	m_ForceRescan = true;
@@ -398,19 +530,19 @@ void ContentExplorerPanel::HandleKeyboardInputs()
 
 	if (ImGui::IsWindowFocused())
 	{
-		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Delete))
 			Delete();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_C))
 			Copy();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_V))
 			Paste();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_X))
 			Cut();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_D))
 			Duplicate();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_A))
 			SelectAll();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)) && m_NumberSelected == 1)
+		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_R) && m_NumberSelected == 1)
 			m_Renaming = true;
 	}
 }
@@ -424,80 +556,21 @@ void ContentExplorerPanel::RightClickMenu()
 	ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 	ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.0f, 0.0f));
-	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" New"))
+	if (ImGui::BeginMenu(ICON_FA_FOLDER_PLUS" Create New"))
 	{
-		if (ImGui::Selectable(ICON_FA_FOLDER"\tFolder"))
-		{
-			std::string newFolderName = (m_CurrentPath / "New folder").string();
-			int suffix = 1;
-
-			if (std::filesystem::exists(newFolderName))
-			{
-				while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
-				{
-					suffix++;
-				}
-
-				newFolderName += " (" + std::to_string(suffix) + ')';
-			}
-
-			std::filesystem::create_directory(newFolderName);
-
-			m_ForceRescan = true;
-			m_Renaming = true;
-
-			m_CurrentSelectedPath = newFolderName;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
-		{
-			CreateNewScene();
-			m_Renaming = true;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
-		{
-			CreateNewMaterial();
-			m_Renaming = true;
-		}
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
-		{
-			CreateNewLuaScript();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
-		{
-			CreateNewTileset();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
-		{
-			CreateNewSpriteSheet();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
-		{
-			CreateNewPhysicsMaterial();
-			m_Renaming = true;
-		}
-
-		if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
-		{
-			CreateNewBehaviourTree();
-			m_Renaming = true;
-		}
+		CreateNewMenu();
 		ImGui::EndMenu();
 	}
 
 	if (ImGui::MenuItem(ICON_FA_FILE_IMPORT" Import Assets"))
 	{
 		std::optional<std::vector<std::wstring>> assetPaths = FileDialog::MultiOpen(L"Select Files...",
-			L"Any File\0*.*\0"
-			L"Film Box (.fbx)\0*.fbx\0"
-			L"Wavefront OBJ (.obj)\0*.obj\0"
-			L"Tiled Tilemap(.tmx)\0*.tmx\0"
-			L"Tiled Tileset(.tsx)\0*.tsx");
+			{ {L"Any File", L"*.*"},
+			  {L"Film Box (.fbx)", L"*.fbx"},
+			  {L"Wavefront OBJ (.obj)", L"*.obj"},
+			  {L"gltf (.gltf, .glb)", L"*.gltf;*.glb"},
+			  {L"Tiled Tilemap(.tmx)", L"*.tmx"},
+			  {L"Tiled Tileset(.tsx)", L"*.tsx"} });
 
 		if (assetPaths)
 		{
@@ -519,6 +592,71 @@ void ContentExplorerPanel::RightClickMenu()
 
 	ImGui::PopStyleColor();
 	ImGui::PopStyleVar(2);
+}
+
+void ContentExplorerPanel::CreateNewMenu()
+{
+	if (ImGui::Selectable(ICON_FA_FOLDER"\tFolder"))
+	{
+		std::string newFolderName = (m_CurrentPath / "New folder").string();
+		int suffix = 1;
+
+		if (std::filesystem::exists(newFolderName))
+		{
+			while (std::filesystem::exists(newFolderName + " (" + std::to_string(suffix) + ')'))
+			{
+				suffix++;
+			}
+
+			newFolderName += " (" + std::to_string(suffix) + ')';
+		}
+
+		std::filesystem::create_directory(newFolderName);
+
+		m_ForceRescan = true;
+		m_Renaming = true;
+
+		m_CurrentSelectedPath = newFolderName;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SCENE) + "\tScene").c_str()))
+	{
+		CreateNewScene();
+		m_Renaming = true;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::MATERIAL) + "\tMaterial").c_str()))
+	{
+		CreateNewMaterial();
+		m_Renaming = true;
+	}
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SCRIPT) + "\tLua Script").c_str()))
+	{
+		CreateNewLuaScript();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::TILESET) + "\tTileset").c_str()))
+	{
+		CreateNewTileset();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::SPRITESHEET) + "\tSprite Sheet").c_str()))
+	{
+		CreateNewSpriteSheet();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::PHYSICSMATERIAL) + "\tPhysics Material").c_str()))
+	{
+		CreateNewPhysicsMaterial();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
+	{
+		CreateNewBehaviourTree();
+		m_Renaming = true;
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -716,6 +854,8 @@ void ContentExplorerPanel::OnAttach()
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 
+	m_History.SetRootPath(std::filesystem::absolute(Application::GetOpenDocumentDirectory()));
+
 	m_FileWatcher.Start([this](std::string path, FileStatus status)
 		{
 			m_ForceRescan = true;
@@ -725,6 +865,23 @@ void ContentExplorerPanel::OnAttach()
 void ContentExplorerPanel::OnDetach()
 {
 	m_TextFilter->Clear();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void ContentExplorerPanel::OnEvent(Event& event)
+{
+	EventDispatcher dispatcher(event);
+	dispatcher.Dispatch<AppOpenDocumentChangedEvent>([this](AppOpenDocumentChangedEvent& e)
+		{
+			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			m_History.Clear();
+			m_History.SetRootPath(rootPath);
+			m_CurrentPath = rootPath;
+			m_History.SwitchTo(m_CurrentPath);
+			m_ForceRescan = true;
+			return false;
+		});
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -761,6 +918,9 @@ void ContentExplorerPanel::OnImGuiRender()
 			m_CurrentPath = std::filesystem::absolute(".");
 			m_History.SwitchTo(m_CurrentPath);
 		}
+
+		// Keeps the watcher pointed at whatever folder is actually displayed.
+		m_FileWatcher.SetPathToWatch(m_CurrentPath);
 
 		//set the input buffer as the current path
 		memset(m_CurrentPathInputBuffer, 0, sizeof(m_CurrentPathInputBuffer));
@@ -914,7 +1074,7 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_ARROW_DOWN_WIDE_SHORT "\tSize\0"
 			ICON_FA_ARROW_DOWN_SHORT_WIDE "\tSize Reverse\0"
 			ICON_FA_SORT_DOWN "\tType\0"
-			ICON_FA_SORT_UP "\tType Reverse"))
+			ICON_FA_SORT_UP "\tType Reverse\0"))
 		{
 			m_ForceRescan = true;
 			Settings::SetInt("ContentExplorer", "SortingMode", (int)m_SortingMode);
@@ -1002,11 +1162,16 @@ void ContentExplorerPanel::OnImGuiRender()
 		// Split path control
 		else
 		{
+			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			std::vector<std::string> rootSplitPath = SplitString(rootPath.string(), std::filesystem::path::preferred_separator);
+			
 			const int numTabs = (int)m_CurrentSplitPath.size();
+			int startTab = std::min((int)rootSplitPath.size() - 1, numTabs > 0 ? numTabs - 1 : 0);
+			if (startTab < 0) startTab = 0;
 
 			int pushpop = 0;
 
-			for (int t = 0; t < numTabs; t++)
+			for (int t = startTab; t < numTabs; t++)
 			{
 				if (t == numTabs - 1)
 				{
@@ -1019,7 +1184,13 @@ void ContentExplorerPanel::OnImGuiRender()
 				ImGui::SameLine();
 
 				ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2, 0));
-				const bool pressed = ImGui::Button(m_CurrentSplitPath[t].c_str());
+				
+				std::string buttonText = m_CurrentSplitPath[t];
+				if (t == startTab && buttonText == rootSplitPath.back()) {
+					buttonText = ICON_FA_HOUSE " Project";
+				}
+				
+				const bool pressed = ImGui::Button(buttonText.c_str());
 				if (t != numTabs - 1)
 				{
 					ImGui::SameLine();
@@ -1101,6 +1272,16 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_VOLLEYBALL "\tPhysics Material\0"
 			ICON_FA_FONT "\tFont\0"))
 		{
+		}
+
+		ImGui::SameLine();
+		if (ImGui::Button(ICON_FA_FOLDER_PLUS " Create New"))
+			ImGui::OpenPopup("Create New");
+
+		if (ImGui::BeginPopup("Create New"))
+		{
+			CreateNewMenu();
+			ImGui::EndPopup();
 		}
 
 		ImGui::SameLine();
@@ -1317,8 +1498,10 @@ void ContentExplorerPanel::OnImGuiRender()
 						std::string dirName = SplitString(m_Dirs[i].string(), std::filesystem::path::preferred_separator).back();
 						ImGui::BeginGroup();
 
+						std::string id = ICON_FA_FOLDER_OPEN "##dir" + std::to_string(i);
+
 						ImGui::PushFont(Fonts::Icons);
-						if (ImGui::Button(ICON_FA_FOLDER_OPEN, { thumbnailSize, thumbnailSize }))
+						if (ImGui::Button(id.c_str(), {thumbnailSize, thumbnailSize}))
 						{
 							if (!ImGui::GetIO().KeyCtrl)
 							{
@@ -1702,6 +1885,41 @@ void ContentExplorerPanel::OnImGuiRender()
 			if (ImGui::Button("Cancel"))
 			{
 				m_TryingToChangeScene = false;
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		if (m_ShowDeleteConfirmation)
+		{
+			ImGui::SetNextWindowSize(ImVec2(450, 220), ImGuiCond_Appearing);
+			ImGui::SetNextWindowPos(ImGui::GetMainViewport()->GetCenter(), ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
+			ImGui::OpenPopup("Confirm Delete");
+			m_ShowDeleteConfirmation = false;
+		}
+
+		if (ImGui::BeginPopupModal("Confirm Delete"))
+		{
+			ImGui::TextWrapped("The following file(s) still reference what you're about to delete:");
+			ImGui::BeginChild("##References", ImVec2(0, 100), true);
+			for (const std::filesystem::path& reference : m_PendingDeleteReferences)
+				ImGui::BulletText("%s", reference.filename().string().c_str());
+			ImGui::EndChild();
+			ImGui::Separator();
+			ImGui::TextWrapped("Delete anyway?");
+
+			if (ImGui::Button("Delete"))
+			{
+				PerformDelete(m_PendingDeletePaths, m_PendingDeleteReferences);
+				m_PendingDeletePaths.clear();
+				m_PendingDeleteReferences.clear();
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::SameLine();
+			if (ImGui::Button("Cancel"))
+			{
+				m_PendingDeletePaths.clear();
+				m_PendingDeleteReferences.clear();
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

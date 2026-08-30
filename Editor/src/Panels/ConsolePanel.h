@@ -35,7 +35,7 @@ private:
 	void ImGuiRenderHeader();
 	void ImGuiRenderSettings();
 	void ImGuiRenderMessages();
-	void RenderMessage(const InternalConsole::Message& message);
+	void RenderMessage(const InternalConsole::Message& message, size_t id);
 
 	Level GetMessageLevel(spdlog::level::level_enum level);
 
@@ -49,7 +49,6 @@ private:
 
 	float m_DisplayScale;
 	bool m_AllowScrollingToBottom;
-	uint16_t m_LastBufferSize;
 
 	Level m_LevelFilter;
 	ImGuiTextFilter* m_TextFilter;

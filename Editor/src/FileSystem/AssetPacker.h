@@ -15,23 +15,31 @@ class AssetPacker : public Layer
 		Done
 	};
 
-	struct AssetNode {
+	struct AssetNode
+	{
 		std::string name;
 		std::filesystem::path fullPath;
 		bool isDirectory = false;
 		std::vector<Ref<AssetNode>> children;
 	};
-	
+
 public:
 	AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory);
 
 	void OnImGuiRender();
 
+	// Packs+exports synchronously, on the calling thread, bypassing the ImGui progress UI - for
+	// CLI/automated testing.
+	void RunHeadlessExport() { PackAssets(); }
+
 private:
 	void DiscoverAssets();
+	std::unordered_set<std::filesystem::path> GetAtlasCoveredPaths() const;
+	std::unordered_set<std::filesystem::path> GetTexturePathsStillNeededAsFiles() const;
 	void AddAssetToTree(const std::filesystem::path& assetPath, Ref<AssetNode> root);
 	void PackAssets();
-	void ExportGame();
+	void ExportGameToExecutable();
+	void ExportGameToAppBundle();
 
 	void DrawAssetTree(Ref<AssetNode> node);
 
@@ -40,6 +48,7 @@ private:
 	std::filesystem::path m_ProjectDirectory;
 	std::filesystem::path m_ExportDirectory;
 	std::filesystem::path m_GameName;
+	bool m_EmbedBundle = true;
 	std::vector<std::filesystem::path> m_DiscoveredAssets;
 	std::unordered_set<std::filesystem::path> m_SelectedAssets;
 

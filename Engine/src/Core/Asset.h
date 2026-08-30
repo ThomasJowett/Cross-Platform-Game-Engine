@@ -9,7 +9,7 @@
 #include "Logging/Instrumentor.h"
 
 #include <filesystem>
-
+#include <string>
 
 class Asset
 {
@@ -61,6 +61,11 @@ public:
 			return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 
 		Ref<T> asset;
+		if (filepath.empty())
+		{
+			ENGINE_ERROR("Cannot load asset with empty filepath");
+			return nullptr;
+		}
 		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
 		if (std::filesystem::exists(absolutePath)) {
 			ENGINE_INFO("Loading asset from disk: {0}", absolutePath);

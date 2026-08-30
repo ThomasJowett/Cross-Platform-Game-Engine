@@ -26,6 +26,9 @@ public:
 
 	CollisionShape GetCollisionShape() const { return m_CollisionShape; }
 	void SetCollisionShape(CollisionShape shape) { m_CollisionShape = shape; }
+
+	const std::vector<Vector2f>& GetVertices() const { return m_Vertices; }
+	void SetVertices(const std::vector<Vector2f>& vertices) { m_Vertices = vertices; }
 private:
 	double m_Probability = 1.0;
 	CollisionShape m_CollisionShape = CollisionShape::None;

@@ -1,9 +1,8 @@
-#include "stdafx.h"
 #include "StateMachine.h"
 
 void StateMachine::Update()
 {
-	if (m_CurrentState) 
+	if (m_CurrentState)
 		m_CurrentState->During();
 }
 

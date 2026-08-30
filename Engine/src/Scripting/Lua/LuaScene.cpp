@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "LuaBindings.h"
 
 #include "Logging/Instrumentor.h"
@@ -12,6 +11,8 @@
 #include "Renderer/Renderer.h"
 
 #include "Renderer/PostProcessEffects/GaussianBlurEffect.h"
+#include "math/Vector2f.h"
+#include "sol/property.hpp"
 
 namespace Lua
 {
@@ -64,10 +65,10 @@ void BindScene(sol::state& state)
 	scene_type.set_function("GetPixelsPerUnit", &Scene::GetPixelsPerUnit);
 
 	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
-	hitResult_type["Hit"] = &HitResult2D::hit;
-	hitResult_type["Entity"] = &HitResult2D::entity;
-	hitResult_type["Point"] = &HitResult2D::hitPoint;
-	hitResult_type["Normal"] = &HitResult2D::hitNormal;
+	hitResult_type["Hit"] = sol::property([](HitResult2D& h) { return h.hit; }, [](HitResult2D& h, bool v) { h.hit = v; });
+	hitResult_type["Entity"] = sol::property([](HitResult2D& h) { return h.entity; }, [](HitResult2D& h, Entity v) { h.entity = v; });
+	hitResult_type["Point"] = sol::property([](HitResult2D& h) { return h.hitPoint; }, [](HitResult2D& h, const Vector2f& v) { h.hitPoint = v; });
+	hitResult_type["Normal"] = sol::property([](HitResult2D& h) { return h.hitNormal; }, [](HitResult2D& h, const Vector2f& v) { h.hitNormal = v; });
 
 	scene_type.set_function("RayCast2D", &Scene::RayCast2D);
 	scene_type.set_function("MultiRayCast2D", &Scene::MultiRayCast2D);
@@ -118,9 +119,9 @@ void BindScene(sol::state& state)
 		sol::constructors<GaussianBlurEffect(float)>(),
 		sol::base_classes, sol::bases<PostProcessEffect>()
 	);
-	
+
 	sol::table postProcess = state.create_table("PostProcess");
-	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect> 
+	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect>
 		{
 			if (name == "GaussianBlur") {
 				if (args.size() == 1) {

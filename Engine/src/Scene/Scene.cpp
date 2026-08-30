@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Scene.h"
 #include "Entity.h"
 
@@ -9,6 +8,7 @@
 #include "Renderer/RenderCommand.h"
 #include "Renderer/FrameBuffer.h"
 
+#include "Scene/SceneManager.h"
 #include "Utilities/GeometryGenerator.h"
 #include "Utilities/Box2DDebugDraw.h"
 
@@ -182,6 +182,9 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 {
 	PROFILE_FUNCTION();
 
+	// Lets SceneManager::ChangeScene() defer instead of destroying this Scene mid-iteration.
+	m_IsUpdating = true;
+
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
@@ -238,15 +241,15 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 						ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 					}
 				}
-				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath()); 
+				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath());
 					ma_sound_init_from_file(
-					m_AudioEngine.get(), absolutePath.string().c_str(),
-					flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
+						m_AudioEngine.get(), absolutePath.string().c_str(),
+						flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
 				{
 					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
 				}
-				
-				if(audioSourceComponent.sound)
+
+				if (audioSourceComponent.sound)
 				{
 					ma_sound_set_volume(audioSourceComponent.sound.get(), audioSourceComponent.volume);
 					ma_sound_set_pitch(audioSourceComponent.sound.get(), audioSourceComponent.pitch);
@@ -269,6 +272,8 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 				}
 			}
 		});
+
+	m_IsUpdating = false;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -575,8 +580,6 @@ void Scene::OnUpdate(float deltaTime)
 	for (auto entity : destroyView)
 	{
 		Entity e = Entity(entity, this);
-		m_PhysicsEngine2D->DestroyEntity(e);
-
 		SceneGraph::Remove(e);
 	}
 }
@@ -673,8 +676,6 @@ void Scene::OnFixedUpdate()
 	for (auto entity : destroyView)
 	{
 		Entity e = Entity(entity, this);
-		m_PhysicsEngine2D->DestroyEntity(e);
-
 		SceneGraph::Remove(e);
 	}
 
@@ -774,6 +775,7 @@ bool Scene::Load(bool binary)
 	if (!std::filesystem::exists(filepath))
 	{
 		ENGINE_ERROR("File not found {0}", filepath);
+		SceneManager::CancelChangeScene();
 		return false;
 	}
 
@@ -937,3 +939,18 @@ std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::OnEntityDestroyed(Entity entity)
+{
+	if (m_PhysicsEngine2D)
+		m_PhysicsEngine2D->DestroyEntity(entity);
+
+	if (entity.HasComponent<AudioSourceComponent>())
+	{
+		auto& audioSourceComponent = entity.GetComponent<AudioSourceComponent>();
+		if (audioSourceComponent.sound)
+		{
+			ma_sound_uninit(audioSourceComponent.sound.get());
+		}
+	}
+}

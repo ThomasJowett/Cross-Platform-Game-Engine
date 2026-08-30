@@ -1,11 +1,8 @@
-#include "stdafx.h"
 #include "Pipeline.h"
 #include "Renderer.h"
 
 #include "Platform/OpenGL/OpenGLPipeline.h"
-#ifdef _WINDOWS
-#include "Platform/DirectX/DirectX11Pipeline.h"
-#endif // __WINDOWS__
+#include "Platform/WebGPU/WebGPUPipeline.h"
 
 Ref<Pipeline> Pipeline::Create(const Spec& spec)
 {
@@ -15,16 +12,8 @@ Ref<Pipeline> Pipeline::Create(const Spec& spec)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLPipeline>(spec);
-#ifdef _WINDOWS
-	case RendererAPI::API::Directx11:
-		ENGINE_WARN("Could not create pipeline: DirectX is not currently supported");
-		return	CreateRef<DirectX11Pipeline>(spec);
-#endif // _WINDOWS
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create pipeline: Metal is not currently supported")
-			return nullptr;
-#endif // __APPLE__
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUPipeline>(spec);
 	default:
 		break;
 	}

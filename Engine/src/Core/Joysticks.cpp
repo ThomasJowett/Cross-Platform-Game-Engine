@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Joysticks.h"
 
 Joysticks::Joystick Joysticks::s_Joysticks[MAX_JOYSTICKS];

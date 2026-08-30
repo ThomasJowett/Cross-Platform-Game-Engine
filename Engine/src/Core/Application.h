@@ -61,9 +61,18 @@ public:
 
 	static float GetDeltaTime() { return Get().m_DeltaTime; }
 
+	// True if launched with --auto-play - starts directly in Play state instead of Edit, for
+	// scripted/headless testing that needs the scene running without a manual Play click.
+	static bool ShouldAutoPlay() { return Get().m_AutoPlay; }
+
+	// Scene path to load instead of the project's own default scene, from --scene <path>.
+	// Empty if not set.
+	static const std::string& GetSceneOverride() { return Get().m_SceneOverride; }
+
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
+	void Tick();
 	void Run();
 	int Init(int argc, char* argv[]);
 	void OnEvent(Event& e);
@@ -96,6 +105,15 @@ private:
 	static EventCallbackFn s_EventCallback;
 
 	float m_DeltaTime = 0.0f;
+	double m_CurrentTime = 0.0;
+	double m_Accumulator = 0.0;
+
+	bool m_AutoPlay = false;
+	std::string m_SceneOverride;
+	// Duration in seconds from --exit-after; negative means disabled. m_ExitDeadline is the
+	// absolute GetTime() value computed from it once Run() starts.
+	double m_ExitAfterSeconds = -1.0;
+	double m_ExitDeadline = -1.0;
 };
 
 // To be defined in CLIENT

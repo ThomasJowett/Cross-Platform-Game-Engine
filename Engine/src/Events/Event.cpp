@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Event.h"
 
 EventCategory operator|(EventCategory lhs, EventCategory rhs)
@@ -13,7 +12,7 @@ EventCategory operator|(EventCategory lhs, EventCategory rhs)
 EventCategory operator&(EventCategory lhs, EventCategory rhs)
 {
     return static_cast<EventCategory>(
-        static_cast<std::underlying_type<EventCategory>::type>(lhs)&
+        static_cast<std::underlying_type<EventCategory>::type>(lhs) &
         static_cast<std::underlying_type<EventCategory>::type>(rhs));
 }
 

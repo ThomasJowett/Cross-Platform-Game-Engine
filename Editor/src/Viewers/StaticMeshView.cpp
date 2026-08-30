@@ -2,13 +2,18 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
-#include "Engine.h"
+#include "Utilities/GeometryGenerator.h"
+#include "Renderer/RenderCommand.h"
+#include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Renderer/Renderer.h"
 
 StaticMeshView::StaticMeshView(bool* show, std::filesystem::path filepath)
 	:View("StaticMeshView"), m_Show(show), m_FilePath(filepath)
 {
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::Depth };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -115,6 +120,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	}
 
 	m_Framebuffer->Bind();
+	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
 	bool rightMouseDown = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
@@ -141,6 +147,7 @@ void StaticMeshView::OnUpdate(float deltaTime)
 	Renderer::Submit(m_GridMesh);
 
 	Renderer::EndScene();
+	RenderCommand::EndRenderPass();
 	m_Framebuffer->UnBind();
 }
 

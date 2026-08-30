@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Mesh.h"
 #include "Scene/AssetManager.h"
 
@@ -9,7 +8,7 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 {
 	const float* v = (float*)m_Vertices.data();
 	// Generate the bounding box
-	auto stride = layout.GetStride() / sizeof(float);
+	int stride = layout.GetStride() / sizeof(float);
 	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size() / stride, stride);
 
 	Submesh submesh;
@@ -33,7 +32,7 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials, const BufferLayout& layout)
 	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials), m_VertexLayout(layout)
 {
-	auto stride = layout.GetStride() / sizeof(float);
+	int stride = layout.GetStride() / sizeof(float);
 	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)m_Vertices.size() * sizeof(float));
 	m_VertexBuffer->SetLayout(layout);
 	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());

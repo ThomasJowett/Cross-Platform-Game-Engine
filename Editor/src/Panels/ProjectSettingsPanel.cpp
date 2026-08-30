@@ -1,12 +1,13 @@
 #include "ProjectSettingsPanel.h"
 
 #include "IconsFontAwesome6.h"
-#include "Engine.h"
 
 #include "cereal/archives/json.hpp"
 #include "MainDockSpace.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "FileSystem/Directory.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Scene/SceneManager.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")
@@ -17,7 +18,17 @@ void ProjectSettingsPanel::OnImGuiRender()
 {
 	if (!*m_Show)
 	{
+		m_WasShown = false;
 		return;
+	}
+
+	// The .proj file can change on disk without an AppOpenDocumentChangedEvent firing (e.g. a
+	// scene rename updating the Default Scene field) - re-read on every hidden-to-shown
+	// transition so reopening this window reflects that instead of showing stale cached data.
+	if (!m_WasShown)
+	{
+		ReadProjectFile();
+		m_WasShown = true;
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 480), ImGuiCond_FirstUseEver);
@@ -49,6 +60,12 @@ void ProjectSettingsPanel::OnImGuiRender()
 		ImGui::Tooltip("Open Scene");
 
 		ImGui::InputTextMultiline("Description", m_DescriptionBuffer, sizeof(m_DescriptionBuffer));
+
+		int pageSize = (int)m_ProjectData.spriteAtlasPageSize;
+		if (ImGui::InputInt("Sprite Atlas Page Size", &pageSize, 256, 1024))
+			m_ProjectData.spriteAtlasPageSize = (uint32_t)std::clamp(pageSize, 256, 8192);
+		ImGui::Tooltip("Dimensions (square, pixels) of each packed sprite atlas page. Larger pages\nmean fewer pages but more VRAM per page - changing this only takes effect\non the next atlas rebuild.");
+
 		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))
 		{
 			SaveProjectFile();

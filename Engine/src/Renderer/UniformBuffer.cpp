@@ -1,11 +1,8 @@
-#include "stdafx.h"
 #include "UniformBuffer.h"
 
 #include "Renderer.h"
 #include "Platform/OpenGL/OpenGLUniformBuffer.h"
-#ifdef _WINDOWS
-#include "Platform/DirectX/DirectX11UniformBuffer.h"
-#endif // _WINDOWS
+#include "Platform/WebGPU/WebGPUUniformBuffer.h"
 
 Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 {
@@ -15,15 +12,8 @@ Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, uint32_t binding)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLUniformBuffer>(size, binding);
-#ifdef _WINDOWS
-	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11UniformBuffer>(size, binding);
-#endif // _WINDOWS
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Uniform Buffer: Metal is not currently supported");
-		return nullptr;
-#endif // __APPLE__
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUUniformBuffer>(size, binding);
 	default:
 		break;
 	}

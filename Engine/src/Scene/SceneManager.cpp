@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneManager.h"
 #include "SceneGraph.h"
 #include "Events/SceneEvent.h"
@@ -136,6 +135,9 @@ bool SceneManager::FinalChangeScene()
 	else if (!s_CurrentScene->Load())
 		s_CurrentScene.reset();
 
+	if (!s_CurrentScene)
+		return false;
+
 	SceneChangedEvent event(s_NextFilepath);
 	Application::CallEvent(event);
 
@@ -240,4 +242,8 @@ void SceneManager::Shutdown()
 	s_CurrentScene.reset();
 	s_NextFilepath.clear();
 	s_EditingScene.clear();
+}
+
+void SceneManager::CancelChangeScene() {
+	s_NextFilepath.clear();
 }

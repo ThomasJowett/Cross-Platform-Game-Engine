@@ -6,8 +6,12 @@
 #include <unordered_map>
 #include <string>
 #include <functional>
+#include <mutex>
+#include <atomic>
 
 enum class FileStatus { Created, Modified, Erased };
+
+#ifndef __EMSCRIPTEN__
 
 class FileWatcher
 {
@@ -25,6 +29,7 @@ public:
 
 	void SetPathToWatch(const std::filesystem::path& pathToWatch)
 	{
+		std::lock_guard<std::mutex> lock(m_Mutex);
 		m_PathToWatch = pathToWatch;
 		if (std::filesystem::exists(pathToWatch))
 		{
@@ -41,6 +46,8 @@ public:
 		{
 			// wait for delay (ms)
 			std::this_thread::sleep_for(m_Delay);
+
+			std::lock_guard<std::mutex> lock(m_Mutex);
 
 			if (!std::filesystem::exists(m_PathToWatch))
 				continue;
@@ -86,6 +93,7 @@ public:
 
 	void Start(const std::function<void(std::string, FileStatus)> callback)
 	{
+		m_Running = true;
 		m_Callback = std::bind(callback, std::placeholders::_1, std::placeholders::_2);
 		m_CheckThread = std::thread(&FileWatcher::RunCheck, this);
 	}
@@ -103,15 +111,37 @@ private:
 		auto el = m_Paths.find(key);
 		return el != m_Paths.end();
 	}
+	std::mutex m_Mutex;
 	std::filesystem::path m_PathToWatch;
 
 	std::chrono::duration<int, std::milli> m_Delay;
 
 	std::unordered_map<std::string, std::filesystem::file_time_type> m_Paths;
 
-	bool m_Running = true;
+	std::atomic<bool> m_Running = true;
 
 	std::thread m_CheckThread;
 
 	std::function<void(std::string, FileStatus)> m_Callback;
 };
+#else
+// ---------------------------------------------------------
+// WEB (EMSCRIPTEN) STUB IMPLEMENTATION
+// ---------------------------------------------------------
+class FileWatcher
+{
+public:
+	FileWatcher(const FileWatcher&) = delete;
+	FileWatcher(std::chrono::duration<int, std::milli> delay) {}
+	~FileWatcher() {}
+
+	void SetPathToWatch(const std::filesystem::path& pathToWatch) {}
+
+	void Start(const std::function<void(std::string, FileStatus)> callback)
+	{
+		// On Web, we do nothing. The thread is never started.
+	}
+
+	void Stop() {}
+};
+#endif

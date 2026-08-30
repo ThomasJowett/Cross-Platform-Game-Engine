@@ -6,6 +6,7 @@
 #include "SubTexture2D.h"
 #include "Core/Colour.h"
 #include "Asset/Font.h"
+#include "Asset/SpriteAtlas.h"
 
 #include "Scene/Components/SpriteComponent.h"
 #include "Scene/Components/CircleRendererComponent.h"
@@ -15,6 +16,10 @@ class Renderer2D
 public:
 	static bool Init();
 	static void Shutdown();
+
+	// Sample count the quad/circle/line/text/hairline pipelines are created with - must be set
+	// before Init() to take effect.
+	static void SetTargetSamples(uint32_t samples);
 
 	static void OnWindowResize(uint32_t width, uint32_t height);
 	static void BeginScene();
@@ -51,6 +56,9 @@ public:
 
 	// Sprite
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);
+
+	static void SetSpriteAtlas(Ref<SpriteAtlas> atlas);
+	static Ref<SpriteAtlas> GetSpriteAtlas();
 
 	// Circle
 	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f, int entityId = -1);
@@ -94,6 +102,9 @@ public:
 	static void ResetStats();
 
 private:
+	static float AssignQuadTextureSlot(const Ref<Texture>& texture);
+	static void DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId);
+
 	static void StartQuadsBatch();
 	static void StartCirclesBatch();
 	static void StartLinesBatch();

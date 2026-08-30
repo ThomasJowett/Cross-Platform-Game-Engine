@@ -6,7 +6,11 @@
 
 #include "MainDockSpace.h"
 
-#include "Engine.h"
+#include "Utilities/GeometryGenerator.h"
+#include "Renderer/RenderCommand.h"
+#include "Renderer/Renderer.h"
+#include "Asset/Texture.h"
+#include "ImGui/ImGuiUtilities.h"
 
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	:View("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
@@ -14,7 +18,7 @@ MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	m_Mesh = GeometryGenerator::CreateSphere(1.0f, 50, 50);
 
 	FrameBufferSpecification frameBufferSpecification = { 640, 480 };
-	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8 , FrameBufferTextureFormat::Depth };
+	frameBufferSpecification.attachments = { FrameBufferTextureFormat::RGBA8, FrameBufferTextureFormat::RED_INTEGER, FrameBufferTextureFormat::Depth };
 	m_Framebuffer = FrameBuffer::Create(frameBufferSpecification);
 }
 
@@ -186,6 +190,7 @@ void MaterialView::OnUpdate(float deltaTime)
 	}
 
 	m_Framebuffer->Bind();
+	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
@@ -193,6 +198,7 @@ void MaterialView::OnUpdate(float deltaTime)
 	Renderer::Submit(m_Mesh, m_LocalMaterial);
 
 	Renderer::EndScene();
+	RenderCommand::EndRenderPass();
 	m_Framebuffer->UnBind();
 }
 
@@ -207,7 +213,8 @@ void MaterialView::Save()
 void MaterialView::SaveAs()
 {
 	auto ext = m_FilePath.extension();
-	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", ConvertToWideChar(m_FilePath.extension().string()));
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", { {L"Material File", std::wstring(L"*") + ConvertToWideChar(m_FilePath.extension().string())} });
+
 	if (dialogPath)
 	{
 		m_FilePath = dialogPath.value();

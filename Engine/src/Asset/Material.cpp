@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Material.h"
 
 #include "TinyXml2/tinyxml2.h"
@@ -164,7 +163,7 @@ Ref<Material> Material::GetDefaultMaterial()
 			}
 		}
 
-		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, false, &textureData);
+		Ref<Texture2D> texture = Texture2D::Create(textureSize, textureSize, Texture::Format::RGBA, 1u, &textureData);
 
 		s_DefaultMaterial->AddTexture(texture, 0);
 	}

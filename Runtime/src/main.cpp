@@ -1,7 +1,9 @@
 #include "Core/Application.h"
 #include "Renderer/RenderCommand.h"
+#include "Renderer/Renderer2D.h"
 #include "Scene/SceneManager.h"
 #include "Scene/AssetManager.h"
+#include "Asset/SpriteAtlas.h"
 
 #include "RuntimeLayer.h"
 
@@ -9,6 +11,7 @@ struct AssetBundleFooter {
 	uint64_t zipSize;
 	uint64_t gameTitleSize;
 	uint64_t defaultSceneSize;
+	uint64_t externalBundle; // 0 = zip is embedded before this footer, 1 = zip is a separate ".pak" file next to the executable
 	char magic[8];
 };
 
@@ -26,7 +29,24 @@ int main(int argc, char* argv[])
 	if (rCode != -1)
 		return rCode;
 
-	std::ifstream exe(argv[0], std::ios::binary | std::ios::ate);
+	// A signed macOS .app can't have data appended to its executable the way a flat Windows/
+	// Linux exe can - AssetPacker::ExportGameToAppBundle() instead ships a "game.meta" (the same
+	// footer/title/scene layout, just in its own file) and "assets.pak" in Contents/
+	// Resources next to the executable in Contents/MacOS.
+	std::filesystem::path metadataSource = argv[0];
+	bool isAppBundle = false;
+	std::filesystem::path resourcesDir;
+#ifdef __APPLE__
+	std::filesystem::path exeDir = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+	isAppBundle = exeDir.filename() == "MacOS";
+	if (isAppBundle)
+	{
+		resourcesDir = exeDir.parent_path() / "Resources";
+		metadataSource = resourcesDir / "game.meta";
+	}
+#endif
+
+	std::ifstream exe(metadataSource, std::ios::binary | std::ios::ate);
 	std::streamoff exeSize = exe.tellg();
 	exe.seekg(exeSize - sizeof(AssetBundleFooter));
 
@@ -49,23 +69,48 @@ int main(int argc, char* argv[])
 	std::string gameTitle(footer.gameTitleSize, '\0');
 	exe.read(&gameTitle[0], footer.gameTitleSize);
 
-	std::streamoff zipOffset = exeSize - sizeof(AssetBundleFooter) - footer.defaultSceneSize - footer.gameTitleSize - footer.zipSize;
+	if (footer.externalBundle)
+	{
+		std::filesystem::path bundlePath;
+		if (isAppBundle)
+			bundlePath = resourcesDir / "assets.pak";
+		else
+		{
+			bundlePath = std::filesystem::path(argv[0]);
+			bundlePath.replace_extension(".pak");
+		}
 
-	exe.seekg(zipOffset);
+		if (!AssetManager::LoadBundleFromFile(bundlePath))
+		{
+			ENGINE_ERROR("Failed to load external asset bundle: {0}", bundlePath.string());
+			return EXIT_FAILURE;
+		}
+	}
+	else
+	{
+		std::streamoff zipOffset = exeSize - sizeof(AssetBundleFooter) - footer.defaultSceneSize - footer.gameTitleSize - footer.zipSize;
 
-	std::vector<uint8_t> zipData(footer.zipSize);
-	exe.read(reinterpret_cast<char*>(zipData.data()), footer.zipSize);
+		exe.seekg(zipOffset);
 
-	AssetManager::LoadBundle(zipData.data(), zipData.size());
+		std::vector<uint8_t> zipData(footer.zipSize);
+		exe.read(reinterpret_cast<char*>(zipData.data()), footer.zipSize);
+
+		AssetManager::LoadBundle(zipData.data(), zipData.size());
+	}
 
 	Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
 
 	if (!window)
 		return EXIT_FAILURE;
 
+	Application::ShowImGui(false);
+
 	RenderCommand::SetClearColour(Colours::GREY);
 
 	Application::SetOpenDocument(argv[0]);
+
+	if (Ref<SpriteAtlas> atlas = AssetManager::GetAsset<SpriteAtlas>("Generated/SpriteAtlas/Manifest.atlas"))
+		Renderer2D::SetSpriteAtlas(atlas);
 
 	SceneManager::ChangeScene(std::filesystem::path(defaultScene));
 

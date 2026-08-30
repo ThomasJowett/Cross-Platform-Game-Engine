@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneSerializer.h"
 
 #include "Scene/Entity.h"
@@ -7,6 +6,7 @@
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
 #include "AssetManager.h"
+#include "Renderer/Renderer2D.h"
 
 #include "TinyXml2/tinyxml2.h"
 
@@ -34,7 +34,7 @@ bool SceneSerializer::Serialize(const std::filesystem::path& filepath) const
 
 	m_Scene->m_Registry.each([this, &pRoot](auto entityID)
 		{
-			Entity entity = { entityID, m_Scene};
+			Entity entity = { entityID, m_Scene };
 
 			if (!entity)
 				return;
@@ -191,6 +191,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		{
 			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texture);
 		}
+		else if (!component.texturePath.empty())
+		{
+			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texturePath);
+		}
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
 	}
@@ -219,7 +223,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 			SerializationUtils::Encode(pStaticMeshElement, component.mesh->GetFilepath());
 
 		for (const auto& materialOverride : component.materialOverrides) {
-			if(materialOverride != Material::GetDefaultMaterial())
+			if (materialOverride != Material::GetDefaultMaterial())
 				SerializationUtils::Encode(pStaticMeshElement->InsertNewChildElement("MaterialOverride"), materialOverride->GetFilepath());
 		}
 	}
@@ -571,7 +575,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTint"), component->normalTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTint"), component->hoveredTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTint"), component->clickedTint);
-		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("disabledTint"), component->disabledTint);
+		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
 	}
 
 	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
@@ -693,9 +697,16 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SpriteComponent& component = entity.AddComponent<SpriteComponent>();
 
 		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Tint"), component.tint);
-		pSpriteComponentElement->QueryFloatAttribute("Tilingfactor", &component.tilingFactor);
+		pSpriteComponentElement->QueryFloatAttribute("TilingFactor", &component.tilingFactor);
 
-		SerializationUtils::Decode(pSpriteComponentElement->FirstChildElement("Texture"), component.texture);
+		tinyxml2::XMLElement* pTextureElement = pSpriteComponentElement->FirstChildElement("Texture");
+
+		if (const char* filepath = pTextureElement ? pTextureElement->Attribute("Filepath") : nullptr)
+			component.texturePath = filepath;
+		Ref<SpriteAtlas> atlas = Renderer2D::GetSpriteAtlas();
+		bool atlasCovers = atlas && component.tilingFactor == 1.0f && atlas->GetRegion(component.texturePath);
+		if (!atlasCovers)
+			SerializationUtils::Decode(pTextureElement, component.texture);
 	}
 
 	// Animated Sprite ---------------------------------------------------------------------------------------------------
@@ -725,7 +736,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 			component.animation = animation;
 			if (component.spriteSheet) {
 				Animation* animationRef = component.spriteSheet->GetAnimation(animation);
-				if(animationRef)
+				if (animationRef)
 					component.currentFrame = animationRef->GetStartFrame();
 
 			}
@@ -747,16 +758,20 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 				component.SetMesh(AssetManager::GetAsset<StaticMesh>(meshFilepath));
 			}
 		}
-
-		uint32_t materialIndex = 0;
-		for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride");
-			pMaterialElement; pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+		if (component.mesh)
 		{
-			if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
-			{
-				component.materialOverrides.at(materialIndex) = AssetManager::GetAsset<Material>(materialFilepathChar);
+			uint32_t materialIndex = 0;
+			for (tinyxml2::XMLElement const* pMaterialElement = pStaticMeshComponentElement->FirstChildElement("MaterialOverride"); pMaterialElement;
+			     pMaterialElement = pMaterialElement->NextSiblingElement("MaterialOverride"))
+			{	
+				if (component.materialOverrides.size() <= materialIndex)
+					break;
+				if (const char* materialFilepathChar = pMaterialElement->Attribute("Filepath"))
+				{
+					component.materialOverrides.at(materialIndex) = AssetManager::GetAsset<Material>(materialFilepathChar);
+				}
+				materialIndex++;
 			}
-			materialIndex++;
 		}
 	}
 
@@ -1075,7 +1090,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
 
 		SerializationUtils::Decode(pBehaviourTreeComponentElement, component.filepath);
-		if(!component.filepath.empty())
+		if (!component.filepath.empty())
 			component.behaviourTree = BehaviourTree::Serializer::Deserialize(component.filepath);
 	}
 
@@ -1147,7 +1162,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pWidgetComponent->QueryFloatAttribute("MarginRight", &component.marginRight);
 		pWidgetComponent->QueryFloatAttribute("MarginTop", &component.marginTop);
 		pWidgetComponent->QueryFloatAttribute("MarginBottom", &component.marginBottom);
-		
+
 		pWidgetComponent->QueryFloatAttribute("rotation", &component.rotation);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Position"), component.position);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Size"), component.size);

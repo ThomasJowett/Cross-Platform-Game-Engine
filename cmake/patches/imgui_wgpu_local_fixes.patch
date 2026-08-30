@@ -1,0 +1,203 @@
+diff --git a/backends/imgui_impl_wgpu.cpp b/backends/imgui_impl_wgpu.cpp
+index e414a1281..72f6036b7 100644
+--- a/backends/imgui_impl_wgpu.cpp
++++ b/backends/imgui_impl_wgpu.cpp
+@@ -69,9 +69,11 @@ struct RenderResources
+ {
+     WGPUTexture         FontTexture = nullptr;          // Font texture
+     WGPUTextureView     FontTextureView = nullptr;      // Texture view for font texture
+-    WGPUSampler         Sampler = nullptr;              // Sampler for the font texture
++    WGPUSampler         SamplerLinear = nullptr;        // Bilinear sampler - default, also used for the font texture
++    WGPUSampler         SamplerNearest = nullptr;       // Point/nearest sampler - selected via ImGui_ImplWGPU_DrawCallback_SetSamplerNearest
+     WGPUBuffer          Uniforms = nullptr;             // Shader uniforms
+-    WGPUBindGroup       CommonBindGroup = nullptr;      // Resources bind-group to bind the common resources to pipeline
++    WGPUBindGroup       CommonBindGroupLinear = nullptr;  // Common resources bind-group, paired with SamplerLinear
++    WGPUBindGroup       CommonBindGroupNearest = nullptr; // Common resources bind-group, paired with SamplerNearest
+     ImGuiStorage        ImageBindGroups;                // Resources bind-group to bind the font/image resources to pipeline (this is a key->value map)
+     WGPUBindGroup       ImageBindGroup = nullptr;       // Default font-resource of Dear ImGui
+     WGPUBindGroupLayout ImageBindGroupLayout = nullptr; // Cache layout used for the image bind group. Avoids allocating unnecessary JS objects when working with WebASM
+@@ -244,9 +246,11 @@ static void SafeRelease(RenderResources& res)
+ {
+     SafeRelease(res.FontTexture);
+     SafeRelease(res.FontTextureView);
+-    SafeRelease(res.Sampler);
++    SafeRelease(res.SamplerLinear);
++    SafeRelease(res.SamplerNearest);
+     SafeRelease(res.Uniforms);
+-    SafeRelease(res.CommonBindGroup);
++    SafeRelease(res.CommonBindGroupLinear);
++    SafeRelease(res.CommonBindGroupNearest);
+     SafeRelease(res.ImageBindGroup);
+     SafeRelease(res.ImageBindGroupLayout);
+ };
+@@ -357,13 +361,34 @@ static void ImGui_ImplWGPU_SetupRenderState(ImDrawData* draw_data, WGPURenderPas
+     wgpuRenderPassEncoderSetVertexBuffer(ctx, 0, fr->VertexBuffer, 0, fr->VertexBufferSize * sizeof(ImDrawVert));
+     wgpuRenderPassEncoderSetIndexBuffer(ctx, fr->IndexBuffer, sizeof(ImDrawIdx) == 2 ? WGPUIndexFormat_Uint16 : WGPUIndexFormat_Uint32, 0, fr->IndexBufferSize * sizeof(ImDrawIdx));
+     wgpuRenderPassEncoderSetPipeline(ctx, bd->pipelineState);
+-    wgpuRenderPassEncoderSetBindGroup(ctx, 0, bd->renderResources.CommonBindGroup, 0, nullptr);
++    wgpuRenderPassEncoderSetBindGroup(ctx, 0, bd->renderResources.CommonBindGroupLinear, 0, nullptr);
+ 
+     // Setup blend factor
+     WGPUColor blend_color = { 0.f, 0.f, 0.f, 0.f };
+     wgpuRenderPassEncoderSetBlendConstant(ctx, &blend_color);
+ }
+ 
++// Local patch, mirrors the DrawCallback_SetSamplerLinear/DrawCallback_SetSamplerNearest mechanism that
++// landed upstream in Dear ImGui v1.92.7 (ocornut/imgui#9378) - not available to us yet, see
++// IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH in the header for why. Register one of these with
++// ImDrawList::AddCallback() to switch which sampler bind group 0 uses for subsequent draw commands in the
++// same render pass - e.g. to render a nearest-filtered preview image among otherwise-linear-filtered UI.
++// Always pair a SetSamplerNearest call with a matching SetSamplerLinear call right after, since the bound
++// group persists across draw commands until changed again.
++void ImGui_ImplWGPU_DrawCallback_SetSamplerLinear(const ImDrawList*, const ImDrawCmd*)
++{
++    ImGui_ImplWGPU_Data* bd = ImGui_ImplWGPU_GetBackendData();
++    ImGui_ImplWGPU_RenderState* render_state = (ImGui_ImplWGPU_RenderState*)ImGui::GetPlatformIO().Renderer_RenderState;
++    wgpuRenderPassEncoderSetBindGroup(render_state->RenderPassEncoder, 0, bd->renderResources.CommonBindGroupLinear, 0, nullptr);
++}
++
++void ImGui_ImplWGPU_DrawCallback_SetSamplerNearest(const ImDrawList*, const ImDrawCmd*)
++{
++    ImGui_ImplWGPU_Data* bd = ImGui_ImplWGPU_GetBackendData();
++    ImGui_ImplWGPU_RenderState* render_state = (ImGui_ImplWGPU_RenderState*)ImGui::GetPlatformIO().Renderer_RenderState;
++    wgpuRenderPassEncoderSetBindGroup(render_state->RenderPassEncoder, 0, bd->renderResources.CommonBindGroupNearest, 0, nullptr);
++}
++
+ // Render function
+ // (this used to be set in io.RenderDrawListsFn and called by ImGui::Render(), but you can now call this directly from your main loop)
+ void ImGui_ImplWGPU_RenderDrawData(ImDrawData* draw_data, WGPURenderPassEncoder pass_encoder)
+@@ -587,7 +612,12 @@ static void ImGui_ImplWGPU_CreateFontsTexture()
+         sampler_desc.addressModeV = WGPUAddressMode_ClampToEdge;
+         sampler_desc.addressModeW = WGPUAddressMode_ClampToEdge;
+         sampler_desc.maxAnisotropy = 1;
+-        bd->renderResources.Sampler = wgpuDeviceCreateSampler(bd->wgpuDevice, &sampler_desc);
++        bd->renderResources.SamplerLinear = wgpuDeviceCreateSampler(bd->wgpuDevice, &sampler_desc);
++
++        sampler_desc.minFilter = WGPUFilterMode_Nearest;
++        sampler_desc.magFilter = WGPUFilterMode_Nearest;
++        sampler_desc.mipmapFilter = WGPUMipmapFilterMode_Nearest;
++        bd->renderResources.SamplerNearest = wgpuDeviceCreateSampler(bd->wgpuDevice, &sampler_desc);
+     }
+ 
+     // Store our identifier
+@@ -733,18 +763,23 @@ bool ImGui_ImplWGPU_CreateDeviceObjects()
+     ImGui_ImplWGPU_CreateFontsTexture();
+     ImGui_ImplWGPU_CreateUniformBuffer();
+ 
+-    // Create resource bind group
++    // Create resource bind groups - one per sampler, same layout, so a draw callback can pick which one
++    // is bound (see ImGui_ImplWGPU_DrawCallback_SetSamplerLinear/Nearest) without touching bind group 1
++    // (the per-texture one) at all.
+     WGPUBindGroupEntry common_bg_entries[] =
+     {
+         { nullptr, 0, bd->renderResources.Uniforms, 0, MEMALIGN(sizeof(Uniforms), 16), 0, 0 },
+-        { nullptr, 1, 0, 0, 0, bd->renderResources.Sampler, 0 },
++        { nullptr, 1, 0, 0, 0, bd->renderResources.SamplerLinear, 0 },
+     };
+ 
+     WGPUBindGroupDescriptor common_bg_descriptor = {};
+     common_bg_descriptor.layout = bg_layouts[0];
+     common_bg_descriptor.entryCount = sizeof(common_bg_entries) / sizeof(WGPUBindGroupEntry);
+     common_bg_descriptor.entries = common_bg_entries;
+-    bd->renderResources.CommonBindGroup = wgpuDeviceCreateBindGroup(bd->wgpuDevice, &common_bg_descriptor);
++    bd->renderResources.CommonBindGroupLinear = wgpuDeviceCreateBindGroup(bd->wgpuDevice, &common_bg_descriptor);
++
++    common_bg_entries[1].sampler = bd->renderResources.SamplerNearest;
++    bd->renderResources.CommonBindGroupNearest = wgpuDeviceCreateBindGroup(bd->wgpuDevice, &common_bg_descriptor);
+ 
+     WGPUBindGroup image_bind_group = ImGui_ImplWGPU_CreateImageBindGroup(bg_layouts[1], bd->renderResources.FontTextureView);
+     bd->renderResources.ImageBindGroup = image_bind_group;
+@@ -775,6 +810,28 @@ void ImGui_ImplWGPU_InvalidateDeviceObjects()
+         SafeRelease(bd->pFrameResources[i]);
+ }
+ 
++void ImGui_ImplWGPU_InvalidateImageBindGroups()
++{
++    ImGui_ImplWGPU_Data* bd = ImGui_ImplWGPU_GetBackendData();
++    if (!bd)
++        return;
++
++    for (int i = 0; i < bd->renderResources.ImageBindGroups.Data.Size; i++)
++    {
++        WGPUBindGroup bind_group = (WGPUBindGroup)bd->renderResources.ImageBindGroups.Data[i].val_p;
++        if (bind_group)
++            wgpuBindGroupRelease(bind_group);
++    }
++    bd->renderResources.ImageBindGroups.Clear();
++
++    // The font atlas' own bind group lives in this same cache (see ImGui_ImplWGPU_CreateDeviceObjects),
++    // aliased into this separate field too - already released above, so it must be nulled out here
++    // as well or SafeRelease(RenderResources&) double-releases it at shutdown. ImGui_ImplWGPU_RenderDrawData
++    // lazily recreates whatever it needs on the next frame it draws that texture, at a negligible
++    // one-time cost.
++    bd->renderResources.ImageBindGroup = nullptr;
++}
++
+ bool ImGui_ImplWGPU_Init(ImGui_ImplWGPU_InitInfo* init_info)
+ {
+     ImGuiIO& io = ImGui::GetIO();
+@@ -805,9 +862,11 @@ bool ImGui_ImplWGPU_Init(ImGui_ImplWGPU_InitInfo* init_info)
+ 
+     bd->renderResources.FontTexture = nullptr;
+     bd->renderResources.FontTextureView = nullptr;
+-    bd->renderResources.Sampler = nullptr;
++    bd->renderResources.SamplerLinear = nullptr;
++    bd->renderResources.SamplerNearest = nullptr;
+     bd->renderResources.Uniforms = nullptr;
+-    bd->renderResources.CommonBindGroup = nullptr;
++    bd->renderResources.CommonBindGroupLinear = nullptr;
++    bd->renderResources.CommonBindGroupNearest = nullptr;
+     bd->renderResources.ImageBindGroups.Data.reserve(100);
+     bd->renderResources.ImageBindGroup = nullptr;
+     bd->renderResources.ImageBindGroupLayout = nullptr;
+diff --git a/backends/imgui_impl_wgpu.h b/backends/imgui_impl_wgpu.h
+index 3262ac5ea..be92c6eda 100644
+--- a/backends/imgui_impl_wgpu.h
++++ b/backends/imgui_impl_wgpu.h
+@@ -57,6 +57,46 @@ IMGUI_IMPL_API void ImGui_ImplWGPU_RenderDrawData(ImDrawData* draw_data, WGPURen
+ IMGUI_IMPL_API bool ImGui_ImplWGPU_CreateDeviceObjects();
+ IMGUI_IMPL_API void ImGui_ImplWGPU_InvalidateDeviceObjects();
+ 
++// Releases cached per-texture bind groups (keyed by texture view pointer) without touching
++// the font atlas/pipeline. Call this after destroying any WGPUTextureView that may have been
++// shown via ImGui::Image() - otherwise a later texture view allocated at the same address
++// (e.g. after a resize destroys and recreates a render target) can be handed a stale, already-
++// invalid bind group left over from the destroyed one, since this cache is never otherwise
++// invalidated per-entry.
++//
++// NOTE: this is a local patch, not upstream Dear ImGui. The proper fix landed upstream in
++// v1.91.9 ("Recreate image bind groups during render", #8426/#8046/#7765/#8027), but that
++// commit also bundles a WebGPU-native header update (WGPUTexelCopyTextureInfo, WGPU_STRLEN,
++// etc.) our vendored wgpu-native distribution doesn't provide yet - upgrading imgui alone
++// doesn't compile. Revert this patch and bump the Engine/vendor/imgui submodule to
++// v1.91.9-docking (or later) instead, once the WebGPU-native dependency is upgraded to match.
++//
++// This header is a local, uncommitted patch (the committed imgui submodule pointer doesn't have
++// it) - callers must guard use of this function behind #ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
++// so committed code still compiles against the real, unpatched submodule (CI, fresh clones).
++#define IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS 1
++IMGUI_IMPL_API void ImGui_ImplWGPU_InvalidateImageBindGroups();
++
++// Register with ImDrawList::AddCallback() to switch which sampler (bilinear vs. nearest/point) bind
++// group 0 uses for subsequent draw commands in the same render pass - e.g. wrap an ImGui::Image() call
++// that should render with nearest-neighbour filtering (pixel art, tile/sprite previews) with
++// SetSamplerNearest before it and SetSamplerLinear right after, since the bound group is sticky and
++// otherwise leaks into whatever UI renders next.
++//
++// NOTE: this is a local patch, not upstream Dear ImGui. It mirrors the DrawCallback_SetSamplerLinear/
++// DrawCallback_SetSamplerNearest mechanism that landed upstream in v1.92.7 (ocornut/imgui#9378), which
++// isn't reachable yet for the same wgpu-native header reason as IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
++// above. Once that's upgraded, drop this patch and switch callers to
++// ImGui::GetPlatformIO().DrawCallback_SetSamplerLinear/Nearest instead - the call sites should translate
++// close to 1:1 since this was written to match upstream's eventual shape.
++//
++// This header is a local, uncommitted patch (the committed imgui submodule pointer doesn't have it) -
++// callers must guard use of these functions behind #ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH so
++// committed code still compiles against the real, unpatched submodule (CI, fresh clones).
++#define IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH 1
++IMGUI_IMPL_API void ImGui_ImplWGPU_DrawCallback_SetSamplerLinear(const ImDrawList* parent_list, const ImDrawCmd* cmd);
++IMGUI_IMPL_API void ImGui_ImplWGPU_DrawCallback_SetSamplerNearest(const ImDrawList* parent_list, const ImDrawCmd* cmd);
++
+ // [BETA] Selected render state data shared with callbacks.
+ // This is temporarily stored in GetPlatformIO().Renderer_RenderState during the ImGui_ImplWGPU_RenderDrawData() call.
+ // (Please open an issue if you feel you need access to more data)

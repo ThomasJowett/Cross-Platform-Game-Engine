@@ -16,6 +16,8 @@ struct SpriteComponent
 	Ref<Texture2D> texture;
 	float tilingFactor = 1.0f;
 
+	std::filesystem::path texturePath;
+
 	SpriteComponent() = default;
 	SpriteComponent(const SpriteComponent&) = default;
 
@@ -27,6 +29,7 @@ private:
 		SerializationUtils::SaveTextureToArchive(archive, texture);
 		archive(tint);
 		archive(tilingFactor);
+		archive(texturePath.string());
 	}
 
 	template<typename Archive>
@@ -35,5 +38,8 @@ private:
 		SerializationUtils::LoadTextureFromArchive(archive, texture);
 		archive(tint);
 		archive(tilingFactor);
+		std::string path;
+		archive(path);
+		texturePath = path;
 	}
 };

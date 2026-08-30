@@ -4,7 +4,10 @@
 #include "IconsFontAwesome6.h"
 #include "History/HistoryCommands.h"
 
-#include "Engine.h"
+#include "Scene/SceneGraph.h"
+#include "Scene/SceneSerializer.h"
+#include "Scene/SceneManager.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #include "MainDockSpace.h"
 
@@ -60,6 +63,13 @@ void HierarchyPanel::OnImGuiRender()
 		if ((ImGui::IsMouseClicked(ImGuiMouseButton_Left) && ImGui::IsWindowHovered()) || !m_SelectedEntity.BelongsToScene(SceneManager::CurrentScene()))
 		{
 			m_SelectedEntity = {};
+		}
+
+		if (!SceneManager::IsSceneLoaded())
+		{
+			ImGui::TextUnformatted("No scene loaded");
+			ImGui::End();
+			return;
 		}
 
 		// right click on a blank space

@@ -4,9 +4,11 @@
 #include "FileSystem/Directory.h"
 #include "Viewers/ViewerManager.h"
 
-#include "Engine.h"
+#include "ImGui/ImGuiUtilities.h"
+#include "Utilities/StringUtils.h"
+#include "Utilities/FileUtils.h"
 
-bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const wchar_t* filter)
+bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const std::vector<DialogFilterItem>& filters)
 {
 	bool edited = false;
 	static char inputBuffer[1024] = "";
@@ -30,7 +32,7 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 	ImGui::SameLine();
 	if (ImGui::Button(ICON_FA_FOLDER_OPEN))
 	{
-		std::optional<std::wstring> dialogfilepath = FileDialog::Open(L"Open...", filter);
+		std::optional<std::wstring> dialogfilepath = FileDialog::Open(L"Open...", filters);
 		if (dialogfilepath)
 		{
 			filepath = dialogfilepath.value();
@@ -44,9 +46,18 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, const w
 		{
 			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
 
-			std::wstring filterStr = filter;
+			bool match = filters.empty();
+			for (const auto& filter : filters)
+			{
+				std::wstring spec = filter.Spec;
+				if (spec.find(ConvertToWideChar(file->extension().string())) != std::string::npos || spec == L"*.*")
+				{
+					match = true;
+					break;
+				}
+			}
 
-			if (filterStr.find(ConvertToWideChar(file->extension().string())) != std::string::npos)
+			if (match)
 			{
 				if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 				{
@@ -93,7 +104,7 @@ bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileT
 
 bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileType filetype)
 {
-	const wchar_t* filter;
+	std::vector<DialogFilterItem> filters;
 
 	switch (filetype)
 	{
@@ -102,27 +113,28 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileTyp
 	case FileType::IMAGE:
 		break;
 	case FileType::MESH:
-		filter = L"Static Mesh (.staticMesh)\0*.staticMesh\0";
+		filters = { {L"Static Mesh (.staticMesh)", L"*.staticMesh"} };
 		break;
 	case FileType::SCENE:
-		filter = L"Scene (.scene)\0*.scene\0";
+		filters = { {L"Scene (.scene)", L"*.scene"} };
 		break;
 	case FileType::SCRIPT:
-		filter = L"Script (.cs)\0*.cs\0";
+		filters = { {L"Script (.lua)", L"*.lua"} };
 		break;
 	case FileType::AUDIO:
 		break;
 	case FileType::MATERIAL:
-		filter = L"Material (.material)\0*.material\0";
+		filters = { {L"Material (.material)", L"*.material"} };
 		break;
 	case FileType::FONT:
-		filter = L"TrueType (.ttf)\0*.ttf\0";
+		filters = { {L"TrueType (.ttf)", L"*.ttf"} };
 		break;
 	case FileType::BEHAVIOURTREE:
-		filter = L"Behaviour Tree (.behaviourtree)\0*.behaviourtree\0";
+		filters = { {L"Behaviour Tree (.behaviourtree)", L"*.behaviourtree"} };
+		break;
 	default:
-		filter = L"Any\0*.*\0";
+		filters = { {L"Any", L"*.*"} };
 		break;
 	}
-	return ImGui::FileEdit(label, filepath, filter);
+	return ImGui::FileEdit(label, filepath, filters);
 }

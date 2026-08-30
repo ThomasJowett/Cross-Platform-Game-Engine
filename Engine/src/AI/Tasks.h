@@ -2,6 +2,7 @@
 
 #include "BehaviourTree.h"
 #include "sol/sol.hpp"
+#include "Asset/LuaScript.h"
 
 namespace BehaviourTree
 {
@@ -57,10 +58,10 @@ public:
 	Status update(float deltaTime) final;
 	void terminate(Status s) final;
 
-	const std::filesystem::path& getFilePath() { return m_AbsoluteFilepath; }
+	Ref<LuaScript> getLuaScript() const { return m_LuaScript; }
 
 private:
-	std::filesystem::path m_AbsoluteFilepath;
+	Ref<LuaScript> m_LuaScript;
 
 	Ref<sol::environment> m_SolEnvironment;
 	Ref<sol::protected_function> m_OnStateEntryFunc;

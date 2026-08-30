@@ -1,5 +1,6 @@
 #pragma once
 #include "Renderer/PostProcess.h"
+#include "Renderer/Pipeline.h"
 
 class GaussianBlurEffect : public PostProcessEffect
 {
@@ -14,4 +15,8 @@ public:
 
 private:
 	float m_Strength = 1.0f;
+
+	// Both passes share the same shader/layout/target format, so one pipeline covers both. Created
+	// lazily on first Apply() since the constructor has no mesh/layout to build it from up front.
+	Ref<Pipeline> m_Pipeline;
 };

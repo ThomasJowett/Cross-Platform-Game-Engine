@@ -87,6 +87,8 @@ public:
 
 	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
 
+	void OnEntityDestroyed(Entity entity);
+
 private:
 	entt::registry m_Registry;
 

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Input.h"
 #include "Renderer/RendererAPI.h"
 
@@ -20,7 +19,7 @@ void Input::Init(GLFWwindow* windowHandle)
 
 void Input::SetMouseWheel(double X, double Y)
 {
-	s_Instance->m_MouseWheelX += X; 
+	s_Instance->m_MouseWheelX += X;
 	s_Instance->m_MouseWheelY += Y;
 }
 
@@ -101,6 +100,7 @@ double Input::GetMouseXImpl()
 bool Input::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 {
 	Joysticks::Joystick joystick = Joysticks::GetJoystick(joystickSlot);
+#ifndef __EMSCRIPTEN__
 	if (joystick.isMapped)
 	{
 		GLFWgamepadstate state;
@@ -111,6 +111,7 @@ bool Input::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 		}
 	}
 	else
+#endif
 	{
 		int button_count;
 		const unsigned char* buttons = glfwGetJoystickButtons(joystickSlot, &button_count);
@@ -123,6 +124,7 @@ bool Input::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 
 double Input::GetJoystickAxisImpl(int joystickSlot, int axis)
 {
+#ifndef __EMSCRIPTEN__
 	GLFWgamepadstate state;
 
 	if (glfwGetGamepadState(Joysticks::GetJoystick(joystickSlot).id, &state) && axis <= GLFW_GAMEPAD_AXIS_LAST)
@@ -130,6 +132,7 @@ double Input::GetJoystickAxisImpl(int joystickSlot, int axis)
 		if (state.axes[axis] >= Joysticks::GetDeadZone() || state.axes[axis] <= -Joysticks::GetDeadZone())
 			return state.axes[axis];
 	}
+#endif
 
 	int axes_count;
 	const float* axes = glfwGetJoystickAxes(joystickSlot, &axes_count);

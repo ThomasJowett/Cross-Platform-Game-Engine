@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneGraph.h"
 #include "Components.h"
 
@@ -82,11 +81,11 @@ void SceneGraph::TraverseUI(entt::registry& registry, uint32_t viewportWidth, ui
 		Vector3f halfScale = scale / 2.0f;
 		halfScale.y = -halfScale.y;
 
-		Matrix4x4 transform = 
+		Matrix4x4 transform =
 			//Matrix4x4::Translate(Vector3f(leftAnchorScreenPosition, -topAnchorScreenPosition, 0.0f))
 			//* Matrix4x4::Translate(Vector3f(widgetComp.marginLeft, -widgetComp.marginTop, 0.0f))
 			Matrix4x4::Translate(position)
-			* Matrix4x4::RotateZ(widgetComp.rotation) 
+			* Matrix4x4::RotateZ(widgetComp.rotation)
 			* Matrix4x4::Translate(halfScale)
 			* Matrix4x4::Scale(scale);
 
@@ -150,7 +149,7 @@ void SceneGraph::Reparent(Entity entity, Entity parent)
 			currentHierachyComp = registry.try_get<HierarchyComponent>(previousSibling);
 		}
 
-		if(currentHierachyComp)
+		if (currentHierachyComp)
 			currentHierachyComp->nextSibling = entity.GetHandle();
 		hierarchyComp.previousSibling = previousSibling;
 	}
@@ -229,6 +228,7 @@ void SceneGraph::Remove(Entity entity)
 	Unparent(entity);
 
 	ENGINE_DEBUG("Removed {0}", entity.GetName());
+	entity.GetScene()->OnEntityDestroyed(entity);
 	registry.destroy(entity);
 }
 

@@ -7,8 +7,6 @@
 #include "MainDockSpace.h"
 #include "History/HistoryManager.h"
 
-#include "Engine.h"
-
 #include "ImGui/ImGuiTransform.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "ImGui/ImGuiTextureEdit.h"
@@ -17,6 +15,8 @@
 
 #include "Viewers/ViewerManager.h"
 #include "FileSystem/Directory.h"
+#include "Scene/SceneManager.h"
+#include "ImGui/ImGuiUtilities.h"
 
 #define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
 
@@ -97,7 +97,7 @@ void PropertiesPanel::OnImGuiRender()
 		else if (SceneManager::IsSceneLoaded())
 		{
 			Vector2f gravity = SceneManager::CurrentScene()->GetGravity();
-			if (ImGui::Vector("Gravity Scale", SceneManager::CurrentScene()->GetGravity(), ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Gravity Scale", gravity, ImGui::GetContentRegionAvail().x))
 			{
 				SceneManager::CurrentScene()->SetGravity(gravity);
 				SceneManager::CurrentScene()->MakeDirty();
@@ -378,6 +378,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 
 			if (ImGui::Texture2DEdit("Texture", sprite.texture)) {
+				sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
 				m_EditSpriteCommand.first = true;
 				SceneManager::CurrentScene()->MakeDirty();
 			}
@@ -459,7 +460,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					const bool is_selected = false;
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
-						sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(file);
+						sprite.spriteSheet = AssetManager::GetAsset<SpriteSheet>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						SceneManager::CurrentScene()->MakeDirty();
 						m_EditAnimatedSpriteCommand.first = true;
 					}
@@ -578,7 +579,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				"Orthogonal\0"
 				"Isometric\0"
 				"Isometric (staggered)\0"
-				"Hexagonal (staggered)"))
+				"Hexagonal (staggered)\0"))
 			{
 				tilemap.Rebuild();
 				SceneManager::CurrentScene()->MakeDirty();
@@ -630,7 +631,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				{
 					if (ImGui::Selectable(file.filename().string().c_str()))
 					{
-						tilemap.tileset = AssetManager::GetAsset<Tileset>(file);
+						tilemap.tileset = AssetManager::GetAsset<Tileset>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						tilemap.Rebuild();
 						SceneManager::CurrentScene()->MakeDirty();
 					}
@@ -708,7 +709,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			SceneCamera::ProjectionType projectionType = camera.GetProjectionType();
 			if (ImGui::Combo("Projection", (int*)&projectionType,
 				"Perspective\0"
-				"Orthographic"))
+				"Orthographic\0"))
 			{
 				camera.SetProjection(projectionType);
 				SceneManager::CurrentScene()->MakeDirty();
@@ -1169,7 +1170,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 					if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 					{
 						Ref<EditComponentCommand<LuaScriptComponent>> editLuaCommand = CreateRef<EditComponentCommand<LuaScriptComponent>>(entity);
-						luaScript.script = AssetManager::GetAsset<LuaScript>(file);
+						luaScript.script = AssetManager::GetAsset<LuaScript>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 						SceneManager::CurrentScene()->MakeDirty();
 						HistoryManager::AddHistoryRecord(editLuaCommand);
 						break;
@@ -1246,7 +1247,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 			{
 				if (ImGui::MenuItem(file.filename().string().c_str()))
 				{
-					entity.AddComponent<LuaScriptComponent>(file);
+					entity.AddComponent<LuaScriptComponent>(FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory()));
 					break;
 				}
 			}

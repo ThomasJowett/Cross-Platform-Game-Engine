@@ -72,6 +72,7 @@ Editor/Editor.args.json
 .Trashes
 *.swp
 *.plist
+!Editor/entitlements.plist
 *.pbxproj
 *.xcuserstate
 *.xcworkspacedata
@@ -86,3 +87,4 @@ CTestTestfile.cmake
 Editor/data/Fonts/Manrope-Medium.png
 build
 build_*
+.cache

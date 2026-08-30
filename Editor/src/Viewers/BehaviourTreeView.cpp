@@ -25,13 +25,15 @@ void BehaviourTreeView::OnAttach()
 	NodeEditor::Config config;
 	m_NodeEditorContext = NodeEditor::CreateEditor(&config);
 
-	m_BehaviourTree = BehaviourTree::Serializer::Deserialize(m_Filepath);
-	if (m_BehaviourTree)
-		m_LocalBehaviourTree = CreateRef<BehaviourTree::BehaviourTree>(*m_BehaviourTree);
-	else
-		ViewerManager::CloseViewer(m_Filepath);
+	m_BehaviourTree = AssetManager::GetAsset<BehaviourTree::BehaviourTree>(m_Filepath);
 
-	BuildNodeList();
+	if (m_BehaviourTree) {
+		m_LocalBehaviourTree = CreateRef<BehaviourTree::BehaviourTree>(*m_BehaviourTree);
+		BuildNodeList();
+	}
+	else {
+		ViewerManager::CloseViewer(m_Filepath);
+	}
 }
 
 void BehaviourTreeView::OnDetach()
@@ -425,7 +427,7 @@ BehaviourTreeView::Node* BehaviourTreeView::BuildNode(Ref<BehaviourTree::Node> b
 		return &m_Nodes[pos];
 	}
 	else if (auto task = std::dynamic_pointer_cast<BehaviourTree::CustomTask>(btNode)) {
-		m_Nodes.emplace_back(GetNextId(), task->getFilePath().filename().string(), btNode);
+		m_Nodes.emplace_back(GetNextId(), task->getLuaScript()->GetFilepath().filename().string(), btNode);
 		size_t pos = m_Nodes.size() - 1;
 		m_Nodes[pos].input = CreateRef<Pin>(GetNextId(), &(m_Nodes[pos]), PinKind::Input);
 		m_Nodes[pos].output = nullptr;

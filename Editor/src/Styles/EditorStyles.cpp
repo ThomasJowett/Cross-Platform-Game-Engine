@@ -2,8 +2,7 @@
 
 #include "ImGui/ImGuiTextEditor.h"
 
-ImVec4 ImLerp(const ImVec4& a, const ImVec4& b, float t) { return ImVec4(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, a.z + (b.z - a.z) * t, a.w + (b.w - a.w) * t); }
-ImVec4 operator*(const ImVec4& lhs, const ImVec4& rhs) { return ImVec4(lhs.x * rhs.x, lhs.y * rhs.y, lhs.z * rhs.z, lhs.w * rhs.w); }
+#include "imgui_internal.h"
 
 bool EditorStyles::Phthalo()
 {
@@ -60,29 +59,29 @@ bool EditorStyles::Phthalo()
 	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 
-	TextEditor::SetPalette(TextEditor::Palette( {
-			0xffffffff,	// Default
-			0xffd69c56,	// Keyword	
-			0xff00ff00,	// Number
-			0xff7070e0,	// String
-			0xff70a0e0, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff206020, // Comment (single line)
-			0xff406020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-			} ));
+	TextEditor::SetPalette(TextEditor::Palette({
+	    0xffffffff, // Default
+	    0xffd69c56, // Keyword
+	    0xff00ff00, // Number
+	    0xff7070e0, // String
+	    0xff70a0e0, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff206020, // Comment (single line)
+	    0xff406020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }
@@ -143,28 +142,28 @@ bool EditorStyles::Majorelle()
 	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.20f, 0.20f, 0.20f, 0.35f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xff000000,	// None
-			0xffff0c06,	// Keyword	
-			0xff008000,	// Number
-			0xff2020a0,	// String
-			0xff304070, // Char literal
-			0xff000000, // Punctuation
-			0xff406060,	// Preprocessor
-			0xff404040, // Identifier
-			0xff606010, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff205720, // Comment (single line)
-			0xff405720, // Comment (multi line)
-			0xffffffff, // Background
-			0xff000000, // Cursor
-			0x80600000, // Selection
-			0xa00010ff, // ErrorMarker
-			0x80f08000, // Breakpoint
-			0xff505000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40000000, // Current line edge
-		}));
+	    0xff000000, // None
+	    0xffff0c06, // Keyword
+	    0xff008000, // Number
+	    0xff2020a0, // String
+	    0xff304070, // Char literal
+	    0xff000000, // Punctuation
+	    0xff406060, // Preprocessor
+	    0xff404040, // Identifier
+	    0xff606010, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff205720, // Comment (single line)
+	    0xff405720, // Comment (multi line)
+	    0xffffffff, // Background
+	    0xff000000, // Cursor
+	    0x80600000, // Selection
+	    0xa00010ff, // ErrorMarker
+	    0x80f08000, // Breakpoint
+	    0xff505000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40000000, // Current line edge
+	}));
 
 	return false;
 }
@@ -219,28 +218,28 @@ bool EditorStyles::Cherry()
 	colors[ImGuiCol_SeparatorActive] = ImVec4(0.455f, 0.198f, 0.301f, 0.69f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xffffffff,	// Default
-			0xffd69c56,	// Keyword	
-			0xff00df00,	// Number
-			0xff7070e6,	// String
-			0xff70a0e6, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff206020, // Comment (single line)
-			0xff406020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-		}));
+	    0xffffffff, // Default
+	    0xffd69c56, // Keyword
+	    0xff00df00, // Number
+	    0xff7070e6, // String
+	    0xff70a0e6, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff206020, // Comment (single line)
+	    0xff406020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }
@@ -296,28 +295,28 @@ bool EditorStyles::Xiketic()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xff7f7f7f,	// Default
-			0xffd69c56,	// Keyword	
-			0xff00df00,	// Number
-			0xff7070e0,	// String
-			0xff70a0e0, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff206020, // Comment (single line)
-			0xff406020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-		}));
+	    0xff7f7f7f, // Default
+	    0xffd69c56, // Keyword
+	    0xff00df00, // Number
+	    0xff7070e0, // String
+	    0xff70a0e0, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff206020, // Comment (single line)
+	    0xff406020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }
@@ -326,44 +325,44 @@ bool EditorStyles::Onyx()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
 
-	colors[ImGuiCol_Text] = { 0.73333335f, 0.73333335f, 0.73333335f, 1.00f };
-	colors[ImGuiCol_TextDisabled] = { 0.34509805f, 0.34509805f, 0.34509805f, 1.00f };
-	colors[ImGuiCol_WindowBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
-	colors[ImGuiCol_ChildBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.00f };
-	colors[ImGuiCol_PopupBg] = { 0.23529413f, 0.24705884f, 0.25490198f, 0.94f };
-	colors[ImGuiCol_Border] = { 0.33333334f, 0.33333334f, 0.33333334f, 0.50f };
-	colors[ImGuiCol_BorderShadow] = { 0.15686275f, 0.15686275f, 0.15686275f, 0.00f };
-	colors[ImGuiCol_FrameBg] = { 0.16862746f, 0.16862746f, 0.16862746f, 0.54f };
-	colors[ImGuiCol_FrameBgHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-	colors[ImGuiCol_FrameBgActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
-	colors[ImGuiCol_TitleBg] = { 0.04f, 0.04f, 0.04f, 1.00f };
-	colors[ImGuiCol_TitleBgCollapsed] = { 0.16f, 0.29f, 0.48f, 1.00f };
-	colors[ImGuiCol_TitleBgActive] = { 0.00f, 0.00f, 0.00f, 0.51f };
-	colors[ImGuiCol_MenuBarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.80f };
-	colors[ImGuiCol_ScrollbarBg] = { 0.27058825f, 0.28627452f, 0.2901961f, 0.60f };
-	colors[ImGuiCol_ScrollbarGrab] = { 0.21960786f, 0.30980393f, 0.41960788f, 0.51f };
-	colors[ImGuiCol_ScrollbarGrabHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-	colors[ImGuiCol_ScrollbarGrabActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 0.91f };
-	colors[ImGuiCol_CheckMark] = { 0.90f, 0.90f, 0.90f, 0.83f };
-	colors[ImGuiCol_SliderGrab] = { 0.70f, 0.70f, 0.70f, 0.62f };
-	colors[ImGuiCol_SliderGrabActive] = { 0.30f, 0.30f, 0.30f, 0.84f };
-	colors[ImGuiCol_Button] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.49f };
-	colors[ImGuiCol_ButtonHovered] = { 0.21960786f, 0.30980393f, 0.41960788f, 1.00f };
-	colors[ImGuiCol_ButtonActive] = { 0.13725491f, 0.19215688f, 0.2627451f, 1.00f };
-	colors[ImGuiCol_Header] = { 0.33333334f, 0.3529412f, 0.36078432f, 0.53f };
-	colors[ImGuiCol_HeaderHovered] = { 0.453125f, 0.67578125f, 0.99609375f, 0.67f };
-	colors[ImGuiCol_HeaderActive] = { 0.47058827f, 0.47058827f, 0.47058827f, 0.67f };
-	colors[ImGuiCol_Separator] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-	colors[ImGuiCol_SeparatorHovered] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-	colors[ImGuiCol_SeparatorActive] = { 0.31640625f, 0.31640625f, 0.31640625f, 1.00f };
-	colors[ImGuiCol_ResizeGrip] = { 1.00f, 1.00f, 1.00f, 0.85f };
-	colors[ImGuiCol_ResizeGripHovered] = { 1.00f, 1.00f, 1.00f, 0.60f };
-	colors[ImGuiCol_ResizeGripActive] = { 1.00f, 1.00f, 1.00f, 0.90f };
-	colors[ImGuiCol_PlotLines] = { 0.61f, 0.61f, 0.61f, 1.00f };
-	colors[ImGuiCol_PlotLinesHovered] = { 1.00f, 0.43f, 0.35f, 1.00f };
-	colors[ImGuiCol_PlotHistogram] = { 0.90f, 0.70f, 0.00f, 1.00f };
-	colors[ImGuiCol_PlotHistogramHovered] = { 1.00f, 0.60f, 0.00f, 1.00f };
-	colors[ImGuiCol_TextSelectedBg] = { 0.18431373f, 0.39607847f, 0.79215693f, 0.90f };
+	colors[ImGuiCol_Text] = {0.73333335f, 0.73333335f, 0.73333335f, 1.00f};
+	colors[ImGuiCol_TextDisabled] = {0.34509805f, 0.34509805f, 0.34509805f, 1.00f};
+	colors[ImGuiCol_WindowBg] = {0.23529413f, 0.24705884f, 0.25490198f, 0.94f};
+	colors[ImGuiCol_ChildBg] = {0.23529413f, 0.24705884f, 0.25490198f, 0.00f};
+	colors[ImGuiCol_PopupBg] = {0.23529413f, 0.24705884f, 0.25490198f, 0.94f};
+	colors[ImGuiCol_Border] = {0.33333334f, 0.33333334f, 0.33333334f, 0.50f};
+	colors[ImGuiCol_BorderShadow] = {0.15686275f, 0.15686275f, 0.15686275f, 0.00f};
+	colors[ImGuiCol_FrameBg] = {0.16862746f, 0.16862746f, 0.16862746f, 0.54f};
+	colors[ImGuiCol_FrameBgHovered] = {0.453125f, 0.67578125f, 0.99609375f, 0.67f};
+	colors[ImGuiCol_FrameBgActive] = {0.47058827f, 0.47058827f, 0.47058827f, 0.67f};
+	colors[ImGuiCol_TitleBg] = {0.04f, 0.04f, 0.04f, 1.00f};
+	colors[ImGuiCol_TitleBgCollapsed] = {0.16f, 0.29f, 0.48f, 1.00f};
+	colors[ImGuiCol_TitleBgActive] = {0.00f, 0.00f, 0.00f, 0.51f};
+	colors[ImGuiCol_MenuBarBg] = {0.27058825f, 0.28627452f, 0.2901961f, 0.80f};
+	colors[ImGuiCol_ScrollbarBg] = {0.27058825f, 0.28627452f, 0.2901961f, 0.60f};
+	colors[ImGuiCol_ScrollbarGrab] = {0.21960786f, 0.30980393f, 0.41960788f, 0.51f};
+	colors[ImGuiCol_ScrollbarGrabHovered] = {0.21960786f, 0.30980393f, 0.41960788f, 1.00f};
+	colors[ImGuiCol_ScrollbarGrabActive] = {0.13725491f, 0.19215688f, 0.2627451f, 0.91f};
+	colors[ImGuiCol_CheckMark] = {0.90f, 0.90f, 0.90f, 0.83f};
+	colors[ImGuiCol_SliderGrab] = {0.70f, 0.70f, 0.70f, 0.62f};
+	colors[ImGuiCol_SliderGrabActive] = {0.30f, 0.30f, 0.30f, 0.84f};
+	colors[ImGuiCol_Button] = {0.33333334f, 0.3529412f, 0.36078432f, 0.49f};
+	colors[ImGuiCol_ButtonHovered] = {0.21960786f, 0.30980393f, 0.41960788f, 1.00f};
+	colors[ImGuiCol_ButtonActive] = {0.13725491f, 0.19215688f, 0.2627451f, 1.00f};
+	colors[ImGuiCol_Header] = {0.33333334f, 0.3529412f, 0.36078432f, 0.53f};
+	colors[ImGuiCol_HeaderHovered] = {0.453125f, 0.67578125f, 0.99609375f, 0.67f};
+	colors[ImGuiCol_HeaderActive] = {0.47058827f, 0.47058827f, 0.47058827f, 0.67f};
+	colors[ImGuiCol_Separator] = {0.31640625f, 0.31640625f, 0.31640625f, 1.00f};
+	colors[ImGuiCol_SeparatorHovered] = {0.31640625f, 0.31640625f, 0.31640625f, 1.00f};
+	colors[ImGuiCol_SeparatorActive] = {0.31640625f, 0.31640625f, 0.31640625f, 1.00f};
+	colors[ImGuiCol_ResizeGrip] = {1.00f, 1.00f, 1.00f, 0.85f};
+	colors[ImGuiCol_ResizeGripHovered] = {1.00f, 1.00f, 1.00f, 0.60f};
+	colors[ImGuiCol_ResizeGripActive] = {1.00f, 1.00f, 1.00f, 0.90f};
+	colors[ImGuiCol_PlotLines] = {0.61f, 0.61f, 0.61f, 1.00f};
+	colors[ImGuiCol_PlotLinesHovered] = {1.00f, 0.43f, 0.35f, 1.00f};
+	colors[ImGuiCol_PlotHistogram] = {0.90f, 0.70f, 0.00f, 1.00f};
+	colors[ImGuiCol_PlotHistogramHovered] = {1.00f, 0.60f, 0.00f, 1.00f};
+	colors[ImGuiCol_TextSelectedBg] = {0.18431373f, 0.39607847f, 0.79215693f, 0.90f};
 	colors[ImGuiCol_Tab] = ImLerp(colors[ImGuiCol_Header], colors[ImGuiCol_TitleBgActive], 0.80f);
 	colors[ImGuiCol_TabHovered] = colors[ImGuiCol_HeaderHovered];
 	colors[ImGuiCol_TabActive] = ImLerp(colors[ImGuiCol_HeaderActive], colors[ImGuiCol_TitleBgActive], 0.60f);
@@ -373,28 +372,28 @@ bool EditorStyles::Onyx()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xffdfdfdf,	// Default
-			0xffdf9c56,	// Keyword	
-			0xff00df00,	// Number
-			0xff7070e0,	// String
-			0xff70a0e0, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff207020, // Comment (single line)
-			0xff407020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-		}));
+	    0xffdfdfdf, // Default
+	    0xffdf9c56, // Keyword
+	    0xff00df00, // Number
+	    0xff7070e0, // String
+	    0xff70a0e0, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff207020, // Comment (single line)
+	    0xff407020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }
@@ -454,28 +453,28 @@ bool EditorStyles::Mono()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xff7f7f7f,	// Default
-			0xffd69c56,	// Keyword	
-			0xff00df00,	// Number
-			0xff7070e5,	// String
-			0xff70a0e5, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff206020, // Comment (single line)
-			0xff406020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-		}));
+	    0xff7f7f7f, // Default
+	    0xffd69c56, // Keyword
+	    0xff00df00, // Number
+	    0xff7070e5, // String
+	    0xff70a0e5, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff206020, // Comment (single line)
+	    0xff406020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }
@@ -535,28 +534,28 @@ bool EditorStyles::Emerald()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xff000000,	// None
-			0xffff0c06,	// Keyword	
-			0xff008000,	// Number
-			0xff2020a0,	// String
-			0xff304070, // Char literal
-			0xff000000, // Punctuation
-			0xff406060,	// Preprocessor
-			0xff404040, // Identifier
-			0xff606010, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff205f20, // Comment (single line)
-			0xff405f20, // Comment (multi line)
-			0xffffffff, // Background
-			0xff000000, // Cursor
-			0x80600000, // Selection
-			0xa00010ff, // ErrorMarker
-			0x80f08000, // Breakpoint
-			0xff505000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40000000, // Current line edge
-		}));
+	    0xff000000, // None
+	    0xffff0c06, // Keyword
+	    0xff008000, // Number
+	    0xff2020a0, // String
+	    0xff304070, // Char literal
+	    0xff000000, // Punctuation
+	    0xff406060, // Preprocessor
+	    0xff404040, // Identifier
+	    0xff606010, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff205f20, // Comment (single line)
+	    0xff405f20, // Comment (multi line)
+	    0xffffffff, // Background
+	    0xff000000, // Cursor
+	    0x80600000, // Selection
+	    0xa00010ff, // ErrorMarker
+	    0x80f08000, // Breakpoint
+	    0xff505000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40000000, // Current line edge
+	}));
 
 	return false;
 }
@@ -617,28 +616,28 @@ bool EditorStyles::Ochre()
 	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.20f, 0.20f, 0.20f, 1.00f);
 
 	TextEditor::SetPalette(TextEditor::Palette({
-			0xff7f7f7f,	// Default
-			0xffd69c56,	// Keyword	
-			0xff00ff00,	// Number
-			0xff7070e0,	// String
-			0xff70a0e0, // Char literal
-			0xffffffff, // Punctuation
-			0xff408080,	// Preprocessor
-			0xffaaaaaa, // Identifier
-			0xff9bc64d, // Known identifier
-			0xffc040a0, // Preproc identifier
-			0xff206020, // Comment (single line)
-			0xff406020, // Comment (multi line)
-			0xff101010, // Background
-			0xffe0e0e0, // Cursor
-			0x80a06020, // Selection
-			0x800020ff, // ErrorMarker
-			0x40f08000, // Breakpoint
-			0xff707000, // Line number
-			0x40000000, // Current line fill
-			0x40808080, // Current line fill (inactive)
-			0x40a0a0a0, // Current line edge
-		}));
+	    0xff7f7f7f, // Default
+	    0xffd69c56, // Keyword
+	    0xff00ff00, // Number
+	    0xff7070e0, // String
+	    0xff70a0e0, // Char literal
+	    0xffffffff, // Punctuation
+	    0xff408080, // Preprocessor
+	    0xffaaaaaa, // Identifier
+	    0xff9bc64d, // Known identifier
+	    0xffc040a0, // Preproc identifier
+	    0xff206020, // Comment (single line)
+	    0xff406020, // Comment (multi line)
+	    0xff101010, // Background
+	    0xffe0e0e0, // Cursor
+	    0x80a06020, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff707000, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
 
 	return true;
 }

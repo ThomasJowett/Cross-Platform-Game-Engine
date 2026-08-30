@@ -1,11 +1,8 @@
-#include "stdafx.h"
 #include "Texture.h"
 
 #include "Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
-#ifdef _WINDOWS
-#include "Platform/DirectX/DirectX11Texture.h"
-#endif // _WINDOWS
+#include "Platform/WebGPU/WebGPUTexture.h"
 
 Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 {
@@ -16,15 +13,8 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format,
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(width, height, format, samples, pixels);
-#ifdef _WINDOWS
-	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11Texture2D>(width, height, samples, format);
-#endif // _WINDOWS
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Texture: Metal is not currently supported");
-		return nullptr;
-#endif // __APPLE__
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUTexture2D>(width, height, format, samples, pixels);
 	default:
 		break;
 	}
@@ -44,15 +34,8 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(filepath);
-#ifdef _WINDOWS
-	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11Texture2D>(filepath);
-#endif // _WINDOWS
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Texture: Metal is not currently supported")
-			return nullptr;
-#endif // __APPLE__
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUTexture2D>(filepath);
 	default:
 		break;
 	}
@@ -70,15 +53,9 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const st
 		break;
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(filepath, imageData);
-#ifdef _WINDOWS
-	case RendererAPI::API::Directx11:
-		return CreateRef<DirectX11Texture2D>(filepath, imageData);
-#endif // _WINDOWS
-#ifdef __APPLE__
-	case RendererAPI::API::Metal:
-		CORE_ASSERT(false, "Could not create Texture: Metal is not currently supported")
-			return nullptr;
-#endif // __APPLE__
+	case RendererAPI::API::WebGPU:
+		return CreateRef<WebGPUTexture2D>(filepath, imageData);
+
 	default:
 		break;
 	}
@@ -86,6 +63,7 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const st
 	CORE_ASSERT(true, "Could not create Texture: Invalid Renderer API")
 		return nullptr;
 }
+
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -165,7 +143,7 @@ Ref<Texture2D> TextureLibrary2D::Load(const std::filesystem::path& path, Ref<Vir
 		}
 	}
 
-	if(texture)
+	if (texture)
 		Add(texture);
 	return texture;
 }

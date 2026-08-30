@@ -13,6 +13,7 @@
 bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVec2& size)
 {
 	bool edited = false;
+	ImGui::PushID(label);
 	ImGui::TextUnformatted(label);
 	ImGui::BeginGroup();
 	if (texture)
@@ -157,6 +158,8 @@ bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVe
 		}
 		ImGui::EndDragDropTarget();
 	}
+
+	ImGui::PopID();
 
 	return edited;
 }

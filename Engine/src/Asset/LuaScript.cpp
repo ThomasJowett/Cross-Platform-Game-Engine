@@ -1,10 +1,9 @@
-#include "stdafx.h"
 #include "LuaScript.h"
 #include "Core/Application.h"
 
 LuaScript::LuaScript(const std::filesystem::path& filepath)
 {
-    Load(filepath);
+	Load(filepath);
 }
 
 LuaScript::LuaScript(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)

@@ -7,7 +7,19 @@
 #include "IconsMaterialDesign.h"
 #include "Fonts/Fonts.h"
 
-#include "Engine.h"
+#include "Renderer/FrameBuffer.h"
+#include "Core/Settings.h"
+#include "Core/Input.h"
+#include "Core/MouseButtonCodes.h"
+#include "Core/KeyCodes.h"
+#include "Renderer/Renderer2D.h"
+#include "Renderer/Renderer.h"
+#include "Renderer/RenderCommand.h"
+#include "Utilities/MathUtils.h"
+#include "Scene/Components.h"
+#include "Scene/SceneManager.h"
+#include "History/HistoryManager.h"
+#include "ImGui/ImGuiUtilities.h"
 #include "FileSystem/FileDialog.h"
 #include "Viewers/ViewerManager.h"
 #include "Importers/ImportManager.h"
@@ -34,7 +46,7 @@ ViewportPanel::ViewportPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref
 
 	m_Framebuffer->ClearAttachment(1, -1);
 
-	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colours::GREY);
+	Ref<Material> gridMaterial = CreateRef<Material>("Grid", Colour(0.2f, 0.2f, 0.2f, 1.0f));
 	gridMaterial->SetTwoSided(true);
 	gridMaterial->SetTilingFactor(100.0f);
 	gridMaterial->SetTransparency(true);
@@ -135,15 +147,31 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
-			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+			// Read the hovered entity every frame, calling this every frame is cheap
+			if (m_RelativeMousePosition.x >= 0.0f && m_RelativeMousePosition.x < m_ViewportSize.x
+				&& m_RelativeMousePosition.y >= 0.0f && m_RelativeMousePosition.y < m_ViewportSize.y)
 			{
 				m_Framebuffer->Bind();
-				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - m_RelativeMousePosition.y));
-				m_HoveredEntity = m_PixelData == -1 ? Entity() : Entity((entt::entity)m_PixelData, SceneManager::CurrentScene());
-				if (!ImGuizmo::IsUsing() && !ImGuizmo::IsOver() && !m_RightClickMenuOpen
-					&& m_RelativeMousePosition == m_MousePositionBeginClick)
-					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
+				m_PixelData = m_Framebuffer->ReadPixel(1, (int)m_RelativeMousePosition.x, (int)(m_ViewportSize.y - 1.0f - m_RelativeMousePosition.y));
 				m_Framebuffer->UnBind();
+
+				// m_PixelData can be a stale entity id left over from a previously loaded scene - validate it.
+				Scene* currentScene = SceneManager::CurrentScene();
+				bool validHoveredEntity = m_PixelData != -1 && currentScene && currentScene->GetRegistry().valid((entt::entity)m_PixelData);
+				m_HoveredEntity = validHoveredEntity ? Entity((entt::entity)m_PixelData, currentScene) : Entity();
+			}
+			else
+			{
+				m_HoveredEntity = Entity();
+			}
+
+			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
+			{
+				// Only trust IsOver()/IsUsing() when the gizmo was actually drawn this frame -
+				// otherwise it's stale and still sits over the last selected entity.
+				bool overGizmo = m_HierarchyPanel->GetSelectedEntity().IsSceneValid() && (ImGuizmo::IsUsing() || ImGuizmo::IsOver());
+				if (!overGizmo && !m_RightClickMenuOpen && m_RelativeMousePosition == m_MousePositionBeginClick)
+					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 			}
 		}
 
@@ -168,8 +196,10 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			m_CameraPreview->UnBind();
 		}
 
-		// Debug render pass
+		// Debug render pass - draws gizmo overlays on top of the scene already rendered into
+		// m_Framebuffer above, so this must load (not clear) the existing attachment contents.
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Renderer::BeginScene(m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix());
 
 		if (selectedEntity && selectedEntity.HasComponent<TransformComponent>())
@@ -442,12 +472,11 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			{
 				Matrix4x4 view = Matrix4x4::Translate(transformComp.GetWorldPosition()) * Matrix4x4::Rotate({ transformComp.rotation });
 				Matrix4x4 projection = Matrix4x4::Inverse(cameraComp.camera.GetProjectionMatrix());
-				projection.Transpose();
 
-				Vector4f frontTopLeft_4 = Vector4f(-1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontTopRight_4 = Vector4f(1.0f, 1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontBottomLeft_4 = Vector4f(-1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
-				Vector4f frontBottomRight_4 = Vector4f(1.0f, -1.0f, -1.0f, 1.0f) * projection * view;
+				Vector4f frontTopLeft_4 = Vector4f(-1.0f, 1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontTopRight_4 = Vector4f(1.0f, 1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontBottomLeft_4 = Vector4f(-1.0f, -1.0f, 0.0f, 1.0f) * projection * view;
+				Vector4f frontBottomRight_4 = Vector4f(1.0f, -1.0f, 0.0f, 1.0f) * projection * view;
 
 				Vector4f backTopLeft_4 = Vector4f(-1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
 				Vector4f backTopRight_4 = Vector4f(1.0f, 1.0f, 1.0f, 1.0f) * projection * view;
@@ -511,6 +540,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		}
 
 		Renderer::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 
@@ -518,18 +548,21 @@ void ViewportPanel::OnUpdate(float deltaTime)
 	{
 		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Renderer2D::BeginScene();
 		SceneManager::CurrentScene()->GetRegistry().view<LuaScriptComponent>().each([](auto entity, auto& luaScriptComp)
 			{
 				luaScriptComp.OnDebugRender();
 			});
 		Renderer2D::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 	else if (sceneState == SceneState::Play)
 	{
 		m_TilemapEditor->Hide();
 		m_Framebuffer->Bind();
+		RenderCommand::StartRenderPass(false);
 		Matrix4x4 view;
 		Matrix4x4 projection;
 		if (Entity cameraEntity = SceneManager::CurrentScene()->GetPrimaryCameraEntity())
@@ -545,6 +578,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 				luaScriptComp.OnDebugRender();
 			});
 		Renderer2D::EndScene();
+		RenderCommand::EndRenderPass();
 		m_Framebuffer->UnBind();
 	}
 }
@@ -817,13 +851,14 @@ void ViewportPanel::OnImGuiRender()
 
 		if (SceneManager::GetSceneState() != SceneState::Play && SceneManager::GetSceneState() != SceneState::Pause)
 		{
-			ImGuizmo::SetID(0);
+			ImGuizmo::PushID(0);
 			ImGuizmo::SetDrawlist();
 			ImGuizmo::SetRect(window_pos.x, window_pos.y, (float)panelSize.x, (float)panelSize.y);
 
 			Matrix4x4 cameraViewMat = Matrix4x4::Inverse(m_CameraController.GetTransformMatrix());
 			Matrix4x4 cameraProjectionMat = m_CameraController.GetCamera()->GetProjectionMatrix();
 			cameraViewMat.Transpose();
+			cameraProjectionMat.Transpose();
 
 			if (m_HierarchyPanel->GetSelectedEntity().IsSceneValid())
 			{
@@ -1071,6 +1106,7 @@ void ViewportPanel::OnImGuiRender()
 					drawList->AddCircleFilled(topRight, 3, IM_COL32(255, 255, 255, 255));
 				}
 			}
+			ImGuizmo::PopID();
 		}
 
 		ImVec2 statsBoxPosition = ImVec2(topLeft.x + ImGui::GetStyle().ItemSpacing.x, topLeft.y + ImGui::GetStyle().ItemSpacing.y);
@@ -1096,14 +1132,35 @@ void ViewportPanel::OnImGuiRender()
 
 		if (m_ShowStats)
 		{
-			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, window_pos.y + ImGui::GetStyle().ItemSpacing.y), ImVec2(window_pos.x + 250, window_pos.y + (24 * 4)), IM_COL32(0, 0, 0, 30), 3.0f);
-			ImGui::Text("Draw Calls: %i", Renderer2D::GetStats().drawCalls);
-			ImGui::Text("Quad Count: %i", Renderer2D::GetStats().quadCount);
-			ImGui::Text("Line Count: %i", Renderer2D::GetStats().lineCount);
-			ImGui::Text("Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
+			char statsLines[5][32];
+			snprintf(statsLines[0], sizeof(statsLines[0]), "Draw Calls: %i", Renderer2D::GetStats().drawCalls + Renderer::GetStats().drawCalls);
+			snprintf(statsLines[1], sizeof(statsLines[1]), "Quad Count: %i", Renderer2D::GetStats().quadCount);
+			snprintf(statsLines[2], sizeof(statsLines[2]), "Line Count: %i", Renderer2D::GetStats().lineCount);
+			snprintf(statsLines[3], sizeof(statsLines[3]), "Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
+			snprintf(statsLines[4], sizeof(statsLines[4]), "Mesh Count: %i", Renderer::GetStats().meshCount);
+
+			ImVec2 statsBoxSize(0.0f, 0.0f);
+			for (const char* line : statsLines)
+			{
+				ImVec2 lineSize = ImGui::CalcTextSize(line);
+				statsBoxSize.x = std::max(statsBoxSize.x, lineSize.x);
+				statsBoxSize.y += ImGui::GetTextLineHeightWithSpacing();
+			}
+
+			float statsBoxStartY = window_pos.y + ImGui::GetStyle().ItemSpacing.y;
+			if (m_ShowFrameRate)
+				statsBoxStartY += ImGui::GetTextLineHeightWithSpacing();
+
+			ImVec2 padding = ImGui::GetStyle().ItemSpacing;
+			ImGui::GetWindowDrawList()->AddRectFilled(ImVec2(window_pos.x, statsBoxStartY),
+				ImVec2(window_pos.x + statsBoxSize.x + padding.x * 2.0f, statsBoxStartY + statsBoxSize.y), IM_COL32(0, 0, 0, 30), 3.0f);
+
+			for (const char* line : statsLines)
+				ImGui::Text("%s", line);
 		}
 
 		Renderer2D::ResetStats();
+		Renderer::ResetStats();
 	}
 	if (!shown)
 		ImGui::PopStyleVar();
@@ -1191,18 +1248,18 @@ void ViewportPanel::HandleKeyboardInputs()
 	auto ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	auto alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Escape)))
+	if (ImGui::IsKeyPressed(ImGuiKey_Escape))
 	{
 		SceneManager::ChangeSceneState(SceneState::Edit);
 	}
 
-	if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F11)))
+	if (ImGui::IsKeyPressed(ImGuiKey_F11))
 	{
 		m_Fullscreen = !m_Fullscreen;
 	}
 
 	if (SceneManager::GetSceneState() == SceneState::Play) {
-		if (shift && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
+		if (shift && ImGui::IsKeyPressed(ImGuiKey_Tab))
 		{
 			Application::GetWindow()->EnableCursor();
 			ImGuiIO& io = ImGui::GetIO();
@@ -1211,22 +1268,22 @@ void ViewportPanel::HandleKeyboardInputs()
 			io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 		}
 	}
-	else if (alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_P)))
+	else if (alt && ImGui::IsKeyPressed(ImGuiKey_P))
 	{
 		SceneManager::ChangeSceneState(SceneState::Play);
 	}
 
 	if (m_WindowHovered && !ImGui::IsAnyMouseDown())
 	{
-		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Q)))
+		if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Q))
 			m_Operation = OperationMode::Select;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_W)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_W))
 			m_Operation = OperationMode::Move;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_E)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_E))
 			m_Operation = OperationMode::Rotate;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_R)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_R))
 			m_Operation = OperationMode::Scale;
-		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_T)))
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_T))
 			m_Operation = OperationMode::Universal;
 	}
 }

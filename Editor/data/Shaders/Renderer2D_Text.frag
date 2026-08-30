@@ -13,7 +13,7 @@ layout(location = 0)in VertexOutput Input;
 layout(location = 2)in flat float v_TexIndex;
 layout(location = 3)in flat int v_EntityId;
 
-layout(binding = 0)uniform sampler2D u_FontAtlases[32];
+layout(binding = 1)uniform sampler2D u_FontAtlases[8];
 
 float median(float r, float g, float b)
 {

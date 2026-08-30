@@ -2,8 +2,6 @@
 
 #include "math/Vector2f.h"
 
-#include "Engine.h"
-
 bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 {
 	bool edited = false;

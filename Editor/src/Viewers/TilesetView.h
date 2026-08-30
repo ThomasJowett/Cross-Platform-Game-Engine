@@ -31,4 +31,8 @@ private:
 	bool m_Dirty = false;
 
 	uint32_t m_SelectedYCoord = 0, m_SelectedXCoord = 0;
+
+	bool m_SnapEnabled = true;
+	bool m_AddingPolygon = false;
+	int m_DraggedPoint = -1;
 };

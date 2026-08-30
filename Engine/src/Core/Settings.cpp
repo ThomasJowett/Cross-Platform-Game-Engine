@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "Settings.h"
 
 #include "simpleini.h"
@@ -48,7 +47,7 @@ void Settings::SetValue(const char* section, const char* key, const char* value)
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set setting: {0}", rc);
+		ENGINE_ERROR("Failed to set setting: {0}", (int)rc);
 	}
 }
 
@@ -60,7 +59,7 @@ void Settings::SetBool(const char* section, const char* key, const bool value)
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set bool setting: {0}", rc);
+		ENGINE_ERROR("Failed to set bool setting: {0}", (int)rc);
 	}
 }
 
@@ -72,7 +71,7 @@ void Settings::SetDouble(const char* section, const char* key, const double valu
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set bool setting: {0}", rc);
+		ENGINE_ERROR("Failed to set bool setting: {0}", (int)rc);
 	}
 }
 
@@ -84,7 +83,7 @@ void Settings::SetInt(const char* section, const char* key, const int value)
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set integer setting: {0}", rc);
+		ENGINE_ERROR("Failed to set integer setting: {0}", (int)rc);
 	}
 }
 
@@ -98,7 +97,7 @@ void Settings::SetVector2f(const char* section, const char* key, const Vector2f&
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set Vector2f setting: {0}", rc);
+		ENGINE_ERROR("Failed to set Vector2f setting: {0}", (int)rc);
 	}
 }
 
@@ -112,7 +111,7 @@ void Settings::SetVector3f(const char* section, const char* key, const Vector3f&
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to set Vector2f setting: {0}", rc);
+		ENGINE_ERROR("Failed to set Vector2f setting: {0}", (int)rc);
 	}
 }
 
@@ -331,6 +330,6 @@ void Settings::SaveSettings()
 
 	if (rc < 0)
 	{
-		ENGINE_ERROR("Failed to save settings to file: {0}", rc);
+		ENGINE_ERROR("Failed to save settings to file: {0}", (int)rc);
 	}
 }

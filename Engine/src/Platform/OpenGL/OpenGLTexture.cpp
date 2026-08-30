@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "OpenGLTexture.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
@@ -13,10 +12,12 @@ void OpenGLTexture2D::SetFilteringAndWrappingMethod()
 	case Texture::FilterMethod::Linear:
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 8.0f);
 		break;
 	case Texture::FilterMethod::Nearest:
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTextureParameteri(m_RendererID, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTextureParameterf(m_RendererID, GL_TEXTURE_MAX_ANISOTROPY, 1.0f);
 		break;
 	default:
 		break;
@@ -80,7 +81,6 @@ OpenGLTexture2D::OpenGLTexture2D(uint32_t width, uint32_t height, Format format,
 	case Texture::Format::RGBA32F:  m_InternalFormat = GL_RGBA32F;  m_DataFormat = GL_RGBA; m_Type = GL_FLOAT; break;
 	default: m_InternalFormat = GL_RGBA8; m_DataFormat = GL_RGBA;	break;
 	}
-	
 
 	bool multisampled = samples > 1;
 
@@ -107,7 +107,7 @@ OpenGLTexture2D::OpenGLTexture2D(const std::filesystem::path& path)
 	m_Filepath = path;
 
 	bool isValid = LoadTextureFromFile();
-	if (!isValid){
+	if (!isValid) {
 		NullTexture();
 	}
 }
@@ -146,9 +146,9 @@ void OpenGLTexture2D::Bind(uint32_t slot) const
 	glBindTextureUnit(slot, m_RendererID);
 }
 
-uint32_t OpenGLTexture2D::GetRendererID() const
+void* OpenGLTexture2D::GetRendererID() const
 {
-	return m_RendererID;
+	return reinterpret_cast<void*>(static_cast<uintptr_t>(m_RendererID));
 }
 
 bool OpenGLTexture2D::Reload()
@@ -166,7 +166,9 @@ bool OpenGLTexture2D::Reload()
 
 bool OpenGLTexture2D::operator==(const Texture& other) const
 {
-	return m_RendererID == ((OpenGLTexture2D&)other).GetRendererID();
+	auto& glOther = (const OpenGLTexture2D&)other;
+	uint32_t otherID = static_cast<uint32_t>(reinterpret_cast<uintptr_t>(glOther.GetRendererID()));
+	return m_RendererID == otherID;
 }
 
 void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
@@ -176,8 +178,8 @@ void OpenGLTexture2D::SetFilterMethod(FilterMethod filterMethod)
 }
 
 void OpenGLTexture2D::SetWrapMethod(WrapMethod wrapMethod)
-{ 
-	m_WrapMethod = wrapMethod; 
+{
+	m_WrapMethod = wrapMethod;
 	SetFilteringAndWrappingMethod();
 }
 
@@ -239,6 +241,7 @@ bool OpenGLTexture2D::LoadTextureFromFile()
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 
@@ -285,6 +288,7 @@ bool OpenGLTexture2D::LoadTextureFromMemory(const std::vector<uint8_t>& imageDat
 
 	m_Width = (uint32_t)width;
 	m_Height = (uint32_t)height;
+	m_Channels = (uint32_t)channels;
 
 	auto [dataFormat, internalFormat] = GetDataFormatType(channels);
 

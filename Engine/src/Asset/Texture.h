@@ -16,6 +16,7 @@ public:
 		RED8UI,
 		RED16UI,
 		RED32UI,
+		RED32I,
 		RED32F,
 		RG8,
 		RG16F,
@@ -53,12 +54,13 @@ public:
 	virtual ~Texture() = default;
 	virtual uint32_t GetWidth() const = 0;
 	virtual uint32_t GetHeight() const = 0;
+	virtual uint32_t GetChannels() const = 0;
 
 	virtual void SetData(const void* data) = 0;
 
 	virtual void Bind(uint32_t slot = 0) const = 0;
 
-	virtual uint32_t GetRendererID() const = 0;
+	virtual void* GetRendererID() const = 0;
 
 	virtual bool Reload() = 0;
 

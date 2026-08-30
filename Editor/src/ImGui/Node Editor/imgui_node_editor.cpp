@@ -180,7 +180,7 @@ static void ImDrawList_ChannelsGrow(ImDrawList* draw_list, int channels_count)
 
 static void ImDrawListSplitter_SwapChannels(ImDrawListSplitter* splitter, int left, int right)
 {
-	IM_ASSERT(left < splitter->_Count&& right < splitter->_Count);
+	IM_ASSERT(left < splitter->_Count && right < splitter->_Count);
 	if (left == right)
 		return;
 
@@ -309,9 +309,9 @@ static void ImDrawList_PathBezierOffset(ImDrawList* drawList, float offset, cons
 	using namespace ed;
 
 	auto acceptPoint = [drawList, offset](const ImCubicBezierSubdivideSample& r)
-	{
-		drawList->PathLineTo(r.Point + ImNormalized(ImVec2(-r.Tangent.y, r.Tangent.x)) * offset);
-	};
+		{
+			drawList->PathLineTo(r.Point + ImNormalized(ImVec2(-r.Tangent.y, r.Tangent.x)) * offset);
+		};
 
 	ImCubicBezierSubdivide(acceptPoint, p0, p1, p2, p3);
 }
@@ -595,10 +595,10 @@ void ed::Node::Draw(ImDrawList* drawList, DrawFlags flags)
 # if 0
 		// #debug: highlight group regions
 		auto drawRect = [drawList](const ImRect& rect, ImU32 color)
-		{
-			if (ImRect_IsEmpty(rect)) return;
-			drawList->AddRectFilled(rect.Min, rect.Max, color);
-		};
+			{
+				if (ImRect_IsEmpty(rect)) return;
+				drawList->AddRectFilled(rect.Min, rect.Max, color);
+			};
 
 		drawRect(GetRegionBounds(NodeRegion::Top), IM_COL32(255, 0, 0, 64));
 		drawRect(GetRegionBounds(NodeRegion::Bottom), IM_COL32(255, 0, 0, 64));
@@ -844,17 +844,17 @@ void ed::Link::UpdateEndpoints()
 ImCubicBezierPoints ed::Link::GetCurve() const
 {
 	auto easeLinkStrength = [](const ImVec2& a, const ImVec2& b, float strength)
-	{
-		const auto distanceX = b.x - a.x;
-		const auto distanceY = b.y - a.y;
-		const auto distance = ImSqrt(distanceX * distanceX + distanceY * distanceY);
-		const auto halfDistance = distance * 0.5f;
+		{
+			const auto distanceX = b.x - a.x;
+			const auto distanceY = b.y - a.y;
+			const auto distance = ImSqrt(distanceX * distanceX + distanceY * distanceY);
+			const auto halfDistance = distance * 0.5f;
 
-		if (halfDistance < strength)
-			strength = strength * ImSin(IM_PI * 0.5f * halfDistance / strength);
+			if (halfDistance < strength)
+				strength = strength * ImSin(IM_PI * 0.5f * halfDistance / strength);
 
-		return strength;
-	};
+			return strength;
+		};
 
 	const auto startStrength = easeLinkStrength(m_Start, m_End, m_StartPin->m_Strength);
 	const auto   endStrength = easeLinkStrength(m_Start, m_End, m_EndPin->m_Strength);
@@ -1058,7 +1058,7 @@ void ed::EditorContext::Begin(const char* id, const ImVec2& size)
 	//    ImGuiWindowFlags_NoScrollbar |
 	//    ImGuiWindowFlags_NoScrollWithMouse);
 
-	ImGui::CaptureKeyboardFromApp();
+	ImGui::SetNextFrameWantCaptureKeyboard(true);
 
 	m_IsWindowActive = ImGui::IsWindowFocused();
 
@@ -1162,18 +1162,18 @@ void ed::EditorContext::End()
 		EditorAction* possibleAction = nullptr;
 
 		auto accept = [&possibleAction, &control](EditorAction& action)
-		{
-			auto result = action.Accept(control);
+			{
+				auto result = action.Accept(control);
 
-			if (result == EditorAction::True)
-				return true;
-			else if (/*!possibleAction &&*/ result == EditorAction::Possible)
-				possibleAction = &action;
-			else if (result == EditorAction::Possible)
-				action.Reject();
+				if (result == EditorAction::True)
+					return true;
+				else if (/*!possibleAction &&*/ result == EditorAction::Possible)
+					possibleAction = &action;
+				else if (result == EditorAction::Possible)
+					action.Reject();
 
-			return false;
-		};
+				return false;
+			};
 
 		if (accept(m_ContextMenuAction))
 			m_CurrentAction = &m_ContextMenuAction;
@@ -1261,16 +1261,16 @@ void ed::EditorContext::End()
 		int targetChannel = nodeChannelCount;
 
 		auto copyNode = [&targetChannel, drawList](Node* node)
-		{
-			if (!node->m_IsLive)
-				return;
+			{
+				if (!node->m_IsLive)
+					return;
 
-			for (int i = 0; i < c_ChannelsPerNode; ++i)
-				ImDrawList_SwapChannels(drawList, node->m_Channel + i, targetChannel + i);
+				for (int i = 0; i < c_ChannelsPerNode; ++i)
+					ImDrawList_SwapChannels(drawList, node->m_Channel + i, targetChannel + i);
 
-			node->m_Channel = targetChannel;
-			targetChannel += c_ChannelsPerNode;
-		};
+				node->m_Channel = targetChannel;
+				targetChannel += c_ChannelsPerNode;
+			};
 
 		auto groupsItEnd = std::find_if(m_Nodes.begin(), m_Nodes.end(), [](Node* node) { return !IsGroup(node); });
 
@@ -1352,15 +1352,15 @@ void ed::EditorContext::End()
 		// we move them to clip plane. Batch transformation in canvas
 		// will bring them back to global space.
 		auto preTransformClipRect = [this, drawList](int channelIndex)
-		{
-			ImDrawChannel& channel = drawList->_Splitter._Channels[channelIndex];
-			for (ImDrawCmd& cmd : channel._CmdBuffer)
 			{
-				auto a = ToCanvas(ImVec2(cmd.ClipRect.x, cmd.ClipRect.y));
-				auto b = ToCanvas(ImVec2(cmd.ClipRect.z, cmd.ClipRect.w));
-				cmd.ClipRect = ImVec4(a.x, a.y, b.x, b.y);
-			}
-		};
+				ImDrawChannel& channel = drawList->_Splitter._Channels[channelIndex];
+				for (ImDrawCmd& cmd : channel._CmdBuffer)
+				{
+					auto a = ToCanvas(ImVec2(cmd.ClipRect.x, cmd.ClipRect.y));
+					auto b = ToCanvas(ImVec2(cmd.ClipRect.z, cmd.ClipRect.w));
+					cmd.ClipRect = ImVec4(a.x, a.y, b.x, b.y);
+				}
+			};
 
 		drawList->ChannelsSetCurrent(0);
 
@@ -1972,36 +1972,36 @@ ed::Control ed::EditorContext::BuildControl(bool allowOffscreen)
 
 	// Emits invisible button and returns true if it is clicked.
 	auto emitInteractiveArea = [](ObjectId id, const ImRect& rect)
-	{
-		char idString[33] = { 0 }; // itoa can output 33 bytes maximum
-		snprintf(idString, 32, "%p", id.AsPointer());
-		ImGui::SetCursorScreenPos(rect.Min);
+		{
+			char idString[33] = { 0 }; // itoa can output 33 bytes maximum
+			snprintf(idString, 32, "%p", id.AsPointer());
+			ImGui::SetCursorScreenPos(rect.Min);
 
-		// debug
-		//if (id < 0) return ImGui::Button(idString, to_imvec(rect.size));
+			// debug
+			//if (id < 0) return ImGui::Button(idString, to_imvec(rect.size));
 
-		auto result = ImGui::InvisibleButton(idString, rect.GetSize());
+			auto result = ImGui::InvisibleButton(idString, rect.GetSize());
 
-		// #debug
-		//ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IM_COL32(0, 255, 0, 64));
+			// #debug
+			//ImGui::GetWindowDrawList()->AddRectFilled(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), IM_COL32(0, 255, 0, 64));
 
-		return result;
-	};
+			return result;
+		};
 
 	// Check input interactions over area.
 	auto checkInteractionsInArea = [&emitInteractiveArea, &hotObject, &activeObject, &clickedObject, &doubleClickedObject](ObjectId id, const ImRect& rect, Object* object)
-	{
-		if (emitInteractiveArea(id, rect))
-			clickedObject = object;
-		if (!doubleClickedObject && ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered())
-			doubleClickedObject = object;
+		{
+			if (emitInteractiveArea(id, rect))
+				clickedObject = object;
+			if (!doubleClickedObject && ImGui::IsMouseDoubleClicked(0) && ImGui::IsItemHovered())
+				doubleClickedObject = object;
 
-		if (!hotObject && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
-			hotObject = object;
+			if (!hotObject && ImGui::IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem))
+				hotObject = object;
 
-		if (ImGui::IsItemActive())
-			activeObject = object;
-	};
+			if (ImGui::IsItemActive())
+				activeObject = object;
+		};
 
 	// Process live nodes and pins.
 	for (auto nodeIt = m_Nodes.rbegin(), nodeItEnd = m_Nodes.rend(); nodeIt != nodeItEnd; ++nodeIt)
@@ -2114,33 +2114,33 @@ void ed::EditorContext::ShowMetrics(const Control& control)
 	auto& io = ImGui::GetIO();
 
 	auto getObjectName = [](Object* object)
-	{
-		if (!object) return "";
-		else if (object->AsNode())  return "Node";
-		else if (object->AsPin())   return "Pin";
-		else if (object->AsLink())  return "Link";
-		else return "";
-	};
+		{
+			if (!object) return "";
+			else if (object->AsNode())  return "Node";
+			else if (object->AsPin())   return "Pin";
+			else if (object->AsLink())  return "Link";
+			else return "";
+		};
 
 	auto getHotObjectName = [&control, &getObjectName]()
-	{
-		if (control.HotObject)
-			return getObjectName(control.HotObject);
-		else if (control.BackgroundHot)
-			return "Background";
-		else
-			return "<unknown>";
-	};
+		{
+			if (control.HotObject)
+				return getObjectName(control.HotObject);
+			else if (control.BackgroundHot)
+				return "Background";
+			else
+				return "<unknown>";
+		};
 
 	auto getActiveObjectName = [&control, &getObjectName]()
-	{
-		if (control.ActiveObject)
-			return getObjectName(control.ActiveObject);
-		else if (control.BackgroundActive)
-			return "Background";
-		else
-			return "<unknown>";
-	};
+		{
+			if (control.ActiveObject)
+				return getObjectName(control.ActiveObject);
+			else if (control.BackgroundActive)
+				return "Background";
+			else
+				return "<unknown>";
+		};
 
 	auto liveNodeCount = (int)std::count_if(m_Nodes.begin(), m_Nodes.end(), [](Node* node) { return  node->m_IsLive; });
 	auto livePinCount = (int)std::count_if(m_Pins.begin(), m_Pins.end(), [](Pin* pin) { return   pin->m_IsLive; });
@@ -2232,23 +2232,23 @@ bool ed::NodeSettings::Parse(const json::value& data, NodeSettings& result)
 		return false;
 
 	auto tryParseVector = [](const json::value& v, ImVec2& result) -> bool
-	{
-		if (v.is_object())
 		{
-			auto xValue = v["x"];
-			auto yValue = v["y"];
-
-			if (xValue.is_number() && yValue.is_number())
+			if (v.is_object())
 			{
-				result.x = static_cast<float>(xValue.get<double>());
-				result.y = static_cast<float>(yValue.get<double>());
+				auto xValue = v["x"];
+				auto yValue = v["y"];
 
-				return true;
+				if (xValue.is_number() && yValue.is_number())
+				{
+					result.x = static_cast<float>(xValue.get<double>());
+					result.y = static_cast<float>(yValue.get<double>());
+
+					return true;
+				}
 			}
-		}
 
-		return false;
-	};
+			return false;
+		};
 
 	if (!tryParseVector(data["location"], result.m_Location))
 		return false;
@@ -2316,17 +2316,17 @@ std::string ed::Settings::Serialize()
 	json::value result;
 
 	auto serializeObjectId = [](ObjectId id)
-	{
-		auto value = std::to_string(reinterpret_cast<uintptr_t>(id.AsPointer()));
-		switch (id.Type())
 		{
-		default:
-		case NodeEditor::Detail::ObjectType::None: return value;
-		case NodeEditor::Detail::ObjectType::Node: return "node:" + value;
-		case NodeEditor::Detail::ObjectType::Link: return "link:" + value;
-		case NodeEditor::Detail::ObjectType::Pin:  return "pin:" + value;
-		}
-	};
+			auto value = std::to_string(reinterpret_cast<uintptr_t>(id.AsPointer()));
+			switch (id.Type())
+			{
+			default:
+			case NodeEditor::Detail::ObjectType::None: return value;
+			case NodeEditor::Detail::ObjectType::Node: return "node:" + value;
+			case NodeEditor::Detail::ObjectType::Link: return "link:" + value;
+			case NodeEditor::Detail::ObjectType::Pin:  return "pin:" + value;
+			}
+		};
 
 	auto& nodes = result["nodes"];
 	for (auto& node : m_Nodes)
@@ -2359,39 +2359,39 @@ bool ed::Settings::Parse(const std::string& string, Settings& settings)
 		return false;
 
 	auto tryParseVector = [](const json::value& v, ImVec2& result) -> bool
-	{
-		if (v.is_object() && v.contains("x") && v.contains("y"))
 		{
-			auto xValue = v["x"];
-			auto yValue = v["y"];
-
-			if (xValue.is_number() && yValue.is_number())
+			if (v.is_object() && v.contains("x") && v.contains("y"))
 			{
-				result.x = static_cast<float>(xValue.get<double>());
-				result.y = static_cast<float>(yValue.get<double>());
+				auto xValue = v["x"];
+				auto yValue = v["y"];
 
-				return true;
+				if (xValue.is_number() && yValue.is_number())
+				{
+					result.x = static_cast<float>(xValue.get<double>());
+					result.y = static_cast<float>(yValue.get<double>());
+
+					return true;
+				}
 			}
-		}
 
-		return false;
-	};
+			return false;
+		};
 
 	auto deserializeObjectId = [](const std::string& str)
-	{
-		auto separator = str.find_first_of(':');
-		auto idStart = str.c_str() + ((separator != std::string::npos) ? separator + 1 : 0);
-		auto id = reinterpret_cast<void*>(strtoull(idStart, nullptr, 10));
-		if (str.compare(0, separator, "node") == 0)
-			return ObjectId(NodeId(id));
-		else if (str.compare(0, separator, "link") == 0)
-			return ObjectId(LinkId(id));
-		else if (str.compare(0, separator, "pin") == 0)
-			return ObjectId(PinId(id));
-		else
-			// fallback to old format
-			return ObjectId(NodeId(id)); //return ObjectId();
-	};
+		{
+			auto separator = str.find_first_of(':');
+			auto idStart = str.c_str() + ((separator != std::string::npos) ? separator + 1 : 0);
+			auto id = reinterpret_cast<void*>(strtoull(idStart, nullptr, 10));
+			if (str.compare(0, separator, "node") == 0)
+				return ObjectId(NodeId(id));
+			else if (str.compare(0, separator, "link") == 0)
+				return ObjectId(LinkId(id));
+			else if (str.compare(0, separator, "pin") == 0)
+				return ObjectId(PinId(id));
+			else
+				// fallback to old format
+				return ObjectId(NodeId(id)); //return ObjectId();
+		};
 
 	//auto& settingsObject = settingsValue.get<json::object>();
 
@@ -2660,9 +2660,9 @@ void ed::FlowAnimation::UpdatePath()
 	m_PathLength = ImCubicBezierLength(curve.P0, curve.P1, curve.P2, curve.P3);
 
 	auto collectPointsCallback = [this](ImCubicBezierFixedStepSample& result)
-	{
-		m_Path.push_back(CurvePoint{ result.Length, result.Point });
-	};
+		{
+			m_Path.push_back(CurvePoint{ result.Length, result.Point });
+		};
 
 	const auto step = ImMax(m_MarkerDistance * 0.5f, 15.0f);
 
@@ -2821,28 +2821,28 @@ ed::EditorAction::AcceptResult ed::NavigateAction::Accept(const Control& control
 
 	auto& io = ImGui::GetIO();
 
-	if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_F)) && Editor->AreShortcutsEnabled())
+	if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_F) && Editor->AreShortcutsEnabled())
 	{
 		const auto allowZoomIn = io.KeyShift;
 
 		auto findHotObjectToZoom = [this, &control, &io]() -> Object*
-		{
-			if (control.HotObject)
 			{
-				if (auto pin = control.HotObject->AsPin())
-					return pin->m_Node;
-				else
-					return control.HotObject;
-			}
-			else if (control.BackgroundHot)
-			{
-				auto node = Editor->FindNodeAt(io.MousePos);
-				if (IsGroup(node))
-					return node;
-			}
+				if (control.HotObject)
+				{
+					if (auto pin = control.HotObject->AsPin())
+						return pin->m_Node;
+					else
+						return control.HotObject;
+				}
+				else if (control.BackgroundHot)
+				{
+					auto node = Editor->FindNodeAt(io.MousePos);
+					if (IsGroup(node))
+						return node;
+				}
 
-			return nullptr;
-		};
+				return nullptr;
+			};
 
 		bool navigateToContent = false;
 		if (!Editor->GetSelectedObjects().empty())
@@ -3255,13 +3255,13 @@ void ed::SizeAction::ShowMetrics()
 	EditorAction::ShowMetrics();
 
 	auto getObjectName = [](Object* object)
-	{
-		if (!object) return "";
-		else if (object->AsNode())  return "Node";
-		else if (object->AsPin())   return "Pin";
-		else if (object->AsLink())  return "Link";
-		else return "";
-	};
+		{
+			if (!object) return "";
+			else if (object->AsNode())  return "Node";
+			else if (object->AsPin())   return "Pin";
+			else if (object->AsLink())  return "Link";
+			else return "";
+		};
 
 	ImGui::Text("%s:", GetName());
 	ImGui::Text("    Active: %s", m_IsActive ? "yes" : "no");
@@ -3355,9 +3355,9 @@ ed::EditorAction::AcceptResult ed::DragAction::Accept(const Control& control)
 					node->GetGroupedNodes(groupedNodes, true);
 
 			auto isAlreadyPicked = [this](Node* node)
-			{
-				return std::find(m_Objects.begin(), m_Objects.end(), node) != m_Objects.end();
-			};
+				{
+					return std::find(m_Objects.begin(), m_Objects.end(), node) != m_Objects.end();
+				};
 
 			for (auto candidate : groupedNodes)
 				if (!isAlreadyPicked(candidate) && candidate->AcceptDrag())
@@ -3408,22 +3408,22 @@ bool ed::DragAction::Process(const Control& control)
 			float y = FLT_MAX;
 
 			auto testPivot = [this, &x, &y, &draggedOrigin, &dragOffset, &alignPivot](const ImVec2& pivot)
-			{
-				auto initial = draggedOrigin + dragOffset + pivot;
-				auto candidate = Editor->AlignPointToGrid(initial) - draggedOrigin - pivot;
-
-				if (ImFabs(candidate.x) < ImFabs(ImMin(x, FLT_MAX)))
 				{
-					x = candidate.x;
-					alignPivot.x = pivot.x;
-				}
+					auto initial = draggedOrigin + dragOffset + pivot;
+					auto candidate = Editor->AlignPointToGrid(initial) - draggedOrigin - pivot;
 
-				if (ImFabs(candidate.y) < ImFabs(ImMin(y, FLT_MAX)))
-				{
-					y = candidate.y;
-					alignPivot.y = pivot.y;
-				}
-			};
+					if (ImFabs(candidate.x) < ImFabs(ImMin(x, FLT_MAX)))
+					{
+						x = candidate.x;
+						alignPivot.x = pivot.x;
+					}
+
+					if (ImFabs(candidate.y) < ImFabs(ImMin(y, FLT_MAX)))
+					{
+						y = candidate.y;
+						alignPivot.y = pivot.y;
+					}
+				};
 
 			for (auto pin = draggedNode->m_LastPin; pin; pin = pin->m_PreviousPin)
 			{
@@ -3458,13 +3458,13 @@ void ed::DragAction::ShowMetrics()
 	EditorAction::ShowMetrics();
 
 	auto getObjectName = [](Object* object)
-	{
-		if (!object) return "";
-		else if (object->AsNode())  return "Node";
-		else if (object->AsPin())   return "Pin";
-		else if (object->AsLink())  return "Link";
-		else return "";
-	};
+		{
+			if (!object) return "";
+			else if (object->AsNode())  return "Node";
+			else if (object->AsPin())   return "Pin";
+			else if (object->AsLink())  return "Link";
+			else return "";
+		};
 
 	ImGui::Text("%s:", GetName());
 	ImGui::Text("    Active: %s", m_IsActive ? "yes" : "no");
@@ -3732,17 +3732,17 @@ void ed::ContextMenuAction::ShowMetrics()
 	EditorAction::ShowMetrics();
 
 	auto getMenuName = [](Menu menu)
-	{
-		switch (menu)
 		{
-		default:
-		case None:        return "None";
-		case Node:        return "Node";
-		case Pin:         return "Pin";
-		case Link:        return "Link";
-		case Background:  return "Background";
-		}
-	};
+			switch (menu)
+			{
+			default:
+			case None:        return "None";
+			case Node:        return "Node";
+			case Pin:         return "Pin";
+			case Link:        return "Link";
+			case Background:  return "Background";
+			}
+		};
 
 	ImGui::Text("%s:", GetName());
 	ImGui::Text("    Menu: %s", getMenuName(m_CurrentMenu));
@@ -3809,15 +3809,15 @@ ed::EditorAction::AcceptResult ed::ShortcutAction::Accept(const Control& control
 	Action candidateAction = None;
 
 	auto& io = ImGui::GetIO();
-	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGuiKey_X))
 		candidateAction = Cut;
-	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
+	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGuiKey_C))
 		candidateAction = Copy;
-	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
+	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGuiKey_V))
 		candidateAction = Paste;
-	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+	if (io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGuiKey_D))
 		candidateAction = Duplicate;
-	if (!io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+	if (!io.KeyCtrl && !io.KeyShift && !io.KeyAlt && ImGui::IsKeyPressed(ImGuiKey_Space))
 		candidateAction = CreateNode;
 
 	if (candidateAction != None)
@@ -3874,9 +3874,9 @@ ed::EditorAction::AcceptResult ed::ShortcutAction::Accept(const Control& control
 				std::sort(nodes.begin(), nodes.end());
 
 				auto isNodeInContext = [&nodes](NodeId nodeId)
-				{
-					return std::binary_search(nodes.begin(), nodes.end(), ObjectWrapper<Node>{nodeId, nullptr});
-				};
+					{
+						return std::binary_search(nodes.begin(), nodes.end(), ObjectWrapper<Node>{nodeId, nullptr});
+					};
 
 				// Collect links connected to nodes and drop those reaching out of context
 				std::vector<Link*> links;
@@ -3932,18 +3932,18 @@ void ed::ShortcutAction::ShowMetrics()
 	EditorAction::ShowMetrics();
 
 	auto getActionName = [](Action action)
-	{
-		switch (action)
 		{
-		default:
-		case None:       return "None";
-		case Cut:        return "Cut";
-		case Copy:       return "Copy";
-		case Paste:      return "Paste";
-		case Duplicate:  return "Duplicate";
-		case CreateNode: return "CreateNode";
-		}
-	};
+			switch (action)
+			{
+			default:
+			case None:       return "None";
+			case Cut:        return "Cut";
+			case Copy:       return "Copy";
+			case Paste:      return "Paste";
+			case Duplicate:  return "Duplicate";
+			case CreateNode: return "CreateNode";
+			}
+		};
 
 	ImGui::Text("%s:", GetName());
 	ImGui::Text("    Action: %s", getActionName(m_CurrentAction));
@@ -4103,37 +4103,37 @@ void ed::CreateItemAction::ShowMetrics()
 	EditorAction::ShowMetrics();
 
 	auto getStageName = [](Stage stage)
-	{
-		switch (stage)
 		{
-		case None:     return "None";
-		case Possible: return "Possible";
-		case Create:   return "Create";
-		default:       return "<unknown>";
-		}
-	};
+			switch (stage)
+			{
+			case None:     return "None";
+			case Possible: return "Possible";
+			case Create:   return "Create";
+			default:       return "<unknown>";
+			}
+		};
 
 	auto getActionName = [](Action action)
-	{
-		switch (action)
 		{
-		default:
-		case Unknown:     return "Unknown";
-		case UserReject:  return "Reject";
-		case UserAccept:  return "Accept";
-		}
-	};
+			switch (action)
+			{
+			default:
+			case Unknown:     return "Unknown";
+			case UserReject:  return "Reject";
+			case UserAccept:  return "Accept";
+			}
+		};
 
 	auto getItemName = [](Type item)
-	{
-		switch (item)
 		{
-		default:
-		case NoItem: return "None";
-		case Node:   return "Node";
-		case Link:   return "Link";
-		}
-	};
+			switch (item)
+			{
+			default:
+			case NoItem: return "None";
+			case Node:   return "Node";
+			case Link:   return "Link";
+			}
+		};
 
 	ImGui::Text("%s:", GetName());
 	ImGui::Text("    Stage: %s", getStageName(m_CurrentStage));
@@ -4339,26 +4339,26 @@ ed::EditorAction::AcceptResult ed::DeleteItemsAction::Accept(const Control& cont
 		return False;
 
 	auto addDeadLinks = [this]()
-	{
-		vector<ed::Link*> links;
-		for (auto object : m_CandidateObjects)
 		{
-			auto node = object->AsNode();
-			if (!node)
-				continue;
+			vector<ed::Link*> links;
+			for (auto object : m_CandidateObjects)
+			{
+				auto node = object->AsNode();
+				if (!node)
+					continue;
 
-			Editor->FindLinksForNode(node->m_ID, links, true);
-		}
-		if (!links.empty())
-		{
-			std::sort(links.begin(), links.end());
-			links.erase(std::unique(links.begin(), links.end()), links.end());
-			m_CandidateObjects.insert(m_CandidateObjects.end(), links.begin(), links.end());
-		}
-	};
+				Editor->FindLinksForNode(node->m_ID, links, true);
+			}
+			if (!links.empty())
+			{
+				std::sort(links.begin(), links.end());
+				links.erase(std::unique(links.begin(), links.end()), links.end());
+				m_CandidateObjects.insert(m_CandidateObjects.end(), links.begin(), links.end());
+			}
+		};
 
 	auto& io = ImGui::GetIO();
-	if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)) && Editor->AreShortcutsEnabled())
+	if (ImGui::IsWindowFocused() && ImGui::IsKeyPressed(ImGuiKey_Delete) && Editor->AreShortcutsEnabled())
 	{
 		auto& selection = Editor->GetSelectedObjects();
 		if (!selection.empty())

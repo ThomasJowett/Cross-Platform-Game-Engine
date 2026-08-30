@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "SceneCamera.h"
 
 SceneCamera::SceneCamera()
@@ -66,7 +65,7 @@ void SceneCamera::RecalculateOrthographicProjection()
 {
 	float left = -m_OrthographicSize * m_AspectRatio * 0.5f;
 	float right = m_OrthographicSize * m_AspectRatio * 0.5f;
-	float bottom = -m_OrthographicSize  * 0.5f;
+	float bottom = -m_OrthographicSize * 0.5f;
 	float top = m_OrthographicSize * 0.5f;
 	SetProjectionMatrix(Matrix4x4::OrthographicRH(left, right, bottom, top, m_OrthoGraphicNear, m_OrthoGraphicFar));
 }

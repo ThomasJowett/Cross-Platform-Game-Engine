@@ -4,6 +4,8 @@
 #include <shellapi.h>
 #endif // _WINDOWS
 
+#include <imgui_internal.h> // Required for DockBuilder API
+
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
 #include "IconsFontAwesome5Brands.h"
@@ -33,8 +35,14 @@
 #include "cereal/types/string.hpp"
 
 #include "FileSystem/AssetPacker.h"
+#include "FileSystem/SpriteAtlasBuilder.h"
+#include "ImGui/ImGuiUtilities.h"
 
-#include "Engine.h"
+#include "Core/Version.h"
+#include "Core/Settings.h"
+#include "Scene/SceneManager.h"
+#include "Renderer/RenderCommand.h"
+#include "Events/SceneEvent.h"
 
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
@@ -150,6 +158,11 @@ void MainDockSpace::OnAttach()
 	}
 
 	SceneManager::ChangeSceneState(SceneState::Edit);
+
+	// --auto-play: for scripted/headless testing that needs the scene running without a manual
+	// Play click - applied after the Edit-state default above so it isn't immediately overridden.
+	if (Application::ShouldAutoPlay())
+		SceneManager::ChangeSceneState(SceneState::Play);
 }
 
 void MainDockSpace::OnDetach()
@@ -193,6 +206,7 @@ void MainDockSpace::OnUpdate(float deltaTime)
 
 void MainDockSpace::OnImGuiRender()
 {
+	PROFILE_FUNCTION();
 #ifdef DEBUG
 	if (m_ShowImGuiDemo) ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
 #endif // DEBUG
@@ -236,6 +250,34 @@ void MainDockSpace::OnImGuiRender()
 	if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
 	{
 		ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
+
+		static bool first_time = true;
+		if (first_time)
+		{
+			first_time = false;
+
+			if (ImGui::DockBuilderGetNode(dockspace_id) == nullptr)
+			{
+				ImGui::DockBuilderRemoveNode(dockspace_id);
+				ImGui::DockBuilderAddNode(dockspace_id, ImGuiDockNodeFlags_DockSpace);
+				ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->Size);
+
+				ImGuiID dock_main_id = dockspace_id;
+				ImGuiID dock_id_left = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+				ImGuiID dock_id_bottom = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.30f, nullptr, &dock_main_id);
+				ImGuiID dock_id_right = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.25f, nullptr, &dock_main_id);
+
+				ImGui::DockBuilderDockWindow(ICON_FA_SITEMAP" Hierarchy", dock_id_left);
+				ImGui::DockBuilderDockWindow(ICON_FA_SCREWDRIVER_WRENCH" Properties", dock_id_right);
+				ImGui::DockBuilderDockWindow(ICON_FA_FOLDER_OPEN " Content Explorer", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_TERMINAL" Console", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_CIRCLE_XMARK" Error List", dock_id_bottom);
+				ImGui::DockBuilderDockWindow(ICON_FA_BORDER_ALL" Viewport", dock_main_id);
+
+				ImGui::DockBuilderFinish(dockspace_id);
+			}
+		}
+
 		ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
 	}
 	else
@@ -247,17 +289,13 @@ void MainDockSpace::OnImGuiRender()
 	{
 		if (ImGui::BeginMenu("File"))
 		{
-			if (ImGui::MenuItem(ICON_FA_FILE" New Scene", "Ctrl + N"))
-			{
-				m_ContentExplorer->CreateNewScene();
-			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_PLUS" New Project", "Ctrl + Shift + N"))
 			{
 				Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
-				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
 				if (fileToOpen.has_value())
 					Application::Get().SetOpenDocument(fileToOpen.value());
 			}
@@ -278,12 +316,23 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
-				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", L"Executable\0*.exe\0");
+#ifdef _WINDOWS
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Executable", L"*.exe"} });
+#elif defined(__APPLE__)
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Application", L"*.app"} });
+#else
+				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Any File", L"*.*"} });
+#endif
 				if (exportLocation.has_value())
 				{
 					Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory(), exportLocation.value()));
 				}
 			}
+			if (ImGui::MenuItem(ICON_FA_ARROWS_ROTATE" Rebuild Sprite Atlas"))
+			{
+				SpriteAtlasBuilder::Rebuild();
+			}
+			ImGui::Tooltip("Forces a full repack even if nothing looks stale - use after adding\nsprites the automatic per-project-open check hasn't caught up with yet.");
 			if (ImGui::MenuItem(ICON_FA_RIGHT_FROM_BRACKET" Exit", "Alt + F4")) Application::Get().Close();
 			ImGui::EndMenu();
 		}
@@ -404,6 +453,7 @@ void MainDockSpace::OnImGuiRender()
 	{
 		ImGui::Text("Version: %i.%i.%i", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		ImGui::Text("Built on: %s", __DATE__);
+		ImGui::Text("Renderer: %s", RendererAPI::GetAPIName());
 		ImGui::Separator();
 		ImGui::Text("Dear ImGui version: %s", ImGui::GetVersion());
 		ImGui::Text("spd log version: %i.%i.%i", SPDLOG_VER_MAJOR, SPDLOG_VER_MINOR, SPDLOG_VER_PATCH);
@@ -433,8 +483,14 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	input(data);
 	file.close();
 
-	if (!data.defaultScene.empty())
-		SceneManager::ChangeScene(std::filesystem::path(data.defaultScene));
+	SpriteAtlasBuilder::EnsureUpToDate();
+
+	// --scene: overrides the project's own default scene, for testing a specific scene directly.
+	const std::string& sceneOverride = Application::GetSceneOverride();
+	const std::string& sceneToLoad = !sceneOverride.empty() ? sceneOverride : data.defaultScene;
+
+	if (!sceneToLoad.empty())
+		SceneManager::ChangeScene(std::filesystem::path(sceneToLoad));
 	else
 		SceneManager::ChangeScene("");
 }
@@ -454,7 +510,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
-	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_S)))
+	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
 	{
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 		{
@@ -469,64 +525,64 @@ void MainDockSpace::HandleKeyBoardInputs()
 		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
 			iSave->SaveAs();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_N))
 	{
 		m_ContentExplorer->CreateNewScene();
 	}
-	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_N)))
+	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_N))
 	{
 		Application::GetLayerStack().AddOverlay(CreateRef<ProjectsStartScreen>(true));
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_O)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_O))
 	{
-		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", L"Project Files (*.proj)\0*.proj\0Any File\0*.*\0");
+		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
 		if (fileToOpen)
 			Application::Get().SetOpenDocument(fileToOpen.value());
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Z))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
 			if (iUndo->CanUndo())
 				iUndo->Undo();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Y)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Y))
 	{
 		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
 			if (iUndo->CanRedo())
 				iUndo->Redo();
 	}
-	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Delete))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Delete();
 	}
-	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_C)))
-		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_C))
+		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Copy();
 	}
-	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_V)))
-		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Insert))))
+	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_V))
+		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			iCopy->Paste();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_X)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_X))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Cut();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_D)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_D))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())
 				iCopy->Duplicate();
 	}
-	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_A)))
+	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_A))
 	{
 		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
 			if (iCopy->HasSelection())

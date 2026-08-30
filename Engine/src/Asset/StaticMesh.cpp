@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "StaticMesh.h"
 #include "Utilities/MeshSerializer.h"
 
@@ -39,7 +38,7 @@ bool StaticMesh::Load(const std::filesystem::path& filepath)
 bool StaticMesh::Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data)
 {
 	Ref<Mesh> mesh = MeshSerializer::DeserializeFromMemory(filepath, data);
-	if(!mesh)
+	if (!mesh)
 		return false;
 
 	m_Filepath = filepath;

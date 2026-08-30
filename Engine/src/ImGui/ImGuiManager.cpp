@@ -1,32 +1,24 @@
-#include "stdafx.h"
 #include "ImGuiManager.h"
 
+#include "Asset/Texture.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
-#include "Asset/Texture.h"
 #include "Renderer/RendererAPI.h"
+#include <memory>
+#include <webgpu/webgpu.hpp>
 
 
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "imgui.h"
 #include "imgui/backends/imgui_impl_glfw.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
+#include "imgui/backends/imgui_impl_wgpu.h"
+
+#include "Platform/WebGPU/WebGPUContext.h"
 
 #include "GLFW/glfw3.h"
 
-#ifdef _WINDOWS
-#include "Platform/DirectX/DirectX11RendererAPI.h"
-#include "Platform/DirectX/DirectX11Context.h"
-#include "imgui/backends/imgui_impl_dx11.h"
-
-extern ID3D11Device* g_D3dDevice;
-extern ID3D11DeviceContext* g_ImmediateContext;
-#endif // _WINDOWS
-
-ImGuiManager::ImGuiManager()
-	:m_UsingImGui(false)
-{
-}
+ImGuiManager::ImGuiManager() : m_UsingImGui(false) {}
 
 void ImGuiManager::Init()
 {
@@ -36,11 +28,15 @@ void ImGuiManager::Init()
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
 
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGuiIO& io = ImGui::GetIO();
+	(void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
 	io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-	io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+	RendererAPI::API api = RendererAPI::GetAPI();
+	if (api == RendererAPI::API::OpenGL)
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
@@ -48,23 +44,35 @@ void ImGuiManager::Init()
 
 	io.IniFilename = m_IniFile.c_str();
 
-	//Setup Platform/Renderer bindings
-	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef _WINDOWS
-		if (ImGui_ImplGlfw_InitForOther(Application::GetWindow()->GetNativeWindow(), true))
-		{
-			m_UsingImGui = ImGui_ImplDX11_Init(g_D3dDevice, g_ImmediateContext);
-		}
-#endif // _WINDOWS
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	// Setup Platform/Renderer bindings
+	if (api == RendererAPI::API::OpenGL)
 	{
 		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
 
 		if (ImGui_ImplGlfw_InitForOpenGL(window, true))
 			m_UsingImGui = ImGui_ImplOpenGL3_Init("#version 460");
+	}
+	else if (api == RendererAPI::API::WebGPU)
+	{
+		GLFWwindow* window = Application::GetWindow()->GetNativeWindow();
+
+		if (ImGui_ImplGlfw_InitForOther(window, true))
+		{
+			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+
+			Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+
+			auto device = webGPUContext->GetWebGPUDevice();
+			auto format = webGPUContext->GetSwapchainFormat();
+
+			ImGui_ImplWGPU_InitInfo init_info = {};
+			init_info.Device = device;
+			init_info.NumFramesInFlight = 3;
+			init_info.RenderTargetFormat = format;
+			init_info.DepthStencilFormat = WGPUTextureFormat_Undefined;
+
+			m_UsingImGui = ImGui_ImplWGPU_Init(&init_info);
+		}
 	}
 	else
 	{
@@ -77,11 +85,9 @@ void ImGuiManager::Shutdown()
 	PROFILE_FUNCTION();
 
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
+	if (api == RendererAPI::API::WebGPU)
 	{
-#ifdef _WINDOWS
-		ImGui_ImplDX11_Shutdown();
-#endif // _WINDOWS
+		ImGui_ImplWGPU_Shutdown();
 	}
 	else if (api == RendererAPI::API::OpenGL)
 	{
@@ -105,15 +111,13 @@ void ImGuiManager::Begin()
 {
 	PROFILE_FUNCTION();
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef _WINDOWS
-		ImGui_ImplDX11_NewFrame();
-#endif // _WINDOWS
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_NewFrame();
+	}
+	else if (api == RendererAPI::API::WebGPU)
+	{
+		ImGui_ImplWGPU_NewFrame();
 	}
 	ImGui_ImplGlfw_NewFrame();
 
@@ -127,22 +131,75 @@ void ImGuiManager::End()
 	Application& app = Application::Get();
 	io.DisplaySize = ImVec2((float)app.GetWindow()->GetWidth(), (float)app.GetWindow()->GetHeight());
 
-	//Rendering
+	// Rendering
 	ImGui::Render();
 
 	RendererAPI::API api = RendererAPI::GetAPI();
-	if (api == RendererAPI::API::Directx11)
-	{
-#ifdef _WINDOWS
-		ImGui_ImplDX11_RenderDrawData(ImGui::GetDrawData());
-#endif // _WINDOWS
-	}
-	else if (api == RendererAPI::API::OpenGL)
+	if (api == RendererAPI::API::OpenGL)
 	{
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 	}
+	else if (api == RendererAPI::API::WebGPU)
+	{
+		Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
+		if (!context)
+			return;
+		Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
+		if (!webGPUContext)
+			return;
 
-	if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		wgpu::TextureView targetView = webGPUContext->GetCurrentTextureView();
+		if (!targetView)
+			return;
+
+		ImDrawData* drawData = ImGui::GetDrawData();
+		if (!drawData)
+			return;
+
+		// If a scene has already rendered to the swapchain this frame (a shipped game using
+		// ImGui as an in-game overlay, as opposed to the Editor where ImGui is the only thing
+		// that ever draws here), clearing would erase it - load and draw on top instead.
+		bool alreadyRendered = webGPUContext->HasSwapchainBeenRenderedThisFrame();
+
+		wgpu::RenderPassColorAttachment colourAttachment = {};
+		colourAttachment.view = targetView;
+		colourAttachment.loadOp = alreadyRendered ? wgpu::LoadOp::Load : wgpu::LoadOp::Clear;
+		colourAttachment.storeOp = wgpu::StoreOp::Store;
+		colourAttachment.clearValue = { 0.1f, 0.1f, 0.1f, 1.0f }; // TODO: set the clear colour properly
+#ifdef __EMSCRIPTEN__
+		colourAttachment.depthSlice = WGPU_DEPTH_SLICE_UNDEFINED;
+#endif
+
+		wgpu::RenderPassDescriptor renderPassDesc = {};
+		renderPassDesc.colorAttachmentCount = 1;
+		renderPassDesc.colorAttachments = &colourAttachment;
+		renderPassDesc.depthStencilAttachment = nullptr;
+
+		auto device = webGPUContext->GetWebGPUDevice();
+		if (!device)
+			return;
+		wgpu::CommandEncoderDescriptor encoderDesc = {};
+		encoderDesc.label = "ImGui Command Encoder";
+		wgpu::CommandEncoder encoder = device.createCommandEncoder(encoderDesc);
+		if (!encoder)
+			return;
+
+		wgpu::RenderPassEncoder renderPass = encoder.beginRenderPass(renderPassDesc);
+		if (renderPass) {
+			ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
+			renderPass.end();
+			webGPUContext->MarkSwapchainRenderedThisFrame();
+		}
+
+		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};
+		cmdBufferDescriptor.label = "ImGui Command Buffer";
+		wgpu::CommandBuffer command = encoder.finish(cmdBufferDescriptor);
+
+		if (command)
+			webGPUContext->GetQueue().submit(1, &command);
+	}
+
+	if (api == RendererAPI::API::OpenGL && (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
 	{
 		GLFWwindow* backup_current_context = nullptr;
 		backup_current_context = glfwGetCurrentContext();

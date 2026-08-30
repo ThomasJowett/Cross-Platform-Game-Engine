@@ -8,6 +8,9 @@ class SubTexture2D
 public:
 	SubTexture2D();
 	SubTexture2D(const Ref<Texture2D>& texture, uint32_t spriteWidth, uint32_t spriteHeight, uint32_t currentCell = 0);
+	SubTexture2D(const Ref<Texture2D>& texture, const Vector2f& min, const Vector2f& max);
+
+	static Ref<SubTexture2D> CreateFromCoords(const Ref<Texture2D>& texture, const Vector2f& pixelCoords, const Vector2f& spriteSize);
 
 	const Ref<Texture2D> GetTexture() const { return m_Texture; }
 	Ref<Texture2D>& GetTexture() { return m_Texture; }
@@ -29,11 +32,12 @@ public:
 
 	Vector2f GetMargin() { return m_Margin; }
 	void SetMargin(const Vector2f& margin) { m_Margin = margin; }
+
 private:
 	void CalculateTextureCoordinates();
 	Ref<Texture2D> m_Texture;
 	Vector2f m_TexCoords[4];
-	Vector2f m_Margin = { 0.0001f, 0.0001f };
+	Vector2f m_Margin = {0.0001f, 0.0001f};
 
 	uint32_t m_CurrentCell;
 

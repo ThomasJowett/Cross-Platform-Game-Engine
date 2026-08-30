@@ -26,6 +26,7 @@ public:
 	static SceneState GetSceneState();
 	static void Restart();
 	static void Shutdown();
+	static void CancelChangeScene();
 private:
 	static bool FinalChangeScene();
 	static Scope<Scene> s_CurrentScene;
