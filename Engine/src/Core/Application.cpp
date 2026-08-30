@@ -384,12 +384,7 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 	if (std::filesystem::exists(filepath))
 	{
 		m_OpenDocument = filepath;
-
-		std::string fileDirectory = filepath.string();
-
-		fileDirectory = fileDirectory.substr(0, fileDirectory.find_last_of(std::filesystem::path::preferred_separator));
-
-		m_OpenDocumentDirectory = fileDirectory;
+		m_OpenDocumentDirectory = filepath.parent_path();
 
 		if (filepath.extension() != ".proj")
 			return true;
