@@ -101,7 +101,7 @@ bool WebGPUShader::LoadShaderFromBundle(const std::filesystem::path& filepath)
 		auto device = webGPUContext->GetWebGPUDevice();
 		m_Shader = device.createShaderModule(shaderDesc);
 	}
-	return false;
+	return m_Shader;
 }
 
 std::string WebGPUShader::ReadFile(const std::filesystem::path& filepath)
