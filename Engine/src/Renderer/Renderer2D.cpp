@@ -869,6 +869,11 @@ void Renderer2D::SetSpriteAtlas(Ref<SpriteAtlas> atlas)
 	s_Data.activeAtlas = atlas;
 }
 
+Ref<SpriteAtlas> Renderer2D::GetSpriteAtlas()
+{
+	return s_Data.activeAtlas;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness, float fade, int entityId)

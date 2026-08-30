@@ -58,6 +58,7 @@ public:
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);
 
 	static void SetSpriteAtlas(Ref<SpriteAtlas> atlas);
+	static Ref<SpriteAtlas> GetSpriteAtlas();
 
 	// Circle
 	static void DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness = 1.0f, float fade = 0.005f, int entityId = -1);

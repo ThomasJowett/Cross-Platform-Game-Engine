@@ -6,6 +6,7 @@
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
 #include "AssetManager.h"
+#include "Renderer/Renderer2D.h"
 
 #include "TinyXml2/tinyxml2.h"
 
@@ -189,6 +190,10 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		if (component.texture)
 		{
 			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texture);
+		}
+		else if (!component.texturePath.empty())
+		{
+			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texturePath);
 		}
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
@@ -695,10 +700,13 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pSpriteComponentElement->QueryFloatAttribute("TilingFactor", &component.tilingFactor);
 
 		tinyxml2::XMLElement* pTextureElement = pSpriteComponentElement->FirstChildElement("Texture");
-		SerializationUtils::Decode(pTextureElement, component.texture);
 
 		if (const char* filepath = pTextureElement ? pTextureElement->Attribute("Filepath") : nullptr)
 			component.texturePath = filepath;
+		Ref<SpriteAtlas> atlas = Renderer2D::GetSpriteAtlas();
+		bool atlasCovers = atlas && component.tilingFactor == 1.0f && atlas->GetRegion(component.texturePath);
+		if (!atlasCovers)
+			SerializationUtils::Decode(pTextureElement, component.texture);
 	}
 
 	// Animated Sprite ---------------------------------------------------------------------------------------------------
