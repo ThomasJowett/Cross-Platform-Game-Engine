@@ -10,9 +10,9 @@ SignalBus LuaManager::s_SignalBus;
 
 static sol::function s_UnrequireFunction;
 
-std::vector<std::pair<std::string, std::string>> LuaManager::s_Identifiers = {
-	std::make_pair("CurrentEntity", "Get the entity this script is attached to"),
-	std::make_pair("CurrentScene", "Get the currently loaded scene")
+std::vector<LuaApiEntry> LuaManager::s_Identifiers = {
+	{ "CurrentEntity", "Get the entity this script is attached to", LuaApiEntry::Kind::Global, "", "" },
+	{ "CurrentScene", "Get the currently loaded scene", LuaApiEntry::Kind::Global, "", "" }
 };
 
 int LoadFileRequire(lua_State* L) {
@@ -132,5 +132,10 @@ bool LuaManager::IsValid()
 
 void LuaManager::AddIdentifier(const std::string& keyword, const std::string& description)
 {
-	s_Identifiers.push_back(std::make_pair(keyword, description));
+	AddApiEntry({ keyword, description, LuaApiEntry::Kind::Global, "", "" });
+}
+
+void LuaManager::AddApiEntry(LuaApiEntry entry)
+{
+	s_Identifiers.push_back(std::move(entry));
 }
