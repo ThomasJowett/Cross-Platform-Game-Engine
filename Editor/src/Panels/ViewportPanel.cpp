@@ -798,7 +798,8 @@ void ViewportPanel::OnImGuiRender()
 			m_MousePositionBeginClick = m_RelativeMousePosition;
 		}
 
-		m_ViewportHovered = (m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
+		m_ViewportHovered = (m_WindowHovered
+			&& m_RelativeMousePosition.x < m_ViewportSize.x && m_RelativeMousePosition.y < m_ViewportSize.y
 			&& m_RelativeMousePosition.x > 0.0f && m_RelativeMousePosition.y > 0.0f)
 			|| (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)
 				&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
