@@ -176,3 +176,24 @@ endif()
 if (MSVC)
     target_compile_options(Editor PRIVATE "/utf-8")
 endif()
+
+# Runs Editor headless with --generate-docs, dumping the Lua API registry (populated by
+# LuaManager::Init(), which app->Init() always calls before any window/renderer setup) to
+# Markdown. --generate-docs takes the same "<some existing file> --generate-docs <dir>"
+# form as --export-game purely to satisfy Application::Init's argument validation, which
+# requires a real, openable argv[1] - the file's content is never read for this flag, so
+# this project's own CMakeLists.txt stands in for it. Not part of the default build; run
+# explicitly with `cmake --build . --target GenerateLuaDocs`.
+#
+# Also copies the engine logo into docs/assets/ for mkdocs.yml's theme.logo/favicon - it's a
+# copy of Editor/data/Icons/Logo.png (the one real file, also used for the window icon and
+# README), not a second asset to keep in sync by hand, so it's produced here alongside the
+# generated Markdown rather than committed.
+add_custom_target(GenerateLuaDocs
+    COMMAND $<TARGET_FILE:Editor> "${CMAKE_SOURCE_DIR}/CMakeLists.txt" --generate-docs "${CMAKE_SOURCE_DIR}/docs/LuaAPI"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${CMAKE_SOURCE_DIR}/docs/assets"
+    COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_SOURCE_DIR}/Editor/data/Icons/Logo.png" "${CMAKE_SOURCE_DIR}/docs/assets/logo.png"
+    DEPENDS Editor
+    WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+    COMMENT "Generating Lua API documentation"
+)
