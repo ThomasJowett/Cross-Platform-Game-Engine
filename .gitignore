@@ -91,3 +91,4 @@ build_*
 
 # Docs generated lua files
 docs/LuaAPI/
+docs/assets/logo.png
