@@ -52,8 +52,8 @@ void BindScene(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
-	SetFunction(state, "ChangeScene", "Load and change to scene", &ChangeScene);
-	SetFunction(state, "LoadScene", "Load a scene", &LoadScene);
+	SetFunction(state, "", "ChangeScene", "Load and change to scene", &ChangeScene);
+	SetFunction(state, "", "LoadScene", "Load a scene", &LoadScene);
 
 	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
 	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));

@@ -15,9 +15,9 @@ void BindDebug(sol::state& state);
 void BindSignaling(sol::state& state);
 
 template<typename T, typename... Args>
-void SetFunction(T& type, const std::string& name, const std::string& description, Args&&... args)
+void SetFunction(T& type, const std::string& owner, const std::string& name, const std::string& description, Args&&... args)
 {
 	type.set_function(name, std::forward<Args>(args)...);
-	LuaManager::AddIdentifier(name, description);
+	LuaManager::AddApiEntry({ name, description, LuaApiEntry::Kind::Function, owner, "" });
 }
 }
