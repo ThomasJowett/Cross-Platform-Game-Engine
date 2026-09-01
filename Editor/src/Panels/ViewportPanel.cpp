@@ -771,7 +771,7 @@ void ViewportPanel::OnImGuiRender()
 		ImGui::Image(m_Framebuffer->GetColourAttachment(), m_ViewportSize);
 		ImGui::PopStyleVar(2);
 		m_RightClickMenuOpen = false;
-		if (!ImGui::IsMouseDragging(ImGuiMouseButton_Right))
+		if (ImGui::GetMouseDragDelta(ImGuiMouseButton_Right) == ImVec2(0.0f, 0.0f))
 		{
 			if (ImGui::BeginPopupContextItem("Viewport Right Click"))
 			{
