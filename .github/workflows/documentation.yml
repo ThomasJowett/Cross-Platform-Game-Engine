@@ -1,8 +1,9 @@
-name: Build and deploy Lua API docs
+name: Build and deploy documentation
 
-# Builds the Editor, runs --generate-docs to produce Markdown (see LuaDocGenerator.cpp),
-# renders it with MkDocs + Material (see mkdocs.yml), and deploys straight to GitHub Pages.
-# Everything happens inside this workflow run - nothing is ever committed back to the repo.
+# Builds the Editor, runs --generate-docs to produce the Lua API reference Markdown (see
+# LuaDocGenerator.cpp), renders the full site (that plus the hand-written pages) with MkDocs +
+# Material (see mkdocs.yml), and deploys straight to GitHub Pages. Everything happens inside
+# this workflow run - nothing is ever committed back to the repo.
 on:
   push:
     branches: ["master"]
@@ -10,9 +11,9 @@ on:
       - "Engine/src/Scripting/Lua/**"
       - "Engine/src/Scene/Components/**"
       - "Editor/src/FileSystem/LuaDocGenerator.*"
+      - "docs/**"
       - "mkdocs.yml"
-      - "docs/requirements.txt"
-      - ".github/workflows/lua-docs.yml"
+      - ".github/workflows/documentation.yml"
   workflow_dispatch:
 
 permissions:
@@ -38,11 +39,11 @@ jobs:
           sudo apt-get install -y --fix-missing libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev
 
       - name: Configure CMake
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -S .
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_UNITY_BUILD=ON -S .
 
       # Only builds what GenerateLuaDocs depends on (Editor and its dependencies), not the
       # full multi-platform matrix the main CI workflow builds.
-      - name: Generate Lua API docs
+      - name: Generate Lua API reference
         run: cmake --build build --target GenerateLuaDocs
 
       - uses: actions/setup-python@v5
