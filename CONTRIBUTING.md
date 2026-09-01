@@ -6,7 +6,7 @@ This document provides foundational mandates and architectural guidance for work
 - **Language**: C++ 17
 - **Build System**: CMake
 - **Platforms**: Windows, macOS, Linux
-- **Renderer**: Dual-API support for OpenGL and WebGPU (WebGPU is work-in-progress).
+- **Renderer**: Dual-API support for OpenGL and WebGPU.
 - **ECS**: EnTT (Entity Component System).
 - **Scripting**: Lua integrated via Sol2.
 
