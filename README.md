@@ -5,7 +5,7 @@
  <img width="128" height="128" src="Editor/data/Icons/Logo.png">
 </p>
 
-<h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL.</h3>
+<h3 align="center">Cross-Platform Game Engine written in C++ that supports OpenGL and WebGPU.</h3>
 
 <div align="center">
  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a>
@@ -18,7 +18,7 @@
 
 ## Features
 
-* Cross-platform rendering backend, supporting OpenGL with a WebGPU backend in progress
+* Cross-platform rendering backend, supporting both OpenGL and WebGPU
 * Entity-component system (ECS) based scene model, backed by [Entt](https://github.com/skypjack/entt)
 * Editor with a content browser, scene viewport, and asset pipeline (textures, meshes, materials, tilesets, audio)
 * 2D and 3D rendering, including sprites, text (MSDF font atlases), and static meshes
