@@ -5,6 +5,18 @@
 #include "Core/core.h"
 #include "Signaling.hpp"
 
+struct LuaApiEntry
+{
+	enum class Kind { Global, Property, Function, ComponentAccessor };
+
+	std::string name;
+	std::string description;
+	Kind kind = Kind::Global;
+	std::string component;
+	std::string type;
+	bool isComponent = false;
+};
+
 class LuaManager
 {
 public:
@@ -17,14 +29,15 @@ public:
 	static bool IsValid();
 
 	static void AddIdentifier(const std::string& keyword, const std::string& description);
-	static const std::vector<std::pair<std::string, std::string>>& GetIdentifiers() { return s_Identifiers; }
+	static void AddApiEntry(LuaApiEntry entry);
+	static const std::vector<LuaApiEntry>& GetIdentifiers() { return s_Identifiers; }
 
 	static SignalBus& GetSignalBus() { return s_SignalBus; }
 
 private:
 	static Scope<sol::state> s_State;
 
-	static std::vector<std::pair<std::string, std::string>> s_Identifiers;
+	static std::vector<LuaApiEntry> s_Identifiers;
 
 	static SignalBus s_SignalBus;
 };
