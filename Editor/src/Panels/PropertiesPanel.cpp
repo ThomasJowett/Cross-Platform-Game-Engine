@@ -556,6 +556,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Tilemap ------------------------------------------------------------------------------------------------------------------------
 	DrawComponent<TilemapComponent>(ICON_FA_BORDER_ALL" Tilemap", entity, [=](auto& tilemap)
 		{
+			tilemap.UpdateRebuild();
 			//m_TilemapEditor->OnImGuiRender(tilemap);
 
 			if (tilemap.tileset)
@@ -652,7 +653,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 							if (ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
 							{
 								tilemap.tileset = AssetManager::GetAsset<Tileset>(FileUtils::RelativePath(*file, Application::GetOpenDocumentDirectory()));
-								tilemap.mesh->GetMaterials()[0]->AddTexture(tilemap.tileset->GetSubTexture()->GetTexture(), 0);
+								tilemap.Rebuild();
 								SceneManager::CurrentScene()->MakeDirty();
 							}
 						}

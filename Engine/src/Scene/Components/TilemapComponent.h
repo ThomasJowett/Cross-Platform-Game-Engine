@@ -9,9 +9,31 @@
 #include "Renderer/Mesh.h"
 #include "Scripting/Lua/LuaBindings.h"
 
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <array>
+
 class b2Body;
 
 LUA_TYPE_NAME(Tileset, "Tileset")
+
+struct RebuildResult
+{
+	std::vector<Vertex> vertices;
+	std::vector<uint32_t> indices;
+	Ref<Texture2D> texture;
+	Colour tint;
+	uint32_t rebuildId = 0;
+};
+
+struct RebuildState
+{
+	std::mutex mutex;
+	RebuildResult result;
+	bool hasResult = false;
+	uint32_t currentRebuildId = 0;
+};
 
 struct TilemapComponent
 {
@@ -41,8 +63,39 @@ struct TilemapComponent
 
 	b2Body* runtimeBody = nullptr;
 
+	Ref<RebuildState> rebuildState;
+
 	TilemapComponent() = default;
-	TilemapComponent(const TilemapComponent&) = default;
+	TilemapComponent(const TilemapComponent& other)
+		: tileset(other.tileset), tint(other.tint), tiles(other.tiles),
+		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
+		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
+		  orientation(other.orientation), isTrigger(other.isTrigger),
+		  mesh(other.mesh), runtimeBody(nullptr), rebuildState(nullptr)
+	{
+	}
+
+	TilemapComponent& operator=(const TilemapComponent& other)
+	{
+		if (this == &other)
+			return *this;
+
+		tileset = other.tileset;
+		tint = other.tint;
+		tiles = other.tiles;
+		tilesWide = other.tilesWide;
+		tilesHigh = other.tilesHigh;
+		tileWidth = other.tileWidth;
+		tileHeight = other.tileHeight;
+		orientation = other.orientation;
+		isTrigger = other.isTrigger;
+		mesh = other.mesh;
+		runtimeBody = nullptr;
+		rebuildState = nullptr;
+
+		return *this;
+	}
+
 	TilemapComponent(Orientation orientation, uint32_t tilesWide, uint32_t tilesHigh)
 		:orientation(orientation), tilesWide(tilesWide), tilesHigh(tilesHigh),
 		tiles(tilesHigh)
@@ -54,6 +107,7 @@ struct TilemapComponent
 	}
 
 	void Rebuild();
+	void UpdateRebuild();
 
 	REFLECT_LUA_BEGIN(TilemapComponent)
 		REFLECT_LUA_PROPERTY(tileset, "The tileset this map draws its tiles from")
@@ -64,7 +118,7 @@ struct TilemapComponent
 		REFLECT_LUA_PROPERTY(tileHeight, "Height of a single tile, in pixels")
 		REFLECT_LUA_PROPERTY(orientation, "How tiles are laid out: orthogonal, isometric, staggered or hexagonal")
 		REFLECT_LUA_PROPERTY(isTrigger, "Whether this tilemap's collision only reports overlaps instead of physically blocking")
-		REFLECT_LUA_FUNCTION(Rebuild, "Regenerate the tilemap's mesh from the current tile grid")
+		REFLECT_LUA_FUNCTION(Rebuild, "Regenerate the tilemap's mesh from the current tile grid (runs in the background; call UpdateRebuild to pick up the result)")
 
 		REFLECT_LUA_FUNCTION_CUSTOM("SetTile", "Set the tile index at the given column/row, if within bounds", [](Self& c, uint32_t x, uint32_t y, uint32_t tileId) {
 			if (y < c.tiles.size() && x < c.tiles[y].size()) {

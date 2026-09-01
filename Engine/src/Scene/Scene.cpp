@@ -406,6 +406,7 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	for (auto entity : tilemapGroup)
 	{
 		auto&& [transformComp, tilemapComp] = tilemapGroup.get(entity);
+		tilemapComp.UpdateRebuild();
 		if (tilemapComp.tileset && tilemapComp.mesh)
 		{
 			Renderer::Submit(tilemapComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
