@@ -88,3 +88,6 @@ Editor/data/Fonts/Manrope-Medium.png
 build
 build_*
 .cache
+
+# Docs generated lua files
+docs/LuaAPI/
