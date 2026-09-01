@@ -39,10 +39,10 @@ void ScriptView::OnAttach()
 	if (lang.mName == "Lua")
 	{
 		const auto& identifiers = LuaManager::GetIdentifiers();
-		for (auto& [keyword, definition] : identifiers) {
+		for (const LuaApiEntry& entry : identifiers) {
 			TextEditor::Identifier id;
-			id.mDeclaration = definition;
-			lang.mIdentifiers.insert(std::make_pair(keyword, id));
+			id.mDeclaration = entry.description;
+			lang.mIdentifiers.insert(std::make_pair(entry.name, id));
 		}
 	}
 

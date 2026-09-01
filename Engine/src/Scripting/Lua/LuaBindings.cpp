@@ -18,6 +18,12 @@
 
 namespace Lua
 {
+template <typename T, typename = void>
+struct has_lua_bindings : std::false_type {};
+
+template <typename T>
+struct has_lua_bindings<T, std::void_t<decltype(&T::RegisterLuaBindings)>> : std::true_type {};
+
 template<typename Component>
 void RegisterComponent(sol::state& state)
 {
@@ -26,11 +32,26 @@ void RegisterComponent(sol::state& state)
 	name = SplitString(name, '\n')[0];
 	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
-	entity_Type.set_function("Add" + name, static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
-	entity_Type.set_function("Remove" + name, &Entity::RemoveComponent<Component>);
-	entity_Type.set_function("Has" + name, &Entity::HasComponent<Component>);
-	entity_Type.set_function("GetOrAdd" + name, &Entity::GetOrAddComponent<Component>);
-	entity_Type.set_function("Get" + name, &Entity::TryGetComponent<Component>);
+
+	// Kind::ComponentAccessor, not Function - these are implemented on Entity and documented
+	// generically on Entity's own page (see LuaDocGenerator), not repeated on every
+	// component's page as if e.g. a TilemapComponent could be added to itself.
+	auto registerAccessor = [&](const std::string& functionName, const std::string& description, auto&& function)
+	{
+		entity_Type.set_function(functionName, std::forward<decltype(function)>(function));
+		LuaManager::AddApiEntry({ functionName, description, LuaApiEntry::Kind::ComponentAccessor, name, "", true });
+	};
+
+	registerAccessor("Add" + name, "Add a " + name + " to this entity", static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
+	registerAccessor("Remove" + name, "Remove the " + name + " from this entity", &Entity::RemoveComponent<Component>);
+	registerAccessor("Has" + name, "Check whether this entity has a " + name, &Entity::HasComponent<Component>);
+	registerAccessor("GetOrAdd" + name, "Get the entity's " + name + ", adding one first if it doesn't already have one", &Entity::GetOrAddComponent<Component>);
+	registerAccessor("Get" + name, "Get the entity's " + name + ", or nil if it doesn't have one", &Entity::TryGetComponent<Component>);
+
+	if constexpr (has_lua_bindings<Component>::value)
+	{
+		Component::RegisterLuaBindings(state, component_type);
+	}
 }
 
 template<typename... Component>
