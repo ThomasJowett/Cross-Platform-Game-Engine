@@ -19,12 +19,12 @@ void BindInput(sol::state& state)
 	sol::table input = state.create_table("Input");
 	LuaManager::AddIdentifier("Input", "Input");
 
-	SetFunction(input, "IsKeyPressed", "Is key pressed", [](char c)
+	SetFunction(input, "Input", "IsKeyPressed", "Is key pressed", [](char c)
 		{
 			return Input::IsKeyPressed((int)c);
 		});
-	SetFunction(input, "IsMouseButtonPressed", "Is the mouse button pressed", &Input::IsMouseButtonPressed);
-	SetFunction(input, "GetMousePos", "Get mouse position", &Input::GetMousePos);
+	SetFunction(input, "Input", "IsMouseButtonPressed", "Is the mouse button pressed", &Input::IsMouseButtonPressed);
+	SetFunction(input, "Input", "GetMousePos", "Get mouse position", &Input::GetMousePos);
 
 	std::initializer_list<std::pair<sol::string_view, int>> mouseItems = {
 		{ "Left", MOUSE_BUTTON_LEFT },
@@ -87,18 +87,18 @@ void BindInput(sol::state& state)
 
 	state.new_enum("Cursors", cursorItems);
 
-	SetFunction(input, "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
+	SetFunction(input, "Input", "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
 		{ return Application::GetWindow()->SetCursor(cursor); });
-	SetFunction(input, "DisableCursor", "Disable the cursor", [](sol::this_state s)
+	SetFunction(input, "Input", "DisableCursor", "Disable the cursor", [](sol::this_state s)
 		{
 			if (SceneManager::GetSceneState() == SceneState::Play)
 				return Application::GetWindow()->DisableCursor();
 			else
 				return;
 		});
-	SetFunction(input, "EnableCursor", "Enable the cursor", [](sol::this_state s)
+	SetFunction(input, "Input", "EnableCursor", "Enable the cursor", [](sol::this_state s)
 		{ return Application::GetWindow()->EnableCursor(); });
-	SetFunction(input, "SetCursorPosition", "Set the position of the cursor", [](sol::this_state s, double xPos, double yPos)
+	SetFunction(input, "Input", "SetCursorPosition", "Set the position of the cursor", [](sol::this_state s, double xPos, double yPos)
 		{ return Application::GetWindow()->SetCursorPosition(xPos, yPos); });
 }
 }

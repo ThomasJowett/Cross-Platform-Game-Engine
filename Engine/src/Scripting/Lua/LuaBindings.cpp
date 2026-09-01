@@ -52,14 +52,14 @@ void BindEntity(sol::state& state)
 		sol::types<entt::entity, Scene*>
 		>()
 	);
-	SetFunction(entity_type, "IsSceneValid", "Is Valid", &Entity::IsSceneValid);
-	SetFunction(entity_type, "GetName", "Get Name", &Entity::GetName);
-	SetFunction(entity_type, "SetName", "Set Name", &Entity::SetName);
-	SetFunction(entity_type, "AddChild", "Add Child", &Entity::AddChild);
-	SetFunction(entity_type, "Destroy", "Destroy", &Entity::Destroy);
-	SetFunction(entity_type, "GetParent", "Get Parent", &Entity::GetParent);
-	SetFunction(entity_type, "GetSibling", "Get Sibling", &Entity::GetSibling);
-	SetFunction(entity_type, "GetChild", "Get first Child", &Entity::GetChild);
+	SetFunction(entity_type, "Entity", "IsSceneValid", "Is Valid", &Entity::IsSceneValid);
+	SetFunction(entity_type, "Entity", "GetName", "Get Name", &Entity::GetName);
+	SetFunction(entity_type, "Entity", "SetName", "Set Name", &Entity::SetName);
+	SetFunction(entity_type, "Entity", "AddChild", "Add Child", &Entity::AddChild);
+	SetFunction(entity_type, "Entity", "Destroy", "Destroy", &Entity::Destroy);
+	SetFunction(entity_type, "Entity", "GetParent", "Get Parent", &Entity::GetParent);
+	SetFunction(entity_type, "Entity", "GetSibling", "Get Sibling", &Entity::GetSibling);
+	SetFunction(entity_type, "Entity", "GetChild", "Get first Child", &Entity::GetChild);
 
 	RegisterAllComponents<COMPONENTS>(state);
 
@@ -326,7 +326,7 @@ void BindSignaling(sol::state& state)
 	PROFILE_FUNCTION();
 	sol::table signal = state.create_table("Signal");
 	LuaManager::AddIdentifier("Signal", "Signal bus");
-	SetFunction(signal, "Connect", "Connects a function to a signal",
+	SetFunction(signal, "Signal", "Connect", "Connects a function to a signal",
 		[&](const std::string& signalName, Entity listener, sol::function callback)
 		{
 			SignalBus::Callback cb = [callback](Entity sender, sol::table data)
@@ -343,12 +343,12 @@ void BindSignaling(sol::state& state)
 				};
 			LuaManager::GetSignalBus().Connect(signalName, listener, cb);
 		});
-	SetFunction(signal, "Disconnect", "Disconnects a function from a signal",
+	SetFunction(signal, "Signal", "Disconnect", "Disconnects a function from a signal",
 		[&](const std::string& signalName, Entity listener)
 		{
 			LuaManager::GetSignalBus().Disconnect(signalName, listener);
 		});
-	SetFunction(signal, "Emit", "Emits a signal",
+	SetFunction(signal, "Signal", "Emit", "Emits a signal",
 		[&](const std::string& signalName, Entity sender, sol::table data)
 		{
 			LuaManager::GetSignalBus().Emit(signalName, sender, data);
