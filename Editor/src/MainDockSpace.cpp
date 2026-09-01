@@ -414,7 +414,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_CIRCLE_INFO" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
-				Webpage::OpenWebpage(L"https://github.com/ThomasJowett/Cross-Platform-Game-Engine/wiki");
+				Webpage::OpenWebpage(L"https://thomasjowett.github.io/Cross-Platform-Game-Engine/");
 			}
 			ImGui::EndMenu();
 		}

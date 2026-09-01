@@ -1,0 +1,43 @@
+site_name: Cross-Platform Game Engine
+site_description: Documentation and Lua API reference for the engine.
+# Assumes the default GitHub Pages URL for this repo - update if a custom domain is set up.
+site_url: https://thomasjowett.github.io/Cross-Platform-Game-Engine/
+
+# docs/ is hand-written (index.md, getting-started.md, ...) - edit those directly. Only
+# docs/LuaAPI/ is generated (by Editor's --generate-docs flag / the GenerateLuaDocs CMake
+# target - see Editor/src/FileSystem/LuaDocGenerator.cpp); don't hand-edit anything under
+# there, it's overwritten on every regeneration.
+docs_dir: docs
+
+# No explicit nav: the Lua API's component list changes as more components adopt the
+# REFLECT_LUA_* macros, so navigation is left to MkDocs' automatic file-tree nav (which
+# already matches what the generator produces - flat pages plus a Components/ subsection)
+# rather than a hand-maintained list that would go stale.
+
+theme:
+  name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+markdown_extensions:
+  - admonition
+  - pymdownx.superfences

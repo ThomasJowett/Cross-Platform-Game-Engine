@@ -5,6 +5,7 @@
 #include "ProjectsStartScreen.h"
 #include "MainDockSpace.h"
 #include "FileSystem/AssetPacker.h"
+#include "FileSystem/LuaDocGenerator.h"
 
 int main(int argc, char* argv[])
 {
@@ -25,6 +26,17 @@ int main(int argc, char* argv[])
 		bool show = true;
 		AssetPacker packer(&show, Application::GetOpenDocumentDirectory(), std::filesystem::path(argv[3]));
 		packer.RunHeadlessExport();
+		std::cout << "OK" << std::endl;
+		return EXIT_SUCCESS;
+	}
+
+	// Dumps the Lua API registry (already fully populated by LuaManager::Init() inside
+	// app->Init() above) to Markdown - see LuaDocGenerator. Takes the same "some existing
+	// file as argv[1]" form as --export-game purely to satisfy Application::Init's argument
+	// validation; the file's content is never read for this flag.
+	if (argc > 2 && std::string(argv[2]) == "--generate-docs" && argc > 3)
+	{
+		LuaDocGenerator::Generate(std::filesystem::path(argv[3]));
 		std::cout << "OK" << std::endl;
 		return EXIT_SUCCESS;
 	}
