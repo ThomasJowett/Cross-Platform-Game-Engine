@@ -1,0 +1,72 @@
+name: Build and deploy Lua API docs
+
+# Builds the Editor, runs --generate-docs to produce Markdown (see LuaDocGenerator.cpp),
+# renders it with MkDocs + Material (see mkdocs.yml), and deploys straight to GitHub Pages.
+# Everything happens inside this workflow run - nothing is ever committed back to the repo.
+on:
+  push:
+    branches: ["master"]
+    paths:
+      - "Engine/src/Scripting/Lua/**"
+      - "Engine/src/Scene/Components/**"
+      - "Editor/src/FileSystem/LuaDocGenerator.*"
+      - "mkdocs.yml"
+      - "docs/requirements.txt"
+      - ".github/workflows/lua-docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y --fix-missing libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl1-mesa-dev libxcursor-dev mesa-common-dev
+
+      - name: Configure CMake
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Release -S .
+
+      # Only builds what GenerateLuaDocs depends on (Editor and its dependencies), not the
+      # full multi-platform matrix the main CI workflow builds.
+      - name: Generate Lua API docs
+        run: cmake --build build --target GenerateLuaDocs
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MkDocs
+        run: pip install -r docs/requirements.txt
+
+      - name: Build site
+        run: mkdocs build --strict --site-dir site
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
