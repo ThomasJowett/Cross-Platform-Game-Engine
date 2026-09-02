@@ -96,6 +96,43 @@ struct TilemapComponent
 		return *this;
 	}
 
+	// A copy ctor/assignment alone suppresses the implicit move ctor/assignment entirely (not "deletes"
+	// it - it's just never declared), so entt::snapshot_loader's internal `emplace(..., std::move(instance))`
+	// silently fell back to the copy ctor above, which deliberately nulls rebuildState - permanently
+	// severing the link UpdateRebuild() needs to ever pick up the load()-triggered background rebuild's
+	// result. A real move, unlike a copy, doesn't need that severing (the source is being discarded).
+	TilemapComponent(TilemapComponent&& other) noexcept
+		: tileset(std::move(other.tileset)), tint(other.tint), tiles(std::move(other.tiles)),
+		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
+		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
+		  orientation(other.orientation), isTrigger(other.isTrigger),
+		  mesh(std::move(other.mesh)), runtimeBody(other.runtimeBody), rebuildState(std::move(other.rebuildState))
+	{
+		other.runtimeBody = nullptr;
+	}
+
+	TilemapComponent& operator=(TilemapComponent&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		tileset = std::move(other.tileset);
+		tint = other.tint;
+		tiles = std::move(other.tiles);
+		tilesWide = other.tilesWide;
+		tilesHigh = other.tilesHigh;
+		tileWidth = other.tileWidth;
+		tileHeight = other.tileHeight;
+		orientation = other.orientation;
+		isTrigger = other.isTrigger;
+		mesh = std::move(other.mesh);
+		runtimeBody = other.runtimeBody;
+		rebuildState = std::move(other.rebuildState);
+		other.runtimeBody = nullptr;
+
+		return *this;
+	}
+
 	TilemapComponent(Orientation orientation, uint32_t tilesWide, uint32_t tilesHigh)
 		:orientation(orientation), tilesWide(tilesWide), tilesHigh(tilesHigh),
 		tiles(tilesHigh)
