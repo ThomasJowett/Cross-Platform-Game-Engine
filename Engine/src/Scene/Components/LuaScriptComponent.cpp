@@ -75,6 +75,22 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	if (!m_OnEndContactFunc->valid())
 		m_OnEndContactFunc.reset();
 
+	m_OnPressedFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnPressed"]);
+	if (!m_OnPressedFunc->valid())
+		m_OnPressedFunc.reset();
+
+	m_OnReleasedFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnReleased"]);
+	if (!m_OnReleasedFunc->valid())
+		m_OnReleasedFunc.reset();
+
+	m_OnHoveredFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnHovered"]);
+	if (!m_OnHoveredFunc->valid())
+		m_OnHoveredFunc.reset();
+
+	m_OnUnHoveredFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnUnHovered"]);
+	if (!m_OnUnHoveredFunc->valid())
+		m_OnUnHoveredFunc.reset();
+
 	LuaManager::GetState().collect_garbage();
 	return true;
 }
@@ -196,6 +212,74 @@ void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnEndContact': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnPressed()
+{
+	PROFILE_FUNCTION();
+	if (m_OnPressedFunc)
+	{
+		sol::protected_function_result result = m_OnPressedFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnPressed': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnReleased()
+{
+	PROFILE_FUNCTION();
+	if (m_OnReleasedFunc)
+	{
+		sol::protected_function_result result = m_OnReleasedFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnReleased': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnHovered()
+{
+	PROFILE_FUNCTION();
+	if (m_OnHoveredFunc)
+	{
+		sol::protected_function_result result = m_OnHoveredFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnHovered': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnUnHovered()
+{
+	PROFILE_FUNCTION();
+	if (m_OnUnHoveredFunc)
+	{
+		sol::protected_function_result result = m_OnUnHoveredFunc->call();
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnUnHovered': {0}", error.what());
 
 			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);

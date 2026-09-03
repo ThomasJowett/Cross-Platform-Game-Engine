@@ -72,4 +72,8 @@ private:
 	Ref<sol::protected_function> m_OnDebugRenderFunc;
 	Ref<sol::protected_function> m_OnBeginContactFunc;
 	Ref<sol::protected_function> m_OnEndContactFunc;
+	Ref<sol::protected_function> m_OnPressedFunc;
+	Ref<sol::protected_function> m_OnReleasedFunc;
+	Ref<sol::protected_function> m_OnHoveredFunc;
+	Ref<sol::protected_function> m_OnUnHoveredFunc;
 };
