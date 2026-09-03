@@ -95,6 +95,38 @@ struct TilemapComponent
 
 		return *this;
 	}
+	
+	TilemapComponent(TilemapComponent&& other) noexcept
+		: tileset(std::move(other.tileset)), tint(other.tint), tiles(std::move(other.tiles)),
+		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
+		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
+		  orientation(other.orientation), isTrigger(other.isTrigger),
+		  mesh(std::move(other.mesh)), runtimeBody(other.runtimeBody), rebuildState(std::move(other.rebuildState))
+	{
+		other.runtimeBody = nullptr;
+	}
+
+	TilemapComponent& operator=(TilemapComponent&& other) noexcept
+	{
+		if (this == &other)
+			return *this;
+
+		tileset = std::move(other.tileset);
+		tint = other.tint;
+		tiles = std::move(other.tiles);
+		tilesWide = other.tilesWide;
+		tilesHigh = other.tilesHigh;
+		tileWidth = other.tileWidth;
+		tileHeight = other.tileHeight;
+		orientation = other.orientation;
+		isTrigger = other.isTrigger;
+		mesh = std::move(other.mesh);
+		runtimeBody = other.runtimeBody;
+		rebuildState = std::move(other.rebuildState);
+		other.runtimeBody = nullptr;
+
+		return *this;
+	}
 
 	TilemapComponent(Orientation orientation, uint32_t tilesWide, uint32_t tilesHigh)
 		:orientation(orientation), tilesWide(tilesWide), tilesHigh(tilesHigh),
