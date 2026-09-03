@@ -1129,7 +1129,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::InputFloat("Pixels per unit", &canvas.pixelPerUnit, 0.1f);
 		});
 
-	DrawComponent<ButtonComponent>("Button", entity, [](auto& button)
+	DrawComponent<ButtonComponent>("Button", entity, [&](auto& button)
 		{
 			ImGui::Texture2DEdit("Normal", button.normalTexture);
 			ImGui::Texture2DEdit("Hovered", button.hoveredTexture);
@@ -1139,6 +1139,27 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
 
+			if (button.normalTexture)
+			{
+				if (ImGui::Button("Pixel Perfect"))
+				{
+					if (WidgetComponent* widgetComp = entity.TryGetComponent<WidgetComponent>())
+					{
+						Ref<EditComponentCommand<WidgetComponent>> pixelPerfectCommand = CreateRef<EditComponentCommand<WidgetComponent>>(entity);
+						// Fixed width/height is what makes the size setting below actually take effect -
+						// otherwise the widget is in stretch mode and size is derived from anchors instead.
+						widgetComp->fixedWidth = true;
+						widgetComp->fixedHeight = true;
+						widgetComp->SetSizeX((float)button.normalTexture->GetWidth());
+						widgetComp->SetSizeY((float)button.normalTexture->GetHeight());
+						pixelPerfectCommand->End();
+						HistoryManager::AddHistoryRecord(pixelPerfectCommand);
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+				}
+				ImGui::Tooltip("Set the Widget's size to the Normal texture's pixel dimensions");
+			}
+		});
 
 	DrawComponent<StackLayoutComponent>(ICON_FA_BARS" Stack Layout", entity, [](auto& stack)
 		{
