@@ -615,6 +615,12 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pScrollBoxElement->SetAttribute("ClipContent", component->clipContent);
 	}
 
+	if (HiddenComponent* component = entity.TryGetComponent<HiddenComponent>())
+	{
+		tinyxml2::XMLElement* pHiddenElement = pElement->InsertNewChildElement("Hidden");
+		pHiddenElement->SetAttribute("Hidden", component->hidden);
+	}
+
 	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
 	{
 		tinyxml2::XMLElement* pAudioSourceElement = pElement->InsertNewChildElement("AudioSource");
@@ -1258,6 +1264,13 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pScrollBoxComponent->QueryBoolAttribute("HorizontalScroll", &component.horizontalScroll);
 		pScrollBoxComponent->QueryBoolAttribute("VerticalScroll", &component.verticalScroll);
 		pScrollBoxComponent->QueryBoolAttribute("ClipContent", &component.clipContent);
+	}
+
+	// Hidden ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pHiddenComponent = pEntityElement->FirstChildElement("Hidden"))
+	{
+		HiddenComponent& component = entity.AddComponent<HiddenComponent>();
+		pHiddenComponent->QueryBoolAttribute("Hidden", &component.hidden);
 	}
 
 	// AudioSource ----------------------------------------------------------------------------------------------------

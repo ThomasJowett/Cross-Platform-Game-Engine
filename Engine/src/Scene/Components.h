@@ -26,6 +26,7 @@
 #include "Components/PointLightComponent.h"
 #include "Components/AudioSourceComponent.h"
 #include "Components/AudioListenerComponent.h"
+#include "Components/HiddenComponent.h"
 
 #include "Components/UIWidgets/WidgetComponent.h"
 #include "Components/UIWidgets/ButtonComponent.h"
@@ -65,5 +66,6 @@ GridLayoutComponent,		\
 ScrollBoxComponent,			\
 AudioSourceComponent,		\
 AudioListenerComponent,		\
+HiddenComponent,			\
 WeldJoint2DComponent		\
 
