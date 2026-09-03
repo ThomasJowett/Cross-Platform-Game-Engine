@@ -43,6 +43,11 @@ public:
 
 	void RenderUI(uint32_t canvasWidth, uint32_t canvasHeight);
 
+	// Hit-tests and dispatches hover/press/release to any hovered/clicked widget's LuaScriptComponent.
+	// mousePosition must be in the same canvas-local pixel space as canvasWidth/canvasHeight (the
+	// caller is responsible for that conversion - see ViewportPanel.cpp/RuntimeLayer.cpp).
+	void UpdateUIInput(Vector2f mousePosition, uint32_t canvasWidth, uint32_t canvasHeight);
+
 	// Called once per frame
 	void OnUpdate(float deltaTime);
 

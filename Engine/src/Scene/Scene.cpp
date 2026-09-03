@@ -500,6 +500,67 @@ void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 	Renderer::EndScene();
 }
 
+void Scene::UpdateUIInput(Vector2f mousePosition, uint32_t canvasWidth, uint32_t canvasHeight)
+{
+	PROFILE_FUNCTION();
+
+	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
+	entt::entity hit = SceneGraph::HitTestUI(m_Registry, mousePosition, (float)canvasWidth, (float)canvasHeight);
+
+	if (m_HoveredWidget != entt::null && m_HoveredWidget != hit && m_Registry.valid(m_HoveredWidget))
+	{
+		WidgetComponent* widget = m_Registry.try_get<WidgetComponent>(m_HoveredWidget);
+		if (widget != nullptr && !widget->disabled)
+		{
+			widget->state = WidgetComponent::WidgetState::normal;
+			if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(m_HoveredWidget))
+				script->OnUnHovered();
+		}
+	}
+
+	entt::entity previousHovered = m_HoveredWidget;
+	m_HoveredWidget = hit;
+
+	if (hit != entt::null)
+	{
+		WidgetComponent& widget = m_Registry.get<WidgetComponent>(hit);
+		if (widget.disabled)
+		{
+			widget.state = WidgetComponent::WidgetState::disabled;
+		}
+		else
+		{
+			if (hit != previousHovered)
+			{
+				if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(hit))
+					script->OnHovered();
+			}
+			widget.state = (m_PressedWidget == hit && Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				? WidgetComponent::WidgetState::clicked
+				: WidgetComponent::WidgetState::hovered;
+		}
+	}
+
+	if (Input::IsMouseJustPressed(MOUSE_BUTTON_LEFT) && hit != entt::null && !m_Registry.get<WidgetComponent>(hit).disabled)
+	{
+		m_PressedWidget = hit;
+		if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(hit))
+			script->OnPressed();
+	}
+
+	if (Input::IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && m_PressedWidget != entt::null)
+	{
+		// Press and release over the same widget = a completed click; releasing elsewhere cancels it -
+		// standard button semantics.
+		if (m_PressedWidget == hit)
+		{
+			if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(m_PressedWidget))
+				script->OnReleased();
+		}
+		m_PressedWidget = entt::null;
+	}
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 void Scene::OnUpdate(float deltaTime)
