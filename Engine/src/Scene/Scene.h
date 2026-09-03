@@ -112,6 +112,9 @@ private:
 
 	std::stringstream m_Snapshot;
 
+	entt::entity m_HoveredWidget = entt::null;
+	entt::entity m_PressedWidget = entt::null;
+
 	friend class Entity;
 	friend class SceneSerializer;
 

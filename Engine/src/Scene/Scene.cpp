@@ -188,6 +188,10 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
+
+	m_HoveredWidget = entt::null;
+	m_PressedWidget = entt::null;
+
 	if (createSnapshot)
 	{
 		std::stringstream().swap(m_Snapshot);
@@ -312,6 +316,10 @@ void Scene::OnRuntimeStop()
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
 	std::stringstream().swap(m_Snapshot);
+
+	m_HoveredWidget = entt::null;
+	m_PressedWidget = entt::null;
+
 	m_Dirty = false;
 	AssetManager::CleanUp();
 	Renderer::ClearPostProcessEffects();
