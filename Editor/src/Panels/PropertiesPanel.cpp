@@ -1140,6 +1140,23 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
 
 
+	DrawComponent<StackLayoutComponent>(ICON_FA_BARS" Stack Layout", entity, [](auto& stack)
+		{
+			int direction = stack.horizontal ? 1 : 0;
+			if (ImGui::Combo("Direction", &direction, "Vertical\0Horizontal\0"))
+			{
+				stack.horizontal = direction == 1;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			Dirty(ImGui::DragFloat("Spacing", &stack.spacing, 0.1f, 0.0f));
+			Dirty(ImGui::Checkbox("Stretch Cross Axis", &stack.stretchCrossAxis));
+			ImGui::TextUnformatted("Padding");
+			Dirty(ImGui::DragFloat("Left##StackPadding", &stack.paddingLeft, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Top##StackPadding", &stack.paddingTop, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Right##StackPadding", &stack.paddingRight, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Bottom##StackPadding", &stack.paddingBottom, 0.1f, 0.0f));
+		});
+
 	DrawComponent<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity, [](auto& grid)
 		{
 			Dirty(ImGui::DragInt("Columns", &grid.columns, 1, 1, 64));
@@ -1263,6 +1280,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
 			AddComponentMenuItem<ButtonComponent>(ICON_FA_CIRCLE_DOT" Button", entity);
+			AddComponentMenuItem<StackLayoutComponent>(ICON_FA_BARS" Stack Layout", entity);
 			AddComponentMenuItem<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity);
 			AddComponentMenuItem<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity);
 			ImGui::EndMenu();

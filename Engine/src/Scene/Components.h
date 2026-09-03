@@ -29,6 +29,7 @@
 
 #include "Components/UIWidgets/WidgetComponent.h"
 #include "Components/UIWidgets/ButtonComponent.h"
+#include "Components/UIWidgets/StackLayoutComponent.h"
 #include "Components/UIWidgets/GridLayoutComponent.h"
 #include "Components/UIWidgets/ScrollBoxComponent.h"
 
@@ -59,6 +60,7 @@ TextComponent,				\
 PointLightComponent,		\
 WidgetComponent,			\
 ButtonComponent,			\
+StackLayoutComponent,		\
 GridLayoutComponent,		\
 ScrollBoxComponent,			\
 AudioSourceComponent,		\

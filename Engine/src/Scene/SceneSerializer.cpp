@@ -578,6 +578,18 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
 	}
 
+	if (StackLayoutComponent* component = entity.TryGetComponent<StackLayoutComponent>())
+	{
+		tinyxml2::XMLElement* pStackElement = pElement->InsertNewChildElement("StackLayout");
+
+		pStackElement->SetAttribute("Horizontal", component->horizontal);
+		pStackElement->SetAttribute("Spacing", component->spacing);
+		pStackElement->SetAttribute("StretchCrossAxis", component->stretchCrossAxis);
+		pStackElement->SetAttribute("PaddingLeft", component->paddingLeft);
+		pStackElement->SetAttribute("PaddingTop", component->paddingTop);
+		pStackElement->SetAttribute("PaddingRight", component->paddingRight);
+		pStackElement->SetAttribute("PaddingBottom", component->paddingBottom);
+	}
 
 	if (GridLayoutComponent* component = entity.TryGetComponent<GridLayoutComponent>())
 	{
@@ -1206,6 +1218,20 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTint"), component.clickedTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
+	}
+
+	// StackLayout ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pStackComponent = pEntityElement->FirstChildElement("StackLayout"))
+	{
+		StackLayoutComponent& component = entity.AddComponent<StackLayoutComponent>();
+
+		pStackComponent->QueryBoolAttribute("Horizontal", &component.horizontal);
+		pStackComponent->QueryFloatAttribute("Spacing", &component.spacing);
+		pStackComponent->QueryBoolAttribute("StretchCrossAxis", &component.stretchCrossAxis);
+		pStackComponent->QueryFloatAttribute("PaddingLeft", &component.paddingLeft);
+		pStackComponent->QueryFloatAttribute("PaddingTop", &component.paddingTop);
+		pStackComponent->QueryFloatAttribute("PaddingRight", &component.paddingRight);
+		pStackComponent->QueryFloatAttribute("PaddingBottom", &component.paddingBottom);
 	}
 
 	// GridLayout ----------------------------------------------------------------------------------------------------
