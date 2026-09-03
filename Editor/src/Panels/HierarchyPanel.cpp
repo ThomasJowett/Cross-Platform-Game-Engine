@@ -178,7 +178,10 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
 				Entity* dragged = (Entity*)payload->Data;
+				Ref<MoveSiblingCommand> moveCommand = CreateRef<MoveSiblingCommand>(*dragged, entity, /*newIsBefore*/true);
 				SceneGraph::MoveBefore(*dragged, entity);
+				HistoryManager::AddHistoryRecord(moveCommand);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -262,7 +265,10 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
 				Entity* dragged = (Entity*)payload->Data;
+				Ref<MoveSiblingCommand> moveCommand = CreateRef<MoveSiblingCommand>(*dragged, entity, /*newIsBefore*/false);
 				SceneGraph::MoveAfter(*dragged, entity);
+				HistoryManager::AddHistoryRecord(moveCommand);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::EndDragDropTarget();
 		}
