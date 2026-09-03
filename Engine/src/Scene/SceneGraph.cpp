@@ -23,6 +23,21 @@ void SceneGraph::Traverse(entt::registry& registry)
 		});
 }
 
+bool SceneGraph::IsEffectivelyHidden(entt::registry& registry, entt::entity entity)
+{
+	while (entity != entt::null)
+	{
+		if (HiddenComponent* hiddenComp = registry.try_get<HiddenComponent>(entity))
+		{
+			if (hiddenComp->hidden)
+				return true;
+		}
+		HierarchyComponent* hierarchyComp = registry.try_get<HierarchyComponent>(entity);
+		entity = hierarchyComp != nullptr ? hierarchyComp->parent : entt::null;
+	}
+	return false;
+}
+
 void SceneGraph::TraverseUI(entt::registry& registry, uint32_t viewportWidth, uint32_t viewportHeight)
 {
 	PROFILE_FUNCTION();
