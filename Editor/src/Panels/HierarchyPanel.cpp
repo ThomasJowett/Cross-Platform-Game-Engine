@@ -188,6 +188,15 @@ void HierarchyPanel::DrawNode(Entity entity)
 		ImGui::PopID();
 	}
 
+	bool isHidden = entity.HasComponent<HiddenComponent>() && entity.GetComponent<HiddenComponent>().hidden;
+	ImGui::PushID(("hide_toggle" + std::to_string((uint32_t)entity)).c_str());
+	if (ImGui::SmallButton(isHidden ? ICON_FA_EYE_SLASH : ICON_FA_EYE))
+	{
+		entity.GetOrAddComponent<HiddenComponent>().hidden = !isHidden;
+	}
+	ImGui::PopID();
+	ImGui::SameLine();
+
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name.c_str());
 
 	if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_None))
