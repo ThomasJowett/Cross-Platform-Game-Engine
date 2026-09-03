@@ -1139,6 +1139,22 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
 
+
+	DrawComponent<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity, [](auto& grid)
+		{
+			Dirty(ImGui::DragInt("Columns", &grid.columns, 1, 1, 64));
+			Dirty(ImGui::Vector("Cell Spacing", grid.cellSpacing));
+			Dirty(ImGui::Checkbox("Uniform Cell Size", &grid.uniformCellSize));
+			ImGui::Tooltip("When enabled, every cell is stretched to the computed column width and row height");
+			Dirty(ImGui::DragFloat("Fixed Row Height", &grid.fixedRowHeight, 0.1f, 0.0f));
+			ImGui::Tooltip("0 = auto row height from the tallest child in the row");
+			ImGui::TextUnformatted("Padding");
+			Dirty(ImGui::DragFloat("Left##GridPadding", &grid.paddingLeft, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Top##GridPadding", &grid.paddingTop, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Right##GridPadding", &grid.paddingRight, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Bottom##GridPadding", &grid.paddingBottom, 0.1f, 0.0f));
+		});
+
 	DrawComponent<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity, [](auto& scrollBox)
 		{
 			Dirty(ImGui::Checkbox("Horizontal Scroll", &scrollBox.horizontalScroll));
@@ -1247,6 +1263,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
 			AddComponentMenuItem<ButtonComponent>(ICON_FA_CIRCLE_DOT" Button", entity);
+			AddComponentMenuItem<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity);
 			AddComponentMenuItem<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity);
 			ImGui::EndMenu();
 		}

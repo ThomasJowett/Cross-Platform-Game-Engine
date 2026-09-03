@@ -29,6 +29,7 @@
 
 #include "Components/UIWidgets/WidgetComponent.h"
 #include "Components/UIWidgets/ButtonComponent.h"
+#include "Components/UIWidgets/GridLayoutComponent.h"
 #include "Components/UIWidgets/ScrollBoxComponent.h"
 
 //List of components that can be serialized
@@ -58,6 +59,7 @@ TextComponent,				\
 PointLightComponent,		\
 WidgetComponent,			\
 ButtonComponent,			\
+GridLayoutComponent,		\
 ScrollBoxComponent,			\
 AudioSourceComponent,		\
 AudioListenerComponent,		\

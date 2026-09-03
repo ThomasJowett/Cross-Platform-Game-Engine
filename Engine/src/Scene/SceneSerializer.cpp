@@ -578,6 +578,21 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
 	}
 
+
+	if (GridLayoutComponent* component = entity.TryGetComponent<GridLayoutComponent>())
+	{
+		tinyxml2::XMLElement* pGridElement = pElement->InsertNewChildElement("GridLayout");
+
+		pGridElement->SetAttribute("Columns", component->columns);
+		SerializationUtils::Encode(pGridElement->InsertNewChildElement("CellSpacing"), component->cellSpacing);
+		pGridElement->SetAttribute("UniformCellSize", component->uniformCellSize);
+		pGridElement->SetAttribute("FixedRowHeight", component->fixedRowHeight);
+		pGridElement->SetAttribute("PaddingLeft", component->paddingLeft);
+		pGridElement->SetAttribute("PaddingTop", component->paddingTop);
+		pGridElement->SetAttribute("PaddingRight", component->paddingRight);
+		pGridElement->SetAttribute("PaddingBottom", component->paddingBottom);
+	}
+
 	if (ScrollBoxComponent* component = entity.TryGetComponent<ScrollBoxComponent>())
 	{
 		tinyxml2::XMLElement* pScrollBoxElement = pElement->InsertNewChildElement("ScrollBox");
@@ -1193,6 +1208,20 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
 	}
 
+	// GridLayout ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pGridComponent = pEntityElement->FirstChildElement("GridLayout"))
+	{
+		GridLayoutComponent& component = entity.AddComponent<GridLayoutComponent>();
+
+		pGridComponent->QueryIntAttribute("Columns", &component.columns);
+		SerializationUtils::Decode(pGridComponent->FirstChildElement("CellSpacing"), component.cellSpacing);
+		pGridComponent->QueryBoolAttribute("UniformCellSize", &component.uniformCellSize);
+		pGridComponent->QueryFloatAttribute("FixedRowHeight", &component.fixedRowHeight);
+		pGridComponent->QueryFloatAttribute("PaddingLeft", &component.paddingLeft);
+		pGridComponent->QueryFloatAttribute("PaddingTop", &component.paddingTop);
+		pGridComponent->QueryFloatAttribute("PaddingRight", &component.paddingRight);
+		pGridComponent->QueryFloatAttribute("PaddingBottom", &component.paddingBottom);
+	}
 
 	// ScrollBox ----------------------------------------------------------------------------------------------------
 	if (tinyxml2::XMLElement const* pScrollBoxComponent = pEntityElement->FirstChildElement("ScrollBox"))
