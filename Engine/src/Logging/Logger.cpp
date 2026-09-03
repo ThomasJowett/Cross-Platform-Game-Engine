@@ -31,11 +31,11 @@ void Logger::Init()
 
 	s_EngineLogger = std::make_shared<spdlog::logger>("ENGINE", begin(logSinks), end(logSinks));
 	spdlog::register_logger(s_EngineLogger);
-	s_EngineLogger->set_level(spdlog::level::warn);
+	s_EngineLogger->set_level(spdlog::level::debug);
 	s_EngineLogger->flush_on(spdlog::level::err);
 
 	s_ClientLogger = std::make_shared<spdlog::logger>("CLIENT", begin(logSinks), end(logSinks));
 	spdlog::register_logger(s_ClientLogger);
-	s_ClientLogger->set_level(spdlog::level::warn);
+	s_ClientLogger->set_level(spdlog::level::debug);
 	s_ClientLogger->flush_on(spdlog::level::err);
 }
