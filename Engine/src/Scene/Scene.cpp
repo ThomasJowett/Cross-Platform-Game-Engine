@@ -464,37 +464,42 @@ void Scene::Render()
 
 void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 {
-	auto [mouseX, mouseY] = Input::GetMousePos();
-	bool mousePressed = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
-	bool mouseReleased = Input::IsMouseButtonReleased(MOUSE_BUTTON_RIGHT);
-
 	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
 
 	float halfWidth = canvasWidth / 2.0f;
 	float halfHeight = canvasHeight / 2.0f;
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
 
-	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
-	for (auto entity : buttonGroup)
+	// Draw in the same order HitTestUI resolves topmost-hit from (Canvas -> firstChild -> nextSibling),
+	// so what's visually on top is also what's clickable on top.
+	std::vector<entt::entity> drawOrder;
+	SceneGraph::CollectUIDrawOrder(m_Registry, drawOrder);
+
+	for (entt::entity entity : drawOrder)
 	{
-		auto&& [widgetComp, buttonComp] = buttonGroup.get(entity);
+		ButtonComponent* buttonComp = m_Registry.try_get<ButtonComponent>(entity);
+		if (buttonComp == nullptr)
+			continue;
+
+		WidgetComponent& widgetComp = m_Registry.get<WidgetComponent>(entity);
 
 		switch (widgetComp.state)
 		{
 		case WidgetComponent::WidgetState::normal:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->normalTexture, buttonComp->normalTint, 1.0f, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::hovered:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.hoveredTexture, buttonComp.hoveredTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->hoveredTexture, buttonComp->hoveredTint, 1.0f, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::clicked:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.clickedTexture, buttonComp.clickedTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->clickedTexture, buttonComp->clickedTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::disabled:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->disabledTexture, buttonComp->disabledTint, 1.0f, (int)entity);
 			break;
 		default:
 			break;
 		}
-
-		//TODO: check button state
 	}
 
 	Renderer::EndScene();

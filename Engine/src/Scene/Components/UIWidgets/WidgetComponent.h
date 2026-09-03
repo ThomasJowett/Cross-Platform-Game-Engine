@@ -26,11 +26,6 @@ struct WidgetComponent
 	float marginRight = 100.0f;
 	float marginBottom = 100.0f;
 
-	//bool OnPressed();
-	//bool OnReleased();
-	//bool OnHovered();
-	//bool OnUnHovered();
-
 	void SetAnchorLeft(float left);
 	void SetAnchorRight(float right);
 	void SetAnchorTop(float top);
@@ -57,19 +52,32 @@ struct WidgetComponent
 		m_TransformMatrix = transformMatrix;
 	}
 
+	// Origin (translate+rotate, no scale) passed down to children as their parent matrix -
+	// keeping scale out stops a parent's pixel-size Scale(size) from multiplying into a child's translation.
+	Matrix4x4 GetWorldOriginMatrix() const
+	{
+		return m_WorldOriginMatrix;
+	}
+
+	void SetWorldOriginMatrix(Matrix4x4 worldOriginMatrix)
+	{
+		m_WorldOriginMatrix = worldOriginMatrix;
+	}
+
 	enum class WidgetState
 	{
 		normal,
 		hovered,
 		clicked,
 		disabled
-	}state;
+	}state = WidgetState::normal;
 
 	static const uint32_t s_referenceWidth = 1920;
 	static const uint32_t s_referenceHeight = 1080;
 
 private:
 	Matrix4x4 m_TransformMatrix;
+	Matrix4x4 m_WorldOriginMatrix;
 
 	friend cereal::access;
 	template<typename Archive>

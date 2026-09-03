@@ -32,7 +32,7 @@ void WidgetComponent::SetAnchorTop(float top)
 		marginBottom = position.y + size.y - (anchorBottom * s_referenceHeight);
 	}
 
-	marginTop = position.x - (anchorTop * s_referenceHeight);
+	marginTop = position.y - (anchorTop * s_referenceHeight);
 }
 
 void WidgetComponent::SetAnchorBottom(float bottom)
@@ -41,7 +41,7 @@ void WidgetComponent::SetAnchorBottom(float bottom)
 
 	if (anchorTop > bottom) {
 		anchorTop = bottom;
-		marginTop = (anchorTop * s_referenceHeight) + position.x;
+		marginTop = position.y - (anchorTop * s_referenceHeight);
 	}
 
 	marginBottom = position.y + size.y - (anchorBottom * s_referenceHeight);
@@ -63,7 +63,7 @@ void WidgetComponent::SetMarginTop(float top)
 	marginTop = top;
 	position.y = (anchorTop * s_referenceHeight) + marginTop;
 	if (!fixedHeight)
-		size.y = ((anchorBottom * s_referenceHeight) + marginBottom) - ((anchorTop * s_referenceWidth) + marginTop);
+		size.y = ((anchorBottom * s_referenceHeight) + marginBottom) - ((anchorTop * s_referenceHeight) + marginTop);
 	else
 		marginBottom = marginTop + size.y;
 }
@@ -83,7 +83,7 @@ void WidgetComponent::SetMarginBottom(float bottom)
 {
 	marginBottom = bottom;
 	if (!fixedHeight) {
-		size.y = ((anchorBottom * s_referenceHeight) + marginBottom) - ((anchorTop * s_referenceWidth) + marginTop);
+		size.y = ((anchorBottom * s_referenceHeight) + marginBottom) - ((anchorTop * s_referenceHeight) + marginTop);
 	}
 	else {
 		position.y = (anchorTop * s_referenceHeight) + marginTop - size.y;
@@ -118,6 +118,6 @@ void WidgetComponent::SetSizeX(float sizeX)
 void WidgetComponent::SetSizeY(float sizeY)
 {
 	size.y = sizeY;
-	
-	marginBottom = marginTop + size.x;
+
+	marginBottom = marginTop + size.y;
 }

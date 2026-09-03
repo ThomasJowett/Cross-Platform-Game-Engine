@@ -42,82 +42,111 @@ void SceneGraph::TraverseUI(entt::registry& registry, uint32_t viewportWidth, ui
 {
 	PROFILE_FUNCTION();
 
-	auto nonHierachyWidgets = registry.view<WidgetComponent>(entt::exclude<HierarchyComponent>);
+	// Every widget is authored against a virtual s_referenceWidth x s_referenceHeight canvas - anchors
+	// are resolution-independent fractions, so nothing else needs to know the real viewport size except
+	// this one global scale, applied once per widget at render-matrix time (see UpdateUIWidgetTransform).
+	float globalScaleX = (float)viewportWidth / (float)WidgetComponent::s_referenceWidth;
+	float globalScaleY = (float)viewportHeight / (float)WidgetComponent::s_referenceHeight;
 
-	float viewport_scale = (float)(viewportWidth + viewportHeight) / (float)(WidgetComponent::s_referenceWidth + WidgetComponent::s_referenceHeight);
-
-	for (auto entity : nonHierachyWidgets)
+	// Every widget must hang off a CanvasComponent root - a widget with no Canvas ancestor is not traversed.
+	auto canvasView = registry.view<CanvasComponent, HierarchyComponent>();
+	for (auto canvasEntity : canvasView)
 	{
-		auto& widgetComp = registry.get<WidgetComponent>(entity);
+		HierarchyComponent& canvasHierarchyComp = canvasView.get<HierarchyComponent>(canvasEntity);
 
-		Vector3f position;
-		//Vector3f position(widgetComp.position.x * viewport_scale, -(widgetComp.position.y * viewport_scale), 0.0f);
-		Vector3f scale;
-
-		float leftAnchorScreenPosition = viewportWidth * widgetComp.anchorLeft;
-		float rightAnchorScreenPosition = viewportWidth * widgetComp.anchorRight;
-		float topAnchorScreenPosition = viewportHeight * widgetComp.anchorTop;
-		float bottomAnchorScreenPosition = viewportHeight * widgetComp.anchorBottom;
-
-		float viewportScaleX = (float)viewportWidth / (float)WidgetComponent::s_referenceWidth;
-		float viewportScaleY = (float)viewportHeight / (float)WidgetComponent::s_referenceHeight;
-
-		if (widgetComp.fixedWidth) {
-			position.x = leftAnchorScreenPosition + (widgetComp.marginLeft * viewportScaleX);
-			scale.x = widgetComp.size.x;
-		}
-		else {
-			position.x = leftAnchorScreenPosition + (widgetComp.marginLeft * viewportScaleX);
-			scale.x = widgetComp.size.x;
-			//scale.x = rightAnchorScreenPosition + (widgetComp.marginRight * viewportScaleX);
-		}
-
-		if (widgetComp.fixedHeight) {
-			position.y = -(topAnchorScreenPosition + (widgetComp.marginTop * viewportScaleY));
-			scale.y = widgetComp.size.y;
-		}
-		else {
-			position.y = -(topAnchorScreenPosition + (widgetComp.marginTop * viewportScaleY));
-			scale.y = widgetComp.size.y;
-			//scale.y = bottomAnchorScreenPosition + (widgetComp.marginBottom * viewportScaleY);
-		}
-
-		scale.z = 1.0f;
-
-		//Vector3f position(leftAnchorScreenPosition + widgetComp.marginLeft, topAnchorScreenPosition - widgetComp.marginTop, 0.0f);
-		//Vector3f bottomRight(rightAnchorScreenPosition + widgetComp.marginRight, bottomAnchorScreenPosition + widgetComp.marginBottom, 0.0f);
-		//Vector3f scale = position + bottomRight;
-
-		//Vector3f position(widgetComp.position.x * viewport_scale, -(widgetComp.position.y * viewport_scale), 0.0f);
-		//Vector3f position(widgetComp.position.x, -(widgetComp.position.y), 0.0f);
-
-		//Vector3f scale(widgetComp.size.x * viewport_scale, widgetComp.size.y * viewport_scale, 1.0f);
-		//Vector3f scale(widgetComp.size.x, widgetComp.size.y, 1.0f);
-		Vector3f halfScale = scale / 2.0f;
-		halfScale.y = -halfScale.y;
-
-		Matrix4x4 transform =
-			//Matrix4x4::Translate(Vector3f(leftAnchorScreenPosition, -topAnchorScreenPosition, 0.0f))
-			//* Matrix4x4::Translate(Vector3f(widgetComp.marginLeft, -widgetComp.marginTop, 0.0f))
-			Matrix4x4::Translate(position)
-			* Matrix4x4::RotateZ(widgetComp.rotation)
-			* Matrix4x4::Translate(halfScale)
-			* Matrix4x4::Scale(scale);
-
-		widgetComp.SetTransformMatrix(transform);
-	}
-
-	auto widgetView = registry.view<WidgetComponent, HierarchyComponent>();
-	for (auto entity : widgetView) {
-		WidgetComponent& widgetComp = widgetView.get<WidgetComponent>(entity);
-		HierarchyComponent& hierarchyComp = widgetView.get<HierarchyComponent>(entity);
-
-		// if the entity is active and a root node
-		if (hierarchyComp.isActive && hierarchyComp.parent == entt::null)
+		entt::entity child = canvasHierarchyComp.firstChild;
+		while (child != entt::null)
 		{
-			UpdateUIWidgetTransform(&widgetComp, &hierarchyComp, registry);
+			WidgetComponent* childWidget = registry.try_get<WidgetComponent>(child);
+			HierarchyComponent* childHierarchyComp = registry.try_get<HierarchyComponent>(child);
+			if (childWidget != nullptr && childHierarchyComp != nullptr && childHierarchyComp->isActive)
+			{
+				UpdateUIWidgetTransform(child, childWidget, childHierarchyComp, registry, Matrix4x4(),
+					(float)WidgetComponent::s_referenceWidth, (float)WidgetComponent::s_referenceHeight, globalScaleX, globalScaleY, false);
+			}
+			child = childHierarchyComp != nullptr ? childHierarchyComp->nextSibling : entt::null;
 		}
 	}
+}
+
+// ancestorHidden is carried down from the parent rather than re-walking up per node (which
+// SceneGraph::IsEffectivelyHidden does, for the non-tree-walked render loops that need it) - this walk
+// already visits every ancestor before its descendants, so propagating the flag is equivalent and cheaper.
+static void CollectUIDrawOrderRecursive(entt::registry& registry, entt::entity node, bool ancestorHidden, std::vector<entt::entity>& outOrder)
+{
+	while (node != entt::null)
+	{
+		HierarchyComponent* hierarchyComp = registry.try_get<HierarchyComponent>(node);
+
+		bool selfHidden = false;
+		if (HiddenComponent* hiddenComp = registry.try_get<HiddenComponent>(node))
+			selfHidden = hiddenComp->hidden;
+		bool effectivelyHidden = ancestorHidden || selfHidden;
+
+		if (!effectivelyHidden
+			&& registry.try_get<WidgetComponent>(node) != nullptr
+			&& (hierarchyComp == nullptr || hierarchyComp->isActive))
+		{
+			outOrder.push_back(node);
+		}
+
+		if (hierarchyComp != nullptr)
+			CollectUIDrawOrderRecursive(registry, hierarchyComp->firstChild, effectivelyHidden, outOrder);
+
+		node = hierarchyComp != nullptr ? hierarchyComp->nextSibling : entt::null;
+	}
+}
+
+void SceneGraph::CollectUIDrawOrder(entt::registry& registry, std::vector<entt::entity>& outOrder)
+{
+	PROFILE_FUNCTION();
+
+	auto canvasView = registry.view<CanvasComponent, HierarchyComponent>();
+	for (auto canvasEntity : canvasView)
+	{
+		HierarchyComponent& canvasHierarchyComp = canvasView.get<HierarchyComponent>(canvasEntity);
+		bool canvasHidden = false;
+		if (HiddenComponent* hiddenComp = registry.try_get<HiddenComponent>(canvasEntity))
+			canvasHidden = hiddenComp->hidden;
+		CollectUIDrawOrderRecursive(registry, canvasHierarchyComp.firstChild, canvasHidden, outOrder);
+	}
+}
+
+entt::entity SceneGraph::HitTestUI(entt::registry& registry, Vector2f mousePosition, float canvasWidth, float canvasHeight)
+{
+	PROFILE_FUNCTION();
+
+	// Same fixed-vs-scaled rect math already proven in ViewportPanel.cpp's anchor/margin handles -
+	// widget->position/size are reference-resolution pixels, converted to canvas-local screen pixels.
+	float globalScaleX = canvasWidth / (float)WidgetComponent::s_referenceWidth;
+	float globalScaleY = canvasHeight / (float)WidgetComponent::s_referenceHeight;
+
+	std::vector<entt::entity> drawOrder;
+	CollectUIDrawOrder(registry, drawOrder);
+
+	// Walking in draw order and always overwriting on a hit means the last (topmost) match wins,
+	// with a single pass and no need to walk in reverse.
+	entt::entity result = entt::null;
+	for (entt::entity entity : drawOrder)
+	{
+		// Only entities with an interactive widget type participate - containers (Canvas/Stack/Grid/
+		// ScrollBox) draw nothing of their own, so they have no visual footprint to block clicks with.
+		if (registry.try_get<ButtonComponent>(entity) == nullptr)
+			continue;
+
+		WidgetComponent& widget = registry.get<WidgetComponent>(entity);
+		float renderWidth = widget.fixedWidth ? widget.size.x : widget.size.x * globalScaleX;
+		float renderHeight = widget.fixedHeight ? widget.size.y : widget.size.y * globalScaleY;
+		float left = widget.position.x * globalScaleX;
+		float top = widget.position.y * globalScaleY;
+
+		if (mousePosition.x >= left && mousePosition.x <= left + renderWidth
+			&& mousePosition.y >= top && mousePosition.y <= top + renderHeight)
+		{
+			result = entity;
+		}
+	}
+	return result;
 }
 
 void SceneGraph::Reparent(Entity entity, Entity parent)
@@ -396,27 +425,229 @@ void SceneGraph::UpdateTransform(TransformComponent* transformComp, HierarchyCom
 	}
 }
 
-void SceneGraph::UpdateUIWidgetTransform(WidgetComponent* widget, HierarchyComponent* hierachyComp, entt::registry& registry)
+void SceneGraph::UpdateUIWidgetTransform(entt::entity entity, WidgetComponent* widget, HierarchyComponent* hierarchyComp,
+	entt::registry& registry, const Matrix4x4& parentWorldOrigin, float parentWidth, float parentHeight,
+	float globalScaleX, float globalScaleY, bool rectProvidedByParent)
 {
 	PROFILE_FUNCTION();
-	Matrix4x4 parentTransform = Matrix4x4();
 
-	if (hierachyComp->parent != entt::null) {
-		auto parentEntity = hierachyComp->parent;
+	Vector2f localPos, localSize;
 
-		if (registry.valid(parentEntity)) {
-			WidgetComponent* parentWidget = registry.try_get<WidgetComponent>(parentEntity);
-			HierarchyComponent* parentHierarchy = registry.try_get<HierarchyComponent>(parentEntity);
-
-			parentTransform = parentWidget->GetTransformMatrix();
-
-			UpdateUIWidgetTransform(parentWidget, parentHierarchy, registry);
-		}
+	if (rectProvidedByParent)
+	{
+		// A Stack/Grid/ScrollBox ancestor already wrote position/size for this widget this frame -
+		// anchors are ignored while a widget is under container-managed layout.
+		localPos = widget->position;
+		localSize = widget->size;
 	}
 	else
 	{
-		Matrix4x4 transform = Matrix4x4::Translate(widget->position.to_Vector3D());
+		// parentWidth/Height, and every value here, are reference-resolution pixels - anchors need no
+		// scaling (they're fractions), and margins/sizes are authored directly in reference pixels too,
+		// exactly matching WidgetComponent's own Set* setters. The only viewport-size-aware step in this
+		// whole tree is globalScale, applied once below when building the render matrix.
+		float leftAnchorPx = parentWidth * widget->anchorLeft;
+		float rightAnchorPx = parentWidth * widget->anchorRight;
+		float topAnchorPx = parentHeight * widget->anchorTop;
+		float bottomAnchorPx = parentHeight * widget->anchorBottom;
+
+		localPos.x = leftAnchorPx + widget->marginLeft;
+		localPos.y = topAnchorPx + widget->marginTop;
+
+		localSize.x = widget->fixedWidth ? widget->size.x : (rightAnchorPx + widget->marginRight) - localPos.x;
+		localSize.y = widget->fixedHeight ? widget->size.y : (bottomAnchorPx + widget->marginBottom) - localPos.y;
+
+		widget->position = localPos;
+		widget->size = localSize;
 	}
 
-	//Matrix4x4 localTransform = 
+	// Origin (translate+rotate, no scale) is what gets passed to children - keeps this widget's
+	// pixel-size Scale out of the matrix children compose their own translation against. Stays in
+	// reference-resolution space the whole way down; globalScale is applied fresh below, never baked
+	// into worldOrigin, or it would compound once per level of nesting.
+	//
+	// Fixed width/height means literally fixed - the same real screen-pixel size at any resolution -
+	// not a reference-resolution size that still scales with the viewport. Pre-dividing by globalScale
+	// here cancels out the multiply below, so the rendered size ends up exactly widget->size unscaled.
+	// (Position still scales normally, so the widget stays correctly anchored either way.)
+	Vector3f renderSize(
+		widget->fixedWidth ? localSize.x / globalScaleX : localSize.x,
+		widget->fixedHeight ? localSize.y / globalScaleY : localSize.y,
+		1.0f);
+	Vector3f halfRenderSize(renderSize.x * 0.5f, -renderSize.y * 0.5f, 0.0f);
+	Matrix4x4 localOrigin = Matrix4x4::Translate(Vector3f(localPos.x, -localPos.y, 0.0f)) * Matrix4x4::RotateZ(widget->rotation);
+	Matrix4x4 worldOrigin = parentWorldOrigin * localOrigin;
+	Matrix4x4 globalScale = Matrix4x4::Scale(Vector3f(globalScaleX, globalScaleY, 1.0f));
+	Matrix4x4 renderMatrix = globalScale * worldOrigin * Matrix4x4::Translate(halfRenderSize) * Matrix4x4::Scale(renderSize);
+
+	widget->SetWorldOriginMatrix(worldOrigin);
+	widget->SetTransformMatrix(renderMatrix);
+
+	bool childrenRectProvided = false;
+	if (StackLayoutComponent* stack = registry.try_get<StackLayoutComponent>(entity))
+	{
+		LayoutStack(*stack, widget, localSize, hierarchyComp, registry);
+		childrenRectProvided = true;
+	}
+	else if (GridLayoutComponent* grid = registry.try_get<GridLayoutComponent>(entity))
+	{
+		LayoutGrid(*grid, widget, localSize, hierarchyComp, registry);
+		childrenRectProvided = true;
+	}
+	else if (ScrollBoxComponent* scrollBox = registry.try_get<ScrollBoxComponent>(entity))
+	{
+		LayoutScrollBox(*scrollBox, localSize, hierarchyComp, registry);
+		childrenRectProvided = true;
+	}
+
+	entt::entity child = hierarchyComp->firstChild;
+	while (child != entt::null)
+	{
+		WidgetComponent* childWidget = registry.try_get<WidgetComponent>(child);
+		HierarchyComponent* childHierarchyComp = registry.try_get<HierarchyComponent>(child);
+		if (childWidget != nullptr && childHierarchyComp != nullptr && childHierarchyComp->isActive)
+		{
+			UpdateUIWidgetTransform(child, childWidget, childHierarchyComp, registry, worldOrigin,
+				localSize.x, localSize.y, globalScaleX, globalScaleY, childrenRectProvided);
+		}
+		child = childHierarchyComp != nullptr ? childHierarchyComp->nextSibling : entt::null;
+	}
+}
+
+void SceneGraph::LayoutStack(const StackLayoutComponent& stack, WidgetComponent* containerWidget, Vector2f containerSize,
+	HierarchyComponent* hierarchyComp, entt::registry& registry)
+{
+	PROFILE_FUNCTION();
+
+	float padLeft = stack.paddingLeft;
+	float padTop = stack.paddingTop;
+	float padRight = stack.paddingRight;
+	float padBottom = stack.paddingBottom;
+	float spacingPx = stack.spacing;
+	float crossSize = stack.horizontal ? (containerSize.y - padTop - padBottom) : (containerSize.x - padLeft - padRight);
+
+	float cursor = stack.horizontal ? padLeft : padTop;
+	bool first = true;
+
+	entt::entity child = hierarchyComp->firstChild;
+	while (child != entt::null)
+	{
+		WidgetComponent* childWidget = registry.try_get<WidgetComponent>(child);
+		HierarchyComponent* childHierarchyComp = registry.try_get<HierarchyComponent>(child);
+		if (childWidget != nullptr && childHierarchyComp != nullptr && childHierarchyComp->isActive)
+		{
+			if (!first)
+				cursor += spacingPx;
+			first = false;
+
+			Vector2f desired = childWidget->size;
+			if (stack.horizontal)
+			{
+				childWidget->position = Vector2f(cursor, padTop);
+				childWidget->size = Vector2f(desired.x, stack.stretchCrossAxis ? crossSize : desired.y);
+				cursor += childWidget->size.x;
+			}
+			else
+			{
+				childWidget->position = Vector2f(padLeft, cursor);
+				childWidget->size = Vector2f(stack.stretchCrossAxis ? crossSize : desired.x, desired.y);
+				cursor += childWidget->size.y;
+			}
+		}
+		child = childHierarchyComp != nullptr ? childHierarchyComp->nextSibling : entt::null;
+	}
+
+	// Auto-size the stack's own main axis to fit its content (matching Godot's VBox/HBoxContainer) -
+	// besides being generally expected, this is what lets a Stack inside a ScrollBox report a meaningful
+	// contentSize (see LayoutScrollBox) instead of being stuck at whatever size it last had.
+	if (stack.horizontal)
+		containerWidget->size.x = cursor + padRight;
+	else
+		containerWidget->size.y = cursor + padBottom;
+}
+
+void SceneGraph::LayoutGrid(const GridLayoutComponent& grid, WidgetComponent* containerWidget, Vector2f containerSize,
+	HierarchyComponent* hierarchyComp, entt::registry& registry)
+{
+	PROFILE_FUNCTION();
+
+	int columns = std::max(1, grid.columns);
+	float padLeft = grid.paddingLeft;
+	float padTop = grid.paddingTop;
+	float padRight = grid.paddingRight;
+	float padBottom = grid.paddingBottom;
+	float gapX = grid.cellSpacing.x;
+	float gapY = grid.cellSpacing.y;
+	float cellWidth = (containerSize.x - padLeft - padRight - (columns - 1) * gapX) / columns;
+
+	std::vector<entt::entity> children;
+	entt::entity c = hierarchyComp->firstChild;
+	while (c != entt::null)
+	{
+		HierarchyComponent* childHierarchyComp = registry.try_get<HierarchyComponent>(c);
+		if (registry.try_get<WidgetComponent>(c) != nullptr && childHierarchyComp != nullptr && childHierarchyComp->isActive)
+			children.push_back(c);
+		c = childHierarchyComp != nullptr ? childHierarchyComp->nextSibling : entt::null;
+	}
+
+	if (children.empty())
+	{
+		containerWidget->size.y = padTop + padBottom;
+		return;
+	}
+
+	int rows = (int)((children.size() + columns - 1) / columns);
+	std::vector<float> rowHeights(rows, grid.fixedRowHeight > 0.0f ? grid.fixedRowHeight : 0.0f);
+	if (grid.fixedRowHeight <= 0.0f)
+	{
+		for (size_t i = 0; i < children.size(); i++)
+		{
+			WidgetComponent* childWidget = registry.try_get<WidgetComponent>(children[i]);
+			rowHeights[i / columns] = std::max(rowHeights[i / columns], childWidget->size.y);
+		}
+	}
+
+	float y = padTop;
+	for (int row = 0; row < rows; row++)
+	{
+		float x = padLeft;
+		for (int col = 0; col < columns; col++)
+		{
+			size_t idx = (size_t)row * columns + col;
+			if (idx >= children.size())
+				break;
+
+			WidgetComponent* childWidget = registry.try_get<WidgetComponent>(children[idx]);
+			childWidget->position = Vector2f(x, y);
+			if (grid.uniformCellSize)
+				childWidget->size = Vector2f(cellWidth, rowHeights[row]);
+			x += cellWidth + gapX;
+		}
+		y += rowHeights[row] + gapY;
+	}
+
+	// Auto-size the grid's own height to fit its rows (see LayoutStack for why) - width stays whatever
+	// the grid's own anchors/fixedWidth already gave it, since column width is derived from that.
+	containerWidget->size.y = y - gapY + padBottom;
+}
+
+void SceneGraph::LayoutScrollBox(ScrollBoxComponent& scrollBox, Vector2f containerSize, HierarchyComponent* hierarchyComp,
+	entt::registry& registry)
+{
+	PROFILE_FUNCTION();
+
+	float maxScrollX = std::max(0.0f, scrollBox.contentSize.x - containerSize.x);
+	float maxScrollY = std::max(0.0f, scrollBox.contentSize.y - containerSize.y);
+	scrollBox.scrollOffset.x = scrollBox.horizontalScroll ? std::clamp(scrollBox.scrollOffset.x, 0.0f, maxScrollX) : 0.0f;
+	scrollBox.scrollOffset.y = scrollBox.verticalScroll ? std::clamp(scrollBox.scrollOffset.y, 0.0f, maxScrollY) : 0.0f;
+
+	entt::entity child = hierarchyComp->firstChild;
+	if (child != entt::null)
+	{
+		if (WidgetComponent* childWidget = registry.try_get<WidgetComponent>(child))
+		{
+			childWidget->position = Vector2f(-scrollBox.scrollOffset.x, -scrollBox.scrollOffset.y);
+			scrollBox.contentSize = childWidget->size;
+		}
+	}
 }

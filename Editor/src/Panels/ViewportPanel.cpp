@@ -139,11 +139,25 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		auto [view, projection] = SceneManager::CurrentScene()->GetPrimaryCameraViewProjection();
 		Renderer::RenderScene(SceneManager::CurrentScene(), view, projection, m_Framebuffer);
 		m_Framebuffer->UnBind();
+
+		if (sceneState == SceneState::Play)
+		{
+			// m_RelativeMousePosition/m_ViewportHovered are computed in OnImGuiRender, one frame behind -
+			// same established lag the camera controller already relies on for this exact class of data.
+			Vector2f uiMousePosition = m_ViewportHovered ? m_RelativeMousePosition : Vector2f(-1e6f, -1e6f);
+			SceneManager::CurrentScene()->UpdateUIInput(uiMousePosition, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
 	}
 	else if (sceneState == SceneState::SimulatePause || sceneState == SceneState::Edit || sceneState == SceneState::Simulate)
 	{
 		Renderer::RenderScene(SceneManager::CurrentScene(), m_CameraController.GetTransformMatrix(), m_CameraController.GetCamera()->GetProjectionMatrix(), m_Framebuffer);
 		m_Framebuffer->UnBind();
+
+		if (sceneState == SceneState::Simulate)
+		{
+			Vector2f uiMousePosition = m_ViewportHovered ? m_RelativeMousePosition : Vector2f(-1e6f, -1e6f);
+			SceneManager::CurrentScene()->UpdateUIInput(uiMousePosition, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+		}
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
 		{
@@ -168,9 +182,12 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseReleased(ImGuiMouseButton_Right))
 			{
 				// Only trust IsOver()/IsUsing() when the gizmo was actually drawn this frame -
-				// otherwise it's stale and still sits over the last selected entity.
+				// otherwise it's stale and still sits over the last selected entity. m_WidgetHandleActive
+				// is the equivalent guard for the anchor/margin handles (set last frame, during
+				// OnImGuiRender) - without it, clicking a handle also pixel-picks whatever's under that
+				// same screen pixel and stomps the selection the handle was meant to be editing.
 				bool overGizmo = m_HierarchyPanel->GetSelectedEntity().IsSceneValid() && (ImGuizmo::IsUsing() || ImGuizmo::IsOver());
-				if (!overGizmo && !m_RightClickMenuOpen && m_RelativeMousePosition == m_MousePositionBeginClick)
+				if (!overGizmo && !m_WidgetHandleActive && !m_RightClickMenuOpen && m_RelativeMousePosition == m_MousePositionBeginClick)
 					m_HierarchyPanel->SetSelectedEntity(m_HoveredEntity);
 			}
 		}
@@ -1083,28 +1100,178 @@ void ViewportPanel::OnImGuiRender()
 					}
 				}
 
+				m_WidgetHandleActive = false;
 				if (WidgetComponent* widgetComp = selectedEntity.TryGetComponent<WidgetComponent>())
 				{
+					// widgetComp->position/size are reference-resolution pixels (see SceneGraph::TraverseUI) -
+					// this scale converts them to the screen pixels window_pos/m_ViewportSize are already in.
+					// Anchor corners need no such conversion (they're 0-1 fractions of the parent already).
+					// Assumes the selected widget is a direct Canvas child (parent size == the reference
+					// canvas) - a widget nested under another widget's rect isn't precisely represented here.
+					float viewportScaleX = m_ViewportSize.x / (float)WidgetComponent::s_referenceWidth;
+					float viewportScaleY = m_ViewportSize.y / (float)WidgetComponent::s_referenceHeight;
 
 					ImVec2 topLeft(m_ViewportSize.x * widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y * widgetComp->anchorTop + window_pos.y);
 					ImVec2 bottomLeft(m_ViewportSize.x * widgetComp->anchorLeft + window_pos.x, m_ViewportSize.y * widgetComp->anchorBottom + window_pos.y);
 					ImVec2 bottomRight(m_ViewportSize.x * widgetComp->anchorRight + window_pos.x, m_ViewportSize.y * widgetComp->anchorBottom + window_pos.y);
 					ImVec2 topRight(m_ViewportSize.x * widgetComp->anchorRight + window_pos.x, m_ViewportSize.y * widgetComp->anchorTop + window_pos.y);
 
+					// Fixed width/height means the rendered size is literal screen pixels, not scaled like
+					// everything else (see SceneGraph::UpdateUIWidgetTransform) - match that here too, or
+					// these handles land wherever the un-fixed case would have put them.
+					float renderWidth = widgetComp->fixedWidth ? widgetComp->size.x : widgetComp->size.x * viewportScaleX;
+					float renderHeight = widgetComp->fixedHeight ? widgetComp->size.y : widgetComp->size.y * viewportScaleY;
+
+					float rectLeft = window_pos.x + widgetComp->position.x * viewportScaleX;
+					float rectTop = window_pos.y + widgetComp->position.y * viewportScaleY;
+					float rectRight = rectLeft + renderWidth;
+					float rectBottom = rectTop + renderHeight;
+
+					ImVec2 leftMid(rectLeft, (rectTop + rectBottom) * 0.5f);
+					ImVec2 topMid((rectLeft + rectRight) * 0.5f, rectTop);
+					ImVec2 rightMid(rectRight, (rectTop + rectBottom) * 0.5f);
+					ImVec2 bottomMid((rectLeft + rectRight) * 0.5f, rectBottom);
 
 					ImDrawList* drawList = ImGui::GetWindowDrawList();
 
-					drawList->AddCircleFilled(topLeft, 4, IM_COL32(44, 44, 44, 255));
-					drawList->AddCircleFilled(topLeft, 3, IM_COL32(255, 255, 255, 255));
+					auto drawHandle = [drawList](ImVec2 pos)
+					{
+						drawList->AddCircleFilled(pos, 4, IM_COL32(44, 44, 44, 255));
+						drawList->AddCircleFilled(pos, 3, IM_COL32(255, 255, 255, 255));
+					};
 
-					drawList->AddCircleFilled(bottomLeft, 4, IM_COL32(44, 44, 44, 255));
-					drawList->AddCircleFilled(bottomLeft, 3, IM_COL32(255, 255, 255, 255));
+					auto beginWidgetEdit = [&]()
+					{
+						if (!m_EditWidgetCommand)
+							m_EditWidgetCommand = CreateRef<EditComponentCommand<WidgetComponent>>(selectedEntity);
+					};
 
-					drawList->AddCircleFilled(bottomRight, 4, IM_COL32(44, 44, 44, 255));
-					drawList->AddCircleFilled(bottomRight, 3, IM_COL32(255, 255, 255, 255));
+					auto endWidgetEditIfDone = [&]()
+					{
+						m_WidgetHandleActive |= ImGui::IsItemHovered() || ImGui::IsItemActive();
+						if (ImGui::IsItemDeactivated() && m_EditWidgetCommand)
+						{
+							m_EditWidgetCommand->End();
+							HistoryManager::AddHistoryRecord(m_EditWidgetCommand);
+							m_EditWidgetCommand = nullptr;
+							SceneManager::CurrentScene()->MakeDirty();
+						}
+					};
 
-					drawList->AddCircleFilled(topRight, 4, IM_COL32(44, 44, 44, 255));
-					drawList->AddCircleFilled(topRight, 3, IM_COL32(255, 255, 255, 255));
+					const float handleRadius = 6.0f;
+					const ImVec2 handleSize(handleRadius * 2.0f, handleRadius * 2.0f);
+
+					// Corner handles drag the anchor point they sit on (both axes at once).
+					struct CornerHandle { const char* id; ImVec2 pos; bool left, top; };
+					CornerHandle corners[] = {
+						{ "anchor_tl", topLeft, true, true },
+						{ "anchor_bl", bottomLeft, true, false },
+						{ "anchor_br", bottomRight, false, false },
+						{ "anchor_tr", topRight, false, true },
+					};
+					for (CornerHandle& corner : corners)
+					{
+						ImGui::PushID(corner.id);
+						ImGui::SetCursorScreenPos(ImVec2(corner.pos.x - handleRadius, corner.pos.y - handleRadius));
+						ImGui::InvisibleButton(corner.id, handleSize);
+						if (ImGui::IsItemActivated())
+							beginWidgetEdit();
+						if (ImGui::IsItemActive())
+						{
+							ImVec2 mousePos = ImGui::GetMousePos();
+							float fractionX = std::clamp((mousePos.x - window_pos.x) / m_ViewportSize.x, 0.0f, 1.0f);
+							float fractionY = std::clamp((mousePos.y - window_pos.y) / m_ViewportSize.y, 0.0f, 1.0f);
+							if (corner.left)
+								widgetComp->SetAnchorLeft(fractionX);
+							else
+								widgetComp->SetAnchorRight(fractionX);
+							if (corner.top)
+								widgetComp->SetAnchorTop(fractionY);
+							else
+								widgetComp->SetAnchorBottom(fractionY);
+						}
+						endWidgetEditIfDone();
+						ImGui::PopID();
+					}
+
+					// Edge handles: the near edge (left/top) always drags margin; the far edge (right/bottom)
+					// resizes directly when fixedWidth/fixedHeight, otherwise drags the opposite margin -
+					// matches which fields SceneGraph::UpdateUIWidgetTransform actually reads for each mode.
+					// All margin/size values passed to the Set* setters are reference-resolution pixels,
+					// matching WidgetComponent's own formulas - screen-space mouse deltas are converted to
+					// reference space (divide by viewportScale) before being handed to a setter.
+					ImGui::PushID("margin_left");
+					ImGui::SetCursorScreenPos(ImVec2(leftMid.x - handleRadius, leftMid.y - handleRadius));
+					ImGui::InvisibleButton("margin_left", handleSize);
+					if (ImGui::IsItemActivated())
+						beginWidgetEdit();
+					if (ImGui::IsItemActive())
+					{
+						float desiredLeftRef = (ImGui::GetMousePos().x - window_pos.x) / viewportScaleX;
+						widgetComp->SetMarginLeft(desiredLeftRef - (float)WidgetComponent::s_referenceWidth * widgetComp->anchorLeft);
+					}
+					endWidgetEditIfDone();
+					ImGui::PopID();
+
+					ImGui::PushID("margin_top");
+					ImGui::SetCursorScreenPos(ImVec2(topMid.x - handleRadius, topMid.y - handleRadius));
+					ImGui::InvisibleButton("margin_top", handleSize);
+					if (ImGui::IsItemActivated())
+						beginWidgetEdit();
+					if (ImGui::IsItemActive())
+					{
+						float desiredTopRef = (ImGui::GetMousePos().y - window_pos.y) / viewportScaleY;
+						widgetComp->SetMarginTop(desiredTopRef - (float)WidgetComponent::s_referenceHeight * widgetComp->anchorTop);
+					}
+					endWidgetEditIfDone();
+					ImGui::PopID();
+
+					ImGui::PushID("margin_right");
+					ImGui::SetCursorScreenPos(ImVec2(rightMid.x - handleRadius, rightMid.y - handleRadius));
+					ImGui::InvisibleButton("margin_right", handleSize);
+					if (ImGui::IsItemActivated())
+						beginWidgetEdit();
+					if (ImGui::IsItemActive())
+					{
+						if (widgetComp->fixedWidth)
+							// Fixed size is literal screen pixels - no reference-space conversion here.
+							widgetComp->SetSizeX(std::max(1.0f, ImGui::GetMousePos().x - rectLeft));
+						else
+						{
+							float desiredRightRef = (ImGui::GetMousePos().x - window_pos.x) / viewportScaleX;
+							widgetComp->SetMarginRight(desiredRightRef - (float)WidgetComponent::s_referenceWidth * widgetComp->anchorRight);
+						}
+					}
+					endWidgetEditIfDone();
+					ImGui::PopID();
+
+					ImGui::PushID("margin_bottom");
+					ImGui::SetCursorScreenPos(ImVec2(bottomMid.x - handleRadius, bottomMid.y - handleRadius));
+					ImGui::InvisibleButton("margin_bottom", handleSize);
+					if (ImGui::IsItemActivated())
+						beginWidgetEdit();
+					if (ImGui::IsItemActive())
+					{
+						if (widgetComp->fixedHeight)
+							// Fixed size is literal screen pixels - no reference-space conversion here.
+							widgetComp->SetSizeY(std::max(1.0f, ImGui::GetMousePos().y - rectTop));
+						else
+						{
+							float desiredBottomRef = (ImGui::GetMousePos().y - window_pos.y) / viewportScaleY;
+							widgetComp->SetMarginBottom(desiredBottomRef - (float)WidgetComponent::s_referenceHeight * widgetComp->anchorBottom);
+						}
+					}
+					endWidgetEditIfDone();
+					ImGui::PopID();
+
+					drawHandle(topLeft);
+					drawHandle(bottomLeft);
+					drawHandle(bottomRight);
+					drawHandle(topRight);
+					drawHandle(leftMid);
+					drawHandle(topMid);
+					drawHandle(rightMid);
+					drawHandle(bottomMid);
 				}
 			}
 			ImGuizmo::PopID();
