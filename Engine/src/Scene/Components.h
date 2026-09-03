@@ -29,6 +29,7 @@
 
 #include "Components/UIWidgets/WidgetComponent.h"
 #include "Components/UIWidgets/ButtonComponent.h"
+#include "Components/UIWidgets/ScrollBoxComponent.h"
 
 //List of components that can be serialized
 #define COMPONENTS			\
@@ -57,6 +58,7 @@ TextComponent,				\
 PointLightComponent,		\
 WidgetComponent,			\
 ButtonComponent,			\
+ScrollBoxComponent,			\
 AudioSourceComponent,		\
 AudioListenerComponent,		\
 WeldJoint2DComponent		\

@@ -528,6 +528,17 @@ void HierarchyPanel::CreateMenu()
 			}
 			m_SelectedEntity = entity;
 		}
+		if (ImGui::MenuItem("Scroll Box"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Scroll Box");
+			entity.AddComponent<WidgetComponent>();
+			entity.AddComponent<ScrollBoxComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
 		ImGui::EndMenu();
 	}
 }

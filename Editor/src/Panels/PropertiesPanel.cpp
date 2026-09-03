@@ -1138,6 +1138,16 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
+
+	DrawComponent<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity, [](auto& scrollBox)
+		{
+			Dirty(ImGui::Checkbox("Horizontal Scroll", &scrollBox.horizontalScroll));
+			Dirty(ImGui::Checkbox("Vertical Scroll", &scrollBox.verticalScroll));
+			Dirty(ImGui::Vector("Scroll Offset", scrollBox.scrollOffset));
+			ImGui::BeginDisabled();
+			ImGui::Checkbox("Clip Content", &scrollBox.clipContent);
+			ImGui::EndDisabled();
+			ImGui::Tooltip("Not implemented yet - content can visually overflow the box until scissor-rect clipping is added");
 		});
 
 	DrawComponent<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity, [](auto& audioSource)
@@ -1237,6 +1247,7 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
 			AddComponentMenuItem<ButtonComponent>(ICON_FA_CIRCLE_DOT" Button", entity);
+			AddComponentMenuItem<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity);
 			ImGui::EndMenu();
 		}
 

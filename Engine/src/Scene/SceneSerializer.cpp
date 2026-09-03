@@ -578,6 +578,16 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
 	}
 
+	if (ScrollBoxComponent* component = entity.TryGetComponent<ScrollBoxComponent>())
+	{
+		tinyxml2::XMLElement* pScrollBoxElement = pElement->InsertNewChildElement("ScrollBox");
+
+		SerializationUtils::Encode(pScrollBoxElement->InsertNewChildElement("ScrollOffset"), component->scrollOffset);
+		pScrollBoxElement->SetAttribute("HorizontalScroll", component->horizontalScroll);
+		pScrollBoxElement->SetAttribute("VerticalScroll", component->verticalScroll);
+		pScrollBoxElement->SetAttribute("ClipContent", component->clipContent);
+	}
+
 	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
 	{
 		tinyxml2::XMLElement* pAudioSourceElement = pElement->InsertNewChildElement("AudioSource");
@@ -1181,6 +1191,18 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTint"), component.clickedTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
+	}
+
+
+	// ScrollBox ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pScrollBoxComponent = pEntityElement->FirstChildElement("ScrollBox"))
+	{
+		ScrollBoxComponent& component = entity.AddComponent<ScrollBoxComponent>();
+
+		SerializationUtils::Decode(pScrollBoxComponent->FirstChildElement("ScrollOffset"), component.scrollOffset);
+		pScrollBoxComponent->QueryBoolAttribute("HorizontalScroll", &component.horizontalScroll);
+		pScrollBoxComponent->QueryBoolAttribute("VerticalScroll", &component.verticalScroll);
+		pScrollBoxComponent->QueryBoolAttribute("ClipContent", &component.clipContent);
 	}
 
 	// AudioSource ----------------------------------------------------------------------------------------------------
