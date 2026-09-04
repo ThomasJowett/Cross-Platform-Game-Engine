@@ -860,8 +860,6 @@ void ViewportPanel::OnImGuiRender()
 							SceneManager::CurrentScene()->InstantiateScene(scene, Vector3f());
 						}
 					}
-
-					CLIENT_DEBUG("Dragging over viewport: {0}", file->string());
 				}
 				ImGui::EndDragDropTarget();
 			}
@@ -1285,7 +1283,10 @@ void ViewportPanel::OnImGuiRender()
 			ImGui::Text("%.1f", io.Framerate);
 		}
 
-		if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f
+		SceneState sceneState = SceneManager::GetSceneState();
+		bool canBoxSelect = sceneState == SceneState::Edit || sceneState == SceneState::Simulate || sceneState == SceneState::SimulatePause;
+
+		if (canBoxSelect && ImGui::IsMouseDown(ImGuiMouseButton_Left) && !ImGuizmo::IsUsing() && (m_MousePositionBeginClick - m_RelativeMousePosition).SqrMagnitude() > 0.01f
 			&& m_MousePositionBeginClick.x < m_ViewportSize.x && m_MousePositionBeginClick.y < m_ViewportSize.y
 			&& m_MousePositionBeginClick.x > 0.0f && m_MousePositionBeginClick.y > 0.0f
 			&& !m_TilemapEditor->IsHovered())
