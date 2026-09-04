@@ -4,8 +4,16 @@
 #include <GLFW/glfw3.h>
 
 #include "Core/Joysticks.h"
+#include "Core/Application.h"
 
 Scope<Input> Input::s_Instance = nullptr;
+
+std::pair<double, double> Input::GetMousePos()
+{
+	if (Application::HasGameViewportOverride())
+		return Application::GetGameViewportMousePos();
+	return s_Instance->GetMousePosImpl();
+}
 
 Input::Input(GLFWwindow* windowHandle)
 	:m_Window(windowHandle)

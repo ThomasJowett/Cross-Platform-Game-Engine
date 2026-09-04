@@ -20,8 +20,10 @@ public:
 		{ return s_Instance->m_MouseButtonsReleased.at(button); }
 	inline static bool IsMouseJustPressed(int button)
 		{ return s_Instance->m_MouseButtonsPressed.at(button); }
-	inline static std::pair<double, double> GetMousePos() 
-		{ return s_Instance->GetMousePosImpl(); }
+	// Returns Application's game-viewport-relative override when the Editor is Play-testing in its
+	// docked viewport (see Application::SetGameViewportOverride()), or the raw OS cursor position
+	// otherwise - Runtime never sets an override, so this is unaffected there.
+	static std::pair<double, double> GetMousePos();
 	inline static double GetMouseX() 
 		{ return s_Instance->GetMouseXImpl(); }
 	inline static double GetMouseY() 
