@@ -96,7 +96,7 @@ void BindEntity(sol::state& state)
 	sceneCamera_type.set_function("SetAspectRatio", &SceneCamera::SetAspectRatio);
 	sceneCamera_type.set_function("GetAspectRatio", &SceneCamera::GetAspectRatio);
 	sceneCamera_type.set_function("GetOrthoNear", &SceneCamera::GetOrthoNear);
-	sceneCamera_type.set_function("SetOrthoNear", &SceneCamera::GetOrthoNear);
+	sceneCamera_type.set_function("SetOrthoNear", &SceneCamera::SetOrthoNear);
 	sceneCamera_type.set_function("GetOrthoFar", &SceneCamera::GetOrthoFar);
 	sceneCamera_type.set_function("SetOrthoFar", &SceneCamera::SetOrthoFar);
 	sceneCamera_type.set_function("GetOrthoSize", &SceneCamera::GetOrthoSize);
