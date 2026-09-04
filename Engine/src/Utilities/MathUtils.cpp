@@ -36,3 +36,14 @@ Vector3f MathUtils::WorldToScreenSpace(const Matrix4x4& viewMat, const Matrix4x4
 	trans.z += worldPosition.z;
 	return Vector3f(trans.x, trans.y, trans.z);
 }
+
+Vector3f MathUtils::ScreenToWorldPoint(const Matrix4x4& viewMat, const Matrix4x4& projectionMat, const Vector2f& screenPosition, const Vector2f& viewportSize, float worldZ)
+{
+	Line3D ray = ComputeCameraRay(viewMat, projectionMat, screenPosition, viewportSize);
+
+	Plane plane(Vector3f(0.0f, 0.0f, 1.0f), 0.0f);
+	Vector3f point;
+	if (!Plane::PlaneLineIntersection(plane, ray, Vector3f(0.0f, 0.0f, worldZ), point))
+		return Vector3f();
+	return point;
+}
