@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cereal/access.hpp"
+#include "Scripting/Lua/LuaBindings.h"
 
 struct WidgetComponent
 {
@@ -74,6 +75,15 @@ struct WidgetComponent
 
 	static const uint32_t s_referenceWidth = 1920;
 	static const uint32_t s_referenceHeight = 1080;
+
+	REFLECT_LUA_BEGIN(WidgetComponent)
+		REFLECT_LUA_PROPERTY_CUSTOM("Position", "The widget's position, in reference-resolution pixels", "Vector2f",
+			([](WidgetComponent& c) { return c.position; }),
+			([](WidgetComponent& c, Vector2f v) { c.SetPositionX(v.x); c.SetPositionY(v.y); }))
+		REFLECT_LUA_PROPERTY_CUSTOM("Size", "The widget's size, in reference-resolution pixels", "Vector2f",
+			([](WidgetComponent& c) { return c.size; }),
+			([](WidgetComponent& c, Vector2f v) { c.SetSizeX(v.x); c.SetSizeY(v.y); }))
+	REFLECT_LUA_END()
 
 private:
 	Matrix4x4 m_TransformMatrix;
