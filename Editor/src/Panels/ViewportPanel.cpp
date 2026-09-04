@@ -134,6 +134,8 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	SceneState sceneState = SceneManager::GetSceneState();
 
+	Application::ClearGameViewportOverride();
+
 	if (sceneState == SceneState::Play || sceneState == SceneState::Pause)
 	{
 		auto [view, projection] = SceneManager::CurrentScene()->GetPrimaryCameraViewProjection();
@@ -146,6 +148,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 			// same established lag the camera controller already relies on for this exact class of data.
 			Vector2f uiMousePosition = m_ViewportHovered ? m_RelativeMousePosition : Vector2f(-1e6f, -1e6f);
 			SceneManager::CurrentScene()->UpdateUIInput(uiMousePosition, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			Application::SetGameViewportOverride(m_RelativeMousePosition.x, m_RelativeMousePosition.y, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 	}
 	else if (sceneState == SceneState::SimulatePause || sceneState == SceneState::Edit || sceneState == SceneState::Simulate)
@@ -157,6 +160,7 @@ void ViewportPanel::OnUpdate(float deltaTime)
 		{
 			Vector2f uiMousePosition = m_ViewportHovered ? m_RelativeMousePosition : Vector2f(-1e6f, -1e6f);
 			SceneManager::CurrentScene()->UpdateUIInput(uiMousePosition, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
+			Application::SetGameViewportOverride(m_RelativeMousePosition.x, m_RelativeMousePosition.y, (uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 		}
 
 		if (m_ViewportHovered && !m_TilemapEditor->IsHovered())
