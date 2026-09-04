@@ -24,16 +24,13 @@ Line3D MathUtils::ComputeCameraRay(const Matrix4x4& viewMat, const Matrix4x4& pr
 
 Vector3f MathUtils::WorldToScreenSpace(const Matrix4x4& viewMat, const Matrix4x4& projectionMat, const Vector3f& worldPosition, const Vector2f& viewportSize)
 {
-	Vector4f trans = projectionMat * Matrix4x4::Inverse(viewMat) * Vector4f(worldPosition, 1.0f);
+	Vector4f trans = projectionMat * viewMat * Vector4f(worldPosition, 1.0f);
 
 	trans *= 0.5f / trans.w;
 	trans += Vector4f(0.5f, 0.5f, 0.5f, 0.0f);
 	trans.y = 1.0f - trans.y;
 	trans.x *= viewportSize.x;
 	trans.y *= viewportSize.y;
-	trans.x += worldPosition.x;
-	trans.y += worldPosition.y;
-	trans.z += worldPosition.z;
 	return Vector3f(trans.x, trans.y, trans.z);
 }
 
