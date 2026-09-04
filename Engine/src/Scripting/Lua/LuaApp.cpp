@@ -34,6 +34,10 @@ void BindApp(sol::state& state)
 		{ return Application::GetWindow()->RestoreWindow(); });
 	SetFunction(application, "App", "SetWindowMode", "Set the window mode (Windowed, Full_Screen or Borderless)", [](sol::this_state s, WindowMode windowMode)
 		{ return Application::GetWindow()->SetWindowMode(windowMode); });
+	SetFunction(application, "App", "GetWindowWidth", "Get the width of the application window, in pixels - the same coordinate space as Input.GetMousePos()", [](sol::this_state s)
+		{ return Application::GetGameViewportWidth(); });
+	SetFunction(application, "App", "GetWindowHeight", "Get the height of the application window, in pixels - the same coordinate space as Input.GetMousePos()", [](sol::this_state s)
+		{ return Application::GetGameViewportHeight(); });
 
 	SetFunction(application, "App", "GetDocumentDirectory", "Get the directory of the currently open project", []()
 		{ return Application::GetOpenDocumentDirectory().string(); });
