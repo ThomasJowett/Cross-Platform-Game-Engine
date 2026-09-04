@@ -146,6 +146,14 @@ void BindEntity(sol::state& state)
 	rigidBody2D_type.set_function("SetLinearVelocity", &RigidBody2DComponent::SetLinearVelocity);
 	rigidBody2D_type.set_function("GetAngularVelocity", &RigidBody2DComponent::GetAngularVelocity);
 	rigidBody2D_type.set_function("SetAngularVelocity", &RigidBody2DComponent::SetAngularVelocity);
+	rigidBody2D_type.set_function("SetTransform", &RigidBody2DComponent::SetTransform);
+	rigidBody2D_type.set_function("GetTransform", [](RigidBody2DComponent& c)
+		{
+			Vector2f position;
+			float rotation;
+			c.GetTransform(position, rotation);
+			return std::make_tuple(position, rotation);
+		});
 
 	auto physicsMaterial_type = state.new_usertype<PhysicsMaterial>("PhysicsMaterial");
 	physicsMaterial_type.set_function("GetDensity", &PhysicsMaterial::GetDensity);
