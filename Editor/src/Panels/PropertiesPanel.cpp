@@ -165,6 +165,33 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				m_EditWidgetComponent.second = CreateRef<EditComponentCommand<WidgetComponent>>(entity);
 			ImGui::BeginGroup();
 
+			bool parentControlsRect = false;
+			const char* parentControlDescription = "";
+			if (HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>())
+			{
+				if (hierarchyComp->parent != entt::null)
+				{
+					Entity parentEntity(hierarchyComp->parent, SceneManager::CurrentScene());
+					if (parentEntity.HasComponent<StackLayoutComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Stack Layout";
+					}
+					else if (parentEntity.HasComponent<GridLayoutComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Grid Layout";
+					}
+					else if (parentEntity.HasComponent<ScrollBoxComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Scroll Box";
+					}
+				}
+			}
+			if (parentControlsRect)
+				ImGui::TextDisabled("Position/anchors/margins are set by the parent's %s", parentControlDescription);
+
 			bool edited = false;
 
 			if (ImGui::Checkbox("Disabled", &widget.disabled))
@@ -183,6 +210,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float anchorRight = widget.anchorRight;
 			float anchorTop = widget.anchorTop;
 			float anchorBottom = widget.anchorBottom;
+
+			if (parentControlsRect)
+				ImGui::BeginDisabled();
 
 			ImGui::TextUnformatted("Anchor");
 
@@ -287,6 +317,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				position.y = 0.0f;
 				edited = true;
 			}
+
+			if (parentControlsRect)
+				ImGui::EndDisabled();
 
 			ImGui::TextUnformatted("Size");
 			ImGui::TextColored({ 245,0,0,255 }, "X");
