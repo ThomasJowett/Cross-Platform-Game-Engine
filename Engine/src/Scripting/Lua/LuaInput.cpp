@@ -24,6 +24,8 @@ void BindInput(sol::state& state)
 			return Input::IsKeyPressed((int)c);
 		});
 	SetFunction(input, "Input", "IsMouseButtonPressed", "Is the mouse button pressed", &Input::IsMouseButtonPressed);
+	SetFunction(input, "Input", "IsMouseButtonReleased", "Was the mouse button released this frame", &Input::IsMouseButtonReleased);
+	SetFunction(input, "Input", "IsMouseJustPressed", "Was the mouse button pressed this frame", &Input::IsMouseJustPressed);
 	SetFunction(input, "Input", "GetMousePos", "Get mouse position", &Input::GetMousePos);
 
 	std::initializer_list<std::pair<sol::string_view, int>> mouseItems = {
