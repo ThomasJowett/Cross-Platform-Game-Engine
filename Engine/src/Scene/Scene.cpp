@@ -26,6 +26,8 @@
 
 #include "miniaudio/miniaudio.h"
 #include "Core/Input.h"
+#include "Core/Application.h"
+#include "Utilities/MathUtils.h"
 
 struct DestroyMarker {};
 
@@ -1025,6 +1027,39 @@ std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 	if (m_PhysicsEngine2D)
 		return m_PhysicsEngine2D->MultiRayCast2D(begin, end);
 	return std::vector<HitResult2D>();
+}
+
+std::vector<Entity> Scene::QueryPoint(Vector2f point)
+{
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->QueryPoint(point);
+	return std::vector<Entity>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Vector3f Scene::ScreenToWorldPoint(Vector2f screenPosition, float worldZ)
+{
+	Matrix4x4 cameraTransform, projection;
+	if (Application::HasGameViewportOverride())
+		std::tie(cameraTransform, projection) = Application::GetGameViewportCamera();
+	else
+		std::tie(cameraTransform, projection) = GetPrimaryCameraViewProjection();
+
+	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
+	return MathUtils::ScreenToWorldPoint(Matrix4x4::Inverse(cameraTransform), projection, screenPosition, viewportSize, worldZ);
+}
+
+Vector3f Scene::WorldToScreenPoint(Vector3f worldPosition)
+{
+	Matrix4x4 cameraTransform, projection;
+	if (Application::HasGameViewportOverride())
+		std::tie(cameraTransform, projection) = Application::GetGameViewportCamera();
+	else
+		std::tie(cameraTransform, projection) = GetPrimaryCameraViewProjection();
+
+	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
+	return MathUtils::WorldToScreenSpace(Matrix4x4::Inverse(cameraTransform), projection, worldPosition, viewportSize);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

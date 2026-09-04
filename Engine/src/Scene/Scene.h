@@ -92,6 +92,17 @@ public:
 
 	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
 
+	// Every entity with a 2D collider whose shape (not just its broad-phase bounding box) contains
+	// point - the natural way to pick up an object with the mouse (see Scene::ScreenToWorldPoint).
+	std::vector<Entity> QueryPoint(Vector2f point);
+
+	// Unprojects a screen-pixel coordinate (as returned by Input::GetMousePos(), origin top-left, Y
+	// down) into world space, on the worldZ plane, using the primary camera. Only meaningful when the
+	// screen coordinate is in the same space as the application window (i.e. in Runtime, or the
+	// Editor's own Game window) - the Editor viewport is a sub-region of the window, not the whole thing.
+	Vector3f ScreenToWorldPoint(Vector2f screenPosition, float worldZ = 0.0f);
+	Vector3f WorldToScreenPoint(Vector3f worldPosition);
+
 	void OnEntityDestroyed(Entity entity);
 
 private:
