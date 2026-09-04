@@ -72,6 +72,10 @@ std::string LuaTypeName()
 		); \
 		LuaManager::AddApiEntry({ #Member, Description, LuaApiEntry::Kind::Property, s_ReflectComponentName, LuaTypeName<decltype(Self::Member)>(), true });
 
+#define REFLECT_LUA_PROPERTY_CUSTOM(Name, Description, LuaType, Getter, Setter) \
+		type[Name] = sol::property(Getter, Setter); \
+		LuaManager::AddApiEntry({ Name, Description, LuaApiEntry::Kind::Property, s_ReflectComponentName, LuaType, true });
+
 #define REFLECT_LUA_FUNCTION(Method, Description) \
 		type.set_function(#Method, &Self::Method); \
 		LuaManager::AddApiEntry({ #Method, Description, LuaApiEntry::Kind::Function, s_ReflectComponentName, "", true });
