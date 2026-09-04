@@ -1040,24 +1040,14 @@ std::vector<Entity> Scene::QueryPoint(Vector2f point)
 
 Vector3f Scene::ScreenToWorldPoint(Vector2f screenPosition, float worldZ)
 {
-	Matrix4x4 cameraTransform, projection;
-	if (Application::HasGameViewportOverride())
-		std::tie(cameraTransform, projection) = Application::GetGameViewportCamera();
-	else
-		std::tie(cameraTransform, projection) = GetPrimaryCameraViewProjection();
-
+	auto [cameraTransform, projection] = GetPrimaryCameraViewProjection();
 	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
 	return MathUtils::ScreenToWorldPoint(Matrix4x4::Inverse(cameraTransform), projection, screenPosition, viewportSize, worldZ);
 }
 
 Vector3f Scene::WorldToScreenPoint(Vector3f worldPosition)
 {
-	Matrix4x4 cameraTransform, projection;
-	if (Application::HasGameViewportOverride())
-		std::tie(cameraTransform, projection) = Application::GetGameViewportCamera();
-	else
-		std::tie(cameraTransform, projection) = GetPrimaryCameraViewProjection();
-
+	auto [cameraTransform, projection] = GetPrimaryCameraViewProjection();
 	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
 	return MathUtils::WorldToScreenSpace(Matrix4x4::Inverse(cameraTransform), projection, worldPosition, viewportSize);
 }
