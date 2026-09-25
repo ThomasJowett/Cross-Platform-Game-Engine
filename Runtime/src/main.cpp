@@ -4,6 +4,8 @@
 #include "Scene/SceneManager.h"
 #include "Scene/AssetManager.h"
 #include "Asset/SpriteAtlas.h"
+#include "Core/InputActionSystem.h"
+#include "Core/InputMappings.h"
 
 #include "RuntimeLayer.h"
 
@@ -97,6 +99,10 @@ int main(int argc, char* argv[])
 
 		AssetManager::LoadBundle(zipData.data(), zipData.size());
 	}
+
+	std::vector<uint8_t> inputMappingsData;
+	if (AssetManager::GetFileData(InputMappings::FilePath, inputMappingsData))
+		InputActionSystem::LoadMappingsFromData(inputMappingsData);
 
 	Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
 

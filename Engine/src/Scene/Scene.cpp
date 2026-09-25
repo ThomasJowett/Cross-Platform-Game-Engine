@@ -26,6 +26,7 @@
 
 #include "miniaudio/miniaudio.h"
 #include "Core/Input.h"
+#include "Core/InputActionSystem.h"
 #include "Core/Application.h"
 #include "Utilities/MathUtils.h"
 
@@ -194,6 +195,8 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 	m_HoveredWidget = entt::null;
 	m_PressedWidget = entt::null;
 
+	InputActionSystem::ResetState();
+
 	if (createSnapshot)
 	{
 		std::stringstream().swap(m_Snapshot);
@@ -307,6 +310,8 @@ void Scene::OnRuntimeStop()
 	m_AudioEngine.reset();
 
 	m_PhysicsEngine2D.reset();
+
+	InputActionSystem::ResetState();
 
 	LuaManager::CleanUp();
 
@@ -575,6 +580,7 @@ void Scene::OnUpdate(float deltaTime)
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
+
 	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
 			if (animatedSpriteComp.spriteSheet)
@@ -589,6 +595,9 @@ void Scene::OnUpdate(float deltaTime)
 				luaScriptComp.created = true;
 			}
 			luaScriptComp.OnUpdate(deltaTime);
+
+			for (const InputActionEvent& inputActionEvent : InputActionSystem::GetPendingEvents())
+				luaScriptComp.OnInputAction(inputActionEvent.actionName, inputActionEvent.phase);
 		});
 
 	m_Registry.view<PrimitiveComponent>(entt::exclude<DestroyMarker>).each([](auto entity, auto& primitiveComponent)

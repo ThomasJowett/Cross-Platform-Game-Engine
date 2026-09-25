@@ -20,6 +20,7 @@
 #include "Panels/ContentExplorerPanel.h"
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/InputMappingsPanel.h"
 #include "Panels/ViewportPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
@@ -33,6 +34,7 @@
 
 #include "ProjectData.h"
 #include "ProjectSerializer.h"
+#include "Core/InputActionSystem.h"
 
 #include "FileSystem/AssetPacker.h"
 #include "FileSystem/SpriteAtlasBuilder.h"
@@ -53,6 +55,7 @@ MainDockSpace::MainDockSpace()
 
 	m_ShowEditorPreferences = false;
 	m_ShowProjectSettings = false;
+	m_ShowInputMappings = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
 	m_ShowErrorList = true;
@@ -100,6 +103,7 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
+	Settings::SetDefaultBool("Windows", "InputMappings", m_ShowInputMappings);
 
 #ifdef DEBUG
 	Settings::SetDefaultBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
@@ -113,6 +117,7 @@ void MainDockSpace::OnAttach()
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
 	m_ShowEditorPreferences = Settings::GetBool("Windows", "EditorPreferences");
 	m_ShowProjectSettings = Settings::GetBool("Windows", "ProjectSettings");
+	m_ShowInputMappings = Settings::GetBool("Windows", "InputMappings");
 	m_ShowContentExplorer = Settings::GetBool("Windows", "ContentExplorer");
 	m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
@@ -129,6 +134,7 @@ void MainDockSpace::OnAttach()
 
 	Application::GetLayerStack().AddOverlay(CreateRef<EditorPreferencesPanel>(&m_ShowEditorPreferences));
 	Application::GetLayerStack().AddOverlay(CreateRef<ProjectSettingsPanel>(&m_ShowProjectSettings));
+	Application::GetLayerStack().AddOverlay(CreateRef<InputMappingsPanel>(&m_ShowInputMappings));
 	Application::GetLayerStack().AddOverlay(m_ContentExplorer);
 	Application::GetLayerStack().AddOverlay(CreateRef<JoystickInfoPanel>(&m_ShowJoystickInfo));
 	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
@@ -383,6 +389,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::Separator();//-----------------------------------------------
 			ImGui::MenuItem(ICON_FA_GEAR" Preferences", "", &m_ShowEditorPreferences);
 			ImGui::MenuItem(ICON_FA_GEARS" Project Settings", "", &m_ShowProjectSettings);
+			ImGui::MenuItem(ICON_FA_SLIDERS" Input Mappings", "", &m_ShowInputMappings);
 			ImGui::EndMenu();
 		}
 
@@ -485,6 +492,10 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 
 	ProjectData data;
 	ProjectSerializer::Deserialize(data, filename);
+
+	std::filesystem::path projectDirectory = filename;
+	projectDirectory.remove_filename();
+	InputActionSystem::LoadMappings(projectDirectory / InputMappings::FilePath);
 
 	SpriteAtlasBuilder::EnsureUpToDate();
 

@@ -34,6 +34,7 @@ private:
 
 	bool m_ShowEditorPreferences;
 	bool m_ShowProjectSettings;
+	bool m_ShowInputMappings;
 
 	bool m_ShowViewport;
 	bool m_ShowConsole;

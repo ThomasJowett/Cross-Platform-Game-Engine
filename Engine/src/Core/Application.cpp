@@ -19,6 +19,7 @@
 
 #include "Logging/Logger.h"
 #include "Core/Input.h"
+#include "Core/InputActionSystem.h"
 
 #include "Utilities/StringUtils.h"
 #include "Scripting/Lua/LuaManager.h"
@@ -206,6 +207,8 @@ void Application::Tick() {
 	m_Accumulator += frameTime;
 
 	m_DeltaTime = (float)frameTime;
+
+	InputActionSystem::Update();
 
 	// On Fixed update
 	while (m_Accumulator >= m_FixedUpdateInterval)

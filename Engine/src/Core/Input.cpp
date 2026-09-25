@@ -41,10 +41,24 @@ void Input::SetMouseReleased(int button)
 	s_Instance->m_MouseButtonsReleased.at(button) = true;
 }
 
+void Input::AccumulateMouseMotion(double xPos, double yPos)
+{
+	if (s_Instance->m_HasLastMousePos)
+	{
+		s_Instance->m_MouseDeltaAccumulator.x += (float)(xPos - s_Instance->m_LastMouseX);
+		s_Instance->m_MouseDeltaAccumulator.y += (float)(yPos - s_Instance->m_LastMouseY);
+	}
+	s_Instance->m_LastMouseX = xPos;
+	s_Instance->m_LastMouseY = yPos;
+	s_Instance->m_HasLastMousePos = true;
+}
+
 void Input::ClearInputData()
 {
 	s_Instance->m_MouseWheelX = 0.0f;
 	s_Instance->m_MouseWheelY = 0.0f;
+
+	s_Instance->m_MouseDeltaAccumulator = Vector2f();
 
 	s_Instance->m_MouseButtonsPressed = {};
 	s_Instance->m_MouseButtonsReleased = {};

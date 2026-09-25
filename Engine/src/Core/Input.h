@@ -4,6 +4,7 @@
 #include "Renderer/RendererAPI.h"
 #include "MouseButtonCodes.h"
 #include "KeyCodes.h"
+#include "math/Vector2f.h"
 
 struct GLFWwindow;
 
@@ -36,12 +37,17 @@ public:
 		{ return s_Instance->m_MouseWheelY; }
 	inline static double GetMouseWheelHorizontal()
 		{ return s_Instance->m_MouseWheelX; }
+	// Mouse movement accumulated since the last frame (raw window cursor delta, not
+	// corrected for the Editor's game-viewport scale override that GetMousePos applies).
+	inline static Vector2f GetMouseDelta()
+		{ return s_Instance->m_MouseDeltaAccumulator; }
 
 	static void Init(GLFWwindow* windowHandle);
 
 	static void SetMouseWheel(double X, double Y);
 	static void SetMousePressed(int button);
 	static void SetMouseReleased(int button);
+	static void AccumulateMouseMotion(double xPos, double yPos);
 	static void ClearInputData();
 protected:
 	virtual bool IsKeyPressedImpl(int keycode);
@@ -55,6 +61,10 @@ private:
 	static Scope<Input> s_Instance;
 
 	double m_MouseWheelX = 0.0f, m_MouseWheelY = 0.0f;
+
+	Vector2f m_MouseDeltaAccumulator;
+	bool m_HasLastMousePos = false;
+	double m_LastMouseX = 0.0, m_LastMouseY = 0.0;
 
 	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsPressed = {};
 	std::array<bool, MOUSE_BUTTON_LAST> m_MouseButtonsReleased = {};

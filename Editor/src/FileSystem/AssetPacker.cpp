@@ -11,6 +11,7 @@
 #include <imgui.h>
 
 #include "Core/Application.h"
+#include "Core/InputMappings.h"
 #include "ProjectSerializer.h"
 
 #include <algorithm>
@@ -324,6 +325,9 @@ void AssetPacker::PackAssets()
 	collectFilesFromDir(dataPath / "data" / "Fonts");
 
 	collectFilesFromDir(m_ProjectDirectory / "Generated" / "SpriteAtlas");
+
+	if (std::filesystem::path inputMappingsPath = m_ProjectDirectory / InputMappings::FilePath; std::filesystem::exists(inputMappingsPath))
+		filesToPack.push_back(inputMappingsPath);
 
 	const size_t totalFiles = filesToPack.size();
 	size_t filesPacked = 0;

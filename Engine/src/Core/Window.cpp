@@ -442,6 +442,7 @@ bool Window::Init(const WindowProps& props)
 
 				MouseMotionEvent event((float)xPos, (float)yPos);
 				data.eventCallback(event);
+				Input::AccumulateMouseMotion(xPos, yPos);
 			});
 	}
 	if (false) {
