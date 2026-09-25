@@ -5,6 +5,7 @@
 #endif // _WINDOWS
 
 #include <imgui_internal.h> // Required for DockBuilder API
+#include <algorithm>
 
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
@@ -31,8 +32,7 @@
 #include "Interfaces/ISaveable.h"
 
 #include "ProjectData.h"
-#include "cereal/archives/json.hpp"
-#include "cereal/types/string.hpp"
+#include "ProjectSerializer.h"
 
 #include "FileSystem/AssetPacker.h"
 #include "FileSystem/SpriteAtlasBuilder.h"
@@ -151,7 +151,8 @@ void MainDockSpace::OnAttach()
 
 	for (std::filesystem::path project : recentProjectsList)
 	{
-		if (project.extension() == ".proj")
+		if (project.extension() == ".proj" && std::filesystem::exists(project)
+			&& std::find(m_RecentProjects.begin(), m_RecentProjects.end(), project) == m_RecentProjects.end())
 		{
 			m_RecentProjects.push_back(project);
 		}
@@ -301,12 +302,18 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
-				for (auto project : m_RecentProjects)
+				// ImGui::MenuItem's ID defaults to its label text - two recent projects with the
+				// same filename (in different folders) would otherwise collide, so scope each
+				// one's ID to its full path instead.
+				for (auto& project : m_RecentProjects)
 				{
+					ImGui::PushID(project.string().c_str());
 					if (ImGui::MenuItem(project.filename().string().c_str()))
 					{
 						Application::SetOpenDocument(project);
 					}
+					ImGui::Tooltip(project.string().c_str());
+					ImGui::PopID();
 				}
 				ImGui::EndMenu();
 			}
@@ -476,12 +483,8 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 
 	m_ContentExplorer->SwitchTo(filename);
 
-	std::ifstream file(filename);
-
-	cereal::JSONInputArchive input(file);
 	ProjectData data;
-	input(data);
-	file.close();
+	ProjectSerializer::Deserialize(data, filename);
 
 	SpriteAtlasBuilder::EnsureUpToDate();
 

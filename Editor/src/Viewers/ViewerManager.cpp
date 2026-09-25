@@ -303,6 +303,7 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
     case FileType::STATEMACHINE:
     {
         extensions.push_back(".statemachine");
+        break;
     }
 	}
 	return extensions;

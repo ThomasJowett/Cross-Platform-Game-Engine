@@ -2,12 +2,14 @@
 
 #include "IconsFontAwesome6.h"
 
-#include "cereal/archives/json.hpp"
+#include "ProjectSerializer.h"
 #include "MainDockSpace.h"
 #include "ImGui/ImGuiFileEdit.h"
 #include "FileSystem/Directory.h"
 #include "ImGui/ImGuiUtilities.h"
 #include "Scene/SceneManager.h"
+#include "Viewers/ViewerManager.h"
+#include "Utilities/FileUtils.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")
@@ -45,7 +47,9 @@ void ProjectSettingsPanel::OnImGuiRender()
 				const bool is_selected = false;
 				if (ImGui::Selectable(file.filename().string().c_str(), is_selected))
 				{
-					m_DefaultScenePath = file;
+					// Directory::GetFilesRecursive returns absolute paths - store project-relative,
+					// matching what's actually written to the project file.
+					m_DefaultScenePath = FileUtils::RelativePath(file, Application::GetOpenDocumentDirectory());
 					break;
 				}
 				ImGui::Tooltip(file.string().c_str());
@@ -92,15 +96,18 @@ void ProjectSettingsPanel::OnEvent(Event& event)
 
 void ProjectSettingsPanel::ReadProjectFile()
 {
-	std::ifstream file(Application::GetOpenDocument());
-
-	if (!file.is_open()) return;
-
-	cereal::JSONInputArchive input(file);
-
-	input(m_ProjectData);
-
-	file.close();
+	if (!ProjectSerializer::Deserialize(m_ProjectData, Application::GetOpenDocument()))
+	{
+		// Don't leave whatever was read for the previous project sitting in memory - otherwise
+		// a project whose file fails to parse (e.g. still the old cereal-JSON .proj format)
+		// looks like it "has" the last successfully-opened project's settings, and hitting
+		// Save would write that other project's data into this one's file.
+		m_ProjectData = ProjectData();
+		m_DefaultScenePath.clear();
+		memset(m_DescriptionBuffer, 0, sizeof(m_DescriptionBuffer));
+		m_Loaded = false;
+		return;
+	}
 
 	m_DefaultScenePath = m_ProjectData.defaultScene;
 
@@ -109,20 +116,21 @@ void ProjectSettingsPanel::ReadProjectFile()
 	{
 		m_DescriptionBuffer[i] = m_ProjectData.description[i];
 	}
+	m_Loaded = true;
 }
 
 void ProjectSettingsPanel::SaveProjectFile()
 {
+	// Never successfully read a project file for the currently open project (see
+	// ReadProjectFile) - refuse to save rather than overwriting it with empty/stale data.
+	if (!m_Loaded)
+	{
+		ENGINE_ERROR("Not saving project settings: the current project file couldn't be read");
+		return;
+	}
+
 	m_ProjectData.defaultScene = m_DefaultScenePath.string();
 	m_ProjectData.description = m_DescriptionBuffer;
 
-	const std::filesystem::path& projectFile = Application::GetOpenDocument();
-	std::ofstream file(projectFile);
-	{
-		cereal::JSONOutputArchive output(file);
-
-		output(cereal::make_nvp(projectFile.filename().string(), m_ProjectData));
-	}
-
-	file.close();
+	ProjectSerializer::Serialize(m_ProjectData, Application::GetOpenDocument());
 }
