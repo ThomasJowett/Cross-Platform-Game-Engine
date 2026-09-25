@@ -55,7 +55,14 @@ sudo apt-get install -y libx11-dev libxrandr-dev libxi-dev libxinerama-dev libgl
 Then use CMake to generate Makefiles and build with `make`.
 
 ### Running
-Once built, run the `Editor` executable to open the editor, or `Runtime` to launch a project standalone.
+Once built, run the `Editor` executable to open the editor.
+
+`Runtime` doesn't open a project directly — it plays back an already-**exported** game (see
+[Exporting a game](https://thomasjowett.github.io/Cross-Platform-Game-Engine/getting-started/#exporting-a-game)).
+To try a project standalone,
+export it first (`File > Export Game` in the Editor, or headlessly with
+`Editor <project>.proj --export-game <output-path>`), then run the resulting executable/app
+bundle.
 
 ## Example Projects
 If you would like to check out some example projects they can be downloaded from [here](https://github.com/ThomasJowett/ExampleGameProjects)
