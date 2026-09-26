@@ -40,6 +40,8 @@ struct LuaScriptComponent
 	void OnHovered();
 	void OnUnHovered();
 
+	void OnInputAction(const std::string& actionName, const std::string& phase);
+
 	bool IsContactListener();
 
 	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }
@@ -76,4 +78,5 @@ private:
 	Ref<sol::protected_function> m_OnReleasedFunc;
 	Ref<sol::protected_function> m_OnHoveredFunc;
 	Ref<sol::protected_function> m_OnUnHoveredFunc;
+	Ref<sol::protected_function> m_OnInputActionFunc;
 };

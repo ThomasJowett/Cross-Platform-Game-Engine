@@ -91,6 +91,10 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	if (!m_OnUnHoveredFunc->valid())
 		m_OnUnHoveredFunc.reset();
 
+	m_OnInputActionFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnInputAction"]);
+	if (!m_OnInputActionFunc->valid())
+		m_OnInputActionFunc.reset();
+
 	LuaManager::GetState().collect_garbage();
 	return true;
 }
@@ -280,6 +284,23 @@ void LuaScriptComponent::OnUnHovered()
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnUnHovered': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnInputAction(const std::string& actionName, const std::string& phase)
+{
+	PROFILE_FUNCTION();
+	if (m_OnInputActionFunc)
+	{
+		sol::protected_function_result result = m_OnInputActionFunc->call(actionName, phase);
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnInputAction': {0}", error.what());
 
 			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
