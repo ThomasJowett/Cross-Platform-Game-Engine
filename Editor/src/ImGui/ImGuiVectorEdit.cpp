@@ -2,6 +2,8 @@
 
 #include "math/Vector2f.h"
 
+#include "imgui/imgui_internal.h"
+
 bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 {
 	bool edited = false;
@@ -34,7 +36,7 @@ bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 	}
 	
 	SameLine();
-	TextUnformatted(label);
+	TextUnformatted(label, FindRenderedTextEnd(label));
 	EndGroup();
     return edited;
 }
@@ -43,6 +45,8 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 {
 	bool edited = false;
 	float width = CalcItemWidth();
+
+	BeginGroup();
 	TextColored({ 245,0,0,255 }, "X");
 	SameLine();
 	SetNextItemWidth(width / 3 - 20);
@@ -60,7 +64,7 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 	SameLine();
 	SetNextItemWidth(width / 3 - 20);
 	std::string idY = "##" + std::string(label) + "Y";
-	if (DragFloat(idY.c_str(), &vector.x, 0.1f))
+	if (DragFloat(idY.c_str(), &vector.y, 0.1f))
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
@@ -82,6 +86,7 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 	}
 
 	SameLine();
-	TextUnformatted(label);
+	TextUnformatted(label, FindRenderedTextEnd(label));
+	EndGroup();
 	return edited;
 }
