@@ -17,6 +17,8 @@
 
 #include <iostream>
 
+class Entity;
+
 namespace BehaviourTree
 {
 class Node
@@ -76,6 +78,7 @@ public:
 
 	void addChild(Ref<Node> child) { m_Children.push_back(child); }
 	bool hasChildren() const { return !m_Children.empty(); }
+	const std::vector<Ref<Node>>& getChildren() const { return m_Children; }
 
 	std::vector<Ref<Node>>::iterator begin() { return m_Children.begin(); }
 	std::vector<Ref<Node>>::iterator end() { return m_Children.end(); }
@@ -238,13 +241,30 @@ public:
 	}
 
 	Ref<Blackboard> getBlackboard() const { return m_Blackboard; }
+	void setBlackboard(Ref<Blackboard> blackboard) { m_Blackboard = blackboard; }
 
 	void setRoot(const Ref<Node> node) { m_Root = node; }
 	const Ref<Node> getRoot() { return m_Root; }
 
+	// Editor-only subtrees not connected to the root, ignored at runtime
+	void addUnattached(Ref<Node> node) { m_Unattached.push_back(node); }
+	const std::vector<Ref<Node>>& getUnattached() const { return m_Unattached; }
+
+	// Gives every custom task in the tree its owning entity and this tree's blackboard
+	void Bind(Entity entity);
+
 private:
 	Ref<Node> m_Root = nullptr;
 	Ref<Blackboard> m_Blackboard = nullptr;
+	std::vector<Ref<Node>> m_Unattached;
+
+	void CopyFrom(const Ref<BehaviourTree>& other)
+	{
+		m_Root = other->getRoot();
+		m_Blackboard = other->getBlackboard();
+		m_Unattached = other->getUnattached();
+		SetEditorPosition(other->GetEditorPosition());
+	}
 
 	// Inherited via Asset
 	bool Load(const std::filesystem::path& filepath) override {
@@ -252,8 +272,7 @@ private:
 		if (!std::filesystem::exists(absolutePath)) return false;
 		auto temp = Serializer::Deserialize(absolutePath);
 		if (temp) {
-			m_Root = temp->getRoot();
-			m_Blackboard = temp->getBlackboard();
+			CopyFrom(temp);
 			m_Filepath = filepath;
 			return true;
 		}
@@ -261,12 +280,9 @@ private:
 	}
 	bool Load(const std::filesystem::path& filepath, const std::vector<uint8_t>& data) override
 	{
-		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
-		if (!std::filesystem::exists(absolutePath)) return false;
-		auto temp = Serializer::Deserialize(absolutePath, data);
+		auto temp = Serializer::Deserialize(filepath, data);
 		if (temp) {
-			m_Root = temp->getRoot();
-			m_Blackboard = temp->getBlackboard();
+			CopyFrom(temp);
 			m_Filepath = filepath;
 			return true;
 		}
@@ -425,7 +441,8 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		ASSERT(hasChildren(), "Composite has no children");
+		if (!hasChildren())
+			return Status::Failure;
 
 		for (Ref<Node> child : m_Children)
 		{
@@ -453,7 +470,8 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		ASSERT(hasChildren(), "Composite has no children");
+		if (!hasChildren())
+			return Status::Failure;
 
 		for (Ref<Node> child : m_Children)
 		{
@@ -484,7 +502,8 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		ASSERT(hasChildren(), "Composite has no children");
+		if (!hasChildren())
+			return Status::Failure;
 
 		while (it != m_Children.end()) {
 			auto status = (*it)->tick(deltaTime);
@@ -519,7 +538,8 @@ public:
 
 	Status update(float deltaTime) override
 	{
-		ASSERT(hasChildren(), "Composite has no children");
+		if (!hasChildren())
+			return Status::Failure;
 
 		while (it != m_Children.end()) {
 			auto status = (*it)->tick(deltaTime);
@@ -546,9 +566,16 @@ public:
 	ParallelSequence(bool successOnAll = true, bool failOnAll = true) : m_UseSuccessFailPolicy(true), m_SuccessOnAll(successOnAll), m_FailOnAll(failOnAll) {}
 	ParallelSequence(int minSuccess, int minFail) : m_MinSuccess(minSuccess), m_MinFail(minFail) {}
 
+	bool usesSuccessFailPolicy() const { return m_UseSuccessFailPolicy; }
+	bool successOnAll() const { return m_SuccessOnAll; }
+	bool failOnAll() const { return m_FailOnAll; }
+	int getMinSuccess() const { return (int)m_MinSuccess; }
+	int getMinFail() const { return (int)m_MinFail; }
+
 	Status update(float deltaTime) override
 	{
-		ASSERT(hasChildren(), "Composite has no children");
+		if (!hasChildren())
+			return Status::Failure;
 
 		size_t minimumSuccess = m_MinSuccess;
 		size_t minimumFail = m_MinFail;

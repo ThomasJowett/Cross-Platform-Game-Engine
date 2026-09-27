@@ -58,9 +58,14 @@ public:
 	Status update(float deltaTime) final;
 	void terminate(Status s) final;
 
+	// Runs the script in a fresh environment with CurrentScene, CurrentEntity and Blackboard set
+	bool Bind(Entity entity, Ref<Blackboard> blackboard);
+
 	Ref<LuaScript> getLuaScript() const { return m_LuaScript; }
+	const std::filesystem::path& getScriptPath() const { return m_ScriptPath; }
 
 private:
+	std::filesystem::path m_ScriptPath;
 	Ref<LuaScript> m_LuaScript;
 
 	Ref<sol::environment> m_SolEnvironment;

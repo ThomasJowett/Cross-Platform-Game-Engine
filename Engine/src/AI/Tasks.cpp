@@ -4,23 +4,43 @@
 
 #include "Logging/Instrumentor.h"
 #include "Scene/SceneManager.h"
+#include "Scene/AssetManager.h"
+#include "Scene/Entity.h"
 #include "Scripting/Lua/LuaErrorEvent.h"
 
 #include "sol/sol.hpp"
 
+#include <functional>
+
 BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::filesystem::path& filepath)
-	:Leaf(behaviourTree)
+	:Leaf(behaviourTree), m_ScriptPath(filepath)
 {
 	PROFILE_FUNCTION();
 
-	m_LuaScript = CreateRef<LuaScript>(filepath);
+	if (!filepath.empty())
+		m_LuaScript = AssetManager::GetAsset<LuaScript>(filepath);
+}
+
+bool BehaviourTree::CustomTask::Bind(Entity entity, Ref<Blackboard> blackboard)
+{
+	PROFILE_FUNCTION();
+
+	m_SolEnvironment.reset();
+	m_OnStateEntryFunc.reset();
+	m_OnStateUpdateFunc.reset();
+	m_OnStateExitFunc.reset();
 
 	if (!m_LuaScript)
 	{
-		ENGINE_ERROR("could not find custom task lua script");
+		ENGINE_ERROR("Custom task has no lua script");
+		return false;
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
+
+	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
+	(*m_SolEnvironment)["CurrentEntity"] = entity;
+	(*m_SolEnvironment)["Blackboard"] = blackboard;
 
 	sol::protected_function_result result = LuaManager::GetState().script(m_LuaScript->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
@@ -28,11 +48,10 @@ BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::f
 	{
 		sol::error error = result;
 
-		auto event = LuaErrorEvent(filepath.string(), error.what());
+		auto event = LuaErrorEvent(m_ScriptPath.string(), error.what());
 		Application::CallEvent(event);
+		return false;
 	}
-
-	(*m_SolEnvironment)["CurrentScene"] = SceneManager::CurrentScene();
 
 	m_OnStateEntryFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnStateEntry"]);
 	if (!m_OnStateEntryFunc->valid())
@@ -47,6 +66,7 @@ BehaviourTree::CustomTask::CustomTask(BehaviourTree* behaviourTree, const std::f
 		m_OnStateExitFunc.reset();
 
 	LuaManager::GetState().collect_garbage();
+	return true;
 }
 
 BehaviourTree::CustomTask::~CustomTask()
@@ -63,7 +83,7 @@ void BehaviourTree::CustomTask::initialize()
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateEntry': {0}", error.what());
-			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			LuaErrorEvent luaErrorEvent(m_ScriptPath.string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
@@ -80,7 +100,7 @@ BehaviourTree::Node::Status BehaviourTree::CustomTask::update(float deltaTime)
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateUpdate': {0}", error.what());
-			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			LuaErrorEvent luaErrorEvent(m_ScriptPath.string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 			return Status::Invalid;
 		}
@@ -105,8 +125,29 @@ void BehaviourTree::CustomTask::terminate(Status s)
 		{
 			sol::error error = result;
 			ENGINE_ERROR("Failed to execute lua script 'OnStateExit': {0}", error.what());
-			LuaErrorEvent luaErrorEvent(m_LuaScript->GetFilepath().string(), error.what());
+			LuaErrorEvent luaErrorEvent(m_ScriptPath.string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
+}
+
+void BehaviourTree::BehaviourTree::Bind(Entity entity)
+{
+	PROFILE_FUNCTION();
+
+	std::function<void(const Ref<Node>&)> bindNode = [&](const Ref<Node>& node)
+		{
+			if (!node)
+				return;
+
+			if (Ref<CustomTask> task = std::dynamic_pointer_cast<CustomTask>(node))
+				task->Bind(entity, m_Blackboard);
+			else if (Ref<Composite> composite = std::dynamic_pointer_cast<Composite>(node))
+				for (const Ref<Node>& child : *composite)
+					bindNode(child);
+			else if (Ref<Decorator> decorator = std::dynamic_pointer_cast<Decorator>(node))
+				bindNode(decorator->getChild());
+		};
+
+	bindNode(m_Root);
 }

@@ -120,6 +120,12 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 			ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
 		}
 	}
+
+	if (BehaviourTreeComponent* behaviourTreeComponent = newEntity.TryGetComponent<BehaviourTreeComponent>())
+	{
+		if (behaviourTreeComponent->behaviourTree)
+			behaviourTreeComponent->behaviourTree->Bind(newEntity);
+	}
 	return Entity();
 }
 
@@ -217,6 +223,13 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 			{
 				ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent.script->GetFilepath().string());
 			}
+		});
+
+	m_Registry.view<BehaviourTreeComponent>().each(
+		[this](const auto entity, auto& behaviourTreeComponent)
+		{
+			if (behaviourTreeComponent.behaviourTree)
+				behaviourTreeComponent.behaviourTree->Bind(Entity{ entity, this });
 		});
 
 	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);

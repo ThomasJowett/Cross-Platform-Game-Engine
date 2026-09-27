@@ -5,6 +5,7 @@
 #include "Core/Application.h"
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
+#include "Utilities/FileUtils.h"
 #include "AssetManager.h"
 #include "Renderer/Renderer2D.h"
 
@@ -1134,8 +1135,11 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
 
 		SerializationUtils::Decode(pBehaviourTreeComponentElement, component.filepath);
+		// Older scenes stored absolute paths
+		if (component.filepath.is_absolute())
+			component.filepath = FileUtils::RelativePath(component.filepath, Application::GetOpenDocumentDirectory());
 		if (!component.filepath.empty())
-			component.behaviourTree = BehaviourTree::Serializer::Deserialize(component.filepath);
+			component.behaviourTree = BehaviourTree::Serializer::Load(component.filepath);
 	}
 
 	// State Machine -----------------------------------------------------------------------------------------------

@@ -1132,9 +1132,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
 	DrawComponent<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity, [](auto& behaviourTree)
 		{
-			if (ImGui::FileSelect("Behaviour Tree", behaviourTree.filepath, FileType::BEHAVIOURTREE))
+			std::filesystem::path absolutePath = behaviourTree.filepath.empty() ? std::filesystem::path() : Application::GetOpenDocumentDirectory() / behaviourTree.filepath;
+			if (ImGui::FileSelect("Behaviour Tree", absolutePath, FileType::BEHAVIOURTREE))
 			{
-				behaviourTree.behaviourTree = BehaviourTree::Serializer::Deserialize(behaviourTree.filepath);
+				behaviourTree.filepath = FileUtils::RelativePath(absolutePath, Application::GetOpenDocumentDirectory());
+				behaviourTree.behaviourTree = BehaviourTree::Serializer::Load(behaviourTree.filepath);
 			}
 		});
 
