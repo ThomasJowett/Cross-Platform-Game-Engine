@@ -92,6 +92,7 @@ static const float c_GroupSelectThickness = 6.0f;  // canvas pixels
 static const float c_LinkSelectThickness = 5.0f;  // canvas pixels
 static const float c_NavigationZoomMargin = 0.1f;  // percentage of visible bounds
 static const float c_MouseZoomDuration = 0.15f; // seconds
+static const float c_MouseZoomFactor = 1.25f; // zoom multiplier per wheel notch
 static const float c_SelectionFadeOutDuration = 0.15f; // seconds
 static const auto  c_ScrollButtonIndex = 1;
 
@@ -2476,7 +2477,7 @@ void ed::Animation::Play(float duration)
 	Editor->RegisterAnimation(this);
 
 	if (duration == 0.0f)
-		Stop();
+		Finish();
 }
 
 void ed::Animation::Stop()
@@ -2930,8 +2931,8 @@ bool ed::NavigateAction::HandleZoom(const Control& control)
 	m_Animation.Finish();
 
 	auto mousePos = io.MousePos;
-	auto steps = (int)io.MouseWheel;
-	auto newZoom = MatchZoom(steps, s_ZoomLevels[steps < 0 ? 0 : s_ZoomLevelCount - 1]);
+	// Scale by the raw wheel delta so fractional trackpad scrolls still zoom
+	auto newZoom = ImClamp(m_Zoom * powf(c_MouseZoomFactor, io.MouseWheel), s_ZoomLevels[0], s_ZoomLevels[s_ZoomLevelCount - 1]);
 
 	auto oldView = GetView();
 	m_Zoom = newZoom;
