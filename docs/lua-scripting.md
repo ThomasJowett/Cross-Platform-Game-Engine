@@ -59,6 +59,9 @@ function OnStateUpdate(deltaTime)
 end
 ```
 
+An **Emit Signal** node sends its signal with the tree's entity as the sender and an empty data
+table, so scripts can react to it with `Signal.Connect` like any other signal.
+
 ## Reading and writing components
 
 Every component type `X` gets `CurrentEntity:AddX()`, `CurrentEntity:GetX()`,
