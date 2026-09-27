@@ -21,11 +21,6 @@ public:
 		m_CurrentTime = m_WaitTime;
 	}
 
-	void terminate(Node::Status status) final
-	{
-		ENGINE_DEBUG("Waited: {0}", m_WaitTime);
-	}
-
 	Status update(float deltaTime) override
 	{
 		m_CurrentTime -= deltaTime;
