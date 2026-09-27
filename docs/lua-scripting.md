@@ -28,39 +28,9 @@ Every script has two globals available without needing to look anything up:
 
 ## Behaviour tree custom tasks
 
-A `Custom Task` node in a behaviour tree runs a Lua script with these optional functions:
-
-```lua
-function OnStateEntry()
-    -- Runs when the task starts
-end
-
-function OnStateUpdate(deltaTime)
-    -- Runs every update while the task is active - return NodeStatus.Success, NodeStatus.Failure or NodeStatus.Running
-    return NodeStatus.Success
-end
-
-function OnStateExit(status)
-    -- Runs when the task finishes, or with NodeStatus.Aborted if the tree interrupts it while running
-end
-```
-
-Alongside `CurrentEntity` and `CurrentScene` (the entity with the `Behaviour Tree` component),
-task scripts get `Blackboard`, the tree's shared state. Each entity gets its own copy of the
-tree, so one `.behaviourtree` file can drive many entities. An entity's own script can reach the
-same blackboard with `CurrentEntity:GetBehaviourTreeComponent():GetBlackboard()`:
-
-```lua
-function OnStateUpdate(deltaTime)
-    if Blackboard:GetBool("TargetVisible") then
-        return NodeStatus.Success
-    end
-    return NodeStatus.Running
-end
-```
-
-An **Emit Signal** node sends its signal with the tree's entity as the sender and an empty data
-table, so scripts can react to it with `Signal.Connect` like any other signal.
+A behaviour tree's **Custom Task** node also runs a Lua script, with its own set of functions
+(`OnStateEntry`, `OnStateUpdate`, `OnStateExit`) and a `Blackboard` global. See
+[Behaviour Trees](behaviour-trees.md#custom-task-scripts).
 
 ## Reading and writing components
 
