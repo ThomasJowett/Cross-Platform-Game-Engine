@@ -327,7 +327,8 @@ void BindCommonTypes(sol::state& state)
 	std::initializer_list<std::pair<sol::string_view, int>> nodeStatusItems = {
 		{ "Success", (int)BehaviourTree::Node::Status::Success },
 		{ "Failure", (int)BehaviourTree::Node::Status::Failure },
-		{ "Running", (int)BehaviourTree::Node::Status::Running }
+		{ "Running", (int)BehaviourTree::Node::Status::Running },
+		{ "Aborted", (int)BehaviourTree::Node::Status::Aborted }
 	};
 	state.new_enum("NodeStatus", nodeStatusItems);
 }

@@ -18,6 +18,7 @@ namespace BehaviourTree
 			if (!(m_Blackboard->getBool(mBlackboardKey) != mIsSet))
 				return m_Child->tick(deltaTime);
 
+			m_Child->halt();
 			return Status::Failure;
 		}
 		const std::string& getKey() const { return mBlackboardKey; }
@@ -46,6 +47,7 @@ namespace BehaviourTree
 			if (!((m_Blackboard->getBool(mBBKey_1) == m_Blackboard->getBool(mBBKey_2)) != mIsEqual))
 				return m_Child->tick(deltaTime);
 
+			m_Child->halt();
 			return Status::Failure;
 		}
 		const std::string& getKey1() const { return mBBKey_1; }
@@ -61,7 +63,7 @@ namespace BehaviourTree
 
 	//--------------------------------------------------------------------------------------------------------------------
 
-	// The Succeeder decorator returns success, regardless of what happens to the child.
+	// The Succeeder decorator returns success once the child finishes, regardless of its result.
 	class Succeeder : public Decorator
 	{
 	public:
@@ -70,12 +72,13 @@ namespace BehaviourTree
 			if (!m_Child)
 				return Status::Failure;
 
-			m_Child->tick(deltaTime);
+			if (m_Child->tick(deltaTime) == Status::Running)
+				return Status::Running;
 			return Status::Success;
 		}
 	};
 
-	// The Failer decorator returns failure, regardless of what happens to the child.
+	// The Failer decorator returns failure once the child finishes, regardless of its result.
 	class Failer : public Decorator
 	{
 	public:
@@ -84,7 +87,8 @@ namespace BehaviourTree
 			if (!m_Child)
 				return Status::Failure;
 
-			m_Child->tick(deltaTime);
+			if (m_Child->tick(deltaTime) == Status::Running)
+				return Status::Running;
 			return Status::Failure;
 		}
 	};
@@ -135,6 +139,7 @@ namespace BehaviourTree
 			m_Child->tick(deltaTime);
 
 			if (limit > 0 && ++counter == limit) {
+				m_Child->halt();
 				return Status::Success;
 			}
 

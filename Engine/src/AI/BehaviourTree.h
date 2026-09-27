@@ -30,6 +30,7 @@ public:
 		Success,
 		Failure,
 		Running,
+		Aborted, // Passed to terminate() when a running node is halted
 	};
 
 	virtual ~Node() = default;
@@ -60,8 +61,22 @@ public:
 
 	void reset() { m_Status = Status::Invalid; }
 
+	// Stops a running node its parent is no longer ticking, so it cleans up and starts fresh next time
+	void halt()
+	{
+		if (m_Status == Status::Running) {
+			haltChildren();
+			terminate(Status::Aborted);
+		}
+		m_Status = Status::Invalid;
+	}
+
 	Vector2f GetEditorPosition() { return m_EditorPosition; }
 	void SetEditorPosition(Vector2f editorPosition) { m_EditorPosition = editorPosition; }
+
+protected:
+	virtual void haltChildren() {}
+
 private:
 	Status m_Status = Status::Invalid;
 
@@ -91,6 +106,14 @@ public:
 	std::vector<Ref<Node>>::const_reverse_iterator rend() const { return m_Children.rend(); }
 
 protected:
+	void haltChildren() override { haltChildrenFrom(0); }
+
+	void haltChildrenFrom(size_t index)
+	{
+		for (size_t i = index; i < m_Children.size(); ++i)
+			m_Children[i]->halt();
+	}
+
 	std::vector<Ref<Node>> m_Children;
 };
 
@@ -220,6 +243,12 @@ public:
 	bool hasChild() const { return m_Child != nullptr; }
 
 protected:
+	void haltChildren() override
+	{
+		if (m_Child)
+			m_Child->halt();
+	}
+
 	Ref<Node> m_Child = nullptr;
 };
 
@@ -444,12 +473,13 @@ public:
 		if (!hasChildren())
 			return Status::Failure;
 
-		for (Ref<Node> child : m_Children)
+		for (size_t i = 0; i < m_Children.size(); ++i)
 		{
-			Node::Status status = child->tick(deltaTime);
+			Node::Status status = m_Children[i]->tick(deltaTime);
 
 			if (status != Status::Failure)
 			{
+				haltChildrenFrom(i + 1);
 				return status;
 			}
 		}
@@ -473,11 +503,12 @@ public:
 		if (!hasChildren())
 			return Status::Failure;
 
-		for (Ref<Node> child : m_Children)
+		for (size_t i = 0; i < m_Children.size(); ++i)
 		{
-			Node::Status status = child->tick(deltaTime);
+			Node::Status status = m_Children[i]->tick(deltaTime);
 
 			if (status != Status::Success) {
+				haltChildrenFrom(i + 1);
 				return status;
 			}
 		}
@@ -509,6 +540,7 @@ public:
 			auto status = (*it)->tick(deltaTime);
 
 			if (status != Status::Failure) {
+				haltChildrenFrom(std::distance(m_Children.begin(), it) + 1);
 				return status;
 			}
 
@@ -545,6 +577,7 @@ public:
 			auto status = (*it)->tick(deltaTime);
 
 			if (status != Status::Success) {
+				haltChildrenFrom(std::distance(m_Children.begin(), it) + 1);
 				return status;
 			}
 
@@ -610,9 +643,11 @@ public:
 		}
 
 		if (total_success >= minimumSuccess) {
+			haltChildren();
 			return Status::Success;
 		}
 		if (total_fail >= minimumFail) {
+			haltChildren();
 			return Status::Failure;
 		}
 
