@@ -63,6 +63,8 @@ const NodeTypeInfo s_NodeTypes[] = {
 	{ NodeType::Wait, "Wait", "Wait", NodeCategory::Task, ICON_FA_HOURGLASS_HALF, c_TaskColour, "Waits for a set time" },
 	{ NodeType::RandomWait, "Random Wait", "RandomWait", NodeCategory::Task, ICON_FA_DICE, c_TaskColour, "Waits for a random time between a min and max" },
 	{ NodeType::CustomTask, "Custom Task", "CustomTask", NodeCategory::Task, ICON_FA_CODE, c_TaskColour, "Runs a Lua script's OnStateEntry, OnStateUpdate and OnStateExit" },
+	{ NodeType::SetBlackboard, "Set Blackboard", "SetBlackboard", NodeCategory::Task, ICON_FA_PEN_TO_SQUARE, c_TaskColour, "Sets a blackboard key to a value" },
+	{ NodeType::EmitSignal, "Emit Signal", "EmitSignal", NodeCategory::Task, ICON_FA_TOWER_BROADCAST, c_TaskColour, "Emits a signal with this entity as the sender" },
 };
 
 const NodeTypeInfo& GetInfo(NodeType type)
@@ -97,6 +99,25 @@ const char* const c_BlackboardTypeNames[] = { "Bool", "Int", "Float", "Double", 
 const char* GetBlackboardTypeName(BlackboardType type)
 {
 	return c_BlackboardTypeNames[(int)type];
+}
+
+// Editor and runtime share the type order so they can be cast between
+static_assert((int)BehaviourTree::SetBlackboard::ValueType::Vec3 == (int)BlackboardType::Vec3, "Blackboard value types out of sync");
+
+template<typename Entry>
+std::string FormatBlackboardValue(const Entry& entry)
+{
+	switch (entry.type)
+	{
+	case BlackboardType::Bool:		return entry.boolValue ? "true" : "false";
+	case BlackboardType::Int:		return std::to_string(entry.intValue);
+	case BlackboardType::Float:
+	case BlackboardType::Double:	return fmt::format("{:g}", entry.numberValue);
+	case BlackboardType::String:	return "\"" + entry.stringValue + "\"";
+	case BlackboardType::Vec2:		return fmt::format("({:g}, {:g})", entry.vectorValue.x, entry.vectorValue.y);
+	case BlackboardType::Vec3:		return fmt::format("({:g}, {:g}, {:g})", entry.vectorValue.x, entry.vectorValue.y, entry.vectorValue.z);
+	}
+	return "";
 }
 
 const ImColor c_WarningColour(255, 200, 80);
@@ -402,6 +423,12 @@ void BehaviourTreeView::DrawNode(const Node& node)
 		break;
 	case NodeType::RandomWait:
 		summary = fmt::format("{:.2f}s to {:.2f}s", node.minTime, node.maxTime);
+		break;
+	case NodeType::SetBlackboard:
+		summary = node.setValue.key.empty() ? "No key" : node.setValue.key + " = " + FormatBlackboardValue(node.setValue);
+		break;
+	case NodeType::EmitSignal:
+		summary = node.signalName.empty() ? "No signal" : "\"" + node.signalName + "\"";
 		break;
 	case NodeType::BlackboardBool:
 		summary = fmt::format("{} is {}", node.key1, node.flag ? "true" : "false");
@@ -755,6 +782,19 @@ void BehaviourTreeView::DrawProperties()
 			}
 		};
 
+	auto inputText = [&](const char* label, std::string& value)
+		{
+			char buffer[256];
+			strncpy(buffer, value.c_str(), sizeof(buffer) - 1);
+			buffer[sizeof(buffer) - 1] = '\0';
+			if (ImGui::InputText(label, buffer, sizeof(buffer)))
+			{
+				value = buffer;
+				changed = true;
+			}
+			finished |= ImGui::IsItemDeactivatedAfterEdit();
+		};
+
 	ImGui::PushItemWidth(-FLT_MIN);
 	switch (node->type)
 	{
@@ -784,18 +824,34 @@ void BehaviourTreeView::DrawProperties()
 		changed |= ImGui::DragFloat("##MaxTime", &node->maxTime, 0.05f, 0.0f, FLT_MAX, "%.2f");
 		finished |= ImGui::IsItemDeactivatedAfterEdit();
 		break;
+	case NodeType::SetBlackboard:
+		ImGui::TextUnformatted("Key");
+		if (BlackboardKeyCombo("##Key", node->setValue.key, node->setValue.type, true))
+		{
+			// The node takes the type of the key it sets
+			if (const BlackboardEntry* entry = FindBlackboardEntry(node->setValue.key))
+				node->setValue.type = entry->type;
+			changed = finished = true;
+		}
+		ImGui::TextUnformatted("Value");
+		DrawBlackboardValue(node->setValue, changed, finished);
+		break;
+	case NodeType::EmitSignal:
+		ImGui::TextUnformatted("Signal name");
+		inputText("##Signal", node->signalName);
+		break;
 	case NodeType::BlackboardBool:
 		ImGui::TextUnformatted("Key");
-		if (BlackboardKeyCombo("##Key", node->key1))
+		if (BlackboardKeyCombo("##Key", node->key1, BlackboardType::Bool))
 			changed = finished = true;
 		checkbox("Is set", node->flag);
 		break;
 	case NodeType::BlackboardCompare:
 		ImGui::TextUnformatted("Key 1");
-		if (BlackboardKeyCombo("##Key1", node->key1))
+		if (BlackboardKeyCombo("##Key1", node->key1, BlackboardType::Bool))
 			changed = finished = true;
 		ImGui::TextUnformatted("Key 2");
-		if (BlackboardKeyCombo("##Key2", node->key2))
+		if (BlackboardKeyCombo("##Key2", node->key2, BlackboardType::Bool))
 			changed = finished = true;
 		checkbox("Is equal", node->flag);
 		break;
@@ -890,6 +946,9 @@ void BehaviourTreeView::DrawBlackboard()
 		if (ImGui::Combo("##Type", &type, c_BlackboardTypeNames, IM_ARRAYSIZE(c_BlackboardTypeNames)))
 		{
 			entry.type = (BlackboardType)type;
+			for (Node& node : m_State.nodes)
+				if (node.type == NodeType::SetBlackboard && node.setValue.key == entry.key)
+					node.setValue.type = entry.type;
 			changed = finished = true;
 		}
 
@@ -906,67 +965,7 @@ void BehaviourTreeView::DrawBlackboard()
 				ImGui::TextColored(c_ErrorColour, "Key already exists");
 		}
 
-		ImGui::SetNextItemWidth(-FLT_MIN);
-		switch (entry.type)
-		{
-		case BlackboardType::Bool:
-			if (ImGui::Checkbox("##Value", &entry.boolValue))
-				changed = finished = true;
-			break;
-		case BlackboardType::Int:
-			changed |= ImGui::DragInt("##Value", &entry.intValue);
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		case BlackboardType::Float:
-		{
-			float value = (float)entry.numberValue;
-			if (ImGui::DragFloat("##Value", &value, 0.1f))
-			{
-				entry.numberValue = value;
-				changed = true;
-			}
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		}
-		case BlackboardType::Double:
-			changed |= ImGui::DragScalar("##Value", ImGuiDataType_Double, &entry.numberValue, 0.1f);
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		case BlackboardType::String:
-		{
-			char buffer[256];
-			strncpy(buffer, entry.stringValue.c_str(), sizeof(buffer) - 1);
-			buffer[sizeof(buffer) - 1] = '\0';
-			if (ImGui::InputText("##Value", buffer, sizeof(buffer)))
-			{
-				entry.stringValue = buffer;
-				changed = true;
-			}
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		}
-		case BlackboardType::Vec2:
-		{
-			Vector2f value(entry.vectorValue.x, entry.vectorValue.y);
-			if (ImGui::Vector("##Value", value))
-			{
-				entry.vectorValue = Vector3f(value.x, value.y, 0.0f);
-				changed = true;
-				// A right click reset isn't a drag, so it has no release to wait for
-				finished |= !ImGui::IsAnyItemActive();
-			}
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		}
-		case BlackboardType::Vec3:
-			if (ImGui::Vector("##Value", entry.vectorValue))
-			{
-				changed = true;
-				finished |= !ImGui::IsAnyItemActive();
-			}
-			finished |= ImGui::IsItemDeactivatedAfterEdit();
-			break;
-		}
+		DrawBlackboardValue(entry, changed, finished);
 
 		ImGui::PopID();
 		ImGui::Spacing();
@@ -993,7 +992,72 @@ void BehaviourTreeView::DrawBlackboard()
 	FinishEdit(before, changed, finished);
 }
 
-bool BehaviourTreeView::BlackboardKeyCombo(const char* label, std::string& key)
+void BehaviourTreeView::DrawBlackboardValue(BlackboardEntry& entry, bool& changed, bool& finished)
+{
+	ImGui::SetNextItemWidth(-FLT_MIN);
+	switch (entry.type)
+	{
+	case BlackboardType::Bool:
+		if (ImGui::Checkbox("##Value", &entry.boolValue))
+			changed = finished = true;
+		break;
+	case BlackboardType::Int:
+		changed |= ImGui::DragInt("##Value", &entry.intValue);
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	case BlackboardType::Float:
+	{
+		float value = (float)entry.numberValue;
+		if (ImGui::DragFloat("##Value", &value, 0.1f))
+		{
+			entry.numberValue = value;
+			changed = true;
+		}
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	}
+	case BlackboardType::Double:
+		changed |= ImGui::DragScalar("##Value", ImGuiDataType_Double, &entry.numberValue, 0.1f);
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	case BlackboardType::String:
+	{
+		char buffer[256];
+		strncpy(buffer, entry.stringValue.c_str(), sizeof(buffer) - 1);
+		buffer[sizeof(buffer) - 1] = '\0';
+		if (ImGui::InputText("##Value", buffer, sizeof(buffer)))
+		{
+			entry.stringValue = buffer;
+			changed = true;
+		}
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	}
+	case BlackboardType::Vec2:
+	{
+		Vector2f value(entry.vectorValue.x, entry.vectorValue.y);
+		if (ImGui::Vector("##Value", value))
+		{
+			entry.vectorValue = Vector3f(value.x, value.y, 0.0f);
+			changed = true;
+			// A right click reset isn't a drag, so it has no release to wait for
+			finished |= !ImGui::IsAnyItemActive();
+		}
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	}
+	case BlackboardType::Vec3:
+		if (ImGui::Vector("##Value", entry.vectorValue))
+		{
+			changed = true;
+			finished |= !ImGui::IsAnyItemActive();
+		}
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
+	}
+}
+
+bool BehaviourTreeView::BlackboardKeyCombo(const char* label, std::string& key, BlackboardType type, bool anyType)
 {
 	bool changed = false;
 
@@ -1002,34 +1066,36 @@ bool BehaviourTreeView::BlackboardKeyCombo(const char* label, std::string& key)
 		bool any = false;
 		for (const BlackboardEntry& entry : m_State.blackboard)
 		{
-			if (entry.type != BlackboardType::Bool)
+			if (!anyType && entry.type != type)
 				continue;
 			any = true;
-			if (ImGui::Selectable(entry.key.c_str(), entry.key == key))
+			std::string itemLabel = anyType ? fmt::format("{} ({})", entry.key, GetBlackboardTypeName(entry.type)) : entry.key;
+			if (ImGui::Selectable(itemLabel.c_str(), entry.key == key))
 			{
 				key = entry.key;
 				changed = true;
 			}
 		}
 		if (!any)
-			ImGui::TextDisabled("No bool keys in the blackboard");
+			ImGui::TextDisabled(anyType ? "No keys in the blackboard" : "No %s keys in the blackboard", GetBlackboardTypeName(type));
 		ImGui::EndCombo();
 	}
 
 	if (BlackboardEntry* entry = FindBlackboardEntry(key))
 	{
-		if (entry->type != BlackboardType::Bool)
-			ImGui::TextColored(c_ErrorColour, ICON_FA_TRIANGLE_EXCLAMATION" '%s' is a %s, not a Bool", key.c_str(), GetBlackboardTypeName(entry->type));
+		if (entry->type != type)
+			ImGui::TextColored(c_ErrorColour, ICON_FA_TRIANGLE_EXCLAMATION" '%s' is a %s, not a %s", key.c_str(), GetBlackboardTypeName(entry->type), GetBlackboardTypeName(type));
 	}
 	else if (!key.empty())
 	{
 		ImGui::TextColored(c_WarningColour, ICON_FA_TRIANGLE_EXCLAMATION" Not in the blackboard");
-		ImGui::Tooltip("Reads as false until a script sets it");
+		ImGui::Tooltip(anyType ? "Created when this task first runs" : "Reads as false until a script sets it");
 		ImGui::SameLine();
 		if (ImGui::SmallButton((std::string(ICON_FA_PLUS" Add##") + label).c_str()))
 		{
 			BlackboardEntry newEntry;
 			newEntry.key = key;
+			newEntry.type = type;
 			m_State.blackboard.push_back(newEntry);
 			changed = true;
 		}
@@ -1065,6 +1131,10 @@ void BehaviourTreeView::RenameBlackboardEntry(size_t index, const std::string& n
 	entry.key = newKey;
 
 	// Keep blackboard nodes pointing at the renamed key
+	for (Node& node : m_State.nodes)
+		if (node.type == NodeType::SetBlackboard && node.setValue.key == oldKey)
+			node.setValue.key = newKey;
+
 	if (entry.type == BlackboardType::Bool)
 	{
 		for (Node& node : m_State.nodes)
@@ -1271,6 +1341,16 @@ std::string BehaviourTreeView::SerializeNodes(const std::vector<int>& nodeIds)
 		pNode->SetAttribute("MinFail", node.minFail);
 		pNode->SetAttribute("MinTime", node.minTime);
 		pNode->SetAttribute("MaxTime", node.maxTime);
+		pNode->SetAttribute("Signal", node.signalName.c_str());
+		pNode->SetAttribute("SetKey", node.setValue.key.c_str());
+		pNode->SetAttribute("SetType", (int)node.setValue.type);
+		pNode->SetAttribute("SetBool", node.setValue.boolValue);
+		pNode->SetAttribute("SetInt", node.setValue.intValue);
+		pNode->SetAttribute("SetNumber", node.setValue.numberValue);
+		pNode->SetAttribute("SetString", node.setValue.stringValue.c_str());
+		pNode->SetAttribute("SetX", node.setValue.vectorValue.x);
+		pNode->SetAttribute("SetY", node.setValue.vectorValue.y);
+		pNode->SetAttribute("SetZ", node.setValue.vectorValue.z);
 	}
 
 	for (const Link& link : m_State.links)
@@ -1328,6 +1408,17 @@ bool BehaviourTreeView::PasteNodes(const std::string& text, std::optional<ImVec2
 		node.minFail = pNode->IntAttribute("MinFail", 1);
 		node.minTime = pNode->FloatAttribute("MinTime", 0.5f);
 		node.maxTime = pNode->FloatAttribute("MaxTime", 1.5f);
+		if (const char* signal = pNode->Attribute("Signal"))
+			node.signalName = signal;
+		if (const char* setKey = pNode->Attribute("SetKey"))
+			node.setValue.key = setKey;
+		node.setValue.type = (BlackboardType)std::clamp(pNode->IntAttribute("SetType"), 0, (int)BlackboardType::Vec3);
+		node.setValue.boolValue = pNode->BoolAttribute("SetBool");
+		node.setValue.intValue = pNode->IntAttribute("SetInt");
+		node.setValue.numberValue = pNode->DoubleAttribute("SetNumber");
+		if (const char* setString = pNode->Attribute("SetString"))
+			node.setValue.stringValue = setString;
+		node.setValue.vectorValue = Vector3f(pNode->FloatAttribute("SetX"), pNode->FloatAttribute("SetY"), pNode->FloatAttribute("SetZ"));
 
 		minPosition = ImMin(minPosition, node.position);
 		pasted.push_back({ pNode->IntAttribute("Id"), node });
@@ -1591,6 +1682,8 @@ int BehaviourTreeView::BuildGraphNode(Ref<BehaviourTree::Node> btNode)
 	else if (std::dynamic_pointer_cast<BT::Wait>(btNode)) type = NodeType::Wait;
 	else if (std::dynamic_pointer_cast<BT::CustomTask>(btNode)) type = NodeType::CustomTask;
 	else if (std::dynamic_pointer_cast<BT::RandomWait>(btNode)) type = NodeType::RandomWait;
+	else if (std::dynamic_pointer_cast<BT::SetBlackboard>(btNode)) type = NodeType::SetBlackboard;
+	else if (std::dynamic_pointer_cast<BT::EmitSignal>(btNode)) type = NodeType::EmitSignal;
 	else
 	{
 		ENGINE_ERROR("Unknown behaviour tree node");
@@ -1626,6 +1719,24 @@ int BehaviourTreeView::BuildGraphNode(Ref<BehaviourTree::Node> btNode)
 		node->minSuccess = parallel->getMinSuccess();
 		node->minFail = parallel->getMinFail();
 	}
+	else if (auto randomWait = std::dynamic_pointer_cast<BT::RandomWait>(btNode))
+	{
+		node->minTime = randomWait->getMinTime();
+		node->maxTime = randomWait->getMaxTime();
+	}
+	else if (auto setBlackboard = std::dynamic_pointer_cast<BT::SetBlackboard>(btNode))
+	{
+		const BT::SetBlackboard::Value& value = setBlackboard->getValue();
+		node->setValue.key = setBlackboard->getKey();
+		node->setValue.type = (BlackboardType)value.type;
+		node->setValue.boolValue = value.boolValue;
+		node->setValue.intValue = value.intValue;
+		node->setValue.numberValue = value.numberValue;
+		node->setValue.stringValue = value.stringValue;
+		node->setValue.vectorValue = value.vectorValue;
+	}
+	else if (auto emitSignal = std::dynamic_pointer_cast<BT::EmitSignal>(btNode))
+		node->signalName = emitSignal->getSignalName();
 
 	// node is invalidated from here as children push into m_State.nodes
 	if (auto composite = std::dynamic_pointer_cast<BT::Composite>(btNode))
@@ -1761,6 +1872,19 @@ Ref<BehaviourTree::Node> BehaviourTreeView::BuildBehaviourTreeNode(int nodeId, B
 	case NodeType::Wait:				btNode = CreateRef<BT::Wait>(behaviourTree, node->waitTime); break;
 	case NodeType::CustomTask:			btNode = CreateRef<BT::CustomTask>(behaviourTree, node->scriptPath); break;
 	case NodeType::RandomWait:			btNode = CreateRef<BT::RandomWait>(behaviourTree, node->minTime, node->maxTime); break;
+	case NodeType::SetBlackboard:
+	{
+		BT::SetBlackboard::Value value;
+		value.type = (BT::SetBlackboard::ValueType)node->setValue.type;
+		value.boolValue = node->setValue.boolValue;
+		value.intValue = node->setValue.intValue;
+		value.numberValue = node->setValue.numberValue;
+		value.stringValue = node->setValue.stringValue;
+		value.vectorValue = node->setValue.vectorValue;
+		btNode = CreateRef<BT::SetBlackboard>(behaviourTree, behaviourTree->getBlackboard(), node->setValue.key, value);
+		break;
+	}
+	case NodeType::EmitSignal:			btNode = CreateRef<BT::EmitSignal>(behaviourTree, node->signalName); break;
 	default: return nullptr;
 	}
 

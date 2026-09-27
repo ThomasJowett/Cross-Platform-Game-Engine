@@ -44,7 +44,10 @@ public:
 		UntilSuccess,
 		UntilFailure,
 		Wait,
-		CustomTask
+		CustomTask,
+		RandomWait,
+		SetBlackboard,
+		EmitSignal
 	};
 
 	enum class NodeCategory
@@ -67,6 +70,19 @@ public:
 	};
 
 private:
+	struct BlackboardEntry
+	{
+		std::string key;
+		BlackboardType type = BlackboardType::Bool;
+
+		// Only the value matching the type is used
+		bool boolValue = false;
+		int intValue = 0;
+		double numberValue = 0.0; // Float and Double
+		std::string stringValue;
+		Vector3f vectorValue; // Vec2 uses x and y
+	};
+
 	struct Node
 	{
 		int id = 0;
@@ -87,6 +103,10 @@ private:
 		bool failOnAll = true;
 		int minSuccess = 1;
 		int minFail = 1;
+		float minTime = 0.5f;
+		float maxTime = 1.5f;
+		std::string signalName = "Signal";
+		BlackboardEntry setValue; // SetBlackboard key and value
 	};
 
 	struct Link
@@ -94,19 +114,6 @@ private:
 		int id = 0;
 		int parentId = 0;
 		int childId = 0;
-	};
-
-	struct BlackboardEntry
-	{
-		std::string key;
-		BlackboardType type = BlackboardType::Bool;
-
-		// Only the value matching the type is used
-		bool boolValue = false;
-		int intValue = 0;
-		double numberValue = 0.0; // Float and Double
-		std::string stringValue;
-		Vector3f vectorValue; // Vec2 uses x and y
 	};
 
 	struct EditorState
@@ -167,7 +174,8 @@ private:
 	void DrawCreateNodePopup();
 	void DrawProperties();
 	void DrawBlackboard();
-	bool BlackboardKeyCombo(const char* label, std::string& key);
+	bool BlackboardKeyCombo(const char* label, std::string& key, BlackboardType type, bool anyType = false);
+	void DrawBlackboardValue(BlackboardEntry& entry, bool& changed, bool& finished);
 	void FinishEdit(const EditorState& before, bool changed, bool finished);
 	void HandleCreate();
 	void HandleDelete();

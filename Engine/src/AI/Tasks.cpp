@@ -143,6 +143,8 @@ void BehaviourTree::BehaviourTree::Bind(Entity entity)
 
 			if (Ref<CustomTask> task = std::dynamic_pointer_cast<CustomTask>(node))
 				task->Bind(entity, m_Blackboard);
+			else if (Ref<EmitSignal> emitSignal = std::dynamic_pointer_cast<EmitSignal>(node))
+				emitSignal->Bind(entity);
 			else if (Ref<Composite> composite = std::dynamic_pointer_cast<Composite>(node))
 				for (const Ref<Node>& child : *composite)
 					bindNode(child);
@@ -162,4 +164,30 @@ BehaviourTree::Node::Status BehaviourTree::RandomWait::update(float deltaTime)
 {
 	m_CurrentTime -= deltaTime;
 	return m_CurrentTime <= 0.0f ? Status::Success : Status::Running;
+}
+
+BehaviourTree::Node::Status BehaviourTree::SetBlackboard::update(float deltaTime)
+{
+	switch (m_Value.type)
+	{
+	case ValueType::Bool:	m_Blackboard->setBool(m_Key, m_Value.boolValue); break;
+	case ValueType::Int:	m_Blackboard->setInt(m_Key, m_Value.intValue); break;
+	case ValueType::Float:	m_Blackboard->setFloat(m_Key, (float)m_Value.numberValue); break;
+	case ValueType::Double:	m_Blackboard->setDouble(m_Key, m_Value.numberValue); break;
+	case ValueType::String:	m_Blackboard->setString(m_Key, m_Value.stringValue); break;
+	case ValueType::Vec2:	m_Blackboard->setVector2(m_Key, Vector2f(m_Value.vectorValue.x, m_Value.vectorValue.y)); break;
+	case ValueType::Vec3:	m_Blackboard->setVector3(m_Key, m_Value.vectorValue); break;
+	}
+	return Status::Success;
+}
+
+BehaviourTree::Node::Status BehaviourTree::EmitSignal::update(float deltaTime)
+{
+	PROFILE_FUNCTION();
+
+	if (!m_Entity || m_SignalName.empty())
+		return Status::Failure;
+
+	LuaManager::GetSignalBus().Emit(m_SignalName, m_Entity, LuaManager::GetState().create_table());
+	return Status::Success;
 }

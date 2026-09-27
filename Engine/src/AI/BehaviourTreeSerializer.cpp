@@ -13,6 +13,19 @@
 
 namespace BehaviourTree
 {
+namespace
+{
+const char* const c_ValueTypeNames[] = { "Bool", "Int", "Float", "Double", "String", "Vec2", "Vec3" };
+
+SetBlackboard::ValueType ValueTypeFromName(const char* name)
+{
+	for (int i = 0; i < (int)std::size(c_ValueTypeNames); ++i)
+		if (name && strcmp(name, c_ValueTypeNames[i]) == 0)
+			return (SetBlackboard::ValueType)i;
+	return SetBlackboard::ValueType::Bool;
+}
+}
+
 void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> node)
 {
 	if (!node)
@@ -105,6 +118,26 @@ void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> n
 		pNode = pElement->InsertNewChildElement("RandomWait");
 		pNode->SetAttribute("MinTime", randomWait->getMinTime());
 		pNode->SetAttribute("MaxTime", randomWait->getMaxTime());
+	}
+	else if (Ref<SetBlackboard> setBlackboard = std::dynamic_pointer_cast<SetBlackboard>(node)) {
+		pNode = pElement->InsertNewChildElement("SetBlackboard");
+		const SetBlackboard::Value& value = setBlackboard->getValue();
+		pNode->SetAttribute("Key", setBlackboard->getKey().c_str());
+		pNode->SetAttribute("Type", c_ValueTypeNames[(int)value.type]);
+		switch (value.type)
+		{
+		case SetBlackboard::ValueType::Bool:	pNode->SetAttribute("Value", value.boolValue); break;
+		case SetBlackboard::ValueType::Int:		pNode->SetAttribute("Value", value.intValue); break;
+		case SetBlackboard::ValueType::Float:
+		case SetBlackboard::ValueType::Double:	pNode->SetAttribute("Value", value.numberValue); break;
+		case SetBlackboard::ValueType::String:	pNode->SetAttribute("Value", value.stringValue.c_str()); break;
+		case SetBlackboard::ValueType::Vec2:	SerializationUtils::Encode(pNode->InsertNewChildElement("Vector"), Vector2f(value.vectorValue.x, value.vectorValue.y)); break;
+		case SetBlackboard::ValueType::Vec3:	SerializationUtils::Encode(pNode->InsertNewChildElement("Vector"), value.vectorValue); break;
+		}
+	}
+	else if (Ref<EmitSignal> emitSignal = std::dynamic_pointer_cast<EmitSignal>(node)) {
+		pNode = pElement->InsertNewChildElement("EmitSignal");
+		pNode->SetAttribute("Signal", emitSignal->getSignalName().c_str());
 	}
 
 	if (pNode) {
@@ -256,6 +289,48 @@ Ref<Node> Serializer::DeserializeNode(tinyxml2::XMLElement* pElement, BehaviourT
 		customTask->SetEditorPosition(position);
 		return customTask;
 	}
+	else if (name == "RandomWait")
+	{
+		Ref<RandomWait> randomWait = CreateRef<RandomWait>(behaviourTree, pElement->FloatAttribute("MinTime", 0.5f), pElement->FloatAttribute("MaxTime", 1.5f));
+		randomWait->SetEditorPosition(position);
+		return randomWait;
+	}
+	else if (name == "SetBlackboard")
+	{
+		SetBlackboard::Value value;
+		value.type = ValueTypeFromName(pElement->Attribute("Type"));
+		switch (value.type)
+		{
+		case SetBlackboard::ValueType::Bool:	value.boolValue = pElement->BoolAttribute("Value"); break;
+		case SetBlackboard::ValueType::Int:		value.intValue = pElement->IntAttribute("Value"); break;
+		case SetBlackboard::ValueType::Float:
+		case SetBlackboard::ValueType::Double:	value.numberValue = pElement->DoubleAttribute("Value"); break;
+		case SetBlackboard::ValueType::String:
+			if (const char* stringValue = pElement->Attribute("Value"))
+				value.stringValue = stringValue;
+			break;
+		case SetBlackboard::ValueType::Vec2:
+		{
+			Vector2f vector;
+			SerializationUtils::Decode(pElement->FirstChildElement("Vector"), vector);
+			value.vectorValue = Vector3f(vector.x, vector.y, 0.0f);
+			break;
+		}
+		case SetBlackboard::ValueType::Vec3:	SerializationUtils::Decode(pElement->FirstChildElement("Vector"), value.vectorValue); break;
+		}
+
+		const char* key = pElement->Attribute("Key");
+		Ref<SetBlackboard> setBlackboard = CreateRef<SetBlackboard>(behaviourTree, behaviourTree->getBlackboard(), key ? key : "", value);
+		setBlackboard->SetEditorPosition(position);
+		return setBlackboard;
+	}
+	else if (name == "EmitSignal")
+	{
+		const char* signalName = pElement->Attribute("Signal");
+		Ref<EmitSignal> emitSignal = CreateRef<EmitSignal>(behaviourTree, signalName ? signalName : "");
+		emitSignal->SetEditorPosition(position);
+		return emitSignal;
+	}
 
 	else
 	{
@@ -291,12 +366,6 @@ bool Serializer::Serialize(const std::filesystem::path& filepath, BehaviourTree*
 		auto pInt = pBlackboard->InsertNewChildElement("Int");
 		pInt->SetAttribute("Key", iter->first.c_str());
 		pInt->SetAttribute("Value", iter->second);
-	}
-	else if (name == "RandomWait")
-	{
-		Ref<RandomWait> randomWait = CreateRef<RandomWait>(behaviourTree, pElement->FloatAttribute("MinTime", 0.5f), pElement->FloatAttribute("MaxTime", 1.5f));
-		randomWait->SetEditorPosition(position);
-		return randomWait;
 	}
 
 	for (auto iter = blackboard->getFloatsBegin(); iter != blackboard->getFloatsEnd(); ++iter) {
