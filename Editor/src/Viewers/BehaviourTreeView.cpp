@@ -61,6 +61,7 @@ const NodeTypeInfo s_NodeTypes[] = {
 	{ NodeType::UntilSuccess, "Until Success", "UntilSuccessDecorator", NodeCategory::Decorator, ICON_FA_ROTATE_RIGHT, c_DecoratorColour, "Repeats its child until it succeeds" },
 	{ NodeType::UntilFailure, "Until Failure", "UntilFailureDecorator", NodeCategory::Decorator, ICON_FA_ROTATE_LEFT, c_DecoratorColour, "Repeats its child until it fails" },
 	{ NodeType::Wait, "Wait", "Wait", NodeCategory::Task, ICON_FA_HOURGLASS_HALF, c_TaskColour, "Waits for a set time" },
+	{ NodeType::RandomWait, "Random Wait", "RandomWait", NodeCategory::Task, ICON_FA_DICE, c_TaskColour, "Waits for a random time between a min and max" },
 	{ NodeType::CustomTask, "Custom Task", "CustomTask", NodeCategory::Task, ICON_FA_CODE, c_TaskColour, "Runs a Lua script's OnStateEntry, OnStateUpdate and OnStateExit" },
 };
 
@@ -398,6 +399,9 @@ void BehaviourTreeView::DrawNode(const Node& node)
 		break;
 	case NodeType::CustomTask:
 		summary = node.scriptPath.empty() ? "No script" : node.scriptPath.filename().string();
+		break;
+	case NodeType::RandomWait:
+		summary = fmt::format("{:.2f}s to {:.2f}s", node.minTime, node.maxTime);
 		break;
 	case NodeType::BlackboardBool:
 		summary = fmt::format("{} is {}", node.key1, node.flag ? "true" : "false");
@@ -772,6 +776,14 @@ void BehaviourTreeView::DrawProperties()
 		}
 		break;
 	}
+	case NodeType::RandomWait:
+		ImGui::TextUnformatted("Min time (s)");
+		changed |= ImGui::DragFloat("##MinTime", &node->minTime, 0.05f, 0.0f, FLT_MAX, "%.2f");
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		ImGui::TextUnformatted("Max time (s)");
+		changed |= ImGui::DragFloat("##MaxTime", &node->maxTime, 0.05f, 0.0f, FLT_MAX, "%.2f");
+		finished |= ImGui::IsItemDeactivatedAfterEdit();
+		break;
 	case NodeType::BlackboardBool:
 		ImGui::TextUnformatted("Key");
 		if (BlackboardKeyCombo("##Key", node->key1))
@@ -1257,6 +1269,8 @@ std::string BehaviourTreeView::SerializeNodes(const std::vector<int>& nodeIds)
 		pNode->SetAttribute("FailOnAll", node.failOnAll);
 		pNode->SetAttribute("MinSuccess", node.minSuccess);
 		pNode->SetAttribute("MinFail", node.minFail);
+		pNode->SetAttribute("MinTime", node.minTime);
+		pNode->SetAttribute("MaxTime", node.maxTime);
 	}
 
 	for (const Link& link : m_State.links)
@@ -1312,6 +1326,8 @@ bool BehaviourTreeView::PasteNodes(const std::string& text, std::optional<ImVec2
 		node.failOnAll = pNode->BoolAttribute("FailOnAll", true);
 		node.minSuccess = pNode->IntAttribute("MinSuccess", 1);
 		node.minFail = pNode->IntAttribute("MinFail", 1);
+		node.minTime = pNode->FloatAttribute("MinTime", 0.5f);
+		node.maxTime = pNode->FloatAttribute("MaxTime", 1.5f);
 
 		minPosition = ImMin(minPosition, node.position);
 		pasted.push_back({ pNode->IntAttribute("Id"), node });
@@ -1574,6 +1590,7 @@ int BehaviourTreeView::BuildGraphNode(Ref<BehaviourTree::Node> btNode)
 	else if (std::dynamic_pointer_cast<BT::UntilFailure>(btNode)) type = NodeType::UntilFailure;
 	else if (std::dynamic_pointer_cast<BT::Wait>(btNode)) type = NodeType::Wait;
 	else if (std::dynamic_pointer_cast<BT::CustomTask>(btNode)) type = NodeType::CustomTask;
+	else if (std::dynamic_pointer_cast<BT::RandomWait>(btNode)) type = NodeType::RandomWait;
 	else
 	{
 		ENGINE_ERROR("Unknown behaviour tree node");
@@ -1743,6 +1760,7 @@ Ref<BehaviourTree::Node> BehaviourTreeView::BuildBehaviourTreeNode(int nodeId, B
 	case NodeType::UntilFailure:		btNode = CreateRef<BT::UntilFailure>(); break;
 	case NodeType::Wait:				btNode = CreateRef<BT::Wait>(behaviourTree, node->waitTime); break;
 	case NodeType::CustomTask:			btNode = CreateRef<BT::CustomTask>(behaviourTree, node->scriptPath); break;
+	case NodeType::RandomWait:			btNode = CreateRef<BT::RandomWait>(behaviourTree, node->minTime, node->maxTime); break;
 	default: return nullptr;
 	}
 

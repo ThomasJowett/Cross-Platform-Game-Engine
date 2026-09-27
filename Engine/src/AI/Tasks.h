@@ -68,4 +68,27 @@ private:
 	Ref<sol::protected_function> m_OnStateUpdateFunc;
 	Ref<sol::protected_function> m_OnStateExitFunc;
 };
+
+//--------------------------------------------------------------------------------------------------------------------
+
+// Waits for a random time between the min and max each time it starts
+class RandomWait : public Leaf
+{
+public:
+	RandomWait(BehaviourTree* behaviourTree, float minTime, float maxTime)
+		:Leaf(behaviourTree), m_MinTime(minTime), m_MaxTime(maxTime)
+	{
+	}
+
+	void initialize() final;
+	Status update(float deltaTime) override;
+
+	float getMinTime() const { return m_MinTime; }
+	float getMaxTime() const { return m_MaxTime; }
+
+private:
+	float m_MinTime;
+	float m_MaxTime;
+	float m_CurrentTime = 0.0f;
+};
 }

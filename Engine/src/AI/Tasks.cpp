@@ -7,6 +7,7 @@
 #include "Scene/AssetManager.h"
 #include "Scene/Entity.h"
 #include "Scripting/Lua/LuaErrorEvent.h"
+#include "Utilities/Random.h"
 
 #include "sol/sol.hpp"
 
@@ -150,4 +151,15 @@ void BehaviourTree::BehaviourTree::Bind(Entity entity)
 		};
 
 	bindNode(m_Root);
+}
+
+void BehaviourTree::RandomWait::initialize()
+{
+	m_CurrentTime = Random::FloatInRange(std::min(m_MinTime, m_MaxTime), std::max(m_MinTime, m_MaxTime));
+}
+
+BehaviourTree::Node::Status BehaviourTree::RandomWait::update(float deltaTime)
+{
+	m_CurrentTime -= deltaTime;
+	return m_CurrentTime <= 0.0f ? Status::Success : Status::Running;
 }

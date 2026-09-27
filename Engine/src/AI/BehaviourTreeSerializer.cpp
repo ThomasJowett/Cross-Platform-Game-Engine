@@ -101,6 +101,11 @@ void Serializer::SerializeNode(tinyxml2::XMLElement* pElement, const Ref<Node> n
 		pNode = pElement->InsertNewChildElement("CustomTask");
 		SerializationUtils::Encode(pNode, customTask->getScriptPath());
 	}
+	else if (Ref<RandomWait> randomWait = std::dynamic_pointer_cast<RandomWait>(node)) {
+		pNode = pElement->InsertNewChildElement("RandomWait");
+		pNode->SetAttribute("MinTime", randomWait->getMinTime());
+		pNode->SetAttribute("MaxTime", randomWait->getMaxTime());
+	}
 
 	if (pNode) {
 		Vector2f editorPosition = node->GetEditorPosition();
@@ -286,6 +291,12 @@ bool Serializer::Serialize(const std::filesystem::path& filepath, BehaviourTree*
 		auto pInt = pBlackboard->InsertNewChildElement("Int");
 		pInt->SetAttribute("Key", iter->first.c_str());
 		pInt->SetAttribute("Value", iter->second);
+	}
+	else if (name == "RandomWait")
+	{
+		Ref<RandomWait> randomWait = CreateRef<RandomWait>(behaviourTree, pElement->FloatAttribute("MinTime", 0.5f), pElement->FloatAttribute("MaxTime", 1.5f));
+		randomWait->SetEditorPosition(position);
+		return randomWait;
 	}
 
 	for (auto iter = blackboard->getFloatsBegin(); iter != blackboard->getFloatsEnd(); ++iter) {
