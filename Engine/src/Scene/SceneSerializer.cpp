@@ -5,6 +5,7 @@
 #include "Core/Application.h"
 #include "Core/Version.h"
 #include "Utilities/SerializationUtils.h"
+#include "Utilities/FileUtils.h"
 #include "AssetManager.h"
 #include "Renderer/Renderer2D.h"
 
@@ -546,6 +547,7 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pWidgetElement->SetAttribute("MarginTop", component->marginTop);
 		pWidgetElement->SetAttribute("MarginBottom", component->marginBottom);
 
+		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Rotation"), component->rotation);
 		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Position"), component->position);
 		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Size"), component->size);
 
@@ -576,6 +578,49 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTint"), component->hoveredTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTint"), component->clickedTint);
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTint"), component->disabledTint);
+	}
+
+	if (StackLayoutComponent* component = entity.TryGetComponent<StackLayoutComponent>())
+	{
+		tinyxml2::XMLElement* pStackElement = pElement->InsertNewChildElement("StackLayout");
+
+		pStackElement->SetAttribute("Horizontal", component->horizontal);
+		pStackElement->SetAttribute("Spacing", component->spacing);
+		pStackElement->SetAttribute("StretchCrossAxis", component->stretchCrossAxis);
+		pStackElement->SetAttribute("PaddingLeft", component->paddingLeft);
+		pStackElement->SetAttribute("PaddingTop", component->paddingTop);
+		pStackElement->SetAttribute("PaddingRight", component->paddingRight);
+		pStackElement->SetAttribute("PaddingBottom", component->paddingBottom);
+	}
+
+	if (GridLayoutComponent* component = entity.TryGetComponent<GridLayoutComponent>())
+	{
+		tinyxml2::XMLElement* pGridElement = pElement->InsertNewChildElement("GridLayout");
+
+		pGridElement->SetAttribute("Columns", component->columns);
+		SerializationUtils::Encode(pGridElement->InsertNewChildElement("CellSpacing"), component->cellSpacing);
+		pGridElement->SetAttribute("UniformCellSize", component->uniformCellSize);
+		pGridElement->SetAttribute("FixedRowHeight", component->fixedRowHeight);
+		pGridElement->SetAttribute("PaddingLeft", component->paddingLeft);
+		pGridElement->SetAttribute("PaddingTop", component->paddingTop);
+		pGridElement->SetAttribute("PaddingRight", component->paddingRight);
+		pGridElement->SetAttribute("PaddingBottom", component->paddingBottom);
+	}
+
+	if (ScrollBoxComponent* component = entity.TryGetComponent<ScrollBoxComponent>())
+	{
+		tinyxml2::XMLElement* pScrollBoxElement = pElement->InsertNewChildElement("ScrollBox");
+
+		SerializationUtils::Encode(pScrollBoxElement->InsertNewChildElement("ScrollOffset"), component->scrollOffset);
+		pScrollBoxElement->SetAttribute("HorizontalScroll", component->horizontalScroll);
+		pScrollBoxElement->SetAttribute("VerticalScroll", component->verticalScroll);
+		pScrollBoxElement->SetAttribute("ClipContent", component->clipContent);
+	}
+
+	if (HiddenComponent* component = entity.TryGetComponent<HiddenComponent>())
+	{
+		tinyxml2::XMLElement* pHiddenElement = pElement->InsertNewChildElement("Hidden");
+		pHiddenElement->SetAttribute("Hidden", component->hidden);
 	}
 
 	if (AudioSourceComponent* component = entity.TryGetComponent<AudioSourceComponent>())
@@ -1090,8 +1135,11 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		BehaviourTreeComponent& component = entity.AddComponent<BehaviourTreeComponent>();
 
 		SerializationUtils::Decode(pBehaviourTreeComponentElement, component.filepath);
+		// Older scenes stored absolute paths
+		if (component.filepath.is_absolute())
+			component.filepath = FileUtils::RelativePath(component.filepath, Application::GetOpenDocumentDirectory());
 		if (!component.filepath.empty())
-			component.behaviourTree = BehaviourTree::Serializer::Deserialize(component.filepath);
+			component.behaviourTree = BehaviourTree::Serializer::Load(component.filepath);
 	}
 
 	// State Machine -----------------------------------------------------------------------------------------------
@@ -1163,7 +1211,7 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pWidgetComponent->QueryFloatAttribute("MarginTop", &component.marginTop);
 		pWidgetComponent->QueryFloatAttribute("MarginBottom", &component.marginBottom);
 
-		pWidgetComponent->QueryFloatAttribute("rotation", &component.rotation);
+		pWidgetComponent->QueryFloatAttribute("Rotation", &component.rotation);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Position"), component.position);
 		SerializationUtils::Decode(pWidgetComponent->FirstChildElement("Size"), component.size);
 	}
@@ -1181,6 +1229,53 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTint"), component.clickedTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTint"), component.disabledTint);
+	}
+
+	// StackLayout ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pStackComponent = pEntityElement->FirstChildElement("StackLayout"))
+	{
+		StackLayoutComponent& component = entity.AddComponent<StackLayoutComponent>();
+
+		pStackComponent->QueryBoolAttribute("Horizontal", &component.horizontal);
+		pStackComponent->QueryFloatAttribute("Spacing", &component.spacing);
+		pStackComponent->QueryBoolAttribute("StretchCrossAxis", &component.stretchCrossAxis);
+		pStackComponent->QueryFloatAttribute("PaddingLeft", &component.paddingLeft);
+		pStackComponent->QueryFloatAttribute("PaddingTop", &component.paddingTop);
+		pStackComponent->QueryFloatAttribute("PaddingRight", &component.paddingRight);
+		pStackComponent->QueryFloatAttribute("PaddingBottom", &component.paddingBottom);
+	}
+
+	// GridLayout ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pGridComponent = pEntityElement->FirstChildElement("GridLayout"))
+	{
+		GridLayoutComponent& component = entity.AddComponent<GridLayoutComponent>();
+
+		pGridComponent->QueryIntAttribute("Columns", &component.columns);
+		SerializationUtils::Decode(pGridComponent->FirstChildElement("CellSpacing"), component.cellSpacing);
+		pGridComponent->QueryBoolAttribute("UniformCellSize", &component.uniformCellSize);
+		pGridComponent->QueryFloatAttribute("FixedRowHeight", &component.fixedRowHeight);
+		pGridComponent->QueryFloatAttribute("PaddingLeft", &component.paddingLeft);
+		pGridComponent->QueryFloatAttribute("PaddingTop", &component.paddingTop);
+		pGridComponent->QueryFloatAttribute("PaddingRight", &component.paddingRight);
+		pGridComponent->QueryFloatAttribute("PaddingBottom", &component.paddingBottom);
+	}
+
+	// ScrollBox ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pScrollBoxComponent = pEntityElement->FirstChildElement("ScrollBox"))
+	{
+		ScrollBoxComponent& component = entity.AddComponent<ScrollBoxComponent>();
+
+		SerializationUtils::Decode(pScrollBoxComponent->FirstChildElement("ScrollOffset"), component.scrollOffset);
+		pScrollBoxComponent->QueryBoolAttribute("HorizontalScroll", &component.horizontalScroll);
+		pScrollBoxComponent->QueryBoolAttribute("VerticalScroll", &component.verticalScroll);
+		pScrollBoxComponent->QueryBoolAttribute("ClipContent", &component.clipContent);
+	}
+
+	// Hidden ----------------------------------------------------------------------------------------------------
+	if (tinyxml2::XMLElement const* pHiddenComponent = pEntityElement->FirstChildElement("Hidden"))
+	{
+		HiddenComponent& component = entity.AddComponent<HiddenComponent>();
+		pHiddenComponent->QueryBoolAttribute("Hidden", &component.hidden);
 	}
 
 	// AudioSource ----------------------------------------------------------------------------------------------------

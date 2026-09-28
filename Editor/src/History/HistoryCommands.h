@@ -47,6 +47,27 @@ private:
 	Entity m_OldParent;
 };
 
+class MoveSiblingCommand : public HistoryRecord
+{
+public:
+	// Construct BEFORE calling SceneGraph::MoveBefore/MoveAfter - newAnchor/newIsBefore
+	// describe the move about to be performed, used by Redo.
+	MoveSiblingCommand(Entity& entity, Entity newAnchor, bool newIsBefore);
+
+	// Inherited via HistoryRecord
+	virtual void Undo() override;
+	virtual void Redo() override;
+	virtual void End() override;
+
+private:
+	Entity m_Entity;
+	Entity m_OldParent;
+	Entity m_OldPreviousSibling;
+	Entity m_OldNextSibling;
+	Entity m_NewAnchor;
+	bool m_NewIsBefore;
+};
+
 template<typename T>
 class AddComponentCommand : public HistoryRecord
 {

@@ -5,6 +5,7 @@
 #endif // _WINDOWS
 
 #include <imgui_internal.h> // Required for DockBuilder API
+#include <algorithm>
 
 #include "Fonts/Fonts.h"
 #include "IconsFontAwesome6.h"
@@ -19,6 +20,7 @@
 #include "Panels/ContentExplorerPanel.h"
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
+#include "Panels/InputMappingsPanel.h"
 #include "Panels/ViewportPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
@@ -31,8 +33,8 @@
 #include "Interfaces/ISaveable.h"
 
 #include "ProjectData.h"
-#include "cereal/archives/json.hpp"
-#include "cereal/types/string.hpp"
+#include "ProjectSerializer.h"
+#include "Core/InputActionSystem.h"
 
 #include "FileSystem/AssetPacker.h"
 #include "FileSystem/SpriteAtlasBuilder.h"
@@ -53,6 +55,7 @@ MainDockSpace::MainDockSpace()
 
 	m_ShowEditorPreferences = false;
 	m_ShowProjectSettings = false;
+	m_ShowInputMappings = false;
 	m_ShowViewport = true;
 	m_ShowConsole = true;
 	m_ShowErrorList = true;
@@ -100,6 +103,7 @@ void MainDockSpace::OnAttach()
 	Settings::SetDefaultBool("Windows", "ErrorList", m_ShowErrorList);
 	Settings::SetDefaultBool("Windows", "EditorPreferences", m_ShowEditorPreferences);
 	Settings::SetDefaultBool("Windows", "ProjectSettings", m_ShowProjectSettings);
+	Settings::SetDefaultBool("Windows", "InputMappings", m_ShowInputMappings);
 
 #ifdef DEBUG
 	Settings::SetDefaultBool("Windows", "ImGuiDemo", m_ShowImGuiDemo);
@@ -113,6 +117,7 @@ void MainDockSpace::OnAttach()
 	m_ShowConsole = Settings::GetBool("Windows", "Console");
 	m_ShowEditorPreferences = Settings::GetBool("Windows", "EditorPreferences");
 	m_ShowProjectSettings = Settings::GetBool("Windows", "ProjectSettings");
+	m_ShowInputMappings = Settings::GetBool("Windows", "InputMappings");
 	m_ShowContentExplorer = Settings::GetBool("Windows", "ContentExplorer");
 	m_ShowJoystickInfo = Settings::GetBool("Windows", "JoystickInfo");
 	m_ShowErrorList = Settings::GetBool("Windows", "ErrorList");
@@ -129,6 +134,7 @@ void MainDockSpace::OnAttach()
 
 	Application::GetLayerStack().AddOverlay(CreateRef<EditorPreferencesPanel>(&m_ShowEditorPreferences));
 	Application::GetLayerStack().AddOverlay(CreateRef<ProjectSettingsPanel>(&m_ShowProjectSettings));
+	Application::GetLayerStack().AddOverlay(CreateRef<InputMappingsPanel>(&m_ShowInputMappings));
 	Application::GetLayerStack().AddOverlay(m_ContentExplorer);
 	Application::GetLayerStack().AddOverlay(CreateRef<JoystickInfoPanel>(&m_ShowJoystickInfo));
 	Application::GetLayerStack().AddOverlay(CreateRef<ErrorListPanel>(&m_ShowErrorList));
@@ -151,7 +157,8 @@ void MainDockSpace::OnAttach()
 
 	for (std::filesystem::path project : recentProjectsList)
 	{
-		if (project.extension() == ".proj")
+		if (project.extension() == ".proj" && std::filesystem::exists(project)
+			&& std::find(m_RecentProjects.begin(), m_RecentProjects.end(), project) == m_RecentProjects.end())
 		{
 			m_RecentProjects.push_back(project);
 		}
@@ -301,12 +308,18 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
-				for (auto project : m_RecentProjects)
+				// ImGui::MenuItem's ID defaults to its label text - two recent projects with the
+				// same filename (in different folders) would otherwise collide, so scope each
+				// one's ID to its full path instead.
+				for (auto& project : m_RecentProjects)
 				{
+					ImGui::PushID(project.string().c_str());
 					if (ImGui::MenuItem(project.filename().string().c_str()))
 					{
 						Application::SetOpenDocument(project);
 					}
+					ImGui::Tooltip(project.string().c_str());
+					ImGui::PopID();
 				}
 				ImGui::EndMenu();
 			}
@@ -376,6 +389,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::Separator();//-----------------------------------------------
 			ImGui::MenuItem(ICON_FA_GEAR" Preferences", "", &m_ShowEditorPreferences);
 			ImGui::MenuItem(ICON_FA_GEARS" Project Settings", "", &m_ShowProjectSettings);
+			ImGui::MenuItem(ICON_FA_SLIDERS" Input Mappings", "", &m_ShowInputMappings);
 			ImGui::EndMenu();
 		}
 
@@ -476,12 +490,12 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 
 	m_ContentExplorer->SwitchTo(filename);
 
-	std::ifstream file(filename);
-
-	cereal::JSONInputArchive input(file);
 	ProjectData data;
-	input(data);
-	file.close();
+	ProjectSerializer::Deserialize(data, filename);
+
+	std::filesystem::path projectDirectory = filename;
+	projectDirectory.remove_filename();
+	InputActionSystem::LoadMappings(projectDirectory / InputMappings::FilePath);
 
 	SpriteAtlasBuilder::EnsureUpToDate();
 

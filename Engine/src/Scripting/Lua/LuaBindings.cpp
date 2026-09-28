@@ -96,7 +96,7 @@ void BindEntity(sol::state& state)
 	sceneCamera_type.set_function("SetAspectRatio", &SceneCamera::SetAspectRatio);
 	sceneCamera_type.set_function("GetAspectRatio", &SceneCamera::GetAspectRatio);
 	sceneCamera_type.set_function("GetOrthoNear", &SceneCamera::GetOrthoNear);
-	sceneCamera_type.set_function("SetOrthoNear", &SceneCamera::GetOrthoNear);
+	sceneCamera_type.set_function("SetOrthoNear", &SceneCamera::SetOrthoNear);
 	sceneCamera_type.set_function("GetOrthoFar", &SceneCamera::GetOrthoFar);
 	sceneCamera_type.set_function("SetOrthoFar", &SceneCamera::SetOrthoFar);
 	sceneCamera_type.set_function("GetOrthoSize", &SceneCamera::GetOrthoSize);
@@ -146,6 +146,14 @@ void BindEntity(sol::state& state)
 	rigidBody2D_type.set_function("SetLinearVelocity", &RigidBody2DComponent::SetLinearVelocity);
 	rigidBody2D_type.set_function("GetAngularVelocity", &RigidBody2DComponent::GetAngularVelocity);
 	rigidBody2D_type.set_function("SetAngularVelocity", &RigidBody2DComponent::SetAngularVelocity);
+	rigidBody2D_type.set_function("SetTransform", &RigidBody2DComponent::SetTransform);
+	rigidBody2D_type.set_function("GetTransform", [](RigidBody2DComponent& c)
+		{
+			Vector2f position;
+			float rotation;
+			c.GetTransform(position, rotation);
+			return std::make_tuple(position, rotation);
+		});
 
 	auto physicsMaterial_type = state.new_usertype<PhysicsMaterial>("PhysicsMaterial");
 	physicsMaterial_type.set_function("GetDensity", &PhysicsMaterial::GetDensity);
@@ -319,7 +327,8 @@ void BindCommonTypes(sol::state& state)
 	std::initializer_list<std::pair<sol::string_view, int>> nodeStatusItems = {
 		{ "Success", (int)BehaviourTree::Node::Status::Success },
 		{ "Failure", (int)BehaviourTree::Node::Status::Failure },
-		{ "Running", (int)BehaviourTree::Node::Status::Running }
+		{ "Running", (int)BehaviourTree::Node::Status::Running },
+		{ "Aborted", (int)BehaviourTree::Node::Status::Aborted }
 	};
 	state.new_enum("NodeStatus", nodeStatusItems);
 }

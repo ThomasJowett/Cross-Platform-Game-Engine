@@ -3,6 +3,7 @@
 #include "Directory.h"
 #include "Viewers/ViewerManager.h"
 #include "ProjectData.h"
+#include "ProjectSerializer.h"
 
 #include "Core/Application.h"
 #include "Asset/SpriteAtlas.h"
@@ -10,8 +11,6 @@
 #include "Renderer/Renderer2D.h"
 #include "TinyXml2/tinyxml2.h"
 #include "Logging/Logger.h"
-
-#include "cereal/archives/json.hpp"
 
 #include <unordered_map>
 
@@ -141,12 +140,8 @@ void SpriteAtlasBuilder::DoBuild(const std::vector<std::filesystem::path>& sourc
 
 uint32_t SpriteAtlasBuilder::GetConfiguredPageSize()
 {
-	std::ifstream file(Application::GetOpenDocument());
-	if (!file.is_open())
-		return 2048;
-
 	ProjectData data;
-	cereal::JSONInputArchive input(file);
-	input(data);
+	if (!ProjectSerializer::Deserialize(data, Application::GetOpenDocument()))
+		return 2048;
 	return data.spriteAtlasPageSize;
 }

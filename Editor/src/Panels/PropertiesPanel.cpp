@@ -97,7 +97,7 @@ void PropertiesPanel::OnImGuiRender()
 		else if (SceneManager::IsSceneLoaded())
 		{
 			Vector2f gravity = SceneManager::CurrentScene()->GetGravity();
-			if (ImGui::Vector("Gravity Scale", gravity, ImGui::GetContentRegionAvail().x))
+			if (ImGui::Vector("Gravity Scale", gravity, Vector2f(0.0f, -9.81f)))
 			{
 				SceneManager::CurrentScene()->SetGravity(gravity);
 				SceneManager::CurrentScene()->MakeDirty();
@@ -165,6 +165,33 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				m_EditWidgetComponent.second = CreateRef<EditComponentCommand<WidgetComponent>>(entity);
 			ImGui::BeginGroup();
 
+			bool parentControlsRect = false;
+			const char* parentControlDescription = "";
+			if (HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>())
+			{
+				if (hierarchyComp->parent != entt::null)
+				{
+					Entity parentEntity(hierarchyComp->parent, SceneManager::CurrentScene());
+					if (parentEntity.HasComponent<StackLayoutComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Stack Layout";
+					}
+					else if (parentEntity.HasComponent<GridLayoutComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Grid Layout";
+					}
+					else if (parentEntity.HasComponent<ScrollBoxComponent>())
+					{
+						parentControlsRect = true;
+						parentControlDescription = "Scroll Box";
+					}
+				}
+			}
+			if (parentControlsRect)
+				ImGui::TextDisabled("Position/anchors/margins are set by the parent's %s", parentControlDescription);
+
 			bool edited = false;
 
 			if (ImGui::Checkbox("Disabled", &widget.disabled))
@@ -183,6 +210,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float anchorRight = widget.anchorRight;
 			float anchorTop = widget.anchorTop;
 			float anchorBottom = widget.anchorBottom;
+
+			if (parentControlsRect)
+				ImGui::BeginDisabled();
 
 			ImGui::TextUnformatted("Anchor");
 
@@ -287,6 +317,9 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				position.y = 0.0f;
 				edited = true;
 			}
+
+			if (parentControlsRect)
+				ImGui::EndDisabled();
 
 			ImGui::TextUnformatted("Size");
 			ImGui::TextColored({ 245,0,0,255 }, "X");
@@ -1099,9 +1132,11 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Behaviour Tree -----------------------------------------------------------------------------------------------------------------
 	DrawComponent<BehaviourTreeComponent>(ICON_FA_DIAGRAM_PROJECT" Behaviour Tree", entity, [](auto& behaviourTree)
 		{
-			if (ImGui::FileSelect("Behaviour Tree", behaviourTree.filepath, FileType::BEHAVIOURTREE))
+			std::filesystem::path absolutePath = behaviourTree.filepath.empty() ? std::filesystem::path() : Application::GetOpenDocumentDirectory() / behaviourTree.filepath;
+			if (ImGui::FileSelect("Behaviour Tree", absolutePath, FileType::BEHAVIOURTREE))
 			{
-				behaviourTree.behaviourTree = BehaviourTree::Serializer::Deserialize(behaviourTree.filepath);
+				behaviourTree.filepath = FileUtils::RelativePath(absolutePath, Application::GetOpenDocumentDirectory());
+				behaviourTree.behaviourTree = BehaviourTree::Serializer::Load(behaviourTree.filepath);
 			}
 		});
 
@@ -1129,7 +1164,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			ImGui::InputFloat("Pixels per unit", &canvas.pixelPerUnit, 0.1f);
 		});
 
-	DrawComponent<ButtonComponent>("Button", entity, [](auto& button)
+	DrawComponent<ButtonComponent>("Button", entity, [&](auto& button)
 		{
 			ImGui::Texture2DEdit("Normal", button.normalTexture);
 			ImGui::Texture2DEdit("Hovered", button.hoveredTexture);
@@ -1138,6 +1173,70 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
+
+			if (button.normalTexture)
+			{
+				if (ImGui::Button("Pixel Perfect"))
+				{
+					if (WidgetComponent* widgetComp = entity.TryGetComponent<WidgetComponent>())
+					{
+						Ref<EditComponentCommand<WidgetComponent>> pixelPerfectCommand = CreateRef<EditComponentCommand<WidgetComponent>>(entity);
+						// Fixed width/height is what makes the size setting below actually take effect -
+						// otherwise the widget is in stretch mode and size is derived from anchors instead.
+						widgetComp->fixedWidth = true;
+						widgetComp->fixedHeight = true;
+						widgetComp->SetSizeX((float)button.normalTexture->GetWidth());
+						widgetComp->SetSizeY((float)button.normalTexture->GetHeight());
+						pixelPerfectCommand->End();
+						HistoryManager::AddHistoryRecord(pixelPerfectCommand);
+						SceneManager::CurrentScene()->MakeDirty();
+					}
+				}
+				ImGui::Tooltip("Set the Widget's size to the Normal texture's pixel dimensions");
+			}
+		});
+
+	DrawComponent<StackLayoutComponent>(ICON_FA_BARS" Stack Layout", entity, [](auto& stack)
+		{
+			int direction = stack.horizontal ? 1 : 0;
+			if (ImGui::Combo("Direction", &direction, "Vertical\0Horizontal\0"))
+			{
+				stack.horizontal = direction == 1;
+				SceneManager::CurrentScene()->MakeDirty();
+			}
+			Dirty(ImGui::DragFloat("Spacing", &stack.spacing, 0.1f, 0.0f));
+			Dirty(ImGui::Checkbox("Stretch Cross Axis", &stack.stretchCrossAxis));
+			ImGui::TextUnformatted("Padding");
+			Dirty(ImGui::DragFloat("Left##StackPadding", &stack.paddingLeft, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Top##StackPadding", &stack.paddingTop, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Right##StackPadding", &stack.paddingRight, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Bottom##StackPadding", &stack.paddingBottom, 0.1f, 0.0f));
+		});
+
+	DrawComponent<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity, [](auto& grid)
+		{
+			Dirty(ImGui::DragInt("Columns", &grid.columns, 1, 1, 64));
+			Dirty(ImGui::Vector("Cell Spacing", grid.cellSpacing));
+			Dirty(ImGui::Checkbox("Uniform Cell Size", &grid.uniformCellSize));
+			ImGui::Tooltip("When enabled, every cell is stretched to the computed column width and row height");
+			Dirty(ImGui::DragFloat("Fixed Row Height", &grid.fixedRowHeight, 0.1f, 0.0f));
+			ImGui::Tooltip("0 = auto row height from the tallest child in the row");
+			ImGui::TextUnformatted("Padding");
+			Dirty(ImGui::DragFloat("Left##GridPadding", &grid.paddingLeft, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Top##GridPadding", &grid.paddingTop, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Right##GridPadding", &grid.paddingRight, 0.1f, 0.0f));
+			Dirty(ImGui::DragFloat("Bottom##GridPadding", &grid.paddingBottom, 0.1f, 0.0f));
+		});
+
+	DrawComponent<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity, [](auto& scrollBox)
+		{
+			Dirty(ImGui::Checkbox("Horizontal Scroll", &scrollBox.horizontalScroll));
+			Dirty(ImGui::Checkbox("Vertical Scroll", &scrollBox.verticalScroll));
+			Dirty(ImGui::Vector("Scroll Offset", scrollBox.scrollOffset));
+			ImGui::BeginDisabled();
+			ImGui::Checkbox("Clip Content", &scrollBox.clipContent);
+			ImGui::EndDisabled();
+			ImGui::Tooltip("Not implemented yet - content can visually overflow the box until scissor-rect clipping is added");
 		});
 
 	DrawComponent<AudioSourceComponent>(ICON_FA_VOLUME_HIGH" Audio Source", entity, [](auto& audioSource)
@@ -1237,6 +1336,9 @@ void PropertiesPanel::DrawAddComponent(Entity entity)
 		if (ImGui::BeginMenu("UI Widgets")) {
 			AddComponentMenuItem<CanvasComponent>(ICON_FA_OBJECT_GROUP" Canvas", entity);
 			AddComponentMenuItem<ButtonComponent>(ICON_FA_CIRCLE_DOT" Button", entity);
+			AddComponentMenuItem<StackLayoutComponent>(ICON_FA_BARS" Stack Layout", entity);
+			AddComponentMenuItem<GridLayoutComponent>(ICON_FA_TABLE_CELLS" Grid Layout", entity);
+			AddComponentMenuItem<ScrollBoxComponent>(ICON_FA_SCROLL" Scroll Box", entity);
 			ImGui::EndMenu();
 		}
 

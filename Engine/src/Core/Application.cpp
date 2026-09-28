@@ -19,6 +19,7 @@
 
 #include "Logging/Logger.h"
 #include "Core/Input.h"
+#include "Core/InputActionSystem.h"
 
 #include "Utilities/StringUtils.h"
 #include "Scripting/Lua/LuaManager.h"
@@ -207,6 +208,8 @@ void Application::Tick() {
 
 	m_DeltaTime = (float)frameTime;
 
+	InputActionSystem::Update();
+
 	// On Fixed update
 	while (m_Accumulator >= m_FixedUpdateInterval)
 	{
@@ -393,11 +396,15 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
 
-		std::string fileStr = filepath.string();
+		// Canonicalize before comparing/storing - otherwise the same project opened via
+		// different routes (e.g. the "Open Recent" list vs. a file dialog) can end up with
+		// slightly different path spellings (separators, case, relative vs absolute) and be
+		// treated as distinct entries, duplicating the Recent Projects menu.
+		std::string fileStr = std::filesystem::weakly_canonical(filepath).string();
 
 		bool containsFile = false;
 
-		for (std::string file : recentFilesList)
+		for (std::string& file : recentFilesList)
 		{
 			if (file == fileStr)
 			{
@@ -408,7 +415,7 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 
 		if (!containsFile)
 		{
-			recentFiles.append(filepath.string() + ',');
+			recentFiles.append(fileStr + ',');
 			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
 		}
 

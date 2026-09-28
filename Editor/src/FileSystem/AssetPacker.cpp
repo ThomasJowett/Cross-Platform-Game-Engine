@@ -11,9 +11,8 @@
 #include <imgui.h>
 
 #include "Core/Application.h"
-
-#include "cereal/archives/json.hpp"
-#include "cereal/types/string.hpp"
+#include "Core/InputMappings.h"
+#include "ProjectSerializer.h"
 
 #include <algorithm>
 #include <iterator>
@@ -49,15 +48,7 @@ AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirecto
 	m_GameName.replace_extension(".exe");
 #endif // _WINDOWS
 
-	std::ifstream file(Application::GetOpenDocument());
-
-	if (!file.is_open())
-		return;
-
-	cereal::JSONInputArchive input(file);
-	input(m_Data);
-
-	file.close();
+	ProjectSerializer::Deserialize(m_Data, Application::GetOpenDocument());
 }
 
 void AssetPacker::OnImGuiRender()
@@ -334,6 +325,9 @@ void AssetPacker::PackAssets()
 	collectFilesFromDir(dataPath / "data" / "Fonts");
 
 	collectFilesFromDir(m_ProjectDirectory / "Generated" / "SpriteAtlas");
+
+	if (std::filesystem::path inputMappingsPath = m_ProjectDirectory / InputMappings::FilePath; std::filesystem::exists(inputMappingsPath))
+		filesToPack.push_back(inputMappingsPath);
 
 	const size_t totalFiles = filesToPack.size();
 	size_t filesPacked = 0;

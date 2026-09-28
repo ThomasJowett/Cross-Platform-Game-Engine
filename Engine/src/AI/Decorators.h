@@ -12,11 +12,18 @@ namespace BehaviourTree
 
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			if (!(m_Blackboard->getBool(mBlackboardKey) != mIsSet))
 				return m_Child->tick(deltaTime);
 
+			m_Child->halt();
 			return Status::Failure;
 		}
+		const std::string& getKey() const { return mBlackboardKey; }
+		bool getIsSet() const { return mIsSet; }
+
 	private:
 		Ref<Blackboard> m_Blackboard = nullptr;
 		std::string mBlackboardKey;
@@ -34,11 +41,19 @@ namespace BehaviourTree
 
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			if (!((m_Blackboard->getBool(mBBKey_1) == m_Blackboard->getBool(mBBKey_2)) != mIsEqual))
 				return m_Child->tick(deltaTime);
 
+			m_Child->halt();
 			return Status::Failure;
 		}
+		const std::string& getKey1() const { return mBBKey_1; }
+		const std::string& getKey2() const { return mBBKey_2; }
+		bool getIsEqual() const { return mIsEqual; }
+
 	private:
 		Ref<Blackboard> m_Blackboard = nullptr;
 		std::string mBBKey_1;
@@ -48,24 +63,32 @@ namespace BehaviourTree
 
 	//--------------------------------------------------------------------------------------------------------------------
 
-	// The Succeeder decorator returns success, regardless of what happens to the child.
+	// The Succeeder decorator returns success once the child finishes, regardless of its result.
 	class Succeeder : public Decorator
 	{
 	public:
 		Status update(float deltaTime) override
 		{
-			m_Child->tick(deltaTime);
+			if (!m_Child)
+				return Status::Failure;
+
+			if (m_Child->tick(deltaTime) == Status::Running)
+				return Status::Running;
 			return Status::Success;
 		}
 	};
 
-	// The Failer decorator returns failure, regardless of what happens to the child.
+	// The Failer decorator returns failure once the child finishes, regardless of its result.
 	class Failer : public Decorator
 	{
 	public:
 		Status update(float deltaTime) override
 		{
-			m_Child->tick(deltaTime);
+			if (!m_Child)
+				return Status::Failure;
+
+			if (m_Child->tick(deltaTime) == Status::Running)
+				return Status::Running;
 			return Status::Failure;
 		}
 	};
@@ -79,6 +102,9 @@ namespace BehaviourTree
 	public:
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			Status s = m_Child->tick(deltaTime);
 
 			if (s == Status::Success) {
@@ -107,14 +133,20 @@ namespace BehaviourTree
 
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			m_Child->tick(deltaTime);
 
 			if (limit > 0 && ++counter == limit) {
+				m_Child->halt();
 				return Status::Success;
 			}
 
 			return Status::Running;
 		}
+
+		int getLimit() const { return limit; }
 
 	private:
 		int limit;
@@ -129,11 +161,20 @@ namespace BehaviourTree
 	public:
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			while (true) {
 				Status status = m_Child->tick(deltaTime);
 
 				if (status == Status::Success) {
 					return Status::Success;
+				}
+				if (status == Status::Running) {
+					return Status::Running;
+				}
+				if (status == Status::Invalid) {
+					return Status::Failure;
 				}
 			}
 		}
@@ -147,11 +188,20 @@ namespace BehaviourTree
 	public:
 		Status update(float deltaTime) override
 		{
+			if (!m_Child)
+				return Status::Failure;
+
 			while (true) {
 				Status status = m_Child->tick(deltaTime);
 
 				if (status == Status::Failure) {
 					return Status::Success;
+				}
+				if (status == Status::Running) {
+					return Status::Running;
+				}
+				if (status == Status::Invalid) {
+					return Status::Failure;
 				}
 			}
 		}

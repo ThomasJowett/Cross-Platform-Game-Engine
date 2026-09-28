@@ -29,6 +29,7 @@ public:
 
 	HitResult2D RayCast(Vector2f begin, Vector2f end);
 	std::vector<HitResult2D> MultiRayCast2D(Vector2f begin, Vector2f end);
+	std::vector<Entity> QueryPoint(Vector2f point);
 	void ShowDebugDraw(bool show);
 
 

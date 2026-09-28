@@ -10,8 +10,10 @@
 #include "FileSystem/FileDialog.h"
 
 #include "ProjectData.h"
-#include "cereal/archives/json.hpp"
+#include "ProjectSerializer.h"
 #include "imgui.h"
+
+#include <algorithm>
 
 ProjectsStartScreen::ProjectsStartScreen(bool createProject)
 	:m_CreateProject(createProject), Layer("Project Start Screen")
@@ -54,11 +56,14 @@ void ProjectsStartScreen::OnImGuiRender()
 
 			for (const std::filesystem::path& project : m_RecentProjects)
 			{
+				ImGui::PushID(project.string().c_str());
 				if (ImGui::Button(project.filename().string().c_str()))
 				{
 					OpenProject(project);
+					ImGui::PopID();
 					break;
 				}
+				ImGui::PopID();
 			}
 
 			ImGui::NextColumn();
@@ -114,33 +119,23 @@ void ProjectsStartScreen::OnImGuiRender()
 				}
 				else
 				{
-					std::ofstream file;
-					file.open(projectPath);
-					if (file.is_open())
-					{
-						std::filesystem::path sceneDirectory = projectPath;
-						sceneDirectory.remove_filename();
-						sceneDirectory /= "Scenes";
+					std::filesystem::path sceneDirectory = projectPath;
+					sceneDirectory.remove_filename();
+					sceneDirectory /= "Scenes";
 
-						std::filesystem::create_directory(sceneDirectory);
+					std::filesystem::create_directory(sceneDirectory);
 
-						std::string sceneName = "Untitled.scene";
+					std::string sceneName = "Untitled.scene";
 
-						ProjectData data;
-						data.defaultScene = "Scenes/" + sceneName;
+					ProjectData data;
+					data.defaultScene = "Scenes/" + sceneName;
 
-						Ref<Scene> newScene = CreateRef<Scene>(sceneDirectory / sceneName);
+					Ref<Scene> newScene = CreateRef<Scene>(sceneDirectory / sceneName);
 
-						newScene->Save(false);
+					newScene->Save(false);
 
-						{
-							cereal::JSONOutputArchive output(file);
-							output(cereal::make_nvp(projectPath.filename().string(), data));
-						}
-
-						file.close();
+					if (ProjectSerializer::Serialize(data, projectPath))
 						OpenProject(projectPath);
-					}
 				}
 			}
 		}
@@ -156,10 +151,10 @@ void ProjectsStartScreen::OnAttach()
 
 	for (std::filesystem::path project : recentProjectsList)
 	{
-		if (project.extension() == ".proj")
+		if (project.extension() == ".proj" && std::filesystem::exists(project)
+			&& std::find(m_RecentProjects.begin(), m_RecentProjects.end(), project) == m_RecentProjects.end())
 		{
-			if (std::filesystem::exists(project))
-				m_RecentProjects.push_back(project);
+			m_RecentProjects.push_back(project);
 		}
 	}
 }

@@ -28,6 +28,9 @@ private:
 
 	bool* m_Show;
 	bool m_WasShown = false;
+	// Whether m_ProjectData reflects a successful read of the currently open project's file -
+	// see ReadProjectFile/SaveProjectFile.
+	bool m_Loaded = false;
 
 	ProjectData m_ProjectData;
 

@@ -6,5 +6,7 @@ class Vector3f;
 namespace ImGui
 {
 	bool Vector(const char* label, Vector2f& vector, float resetValue = 0.0f);
+	bool Vector(const char* label, Vector2f& vector, const Vector2f& resetValue);
 	bool Vector(const char* label, Vector3f& vector, float resetValue = 0.0f);
+	bool Vector(const char* label, Vector3f& vector, const Vector3f& resetValue);
 }

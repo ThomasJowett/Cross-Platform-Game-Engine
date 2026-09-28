@@ -2,7 +2,14 @@
 
 #include "math/Vector2f.h"
 
+#include "imgui/imgui_internal.h"
+
 bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
+{
+	return Vector(label, vector, Vector2f(resetValue, resetValue));
+}
+
+bool ImGui::Vector(const char* label, Vector2f& vector, const Vector2f& resetValue)
 {
 	bool edited = false;
 	float width = CalcItemWidth();
@@ -16,7 +23,7 @@ bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
-		vector.x = resetValue;
+		vector.x = resetValue.x;
 		edited = true;
 	}
 
@@ -29,20 +36,26 @@ bool ImGui::Vector(const char* label, Vector2f& vector, float resetValue)
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
-		vector.y = resetValue;
+		vector.y = resetValue.y;
 		edited = true;
 	}
 	
 	SameLine();
-	TextUnformatted(label);
+	TextUnformatted(label, FindRenderedTextEnd(label));
 	EndGroup();
-    return edited;
+	return edited;
 }
 
 bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 {
-	bool edited = false;
+	return Vector(label, vector, Vector3f(resetValue, resetValue, resetValue));
+}
+
+bool ImGui::Vector(const char* label, Vector3f& vector, const Vector3f& resetValue) {
+		bool edited = false;
 	float width = CalcItemWidth();
+
+	BeginGroup();
 	TextColored({ 245,0,0,255 }, "X");
 	SameLine();
 	SetNextItemWidth(width / 3 - 20);
@@ -51,7 +64,7 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
-		vector.x = resetValue;
+		vector.x = resetValue.x;
 		edited = true;
 	}
 
@@ -60,11 +73,11 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 	SameLine();
 	SetNextItemWidth(width / 3 - 20);
 	std::string idY = "##" + std::string(label) + "Y";
-	if (DragFloat(idY.c_str(), &vector.x, 0.1f))
+	if (DragFloat(idY.c_str(), &vector.y, 0.1f))
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
-		vector.y = resetValue;
+		vector.y = resetValue.y;
 		edited = true;
 	}
 
@@ -77,11 +90,12 @@ bool ImGui::Vector(const char* label, Vector3f& vector, float resetValue)
 		edited = true;
 	if (IsItemHovered() && IsMouseClicked(ImGuiMouseButton_Right))
 	{
-		vector.z = resetValue;
+		vector.z = resetValue.z;
 		edited = true;
 	}
 
 	SameLine();
-	TextUnformatted(label);
+	TextUnformatted(label, FindRenderedTextEnd(label));
+	EndGroup();
 	return edited;
 }

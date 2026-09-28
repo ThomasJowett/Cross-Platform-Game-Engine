@@ -14,10 +14,12 @@ A cross-platform game engine written in C++, supporting OpenGL and WebGPU render
 - 2D and 3D rendering, including sprites, text (MSDF font atlases), and static meshes
 - Built-in 2D physics via Box2D
 - Lua scripting support
+- Visual behaviour tree editor for AI
 - Scene and asset serialization
 
 ## Where to go next
 
 - [Getting Started](getting-started.md) - creating a project and exporting a game with the Editor
 - [Lua Scripting](lua-scripting.md) - worked examples for giving entities behaviour
+- [Behaviour Trees](behaviour-trees.md) - building AI decisions visually, and scripting custom tasks
 - [Lua API Reference](LuaAPI/index.md) - the full scripting API, generated directly from the engine's source

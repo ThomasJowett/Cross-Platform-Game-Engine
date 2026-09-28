@@ -585,6 +585,45 @@ std::vector<HitResult2D> PhysicsEngine2D::MultiRayCast2D(Vector2f begin, Vector2
 	return callback.GetHitResults();
 }
 
+namespace
+{
+	class QueryPointCallback : public b2QueryCallback
+	{
+	public:
+		QueryPointCallback(const b2Vec2& point) : m_Point(point) {}
+
+		// QueryAABB only narrows candidates by each fixture's (padded) broad-phase AABB - TestPoint
+		// against the actual shape is what makes this an exact point-in-shape query.
+		bool ReportFixture(b2Fixture* fixture) override
+		{
+			if (fixture->TestPoint(m_Point))
+				m_Entities.push_back(Entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene()));
+			return true;
+		}
+
+		std::vector<Entity>& GetEntities() { return m_Entities; }
+
+	private:
+		b2Vec2 m_Point;
+		std::vector<Entity> m_Entities;
+	};
+}
+
+std::vector<Entity> PhysicsEngine2D::QueryPoint(Vector2f point)
+{
+	PROFILE_FUNCTION();
+	b2Vec2 b2Point(point.x, point.y);
+
+	b2AABB aabb;
+	aabb.lowerBound = b2Point;
+	aabb.upperBound = b2Point;
+
+	QueryPointCallback callback(b2Point);
+	m_Box2DWorld->QueryAABB(&callback, aabb);
+
+	return callback.GetEntities();
+}
+
 void PhysicsEngine2D::ShowDebugDraw(bool show)
 {
 	PROFILE_FUNCTION();

@@ -76,6 +76,7 @@ void LuaManager::Init()
 	Lua::BindScene(*s_State);
 	Lua::BindEntity(*s_State);
 	Lua::BindInput(*s_State);
+	Lua::BindInputAction(*s_State);
 	Lua::BindMath(*s_State);
 	Lua::BindCommonTypes(*s_State);
 	Lua::BindDebug(*s_State);

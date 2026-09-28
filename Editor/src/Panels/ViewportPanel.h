@@ -14,6 +14,7 @@
 #include "HierarchyPanel.h"
 #include "ImGui/ImGuiTilemapEditor.h"
 #include "History/HistoryCommands.h"
+#include "Scene/Components/UIWidgets/WidgetComponent.h"
 
 class ViewportPanel
 	:public Layer, public ICopyable, public IUndoable
@@ -96,10 +97,12 @@ private:
 
 	Ref<TilemapEditor> m_TilemapEditor;
 	bool m_RightClickMenuOpen = false;
+	bool m_WidgetHandleActive = false;
 
 	Ref<Mesh> m_GridMesh;
 
 	Ref<EditComponentCommand<TransformComponent>> m_EditTransformCommand = nullptr;
+	Ref<EditComponentCommand<WidgetComponent>> m_EditWidgetCommand = nullptr;
 
 	bool m_Fullscreen = false;
 };

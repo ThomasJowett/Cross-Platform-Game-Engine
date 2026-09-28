@@ -26,6 +26,12 @@ Every script has two globals available without needing to look anything up:
 - `CurrentEntity` - the entity this script is attached to
 - `CurrentScene` - the currently loaded scene
 
+## Behaviour tree custom tasks
+
+A behaviour tree's **Custom Task** node also runs a Lua script, with its own set of functions
+(`OnStateEntry`, `OnStateUpdate`, `OnStateExit`) and a `Blackboard` global. See
+[Behaviour Trees](behaviour-trees.md#custom-task-scripts).
+
 ## Reading and writing components
 
 Every component type `X` gets `CurrentEntity:AddX()`, `CurrentEntity:GetX()`,

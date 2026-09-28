@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cereal/access.hpp"
+#include "Scripting/Lua/LuaBindings.h"
 
 struct WidgetComponent
 {
@@ -25,11 +26,6 @@ struct WidgetComponent
 	float marginTop = 0.0f;
 	float marginRight = 100.0f;
 	float marginBottom = 100.0f;
-
-	//bool OnPressed();
-	//bool OnReleased();
-	//bool OnHovered();
-	//bool OnUnHovered();
 
 	void SetAnchorLeft(float left);
 	void SetAnchorRight(float right);
@@ -57,19 +53,41 @@ struct WidgetComponent
 		m_TransformMatrix = transformMatrix;
 	}
 
+	// Origin (translate+rotate, no scale) passed down to children as their parent matrix -
+	// keeping scale out stops a parent's pixel-size Scale(size) from multiplying into a child's translation.
+	Matrix4x4 GetWorldOriginMatrix() const
+	{
+		return m_WorldOriginMatrix;
+	}
+
+	void SetWorldOriginMatrix(Matrix4x4 worldOriginMatrix)
+	{
+		m_WorldOriginMatrix = worldOriginMatrix;
+	}
+
 	enum class WidgetState
 	{
 		normal,
 		hovered,
 		clicked,
 		disabled
-	}state;
+	}state = WidgetState::normal;
 
 	static const uint32_t s_referenceWidth = 1920;
 	static const uint32_t s_referenceHeight = 1080;
 
+	REFLECT_LUA_BEGIN(WidgetComponent)
+		REFLECT_LUA_PROPERTY_CUSTOM("Position", "The widget's position, in reference-resolution pixels", "Vector2f",
+			([](WidgetComponent& c) { return c.position; }),
+			([](WidgetComponent& c, Vector2f v) { c.SetPositionX(v.x); c.SetPositionY(v.y); }))
+		REFLECT_LUA_PROPERTY_CUSTOM("Size", "The widget's size, in reference-resolution pixels", "Vector2f",
+			([](WidgetComponent& c) { return c.size; }),
+			([](WidgetComponent& c, Vector2f v) { c.SetSizeX(v.x); c.SetSizeY(v.y); }))
+	REFLECT_LUA_END()
+
 private:
 	Matrix4x4 m_TransformMatrix;
+	Matrix4x4 m_WorldOriginMatrix;
 
 	friend cereal::access;
 	template<typename Archive>

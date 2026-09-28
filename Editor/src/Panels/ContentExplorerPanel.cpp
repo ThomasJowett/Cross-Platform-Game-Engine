@@ -14,8 +14,6 @@
 #include "Utilities/AssetReferenceUtils.h"
 #include "Utilities/FileUtils.h"
 #include "Scene/AssetManager.h"
-#include "ProjectData.h"
-#include "cereal/archives/json.hpp"
 
 #include "MainDockSpace.h"
 
@@ -289,38 +287,6 @@ void ContentExplorerPanel::UpdateReferencesAfterRename(const std::filesystem::pa
 	AssetManager::RemoveAsset(oldRelative);
 	AssetReferenceUtils::UpdateCurrentSceneTextureReferences(oldRelative, newRelative);
 	AssetReferenceUtils::ReloadAffectedNonSceneAssets(updatedFiles);
-
-	// The project's "Default Scene" setting is a cereal-serialized field in the .proj file,
-	// not an XML Filepath attribute, so it's outside what AssetReferenceUtils scans.
-	if (oldRelative.extension() == ".scene")
-	{
-		std::string oldRelativeString = oldRelative.string();
-		std::replace(oldRelativeString.begin(), oldRelativeString.end(), '\\', '/');
-
-		ProjectData projectData;
-		{
-			std::ifstream file(Application::GetOpenDocument());
-			if (!file.is_open())
-				return;
-			cereal::JSONInputArchive input(file);
-			input(projectData);
-		}
-
-		std::string defaultScene = projectData.defaultScene;
-		std::replace(defaultScene.begin(), defaultScene.end(), '\\', '/');
-
-		if (defaultScene == oldRelativeString)
-		{
-			std::string newRelativeString = newRelative.string();
-			std::replace(newRelativeString.begin(), newRelativeString.end(), '\\', '/');
-			projectData.defaultScene = newRelativeString;
-
-			const std::filesystem::path& projectFile = Application::GetOpenDocument();
-			std::ofstream outFile(projectFile);
-			cereal::JSONOutputArchive output(outFile);
-			output(cereal::make_nvp(projectFile.filename().string(), projectData));
-		}
-	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -178,12 +178,24 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
 				Entity* dragged = (Entity*)payload->Data;
+				Ref<MoveSiblingCommand> moveCommand = CreateRef<MoveSiblingCommand>(*dragged, entity, /*newIsBefore*/true);
 				SceneGraph::MoveBefore(*dragged, entity);
+				HistoryManager::AddHistoryRecord(moveCommand);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::EndDragDropTarget();
 		}
 		ImGui::PopID();
 	}
+
+	bool isHidden = entity.HasComponent<HiddenComponent>() && entity.GetComponent<HiddenComponent>().hidden;
+	ImGui::PushID(("hide_toggle" + std::to_string((uint32_t)entity)).c_str());
+	if (ImGui::SmallButton(isHidden ? ICON_FA_EYE_SLASH : ICON_FA_EYE))
+	{
+		entity.GetOrAddComponent<HiddenComponent>().hidden = !isHidden;
+	}
+	ImGui::PopID();
+	ImGui::SameLine();
 
 	bool opened = ImGui::TreeNodeEx((void*)(uint64_t)(uint32_t)entity, flags, "%s", name.c_str());
 
@@ -262,7 +274,10 @@ void HierarchyPanel::DrawNode(Entity entity)
 		if (ImGui::BeginDragDropTarget()) {
 			if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Entity")) {
 				Entity* dragged = (Entity*)payload->Data;
+				Ref<MoveSiblingCommand> moveCommand = CreateRef<MoveSiblingCommand>(*dragged, entity, /*newIsBefore*/false);
 				SceneGraph::MoveAfter(*dragged, entity);
+				HistoryManager::AddHistoryRecord(moveCommand);
+				SceneManager::CurrentScene()->MakeDirty();
 			}
 			ImGui::EndDragDropTarget();
 		}
@@ -522,6 +537,39 @@ void HierarchyPanel::CreateMenu()
 			Entity entity = SceneManager::CurrentScene()->CreateEntity("Button");
 			entity.AddComponent<WidgetComponent>();
 			entity.AddComponent<ButtonComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Stack"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Stack");
+			entity.AddComponent<WidgetComponent>();
+			entity.AddComponent<StackLayoutComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Grid"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Grid");
+			entity.AddComponent<WidgetComponent>();
+			entity.AddComponent<GridLayoutComponent>();
+			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
+			if (m_SelectedEntity) {
+				m_SelectedEntity.AddChild(entity);
+			}
+			m_SelectedEntity = entity;
+		}
+		if (ImGui::MenuItem("Scroll Box"))
+		{
+			Entity entity = SceneManager::CurrentScene()->CreateEntity("Scroll Box");
+			entity.AddComponent<WidgetComponent>();
+			entity.AddComponent<ScrollBoxComponent>();
 			HistoryManager::AddHistoryRecord(CreateRef<AddEntityCommand>(entity));
 			if (m_SelectedEntity) {
 				m_SelectedEntity.AddChild(entity);

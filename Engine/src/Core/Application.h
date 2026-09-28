@@ -69,6 +69,20 @@ public:
 	// Empty if not set.
 	static const std::string& GetSceneOverride() { return Get().m_SceneOverride; }
 
+	static void SetGameViewportOverride(double mouseX, double mouseY, uint32_t width, uint32_t height)
+	{
+		Get().m_HasGameViewportOverride = true;
+		Get().m_GameViewportMouseX = mouseX;
+		Get().m_GameViewportMouseY = mouseY;
+		Get().m_GameViewportWidth = width;
+		Get().m_GameViewportHeight = height;
+	}
+	static void ClearGameViewportOverride() { Get().m_HasGameViewportOverride = false; }
+	static bool HasGameViewportOverride() { return Get().m_HasGameViewportOverride; }
+	static std::pair<double, double> GetGameViewportMousePos() { return { Get().m_GameViewportMouseX, Get().m_GameViewportMouseY }; }
+	static uint32_t GetGameViewportWidth() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportWidth : Get().GetWindowImpl()->GetWidth(); }
+	static uint32_t GetGameViewportHeight() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportHeight : Get().GetWindowImpl()->GetHeight(); }
+
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
 	Window* CreateDesktopWindowImpl(const WindowProps& props);
@@ -114,6 +128,11 @@ private:
 	// absolute GetTime() value computed from it once Run() starts.
 	double m_ExitAfterSeconds = -1.0;
 	double m_ExitDeadline = -1.0;
+	bool m_HasGameViewportOverride = false;
+	double m_GameViewportMouseX = 0.0;
+	double m_GameViewportMouseY = 0.0;
+	uint32_t m_GameViewportWidth = 0;
+	uint32_t m_GameViewportHeight = 0;
 };
 
 // To be defined in CLIENT

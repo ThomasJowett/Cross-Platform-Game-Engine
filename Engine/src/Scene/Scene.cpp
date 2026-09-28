@@ -26,6 +26,9 @@
 
 #include "miniaudio/miniaudio.h"
 #include "Core/Input.h"
+#include "Core/InputActionSystem.h"
+#include "Core/Application.h"
+#include "Utilities/MathUtils.h"
 
 struct DestroyMarker {};
 
@@ -117,6 +120,12 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 			ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
 		}
 	}
+
+	if (BehaviourTreeComponent* behaviourTreeComponent = newEntity.TryGetComponent<BehaviourTreeComponent>())
+	{
+		if (behaviourTreeComponent->behaviourTree)
+			behaviourTreeComponent->behaviourTree->Bind(newEntity);
+	}
 	return Entity();
 }
 
@@ -188,6 +197,12 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
 		Save();
+
+	m_HoveredWidget = entt::null;
+	m_PressedWidget = entt::null;
+
+	InputActionSystem::ResetState();
+
 	if (createSnapshot)
 	{
 		std::stringstream().swap(m_Snapshot);
@@ -208,6 +223,13 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 			{
 				ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent.script->GetFilepath().string());
 			}
+		});
+
+	m_Registry.view<BehaviourTreeComponent>().each(
+		[this](const auto entity, auto& behaviourTreeComponent)
+		{
+			if (behaviourTreeComponent.behaviourTree)
+				behaviourTreeComponent.behaviourTree->Bind(Entity{ entity, this });
 		});
 
 	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
@@ -302,6 +324,8 @@ void Scene::OnRuntimeStop()
 
 	m_PhysicsEngine2D.reset();
 
+	InputActionSystem::ResetState();
+
 	LuaManager::CleanUp();
 
 	if (m_Snapshot.rdbuf()->in_avail() != 0)
@@ -312,6 +336,10 @@ void Scene::OnRuntimeStop()
 		entt::snapshot_loader(m_Registry).entities(input).component<COMPONENTS>(input);
 	}
 	std::stringstream().swap(m_Snapshot);
+
+	m_HoveredWidget = entt::null;
+	m_PressedWidget = entt::null;
+
 	m_Dirty = false;
 	AssetManager::CleanUp();
 	Renderer::ClearPostProcessEffects();
@@ -357,6 +385,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto spriteGroup = m_Registry.view<TransformComponent, SpriteComponent>();
 	for (auto entity : spriteGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, spriteComp] = spriteGroup.get(entity);
 		Renderer2D::DrawSprite(transformComp.GetWorldMatrix(), spriteComp, (int)entity);
 	}
@@ -364,6 +394,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto animatedSpriteGroup = m_Registry.view<TransformComponent, AnimatedSpriteComponent>();
 	for (auto entity : animatedSpriteGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
 		if (spriteComp.spriteSheet && spriteComp.spriteSheet->GetSubTexture()) {
 			spriteComp.spriteSheet->GetSubTexture()->SetCurrentCell(spriteComp.currentFrame);
@@ -374,6 +406,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto circleGroup = m_Registry.view<TransformComponent, CircleRendererComponent>();
 	for (auto entity : circleGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, circleComp] = circleGroup.get(entity);
 		Renderer2D::DrawCircle(transformComp.GetWorldMatrix(), circleComp, (int)entity);
 	}
@@ -381,6 +415,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto textGroup = m_Registry.view<TransformComponent, TextComponent>();
 	for (auto entity : textGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, textComp] = textGroup.get(entity);
 		Renderer2D::DrawString(textComp.text, textComp.font, textComp.maxWidth, transformComp.GetWorldMatrix(), textComp.colour, (int)entity);
 	}
@@ -388,6 +424,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto staticMeshGroup = m_Registry.view<TransformComponent, StaticMeshComponent>();
 	for (auto entity : staticMeshGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, staticMeshComp] = staticMeshGroup.get(entity);
 		if (!staticMeshComp.mesh || !staticMeshComp.mesh->GetMesh())
 			continue;
@@ -398,6 +436,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	auto primitiveGroup = m_Registry.view<TransformComponent, PrimitiveComponent>();
 	for (auto entity : primitiveGroup)
 	{
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		auto&& [transformComp, primitiveComp] = primitiveGroup.get(entity);
 		Renderer::Submit(primitiveComp.mesh, primitiveComp.material, transformComp.GetWorldMatrix(), (int)entity);
 	}
@@ -407,6 +447,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 	{
 		auto&& [transformComp, tilemapComp] = tilemapGroup.get(entity);
 		tilemapComp.UpdateRebuild();
+		if (SceneGraph::IsEffectivelyHidden(m_Registry, entity))
+			continue;
 		if (tilemapComp.tileset && tilemapComp.mesh)
 		{
 			Renderer::Submit(tilemapComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
@@ -442,40 +484,106 @@ void Scene::Render()
 
 void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 {
-	auto [mouseX, mouseY] = Input::GetMousePos();
-	bool mousePressed = Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT);
-	bool mouseReleased = Input::IsMouseButtonReleased(MOUSE_BUTTON_RIGHT);
-
 	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
 
 	float halfWidth = canvasWidth / 2.0f;
 	float halfHeight = canvasHeight / 2.0f;
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(halfWidth, -halfHeight, 0.0f)), Matrix4x4::OrthographicRH(-halfWidth, halfWidth, -halfHeight, halfHeight, -1, 1.0f));
 
-	auto buttonGroup = m_Registry.view<WidgetComponent, ButtonComponent>();
-	for (auto entity : buttonGroup)
+	// Draw in the same order HitTestUI resolves topmost-hit from (Canvas -> firstChild -> nextSibling),
+	// so what's visually on top is also what's clickable on top.
+	std::vector<entt::entity> drawOrder;
+	SceneGraph::CollectUIDrawOrder(m_Registry, drawOrder);
+
+	for (entt::entity entity : drawOrder)
 	{
-		auto&& [widgetComp, buttonComp] = buttonGroup.get(entity);
+		ButtonComponent* buttonComp = m_Registry.try_get<ButtonComponent>(entity);
+		if (buttonComp == nullptr)
+			continue;
+
+		WidgetComponent& widgetComp = m_Registry.get<WidgetComponent>(entity);
 
 		switch (widgetComp.state)
 		{
 		case WidgetComponent::WidgetState::normal:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.normalTexture, buttonComp.normalTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->normalTexture, buttonComp->normalTint, 1.0f, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::hovered:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.hoveredTexture, buttonComp.hoveredTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->hoveredTexture, buttonComp->hoveredTint, 1.0f, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::clicked:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp.clickedTexture, buttonComp.clickedTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->clickedTexture, buttonComp->clickedTint, 1.0f, (int)entity);
+			break;
+		case WidgetComponent::WidgetState::disabled:
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->disabledTexture, buttonComp->disabledTint, 1.0f, (int)entity);
 			break;
 		default:
 			break;
 		}
-
-		//TODO: check button state
 	}
 
 	Renderer::EndScene();
+}
+
+void Scene::UpdateUIInput(Vector2f mousePosition, uint32_t canvasWidth, uint32_t canvasHeight)
+{
+	PROFILE_FUNCTION();
+
+	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
+	entt::entity hit = SceneGraph::HitTestUI(m_Registry, mousePosition, (float)canvasWidth, (float)canvasHeight);
+
+	if (m_HoveredWidget != entt::null && m_HoveredWidget != hit && m_Registry.valid(m_HoveredWidget))
+	{
+		WidgetComponent* widget = m_Registry.try_get<WidgetComponent>(m_HoveredWidget);
+		if (widget != nullptr && !widget->disabled)
+		{
+			widget->state = WidgetComponent::WidgetState::normal;
+			if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(m_HoveredWidget))
+				script->OnUnHovered();
+		}
+	}
+
+	entt::entity previousHovered = m_HoveredWidget;
+	m_HoveredWidget = hit;
+
+	if (hit != entt::null)
+	{
+		WidgetComponent& widget = m_Registry.get<WidgetComponent>(hit);
+		if (widget.disabled)
+		{
+			widget.state = WidgetComponent::WidgetState::disabled;
+		}
+		else
+		{
+			if (hit != previousHovered)
+			{
+				if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(hit))
+					script->OnHovered();
+			}
+			widget.state = (m_PressedWidget == hit && Input::IsMouseButtonPressed(MOUSE_BUTTON_LEFT))
+				? WidgetComponent::WidgetState::clicked
+				: WidgetComponent::WidgetState::hovered;
+		}
+	}
+
+	if (Input::IsMouseJustPressed(MOUSE_BUTTON_LEFT) && hit != entt::null && !m_Registry.get<WidgetComponent>(hit).disabled)
+	{
+		m_PressedWidget = hit;
+		if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(hit))
+			script->OnPressed();
+	}
+
+	if (Input::IsMouseButtonReleased(MOUSE_BUTTON_LEFT) && m_PressedWidget != entt::null)
+	{
+		// Press and release over the same widget = a completed click; releasing elsewhere cancels it -
+		// standard button semantics.
+		if (m_PressedWidget == hit)
+		{
+			if (LuaScriptComponent* script = m_Registry.try_get<LuaScriptComponent>(m_PressedWidget))
+				script->OnReleased();
+		}
+		m_PressedWidget = entt::null;
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -485,6 +593,7 @@ void Scene::OnUpdate(float deltaTime)
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
+
 	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
 			if (animatedSpriteComp.spriteSheet)
@@ -499,6 +608,9 @@ void Scene::OnUpdate(float deltaTime)
 				luaScriptComp.created = true;
 			}
 			luaScriptComp.OnUpdate(deltaTime);
+
+			for (const InputActionEvent& inputActionEvent : InputActionSystem::GetPendingEvents())
+				luaScriptComp.OnInputAction(inputActionEvent.actionName, inputActionEvent.phase);
 		});
 
 	m_Registry.view<PrimitiveComponent>(entt::exclude<DestroyMarker>).each([](auto entity, auto& primitiveComponent)
@@ -937,6 +1049,29 @@ std::vector<HitResult2D> Scene::MultiRayCast2D(Vector2f begin, Vector2f end)
 	if (m_PhysicsEngine2D)
 		return m_PhysicsEngine2D->MultiRayCast2D(begin, end);
 	return std::vector<HitResult2D>();
+}
+
+std::vector<Entity> Scene::QueryPoint(Vector2f point)
+{
+	if (m_PhysicsEngine2D)
+		return m_PhysicsEngine2D->QueryPoint(point);
+	return std::vector<Entity>();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Vector3f Scene::ScreenToWorldPoint(Vector2f screenPosition, float worldZ)
+{
+	auto [cameraTransform, projection] = GetPrimaryCameraViewProjection();
+	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
+	return MathUtils::ScreenToWorldPoint(Matrix4x4::Inverse(cameraTransform), projection, screenPosition, viewportSize, worldZ);
+}
+
+Vector3f Scene::WorldToScreenPoint(Vector3f worldPosition)
+{
+	auto [cameraTransform, projection] = GetPrimaryCameraViewProjection();
+	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
+	return MathUtils::WorldToScreenSpace(Matrix4x4::Inverse(cameraTransform), projection, worldPosition, viewportSize);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
