@@ -35,6 +35,7 @@ private:
 
 	void Pitch(float angle);
 	void Yaw(float angle);
+	void Pan();
 
 private:
 

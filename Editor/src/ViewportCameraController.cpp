@@ -42,9 +42,13 @@ void ViewportCameraController::OnUpdate(float deltaTime, bool hoveredViewport)
 		}
 		else
 		{
-			m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
-			m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+			Pan();
 		}
+	}
+	else if (Input::IsMouseButtonPressed(MOUSE_BUTTON_RIGHT) && hoveredViewport && !m_Is3DCamera)
+	{
+		Application::GetWindow()->SetCursor(Cursors::ResizeAll);
+		Pan();
 	}
 
 	m_MouseLastPosition = mousePosition;
@@ -230,4 +234,8 @@ void ViewportCameraController::Yaw(float angle)
 
 	m_Up = Vector3f::Cross(m_Right, m_Forward);
 	m_Up.Normalize();
+}
+void ViewportCameraController::Pan() {
+	m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
+	m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
 }
