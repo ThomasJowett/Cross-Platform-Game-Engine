@@ -66,7 +66,7 @@ if(APPLE)
         MACOSX_BUNDLE_BUNDLE_NAME "Editor"
         MACOSX_BUNDLE_BUNDLE_VERSION "0.0.1"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "0.0.1"
-        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "entitlements.plist"
+        XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist"
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH "@executable_path"
     )
@@ -155,12 +155,19 @@ if(APPLE)
     # $<TARGET_BUNDLE_CONTENT_DIR:Editor> - referencing Editor's target here at all, genex or
     # not, makes CMake add an implicit dependency on it, which cycles against Editor depending
     # on this copy target below.
+    get_property(IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+    if(IS_MULTI_CONFIG)
+        set(EDITOR_BUNDLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/$<CONFIG>/Editor.app")
+    else()
+        set(EDITOR_BUNDLE_DIR "${CMAKE_CURRENT_BINARY_DIR}/Editor.app")
+    endif()
+
     set(RUNTIME_COPY_STAMP "${CMAKE_CURRENT_BINARY_DIR}/RuntimeCopied.stamp")
     add_custom_command(
         OUTPUT "${RUNTIME_COPY_STAMP}"
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-            "${CMAKE_BINARY_DIR}/Runtime/Runtime.app"
-            "${CMAKE_CURRENT_BINARY_DIR}/Editor.app/Contents/Resources/Runtime.app"
+            "$<TARGET_BUNDLE_DIR:Runtime>"
+            "${EDITOR_BUNDLE_DIR}/Contents/Resources/Runtime.app"
         COMMAND ${CMAKE_COMMAND} -E touch "${RUNTIME_COPY_STAMP}"
         DEPENDS Runtime "$<TARGET_FILE:Runtime>"
         COMMENT "Copying Runtime.app into Editor.app bundle"
