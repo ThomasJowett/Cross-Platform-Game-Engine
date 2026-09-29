@@ -147,6 +147,7 @@ std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal, const 
 
 	ReleaseNodes(openSet);
 	ReleaseNodes(closedSet);
+	std::reverse(path.begin(), path.end());
 	return path;
 }
 
