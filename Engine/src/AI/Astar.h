@@ -108,29 +108,10 @@ namespace Astar
 		std::vector<uint32_t> m_Regions;
 	};
 
-	enum class HeuristicType
-	{
-		Manhattan,
-		Euclidean,
-		Octagonal
-	};
-
-	class Heuristic
-	{
-		static GridCoord GetDelta(GridCoord source, GridCoord goal);
-
-	public:
-		static uint32_t Manhattan(GridCoord source, GridCoord goal);
-		static uint32_t Euclidean(GridCoord source, GridCoord goal);
-		static uint32_t Octagonal(GridCoord source, GridCoord goal);
-	};
-
 	// Path runs source -> goal inclusive; empty if either end is blocked or the goal is unreachable.
 	// Fails immediately across regions when the grid has been labelled
-	std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal,
-		bool diagonalMovement = true, HeuristicType heuristic = HeuristicType::Octagonal);
+	std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal, bool diagonalMovement = true);
 
 	// As above, returning cell centres in world space
-	std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal,
-		bool diagonalMovement = true, HeuristicType heuristic = HeuristicType::Octagonal);
+	std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal, bool diagonalMovement = true);
 }
