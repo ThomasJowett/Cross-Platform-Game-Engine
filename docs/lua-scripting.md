@@ -129,9 +129,9 @@ passed to `Emit`), so you can pass along whatever information the listener needs
 
 ## Pathfinding across a tilemap
 
-`Pathfinding.FindPath(start, goal, tilemapEntity)` runs A* over an orthogonal or isometric
-tilemap and returns an array of `Vec2` waypoints, the centre of each tile from `start` to `goal`
-(for isometric maps, the middle of each tile's diamond). Tiles
+`Pathfinding.FindPath(start, goal, tilemapEntity)` runs A* over an orthogonal, isometric
+or hexagonal tilemap and returns an array of `Vec2` waypoints, the centre of each tile from `start`
+to `goal` (for isometric and hex maps, the middle of each tile's diamond or hex). Tiles
 whose tileset tile has a collision shape are treated as walls; empty tiles and tiles without
 a collision shape are walkable. The grid comes straight from the tilemap, so it always matches
 what's drawn, even if the tilemap entity is moved, scaled, rotated or parented.
@@ -170,6 +170,8 @@ end
 The result is empty if either end is off the tilemap or on a wall, or if no route exists.
 Pass `false` as a fourth argument to limit movement to up/down/left/right; diagonal moves
 never cut the corner of a wall. A tilemap marked `isTrigger` doesn't block anything.
+
+On hex maps every step moves to one of the six neighbouring hexes, so the fourth argument has no effect.
 
 ## Where to go next
 

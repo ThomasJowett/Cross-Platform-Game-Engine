@@ -15,7 +15,7 @@ void BindPathfinding(sol::state& state)
 	LuaManager::AddIdentifier("Pathfinding", "A* pathfinding");
 
 	SetFunction(pathfinding, "Pathfinding", "FindPath",
-		"FindPath(start, goal, tilemapEntity, [allowDiagonal = true]) - array of Vector2f tile centres from start to goal around an orthogonal or isometric tilemap's colliding tiles, empty if there is no path",
+		"FindPath(start, goal, tilemapEntity, [allowDiagonal = true]) - array of Vector2f tile centres from start to goal around an orthogonal, isometric or hexagonal tilemap's colliding tiles (allowDiagonal is ignored on hex maps), empty if there is no path",
 		[](Vector2f start, Vector2f goal, Entity tilemapEntity, sol::optional<bool> allowDiagonal)
 		{
 			return sol::as_table(Pathfinding::FindPath(start, goal, tilemapEntity, allowDiagonal.value_or(true)));
