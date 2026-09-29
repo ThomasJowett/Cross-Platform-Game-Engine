@@ -145,7 +145,12 @@ void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 	{
 		m_SurfaceConfig.width = fbWidth;
 		m_SurfaceConfig.height = fbHeight;
-		m_NeedsResize = true;
+
+		// Mid-frame, defer until the acquired texture has been presented
+		if (m_SurfaceAcquired || !m_Device)
+			m_NeedsResize = true;
+		else
+			m_Surface.configure(m_SurfaceConfig);
 	}
 }
 
