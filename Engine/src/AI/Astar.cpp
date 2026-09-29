@@ -147,7 +147,7 @@ std::vector<Vector2f> Generator::FindPath(Vector2f source, Vector2f goal, const 
 
 	ReleaseNodes(openSet);
 	ReleaseNodes(closedSet);
-	return std::vector<Vector2f>();
+	return path;
 }
 
 Node::Node(GridCoord coordinates, Ref<Node> parent)
