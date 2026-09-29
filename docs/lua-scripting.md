@@ -129,8 +129,9 @@ passed to `Emit`), so you can pass along whatever information the listener needs
 
 ## Pathfinding across a tilemap
 
-`Pathfinding.FindPath(start, goal, tilemapEntity)` runs A* over an orthogonal tilemap and
-returns an array of `Vec2` waypoints, the centre of each tile from `start` to `goal`. Tiles
+`Pathfinding.FindPath(start, goal, tilemapEntity)` runs A* over an orthogonal or isometric
+tilemap and returns an array of `Vec2` waypoints, the centre of each tile from `start` to `goal`
+(for isometric maps, the middle of each tile's diamond). Tiles
 whose tileset tile has a collision shape are treated as walls; empty tiles and tiles without
 a collision shape are walkable. The grid comes straight from the tilemap, so it always matches
 what's drawn, even if the tilemap entity is moved, scaled, rotated or parented.
