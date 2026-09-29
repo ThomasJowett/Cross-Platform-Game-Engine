@@ -7,6 +7,7 @@
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 #include "Renderer/Mesh.h"
+#include "AI/Astar.h"
 #include "Scripting/Lua/LuaBindings.h"
 
 #include <thread>
@@ -71,7 +72,7 @@ struct TilemapComponent
 		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
 		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
 		  orientation(other.orientation), isTrigger(other.isTrigger),
-		  mesh(other.mesh), runtimeBody(nullptr), rebuildState(nullptr)
+		  mesh(other.mesh), runtimeBody(nullptr), rebuildState(nullptr), m_PathfindingGrid(nullptr)
 	{
 	}
 
@@ -92,6 +93,7 @@ struct TilemapComponent
 		mesh = other.mesh;
 		runtimeBody = nullptr;
 		rebuildState = nullptr;
+		m_PathfindingGrid = nullptr;
 
 		return *this;
 	}
@@ -106,7 +108,8 @@ struct TilemapComponent
 		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
 		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
 		  orientation(other.orientation), isTrigger(other.isTrigger),
-		  mesh(std::move(other.mesh)), runtimeBody(other.runtimeBody), rebuildState(std::move(other.rebuildState))
+		  mesh(std::move(other.mesh)), runtimeBody(other.runtimeBody), rebuildState(std::move(other.rebuildState)),
+		  m_PathfindingGrid(std::move(other.m_PathfindingGrid))
 	{
 		other.runtimeBody = nullptr;
 	}
@@ -128,6 +131,7 @@ struct TilemapComponent
 		mesh = std::move(other.mesh);
 		runtimeBody = other.runtimeBody;
 		rebuildState = std::move(other.rebuildState);
+		m_PathfindingGrid = std::move(other.m_PathfindingGrid);
 		other.runtimeBody = nullptr;
 
 		return *this;
@@ -146,6 +150,10 @@ struct TilemapComponent
 	void Rebuild();
 	void UpdateRebuild();
 
+	// Built on first use from the tileset's collision shapes, with regions labelled; cleared whenever the tiles change
+	const Astar::AstarGrid& GetPathfindingGrid();
+	void InvalidatePathfindingGrid() { m_PathfindingGrid.reset(); }
+
 	REFLECT_LUA_BEGIN(TilemapComponent)
 		REFLECT_LUA_PROPERTY(tileset, "The tileset this map draws its tiles from")
 		REFLECT_LUA_PROPERTY(tint, "Colour multiplied over every tile")
@@ -160,6 +168,7 @@ struct TilemapComponent
 		REFLECT_LUA_FUNCTION_CUSTOM("SetTile", "Set the tile index at the given column/row, if within bounds", [](Self& c, uint32_t x, uint32_t y, uint32_t tileId) {
 			if (y < c.tiles.size() && x < c.tiles[y].size()) {
 				c.tiles[y][x] = tileId;
+				c.InvalidatePathfindingGrid();
 			}
 		});
 
@@ -177,6 +186,7 @@ struct TilemapComponent
 			for (auto& row : c.tiles) {
 				row.resize(width);
 			}
+			c.InvalidatePathfindingGrid();
 		});
 	REFLECT_LUA_END()
 
@@ -187,6 +197,8 @@ struct TilemapComponent
 	Vector2f WorldToHex(Vector2f v) const;
 
 private:
+	Ref<Astar::AstarGrid> m_PathfindingGrid;
+
 	friend cereal::access;
 	template<typename Archive>
 	void save(Archive& archive) const
