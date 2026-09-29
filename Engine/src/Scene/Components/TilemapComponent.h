@@ -152,6 +152,14 @@ struct TilemapComponent
 
 	// Built on first use from the tileset's collision shapes, with regions labelled; cleared whenever the tiles change
 	const Astar::AstarGrid& GetPathfindingGrid();
+
+	// Tile containing a point in the tilemap's local space; false if off the map or the orientation isn't supported
+	bool LocalToCell(Vector2f local, Astar::GridCoord& cell) const;
+
+	// Centre of a tile's ground in local space
+	Vector2f CellToLocal(Astar::GridCoord cell) const;
+
+	bool SupportsPathfinding() const { return orientation == Orientation::orthogonal || orientation == Orientation::isometric; }
 	void InvalidatePathfindingGrid() { m_PathfindingGrid.reset(); }
 
 	REFLECT_LUA_BEGIN(TilemapComponent)

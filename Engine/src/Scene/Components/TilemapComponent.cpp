@@ -347,3 +347,34 @@ const Astar::AstarGrid& TilemapComponent::GetPathfindingGrid()
 	m_PathfindingGrid->LabelRegions();
 	return *m_PathfindingGrid;
 }
+
+bool TilemapComponent::LocalToCell(Vector2f local, Astar::GridCoord& cell) const
+{
+	Vector2f coords;
+	switch (orientation)
+	{
+	case Orientation::orthogonal:
+		coords = Vector2f(local.x, -local.y);
+		break;
+	case Orientation::isometric:
+		coords = WorldToIso(local);
+		break;
+	default:
+		return false;
+	}
+
+	cell = { (int)std::floor(coords.x), (int)std::floor(coords.y) };
+	return cell.x >= 0 && cell.y >= 0 && cell.x < (int)tilesWide && cell.y < (int)tilesHigh;
+}
+
+Vector2f TilemapComponent::CellToLocal(Astar::GridCoord cell) const
+{
+	float x = (float)cell.x + 0.5f;
+	float y = (float)cell.y + 0.5f;
+
+	// Inverse of WorldToIso, taken at the middle of the tile's diamond
+	if (orientation == Orientation::isometric)
+		return Vector2f((x - y) / 2.0f, -(x + y) / 4.0f);
+
+	return Vector2f(x, -y);
+}
