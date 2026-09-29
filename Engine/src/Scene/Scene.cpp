@@ -337,6 +337,10 @@ void Scene::OnRuntimeStop()
 	}
 	std::stringstream().swap(m_Snapshot);
 
+	// Restored cameras carry the aspect ratio from when the runtime started, not the current viewport
+	if (m_ViewportWidth > 0 && m_ViewportHeight > 0)
+		OnViewportResize(m_ViewportWidth, m_ViewportHeight);
+
 	m_HoveredWidget = entt::null;
 	m_PressedWidget = entt::null;
 
