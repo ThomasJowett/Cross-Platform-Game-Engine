@@ -124,6 +124,13 @@ const ImColor c_WarningColour(255, 200, 80);
 const ImColor c_ErrorColour(255, 90, 90);
 
 constexpr float c_NodeWidth = 160.0f;
+
+// Width of a node's contents, not counting the node editor's padding
+float CalcNodeContentWidth(const std::string& title, const std::string& order, const std::string& summary)
+{
+	float width = std::max(c_NodeWidth, ImGui::CalcTextSize(title.c_str()).x + ImGui::CalcTextSize(order.c_str()).x + 16.0f);
+	return std::max(width, ImGui::CalcTextSize(summary.c_str()).x);
+}
 constexpr float c_LayoutSpacingX = 200.0f;
 constexpr float c_LayoutSpacingY = 140.0f;
 constexpr float c_PropertiesWidth = 260.0f;
@@ -405,13 +412,8 @@ void BehaviourTreeView::DrawNodeEditor()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void BehaviourTreeView::DrawNode(const Node& node)
+std::string BehaviourTreeView::GetNodeSummary(const Node& node)
 {
-	const NodeTypeInfo& info = GetInfo(node.type);
-	ImColor colour = info.colour;
-
-	std::string title = GetLabel(info);
-
 	std::string summary;
 	switch (node.type)
 	{
@@ -458,20 +460,36 @@ void BehaviourTreeView::DrawNode(const Node& node)
 		break;
 	}
 
+	return summary;
+}
+
+std::string BehaviourTreeView::GetChildOrderLabel(int nodeId)
+{
 	// Child order is shown on nodes under a composite, since it decides the order they run in
 	std::string order;
-	if (int parentId = GetParent(node.id))
+	if (int parentId = GetParent(nodeId))
 	{
 		if (const Node* parent = FindNode(parentId); parent && !HasSingleChild(parent->type))
 		{
 			std::vector<int> siblings = GetChildren(parentId);
-			auto iter = std::find(siblings.begin(), siblings.end(), node.id);
+			auto iter = std::find(siblings.begin(), siblings.end(), nodeId);
 			order = std::to_string(std::distance(siblings.begin(), iter) + 1);
 		}
 	}
+	return order;
+}
 
-	float width = std::max(c_NodeWidth, ImGui::CalcTextSize(title.c_str()).x + ImGui::CalcTextSize(order.c_str()).x + 16.0f);
-	width = std::max(width, ImGui::CalcTextSize(summary.c_str()).x);
+void BehaviourTreeView::DrawNode(const Node& node)
+{
+	const NodeTypeInfo& info = GetInfo(node.type);
+	ImColor colour = info.colour;
+
+	std::string title = GetLabel(info);
+
+	std::string summary = GetNodeSummary(node);
+	std::string order = GetChildOrderLabel(node.id);
+
+	float width = CalcNodeContentWidth(title, order, summary);
 
 	NodeEditor::PushStyleColor(NodeEditor::StyleColor_NodeBorder, colour);
 	NodeEditor::BeginNode(node.id);
@@ -579,6 +597,14 @@ void BehaviourTreeView::DrawCreateNodePopup()
 					AddLink(linkNodeId, newId);
 				else
 					AddLink(newId, linkNodeId);
+			}
+
+			// Centre the new node on the cursor, with its top edge (the input pin) at the click
+			if (Node* newNode = FindNode(newId))
+			{
+				const ImVec4& padding = NodeEditor::GetStyle().NodePadding;
+				float width = CalcNodeContentWidth(GetLabel(GetInfo(newNode->type)), GetChildOrderLabel(newId), GetNodeSummary(*newNode)) + padding.x + padding.z;
+				newNode->position.x = std::floor(newNode->position.x - width * 0.5f);
 			}
 
 			Commit(before);
