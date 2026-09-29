@@ -42,30 +42,6 @@ namespace
 			return origin + axisX * grid.x + axisY * -grid.y;
 		}
 	};
-
-	Astar::AstarGrid BuildGrid(const TilemapComponent& tilemap)
-	{
-		Astar::AstarGrid grid((int)tilemap.tilesWide, (int)tilemap.tilesHigh);
-
-		const Ref<Tileset>& tileset = tilemap.tileset;
-		if (!tileset || !tileset->HasCollision() || tilemap.isTrigger)
-			return grid;
-
-		for (uint32_t row = 0; row < tilemap.tilesHigh && row < tilemap.tiles.size(); row++)
-		{
-			const std::vector<uint32_t>& tiles = tilemap.tiles[row];
-			for (uint32_t column = 0; column < tilemap.tilesWide && column < tiles.size(); column++)
-			{
-				uint32_t index = tiles[column];
-				if (index == 0 || index - 1 >= tileset->GetNumberOfTiles())
-					continue;
-
-				if (tileset->GetTile(index - 1).GetCollisionShape() != Tile::CollisionShape::None)
-					grid.SetBlocked({ (int)column, (int)row }, true);
-			}
-		}
-		return grid;
-	}
 }
 
 std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEntity, bool diagonalMovement)
@@ -78,7 +54,7 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 		return path;
 	}
 
-	const TilemapComponent* tilemap = tilemapEntity.TryGetComponent<TilemapComponent>();
+	TilemapComponent* tilemap = tilemapEntity.TryGetComponent<TilemapComponent>();
 	if (!tilemap)
 	{
 		CLIENT_ERROR("Pathfinding.FindPath: entity has no TilemapComponent");
@@ -95,8 +71,7 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 	if (!space.IsValid())
 		return path;
 
-	Astar::AstarGrid grid = BuildGrid(*tilemap);
-	path = Astar::FindPath(grid, space.WorldToGrid(start), space.WorldToGrid(goal), diagonalMovement);
+	path = Astar::FindPath(tilemap->GetPathfindingGrid(), space.WorldToGrid(start), space.WorldToGrid(goal), diagonalMovement);
 
 	for (Vector2f& point : path)
 		point = space.GridToWorld(point);

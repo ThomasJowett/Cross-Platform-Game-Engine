@@ -1,7 +1,6 @@
 #pragma once
 
 #include <vector>
-#include <functional>
 #include <cstdint>
 #include <cmath>
 #include <algorithm>
@@ -48,12 +47,12 @@ namespace Astar
 
 		Vector2f origin;
 
-		// Row-major, width * height, true = blocked
-		std::vector<bool> collisions;
+		// Row-major, width * height, non-zero = blocked
+		std::vector<uint8_t> collisions;
 
 		AstarGrid(int width, int height, float cellWidth = 1.0f, float cellHeight = 1.0f, Vector2f origin = Vector2f())
 			:width(width), height(height), cellWidth(cellWidth), cellHeight(cellHeight), origin(origin),
-			collisions((size_t)std::max(width, 0) * (size_t)std::max(height, 0), false) {}
+			collisions((size_t)std::max(width, 0) * (size_t)std::max(height, 0), 0) {}
 
 		bool InBounds(GridCoord coordinate) const
 		{
@@ -77,10 +76,14 @@ namespace Astar
 			return InBounds(coordinate);
 		}
 
+		// Invalidates region labels
 		void SetBlocked(GridCoord coordinate, bool blocked)
 		{
 			if (InBounds(coordinate))
-				collisions[Index(coordinate)] = blocked;
+			{
+				collisions[Index(coordinate)] = blocked ? 1 : 0;
+				m_Regions.clear();
+			}
 		}
 
 		// Out of bounds counts as blocked
@@ -88,14 +91,29 @@ namespace Astar
 		{
 			if (!InBounds(coordinate))
 				return true;
-			return collisions[Index(coordinate)];
+			return collisions[Index(coordinate)] != 0;
 		}
 
-	private:
+		// Flood fills 4-connected open areas; diagonals can't cut corners so this matches 8-way movement too
+		void LabelRegions();
+
+		bool HasRegions() const { return !m_Regions.empty(); }
+
+		// 0 for blocked cells, otherwise the region id; only valid while HasRegions()
+		uint32_t GetRegion(GridCoord coordinate) const { return m_Regions[Index(coordinate)]; }
+
 		size_t Index(GridCoord coordinate) const { return (size_t)coordinate.y * (size_t)width + (size_t)coordinate.x; }
+
+	private:
+		std::vector<uint32_t> m_Regions;
 	};
 
-	using HeuristicFunction = std::function<uint32_t(GridCoord, GridCoord)>;
+	enum class HeuristicType
+	{
+		Manhattan,
+		Euclidean,
+		Octagonal
+	};
 
 	class Heuristic
 	{
@@ -107,11 +125,12 @@ namespace Astar
 		static uint32_t Octagonal(GridCoord source, GridCoord goal);
 	};
 
-	// Path runs source -> goal inclusive; empty if either end is blocked or the goal is unreachable
+	// Path runs source -> goal inclusive; empty if either end is blocked or the goal is unreachable.
+	// Fails immediately across regions when the grid has been labelled
 	std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal,
-		bool diagonalMovement = true, const HeuristicFunction& heuristic = &Heuristic::Octagonal);
+		bool diagonalMovement = true, HeuristicType heuristic = HeuristicType::Octagonal);
 
 	// As above, returning cell centres in world space
 	std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal,
-		bool diagonalMovement = true, const HeuristicFunction& heuristic = &Heuristic::Octagonal);
+		bool diagonalMovement = true, HeuristicType heuristic = HeuristicType::Octagonal);
 }

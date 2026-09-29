@@ -42,6 +42,8 @@ Vector2f TilemapComponent::WorldToHex(Vector2f v) const
 
 void TilemapComponent::Rebuild()
 {
+	InvalidatePathfindingGrid();
+
 	if (!tileset || !tileset->GetSubTexture())
 	{
 		mesh.reset();
@@ -317,4 +319,31 @@ void TilemapComponent::UpdateRebuild()
 
 		mesh = CreateRef<Mesh>(GeometryGenerator::FlattenVertices(vertices), indices, material, s_StaticMeshLayout);
 	}
+}
+
+const Astar::AstarGrid& TilemapComponent::GetPathfindingGrid()
+{
+	if (m_PathfindingGrid)
+		return *m_PathfindingGrid;
+
+	m_PathfindingGrid = CreateRef<Astar::AstarGrid>((int)tilesWide, (int)tilesHigh);
+
+	if (tileset && tileset->HasCollision() && !isTrigger)
+	{
+		for (uint32_t row = 0; row < tilesHigh && row < tiles.size(); row++)
+		{
+			for (uint32_t column = 0; column < tilesWide && column < tiles[row].size(); column++)
+			{
+				uint32_t index = tiles[row][column];
+				if (index == 0 || index - 1 >= tileset->GetNumberOfTiles())
+					continue;
+
+				if (tileset->GetTile(index - 1).GetCollisionShape() != Tile::CollisionShape::None)
+					m_PathfindingGrid->SetBlocked({ (int)column, (int)row }, true);
+			}
+		}
+	}
+
+	m_PathfindingGrid->LabelRegions();
+	return *m_PathfindingGrid;
 }
