@@ -150,6 +150,10 @@ struct Renderer2DData
 	std::vector<Ref<VertexBuffer>> quadVertexBufferPool;
 	size_t quadVertexBufferPoolIndex = 0;
 
+	// Same reason as quadVertexBufferPool
+	std::vector<Ref<VertexBuffer>> hairLineVertexBufferPool;
+	size_t hairLineVertexBufferPoolIndex = 0;
+
 	std::array<Ref<Texture>, maxTexturesSlots> fontAtlasSlots;
 	uint32_t fontAtlasSlotIndex = 1;
 
@@ -388,6 +392,7 @@ void Renderer2D::BeginScene()
 	ENGINE_TRACE("Renderer2D: BeginScene");
 
 	s_Data.quadVertexBufferPoolIndex = 0;
+	s_Data.hairLineVertexBufferPoolIndex = 0;
 
 	// Reset atlas slots each frame; unused slots default to whiteTexture so SetTextureArray
 	// always has a valid texture for every binding.
@@ -427,6 +432,18 @@ static Ref<VertexBuffer> NextQuadVertexBuffer()
 	}
 
 	return s_Data.quadVertexBufferPool[s_Data.quadVertexBufferPoolIndex++];
+}
+
+static Ref<VertexBuffer> NextHairLineVertexBuffer()
+{
+	if (s_Data.hairLineVertexBufferPoolIndex >= s_Data.hairLineVertexBufferPool.size())
+	{
+		Ref<VertexBuffer> buffer = VertexBuffer::Create(s_Data.maxVertices * sizeof(HairLineVertex));
+		buffer->SetLayout(s_Data.hairLineVertexBuffer->GetLayout());
+		s_Data.hairLineVertexBufferPool.push_back(buffer);
+	}
+
+	return s_Data.hairLineVertexBufferPool[s_Data.hairLineVertexBufferPoolIndex++];
 }
 
 void Renderer2D::FlushQuads()
@@ -511,14 +528,15 @@ void Renderer2D::FlushHairLines()
 
 	ENGINE_TRACE("Renderer2D: Flushing {0} hair lines", s_Data.hairLineVertexCount / 2);
 	uint32_t dataSize = (uint32_t)((uint8_t*)s_Data.hairLineVertexBufferPtr - (uint8_t*)s_Data.hairLineVertexBufferBase);
-	s_Data.hairLineVertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
+	Ref<VertexBuffer> vertexBuffer = NextHairLineVertexBuffer();
+	vertexBuffer->SetData(s_Data.hairLineVertexBufferBase, dataSize);
 
 	s_Data.hairLinePipeline->Bind();
 	s_Data.hairLinePipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
 
-	s_Data.hairLineVertexBuffer->Bind();
+	vertexBuffer->Bind();
 	RenderCommand::DrawLines(s_Data.hairLineVertexCount);
-	s_Data.hairLineVertexBuffer->UnBind();
+	vertexBuffer->UnBind();
 	s_Data.statistics.drawCalls++;
 }
 
@@ -991,7 +1009,7 @@ void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const floa
 
 void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour, int entityId)
 {
-	if (s_Data.hairLineVertexCount >= s_Data.maxLineIndices)
+	if (s_Data.hairLineVertexCount + 2 > s_Data.maxVertices)
 		NextHairLinesBatch();
 	s_Data.hairLineVertexBufferPtr->position = start;
 	s_Data.hairLineVertexBufferPtr->colour = colour;
