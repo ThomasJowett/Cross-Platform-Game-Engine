@@ -1345,6 +1345,8 @@ void ViewportPanel::OnEvent(Event& event)
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<SceneChangedEvent>([&](SceneChangedEvent& event) {
 		SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
+		if (m_ViewportSize.x > 0.0f && m_ViewportSize.y > 0.0f)
+			SceneManager::CurrentScene()->OnViewportResize((uint32_t)m_ViewportSize.x, (uint32_t)m_ViewportSize.y);
 
 		m_CameraController.SetPosition(Vector3f());
 		return false;
