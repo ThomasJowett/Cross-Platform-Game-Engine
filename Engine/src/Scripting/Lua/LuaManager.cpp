@@ -81,6 +81,7 @@ void LuaManager::Init()
 	Lua::BindCommonTypes(*s_State);
 	Lua::BindDebug(*s_State);
 	Lua::BindSignaling(*s_State);
+	Lua::BindPathfinding(*s_State);
 
 	const char* lua_function_script =
 		R"(
