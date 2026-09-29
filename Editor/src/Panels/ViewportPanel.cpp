@@ -381,9 +381,9 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					break;
 				case TilemapComponent::Orientation::hexagonal:
 				{
-					float pixelsPerUnit = (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
-					float halfWidth = (float)tilemapComp.tileWidth / pixelsPerUnit / 2.0f;
-					float halfHeight = (float)tilemapComp.tileHeight / pixelsPerUnit / 2.0f;
+					Vector2f hexSize = tilemapComp.GetHexSize();
+					float halfWidth = hexSize.x / 2.0f;
+					float halfHeight = hexSize.y / 2.0f;
 					float quarterWidth = halfWidth * 0.5f;
 
 					std::vector<Vector2f> cornerOffsets = {
