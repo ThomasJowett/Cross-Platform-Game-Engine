@@ -37,7 +37,14 @@ namespace Astar
 		}
 	};
 
-	// Cell (x, y) covers [origin + (x, y) * cellSize, origin + (x + 1, y + 1) * cellSize)
+	enum class Topology
+	{
+		Square,
+		// Flat-top hexes, rows running down, odd columns shifted down half a hex
+		Hex
+	};
+
+	// Cell (x, y) covers [origin + (x, y) * cellSize, origin + (x + 1, y + 1) * cellSize) on square grids
 	struct AstarGrid
 	{
 		int width;
@@ -46,6 +53,8 @@ namespace Astar
 		float cellHeight;
 
 		Vector2f origin;
+
+		Topology topology = Topology::Square;
 
 		// Row-major, width * height, non-zero = blocked
 		std::vector<uint8_t> collisions;
@@ -94,7 +103,7 @@ namespace Astar
 			return collisions[Index(coordinate)] != 0;
 		}
 
-		// Flood fills 4-connected open areas; diagonals can't cut corners so this matches 8-way movement too
+		// Flood fills connected open areas; on square grids diagonals can't cut corners, so 4-way labels suit 8-way movement too
 		void LabelRegions();
 
 		bool HasRegions() const { return !m_Regions.empty(); }
@@ -109,9 +118,9 @@ namespace Astar
 	};
 
 	// Path runs source -> goal inclusive; empty if either end is blocked or the goal is unreachable.
-	// Fails immediately across regions when the grid has been labelled
+	// Fails immediately across regions when the grid has been labelled. diagonalMovement only applies to square grids
 	std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal, bool diagonalMovement = true);
 
-	// As above, returning cell centres in world space
+	// As above, returning cell centres in world space; square grids only
 	std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal, bool diagonalMovement = true);
 }
