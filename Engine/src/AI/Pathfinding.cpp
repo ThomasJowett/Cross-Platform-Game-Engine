@@ -8,7 +8,7 @@ namespace Pathfinding
 {
 namespace
 {
-	// 2D affine map between world space and the tilemap's grid space (x = column, y = row, 1 unit per tile)
+	// 2D affine map between world space and the tilemap's local space
 	struct TilemapSpace
 	{
 		Vector2f origin;
@@ -28,18 +28,15 @@ namespace
 
 		bool IsValid() const { return std::abs(determinant) > 1e-6f; }
 
-		// Tile rows run down local -y
-		Vector2f WorldToGrid(Vector2f world) const
+		Vector2f WorldToLocal(Vector2f world) const
 		{
 			Vector2f d = world - origin;
-			float localX = (d.x * axisY.y - axisY.x * d.y) / determinant;
-			float localY = (axisX.x * d.y - d.x * axisX.y) / determinant;
-			return Vector2f(localX, -localY);
+			return Vector2f((d.x * axisY.y - axisY.x * d.y) / determinant, (axisX.x * d.y - d.x * axisX.y) / determinant);
 		}
 
-		Vector2f GridToWorld(Vector2f grid) const
+		Vector2f LocalToWorld(Vector2f local) const
 		{
-			return origin + axisX * grid.x + axisY * -grid.y;
+			return origin + axisX * local.x + axisY * local.y;
 		}
 	};
 }
@@ -61,9 +58,9 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 		return path;
 	}
 
-	if (tilemap->orientation != TilemapComponent::Orientation::orthogonal)
+	if (!tilemap->SupportsPathfinding())
 	{
-		CLIENT_ERROR("Pathfinding.FindPath: only orthogonal tilemaps are supported");
+		CLIENT_ERROR("Pathfinding.FindPath: only orthogonal and isometric tilemaps are supported");
 		return path;
 	}
 
@@ -71,10 +68,14 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 	if (!space.IsValid())
 		return path;
 
-	path = Astar::FindPath(tilemap->GetPathfindingGrid(), space.WorldToGrid(start), space.WorldToGrid(goal), diagonalMovement);
+	Astar::GridCoord startCell, goalCell;
+	if (!tilemap->LocalToCell(space.WorldToLocal(start), startCell) || !tilemap->LocalToCell(space.WorldToLocal(goal), goalCell))
+		return path;
 
-	for (Vector2f& point : path)
-		point = space.GridToWorld(point);
+	std::vector<Astar::GridCoord> cells = Astar::FindPath(tilemap->GetPathfindingGrid(), startCell, goalCell, diagonalMovement);
+	path.reserve(cells.size());
+	for (const Astar::GridCoord& cell : cells)
+		path.push_back(space.LocalToWorld(tilemap->CellToLocal(cell)));
 
 	return path;
 }
