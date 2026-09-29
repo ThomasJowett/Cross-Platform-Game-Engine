@@ -411,6 +411,9 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		const float scaleX = transformComp.scale.x;
 		const float scaleY = transformComp.scale.y;
 		const bool isometric = tilemapComp->orientation == TilemapComponent::Orientation::isometric;
+		const bool hexagonal = tilemapComp->orientation == TilemapComponent::Orientation::hexagonal;
+		const Vector2f hexSize = tilemapComp->GetHexSize();
+		const Vector2f hexSpriteSize = tilemapComp->GetHexSpriteSize();
 		Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
 
 		// Grid space (column, row; 1 unit per tile) to body space; isometric matches TilemapComponent::CellToLocal
@@ -421,9 +424,20 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			return b2Vec2(x * scaleX, -y * scaleY);
 		};
 
+		auto hexCentre = [&](uint32_t column, uint32_t row)
+		{
+			Vector2f centre = tilemapComp->HexToWorld(column, row);
+			return b2Vec2(centre.x * scaleX, centre.y * scaleY);
+		};
+
 		// Tileset polygon vertices are 0-1 across the tile's sprite, y down from its top left
 		auto spriteToBody = [&](uint32_t column, uint32_t row, const Vector2f& vertex)
 		{
+			if (hexagonal)
+			{
+				b2Vec2 spriteTopLeft = hexCentre(column, row) + b2Vec2(-0.5f * hexSpriteSize.x * scaleX, (hexSpriteSize.y - 0.5f * hexSize.y) * scaleY);
+				return spriteTopLeft + b2Vec2(vertex.x * hexSpriteSize.x * scaleX, -vertex.y * hexSpriteSize.y * scaleY);
+			}
 			if (isometric)
 			{
 				b2Vec2 spriteTopLeft = gridToBody((float)column, (float)row) + b2Vec2(-0.5f * scaleX, 0.5f * scaleY);
@@ -447,7 +461,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				luaScriptComponent->m_Fixtures.push_back(fixture);
 		};
 
-		if (tilemapComp->orientation == TilemapComponent::Orientation::orthogonal || isometric)
+		if (tilemapComp->orientation == TilemapComponent::Orientation::orthogonal || isometric || hexagonal)
 		{
 			for (uint32_t row = 0; row < tilemapComp->tiles.size(); row++)
 			{
@@ -458,7 +472,26 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 						continue;
 
 					const Tile& tile = tilemapComp->tileset->GetTile(index - 1);
-					if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
+					if (tile.GetCollisionShape() == Tile::CollisionShape::Rect && hexagonal)
+					{
+						// The ground hex, flat-top
+						b2Vec2 centre = hexCentre(column, row);
+						float halfWidth = 0.5f * hexSize.x * scaleX;
+						float quarterWidth = 0.25f * hexSize.x * scaleX;
+						float halfHeight = 0.5f * hexSize.y * scaleY;
+						b2Vec2 corners[6] = {
+							centre + b2Vec2(-halfWidth, 0.0f),
+							centre + b2Vec2(-quarterWidth, -halfHeight),
+							centre + b2Vec2(quarterWidth, -halfHeight),
+							centre + b2Vec2(halfWidth, 0.0f),
+							centre + b2Vec2(quarterWidth, halfHeight),
+							centre + b2Vec2(-quarterWidth, halfHeight)
+						};
+						b2PolygonShape hexShape;
+						hexShape.Set(corners, 6);
+						addFixture(hexShape);
+					}
+					else if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
 					{
 						// The whole tile: a square, or the ground diamond on isometric maps
 						b2Vec2 corners[4] = {
