@@ -408,78 +408,89 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 	if (TilemapComponent* tilemapComp = entity.TryGetComponent<TilemapComponent>();
 		tilemapComp && tilemapComp->tileset && tilemapComp->tileset->HasCollision())
 	{
-		float tileWidth = transformComp.scale.x;
-		float tileHeight = transformComp.scale.y;
+		const float scaleX = transformComp.scale.x;
+		const float scaleY = transformComp.scale.y;
+		const bool isometric = tilemapComp->orientation == TilemapComponent::Orientation::isometric;
+		Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
 
-		uint32_t i = 0;
-		for (const auto& row : tilemapComp->tiles)
+		// Grid space (column, row; 1 unit per tile) to body space; isometric matches TilemapComponent::CellToLocal
+		auto gridToBody = [&](float x, float y)
 		{
-			uint32_t j = 0;
-			for (uint32_t index : row)
+			if (isometric)
+				return b2Vec2((x - y) * 0.5f * scaleX, -(x + y) * 0.25f * scaleY);
+			return b2Vec2(x * scaleX, -y * scaleY);
+		};
+
+		// Tileset polygon vertices are 0-1 across the tile's sprite, y down from its top left
+		auto spriteToBody = [&](uint32_t column, uint32_t row, const Vector2f& vertex)
+		{
+			if (isometric)
 			{
-				if (index > 0)
+				b2Vec2 spriteTopLeft = gridToBody((float)column, (float)row) + b2Vec2(-0.5f * scaleX, 0.5f * scaleY);
+				return spriteTopLeft + b2Vec2(vertex.x * scaleX, -vertex.y * scaleY);
+			}
+			return gridToBody(column + vertex.x, row + vertex.y);
+		};
+
+		auto addFixture = [&](const b2PolygonShape& shape)
+		{
+			b2FixtureDef fixtureDef;
+			fixtureDef.shape = &shape;
+			fixtureDef.isSensor = tilemapComp->isTrigger;
+			fixtureDef.density = defaultPhysicsMaterial->GetDensity();
+			fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
+			fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
+			fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+			b2Fixture* fixture = body->CreateFixture(&fixtureDef);
+
+			if (luaScriptComponent)
+				luaScriptComponent->m_Fixtures.push_back(fixture);
+		};
+
+		if (tilemapComp->orientation == TilemapComponent::Orientation::orthogonal || isometric)
+		{
+			for (uint32_t row = 0; row < tilemapComp->tiles.size(); row++)
+			{
+				for (uint32_t column = 0; column < tilemapComp->tiles[row].size(); column++)
 				{
-					if (tilemapComp->orientation == TilemapComponent::Orientation::orthogonal)
+					uint32_t index = tilemapComp->tiles[row][column];
+					if (index == 0 || index - 1 >= tilemapComp->tileset->GetNumberOfTiles())
+						continue;
+
+					const Tile& tile = tilemapComp->tileset->GetTile(index - 1);
+					if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
 					{
-						const Tile& tile = tilemapComp->tileset->GetTile(index - 1);
-						if (tile.GetCollisionShape() != Tile::CollisionShape::None)
+						// The whole tile: a square, or the ground diamond on isometric maps
+						b2Vec2 corners[4] = {
+							gridToBody((float)column, (float)row),
+							gridToBody((float)column + 1.0f, (float)row),
+							gridToBody((float)column + 1.0f, (float)row + 1.0f),
+							gridToBody((float)column, (float)row + 1.0f)
+						};
+						b2PolygonShape rectShape;
+						rectShape.Set(corners, 4);
+						addFixture(rectShape);
+					}
+					else if (tile.GetCollisionShape() == Tile::CollisionShape::Polygon)
+					{
+						const std::vector<Vector2f>& vertices = tile.GetVertices();
+						std::vector<uint32_t> polygonIndices;
+						if (Triangulation::Triangulate(vertices, polygonIndices))
 						{
-							// TODO: add a fixture for tilemaps
-							if (tile.GetCollisionShape() == Tile::CollisionShape::Rect)
+							for (size_t k = 0; k + 2 < polygonIndices.size(); k += 3)
 							{
-								b2Vec2 center = b2Vec2(j * tileWidth + (0.5f * tileWidth), -(i * tileHeight + (0.5f * tileHeight)));
-								b2PolygonShape rectShape;
-								rectShape.SetAsBox(tileWidth * 0.5f, tileHeight * 0.5f, center, 0.0f);
+								b2Vec2 triangle[3];
+								for (size_t l = 0; l < 3; l++)
+									triangle[l] = spriteToBody(column, row, vertices[polygonIndices[k + l]]);
 
-								b2FixtureDef rectFixtureDef;
-								rectFixtureDef.shape = &rectShape;
-								rectFixtureDef.isSensor = tilemapComp->isTrigger;
-								Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
-								rectFixtureDef.density = defaultPhysicsMaterial->GetDensity();
-								rectFixtureDef.friction = defaultPhysicsMaterial->GetFriction();
-								rectFixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
-								rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
-								b2Fixture* fixture = body->CreateFixture(&rectFixtureDef);
-
-								if (luaScriptComponent)
-									luaScriptComponent->m_Fixtures.push_back(fixture);
-							}
-							else if (tile.GetCollisionShape() == Tile::CollisionShape::Polygon)
-							{
-								const std::vector<Vector2f>& vertices = tile.GetVertices();
-								std::vector<uint32_t> polygonIndices;
-								if (Triangulation::Triangulate(vertices, polygonIndices))
-								{
-									for (size_t k = 0; k < polygonIndices.size(); k += 3)
-									{
-										b2PolygonShape polygonShape;
-										b2Vec2* b2Vertices = new b2Vec2[3];
-										for (size_t l = 0; l < 3; l++)
-										{
-											uint32_t vertexIndex = polygonIndices[k + l];
-											b2Vertices[l] = b2Vec2((vertices[vertexIndex].x + j) * tileWidth, -(vertices[vertexIndex].y + i) * tileHeight);
-										}
-										polygonShape.Set(b2Vertices, 3);
-										b2FixtureDef fixtureDef;
-										fixtureDef.shape = &polygonShape;
-										fixtureDef.isSensor = tilemapComp->isTrigger;
-										Ref<PhysicsMaterial> defaultPhysicsMaterial = PhysicsMaterial::GetDefaultPhysicsMaterial();
-										fixtureDef.density = defaultPhysicsMaterial->GetDensity();
-										fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
-										fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
-										fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
-										b2Fixture* fixture = body->CreateFixture(&fixtureDef);
-										if (luaScriptComponent)
-											luaScriptComponent->m_Fixtures.push_back(fixture);
-									}
-								}
+								b2PolygonShape polygonShape;
+								polygonShape.Set(triangle, 3);
+								addFixture(polygonShape);
 							}
 						}
 					}
 				}
-				j++;
 			}
-			i++;
 		}
 
 		tilemapComp->runtimeBody = body;
