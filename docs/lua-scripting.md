@@ -127,6 +127,49 @@ end
 The callback receives the `sender` (the entity that emitted the signal) and `data` (the table
 passed to `Emit`), so you can pass along whatever information the listener needs.
 
+## Pathfinding across a tilemap
+
+`Pathfinding.FindPath(start, goal, tilemapEntity)` runs A* over an orthogonal tilemap and
+returns an array of `Vec2` waypoints, the centre of each tile from `start` to `goal`. Tiles
+whose tileset tile has a collision shape are treated as walls; empty tiles and tiles without
+a collision shape are walkable. The grid comes straight from the tilemap, so it always matches
+what's drawn, even if the tilemap entity is moved, scaled, rotated or parented.
+
+```lua
+local speed = 3.0
+local path = {}
+local nextPoint = 1
+
+function OnCreate()
+    local level = CurrentScene:FindEntity("Level")
+    local player = CurrentScene:FindEntity("Player")
+
+    local from = CurrentEntity:GetTransformComponent().Position
+    local to = player:GetTransformComponent().Position
+    path = Pathfinding.FindPath(Vec2.new(from.x, from.y), Vec2.new(to.x, to.y), level)
+end
+
+function OnUpdate(deltaTime)
+    local target = path[nextPoint]
+    if target == nil then return end
+
+    local transform = CurrentEntity:GetTransformComponent()
+    local toTarget = Vec3.new(target.x, target.y, transform.Position.z) - transform.Position
+    local distance = toTarget:Length()
+    local step = speed * deltaTime
+    if distance <= step then
+        transform.Position = Vec3.new(target.x, target.y, transform.Position.z)
+        nextPoint = nextPoint + 1
+    else
+        transform.Position = transform.Position + toTarget * (step / distance)
+    end
+end
+```
+
+The result is empty if either end is off the tilemap or on a wall, or if no route exists.
+Pass `false` as a fourth argument to limit movement to up/down/left/right; diagonal moves
+never cut the corner of a wall. A tilemap marked `isTrigger` doesn't block anything.
+
 ## Where to go next
 
 The [Lua API Reference](LuaAPI/index.md) documents every property/function currently exposed
