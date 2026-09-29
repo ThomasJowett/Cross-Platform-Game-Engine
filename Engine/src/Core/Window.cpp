@@ -299,6 +299,9 @@ bool Window::Init(const WindowProps& props)
 	glfwSetWindowPos(m_Window, (int)m_Data.posX, (int)m_Data.posY);
 	glfwGetWindowPos(m_Window, &(m_OldWindowedParams.xPos), &(m_OldWindowedParams.yPos));
 
+	// The move may have landed on a display with a different scale, before any callbacks exist to report it
+	m_Context->ResizeBuffers(m_Data.width, m_Data.height);
+
 	glfwSetWindowUserPointer(m_Window, &m_Data);
 	if (glfwRawMouseMotionSupported())
 		glfwSetInputMode(m_Window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
@@ -317,6 +320,12 @@ bool Window::Init(const WindowProps& props)
 
 				WindowResizeEvent event(width, height);
 				data.eventCallback(event);
+				Application::GetWindow()->GetContext()->ResizeBuffers(width, height);
+			});
+
+		// Moving between displays with different scales changes the framebuffer without changing the window size
+		glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+			{
 				Application::GetWindow()->GetContext()->ResizeBuffers(width, height);
 			});
 
