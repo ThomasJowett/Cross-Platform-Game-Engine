@@ -156,10 +156,10 @@ struct TilemapComponent
 	// Tile containing a point in the tilemap's local space; false if off the map or the orientation isn't supported
 	bool LocalToCell(Vector2f local, Astar::GridCoord& cell) const;
 
-	// Centre of a tile's ground in local space
+	// Centre of a tile's ground (its diamond or hex, not the whole sprite) in local space
 	Vector2f CellToLocal(Astar::GridCoord cell) const;
 
-	bool SupportsPathfinding() const { return orientation == Orientation::orthogonal || orientation == Orientation::isometric; }
+	bool SupportsPathfinding() const { return orientation != Orientation::staggered; }
 	void InvalidatePathfindingGrid() { m_PathfindingGrid.reset(); }
 
 	REFLECT_LUA_BEGIN(TilemapComponent)
@@ -201,7 +201,14 @@ struct TilemapComponent
 	Vector2f IsoToWorld(uint32_t x, uint32_t y) const;
 	Vector2f WorldToIso(Vector2f v) const;
 
+	// Hexes are flat-top and 1 unit wide, odd columns shifted down half a hex; Tile Size sets the proportions
+	Vector2f GetHexSize() const;
+
+	// Size a hex tile's sprite is drawn at, bottom-aligned to its hex
+	Vector2f GetHexSpriteSize() const;
 	Vector2f HexToWorld(uint32_t q, uint32_t r) const;
+
+	// Column and row of the hex containing a local-space point
 	Vector2f WorldToHex(Vector2f v) const;
 
 private:

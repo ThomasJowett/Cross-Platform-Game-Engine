@@ -1,5 +1,4 @@
 #include "TilemapComponent.h"
-#include "Scene/SceneManager.h"
 #include "Utilities/GeometryGenerator.h"
 
 Vector2f TilemapComponent::IsoToWorld(uint32_t x, uint32_t y) const
@@ -12,33 +11,71 @@ Vector2f TilemapComponent::WorldToIso(Vector2f v) const
 	return Vector2f((v.x - v.y * 2.0f), -(v.x + v.y * 2.0f));
 }
 
+namespace
+{
+	// Hexes are 1 unit wide; Tile Size only sets the height ratio
+	float HexHeight(uint32_t tileWidth, uint32_t tileHeight)
+	{
+		return tileWidth > 0 ? (float)tileHeight / (float)tileWidth : 1.0f;
+	}
+
+	// Flat-top, odd columns shifted down half a hex
+	Vector2f HexCentre(int q, int r, float hexHeight)
+	{
+		float y = hexHeight * ((float)r + ((q & 1) ? 0.5f : 0.0f));
+		return Vector2f(0.75f * (float)q, -y);
+	}
+}
+
+Vector2f TilemapComponent::GetHexSize() const
+{
+	return Vector2f(1.0f, HexHeight(tileWidth, tileHeight));
+}
+
+Vector2f TilemapComponent::GetHexSpriteSize() const
+{
+	if (!tileset || !tileset->GetSubTexture() || tileWidth == 0)
+		return GetHexSize();
+
+	float pixelsToUnits = 1.0f / (float)tileWidth;
+	return Vector2f(tileset->GetSubTexture()->GetSpriteWidth() * pixelsToUnits, tileset->GetSubTexture()->GetSpriteHeight() * pixelsToUnits);
+}
+
 Vector2f TilemapComponent::HexToWorld(uint32_t q, uint32_t r) const
 {
-	float hexWitdth = (float)tileWidth / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
-	float hexHeight = (float)tileHeight / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
-
-	float x = hexWitdth * 3.0f / 4.0f * q;
-	float y = hexHeight * r;
-	if (q % 2 == 1)
-	{
-		y += hexHeight * 0.5f;
-	}
-	return Vector2f(x, -y);
+	return HexCentre((int)q, (int)r, GetHexSize().y);
 }
 
 Vector2f TilemapComponent::WorldToHex(Vector2f v) const
 {
-	float hexWidth = (float)tileWidth / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
-	float hexHeight = (float)tileHeight / (float)SceneManager::CurrentScene()->GetPixelsPerUnit();
+	// Stretch to a regular hex (circumradius 0.5), rows running down, then cube-round the axial coordinates
+	float x = v.x;
+	float y = -v.y * (0.8660254f / GetHexSize().y);
 
-	float approxQ = v.x / (hexWidth * 3.0f / 4.0f);
-	int q = (int)std::round(approxQ);
+	float q = x / 0.75f;
+	float r = (-x / 3.0f + 0.57735027f * y) / 0.5f;
+	float s = -q - r;
 
-	float yOffset = (q % 2 == 1) ? hexHeight * 0.5f : 0.0f;
-	float approxR = (-v.y - yOffset) / hexHeight;
-	int r = (int)std::round(approxR);
-	return Vector2f((float)q, (float)r);
+	float roundedQ = std::round(q);
+	float roundedR = std::round(r);
+	float roundedS = std::round(s);
+
+	float dq = std::abs(roundedQ - q);
+	float dr = std::abs(roundedR - r);
+	float ds = std::abs(roundedS - s);
+
+	if (dq > dr && dq > ds)
+		roundedQ = -roundedR - roundedS;
+	else if (dr > ds)
+		roundedR = -roundedQ - roundedS;
+
+	// Axial to odd-column offset
+	int column = (int)roundedQ;
+	int row = (int)roundedR + (column - (column & 1)) / 2;
+	return Vector2f((float)column, (float)row);
 }
+
+/* ------------------------------------------------------------------------------------------------------------------ */
 
 void TilemapComponent::Rebuild()
 {
@@ -84,15 +121,15 @@ void TilemapComponent::Rebuild()
 		}
 	}
 
+	uint32_t spriteWidth = tileset->GetSubTexture()->GetSpriteWidth();
 	uint32_t spriteHeight = tileset->GetSubTexture()->GetSpriteHeight();
-	uint32_t pixelsPerUnit = SceneManager::CurrentScene() ? SceneManager::CurrentScene()->GetPixelsPerUnit() : 100;
 	Ref<Texture2D> tilesetTex = tileset->GetSubTexture()->GetTexture();
 
 	std::weak_ptr<RebuildState> weakState = rebuildState;
 
 	std::thread([
 		weakState, rid, tilesCopy, tw, th, tWidth, tHeight, orient, col,
-		maxTileIndex, tileCoords, spriteHeight, pixelsPerUnit, tilesetTex
+		maxTileIndex, tileCoords, spriteWidth, spriteHeight, tilesetTex
 	]() {
 		std::vector<Vertex> verticesList;
 		std::vector<uint32_t> indicesList;
@@ -201,21 +238,11 @@ void TilemapComponent::Rebuild()
 					{ 0.0f, 1.0f }
 			};
 
-			auto hexToWorld = [tWidth, tHeight, pixelsPerUnit](uint32_t q, uint32_t r) -> Vector2f {
-				float hexWidth = (float)tWidth / (float)pixelsPerUnit;
-				float hexHeight = (float)tHeight / (float)pixelsPerUnit;
-
-				float x = hexWidth * 3.0f / 4.0f * q;
-				float y = hexHeight * r;
-				if (q % 2 == 1)
-				{
-					y += hexHeight * 0.5f;
-				}
-				return Vector2f(x, -y);
-			};
-
-			float hexHeight = (float)spriteHeight / (float)pixelsPerUnit;
-			float hexWidth = (float)tWidth / (float)pixelsPerUnit;
+			// Tile Size is the hex footprint in pixels, scaled to 1 unit wide; the sprite keeps its proportions, bottom-aligned to the hex
+			float hexHeight = HexHeight(tWidth, tHeight);
+			float pixelsToUnits = tWidth > 0 ? 1.0f / (float)tWidth : 1.0f;
+			float quadWidth = (float)spriteWidth * pixelsToUnits;
+			float quadHeight = (float)spriteHeight * pixelsToUnits;
 
 			for (uint32_t r = 0; r < th; r++)
 			{
@@ -230,13 +257,13 @@ void TilemapComponent::Rebuild()
 
 					const auto& texCoords = tileCoords[tilesCopy[r][q] - 1];
 
-					Vector2f center = hexToWorld(q, r);
+					Vector2f center = HexCentre((int)q, (int)r, hexHeight);
 
 					for (size_t v = 0; v < 4; v++)
 					{
 						Vertex vertex;
-						vertex.position.x = center.x + (positions[v].x - 0.5f) * hexWidth;
-						vertex.position.y = center.y + (positions[v].y - 0.5f) * hexHeight;
+						vertex.position.x = center.x + (positions[v].x - 0.5f) * quadWidth;
+						vertex.position.y = center.y - hexHeight * 0.5f + positions[v].y * quadHeight;
 						vertex.position.z = r * 0.0001f;
 
 						vertex.normal.z = 1.0f;
@@ -327,6 +354,8 @@ const Astar::AstarGrid& TilemapComponent::GetPathfindingGrid()
 		return *m_PathfindingGrid;
 
 	m_PathfindingGrid = CreateRef<Astar::AstarGrid>((int)tilesWide, (int)tilesHigh);
+	if (orientation == Orientation::hexagonal)
+		m_PathfindingGrid->topology = Astar::Topology::Hex;
 
 	if (tileset && tileset->HasCollision() && !isTrigger)
 	{
@@ -359,6 +388,9 @@ bool TilemapComponent::LocalToCell(Vector2f local, Astar::GridCoord& cell) const
 	case Orientation::isometric:
 		coords = WorldToIso(local);
 		break;
+	case Orientation::hexagonal:
+		coords = WorldToHex(local);
+		break;
 	default:
 		return false;
 	}
@@ -369,6 +401,9 @@ bool TilemapComponent::LocalToCell(Vector2f local, Astar::GridCoord& cell) const
 
 Vector2f TilemapComponent::CellToLocal(Astar::GridCoord cell) const
 {
+	if (orientation == Orientation::hexagonal)
+		return HexCentre(cell.x, cell.y, GetHexSize().y);
+
 	float x = (float)cell.x + 0.5f;
 	float y = (float)cell.y + 0.5f;
 
