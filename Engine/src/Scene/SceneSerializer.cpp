@@ -964,6 +964,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		SerializationUtils::Decode(pTilemapComponentElement->FirstChildElement("Tint"), component.tint);
 
+		component.tiles.assign(component.tilesHigh, std::vector<uint32_t>(component.tilesWide, 0));
+
 		if (const char* text = pTilemapComponentElement->GetText())
 		{
 			std::vector<std::string> seperatedData = SplitString(text, ',');
