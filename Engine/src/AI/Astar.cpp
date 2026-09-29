@@ -5,33 +5,26 @@
 
 namespace Astar
 {
-GridCoord Heuristic::GetDelta(GridCoord source, GridCoord goal)
-{
-	return GridCoord(abs(source.x - goal.x), abs(source.y - goal.y));
-}
-
-uint32_t Heuristic::Manhattan(GridCoord source, GridCoord goal)
-{
-	GridCoord delta = GetDelta(source, goal);
-	return static_cast<uint32_t>(10 * (delta.x + delta.y));
-}
-
-uint32_t Heuristic::Euclidean(GridCoord source, GridCoord goal)
-{
-	GridCoord delta = GetDelta(source, goal);
-	return static_cast<uint32_t>(10 * sqrt(pow(delta.x, 2) + pow(delta.y, 2)));
-}
-
-uint32_t Heuristic::Octagonal(GridCoord source, GridCoord goal)
-{
-	GridCoord delta = GetDelta(source, goal);
-	return static_cast <uint32_t>(10 * (delta.x + delta.y) + (-6) * ((delta.x < delta.y) ? delta.x : delta.y));
-}
-
 namespace
 {
 	constexpr uint32_t c_StraightCost = 10;
 	constexpr uint32_t c_DiagonalCost = 14;
+
+	// Exact on an open grid for 4-way movement
+	uint32_t Manhattan(GridCoord source, GridCoord goal)
+	{
+		uint32_t dx = (uint32_t)std::abs(source.x - goal.x);
+		uint32_t dy = (uint32_t)std::abs(source.y - goal.y);
+		return c_StraightCost * (dx + dy);
+	}
+
+	// Exact on an open grid for 8-way movement
+	uint32_t Octile(GridCoord source, GridCoord goal)
+	{
+		uint32_t dx = (uint32_t)std::abs(source.x - goal.x);
+		uint32_t dy = (uint32_t)std::abs(source.y - goal.y);
+		return c_StraightCost * std::max(dx, dy) + (c_DiagonalCost - c_StraightCost) * std::min(dx, dy);
+	}
 
 	// First 4 are orthogonal, last 4 diagonal
 	const GridCoord c_Directions[8] = {
@@ -92,9 +85,11 @@ void AstarGrid::LabelRegions()
 	}
 }
 
-template<uint32_t(*HeuristicFn)(GridCoord, GridCoord)>
-static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord source, GridCoord goal, bool diagonalMovement)
+template<bool DiagonalMovement>
+static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord source, GridCoord goal)
 {
+	constexpr auto HeuristicFn = DiagonalMovement ? &Octile : &Manhattan;
+
 	std::vector<GridCoord> path;
 
 	const size_t cellCount = (size_t)grid.width * (size_t)grid.height;
@@ -113,7 +108,7 @@ static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord sour
 	uint32_t sourceH = HeuristicFn(source, goal);
 	open.push({ sourceH, sourceH, sourceIndex });
 
-	const int directionCount = diagonalMovement ? 8 : 4;
+	constexpr int directionCount = DiagonalMovement ? 8 : 4;
 	bool found = false;
 
 	while (!open.empty())
@@ -174,7 +169,7 @@ static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord sour
 	return path;
 }
 
-std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal, bool diagonalMovement, HeuristicType heuristic)
+std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoord goal, bool diagonalMovement)
 {
 	if (grid.DetectCollision(source) || grid.DetectCollision(goal))
 		return {};
@@ -182,19 +177,10 @@ std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoo
 	if (grid.HasRegions() && grid.GetRegion(source) != grid.GetRegion(goal))
 		return {};
 
-	switch (heuristic)
-	{
-	case HeuristicType::Manhattan:
-		return FindPathImpl<&Heuristic::Manhattan>(grid, source, goal, diagonalMovement);
-	case HeuristicType::Euclidean:
-		return FindPathImpl<&Heuristic::Euclidean>(grid, source, goal, diagonalMovement);
-	case HeuristicType::Octagonal:
-	default:
-		return FindPathImpl<&Heuristic::Octagonal>(grid, source, goal, diagonalMovement);
-	}
+	return diagonalMovement ? FindPathImpl<true>(grid, source, goal) : FindPathImpl<false>(grid, source, goal);
 }
 
-std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal, bool diagonalMovement, HeuristicType heuristic)
+std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal, bool diagonalMovement)
 {
 	std::vector<Vector2f> path;
 
@@ -204,7 +190,7 @@ std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f 
 	if (!grid.PositionToGridCoord(source, sourceCoords) || !grid.PositionToGridCoord(goal, goalCoords))
 		return path;
 
-	std::vector<GridCoord> cells = FindPath(grid, sourceCoords, goalCoords, diagonalMovement, heuristic);
+	std::vector<GridCoord> cells = FindPath(grid, sourceCoords, goalCoords, diagonalMovement);
 	path.reserve(cells.size());
 	for (const GridCoord& cell : cells)
 	{
