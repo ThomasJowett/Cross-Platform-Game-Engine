@@ -171,6 +171,8 @@ private:
 
 	void DrawNodeEditor();
 	void DrawNode(const Node& node);
+	std::string GetNodeSummary(const Node& node);
+	std::string GetChildOrderLabel(int nodeId);
 	void DrawCreateNodePopup();
 	void DrawProperties();
 	void DrawBlackboard();
