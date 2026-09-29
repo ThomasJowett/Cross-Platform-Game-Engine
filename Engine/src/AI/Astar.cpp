@@ -26,11 +26,59 @@ namespace
 		return c_StraightCost * std::max(dx, dy) + (c_DiagonalCost - c_StraightCost) * std::min(dx, dy);
 	}
 
+	// Exact on an open hex grid; offset coordinates converted to axial
+	uint32_t HexDistance(GridCoord source, GridCoord goal)
+	{
+		int sourceR = source.y - (source.x - (source.x & 1)) / 2;
+		int goalR = goal.y - (goal.x - (goal.x & 1)) / 2;
+		int dq = source.x - goal.x;
+		int dr = sourceR - goalR;
+		return c_StraightCost * (uint32_t)((std::abs(dq) + std::abs(dr) + std::abs(dq + dr)) / 2);
+	}
+
 	// First 4 are orthogonal, last 4 diagonal
 	const GridCoord c_Directions[8] = {
 		{ 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 },
 		{ -1, -1 }, { 1, 1 }, { -1, 1 }, { 1, -1 }
 	};
+
+	// Hex neighbours depend on column parity
+	const GridCoord c_HexEvenColumnDirections[6] = {
+		{ 1, -1 }, { 1, 0 }, { 0, 1 }, { -1, 0 }, { -1, -1 }, { 0, -1 }
+	};
+	const GridCoord c_HexOddColumnDirections[6] = {
+		{ 1, 0 }, { 1, 1 }, { 0, 1 }, { -1, 1 }, { -1, 0 }, { 0, -1 }
+	};
+
+	enum class Movement
+	{
+		Square4,
+		Square8,
+		Hex
+	};
+
+	template<Movement M>
+	constexpr int DirectionCount() { return M == Movement::Square8 ? 8 : (M == Movement::Hex ? 6 : 4); }
+
+	template<Movement M>
+	const GridCoord* Directions(GridCoord cell)
+	{
+		if constexpr (M == Movement::Hex)
+			return (cell.x & 1) ? c_HexOddColumnDirections : c_HexEvenColumnDirections;
+		else
+			return c_Directions;
+	}
+
+	template<Movement M>
+	uint32_t Heuristic(GridCoord source, GridCoord goal)
+	{
+		if constexpr (M == Movement::Hex)
+			return HexDistance(source, goal);
+		else if constexpr (M == Movement::Square8)
+			return Octile(source, goal);
+		else
+			return Manhattan(source, goal);
+	}
 
 	struct OpenEntry
 	{
@@ -46,10 +94,11 @@ namespace
 	};
 }
 
-void AstarGrid::LabelRegions()
+template<Movement M>
+static void FloodFillRegions(const AstarGrid& grid, std::vector<uint32_t>& regions)
 {
-	const size_t cellCount = collisions.size();
-	m_Regions.assign(cellCount, 0);
+	const size_t cellCount = grid.collisions.size();
+	regions.assign(cellCount, 0);
 
 	std::vector<size_t> queue;
 	queue.reserve(cellCount);
@@ -57,26 +106,27 @@ void AstarGrid::LabelRegions()
 
 	for (size_t seed = 0; seed < cellCount; seed++)
 	{
-		if (collisions[seed] || m_Regions[seed])
+		if (grid.collisions[seed] || regions[seed])
 			continue;
 
 		queue.clear();
 		queue.push_back(seed);
-		m_Regions[seed] = nextRegion;
+		regions[seed] = nextRegion;
 
 		for (size_t head = 0; head < queue.size(); head++)
 		{
-			GridCoord current((int)(queue[head] % width), (int)(queue[head] / width));
-			for (int i = 0; i < 4; i++)
+			GridCoord current((int)(queue[head] % grid.width), (int)(queue[head] / grid.width));
+			const GridCoord* directions = Directions<M>(current);
+			for (int i = 0; i < DirectionCount<M>(); i++)
 			{
-				GridCoord neighbour = current + c_Directions[i];
-				if (DetectCollision(neighbour))
+				GridCoord neighbour = current + directions[i];
+				if (grid.DetectCollision(neighbour))
 					continue;
 
-				size_t index = Index(neighbour);
-				if (!m_Regions[index])
+				size_t index = grid.Index(neighbour);
+				if (!regions[index])
 				{
-					m_Regions[index] = nextRegion;
+					regions[index] = nextRegion;
 					queue.push_back(index);
 				}
 			}
@@ -85,11 +135,17 @@ void AstarGrid::LabelRegions()
 	}
 }
 
-template<bool DiagonalMovement>
+void AstarGrid::LabelRegions()
+{
+	if (topology == Topology::Hex)
+		FloodFillRegions<Movement::Hex>(*this, m_Regions);
+	else
+		FloodFillRegions<Movement::Square4>(*this, m_Regions);
+}
+
+template<Movement M>
 static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord source, GridCoord goal)
 {
-	constexpr auto HeuristicFn = DiagonalMovement ? &Octile : &Manhattan;
-
 	std::vector<GridCoord> path;
 
 	const size_t cellCount = (size_t)grid.width * (size_t)grid.height;
@@ -105,10 +161,9 @@ static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord sour
 	const size_t sourceIndex = grid.Index(source);
 	const size_t goalIndex = grid.Index(goal);
 	gScore[sourceIndex] = 0;
-	uint32_t sourceH = HeuristicFn(source, goal);
+	uint32_t sourceH = Heuristic<M>(source, goal);
 	open.push({ sourceH, sourceH, sourceIndex });
 
-	constexpr int directionCount = DiagonalMovement ? 8 : 4;
 	bool found = false;
 
 	while (!open.empty())
@@ -129,15 +184,16 @@ static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord sour
 		closed[currentIndex] = 1;
 		GridCoord current = toCoord(currentIndex);
 
-		for (int i = 0; i < directionCount; i++)
+		const GridCoord* directions = Directions<M>(current);
+		for (int i = 0; i < DirectionCount<M>(); i++)
 		{
-			const GridCoord& direction = c_Directions[i];
+			const GridCoord& direction = directions[i];
 			GridCoord neighbour = current + direction;
 
 			if (grid.DetectCollision(neighbour))
 				continue;
 
-			bool isDiagonal = i >= 4;
+			bool isDiagonal = M == Movement::Square8 && i >= 4;
 
 			// No cutting corners past a blocked cell
 			if (isDiagonal && (grid.DetectCollision({ current.x + direction.x, current.y })
@@ -153,7 +209,7 @@ static std::vector<GridCoord> FindPathImpl(const AstarGrid& grid, GridCoord sour
 			{
 				gScore[neighbourIndex] = tentativeG;
 				parent[neighbourIndex] = currentIndex;
-				uint32_t h = HeuristicFn(neighbour, goal);
+				uint32_t h = Heuristic<M>(neighbour, goal);
 				open.push({ tentativeG + h, h, neighbourIndex });
 			}
 		}
@@ -177,12 +233,16 @@ std::vector<GridCoord> FindPath(const AstarGrid& grid, GridCoord source, GridCoo
 	if (grid.HasRegions() && grid.GetRegion(source) != grid.GetRegion(goal))
 		return {};
 
-	return diagonalMovement ? FindPathImpl<true>(grid, source, goal) : FindPathImpl<false>(grid, source, goal);
+	if (grid.topology == Topology::Hex)
+		return FindPathImpl<Movement::Hex>(grid, source, goal);
+	return diagonalMovement ? FindPathImpl<Movement::Square8>(grid, source, goal) : FindPathImpl<Movement::Square4>(grid, source, goal);
 }
 
 std::vector<Vector2f> FindPath(const AstarGrid& grid, Vector2f source, Vector2f goal, bool diagonalMovement)
 {
 	std::vector<Vector2f> path;
+	if (grid.topology != Topology::Square)
+		return path;
 
 	GridCoord sourceCoords;
 	GridCoord goalCoords;

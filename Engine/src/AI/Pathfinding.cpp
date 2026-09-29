@@ -60,7 +60,7 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 
 	if (!tilemap->SupportsPathfinding())
 	{
-		CLIENT_ERROR("Pathfinding.FindPath: only orthogonal and isometric tilemaps are supported");
+		CLIENT_ERROR("Pathfinding.FindPath: staggered tilemaps are not supported");
 		return path;
 	}
 
