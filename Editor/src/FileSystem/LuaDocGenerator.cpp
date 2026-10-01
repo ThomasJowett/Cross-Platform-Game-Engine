@@ -15,6 +15,8 @@ namespace
 			file << "- **" << entry.name << "** (`" << entry.type << "`): " << entry.description << "\n";
 		else if (entry.kind == LuaApiEntry::Kind::Function || entry.kind == LuaApiEntry::Kind::ComponentAccessor)
 			file << "- **" << entry.name << "()**: " << entry.description << "\n";
+		else if (entry.kind == LuaApiEntry::Kind::EnumValue)
+			file << "- **" << entry.name << "** = `" << entry.description << "`\n";
 		else
 			file << "- **" << entry.name << "**: " << entry.description << "\n";
 	}
@@ -22,6 +24,16 @@ namespace
 	void SortByName(std::vector<LuaApiEntry>& entries)
 	{
 		std::sort(entries.begin(), entries.end(), [](const LuaApiEntry& a, const LuaApiEntry& b) { return a.name < b.name; });
+	}
+
+	void SortByValue(std::vector<LuaApiEntry>& entries)
+	{
+		std::stable_sort(entries.begin(), entries.end(), [](const LuaApiEntry& a, const LuaApiEntry& b) { return std::stoi(a.description) < std::stoi(b.description); });
+	}
+
+	bool IsEnum(const std::vector<LuaApiEntry>& entries)
+	{
+		return !entries.empty() && std::all_of(entries.begin(), entries.end(), [](const LuaApiEntry& e) { return e.kind == LuaApiEntry::Kind::EnumValue; });
 	}
 }
 
@@ -54,16 +66,20 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 	// AddIdentifier("Log", ...) right where the Log table's own methods are registered) names
 	// a globally-accessible table, not a plain value - link to its page instead of listing it
 	// as a bullet. Anything left (e.g. CurrentEntity) is a genuine bare value.
-	std::vector<LuaApiEntry> globalTables, globalValues;
+	std::vector<LuaApiEntry> globalTables, globalEnums, globalValues;
 	for (const LuaApiEntry& entry : entries)
 	{
 		if (entry.kind != LuaApiEntry::Kind::Global)
 			continue;
-		(byComponent.count(entry.name) ? globalTables : globalValues).push_back(entry);
+		if (!byComponent.count(entry.name))
+			globalValues.push_back(entry);
+		else
+			(IsEnum(byComponent[entry.name]) ? globalEnums : globalTables).push_back(entry);
 	}
 
 	SortByName(globalFunctions);
 	SortByName(globalTables);
+	SortByName(globalEnums);
 	SortByName(globalValues);
 
 	{
@@ -92,6 +108,15 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 			file << "## Tables\n\n";
 			file << "Always-available tables, called directly (e.g. `Log.Debug(...)`) rather than through an entity.\n\n";
 			for (const LuaApiEntry& entry : globalTables)
+				file << "- [" << entry.name << "](" << entry.name << ".md): " << entry.description << "\n";
+			file << "\n";
+		}
+
+		if (!globalEnums.empty())
+		{
+			file << "## Enums\n\n";
+			file << "Named values, used like `BodyType.Dynamic`.\n\n";
+			for (const LuaApiEntry& entry : globalEnums)
 				file << "- [" << entry.name << "](" << entry.name << ".md): " << entry.description << "\n";
 			file << "\n";
 		}
@@ -128,15 +153,29 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 		if (allComponentNames.count(component))
 			continue;	// written as a fragment of the component's own page below
 
-		std::vector<LuaApiEntry> properties, functions;
+		std::vector<LuaApiEntry> properties, functions, enumValues;
 		for (const LuaApiEntry& entry : componentEntries)
-			(entry.kind == LuaApiEntry::Kind::Property ? properties : functions).push_back(entry);
+		{
+			if (entry.kind == LuaApiEntry::Kind::EnumValue)
+				enumValues.push_back(entry);
+			else
+				(entry.kind == LuaApiEntry::Kind::Property ? properties : functions).push_back(entry);
+		}
 
 		SortByName(properties);
 		SortByName(functions);
+		SortByValue(enumValues);
 
 		std::ofstream file(outputDir / (component + ".md"));
 		file << "# " << component << "\n\n";
+
+		if (!enumValues.empty())
+		{
+			file << "## Values\n\n";
+			for (const LuaApiEntry& entry : enumValues)
+				WriteEntry(file, entry);
+			file << "\n";
+		}
 
 		if (!properties.empty())
 		{
