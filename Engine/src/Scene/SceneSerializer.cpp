@@ -546,8 +546,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pWidgetElement->SetAttribute("MarginRight", component->marginRight);
 		pWidgetElement->SetAttribute("MarginTop", component->marginTop);
 		pWidgetElement->SetAttribute("MarginBottom", component->marginBottom);
+		pWidgetElement->SetAttribute("Rotation", component->rotation);
 
-		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Rotation"), component->rotation);
 		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Position"), component->position);
 		SerializationUtils::Encode(pWidgetElement->InsertNewChildElement("Size"), component->size);
 
