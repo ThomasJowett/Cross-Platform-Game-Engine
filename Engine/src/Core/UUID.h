@@ -36,7 +36,7 @@ public:
 		if (m_Hi == rhs.m_Hi)
 			return m_Lo < rhs.m_Lo;
 		else
-			return m_Hi < rhs.m_Lo;
+			return m_Hi < rhs.m_Hi;
 	}
 private:
 	uint64_t m_Lo;
