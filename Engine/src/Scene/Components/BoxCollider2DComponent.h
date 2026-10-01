@@ -25,10 +25,10 @@ struct BoxCollider2DComponent
 	BoxCollider2DComponent() = default;
 	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	REFLECT_LUA_BEGIN(BoxCollider2DComponent)
-		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vector2f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vec2",
 			([](Self& c) -> Vector2f& { return c.offset; }),
 			([](Self& c, const Vector2f& v) { c.offset = v; }))
-		REFLECT_LUA_PROPERTY_CUSTOM("Size", "Half the width and height of the box", "Vector2f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Size", "Half the width and height of the box", "Vec2",
 			([](Self& c) -> Vector2f& { return c.size; }),
 			([](Self& c, const Vector2f& v) { c.size = v; }))
 		REFLECT_LUA_PROPERTY_CUSTOM("PhysicsMaterial", "Density, friction and restitution of the shape, or nil for the defaults", "PhysicsMaterial",

@@ -31,7 +31,7 @@ struct CapsuleCollider2DComponent
 	CapsuleCollider2DComponent() = default;
 	CapsuleCollider2DComponent(const CapsuleCollider2DComponent&) = default;
 	REFLECT_LUA_BEGIN(CapsuleCollider2DComponent)
-		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vector2f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vec2",
 			([](Self& c) -> Vector2f& { return c.offset; }),
 			([](Self& c, const Vector2f& v) { c.offset = v; }))
 		REFLECT_LUA_PROPERTY_CUSTOM("Radius", "Radius of the capsule's rounded ends", "number",
