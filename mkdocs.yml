@@ -6,13 +6,17 @@ site_url: https://thomasjowett.github.io/Cross-Platform-Game-Engine/
 # docs/ is hand-written (index.md, getting-started.md, ...) - edit those directly. Only
 # docs/LuaAPI/ is generated (by Editor's --generate-docs flag / the GenerateLuaDocs CMake
 # target - see Editor/src/FileSystem/LuaDocGenerator.cpp); don't hand-edit anything under
-# there, it's overwritten on every regeneration.
+# there, it's overwritten on every regeneration. Component pages (docs/Components/) are
+# hand-written and include their generated Lua section from docs/LuaAPI/_fragments/.
 docs_dir: docs
 
+# Fragments are only ever included into other pages, never rendered on their own.
+exclude_docs: |
+  LuaAPI/_fragments/
+
 # No explicit nav: the Lua API's component list changes as more components adopt the
-# REFLECT_LUA_* macros, so navigation is left to MkDocs' automatic file-tree nav (which
-# already matches what the generator produces - flat pages plus a Components/ subsection)
-# rather than a hand-maintained list that would go stale.
+# REFLECT_LUA_* macros, so navigation is left to MkDocs' automatic file-tree nav. The order
+# of the hand-written pages is set in docs/.pages (awesome-pages plugin); "..." picks up the rest.
 
 theme:
   name: material
