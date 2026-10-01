@@ -59,14 +59,8 @@ void BindScene(sol::state& state)
 	SetFunction(scene_type, "Scene", "CreateEntity", "Create an empty entity with the given name. It has no Transform until you add one", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
 	SetFunction(scene_type, "Scene", "RemoveEntity", "Destroy an entity and its children; returns false if it isn't in this scene", &Scene::RemoveEntity);
 	SetFunction(scene_type, "Scene", "GetPrimaryCamera", "Get the entity whose Camera is marked Primary", &Scene::GetPrimaryCameraEntity);
-	SetFunction(scene_type, "Scene", "FindEntity", "Find an entity by name, or by a path of names through the hierarchy such as \"HUD/Score\"", &Scene::GetEntityByPath);
-	SetFunction(scene_type, "Scene", "FindEntityByID", "Find the entity with the given UUID, or nil if there isn't one", [](Scene& scene, const Uuid& id) -> sol::optional<Entity>
-		{
-			Entity entity = scene.GetEntityByID(id);
-			if (!entity)
-				return sol::nullopt;
-			return entity;
-		});
+	SetFunction(scene_type, "Scene", "FindEntity", "Find an entity by name, or by a path of names through the hierarchy such as \"HUD/Score\"; check the result with IsSceneValid()", &Scene::GetEntityByPath);
+	SetFunction(scene_type, "Scene", "FindEntityByID", "Find the entity with the given UUID; check the result with IsSceneValid(), like FindEntity", &Scene::GetEntityByID);
 	SetFunction(scene_type, "Scene", "InstantiateScene", "Spawn a copy of every entity in a loaded scene (see LoadScene) at a position", &Scene::InstantiateScene);
 	SetFunction(scene_type, "Scene", "InstantiateEntity", "Spawn a copy of an entity, children included, at a position, and return the copy", &Scene::InstantiateEntity);
 	SetFunction(scene_type, "Scene", "GetPixelsPerUnit", "Get how many texture pixels make one world unit", &Scene::GetPixelsPerUnit);
