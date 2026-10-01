@@ -141,3 +141,8 @@ void LuaManager::AddApiEntry(LuaApiEntry entry)
 {
 	s_Identifiers.push_back(std::move(entry));
 }
+
+void RegisterLuaApiEntry(LuaApiEntry entry)
+{
+	LuaManager::AddApiEntry(std::move(entry));
+}

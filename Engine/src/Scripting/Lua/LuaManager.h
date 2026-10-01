@@ -4,18 +4,7 @@
 
 #include "Core/core.h"
 #include "Signaling.hpp"
-
-struct LuaApiEntry
-{
-	enum class Kind { Global, Property, Function, ComponentAccessor };
-
-	std::string name;
-	std::string description;
-	Kind kind = Kind::Global;
-	std::string component;
-	std::string type;
-	bool isComponent = false;
-};
+#include "LuaApiEntry.h"
 
 class LuaManager
 {
