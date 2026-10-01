@@ -45,7 +45,7 @@ struct RigidBody2DComponent
 	void GetTransform(Vector2f& position, float& rotation);
 
 	REFLECT_LUA_BEGIN(RigidBody2DComponent)
-		state.new_enum("BodyType", std::initializer_list<std::pair<sol::string_view, int>>{
+		Lua::SetEnum(state, "BodyType", "Rigid body types, for RigidBody2DComponent.Type", {
 			{ "Static", (int)BodyType::STATIC },
 			{ "Kinematic", (int)BodyType::KINEMATIC },
 			{ "Dynamic", (int)BodyType::DYNAMIC }

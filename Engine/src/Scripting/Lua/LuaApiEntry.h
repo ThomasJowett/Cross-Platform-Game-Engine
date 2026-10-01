@@ -5,7 +5,7 @@
 // the REFLECT_LUA_* macros without an include cycle.
 struct LuaApiEntry
 {
-	enum class Kind { Global, Property, Function, ComponentAccessor };
+	enum class Kind { Global, Property, Function, ComponentAccessor, EnumValue };	// EnumValue: description holds the value
 
 	std::string name;
 	std::string description;
