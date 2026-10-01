@@ -14,7 +14,7 @@ public:
 	virtual void Bind() const override;
 
 	wgpu::Buffer GetBuffer() const { return m_UniformBuffer; }
-	uint32_t GetSize() const { return m_BufferDesc.size; }
+	uint64_t GetSize() const { return m_BufferDesc.size; }
 private:
 	uint32_t m_Binding;
 	wgpu::BufferDescriptor m_BufferDesc;
