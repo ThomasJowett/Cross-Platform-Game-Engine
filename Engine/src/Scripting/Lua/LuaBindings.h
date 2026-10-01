@@ -121,6 +121,15 @@ void SetFunction(T& type, const std::string& owner, const std::string& name, con
 	RegisterLuaApiEntry({ name, description, LuaApiEntry::Kind::Function, owner, "" });
 }
 
+// Registers a global enum table, e.g. BodyType.Dynamic, and documents each value
+inline void SetEnum(sol::state& state, const std::string& name, const std::string& description, std::initializer_list<std::pair<sol::string_view, int>> items)
+{
+	state.new_enum(name, items);
+	RegisterLuaApiEntry({ name, description, LuaApiEntry::Kind::Global, "", "" });
+	for (const auto& [key, value] : items)
+		RegisterLuaApiEntry({ std::string(key), std::to_string(value), LuaApiEntry::Kind::EnumValue, name, "" });
+}
+
 template<typename T, typename Property>
 void SetProperty(T& type, const std::string& owner, const std::string& name, const std::string& description, const std::string& luaType, Property&& property)
 {
