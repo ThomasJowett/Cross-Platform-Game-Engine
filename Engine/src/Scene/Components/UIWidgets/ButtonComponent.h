@@ -23,10 +23,10 @@ struct ButtonComponent
 	Colour disabledTint = Colours::WHITE;
 
 	REFLECT_LUA_BEGIN(ButtonComponent)
-		REFLECT_LUA_PROPERTY(normalTint, "Tint applied to normalTexture")
-		REFLECT_LUA_PROPERTY(hoveredTint, "Tint applied to hoveredTexture")
-		REFLECT_LUA_PROPERTY(clickedTint, "Tint applied to clickedTexture")
-		REFLECT_LUA_PROPERTY(disabledTint, "Tint applied to disabledTexture")
+		REFLECT_LUA_PROPERTY(normalTint, "Tint applied to the normal state's texture")
+		REFLECT_LUA_PROPERTY(hoveredTint, "Tint applied to the hovered state's texture")
+		REFLECT_LUA_PROPERTY(clickedTint, "Tint applied to the clicked state's texture")
+		REFLECT_LUA_PROPERTY(disabledTint, "Tint applied to the disabled state's texture")
 	REFLECT_LUA_END()
 
 private:
