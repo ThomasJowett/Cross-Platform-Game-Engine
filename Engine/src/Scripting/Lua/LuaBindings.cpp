@@ -16,6 +16,8 @@
 #include "Scene/SceneCamera.h"
 #include "math/Vector3f.h"
 
+#include <algorithm>
+
 namespace Lua
 {
 template <typename T, typename = void>
@@ -66,6 +68,30 @@ void BindEntity(sol::state& state)
 {
 	PROFILE_FUNCTION();
 
+	// Read-only, and only the engine creates IDs, so scripts can't change an entity's ID
+	sol::usertype<Uuid> uuid_type = state.new_usertype<Uuid>("UUID", sol::no_constructor,
+		sol::meta_function::equal_to, [](const Uuid& a, const Uuid& b) { return a == b; },
+		sol::meta_function::to_string, &Uuid::to_string);
+	SetFunction(uuid_type, "UUID", "ToString", "Get the ID as a string, e.g. to save it or use it as a table key", &Uuid::to_string);
+	SetFunction(uuid_type, "UUID", "FromString", "UUID.FromString(s): read back an ID from ToString, or nil if s isn't one", [](const std::string& string) -> sol::optional<Uuid>
+		{
+			size_t dash = string.find('-');
+			if (dash == std::string::npos || dash == 0 || dash == string.size() - 1)
+				return sol::nullopt;
+			auto isDigits = [](const std::string& part) { return std::all_of(part.begin(), part.end(), [](unsigned char c) { return std::isdigit(c); }); };
+			std::string lo = string.substr(0, dash), hi = string.substr(dash + 1);
+			if (!isDigits(lo) || !isDigits(hi))
+				return sol::nullopt;
+			try
+			{
+				return Uuid(std::stoull(lo), std::stoull(hi));
+			}
+			catch (const std::out_of_range&)
+			{
+				return sol::nullopt;
+			}
+		});
+
 	sol::usertype<Entity> entity_type = state.new_usertype<Entity>("Entity",
 		sol::constructors<
 		Entity(),
@@ -74,6 +100,7 @@ void BindEntity(sol::state& state)
 		>()
 	);
 	SetFunction(entity_type, "Entity", "IsSceneValid", "Is Valid", &Entity::IsSceneValid);
+	SetFunction(entity_type, "Entity", "GetID", "Get the entity's UUID, which stays the same across saves and loads", &Entity::GetID);
 	SetFunction(entity_type, "Entity", "GetName", "Get Name", &Entity::GetName);
 	SetFunction(entity_type, "Entity", "SetName", "Set Name", &Entity::SetName);
 	SetFunction(entity_type, "Entity", "AddChild", "Add Child", &Entity::AddChild);

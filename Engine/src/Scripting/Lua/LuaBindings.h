@@ -33,8 +33,8 @@ struct LuaTypeNameTrait<Ref<T>>
 
 LUA_TYPE_NAME(std::string, "string")
 LUA_TYPE_NAME(Colour, "Colour")
-LUA_TYPE_NAME(Vector2f, "Vector2f")
-LUA_TYPE_NAME(Vector3f, "Vector3f")
+LUA_TYPE_NAME(Vector2f, "Vec2")
+LUA_TYPE_NAME(Vector3f, "Vec3")
 LUA_TYPE_NAME(Vector4f, "Vector4f")
 
 template<typename T>
@@ -119,5 +119,12 @@ void SetFunction(T& type, const std::string& owner, const std::string& name, con
 {
 	type.set_function(name, std::forward<Args>(args)...);
 	RegisterLuaApiEntry({ name, description, LuaApiEntry::Kind::Function, owner, "" });
+}
+
+template<typename T, typename Property>
+void SetProperty(T& type, const std::string& owner, const std::string& name, const std::string& description, const std::string& luaType, Property&& property)
+{
+	type[name] = std::forward<Property>(property);
+	RegisterLuaApiEntry({ name, description, LuaApiEntry::Kind::Property, owner, luaType });
 }
 }
