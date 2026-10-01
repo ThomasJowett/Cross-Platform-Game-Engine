@@ -20,6 +20,8 @@ The tree starts running when you press play.
 
 ## The editor
 
+![The behaviour tree editor](assets/BehaviourTreeView.png)
+
 The canvas shows the tree top to bottom, starting from the **Root** node. Each node has an input
 at the top, where its parent connects, and (unless it's a task) an output at the bottom, where
 its children connect.
