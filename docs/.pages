@@ -3,5 +3,7 @@ nav:
   - getting-started.md
   - behaviour-trees.md
   - lua-scripting.md
+  - Components
+  - scene-files.md
   - LuaAPI
   - ...

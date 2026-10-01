@@ -1,0 +1,8 @@
+title: Physics 2D
+nav:
+  - RigidBody2DComponent.md
+  - BoxCollider2DComponent.md
+  - CircleCollider2DComponent.md
+  - CapsuleCollider2DComponent.md
+  - PolygonCollider2DComponent.md
+  - WeldJoint2DComponent.md
