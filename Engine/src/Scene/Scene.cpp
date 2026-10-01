@@ -999,6 +999,19 @@ Entity Scene::GetEntityByName(const std::string& name)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+Entity Scene::GetEntityByID(const Uuid& id)
+{
+	auto view = m_Registry.view<IDComponent>();
+	for (auto entity : view)
+	{
+		if (view.get<IDComponent>(entity).ID == id)
+			return Entity(entity, this);
+	}
+	return Entity();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 Entity Scene::GetEntityByPath(const std::string& path)
 {
 	std::vector<std::string> splitPath = SplitString(path, '/');
