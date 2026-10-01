@@ -63,7 +63,7 @@ Use the provided spdlog-based macros for all logging:
 ### Scripting
 - Component bindings are declared in the component's own header with the `REFLECT_LUA_*` macros (see `Engine/src/Scripting/Lua/LuaBindings.h`); global tables are bound in `Engine/src/Scripting/Lua/`.
 - Components registered in `EnTT` should also be registered in Lua if they need to be accessible from scripts.
-- **Lua names**: properties and functions are PascalCase (e.g. `body.GravityScale`, `body:ApplyImpulse()`). `REFLECT_LUA_PROPERTY` capitalises the C++ member name automatically.
+- **Lua names**: properties and functions are PascalCase (e.g. `body.GravityScale`, `body:ApplyImpulse()`). `REFLECT_LUA_PROPERTY` capitalises the C++ member name automatically. The exception is the components properties that are a single character, which stay lowercase like the C++ fields (`v.x`, `colour.r`).
 
 ## 📁 Directory Structure
 - `Engine/`: Core engine source and vendor libraries.
