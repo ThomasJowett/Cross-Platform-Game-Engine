@@ -17,7 +17,7 @@ void BindInput(sol::state& state)
 	PROFILE_FUNCTION();
 
 	sol::table input = state.create_table("Input");
-	LuaManager::AddIdentifier("Input", "Input");
+	LuaManager::AddIdentifier("Input", "Keyboard, mouse, gamepad and cursor");
 
 	SetFunction(input, "Input", "IsKeyPressed", "Is key pressed", [](char c)
 		{
@@ -33,7 +33,7 @@ void BindInput(sol::state& state)
 		{ "Right", MOUSE_BUTTON_RIGHT },
 		{ "Middle", MOUSE_BUTTON_MIDDLE },
 	};
-	state.new_enum("MouseButton", mouseItems);
+	SetEnum(state, "MouseButton", "Mouse buttons, for Input.IsMouseButtonPressed and friends", mouseItems);
 
 	std::initializer_list<std::pair<sol::string_view, int>> joystickItems = {
 		{ "A", GAMEPAD_BUTTON_A },
@@ -41,7 +41,7 @@ void BindInput(sol::state& state)
 		{ "X", GAMEPAD_BUTTON_X },
 		{ "Y", GAMEPAD_BUTTON_Y },
 		{ "LeftBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
-		{ "RightBumper", GAMEPAD_BUTTON_LEFT_BUMPER },
+		{ "RightBumper", GAMEPAD_BUTTON_RIGHT_BUMPER },
 		{ "Back", GAMEPAD_BUTTON_BACK },
 		{ "Start", GAMEPAD_BUTTON_START },
 		{ "Guide",GAMEPAD_BUTTON_GUIDE },
@@ -56,7 +56,7 @@ void BindInput(sol::state& state)
 		{ "Square", GAMEPAD_BUTTON_SQUARE },
 		{ "Triangle", GAMEPAD_BUTTON_TRIANGLE }
 	};
-	state.new_enum("JoystickButton", joystickItems);
+	SetEnum(state, "JoystickButton", "Gamepad buttons, for Input.IsJoystickButtonPressed", joystickItems);
 
 	std::initializer_list<std::pair<sol::string_view, int>> joystickAxisItems =
 	{
@@ -67,11 +67,11 @@ void BindInput(sol::state& state)
 		{ "LeftTrigger", GAMEPAD_AXIS_LEFT_TRIGGER },
 		{ "RightTrigger", GAMEPAD_AXIS_RIGHT_TRIGGER }
 	};
-	state.new_enum("JoystickAxis", joystickAxisItems);
+	SetEnum(state, "JoystickAxis", "Gamepad sticks and triggers, for Input.GetJoystickAxis", joystickAxisItems);
 
-	input.set_function("GetJoyStickCount", &Joysticks::GetJoystickCount);
-	input.set_function("IsJoystickButtonPressed", &Input::IsJoystickButtonPressed);
-	input.set_function("GetJoystickAxis", &Input::GetJoystickAxis);
+	SetFunction(input, "Input", "GetJoyStickCount", "Get how many gamepads are connected", &Joysticks::GetJoystickCount);
+	SetFunction(input, "Input", "IsJoystickButtonPressed", "IsJoystickButtonPressed(slot, button): whether a gamepad button is held; slots start at 0", &Input::IsJoystickButtonPressed);
+	SetFunction(input, "Input", "GetJoystickAxis", "GetJoystickAxis(slot, axis): stick position from -1 to 1, or trigger from 0 to 1 (see JoystickAxis)", &Input::GetJoystickAxis);
 
 	std::initializer_list<std::pair<sol::string_view, int>> cursorItems =
 	{
@@ -87,7 +87,7 @@ void BindInput(sol::state& state)
 		{ "NotAllowed", (int)Cursors::NotAllowed}
 	};
 
-	state.new_enum("Cursors", cursorItems);
+	SetEnum(state, "Cursors", "Cursor shapes, for Input.SetCursor", cursorItems);
 
 	SetFunction(input, "Input", "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
 		{ return Application::GetWindow()->SetCursor(cursor); });

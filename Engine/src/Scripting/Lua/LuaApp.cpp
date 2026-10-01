@@ -17,10 +17,10 @@ void BindApp(sol::state& state)
 		{ "Full_Screen", (int)WindowMode::FULL_SCREEN },
 		{ "Borderless", (int)WindowMode::BORDERLESS }
 	};
-	state.new_enum("WindowMode", windowModes);
+	SetEnum(state, "WindowMode", "Window modes, for App.SetWindowMode", windowModes);
 
 	sol::table application = state.create_table("App");
-	LuaManager::AddIdentifier("App", "Application");
+	LuaManager::AddIdentifier("App", "The application window");
 
 	SetFunction(application, "App", "ShowImGui", "Show or hide the ImGui overlay", &Application::ShowImGui);
 	SetFunction(application, "App", "ToggleImGui", "Toggle the ImGui overlay", &Application::ToggleImGui);

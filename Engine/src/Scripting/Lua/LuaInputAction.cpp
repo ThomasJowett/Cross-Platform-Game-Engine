@@ -35,5 +35,9 @@ void BindInputAction(sol::state& state)
 	inputAction[sol::metatable_key] = inputActionMeta;
 	state["InputAction"] = inputAction;
 	LuaManager::AddIdentifier("InputAction", "Access an input action by name, e.g. InputAction.Attack:IsTriggered()");
+	// The accessors are made per action name on lookup, so they're documented here rather than where they're bound
+	RegisterLuaApiEntry({ "IsTriggered", "InputAction.<Name>:IsTriggered(): whether the action fired this frame", LuaApiEntry::Kind::Function, "InputAction", "" });
+	RegisterLuaApiEntry({ "GetValue", "InputAction.<Name>:GetValue(): the action's value as a number, e.g. a trigger or a 1D axis", LuaApiEntry::Kind::Function, "InputAction", "" });
+	RegisterLuaApiEntry({ "GetAxis2D", "InputAction.<Name>:GetAxis2D(): the action's value as a Vec2, e.g. a stick or WASD", LuaApiEntry::Kind::Function, "InputAction", "" });
 }
 }

@@ -150,10 +150,15 @@ void BindCommonTypes(sol::state& state)
 		"b", sol::property([](Colour& c) { return c.b; }, [](Colour& c, float v) { c.b = v; }),
 		"a", sol::property([](Colour& c) { return c.a; }, [](Colour& c, float v) { c.a = v; })
 	);
-	colour_type.set_function("SetHexCode", static_cast<void(Colour::*)(const std::string&)>(&Colour::SetColour));
-	colour_type.set_function("SetHexValue", static_cast<void(Colour::*)(const uint32_t&)>(&Colour::SetColour));
-	colour_type.set_function("HexCode", &Colour::HexCode);
-	colour_type.set_function("HexValue", &Colour::HexValue);
+	RegisterLuaApiEntry({ "new", "Colour.new(r, g, b, a) with values from 0 to 1, Colour.new(Colours.Red), or Colour.new() for opaque black", LuaApiEntry::Kind::Function, "Colour", "" });
+	RegisterLuaApiEntry({ "r", "Red, from 0 to 1", LuaApiEntry::Kind::Property, "Colour", "number" });
+	RegisterLuaApiEntry({ "g", "Green, from 0 to 1", LuaApiEntry::Kind::Property, "Colour", "number" });
+	RegisterLuaApiEntry({ "b", "Blue, from 0 to 1", LuaApiEntry::Kind::Property, "Colour", "number" });
+	RegisterLuaApiEntry({ "a", "Alpha, from 0 (transparent) to 1 (opaque)", LuaApiEntry::Kind::Property, "Colour", "number" });
+	SetFunction(colour_type, "Colour", "SetHexCode", "Set from a hex string such as \"#FF8800\"", static_cast<void(Colour::*)(const std::string&)>(&Colour::SetColour));
+	SetFunction(colour_type, "Colour", "SetHexValue", "Set from a hex number such as 0xFF8800FF", static_cast<void(Colour::*)(const uint32_t&)>(&Colour::SetColour));
+	SetFunction(colour_type, "Colour", "HexCode", "Get as a hex string", &Colour::HexCode);
+	SetFunction(colour_type, "Colour", "HexValue", "Get as a hex number", &Colour::HexValue);
 
 	std::initializer_list<std::pair<sol::string_view, int>> coloursItems = {
 		{"Beige", (int)Colours::BEIGE},
@@ -184,32 +189,28 @@ void BindCommonTypes(sol::state& state)
 		{"Yellow", (int)Colours::YELLOW},
 		{"Random", (int)Colours::RANDOM}
 	};
-	state.new_enum("Colours", coloursItems);
+	SetEnum(state, "Colours", "Named colours, for Colour.new(Colours.Red) or colour:SetColour; Random picks one at random", coloursItems);
 
-	colour_type.set_function("SetColour", static_cast<void(Colour::*)(Colours)>(&Colour::SetColour));
+	SetFunction(colour_type, "Colour", "SetColour", "Set to a named colour, e.g. colour:SetColour(Colours.Red)", static_cast<void(Colour::*)(Colours)>(&Colour::SetColour));
 
-	sol::usertype<BehaviourTree::Blackboard> blackboard_type = state.new_usertype<BehaviourTree::Blackboard>(
-		"Blackboard",
-		"SetBool", &BehaviourTree::Blackboard::setBool,
-		"SetInt", &BehaviourTree::Blackboard::setInt,
-		"SetFloat", &BehaviourTree::Blackboard::setFloat,
-		"SetDouble", &BehaviourTree::Blackboard::setDouble,
-		"SetString", &BehaviourTree::Blackboard::setString,
-		"SetVec2", &BehaviourTree::Blackboard::setVector2,
-		"SetVec3", &BehaviourTree::Blackboard::setVector3,
-		"GetBool", &BehaviourTree::Blackboard::getBool,
-		"GetInt", &BehaviourTree::Blackboard::getInt,
-		"GetFloat", &BehaviourTree::Blackboard::getFloat,
-		"GetDouble", &BehaviourTree::Blackboard::getDouble,
-		"GetString", &BehaviourTree::Blackboard::getString,
-		"GetVec2", &BehaviourTree::Blackboard::getVector2,
-		"GetVec3", &BehaviourTree::Blackboard::getVector3
-	);
+	sol::usertype<BehaviourTree::Blackboard> blackboard_type = state.new_usertype<BehaviourTree::Blackboard>("Blackboard");
+	SetFunction(blackboard_type, "Blackboard", "SetBool", "Set a boolean: (key, value)", &BehaviourTree::Blackboard::setBool);
+	SetFunction(blackboard_type, "Blackboard", "SetInt", "Set an integer: (key, value)", &BehaviourTree::Blackboard::setInt);
+	SetFunction(blackboard_type, "Blackboard", "SetFloat", "Set a number: (key, value)", &BehaviourTree::Blackboard::setFloat);
+	SetFunction(blackboard_type, "Blackboard", "SetDouble", "Set a double: (key, value)", &BehaviourTree::Blackboard::setDouble);
+	SetFunction(blackboard_type, "Blackboard", "SetString", "Set a string: (key, value)", &BehaviourTree::Blackboard::setString);
+	SetFunction(blackboard_type, "Blackboard", "SetVec2", "Set a Vec2: (key, value)", &BehaviourTree::Blackboard::setVector2);
+	SetFunction(blackboard_type, "Blackboard", "SetVec3", "Set a Vec3: (key, value)", &BehaviourTree::Blackboard::setVector3);
+	SetFunction(blackboard_type, "Blackboard", "GetBool", "Get a boolean by key", &BehaviourTree::Blackboard::getBool);
+	SetFunction(blackboard_type, "Blackboard", "GetInt", "Get an integer by key", &BehaviourTree::Blackboard::getInt);
+	SetFunction(blackboard_type, "Blackboard", "GetFloat", "Get a number by key", &BehaviourTree::Blackboard::getFloat);
+	SetFunction(blackboard_type, "Blackboard", "GetDouble", "Get a double by key", &BehaviourTree::Blackboard::getDouble);
+	SetFunction(blackboard_type, "Blackboard", "GetString", "Get a string by key", &BehaviourTree::Blackboard::getString);
+	SetFunction(blackboard_type, "Blackboard", "GetVec2", "Get a Vec2 by key", &BehaviourTree::Blackboard::getVector2);
+	SetFunction(blackboard_type, "Blackboard", "GetVec3", "Get a Vec3 by key", &BehaviourTree::Blackboard::getVector3);
 
-	sol::usertype<BehaviourTree::BehaviourTree> behaviourTree_type = state.new_usertype<BehaviourTree::BehaviourTree>(
-		"BehaviourTree",
-		"GetBlackboard", &BehaviourTree::BehaviourTree::getBlackboard
-	);
+	sol::usertype<BehaviourTree::BehaviourTree> behaviourTree_type = state.new_usertype<BehaviourTree::BehaviourTree>("BehaviourTree");
+	SetFunction(behaviourTree_type, "BehaviourTree", "GetBlackboard", "Get the tree's blackboard", &BehaviourTree::BehaviourTree::getBlackboard);
 
 	std::initializer_list<std::pair<sol::string_view, int>> nodeStatusItems = {
 		{ "Success", (int)BehaviourTree::Node::Status::Success },
@@ -217,7 +218,7 @@ void BindCommonTypes(sol::state& state)
 		{ "Running", (int)BehaviourTree::Node::Status::Running },
 		{ "Aborted", (int)BehaviourTree::Node::Status::Aborted }
 	};
-	state.new_enum("NodeStatus", nodeStatusItems);
+	SetEnum(state, "NodeStatus", "What a behaviour tree custom task returns from its update", nodeStatusItems);
 }
 
 //--------------------------------------------------------------------------------------------------------------
@@ -227,12 +228,13 @@ void BindDebug(sol::state& state)
 	PROFILE_FUNCTION();
 
 	sol::table debug = state.create_table("Debug");
+	LuaManager::AddIdentifier("Debug", "Draw debug lines and shapes, from OnDebugRender");
 
-	debug.set_function("DrawLine", [](const Vector3f& start, const Vector3f& end, const Colour& colour)
+	SetFunction(debug, "Debug", "DrawLine", "DrawLine(start, end, colour): a line between two Vec3 points", [](const Vector3f& start, const Vector3f& end, const Colour& colour)
 		{ Renderer2D::DrawHairLine(start, end, colour); });
-	debug.set_function("DrawCircle", [](const Vector3f& position, float radius, uint32_t segments, const Colour& colour)
+	SetFunction(debug, "Debug", "DrawCircle", "DrawCircle(position, radius, segments, colour): a circle outline", [](const Vector3f& position, float radius, uint32_t segments, const Colour& colour)
 		{ Renderer2D::DrawHairLineCircle(position, radius, segments, colour); });
-	debug.set_function("DrawRect", [](const Vector3f& position, const Vector2f& size, const Colour& colour)
+	SetFunction(debug, "Debug", "DrawRect", "DrawRect(position, size, colour): a rectangle outline; size is a Vec2", [](const Vector3f& position, const Vector2f& size, const Colour& colour)
 		{ Renderer2D::DrawHairLineRect(position, size, colour); });
 }
 
