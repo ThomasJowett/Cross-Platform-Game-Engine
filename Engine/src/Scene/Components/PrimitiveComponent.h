@@ -2,6 +2,7 @@
 #include "Utilities/GeometryGenerator.h"
 #include "Core/BoundingBox.h"
 #include "Scene/AssetManager.h"
+#include "Scripting/Lua/LuaBindings.h"
 
 struct PrimitiveComponent
 {
@@ -195,6 +196,99 @@ struct PrimitiveComponent
 
 	operator PrimitiveComponent::Shape& () { return type; }
 	operator const PrimitiveComponent::Shape& () { return type; }
+	REFLECT_LUA_BEGIN(PrimitiveComponent)
+		REFLECT_LUA_PROPERTY_CUSTOM("Type", "Shape as an integer: 0 Cube, 1 Sphere, 2 Plane, 3 Cylinder, 4 Cone, 5 Torus", "integer (enum)",
+			([](Self& c) { return c.type; }),
+			([](Self& c, Shape v) { c.type = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CubeWidth", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cubeWidth; }),
+			([](Self& c, float v) { c.cubeWidth = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CubeHeight", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cubeHeight; }),
+			([](Self& c, float v) { c.cubeHeight = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CubeDepth", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cubeDepth; }),
+			([](Self& c, float v) { c.cubeDepth = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("SphereRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.sphereRadius; }),
+			([](Self& c, float v) { c.sphereRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("SphereLongitudeLines", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.sphereLongitudeLines; }),
+			([](Self& c, uint32_t v) { c.sphereLongitudeLines = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("SphereLatitudeLines", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.sphereLatitudeLines; }),
+			([](Self& c, uint32_t v) { c.sphereLatitudeLines = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneWidth", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.planeWidth; }),
+			([](Self& c, float v) { c.planeWidth = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneLength", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.planeLength; }),
+			([](Self& c, float v) { c.planeLength = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneWidthLines", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.planeWidthLines; }),
+			([](Self& c, uint32_t v) { c.planeWidthLines = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneLengthLines", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.planeLengthLines; }),
+			([](Self& c, uint32_t v) { c.planeLengthLines = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneTileU", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.planeTileU; }),
+			([](Self& c, float v) { c.planeTileU = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("PlaneTileV", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.planeTileV; }),
+			([](Self& c, float v) { c.planeTileV = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("ConeBottomRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.coneBottomRadius; }),
+			([](Self& c, float v) { c.coneBottomRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("ConeHeight", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.coneHeight; }),
+			([](Self& c, float v) { c.coneHeight = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("ConeSliceCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.coneSliceCount; }),
+			([](Self& c, uint32_t v) { c.coneSliceCount = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("ConeStackCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.coneStackCount; }),
+			([](Self& c, uint32_t v) { c.coneStackCount = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CylinderBottomRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cylinderBottomRadius; }),
+			([](Self& c, float v) { c.cylinderBottomRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CylinderTopRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cylinderTopRadius; }),
+			([](Self& c, float v) { c.cylinderTopRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CylinderHeight", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.cylinderHeight; }),
+			([](Self& c, float v) { c.cylinderHeight = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CylinderSliceCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.cylinderSliceCount; }),
+			([](Self& c, uint32_t v) { c.cylinderSliceCount = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("CylinderStackCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.cylinderStackCount; }),
+			([](Self& c, uint32_t v) { c.cylinderStackCount = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("TorusOuterRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.torusOuterRadius; }),
+			([](Self& c, float v) { c.torusOuterRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("TorusInnerRadius", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "number",
+			([](Self& c) { return c.torusInnerRadius; }),
+			([](Self& c, float v) { c.torusInnerRadius = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("TorusSliceCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
+			([](Self& c) { return c.torusSliceCount; }),
+			([](Self& c, uint32_t v) { c.torusSliceCount = v; }))
+		// Misspelt name kept so older scripts still work
+		type["ShpereRadius"] = sol::property([](Self& c) { return c.sphereRadius; }, [](Self& c, float v) { c.sphereRadius = v; });
+		REFLECT_LUA_PROPERTY_CUSTOM("Material", "The material the shape is drawn with", "Material",
+			([](Self& c) { return c.material; }),
+			([](Self& c, const Ref<Material>& v) { c.material = v; }))
+		REFLECT_LUA_PROPERTY_CUSTOM("Mesh", "The generated mesh", "Mesh",
+			([](Self& c) { return c.mesh; }),
+			([](Self& c, const Ref<Mesh>& v) { c.mesh = v; }))
+		REFLECT_LUA_FUNCTION(SetCube, "Rebuild as a cube: (width, depth, height)")
+		REFLECT_LUA_FUNCTION(SetSphere, "Rebuild as a sphere: (radius, longitudeLines, latitudeLines)")
+		REFLECT_LUA_FUNCTION(SetPlane, "Rebuild as a plane: (width, length, widthLines, lengthLines, tileU, tileV)")
+		REFLECT_LUA_FUNCTION(SetCylinder, "Rebuild as a cylinder: (bottomRadius, topRadius, height, sliceCount, stackCount)")
+		REFLECT_LUA_FUNCTION(SetCone, "Rebuild as a cone: (bottomRadius, height, sliceCount, stackCount)")
+		REFLECT_LUA_FUNCTION(SetTorus, "Rebuild as a torus: (outerRadius, innerRadius, sliceCount)")
+		REFLECT_LUA_FUNCTION(SetType, "Rebuild as the given shape type, using its current settings")
+	REFLECT_LUA_END()
+
 private:
 	friend cereal::access;
 
