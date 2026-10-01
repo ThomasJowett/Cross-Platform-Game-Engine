@@ -1,0 +1,7 @@
+nav:
+  - index.md
+  - getting-started.md
+  - behaviour-trees.md
+  - lua-scripting.md
+  - LuaAPI
+  - ...

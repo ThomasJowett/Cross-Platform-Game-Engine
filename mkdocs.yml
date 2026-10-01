@@ -38,6 +38,13 @@ theme:
     - search.suggest
     - content.code.copy
 
+plugins:
+  - search
+  - awesome-pages
+
 markdown_extensions:
   - admonition
   - pymdownx.superfences
+  - pymdownx.snippets:
+      base_path: docs
+      check_paths: true
