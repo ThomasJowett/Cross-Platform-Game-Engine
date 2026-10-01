@@ -56,65 +56,73 @@ void BindScene(sol::state& state)
 	SetFunction(state, "", "LoadScene", "Load a scene", &LoadScene);
 
 	sol::usertype<Scene> scene_type = state.new_usertype<Scene>("Scene");
-	scene_type.set_function("CreateEntity", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
-	scene_type.set_function("RemoveEntity", &Scene::RemoveEntity);
-	scene_type.set_function("GetPrimaryCamera", &Scene::GetPrimaryCameraEntity);
-	scene_type.set_function("FindEntity", &Scene::GetEntityByPath);
-	scene_type.set_function("InstantiateScene", &Scene::InstantiateScene);
-	scene_type.set_function("InstantiateEntity", &Scene::InstantiateEntity);
-	scene_type.set_function("GetPixelsPerUnit", &Scene::GetPixelsPerUnit);
+	SetFunction(scene_type, "Scene", "CreateEntity", "Create an empty entity with the given name. It has no Transform until you add one", static_cast<Entity(Scene::*)(const std::string&)>(&Scene::CreateEntity));
+	SetFunction(scene_type, "Scene", "RemoveEntity", "Destroy an entity and its children; returns false if it isn't in this scene", &Scene::RemoveEntity);
+	SetFunction(scene_type, "Scene", "GetPrimaryCamera", "Get the entity whose Camera is marked Primary", &Scene::GetPrimaryCameraEntity);
+	SetFunction(scene_type, "Scene", "FindEntity", "Find an entity by name, or by a path of names through the hierarchy such as \"HUD/Score\"", &Scene::GetEntityByPath);
+	SetFunction(scene_type, "Scene", "FindEntityByID", "Find the entity with the given UUID, or nil if there isn't one", [](Scene& scene, const Uuid& id) -> sol::optional<Entity>
+		{
+			Entity entity = scene.GetEntityByID(id);
+			if (!entity)
+				return sol::nullopt;
+			return entity;
+		});
+	SetFunction(scene_type, "Scene", "InstantiateScene", "Spawn a copy of every entity in a loaded scene (see LoadScene) at a position", &Scene::InstantiateScene);
+	SetFunction(scene_type, "Scene", "InstantiateEntity", "Spawn a copy of an entity, children included, at a position, and return the copy", &Scene::InstantiateEntity);
+	SetFunction(scene_type, "Scene", "GetPixelsPerUnit", "Get how many texture pixels make one world unit", &Scene::GetPixelsPerUnit);
 
 	sol::usertype<HitResult2D> hitResult_type = state.new_usertype<HitResult2D>("HitResult2D");
-	hitResult_type["Hit"] = sol::property([](HitResult2D& h) { return h.hit; }, [](HitResult2D& h, bool v) { h.hit = v; });
-	hitResult_type["Entity"] = sol::property([](HitResult2D& h) { return h.entity; }, [](HitResult2D& h, Entity v) { h.entity = v; });
-	hitResult_type["Point"] = sol::property([](HitResult2D& h) { return h.hitPoint; }, [](HitResult2D& h, const Vector2f& v) { h.hitPoint = v; });
-	hitResult_type["Normal"] = sol::property([](HitResult2D& h) { return h.hitNormal; }, [](HitResult2D& h, const Vector2f& v) { h.hitNormal = v; });
+	SetProperty(hitResult_type, "HitResult2D", "Hit", "Whether anything was hit", "boolean", sol::property([](HitResult2D& h) { return h.hit; }, [](HitResult2D& h, bool v) { h.hit = v; }));
+	SetProperty(hitResult_type, "HitResult2D", "Entity", "The entity that was hit", "Entity", sol::property([](HitResult2D& h) { return h.entity; }, [](HitResult2D& h, Entity v) { h.entity = v; }));
+	SetProperty(hitResult_type, "HitResult2D", "Point", "World position of the hit", "Vec2", sol::property([](HitResult2D& h) { return h.hitPoint; }, [](HitResult2D& h, const Vector2f& v) { h.hitPoint = v; }));
+	SetProperty(hitResult_type, "HitResult2D", "Normal", "Surface direction at the hit point", "Vec2", sol::property([](HitResult2D& h) { return h.hitNormal; }, [](HitResult2D& h, const Vector2f& v) { h.hitNormal = v; }));
 
-	scene_type.set_function("RayCast2D", &Scene::RayCast2D);
-	scene_type.set_function("MultiRayCast2D", &Scene::MultiRayCast2D);
-	scene_type.set_function("QueryPoint", &Scene::QueryPoint);
-	scene_type.set_function("ScreenToWorldPoint", [](Scene& scene, Vector2f screenPosition, sol::optional<float> worldZ)
+	SetFunction(scene_type, "Scene", "RayCast2D", "Cast a ray between two world points and return the first collider hit, as a HitResult2D", &Scene::RayCast2D);
+	SetFunction(scene_type, "Scene", "MultiRayCast2D", "Cast a ray between two world points and return every collider hit, as a table of HitResult2D", &Scene::MultiRayCast2D);
+	SetFunction(scene_type, "Scene", "QueryPoint", "Get every entity whose 2D collider contains a world point, e.g. to pick objects with the mouse", &Scene::QueryPoint);
+	SetFunction(scene_type, "Scene", "ScreenToWorldPoint", "Convert a screen position, such as Input.GetMousePos(), to world space using the primary camera; optional Z plane, default 0", [](Scene& scene, Vector2f screenPosition, sol::optional<float> worldZ)
 		{ return scene.ScreenToWorldPoint(screenPosition, worldZ.value_or(0.0f)); });
-	scene_type.set_function("WorldToScreenPoint", &Scene::WorldToScreenPoint);
+	SetFunction(scene_type, "Scene", "WorldToScreenPoint", "Convert a world position to a screen position using the primary camera", &Scene::WorldToScreenPoint);
 
 	sol::table assetManager = state.create_table("AssetManager");
-	assetManager.set_function("GetTexture", [](std::string_view path) -> Ref<Texture2D>
+	LuaManager::AddIdentifier("AssetManager", "Load assets by project-relative path");
+	SetFunction(assetManager, "AssetManager", "GetTexture", "Load a texture by project-relative path", [](std::string_view path) -> Ref<Texture2D>
 		{
 			return AssetManager::GetTexture(path);
 		});
-	assetManager.set_function("GetMaterial", [](std::string_view path) -> Ref<Material>
+	SetFunction(assetManager, "AssetManager", "GetMaterial", "Load a material by project-relative path", [](std::string_view path) -> Ref<Material>
 		{
 			return AssetManager::GetAsset<Material>(path);
 		});
-	assetManager.set_function("GetStaticMesh", [](std::string_view path) -> Ref<StaticMesh>
+	SetFunction(assetManager, "AssetManager", "GetStaticMesh", "Load a static mesh by project-relative path", [](std::string_view path) -> Ref<StaticMesh>
 		{
 			return AssetManager::GetAsset<StaticMesh>(path);
 		});
-	assetManager.set_function("GetPhysicsMaterial", [](std::string_view path) -> Ref<PhysicsMaterial>
+	SetFunction(assetManager, "AssetManager", "GetPhysicsMaterial", "Load a physics material by project-relative path", [](std::string_view path) -> Ref<PhysicsMaterial>
 		{
 			return AssetManager::GetAsset<PhysicsMaterial>(path);
 		});
-	assetManager.set_function("GetTileset", [](std::string_view path) -> Ref<Tileset>
+	SetFunction(assetManager, "AssetManager", "GetTileset", "Load a tileset by project-relative path", [](std::string_view path) -> Ref<Tileset>
 		{
 			return AssetManager::GetAsset<Tileset>(path);
 		});
 
 	sol::usertype<Material> material_type = state.new_usertype<Material>("Material");
-	material_type.set_function("SetShader", &Material::SetShader);
-	material_type.set_function("GetShader", &Material::GetShader);
-	material_type.set_function("AddTexture", &Material::AddTexture);
-	material_type.set_function("GetTextureOffset", &Material::GetTextureOffset);
-	material_type.set_function("SetTextureOffset", &Material::SetTextureOffset);
-	material_type.set_function("GetTilingFactor", &Material::GetTilingFactor);
-	material_type.set_function("SetTilingFactor", &Material::SetTilingFactor);
-	material_type.set_function("SetTint", &Material::SetTint);
-	material_type.set_function("GetTint", &Material::GetTint);
-	material_type.set_function("IsTwoSided", &Material::IsTwoSided);
-	material_type.set_function("SetTwoSided", &Material::SetTwoSided);
-	material_type.set_function("IsTransparent", &Material::IsTransparent);
-	material_type.set_function("SetTransparency", &Material::SetTransparency);
-	material_type.set_function("CastsShadows", &Material::CastsShadows);
-	material_type.set_function("SetCastShadows", &Material::SetCastShadows);
+	SetFunction(material_type, "Material", "SetShader", "Set the shader by name", &Material::SetShader);
+	SetFunction(material_type, "Material", "GetShader", "Get the shader name", &Material::GetShader);
+	SetFunction(material_type, "Material", "AddTexture", "Set the texture in a slot: (texture, slot); nil removes it", &Material::AddTexture);
+	SetFunction(material_type, "Material", "GetTextureOffset", "Get the texture offset", &Material::GetTextureOffset);
+	SetFunction(material_type, "Material", "SetTextureOffset", "Set the texture offset", &Material::SetTextureOffset);
+	SetFunction(material_type, "Material", "GetTilingFactor", "Get how many times textures repeat", &Material::GetTilingFactor);
+	SetFunction(material_type, "Material", "SetTilingFactor", "Set how many times textures repeat", &Material::SetTilingFactor);
+	SetFunction(material_type, "Material", "SetTint", "Set the colour multiplied over the textures", &Material::SetTint);
+	SetFunction(material_type, "Material", "GetTint", "Get the colour multiplied over the textures", &Material::GetTint);
+	SetFunction(material_type, "Material", "IsTwoSided", "Whether back faces are drawn", &Material::IsTwoSided);
+	SetFunction(material_type, "Material", "SetTwoSided", "Set whether back faces are drawn", &Material::SetTwoSided);
+	SetFunction(material_type, "Material", "IsTransparent", "Whether the material is drawn with transparency", &Material::IsTransparent);
+	SetFunction(material_type, "Material", "SetTransparency", "Set whether the material is drawn with transparency", &Material::SetTransparency);
+	SetFunction(material_type, "Material", "CastsShadows", "Whether the material casts shadows", &Material::CastsShadows);
+	SetFunction(material_type, "Material", "SetCastShadows", "Set whether the material casts shadows", &Material::SetCastShadows);
 
 	state.new_usertype<PostProcessEffect>("PostProcessEffect", sol::no_constructor);
 
@@ -125,7 +133,8 @@ void BindScene(sol::state& state)
 	);
 
 	sol::table postProcess = state.create_table("PostProcess");
-	postProcess.set_function("CreateEffect", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect>
+	LuaManager::AddIdentifier("PostProcess", "Full-screen post-processing effects");
+	SetFunction(postProcess, "PostProcess", "CreateEffect", "Create an effect by name: \"GaussianBlur\" takes a strength", [](const std::string& name, sol::variadic_args args) -> Ref<PostProcessEffect>
 		{
 			if (name == "GaussianBlur") {
 				if (args.size() == 1) {
@@ -142,15 +151,15 @@ void BindScene(sol::state& state)
 				return nullptr;
 			}
 		});
-	postProcess.set_function("AddEffect", [](Ref<PostProcessEffect> effect)
+	SetFunction(postProcess, "PostProcess", "AddEffect", "Apply an effect to the rendered scene", [](Ref<PostProcessEffect> effect)
 		{
 			Renderer::AddPostProcessEffect(effect);
 		});
-	postProcess.set_function("RemoveEffect", [](Ref<PostProcessEffect> effect)
+	SetFunction(postProcess, "PostProcess", "RemoveEffect", "Stop applying an effect", [](Ref<PostProcessEffect> effect)
 		{
 			Renderer::RemovePostProcessEffect(effect);
 		});
-	postProcess.set_function("ClearEffects", []()
+	SetFunction(postProcess, "PostProcess", "ClearEffects", "Remove every effect", []()
 		{
 			Renderer::ClearPostProcessEffects();
 		});
