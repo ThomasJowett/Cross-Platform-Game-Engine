@@ -61,8 +61,9 @@ Use the provided spdlog-based macros for all logging:
 - Use `Renderer2D` for sprite, text, and primitive rendering.
 
 ### Scripting
-- Lua bindings are managed in `Engine/src/Scripting/Lua/LuaBindings.cpp`.
+- Component bindings are declared in the component's own header with the `REFLECT_LUA_*` macros (see `Engine/src/Scripting/Lua/LuaBindings.h`); global tables are bound in `Engine/src/Scripting/Lua/`.
 - Components registered in `EnTT` should also be registered in Lua if they need to be accessible from scripts.
+- **Lua names**: properties and functions are PascalCase (e.g. `body.GravityScale`, `body:ApplyImpulse()`). `REFLECT_LUA_PROPERTY` capitalises the C++ member name automatically.
 
 ## 📁 Directory Structure
 - `Engine/`: Core engine source and vendor libraries.
