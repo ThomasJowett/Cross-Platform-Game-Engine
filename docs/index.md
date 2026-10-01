@@ -17,6 +17,10 @@ A cross-platform game engine written in C++, supporting OpenGL and WebGPU render
 - Visual behaviour tree editor for AI
 - Scene and asset serialization
 
+## Architecture
+
+![Engine architecture overview](assets/architecture.svg)
+
 ## Where to go next
 
 - [Getting Started](getting-started.md) - creating a project and exporting a game with the Editor
