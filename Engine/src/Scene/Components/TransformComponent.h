@@ -48,13 +48,13 @@ struct TransformComponent
 	const Matrix4x4& GetParentMatrix() const { return m_ParentMatrix; }
 
 	REFLECT_LUA_BEGIN(TransformComponent)
-		REFLECT_LUA_PROPERTY_CUSTOM("Position", "Position relative to the parent entity, or to the world if it has no parent", "Vector3f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Position", "Position relative to the parent entity, or to the world if it has no parent", "Vec3",
 			([](Self& c) -> Vector3f& { return c.position; }),
 			([](Self& c, const Vector3f& v) { c.position = v; }))
-		REFLECT_LUA_PROPERTY_CUSTOM("Rotation", "Rotation as Euler angles in radians, relative to the parent", "Vector3f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Rotation", "Rotation as Euler angles in radians, relative to the parent", "Vec3",
 			([](Self& c) -> Vector3f& { return c.rotation; }),
 			([](Self& c, const Vector3f& v) { c.rotation = v; }))
-		REFLECT_LUA_PROPERTY_CUSTOM("Scale", "Scale relative to the parent", "Vector3f",
+		REFLECT_LUA_PROPERTY_CUSTOM("Scale", "Scale relative to the parent", "Vec3",
 			([](Self& c) -> Vector3f& { return c.scale; }),
 			([](Self& c, const Vector3f& v) { c.scale = v; }))
 		REFLECT_LUA_FUNCTION(GetWorldPosition, "Position in world space, after applying every parent's transform")
