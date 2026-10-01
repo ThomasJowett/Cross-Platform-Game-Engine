@@ -77,6 +77,7 @@ public:
 	Entity GetPrimaryListenerEntity();
 	Entity GetEntityByName(const std::string& name);
 	Entity GetEntityByPath(const std::string& path);
+	Entity GetEntityByID(const Uuid& id);
 
 	std::tuple<Matrix4x4, Matrix4x4> GetPrimaryCameraViewProjection();
 
