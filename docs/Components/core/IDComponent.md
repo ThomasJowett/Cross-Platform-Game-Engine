@@ -25,7 +25,8 @@ scene loads, and the engine logs a warning.
 ## Using IDs in scripts
 
 Get an entity's ID with `entity:GetID()`, and find the entity again with
-`CurrentScene:FindEntityByID(id)`, which returns `nil` if it's gone. IDs are read-only: scripts
+`CurrentScene:FindEntityByID(id)`. Like `FindEntity`, it returns an invalid entity if there's
+no match, so check the result with `IsSceneValid()`. IDs are read-only: scripts
 can't create one or change an entity's ID. See [UUID](../../LuaAPI/UUID.md).
 
 ```lua
@@ -34,7 +35,7 @@ local saved = CurrentEntity:GetID():ToString()
 
 -- Later, or after the scene reloads
 local chest = CurrentScene:FindEntityByID(UUID.FromString(saved))
-if chest then
+if chest:IsSceneValid() then
     Log.Info("Found " .. chest:GetName())
 end
 ```
