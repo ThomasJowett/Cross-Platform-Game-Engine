@@ -12,7 +12,7 @@ static sol::function s_UnrequireFunction;
 
 std::vector<LuaApiEntry> LuaManager::s_Identifiers = {
 	{ "CurrentEntity", "Get the entity this script is attached to", LuaApiEntry::Kind::Global, "", "" },
-	{ "CurrentScene", "Get the currently loaded scene", LuaApiEntry::Kind::Global, "", "" }
+	{ "CurrentScene", "The currently loaded Scene", LuaApiEntry::Kind::Global, "", "" }
 };
 
 int LoadFileRequire(lua_State* L) {
