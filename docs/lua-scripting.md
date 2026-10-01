@@ -24,7 +24,7 @@ end
 Every script has two globals available without needing to look anything up:
 
 - `CurrentEntity` - the entity this script is attached to
-- `CurrentScene` - the currently loaded scene
+- `CurrentScene` - the currently loaded [Scene](LuaAPI/Scene.md), for finding and spawning entities, raycasts and mouse picking
 
 ## Behaviour tree custom tasks
 

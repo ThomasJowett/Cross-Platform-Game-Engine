@@ -1,0 +1,7 @@
+title: Core
+nav:
+  - IDComponent.md
+  - NameComponent.md
+  - TransformComponent.md
+  - HierarchyComponent.md
+  - HiddenComponent.md

@@ -24,6 +24,8 @@ A cross-platform game engine written in C++, supporting OpenGL and WebGPU render
 ## Where to go next
 
 - [Getting Started](getting-started.md) - creating a project and exporting a game with the Editor
-- [Lua Scripting](lua-scripting.md) - worked examples for giving entities behaviour
 - [Behaviour Trees](behaviour-trees.md) - building AI decisions visually, and scripting custom tasks
+- [Lua Scripting](lua-scripting.md) - worked examples for giving entities behaviour
+- [Components](Components/index.md) - what each component does, its scene file format and its Lua API
+- [Scene Files](scene-files.md) - the `.scene` XML format, for writing or generating scenes by hand
 - [Lua API Reference](LuaAPI/index.md) - the full scripting API, generated directly from the engine's source

@@ -163,7 +163,7 @@ If a script has no `OnStateUpdate`, the task succeeds straight away.
 Task scripts have three globals:
 
 - `CurrentEntity` - the entity whose Behaviour Tree component is running this tree
-- `CurrentScene` - the currently loaded scene
+- `CurrentScene` - the currently loaded [Scene](LuaAPI/Scene.md)
 - `Blackboard` - this entity's blackboard
 
 Variables at the top of a script belong to that one task on that one entity, so a timer or
