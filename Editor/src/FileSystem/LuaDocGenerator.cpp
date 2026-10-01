@@ -5,6 +5,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <iostream>
 
 namespace
 {
@@ -27,7 +28,6 @@ namespace
 void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 {
 	std::filesystem::create_directories(outputDirectory);
-	std::filesystem::create_directories(outputDirectory / "Components");
 
 	const std::vector<LuaApiEntry>& entries = LuaManager::GetIdentifiers();
 
@@ -97,16 +97,37 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 		}
 	}
 
-	// Every entry for a given name comes from the same registration path (RegisterComponent<T>
-	// for a real ECS component, or a hand-written Bind* for a utility table), so isComponent is
-	// consistent within a group - safe to just read it off the first entry.
-	auto relativePathFor = [](const std::string& name, bool isComponent)
+	// Hand-written component pages live under docs/Components/<category>/<Name>.md. Found by
+	// filename, so the generator doesn't need to know which category each component is in.
+	const std::filesystem::path outputDir = outputDirectory.lexically_normal();
+	const std::filesystem::path docsDir = (outputDir / "..").lexically_normal();
+	std::map<std::string, std::filesystem::path> componentPages;	// component name -> page path relative to docs/
+	if (std::filesystem::exists(docsDir / "Components"))
 	{
-		return isComponent ? ("Components/" + name + ".md") : (name + ".md");
+		for (const auto& dirEntry : std::filesystem::recursive_directory_iterator(docsDir / "Components"))
+		{
+			if (dirEntry.is_regular_file() && dirEntry.path().extension() == ".md")
+				componentPages[dirEntry.path().stem().string()] = dirEntry.path().lexically_normal().lexically_relative(docsDir);
+		}
+	}
+
+	// Link from a page at docsRelativeFrom (relative to docs/) to docsRelativeTo
+	auto linkBetween = [](const std::filesystem::path& docsRelativeFrom, const std::filesystem::path& docsRelativeTo)
+	{
+		return docsRelativeTo.lexically_relative(docsRelativeFrom.parent_path()).generic_string();
 	};
+
+	for (const std::string& componentName : allComponentNames)
+	{
+		if (!componentPages.count(componentName))
+			std::cerr << "Warning: no documentation page for " << componentName << " - add docs/Components/<category>/" << componentName << ".md" << std::endl;
+	}
 
 	for (auto& [component, componentEntries] : byComponent)
 	{
+		if (allComponentNames.count(component))
+			continue;	// written as a fragment of the component's own page below
+
 		std::vector<LuaApiEntry> properties, functions;
 		for (const LuaApiEntry& entry : componentEntries)
 			(entry.kind == LuaApiEntry::Kind::Property ? properties : functions).push_back(entry);
@@ -114,7 +135,7 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 		SortByName(properties);
 		SortByName(functions);
 
-		std::ofstream file(outputDirectory / relativePathFor(component, componentEntries.front().isComponent));
+		std::ofstream file(outputDir / (component + ".md"));
 		file << "# " << component << "\n\n";
 
 		if (!properties.empty())
@@ -145,8 +166,8 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 				"- e.g. `entity:AddTilemapComponent()`.\n\n";
 			for (const std::string& componentName : allComponentNames)
 			{
-				if (byComponent.count(componentName))
-					file << "- [" << componentName << "](Components/" << componentName << ".md)\n";
+				if (componentPages.count(componentName))
+					file << "- [" << componentName << "](" << linkBetween("LuaAPI/Entity.md", componentPages[componentName]) << ")\n";
 				else
 					file << "- " << componentName << "\n";
 			}
@@ -154,12 +175,63 @@ void LuaDocGenerator::Generate(const std::filesystem::path& outputDirectory)
 		}
 	}
 
+	// Each component's Lua section, pulled into its hand-written page with pymdownx.snippets.
+	// Written for every component, bound or not, so every page can include one unconditionally.
+	const std::filesystem::path fragmentsDir = outputDir / "_fragments";
+	std::filesystem::remove_all(fragmentsDir);
+	std::filesystem::create_directories(fragmentsDir);
+	for (const std::string& componentName : allComponentNames)
+	{
+		std::vector<LuaApiEntry> properties, functions;
+		if (auto it = byComponent.find(componentName); it != byComponent.end())
+		{
+			for (const LuaApiEntry& entry : it->second)
+				(entry.kind == LuaApiEntry::Kind::Property ? properties : functions).push_back(entry);
+		}
+		SortByName(properties);
+		SortByName(functions);
+
+		std::ofstream file(fragmentsDir / (componentName + ".md"));
+		file << "## Lua scripting\n\n";
+
+		if (properties.empty() && functions.empty())
+			file << "No properties or functions of this component are exposed to Lua.\n\n";
+
+		if (!properties.empty())
+		{
+			file << "### Properties\n\n";
+			for (const LuaApiEntry& entry : properties)
+				WriteEntry(file, entry);
+			file << "\n";
+		}
+
+		if (!functions.empty())
+		{
+			file << "### Functions\n\n";
+			for (const LuaApiEntry& entry : functions)
+				WriteEntry(file, entry);
+			file << "\n";
+		}
+	}
+
 	{
 		// index.md, not Home.md - MkDocs' convention for a section's landing page.
-		std::ofstream file(outputDirectory / "index.md");
+		std::ofstream file(outputDir / "index.md");
 		file << "# Lua API Reference\n\n";
 		file << "- [Globals](Globals.md)\n";
 		for (auto& [component, componentEntries] : byComponent)
-			file << "- [" << component << "](" << relativePathFor(component, componentEntries.front().isComponent) << ")\n";
+		{
+			if (!allComponentNames.count(component))
+				file << "- [" << component << "](" << component << ".md)\n";
+		}
+		file << "\n## Components\n\n";
+		file << "Each component's Lua properties and functions are listed on its own page.\n\n";
+		for (const std::string& componentName : allComponentNames)
+		{
+			if (componentPages.count(componentName))
+				file << "- [" << componentName << "](" << linkBetween("LuaAPI/index.md", componentPages[componentName]) << ")\n";
+			else
+				file << "- " << componentName << "\n";
+		}
 	}
 }
