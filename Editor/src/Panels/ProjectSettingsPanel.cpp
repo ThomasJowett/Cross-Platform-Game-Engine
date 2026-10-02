@@ -30,6 +30,7 @@ void ProjectSettingsPanel::OnImGuiRender()
 	if (!m_WasShown)
 	{
 		ReadProjectFile();
+		ReadCollisionLayersFile();
 		m_WasShown = true;
 	}
 
@@ -70,9 +71,12 @@ void ProjectSettingsPanel::OnImGuiRender()
 			m_ProjectData.spriteAtlasPageSize = (uint32_t)std::clamp(pageSize, 256, 8192);
 		ImGui::Tooltip("Dimensions (square, pixels) of each packed sprite atlas page. Larger pages\nmean fewer pages but more VRAM per page - changing this only takes effect\non the next atlas rebuild.");
 
+		DrawCollisionLayers();
+
 		if (ImGui::Button(ICON_FA_FLOPPY_DISK" Save"))
 		{
 			SaveProjectFile();
+			SaveCollisionLayersFile();
 		}
 	}
 	ImGui::End();
@@ -81,11 +85,13 @@ void ProjectSettingsPanel::OnImGuiRender()
 void ProjectSettingsPanel::OnAttach()
 {
 	ReadProjectFile();
+	ReadCollisionLayersFile();
 }
 
 void ProjectSettingsPanel::OnDetach()
 {
 	SaveProjectFile();
+	SaveCollisionLayersFile();
 }
 
 void ProjectSettingsPanel::OnEvent(Event& event)
@@ -133,4 +139,92 @@ void ProjectSettingsPanel::SaveProjectFile()
 	m_ProjectData.description = m_DescriptionBuffer;
 
 	ProjectSerializer::Serialize(m_ProjectData, Application::GetOpenDocument());
+}
+
+void ProjectSettingsPanel::ReadCollisionLayersFile()
+{
+	m_CollisionLayers = CollisionLayers::DefaultNames();
+	m_CollisionLayersDirty = false;
+
+	if (Application::GetOpenDocumentDirectory().empty())
+		return;
+
+	CollisionLayers::Load(m_CollisionLayers, Application::GetOpenDocumentDirectory() / CollisionLayers::FilePath);
+}
+
+void ProjectSettingsPanel::SaveCollisionLayersFile()
+{
+	if (!m_CollisionLayersDirty || Application::GetOpenDocumentDirectory().empty())
+		return;
+
+	std::filesystem::path filepath = Application::GetOpenDocumentDirectory() / CollisionLayers::FilePath;
+
+	std::error_code errorCode;
+	std::filesystem::create_directories(filepath.parent_path(), errorCode);
+	if (errorCode)
+	{
+		ENGINE_ERROR("Could not create directory for collision layers file: {0}, {1}", filepath.parent_path().string(), errorCode.message());
+		return;
+	}
+
+	if (!CollisionLayers::Save(m_CollisionLayers, filepath))
+	{
+		ENGINE_ERROR("Could not save collision layers file: {0}", filepath.string());
+		return;
+	}
+
+	CollisionLayers::SetNames(m_CollisionLayers);
+	m_CollisionLayersDirty = false;
+}
+
+void ProjectSettingsPanel::DrawCollisionLayers()
+{
+	if (!ImGui::CollapsingHeader("Collision Layers"))
+		return;
+
+	ImGui::TextDisabled("Name a slot to add a layer, clear it to remove the layer");
+
+	if (ImGui::BeginTable("##CollisionLayers", 2, ImGuiTableFlags_BordersInnerH | ImGuiTableFlags_SizingStretchProp))
+	{
+		ImGui::TableSetupColumn("##Index", ImGuiTableColumnFlags_WidthFixed);
+		ImGui::TableSetupColumn("##Name", ImGuiTableColumnFlags_WidthStretch);
+
+		for (int i = 0; i < CollisionLayers::MaxLayers; ++i)
+		{
+			ImGui::PushID(i);
+			ImGui::TableNextRow();
+			ImGui::TableNextColumn();
+			ImGui::AlignTextToFramePadding();
+			ImGui::Text("%d", i);
+
+			ImGui::TableNextColumn();
+			char nameBuffer[64];
+			strncpy(nameBuffer, m_CollisionLayers[i].c_str(), sizeof(nameBuffer) - 1);
+			nameBuffer[sizeof(nameBuffer) - 1] = '\0';
+
+			ImGui::SetNextItemWidth(-FLT_MIN);
+			ImGui::BeginDisabled(i == 0);
+			if (ImGui::InputTextWithHint("##LayerName", "Unused", nameBuffer, sizeof(nameBuffer)))
+			{
+				m_CollisionLayers[i] = nameBuffer;
+				m_CollisionLayersDirty = true;
+			}
+			ImGui::EndDisabled();
+
+			if (!m_CollisionLayers[i].empty())
+			{
+				for (int j = 0; j < i; ++j)
+				{
+					if (m_CollisionLayers[j] == m_CollisionLayers[i])
+					{
+						Colour textColour(Colours::YELLOW);
+						ImGui::TextColored(ImVec4(textColour.r, textColour.g, textColour.b, textColour.a), "Duplicate name, Lua lookups find layer %d", j);
+						break;
+					}
+				}
+			}
+			ImGui::PopID();
+		}
+		ImGui::EndTable();
+	}
 }

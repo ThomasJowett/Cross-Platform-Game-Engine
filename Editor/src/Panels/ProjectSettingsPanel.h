@@ -5,6 +5,7 @@
 #include "imgui/imgui.h"
 
 #include "ProjectData.h"
+#include "Physics/CollisionLayers.h"
 
 #include <filesystem>
 
@@ -22,8 +23,12 @@ public:
 private:
 	void ReadProjectFile();
 	void SaveProjectFile();
+	void ReadCollisionLayersFile();
+	void SaveCollisionLayersFile();
 
-	bool OnOpenDocumentChanged(Event& event) { ReadProjectFile(); return false; }
+	void DrawCollisionLayers();
+
+	bool OnOpenDocumentChanged(Event& event) { ReadProjectFile(); ReadCollisionLayersFile(); return false; }
 private:
 
 	bool* m_Show;
@@ -37,4 +42,7 @@ private:
 	std::filesystem::path m_DefaultScenePath;
 
 	char m_DescriptionBuffer[1024] = "";
+
+	CollisionLayers::Names m_CollisionLayers = CollisionLayers::DefaultNames();
+	bool m_CollisionLayersDirty = false;
 };
