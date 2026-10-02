@@ -9,6 +9,7 @@
 #include "Renderer/Mesh.h"
 #include "AI/Astar.h"
 #include "Scripting/Lua/LuaBindings.h"
+#include "Physics/CollisionLayers.h"
 
 #include <thread>
 #include <mutex>
@@ -59,6 +60,8 @@ struct TilemapComponent
 	Orientation orientation = Orientation::orthogonal;
 
 	bool isTrigger = false;
+	uint16_t layer = CollisionLayers::DefaultLayer;
+	uint16_t mask = CollisionLayers::Everything;
 
 	Ref<Mesh> mesh;
 
@@ -71,7 +74,7 @@ struct TilemapComponent
 		: tileset(other.tileset), tint(other.tint), tiles(other.tiles),
 		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
 		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
-		  orientation(other.orientation), isTrigger(other.isTrigger),
+		  orientation(other.orientation), isTrigger(other.isTrigger), layer(other.layer), mask(other.mask),
 		  mesh(other.mesh), runtimeBody(nullptr), rebuildState(nullptr), m_PathfindingGrid(nullptr)
 	{
 	}
@@ -90,6 +93,8 @@ struct TilemapComponent
 		tileHeight = other.tileHeight;
 		orientation = other.orientation;
 		isTrigger = other.isTrigger;
+		layer = other.layer;
+		mask = other.mask;
 		mesh = other.mesh;
 		runtimeBody = nullptr;
 		rebuildState = nullptr;
@@ -107,7 +112,7 @@ struct TilemapComponent
 		: tileset(std::move(other.tileset)), tint(other.tint), tiles(std::move(other.tiles)),
 		  tilesWide(other.tilesWide), tilesHigh(other.tilesHigh),
 		  tileWidth(other.tileWidth), tileHeight(other.tileHeight),
-		  orientation(other.orientation), isTrigger(other.isTrigger),
+		  orientation(other.orientation), isTrigger(other.isTrigger), layer(other.layer), mask(other.mask),
 		  mesh(std::move(other.mesh)), runtimeBody(other.runtimeBody), rebuildState(std::move(other.rebuildState)),
 		  m_PathfindingGrid(std::move(other.m_PathfindingGrid))
 	{
@@ -128,6 +133,8 @@ struct TilemapComponent
 		tileHeight = other.tileHeight;
 		orientation = other.orientation;
 		isTrigger = other.isTrigger;
+		layer = other.layer;
+		mask = other.mask;
 		mesh = std::move(other.mesh);
 		runtimeBody = other.runtimeBody;
 		rebuildState = std::move(other.rebuildState);
@@ -171,6 +178,7 @@ struct TilemapComponent
 		REFLECT_LUA_PROPERTY(tileHeight, "Height of a single tile, in pixels")
 		REFLECT_LUA_PROPERTY(orientation, "How tiles are laid out: orthogonal, isometric, staggered or hexagonal")
 		REFLECT_LUA_PROPERTY(isTrigger, "Whether this tilemap's collision only reports overlaps instead of physically blocking")
+		REFLECT_LUA_COLLISION_FILTER()
 		REFLECT_LUA_FUNCTION(Rebuild, "Regenerate the tilemap's mesh from the current tile grid (runs in the background; call UpdateRebuild to pick up the result)")
 
 		REFLECT_LUA_FUNCTION_CUSTOM("SetTile", "Set the tile index at the given column/row, if within bounds", [](Self& c, uint32_t x, uint32_t y, uint32_t tileId) {
@@ -218,7 +226,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
+		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger, layer, mask);
 
 		SerializationUtils::SaveAssetToArchive(archive, tileset);
 	}
@@ -226,7 +234,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger);
+		archive(tint, tilesWide, tilesHigh, tiles, tileWidth, tileHeight, orientation, isTrigger, layer, mask);
 		SerializationUtils::LoadAssetFromArchive(archive, tileset);
 
 		Rebuild();
