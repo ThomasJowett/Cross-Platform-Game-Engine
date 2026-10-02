@@ -12,6 +12,7 @@
 
 #include "Core/Application.h"
 #include "Core/InputMappings.h"
+#include "Physics/CollisionLayers.h"
 #include "ProjectSerializer.h"
 
 #include <algorithm>
@@ -328,6 +329,9 @@ void AssetPacker::PackAssets()
 
 	if (std::filesystem::path inputMappingsPath = m_ProjectDirectory / InputMappings::FilePath; std::filesystem::exists(inputMappingsPath))
 		filesToPack.push_back(inputMappingsPath);
+
+	if (std::filesystem::path collisionLayersPath = m_ProjectDirectory / CollisionLayers::FilePath; std::filesystem::exists(collisionLayersPath))
+		filesToPack.push_back(collisionLayersPath);
 
 	const size_t totalFiles = filesToPack.size();
 	size_t filesPacked = 0;
