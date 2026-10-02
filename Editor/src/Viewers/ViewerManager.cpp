@@ -7,7 +7,6 @@
 #include "MaterialView.h"
 #include "TilesetView.h"
 #include "SpriteSheetView.h"
-#include "VisualScriptView.h"
 #include "PhysicsMaterialView.h"
 #include "FontView.h"
 #include "BehaviourTreeView.h"
@@ -105,7 +104,6 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::AUDIO:			OpenAssetViewer<AudioView>(assetPath);				return;
 	case FileType::TILESET:			OpenAssetViewer<TilesetView>(assetPath);			return;
 	case FileType::SPRITESHEET:		OpenAssetViewer<SpriteSheetView>(assetPath);		return;
-	case FileType::VISUALSCRIPT:	OpenAssetViewer<VisualScriptView>(assetPath);		return;
 	case FileType::PHYSICSMATERIAL:	OpenAssetViewer<PhysicsMaterialView>(assetPath);	return;
 	case FileType::FONT:			OpenAssetViewer<FontView>(assetPath);				return;
 	case FileType::BEHAVIOURTREE:	OpenAssetViewer<BehaviourTreeView>(assetPath);			return;
@@ -167,11 +165,6 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 	if (strcmp(ext, ".lua") == 0)
 	{
 		return FileType::SCRIPT;
-	}
-
-	if (strcmp(ext, ".visualscript") == 0)
-	{
-		return FileType::VISUALSCRIPT;
 	}
 
 	if (strcmp(ext, ".material") == 0)
@@ -258,11 +251,6 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		extensions.push_back(".lua");
 		break;
 	}
-	case FileType::VISUALSCRIPT:
-	{
-		extensions.push_back(".visualscript");
-		break;
-	}
 	case FileType::AUDIO:
 	{
 		for (const char* ext : AudioExtensions)
@@ -333,7 +321,6 @@ std::vector<std::string> ViewerManager::GetAllExtensions()
 	result.push_back(".spritesheet");
 	result.push_back(".behaviourtree");
 	result.push_back(".statemachine");
-	result.push_back(".visualscript");
 	return result;
 }
 

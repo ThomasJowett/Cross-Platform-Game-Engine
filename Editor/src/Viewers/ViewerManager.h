@@ -19,7 +19,6 @@ enum class FileType
 	MESH,
 	SCENE,
 	SCRIPT,
-	VISUALSCRIPT,
 	AUDIO,
 	MATERIAL,
 	TILESET,

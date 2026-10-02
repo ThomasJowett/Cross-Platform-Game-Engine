@@ -754,7 +754,6 @@ std::string ContentExplorerPanel::GetFileIconForFileType(FileType type) const
 		return ICON_FA_FILE_CODE;
 	case FileType::BEHAVIOURTREE:
 	case FileType::STATEMACHINE:
-	case FileType::VISUALSCRIPT:
 		return ICON_FA_DIAGRAM_PROJECT;
 	case FileType::AUDIO:
 		return ICON_FA_FILE_AUDIO;
@@ -1230,7 +1229,6 @@ void ContentExplorerPanel::OnImGuiRender()
 			ICON_FA_SHAPES "\tMesh\0"
 			ICON_FA_IMAGE "\tScene\0"
 			ICON_FA_FILE_CODE "\tScript\0"
-			ICON_FA_DIAGRAM_PROJECT "\tVisual Script\0"
 			ICON_FA_FILE_AUDIO "\tAudio\0"
 			ICON_FA_BOWLING_BALL "\tMaterial\0"
 			ICON_FA_GRIP "\tTileset\0"
