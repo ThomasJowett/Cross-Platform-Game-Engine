@@ -20,6 +20,80 @@
 
 #define Dirty(x) if(x) SceneManager::CurrentScene()->MakeDirty()
 
+// Layer dropdown and Mask checklist, populated from the project's named collision layers
+static bool CollisionFilterEdit(uint16_t& layer, uint16_t& mask)
+{
+	bool changed = false;
+
+	if (ImGui::BeginCombo("Layer", CollisionLayers::GetLayerName(layer).c_str()))
+	{
+		for (int i = 0; i < CollisionLayers::MaxLayers; ++i)
+		{
+			if (!CollisionLayers::IsNamed(i))
+				continue;
+
+			const uint16_t bit = (uint16_t)(1 << i);
+			if (ImGui::Selectable(CollisionLayers::GetDisplayName(i).c_str(), layer == bit))
+			{
+				layer = bit;
+				changed = true;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Tooltip("Which collision layer this collider is on");
+
+	uint16_t namedBits = 0;
+	for (int i = 0; i < CollisionLayers::MaxLayers; ++i)
+	{
+		if (CollisionLayers::IsNamed(i))
+			namedBits |= (uint16_t)(1 << i);
+	}
+
+	std::string maskPreview;
+	if ((mask & namedBits) == namedBits)
+		maskPreview = "Everything";
+	else if ((mask & namedBits) == 0)
+		maskPreview = "Nothing";
+	else
+	{
+		for (const std::string& name : CollisionLayers::GetMaskNames(mask))
+			maskPreview += (maskPreview.empty() ? "" : ", ") + name;
+	}
+
+	if (ImGui::BeginCombo("Mask", maskPreview.c_str()))
+	{
+		if (ImGui::Button("Everything"))
+		{
+			mask = CollisionLayers::Everything;
+			changed = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button("Nothing"))
+		{
+			mask = 0;
+			changed = true;
+		}
+
+		for (int i = 0; i < CollisionLayers::MaxLayers; ++i)
+		{
+			if (!CollisionLayers::IsNamed(i))
+				continue;
+
+			unsigned int flags = mask;
+			if (ImGui::CheckboxFlags(CollisionLayers::GetDisplayName(i).c_str(), &flags, 1u << i))
+			{
+				mask = (uint16_t)flags;
+				changed = true;
+			}
+		}
+		ImGui::EndCombo();
+	}
+	ImGui::Tooltip("Which collision layers this collider collides with. Two colliders only interact\nwhen each one's mask includes the other's layer");
+
+	return changed;
+}
+
 PropertiesPanel::PropertiesPanel(bool* show, Ref<HierarchyPanel> hierarchyPanel, Ref<TilemapEditor> tilemapEditor)
 	:Layer("Properties"), m_Show(show), m_HierarchyPanel(hierarchyPanel), m_TilemapEditor(tilemapEditor)
 {
@@ -704,6 +778,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			}
 
 			Dirty(ImGui::Checkbox("Is Trigger", &tilemap.isTrigger));
+			Dirty(CollisionFilterEdit(tilemap.layer, tilemap.mask));
 
 			if (ImGui::Button("Edit Tilemap"))
 				m_TilemapEditor->Show();
@@ -1040,6 +1115,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::Vector("Offset", boxCollider2D.offset));
 			Dirty(ImGui::Vector("Size", boxCollider2D.size));
 			Dirty(ImGui::Checkbox("Is Trigger", &boxCollider2D.isTrigger));
+			Dirty(CollisionFilterEdit(boxCollider2D.layer, boxCollider2D.mask));
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", boxCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
@@ -1049,6 +1125,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			Dirty(ImGui::Vector("Offset", circleCollider2D.offset));
 			Dirty(ImGui::DragFloat("Radius", &circleCollider2D.radius, 0.01f, 0.0f, 10.0f));
 			Dirty(ImGui::Checkbox("Is Trigger", &circleCollider2D.isTrigger));
+			Dirty(CollisionFilterEdit(circleCollider2D.layer, circleCollider2D.mask));
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", circleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
 
@@ -1083,6 +1160,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::TreePop();
 			}
 			Dirty(ImGui::Checkbox("Is Trigger", &polygonCollider2D.isTrigger));
+			Dirty(CollisionFilterEdit(polygonCollider2D.layer, polygonCollider2D.mask));
 
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", polygonCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 
@@ -1107,6 +1185,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				"Horizontal\0"));
 
 			Dirty(ImGui::Checkbox("Is Trigger", &capsuleCollider2D.isTrigger));
+			Dirty(CollisionFilterEdit(capsuleCollider2D.layer, capsuleCollider2D.mask));
 
 			Dirty(ImGui::AssetEdit<PhysicsMaterial>("Physics Material", capsuleCollider2D.physicsMaterial, m_DefaultPhysMaterial, FileType::PHYSICSMATERIAL));
 		});
