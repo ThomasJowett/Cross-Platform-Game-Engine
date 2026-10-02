@@ -6,6 +6,7 @@
 #include "Asset/SpriteAtlas.h"
 #include "Core/InputActionSystem.h"
 #include "Core/InputMappings.h"
+#include "Physics/CollisionLayers.h"
 
 #include "RuntimeLayer.h"
 
@@ -103,6 +104,10 @@ int main(int argc, char* argv[])
 	std::vector<uint8_t> inputMappingsData;
 	if (AssetManager::GetFileData(InputMappings::FilePath, inputMappingsData))
 		InputActionSystem::LoadMappingsFromData(inputMappingsData);
+
+	std::vector<uint8_t> collisionLayersData;
+	if (AssetManager::GetFileData(CollisionLayers::FilePath, collisionLayersData))
+		CollisionLayers::LoadNamesFromData(collisionLayersData);
 
 	Window* window = app->CreateDesktopWindow(WindowProps(gameTitle, 1920, 1080, 100, 100));
 
