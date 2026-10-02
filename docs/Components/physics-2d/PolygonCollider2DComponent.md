@@ -10,7 +10,7 @@ fine, because the outline is split into triangles. The default is a pentagon.
 Saved as a `<PolygonCollider2D>` element inside the entity's `<Entity>` element. Attributes that are left out keep their default. See [Scene Files](../../scene-files.md) for how values like vectors, colours and file paths are written.
 
 ```xml
-<PolygonCollider2D IsTrigger="false">
+<PolygonCollider2D IsTrigger="false" Layer="1" Mask="65535">
     <Offset X="0" Y="0"/>
     <Vertex X="0" Y="1"/>
     <Vertex X="-1" Y="-1"/>
@@ -23,6 +23,8 @@ Saved as a `<PolygonCollider2D>` element inside the entity's `<Entity>` element.
 | `Vertex` | child `X` `Y`, repeatable | float, one per corner, in order | a pentagon |
 | `Offset` | child `X` `Y` | float, shape offset from the entity's position | 0, 0 |
 | `IsTrigger` | attribute | bool, reports overlaps without blocking | `false` |
+| `Layer` | attribute | int, bit of the [collision layer](../../collision-layers.md) the collider is on | `1` (`Default`) |
+| `Mask` | attribute | int, bits of the collision layers it collides with | `65535` (everything) |
 | `PhysicsMaterial` | child `Filepath`, optional | path to a `.physicsmaterial` (density, friction, restitution) | built-in defaults |
 
 Collider sizes are multiplied by the entity's transform scale. Without a
