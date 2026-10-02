@@ -92,14 +92,14 @@ void SpriteSheetView::OnImGuiRender()
 		displaySize = ImVec2(100.0f, 100.0f);
 	}
 
-	ImGuiWindowFlags flags = ImGuiWindowFlags_HorizontalScrollbar | ImGuiWindowFlags_MenuBar;
+	ImGuiWindowFlags flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
 	if (m_Dirty)
 		flags |= ImGuiWindowFlags_UnsavedDocument;
 
 	if (ImGui::Begin(m_WindowName.c_str(), m_Show, flags))
 	{
-		if (ImGui::IsWindowFocused())
+		if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 		{
 			MainDockSpace::SetFocussedWindow(this);
 		}
@@ -127,6 +127,8 @@ void SpriteSheetView::OnImGuiRender()
 		{
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
+
+			ImGui::BeginChild("##Settings", ImVec2(0.0f, 0.0f));
 
 			if (ImGui::Texture2DEdit("Texture", m_LocalSpriteSheet->GetSubTexture()->GetTexture()))
 			{
@@ -258,12 +260,12 @@ void SpriteSheetView::OnImGuiRender()
 						ImGui::InputText(nameStr.c_str(), m_InputBuffer, sizeof(m_InputBuffer),
 							ImGuiInputTextFlags_AutoSelectAll | ImGuiInputTextFlags_EnterReturnsTrue);
 
-						if (ImGui::IsItemActive() && ImGui::IsWindowFocused())
+						if (ImGui::IsItemActive() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 						{
 							m_ActiveIndex = index;
 						}
 
-						if (m_ActiveIndex == index && !ImGui::IsItemActive() && ImGui::IsWindowFocused())
+						if (m_ActiveIndex == index && !ImGui::IsItemActive() && ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
 						{
 							if (m_PreviewSprite.animation == name)
 								m_PreviewSprite.animation = m_InputBuffer;
@@ -332,7 +334,7 @@ void SpriteSheetView::OnImGuiRender()
 				ImGui::TreePop();
 			}
 
-
+			ImGui::EndChild();
 
 			ImGui::TableSetColumnIndex(1);
 
@@ -343,9 +345,7 @@ void SpriteSheetView::OnImGuiRender()
 				ImVec2 tileSize((float)m_LocalSpriteSheet->GetSubTexture()->GetSpriteWidth() * m_Zoom,
 					(float)m_LocalSpriteSheet->GetSubTexture()->GetSpriteHeight() * m_Zoom);
 				ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_HorizontalScrollbar;
-				ImGui::BeginChild("Tileset Texture",
-					ImVec2(ImGui::GetContentRegionAvail().x - 5.0f, std::min(displaySize.y + 5.0f, ImGui::GetContentRegionAvail().y - 5.0f)),
-					false, window_flags_image);
+				ImGui::BeginChild("Tileset Texture", ImVec2(0.0f, 0.0f), false, window_flags_image);
 				const ImVec2 p = ImGui::GetCursorScreenPos();
 				ImGui::Image(m_LocalSpriteSheet->GetSubTexture()->GetTexture(), displaySize);
 				ImDrawList* draw_list = ImGui::GetWindowDrawList();
