@@ -13,7 +13,7 @@ Saved as a `<Tilemap>` element inside the entity's `<Entity>` element. Attribute
 
 ```xml
 <Tilemap Filepath="Tilesets/Dungeon.tileset" TilesWide="4" TilesHigh="3"
-         TileWidth="16" TileHeight="16" Orientation="Orthogonal" IsTrigger="false">
+         TileWidth="16" TileHeight="16" Orientation="Orthogonal" IsTrigger="false" Layer="1" Mask="65535">
     <Tint R="1" G="1" B="1" A="1"/>
 1,2,2,3,
 4,0,0,6,
@@ -28,6 +28,8 @@ Saved as a `<Tilemap>` element inside the entity's `<Entity>` element. Attribute
 | `TileWidth` / `TileHeight` | attributes | int, tile size in pixels |  |
 | `Orientation` | attribute | `Orthogonal`, `Isometric`, `Staggered` or `Hexagonal` | `Orthogonal` |
 | `IsTrigger` | attribute | bool, collision reports overlaps without blocking | `false` |
+| `Layer` | attribute | int, bit of the [collision layer](../../collision-layers.md) the collider is on | `1` (`Default`) |
+| `Mask` | attribute | int, bits of the collision layers it collides with | `65535` (everything) |
 | `Tint` | child `R` `G` `B` `A` | float, 0-1 | 1, 1, 1, 1 |
 | text content | element text | comma-separated tile indices, top row first | all `0` |
 
