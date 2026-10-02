@@ -343,6 +343,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		}
 
 		pTilemapElement->SetAttribute("IsTrigger", component.isTrigger);
+		pTilemapElement->SetAttribute("Layer", (unsigned)component.layer);
+		pTilemapElement->SetAttribute("Mask", (unsigned)component.mask);
 
 		std::stringstream csv;
 
@@ -404,6 +406,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		SerializationUtils::Encode(pBoxColliderElement->InsertNewChildElement("Size"), component.size);
 
 		pBoxColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+		pBoxColliderElement->SetAttribute("Layer", (unsigned)component.layer);
+		pBoxColliderElement->SetAttribute("Mask", (unsigned)component.mask);
 	}
 
 	if (entity.HasComponent<CircleCollider2DComponent>())
@@ -418,6 +422,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		pCircleColliderElement->SetAttribute("Radius", component.radius);
 		SerializationUtils::Encode(pCircleColliderElement->InsertNewChildElement("Offset"), component.offset);
 		pCircleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+		pCircleColliderElement->SetAttribute("Layer", (unsigned)component.layer);
+		pCircleColliderElement->SetAttribute("Mask", (unsigned)component.mask);
 	}
 
 	if (entity.HasComponent<PolygonCollider2DComponent>())
@@ -437,6 +443,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 		}
 
 		pPolygonColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+		pPolygonColliderElement->SetAttribute("Layer", (unsigned)component.layer);
+		pPolygonColliderElement->SetAttribute("Mask", (unsigned)component.mask);
 	}
 
 	if (entity.HasComponent<CapsuleCollider2DComponent>())
@@ -454,6 +462,8 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		SerializationUtils::Encode(pCapsuleColliderElement->InsertNewChildElement("Offset"), component.offset);
 		pCapsuleColliderElement->SetAttribute("IsTrigger", component.isTrigger);
+		pCapsuleColliderElement->SetAttribute("Layer", (unsigned)component.layer);
+		pCapsuleColliderElement->SetAttribute("Mask", (unsigned)component.mask);
 	}
 
 	if (entity.HasComponent<WeldJoint2DComponent>())
@@ -957,6 +967,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		}
 
 		component.isTrigger = pTilemapComponentElement->BoolAttribute("IsTrigger", false);
+		component.layer = (uint16_t)pTilemapComponentElement->UnsignedAttribute("Layer", CollisionLayers::DefaultLayer);
+		component.mask = (uint16_t)pTilemapComponentElement->UnsignedAttribute("Mask", CollisionLayers::Everything);
 
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesWide", &component.tilesWide);
 		pTilemapComponentElement->QueryUnsignedAttribute("TilesHigh", &component.tilesHigh);
@@ -1018,6 +1030,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		SerializationUtils::Decode(pBoxColliderComponentElement->FirstChildElement("Size"), component.size);
 
 		component.isTrigger = pBoxColliderComponentElement->BoolAttribute("IsTrigger", false);
+		component.layer = (uint16_t)pBoxColliderComponentElement->UnsignedAttribute("Layer", CollisionLayers::DefaultLayer);
+		component.mask = (uint16_t)pBoxColliderComponentElement->UnsignedAttribute("Mask", CollisionLayers::Everything);
 	}
 
 	// CircleCollider2D -----------------------------------------------------------------------------------------------
@@ -1037,6 +1051,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		pCircleCollider2DComponentElement->QueryFloatAttribute("Radius", &component.radius);
 		SerializationUtils::Decode(pCircleCollider2DComponentElement->FirstChildElement("Offset"), component.offset);
 		component.isTrigger = pCircleCollider2DComponentElement->BoolAttribute("IsTrigger", false);
+		component.layer = (uint16_t)pCircleCollider2DComponentElement->UnsignedAttribute("Layer", CollisionLayers::DefaultLayer);
+		component.mask = (uint16_t)pCircleCollider2DComponentElement->UnsignedAttribute("Mask", CollisionLayers::Everything);
 	}
 
 	// PolygonCollider2D --------------------------------------------------------------------------------------------
@@ -1067,6 +1083,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		}
 
 		component.isTrigger = pPolygonCollider2DComponentElement->BoolAttribute("IsTrigger", false);
+		component.layer = (uint16_t)pPolygonCollider2DComponentElement->UnsignedAttribute("Layer", CollisionLayers::DefaultLayer);
+		component.mask = (uint16_t)pPolygonCollider2DComponentElement->UnsignedAttribute("Mask", CollisionLayers::Everything);
 	}
 
 	// CapsuleCollider2D --------------------------------------------------------------------------------------------
@@ -1090,6 +1108,8 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 		component.direction = (CapsuleCollider2DComponent::Direction)pCapsuleColliderComponentElement->IntAttribute("Direction", (int)component.direction);
 
 		component.isTrigger = pCapsuleColliderComponentElement->BoolAttribute("IsTrigger", false);
+		component.layer = (uint16_t)pCapsuleColliderComponentElement->UnsignedAttribute("Layer", CollisionLayers::DefaultLayer);
+		component.mask = (uint16_t)pCapsuleColliderComponentElement->UnsignedAttribute("Mask", CollisionLayers::Everything);
 	}
 
 	// WeldJoint2D ---------------------------------------------------------------------------------------------------
