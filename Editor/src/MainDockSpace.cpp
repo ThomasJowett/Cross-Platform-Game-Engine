@@ -21,6 +21,7 @@
 #include "Panels/EditorPreferencesPanel.h"
 #include "Panels/ProjectSettingsPanel.h"
 #include "Panels/InputMappingsPanel.h"
+#include "Physics/CollisionLayers.h"
 #include "Panels/ViewportPanel.h"
 #include "Panels/HierarchyPanel.h"
 #include "Panels/PropertiesPanel.h"
@@ -496,6 +497,7 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	std::filesystem::path projectDirectory = filename;
 	projectDirectory.remove_filename();
 	InputActionSystem::LoadMappings(projectDirectory / InputMappings::FilePath);
+	CollisionLayers::LoadNames(projectDirectory / CollisionLayers::FilePath);
 
 	SpriteAtlasBuilder::EnsureUpToDate();
 
