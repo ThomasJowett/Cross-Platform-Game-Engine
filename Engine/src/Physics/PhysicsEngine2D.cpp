@@ -62,6 +62,12 @@ void SetPhysicsMaterial(b2FixtureDef& fixtureDef, Ref<PhysicsMaterial> physicsMa
 	}
 }
 
+void SetCollisionFilter(b2FixtureDef& fixtureDef, uint16_t layer, uint16_t mask)
+{
+	fixtureDef.filter.categoryBits = layer;
+	fixtureDef.filter.maskBits = mask;
+}
+
 PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	:m_Scene(scene)
 {
@@ -225,6 +231,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &boxShape;
 		fixtureDef.isSensor = boxColliderComp.isTrigger;
+		SetCollisionFilter(fixtureDef, boxColliderComp.layer, boxColliderComp.mask);
 		SetPhysicsMaterial(fixtureDef, boxColliderComp.physicsMaterial);
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
@@ -247,6 +254,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		b2FixtureDef fixtureDef;
 		fixtureDef.shape = &circleShape;
 		fixtureDef.isSensor = circleColliderComp.isTrigger;
+		SetCollisionFilter(fixtureDef, circleColliderComp.layer, circleColliderComp.mask);
 		SetPhysicsMaterial(fixtureDef, circleColliderComp.physicsMaterial);
 		fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
@@ -278,6 +286,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				b2FixtureDef fixtureDef;
 				fixtureDef.shape = &polygonShape;
 				fixtureDef.isSensor = polygonColliderComp.isTrigger;
+				SetCollisionFilter(fixtureDef, polygonColliderComp.layer, polygonColliderComp.mask);
 				SetPhysicsMaterial(fixtureDef, polygonColliderComp.physicsMaterial);
 
 				fixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
@@ -311,6 +320,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 			topCirclefixtureDef.shape = &topShape;
 			topCirclefixtureDef.isSensor = capsuleColliderComp.isTrigger;
+			SetCollisionFilter(topCirclefixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 
 			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
 			b2Fixture* fixture = body->CreateFixture(&topCirclefixtureDef);
@@ -327,6 +337,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				b2FixtureDef bottomCircleFixtureDef;
 				bottomCircleFixtureDef.shape = &bottomShape;
 				bottomCircleFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+				SetCollisionFilter(bottomCircleFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
 				fixture = body->CreateFixture(&bottomCircleFixtureDef);
@@ -341,6 +352,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				b2FixtureDef rectFixtureDef;
 				rectFixtureDef.shape = &rectShape;
 				rectFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+				SetCollisionFilter(rectFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
 				fixture = body->CreateFixture(&rectFixtureDef);
@@ -364,6 +376,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			b2FixtureDef topCirclefixtureDef;
 			topCirclefixtureDef.shape = &topShape;
 			topCirclefixtureDef.isSensor = capsuleColliderComp.isTrigger;
+			SetCollisionFilter(topCirclefixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
 			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
@@ -381,6 +394,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				b2FixtureDef bottomCircleFixtureDef;
 				bottomCircleFixtureDef.shape = &bottomShape;
 				bottomCircleFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+				SetCollisionFilter(bottomCircleFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 				bottomCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(bottomCircleFixtureDef, capsuleColliderComp.physicsMaterial);
 				fixture = body->CreateFixture(&bottomCircleFixtureDef);
@@ -395,6 +409,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 				b2FixtureDef rectFixtureDef;
 				rectFixtureDef.shape = &rectShape;
 				rectFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+				SetCollisionFilter(rectFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 				rectFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 				SetPhysicsMaterial(rectFixtureDef, capsuleColliderComp.physicsMaterial);
 				fixture = body->CreateFixture(&rectFixtureDef);
@@ -451,6 +466,7 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			b2FixtureDef fixtureDef;
 			fixtureDef.shape = &shape;
 			fixtureDef.isSensor = tilemapComp->isTrigger;
+			SetCollisionFilter(fixtureDef, tilemapComp->layer, tilemapComp->mask);
 			fixtureDef.density = defaultPhysicsMaterial->GetDensity();
 			fixtureDef.friction = defaultPhysicsMaterial->GetFriction();
 			fixtureDef.restitution = defaultPhysicsMaterial->GetRestitution();
