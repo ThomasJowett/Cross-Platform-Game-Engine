@@ -6,6 +6,7 @@
 #include "Asset/PhysicsMaterial.h"
 #include "Utilities/SerializationUtils.h"
 #include "Scripting/Lua/LuaBindings.h"
+#include "Physics/CollisionLayers.h"
 
 class b2Body;
 
@@ -16,6 +17,8 @@ struct CircleCollider2DComponent
   float radius = 0.5f;
 
   bool isTrigger = false;
+  uint16_t layer = CollisionLayers::DefaultLayer;
+  uint16_t mask = CollisionLayers::Everything;
 
   Ref<PhysicsMaterial> physicsMaterial;
 
@@ -33,6 +36,7 @@ struct CircleCollider2DComponent
     REFLECT_LUA_PROPERTY_CUSTOM("PhysicsMaterial", "Density, friction and restitution of the shape, or nil for the defaults", "PhysicsMaterial",
       ([](Self& c) { return c.physicsMaterial; }),
       ([](Self& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; }))
+    REFLECT_LUA_COLLISION_FILTER()
   REFLECT_LUA_END()
 
 private:
@@ -40,7 +44,7 @@ private:
   template<typename Archive>
   void save(Archive& archive) const
   {
-    archive(offset, radius, isTrigger);
+    archive(offset, radius, isTrigger, layer, mask);
 
     SerializationUtils::SaveAssetToArchive(archive, physicsMaterial);
   }
@@ -48,7 +52,7 @@ private:
   template<typename Archive>
   void load(Archive& archive)
   {
-    archive(offset, radius, isTrigger);
+    archive(offset, radius, isTrigger, layer, mask);
     SerializationUtils::LoadAssetFromArchive(archive, physicsMaterial);
 
     runtimeBody = nullptr;

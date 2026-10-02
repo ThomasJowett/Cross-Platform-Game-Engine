@@ -9,6 +9,7 @@
 
 #include <vector>
 #include "Scripting/Lua/LuaBindings.h"
+#include "Physics/CollisionLayers.h"
 
 class b2Body;
 
@@ -25,6 +26,8 @@ struct PolygonCollider2DComponent
 
 	Vector2f offset;
 	bool isTrigger;
+	uint16_t layer = CollisionLayers::DefaultLayer;
+	uint16_t mask = CollisionLayers::Everything;
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
@@ -42,6 +45,7 @@ struct PolygonCollider2DComponent
 		REFLECT_LUA_PROPERTY_CUSTOM("PhysicsMaterial", "Density, friction and restitution of the shape, or nil for the defaults", "PhysicsMaterial",
 			([](Self& c) { return c.physicsMaterial; }),
 			([](Self& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; }))
+		REFLECT_LUA_COLLISION_FILTER()
 	REFLECT_LUA_END()
 
 private:
@@ -49,7 +53,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(offset, vertices, isTrigger);
+		archive(offset, vertices, isTrigger, layer, mask);
 
 		SerializationUtils::SaveAssetToArchive(archive, physicsMaterial);
 	}
@@ -57,7 +61,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(offset, vertices, isTrigger);
+		archive(offset, vertices, isTrigger, layer, mask);
 		SerializationUtils::LoadAssetFromArchive(archive, physicsMaterial);
 
 		runtimeBody = nullptr;

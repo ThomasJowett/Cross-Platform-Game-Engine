@@ -10,6 +10,7 @@
 #include "Core/Application.h"
 #include "Scene/AssetManager.h"
 #include "Scripting/Lua/LuaBindings.h"
+#include "Physics/CollisionLayers.h"
 
 struct BoxCollider2DComponent
 {
@@ -17,6 +18,8 @@ struct BoxCollider2DComponent
 	Vector2f size = { 0.5f, 0.5f };
 
 	bool isTrigger = false;
+	uint16_t layer = CollisionLayers::DefaultLayer;
+	uint16_t mask = CollisionLayers::Everything;
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
@@ -34,6 +37,7 @@ struct BoxCollider2DComponent
 		REFLECT_LUA_PROPERTY_CUSTOM("PhysicsMaterial", "Density, friction and restitution of the shape, or nil for the defaults", "PhysicsMaterial",
 			([](Self& c) { return c.physicsMaterial; }),
 			([](Self& c, const Ref<PhysicsMaterial>& v) { c.physicsMaterial = v; }))
+		REFLECT_LUA_COLLISION_FILTER()
 	REFLECT_LUA_END()
 
 private:
@@ -41,7 +45,7 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		archive(offset, size, isTrigger);
+		archive(offset, size, isTrigger, layer, mask);
 
 		SerializationUtils::SaveAssetToArchive(archive, physicsMaterial);
 	}
@@ -49,7 +53,7 @@ private:
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		archive(offset, size, isTrigger);
+		archive(offset, size, isTrigger, layer, mask);
 		SerializationUtils::LoadAssetFromArchive(archive, physicsMaterial);
 
 		runtimeBody = nullptr;
