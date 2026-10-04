@@ -126,7 +126,7 @@ Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 		if (behaviourTreeComponent->behaviourTree)
 			behaviourTreeComponent->behaviourTree->Bind(newEntity);
 	}
-	return Entity();
+	return newEntity;
 }
 
 bool Scene::RemoveEntity(Entity& entity)
