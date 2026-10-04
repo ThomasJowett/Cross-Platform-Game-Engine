@@ -261,12 +261,14 @@ void SceneGraph::Remove(Entity entity)
 
 	if (hierarchyComp != nullptr)
 	{
-		entt::entity child = hierarchyComp->firstChild;
-		while (child != entt::null)
+		std::vector<entt::entity> children;
+		for (entt::entity child = hierarchyComp->firstChild; child != entt::null; child = registry.get<HierarchyComponent>(child).nextSibling)
+			children.push_back(child);
+
+		for (entt::entity child : children)
 		{
-			Entity childEntity = { child, entity.GetScene() };
+			Entity childEntity = {child, entity.GetScene()};
 			Remove(childEntity);
-			child = hierarchyComp->firstChild;
 		}
 	}
 	Unparent(entity);
