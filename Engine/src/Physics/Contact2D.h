@@ -58,6 +58,24 @@ public:
 		}
 	}
 
+	// Call before destroying a body: ends its contacts and forgets its fixtures before they are freed
+	void OnBodyDestroyed(const b2Body* body)
+	{
+		for (Contact2D& contact : m_Contacts)
+		{
+			if (contact.fixtureA && contact.fixtureA->GetBody() == body)
+			{
+				contact.fixtureA = nullptr;
+				contact.old = true;
+			}
+			if (contact.fixtureB && contact.fixtureB->GetBody() == body)
+			{
+				contact.fixtureB = nullptr;
+				contact.old = true;
+			}
+		}
+	}
+
 	void RemoveOld()
 	{
 		if (!m_Contacts.empty())
