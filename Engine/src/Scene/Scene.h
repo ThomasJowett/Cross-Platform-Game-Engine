@@ -107,6 +107,9 @@ public:
 	void OnEntityDestroyed(Entity entity);
 
 private:
+	// Call while m_IsUpdating is set, so entities destroyed from OnDestroy wait for the next call
+	void DestroyMarkedEntities();
+
 	entt::registry m_Registry;
 
 	std::filesystem::path m_Filepath;
