@@ -720,24 +720,22 @@ void Scene::OnFixedUpdate()
 				{
 					for (Contact2D& contact : m_PhysicsEngine2D->GetContactListener()->m_Contacts)
 					{
-						if (contact.fixtureA == fixture || contact.fixtureB == fixture)
-						{
-							if (fixture == contact.fixtureB && !contact.triggeredA)
-							{
-								luaScriptComp.OnBeginContact(contact.fixtureA, contact.localNormal, contact.localPoint);
-								contact.triggeredA = true;
-							}
-							else if (fixture == contact.fixtureA && !contact.triggeredB)
-							{
-								luaScriptComp.OnBeginContact(contact.fixtureB, contact.localNormal, contact.localPoint);
-								contact.triggeredB = true;
-							}
+						if (contact.fixtureA != fixture && contact.fixtureB != fixture)
+							continue;
 
-							if (contact.old)
-							{
-								luaScriptComp.OnEndContact(fixture == contact.fixtureA ? contact.fixtureB : contact.fixtureA);
-							}
+						const bool ownsA = fixture == contact.fixtureA;
+						const entt::entity other = ownsA ? contact.entityB : contact.entityA;
+						bool& beginReported = ownsA ? contact.triggeredB : contact.triggeredA;
+
+						// Only begin for an entity that still exists, and only end what began, so scripts get matched pairs
+						if (!beginReported && m_Registry.valid(other))
+						{
+							luaScriptComp.OnBeginContact(Entity(other, this), contact.localNormal, contact.localPoint);
+							beginReported = true;
 						}
+
+						if (contact.old && beginReported)
+							luaScriptComp.OnEndContact(m_Registry.valid(other) ? Entity(other, this) : Entity());
 					}
 				}
 			}

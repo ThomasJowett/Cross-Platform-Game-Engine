@@ -1,14 +1,19 @@
 #pragma once
 
 #include "box2d/box2d.h"
+#include "EnTT/entt.hpp"
 #include "math/Vector2f.h"
 
 #include <vector>
 
 struct Contact2D
 {
+	// Null once that fixture's body is destroyed; the entity handles below stay for reporting
 	b2Fixture* fixtureA;
 	b2Fixture* fixtureB;
+
+	entt::entity entityA;
+	entt::entity entityB;
 
 	bool triggeredA = false;
 	bool triggeredB = false;
@@ -18,7 +23,8 @@ struct Contact2D
 	Vector2f localPoint;
 
 	Contact2D(b2Fixture* A, b2Fixture* B)
-		:fixtureA(A), fixtureB(B)
+		:fixtureA(A), fixtureB(B),
+		entityA((entt::entity)A->GetUserData().pointer), entityB((entt::entity)B->GetUserData().pointer)
 	{}
 
 	bool operator==(const Contact2D& other) const
@@ -79,6 +85,6 @@ public:
 	void RemoveOld()
 	{
 		if (!m_Contacts.empty())
-			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](Contact2D c) {return c.old; }), m_Contacts.end());
+			m_Contacts.erase(std::remove_if(m_Contacts.begin(), m_Contacts.end(), [](const Contact2D& c) {return c.old; }), m_Contacts.end());
 	}
 };

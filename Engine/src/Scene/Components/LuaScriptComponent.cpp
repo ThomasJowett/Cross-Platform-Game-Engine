@@ -183,15 +183,12 @@ void LuaScriptComponent::OnDebugRender()
 	}
 }
 
-void LuaScriptComponent::OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point)
+void LuaScriptComponent::OnBeginContact(Entity other, Vector2f normal, Vector2f point)
 {
 	PROFILE_FUNCTION();
-	ASSERT(std::find(m_Fixtures.begin(), m_Fixtures.end(), fixture) == m_Fixtures.end(), "Should not have a begin contact event for own fixtures");
-
 	if (m_OnBeginContactFunc)
 	{
-		Entity entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene());
-		sol::protected_function_result result = m_OnBeginContactFunc->call(entity, normal, point);
+		sol::protected_function_result result = m_OnBeginContactFunc->call(other, normal, point);
 		if (!result.valid())
 		{
 			sol::error error = result;
@@ -203,15 +200,12 @@ void LuaScriptComponent::OnBeginContact(b2Fixture* fixture, Vector2f normal, Vec
 	}
 }
 
-void LuaScriptComponent::OnEndContact(b2Fixture* fixture)
+void LuaScriptComponent::OnEndContact(Entity other)
 {
 	PROFILE_FUNCTION();
-	ASSERT(std::find(m_Fixtures.begin(), m_Fixtures.end(), fixture) == m_Fixtures.end(), "Should not have an end contact event for own fixtures");
-
 	if (m_OnEndContactFunc)
 	{
-		Entity entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene());
-		sol::protected_function_result result = m_OnEndContactFunc->call(entity);
+		sol::protected_function_result result = m_OnEndContactFunc->call(other);
 		if (!result.valid())
 		{
 			sol::error error = result;

@@ -18,6 +18,10 @@ struct LuaScriptComponent
 	LuaScriptComponent() = default;
 	LuaScriptComponent(const std::filesystem::path& filepath);
 	LuaScriptComponent(const LuaScriptComponent&) = default;
+	LuaScriptComponent& operator=(const LuaScriptComponent&) = default;
+	// Moves leave the source without a Lua environment, so destroying it doesn't call OnDestroy
+	LuaScriptComponent(LuaScriptComponent&&) = default;
+	LuaScriptComponent& operator=(LuaScriptComponent&&) = default;
 
 	~LuaScriptComponent();
 
@@ -32,8 +36,9 @@ struct LuaScriptComponent
 	void OnFixedUpdate();
 	void OnDebugRender();
 
-	void OnBeginContact(b2Fixture* fixture, Vector2f normal, Vector2f point);
-	void OnEndContact(b2Fixture* fixture);
+	void OnBeginContact(Entity other, Vector2f normal, Vector2f point);
+	// other is an empty Entity if it was destroyed while touching
+	void OnEndContact(Entity other);
 
 	void OnPressed();
 	void OnReleased();
