@@ -51,9 +51,9 @@ private:
 
 // Lua bindings shared by every collider component with `layer` and `mask` fields
 #define REFLECT_LUA_COLLISION_FILTER() \
-		type["Layer"] = sol::readonly_property([](Self& c) { return CollisionLayers::GetLayerName(c.layer); }); \
+		type["Layer"] = sol::readonly_property(Lua::ResolveOnAccess<Self>([](Self& c) { return CollisionLayers::GetLayerName(c.layer); })); \
 		RegisterLuaApiEntry({ "Layer", "Name of the collision layer this collider is on (read-only)", LuaApiEntry::Kind::Property, s_ReflectComponentName, "string", true }); \
-		type["Mask"] = sol::readonly_property([](Self& c) { return sol::as_table(CollisionLayers::GetMaskNames(c.mask)); }); \
+		type["Mask"] = sol::readonly_property(Lua::ResolveOnAccess<Self>([](Self& c) { return sol::as_table(CollisionLayers::GetMaskNames(c.mask)); })); \
 		RegisterLuaApiEntry({ "Mask", "Names of the collision layers this collider collides with (read-only)", LuaApiEntry::Kind::Property, s_ReflectComponentName, "table of string", true }); \
 		REFLECT_LUA_FUNCTION_CUSTOM("CollidesWithLayer", "Whether this collider's mask includes the named collision layer", \
 			[](Self& c, const std::string& name) { return CollisionLayers::MaskIncludes(c.mask, name); });
