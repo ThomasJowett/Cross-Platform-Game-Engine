@@ -20,6 +20,11 @@
 
 namespace Lua
 {
+entt::registry& GetSceneRegistry(Scene* scene)
+{
+	return scene->GetRegistry();
+}
+
 template <typename T, typename = void>
 struct has_lua_bindings : std::false_type {};
 
@@ -32,7 +37,14 @@ void RegisterComponent(sol::state& state)
 	std::string name = type_name<Component>().data();
 
 	name = SplitString(name, '\n')[0];
-	sol::usertype<Component> component_type = state.new_usertype<Component>(name);
+
+	using Handle = ComponentHandle<Component>;
+	Handle::s_LuaName = name;
+	sol::usertype<Handle> component_type = state.new_usertype<Handle>(name, sol::no_constructor,
+		sol::meta_function::equal_to, [](const Handle& a, const Handle& b) { return a.entity == b.entity && a.scene == b.scene; });
+	component_type.set_function("IsValid", [](const Handle& handle) { return handle.TryGet() != nullptr; });
+	RegisterLuaApiEntry({ "IsValid", "Whether this still refers to a live component; false once its entity is destroyed or the component removed", LuaApiEntry::Kind::Function, name, "", true });
+
 	auto entity_Type = state["Entity"].get_or_create<sol::usertype<Entity>>();
 
 	// Kind::ComponentAccessor, not Function - these are implemented on Entity and documented
@@ -44,11 +56,24 @@ void RegisterComponent(sol::state& state)
 		LuaManager::AddApiEntry({ functionName, description, LuaApiEntry::Kind::ComponentAccessor, name, "", true });
 	};
 
-	registerAccessor("Add" + name, "Add a " + name + " to this entity", static_cast<Component & (Entity::*)()>(&Entity::AddComponent<Component>));
+	registerAccessor("Add" + name, "Add a " + name + " to this entity", [](Entity& entity)
+		{
+			entity.AddComponent<Component>();
+			return Handle{ entity.GetHandle(), entity.GetScene() };
+		});
 	registerAccessor("Remove" + name, "Remove the " + name + " from this entity", &Entity::RemoveComponent<Component>);
 	registerAccessor("Has" + name, "Check whether this entity has a " + name, &Entity::HasComponent<Component>);
-	registerAccessor("GetOrAdd" + name, "Get the entity's " + name + ", adding one first if it doesn't already have one", &Entity::GetOrAddComponent<Component>);
-	registerAccessor("Get" + name, "Get the entity's " + name + ", or nil if it doesn't have one", &Entity::TryGetComponent<Component>);
+	registerAccessor("GetOrAdd" + name, "Get the entity's " + name + ", adding one first if it doesn't already have one", [](Entity& entity)
+		{
+			entity.GetOrAddComponent<Component>();
+			return Handle{ entity.GetHandle(), entity.GetScene() };
+		});
+	registerAccessor("Get" + name, "Get the entity's " + name + ", or nil if it doesn't have one", [](Entity& entity) -> sol::optional<Handle>
+		{
+			if (!entity.TryGetComponent<Component>())
+				return sol::nullopt;
+			return Handle{ entity.GetHandle(), entity.GetScene() };
+		});
 
 	if constexpr (has_lua_bindings<Component>::value)
 	{
