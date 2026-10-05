@@ -9,11 +9,20 @@ LayerStack::LayerStack()
 
 LayerStack::~LayerStack()
 {
+	DetachAll();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void LayerStack::DetachAll()
+{
 	for (std::vector<Ref<Layer>>::reverse_iterator it = m_Layers.rbegin(); it != m_Layers.rend(); ++it)
 	{
 		(*it)->OnDetach();
 		(*it).reset();
 	}
+	m_Layers.clear();
+	m_LayerInsert = 0;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
