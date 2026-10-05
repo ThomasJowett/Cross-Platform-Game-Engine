@@ -28,7 +28,8 @@ void Entity::AddChild(Entity child)
 
 void Entity::Destroy()
 {
-	m_Scene->RemoveEntity(*this);
+	if (m_Scene)
+		m_Scene->RemoveEntity(*this);
 }
 
 std::string& Entity::GetName()
