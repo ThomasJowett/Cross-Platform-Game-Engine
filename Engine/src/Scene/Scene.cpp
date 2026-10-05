@@ -690,15 +690,9 @@ void Scene::OnUpdate(float deltaTime)
 		}
 	}
 
+	DestroyMarkedEntities();
+
 	m_IsUpdating = false;
-
-	auto destroyView = m_Registry.view<DestroyMarker>();
-
-	for (auto entity : destroyView)
-	{
-		Entity e = Entity(entity, this);
-		SceneGraph::Remove(e);
-	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -788,15 +782,25 @@ void Scene::OnFixedUpdate()
 			});
 	}
 
-	auto destroyView = m_Registry.view<DestroyMarker>();
-
-	for (auto entity : destroyView)
-	{
-		Entity e = Entity(entity, this);
-		SceneGraph::Remove(e);
-	}
+	DestroyMarkedEntities();
 
 	m_IsUpdating = false;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::DestroyMarkedEntities()
+{
+	PROFILE_FUNCTION();
+	// Removing a parent also removes its children, which may be marked too, so walk a copy and skip any already gone
+	auto destroyView = m_Registry.view<DestroyMarker>();
+	std::vector<entt::entity> marked(destroyView.begin(), destroyView.end());
+
+	for (entt::entity entity : marked)
+	{
+		if (m_Registry.valid(entity))
+			SceneGraph::Remove(Entity(entity, this));
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
