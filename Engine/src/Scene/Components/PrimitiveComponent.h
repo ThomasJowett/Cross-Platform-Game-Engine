@@ -66,9 +66,9 @@ struct PrimitiveComponent
 	}
 
 	//Sphere
-	PrimitiveComponent(float shpereRadius, uint32_t sphereLongitudeLines, uint32_t sphereLatitudeLines)
+	PrimitiveComponent(float sphereRadius, uint32_t sphereLongitudeLines, uint32_t sphereLatitudeLines)
 	{
-		SetSphere(shpereRadius, sphereLongitudeLines, sphereLatitudeLines);
+		SetSphere(sphereRadius, sphereLongitudeLines, sphereLatitudeLines);
 	}
 
 	// Plane
@@ -272,8 +272,6 @@ struct PrimitiveComponent
 		REFLECT_LUA_PROPERTY_CUSTOM("TorusSliceCount", "Shape setting - doesn't rebuild the mesh; call the matching Set function to apply it", "integer",
 			([](Self& c) { return c.torusSliceCount; }),
 			([](Self& c, uint32_t v) { c.torusSliceCount = v; }))
-		// Misspelt name kept so older scripts still work
-		type["ShpereRadius"] = sol::property([](Self& c) { return c.sphereRadius; }, [](Self& c, float v) { c.sphereRadius = v; });
 		REFLECT_LUA_PROPERTY_CUSTOM("Material", "The material the shape is drawn with", "Material",
 			([](Self& c) { return c.material; }),
 			([](Self& c, const Ref<Material>& v) { c.material = v; }))
