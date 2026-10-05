@@ -160,15 +160,15 @@ Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
 	if (newEntity.HasComponent<HierarchyComponent>())
 	{
-		HierarchyComponent& heirarchyComp = newEntity.GetComponent<HierarchyComponent>();
+		HierarchyComponent& hierarchyComp = newEntity.GetComponent<HierarchyComponent>();
 
-		if (!parent && heirarchyComp.parent != entt::null)
-			parent = Entity(heirarchyComp.parent, this);
+		if (!parent && hierarchyComp.parent != entt::null)
+			parent = Entity(hierarchyComp.parent, this);
 
-		heirarchyComp.firstChild = entt::null;
-		heirarchyComp.parent = entt::null;
-		heirarchyComp.nextSibling = entt::null;
-		heirarchyComp.previousSibling = entt::null;
+		hierarchyComp.firstChild = entt::null;
+		hierarchyComp.parent = entt::null;
+		hierarchyComp.nextSibling = entt::null;
+		hierarchyComp.previousSibling = entt::null;
 	}
 
 	std::vector<Entity> children = SceneGraph::GetChildren(entity);
