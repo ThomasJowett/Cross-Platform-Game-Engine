@@ -45,7 +45,7 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 {
 	std::vector<Vector2f> path;
 
-	if (!tilemapEntity)
+	if (!tilemapEntity.IsSceneValid())
 	{
 		CLIENT_ERROR("Pathfinding.FindPath: invalid tilemap entity");
 		return path;
