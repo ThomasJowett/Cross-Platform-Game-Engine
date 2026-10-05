@@ -596,18 +596,25 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 void PhysicsEngine2D::DestroyEntity(Entity entity)
 {
 	PROFILE_FUNCTION();
+	b2Body* body = nullptr;
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
-		m_Box2DWorld->DestroyBody(rigidBodyComp->runtimeBody);
+		body = rigidBodyComp->runtimeBody;
 	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body*)boxColliderComp->runtimeBody);
+		body = (b2Body*)boxColliderComp->runtimeBody;
 	else if (CircleCollider2DComponent* colliderComp = entity.TryGetComponent<CircleCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+		body = (b2Body*)colliderComp->runtimeBody;
 	else if (PolygonCollider2DComponent* colliderComp = entity.TryGetComponent<PolygonCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+		body = (b2Body*)colliderComp->runtimeBody;
 	else if (CapsuleCollider2DComponent* colliderComp = entity.TryGetComponent<CapsuleCollider2DComponent>())
-		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+		body = (b2Body*)colliderComp->runtimeBody;
 	else if (TilemapComponent* colliderComp = entity.TryGetComponent<TilemapComponent>())
-		m_Box2DWorld->DestroyBody((b2Body*)colliderComp->runtimeBody);
+		body = (b2Body*)colliderComp->runtimeBody;
+
+	if (body)
+	{
+		m_ContactListener->OnBodyDestroyed(body);
+		m_Box2DWorld->DestroyBody(body);
+	}
 
 	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
 		m_Box2DWorld->DestroyJoint(weldJointComp->joint);
