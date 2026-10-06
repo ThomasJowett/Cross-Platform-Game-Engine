@@ -25,6 +25,43 @@ entt::registry& GetSceneRegistry(Scene* scene)
 	return scene->GetRegistry();
 }
 
+std::string ScriptLocation(lua_State* state)
+{
+	luaL_where(state, 1);
+	std::string location = lua_tostring(state, -1);
+	lua_pop(state, 1);
+	return location;
+}
+
+lua_State* MainLuaState()
+{
+	return LuaManager::GetState().lua_state();
+}
+
+void CheckEntityValid(const Entity& entity, const char* function, lua_State* state)
+{
+	if (!entity.IsSceneValid())
+		throw std::runtime_error(ScriptLocation(state) + function + " called on an entity that no longer exists (destroyed, or not found by FindEntity)");
+}
+
+template<typename F, typename R, typename... Args>
+auto MakeEntityCheck(const char* function, F method, Detail::TypeTag<R>, Detail::TypeList<Args...>)
+{
+	return [function, method](sol::this_state state, Entity& entity, Args... args) -> R
+	{
+		CheckEntityValid(entity, function, state);
+		return std::invoke(method, entity, std::forward<Args>(args)...);
+	};
+}
+
+// Wraps an Entity member function so calling it from Lua on a dead entity raises an error instead of crashing
+template<typename F>
+auto RequireValidEntity(const char* function, F method)
+{
+	using Signature = Detail::MemberSignature<F>;
+	return MakeEntityCheck(function, method, Detail::TypeTag<typename Signature::Return>{}, typename Signature::Arguments{});
+}
+
 template <typename T, typename = void>
 struct has_lua_bindings : std::false_type {};
 
@@ -56,20 +93,35 @@ void RegisterComponent(sol::state& state)
 		LuaManager::AddApiEntry({ functionName, description, LuaApiEntry::Kind::ComponentAccessor, name, "", true });
 	};
 
-	registerAccessor("Add" + name, "Add a " + name + " to this entity", [](Entity& entity)
+	registerAccessor("Add" + name, "Add a " + name + " to this entity; errors if it already has one", [function = "Add" + name](sol::this_state state, Entity& entity)
 		{
+			CheckEntityValid(entity, function.c_str(), state);
+			if (entity.HasComponent<Component>())
+				throw std::runtime_error(ScriptLocation(state) + entity.GetName() + " already has a " + Handle::s_LuaName + "; use GetOrAdd" + Handle::s_LuaName + " instead");
 			entity.AddComponent<Component>();
 			return Handle{ entity.GetHandle(), entity.GetScene() };
 		});
-	registerAccessor("Remove" + name, "Remove the " + name + " from this entity", &Entity::RemoveComponent<Component>);
-	registerAccessor("Has" + name, "Check whether this entity has a " + name, &Entity::HasComponent<Component>);
-	registerAccessor("GetOrAdd" + name, "Get the entity's " + name + ", adding one first if it doesn't already have one", [](Entity& entity)
+	registerAccessor("Remove" + name, "Remove the " + name + " from this entity; errors if it doesn't have one", [function = "Remove" + name](sol::this_state state, Entity& entity)
 		{
+			CheckEntityValid(entity, function.c_str(), state);
+			if (!entity.HasComponent<Component>())
+				throw std::runtime_error(ScriptLocation(state) + entity.GetName() + " has no " + Handle::s_LuaName + " to remove");
+			entity.RemoveComponent<Component>();
+		});
+	registerAccessor("Has" + name, "Check whether this entity has a " + name, [function = "Has" + name](sol::this_state state, Entity& entity)
+		{
+			CheckEntityValid(entity, function.c_str(), state);
+			return entity.HasComponent<Component>();
+		});
+	registerAccessor("GetOrAdd" + name, "Get the entity's " + name + ", adding one first if it doesn't already have one", [function = "GetOrAdd" + name](sol::this_state state, Entity& entity)
+		{
+			CheckEntityValid(entity, function.c_str(), state);
 			entity.GetOrAddComponent<Component>();
 			return Handle{ entity.GetHandle(), entity.GetScene() };
 		});
-	registerAccessor("Get" + name, "Get the entity's " + name + ", or nil if it doesn't have one", [](Entity& entity) -> sol::optional<Handle>
+	registerAccessor("Get" + name, "Get the entity's " + name + ", or nil if it doesn't have one", [function = "Get" + name](sol::this_state state, Entity& entity) -> sol::optional<Handle>
 		{
+			CheckEntityValid(entity, function.c_str(), state);
 			if (!entity.TryGetComponent<Component>())
 				return sol::nullopt;
 			return Handle{ entity.GetHandle(), entity.GetScene() };
@@ -124,15 +176,21 @@ void BindEntity(sol::state& state)
 		sol::types<entt::entity, Scene*>
 		>()
 	);
+	// Everything but IsSceneValid and Destroy raises a Lua error on a destroyed or not-found entity
 	SetFunction(entity_type, "Entity", "IsSceneValid", "Is Valid", &Entity::IsSceneValid);
-	SetFunction(entity_type, "Entity", "GetID", "Get the entity's UUID, which stays the same across saves and loads", &Entity::GetID);
-	SetFunction(entity_type, "Entity", "GetName", "Get Name", &Entity::GetName);
-	SetFunction(entity_type, "Entity", "SetName", "Set Name", &Entity::SetName);
-	SetFunction(entity_type, "Entity", "AddChild", "Add Child", &Entity::AddChild);
-	SetFunction(entity_type, "Entity", "Destroy", "Destroy", &Entity::Destroy);
-	SetFunction(entity_type, "Entity", "GetParent", "Get Parent", &Entity::GetParent);
-	SetFunction(entity_type, "Entity", "GetSibling", "Get Sibling", &Entity::GetSibling);
-	SetFunction(entity_type, "Entity", "GetChild", "Get first Child", &Entity::GetChild);
+	SetFunction(entity_type, "Entity", "GetID", "Get the entity's UUID, which stays the same across saves and loads", RequireValidEntity("GetID", &Entity::GetID));
+	SetFunction(entity_type, "Entity", "GetName", "Get Name", RequireValidEntity("GetName", &Entity::GetName));
+	SetFunction(entity_type, "Entity", "SetName", "Set Name", RequireValidEntity("SetName", &Entity::SetName));
+	SetFunction(entity_type, "Entity", "AddChild", "Add Child", [](sol::this_state state, Entity& entity, Entity child)
+		{
+			CheckEntityValid(entity, "AddChild", state);
+			CheckEntityValid(child, "AddChild (on its child argument)", state);
+			entity.AddChild(child);
+		});
+	SetFunction(entity_type, "Entity", "Destroy", "Destroy; does nothing if it was already destroyed", &Entity::Destroy);
+	SetFunction(entity_type, "Entity", "GetParent", "Get Parent", RequireValidEntity("GetParent", &Entity::GetParent));
+	SetFunction(entity_type, "Entity", "GetSibling", "Get Sibling", RequireValidEntity("GetSibling", &Entity::GetSibling));
+	SetFunction(entity_type, "Entity", "GetChild", "Get first Child", RequireValidEntity("GetChild", &Entity::GetChild));
 
 	RegisterAllComponents<COMPONENTS>(state);
 
