@@ -16,10 +16,20 @@
 #include <type_traits>
 
 class Scene;
+class Entity;
 
 namespace Lua
 {
 entt::registry& GetSceneRegistry(Scene* scene);
+
+// The calling script's "chunk:line: " prefix, so errors raised from C++ report the Lua line in the error panel
+std::string ScriptLocation(lua_State* state);
+
+// The engine's main Lua state, for bindings that can't take sol::this_state (sol counts it as a property argument)
+lua_State* MainLuaState();
+
+// Raises a Lua error if the entity was destroyed or never found, naming the function that was called
+void CheckEntityValid(const Entity& entity, const char* function, lua_State* state);
 
 // What Lua holds for a component: the entity it belongs to, re-resolved through the registry on every access
 template<typename T>
@@ -42,7 +52,7 @@ struct ComponentHandle
 	{
 		if (T* component = TryGet())
 			return *component;
-		throw std::runtime_error(s_LuaName + " is no longer valid: its entity was destroyed or the component was removed");
+		throw std::runtime_error(ScriptLocation(MainLuaState()) + s_LuaName + " is no longer valid: its entity was destroyed or the component was removed");
 	}
 };
 
