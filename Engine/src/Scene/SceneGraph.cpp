@@ -373,17 +373,18 @@ entt::entity SceneGraph::FindEntity(const std::vector<std::string>& path, entt::
 				entt::entity child = hierarchyComp.firstChild;
 				while (child != entt::null && registry.valid(child) && i < path.size())
 				{
-					nameComp = registry.get<NameComponent>(child);
-					hierarchyComp = registry.get<HierarchyComponent>(child);
-					if (nameComp.name == path[i])
+					// Fresh references: assigning through nameComp/hierarchyComp would overwrite the root's components
+					const NameComponent& childNameComp = registry.get<NameComponent>(child);
+					const HierarchyComponent& childHierarchyComp = registry.get<HierarchyComponent>(child);
+					if (childNameComp.name == path[i])
 					{
 						i++;
 						if (i == path.size())
 							return child;
-						child = hierarchyComp.firstChild;
+						child = childHierarchyComp.firstChild;
 					}
 					else
-						child = hierarchyComp.nextSibling;
+						child = childHierarchyComp.nextSibling;
 				}
 			}
 		}
