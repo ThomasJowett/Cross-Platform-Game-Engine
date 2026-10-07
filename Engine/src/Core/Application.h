@@ -61,6 +61,9 @@ public:
 
 	static float GetDeltaTime() { return Get().m_DeltaTime; }
 
+	// Quit once the current frame has finished (see AppQuitRequestedEvent)
+	static void RequestQuit() { Get().m_QuitRequested = true; }
+
 	// True if launched with --auto-play - starts directly in Play state instead of Edit, for
 	// scripted/headless testing that needs the scene running without a manual Play click.
 	static bool ShouldAutoPlay() { return Get().m_AutoPlay; }
@@ -106,6 +109,7 @@ private:
 	Scope<Window> m_Window;
 	Scope<ImGuiManager> m_ImGuiManager;
 	bool m_Running = false;
+	bool m_QuitRequested = false;
 	bool m_Minimized = false;
 	float m_FixedUpdateInterval = 0.01f;
 

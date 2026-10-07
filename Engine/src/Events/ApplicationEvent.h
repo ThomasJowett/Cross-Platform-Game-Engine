@@ -94,6 +94,16 @@ public:
 	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
 };
 
+// Raised after the frame in which a script called App.Quit; if nothing handles it the application closes
+class AppQuitRequestedEvent : public Event
+{
+public:
+	AppQuitRequestedEvent() {}
+
+	EVENT_CLASS_TYPE(APP_QUIT_REQUESTED);
+	EVENT_CLASS_CATEGORY(EventCategory::APPLICATION);
+};
+
 class AppUpdateEvent : public Event
 {
 public:

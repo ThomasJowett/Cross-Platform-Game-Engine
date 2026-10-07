@@ -24,6 +24,7 @@ void BindApp(sol::state& state)
 
 	SetFunction(application, "App", "ShowImGui", "Show or hide the ImGui overlay", &Application::ShowImGui);
 	SetFunction(application, "App", "ToggleImGui", "Toggle the ImGui overlay", &Application::ToggleImGui);
+	SetFunction(application, "App", "Quit", "Quit the game once the current frame has finished; in the editor this stops Play mode instead", []() { Application::RequestQuit(); });
 
 	SetFunction(application, "App", "GetFixedUpdateInterval", "Get the fixed update interval, in seconds", [](sol::this_state s)
 		{ return Application::Get().GetFixedUpdateInterval(); });
