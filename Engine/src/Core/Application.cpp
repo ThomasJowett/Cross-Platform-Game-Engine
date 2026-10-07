@@ -264,6 +264,16 @@ void Application::Tick() {
 
 	m_LayerStack.PushPop();
 
+	// App.Quit from a script: the editor stops Play mode, otherwise the application closes
+	if (m_QuitRequested)
+	{
+		m_QuitRequested = false;
+		AppQuitRequestedEvent event;
+		CallEvent(event);
+		if (!event.Handled)
+			Close();
+	}
+
 	Input::ClearInputData();
 }
 

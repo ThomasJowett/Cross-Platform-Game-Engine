@@ -46,6 +46,7 @@
 #include "Scene/SceneManager.h"
 #include "Renderer/RenderCommand.h"
 #include "Events/SceneEvent.h"
+#include "Events/ApplicationEvent.h"
 
 Layer* MainDockSpace::s_CurrentlyFocusedPanel;
 
@@ -204,6 +205,13 @@ void MainDockSpace::OnEvent(Event& event)
 			HistoryManager::Reset();
 			ViewerManager::CloseAll();
 			return false;
+		});
+	// A script quitting the game stops Play mode rather than closing the editor
+	dispatcher.Dispatch<AppQuitRequestedEvent>([](AppQuitRequestedEvent& e)
+		{
+			if (SceneManager::GetSceneState() != SceneState::Edit)
+				SceneManager::ChangeSceneState(SceneState::Edit);
+			return true;
 		});
 }
 
