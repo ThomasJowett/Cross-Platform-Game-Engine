@@ -1,5 +1,4 @@
 #pragma once
-#define SOL_NO_STD_OPTIONAL 1
 #include "sol/sol.hpp"
 
 #include "Core/core.h"
