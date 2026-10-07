@@ -207,7 +207,9 @@ void SceneGraph::Unparent(Entity entity)
 
 	if (hierachyComp != nullptr && hierachyComp->parent != entt::null)
 	{
-		HierarchyComponent* parentHierachyComp = registry.try_get<HierarchyComponent>(hierachyComp->parent);
+		entt::entity parent = hierachyComp->parent;
+		bool removeParentComponent = false;
+		HierarchyComponent* parentHierachyComp = registry.try_get<HierarchyComponent>(parent);
 
 		if (parentHierachyComp != nullptr)
 		{
@@ -215,13 +217,10 @@ void SceneGraph::Unparent(Entity entity)
 			if (parentHierachyComp->firstChild == entity.GetHandle())
 				parentHierachyComp->firstChild = hierachyComp->nextSibling;
 
-			if (parentHierachyComp->firstChild == entt::null
+			removeParentComponent = parentHierachyComp->firstChild == entt::null
 				&& parentHierachyComp->parent == entt::null
 				&& parentHierachyComp->nextSibling == entt::null
-				&& parentHierachyComp->previousSibling == entt::null)
-			{
-				registry.remove<HierarchyComponent>(hierachyComp->parent);
-			}
+				&& parentHierachyComp->previousSibling == entt::null;
 		}
 
 		// update the links of any siblings
@@ -248,7 +247,12 @@ void SceneGraph::Unparent(Entity entity)
 		hierachyComp->previousSibling = entt::null;
 
 		// if there is no children then the HierarchyComponent is not needed
-		if (hierachyComp->firstChild == entt::null)
+		bool removeOwnComponent = hierachyComp->firstChild == entt::null;
+
+		// Remove components last: removing one can move others in memory, invalidating the pointers above
+		if (removeParentComponent)
+			registry.remove<HierarchyComponent>(parent);
+		if (removeOwnComponent)
 			entity.RemoveComponent<HierarchyComponent>();
 	}
 }
