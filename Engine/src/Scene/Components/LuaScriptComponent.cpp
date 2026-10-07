@@ -34,6 +34,8 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
 	m_Coroutines = CreateRef<Lua::CoroutineScheduler>();
 	Lua::InstallCoroutines(*m_SolEnvironment, m_Coroutines);
+	// Lets errors from functions defined in this script be reported against its file
+	(*m_SolEnvironment)["__ScriptFile"] = script->GetFilepath().string();
 
 	sol::protected_function_result result = LuaManager::GetState().script(script->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
