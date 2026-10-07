@@ -1725,7 +1725,6 @@ void ContentExplorerPanel::OnImGuiRender()
 							continue;
 						}
 
-						ImGui::BeginGroup();
 						std::string filename = GetFileIconForFileType(m_Files[i]) + " " + m_Files[i].filename().string();
 
 						ImGui::TableNextRow();
@@ -1784,8 +1783,6 @@ void ContentExplorerPanel::OnImGuiRender()
 						{
 							ImGui::Text("%iKB", (int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f));
 						}
-
-						ImGui::EndGroup();
 					}
 
 					if (ImGui::BeginPopupContextWindow("Right click menu",
