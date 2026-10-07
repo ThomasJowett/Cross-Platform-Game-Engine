@@ -6,6 +6,7 @@ class Entity;
 class Scene;
 class b2World;
 class b2Draw;
+class b2DestructionListener;
 struct HitResult2D;
 
 
@@ -34,6 +35,8 @@ public:
 
 
 private:
+	// Declared before the world so it outlives it
+	Scope<b2DestructionListener> m_DestructionListener = nullptr;
 	Scope<b2World> m_Box2DWorld = nullptr;
 	Scope<b2Draw> m_Box2DDraw = nullptr;
 

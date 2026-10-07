@@ -20,7 +20,7 @@ struct WeldJoint2DComponent
 	b2Body* bodyA;
 	b2Body* bodyB;
 
-	b2WeldJoint* joint;
+	b2WeldJoint* joint = nullptr;
 	REFLECT_LUA_BEGIN(WeldJoint2DComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("CollideConnected", "Whether the two welded bodies can still collide with each other", "boolean",
 			([](Self& c) { return c.collideConnected; }),

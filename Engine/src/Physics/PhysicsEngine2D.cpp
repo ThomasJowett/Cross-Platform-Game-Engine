@@ -68,11 +68,36 @@ void SetCollisionFilter(b2FixtureDef& fixtureDef, uint16_t layer, uint16_t mask)
 	fixtureDef.filter.maskBits = mask;
 }
 
+
+// Box2D destroys a body's joints along with it; clear the owning component's pointer so it isn't destroyed twice
+class WeldJointDestructionListener : public b2DestructionListener
+{
+public:
+	explicit WeldJointDestructionListener(Scene* scene) : m_Scene(scene) {}
+
+	void SayGoodbye(b2Joint* joint) override
+	{
+		entt::registry& registry = m_Scene->GetRegistry();
+		entt::entity owner = (entt::entity)joint->GetUserData().pointer;
+		if (!registry.valid(owner))
+			return;
+		if (WeldJoint2DComponent* weldJointComp = registry.try_get<WeldJoint2DComponent>(owner); weldJointComp && weldJointComp->joint == joint)
+			weldJointComp->joint = nullptr;
+	}
+
+	void SayGoodbye(b2Fixture* fixture) override {}
+
+private:
+	Scene* m_Scene;
+};
+
 PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	:m_Scene(scene)
 {
 	PROFILE_FUNCTION();
 	m_Box2DWorld = CreateScope<b2World>(b2Vec2(gravity.x, gravity.y));
+	m_DestructionListener = CreateScope<WeldJointDestructionListener>(scene);
+	m_Box2DWorld->SetDestructionListener(m_DestructionListener.get());
 	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
 
@@ -616,8 +641,12 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 		m_Box2DWorld->DestroyBody(body);
 	}
 
-	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>())
+	// Null if Box2D already destroyed it with one of its bodies
+	if (WeldJoint2DComponent* weldJointComp = entity.TryGetComponent<WeldJoint2DComponent>(); weldJointComp && weldJointComp->joint)
+	{
 		m_Box2DWorld->DestroyJoint(weldJointComp->joint);
+		weldJointComp->joint = nullptr;
+	}
 }
 
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
