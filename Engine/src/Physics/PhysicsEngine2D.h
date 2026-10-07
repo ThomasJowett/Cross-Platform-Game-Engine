@@ -25,6 +25,8 @@ public:
 
 	void InitializeEntity(Entity entity);
 	void DestroyEntity(Entity entity);
+	// Registry on_destroy handler for RigidBody2D, collider and tilemap components
+	void OnPhysicsComponentRemoved(entt::registry& registry, entt::entity entity);
 
 	void SetGravity(Vector2f gravity);
 
@@ -48,4 +50,7 @@ private:
 	const int32_t m_PositionIterations = 2;
 
 	b2Body* m_WorldBody = nullptr;
+
+	// Entities whose body was destroyed because a physics component was removed; rebuilt next step
+	std::vector<entt::entity> m_PendingInitialize;
 };

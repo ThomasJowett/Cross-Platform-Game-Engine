@@ -68,6 +68,49 @@ void SetCollisionFilter(b2FixtureDef& fixtureDef, uint16_t layer, uint16_t mask)
 	fixtureDef.filter.maskBits = mask;
 }
 
+// The Box2D body an entity's physics components share, or null if it has none yet
+static b2Body* FindBody(entt::registry& registry, entt::entity entity)
+{
+	if (RigidBody2DComponent* comp = registry.try_get<RigidBody2DComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	if (BoxCollider2DComponent* comp = registry.try_get<BoxCollider2DComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	if (CircleCollider2DComponent* comp = registry.try_get<CircleCollider2DComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	if (PolygonCollider2DComponent* comp = registry.try_get<PolygonCollider2DComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	if (CapsuleCollider2DComponent* comp = registry.try_get<CapsuleCollider2DComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	if (TilemapComponent* comp = registry.try_get<TilemapComponent>(entity); comp && comp->runtimeBody)
+		return comp->runtimeBody;
+	return nullptr;
+}
+
+// Forget an entity's destroyed body and its fixtures
+static void ClearBodyPointers(entt::registry& registry, entt::entity entity)
+{
+	if (RigidBody2DComponent* comp = registry.try_get<RigidBody2DComponent>(entity)) comp->runtimeBody = nullptr;
+	if (BoxCollider2DComponent* comp = registry.try_get<BoxCollider2DComponent>(entity)) comp->runtimeBody = nullptr;
+	if (CircleCollider2DComponent* comp = registry.try_get<CircleCollider2DComponent>(entity)) comp->runtimeBody = nullptr;
+	if (PolygonCollider2DComponent* comp = registry.try_get<PolygonCollider2DComponent>(entity)) comp->runtimeBody = nullptr;
+	if (CapsuleCollider2DComponent* comp = registry.try_get<CapsuleCollider2DComponent>(entity)) comp->runtimeBody = nullptr;
+	if (TilemapComponent* comp = registry.try_get<TilemapComponent>(entity)) comp->runtimeBody = nullptr;
+	if (LuaScriptComponent* comp = registry.try_get<LuaScriptComponent>(entity)) comp->ClearFixtures();
+}
+
+#define PHYSICS_BODY_COMPONENTS RigidBody2DComponent, BoxCollider2DComponent, CircleCollider2DComponent, PolygonCollider2DComponent, CapsuleCollider2DComponent, TilemapComponent
+
+template<typename... Component>
+static void ConnectRemoval(entt::registry& registry, PhysicsEngine2D& engine)
+{
+	(registry.on_destroy<Component>().template connect<&PhysicsEngine2D::OnPhysicsComponentRemoved>(engine), ...);
+}
+
+template<typename... Component>
+static void DisconnectRemoval(entt::registry& registry, PhysicsEngine2D& engine)
+{
+	(registry.on_destroy<Component>().template disconnect<&PhysicsEngine2D::OnPhysicsComponentRemoved>(engine), ...);
+}
 
 // Box2D destroys a body's joints along with it; clear the owning component's pointer so it isn't destroyed twice
 class WeldJointDestructionListener : public b2DestructionListener
@@ -98,6 +141,7 @@ PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 	m_Box2DWorld = CreateScope<b2World>(b2Vec2(gravity.x, gravity.y));
 	m_DestructionListener = CreateScope<WeldJointDestructionListener>(scene);
 	m_Box2DWorld->SetDestructionListener(m_DestructionListener.get());
+	ConnectRemoval<PHYSICS_BODY_COMPONENTS>(m_Scene->GetRegistry(), *this);
 	m_ContactListener = CreateScope<ContactListener2D>();
 	m_Box2DWorld->SetContactListener(m_ContactListener.get());
 
@@ -129,6 +173,20 @@ PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 
 PhysicsEngine2D::~PhysicsEngine2D()
 {
+	DisconnectRemoval<PHYSICS_BODY_COMPONENTS>(m_Scene->GetRegistry(), *this);
+}
+
+void PhysicsEngine2D::OnPhysicsComponentRemoved(entt::registry& registry, entt::entity entity)
+{
+	// A whole-entity destroy has already cleared these in DestroyEntity, so this only acts on a removed component
+	b2Body* body = FindBody(registry, entity);
+	if (!body)
+		return;
+
+	m_ContactListener->OnBodyDestroyed(body);
+	m_Box2DWorld->DestroyBody(body);
+	ClearBodyPointers(registry, entity);
+	m_PendingInitialize.push_back(entity);
 }
 
 void PhysicsEngine2D::OnFixedUpdate()
@@ -136,10 +194,19 @@ void PhysicsEngine2D::OnFixedUpdate()
 	PROFILE_FUNCTION();
 	m_Box2DWorld->Step(Application::Get().GetFixedUpdateInterval(), m_VelocityIterations, m_PositionIterations);
 
+	// Rebuild bodies from whatever physics components remain after one was removed
+	std::vector<entt::entity> pending;
+	pending.swap(m_PendingInitialize);
+	for (entt::entity entity : pending)
+	{
+		entt::registry& registry = m_Scene->GetRegistry();
+		if (registry.valid(entity) && registry.all_of<TransformComponent>(entity) && !FindBody(registry, entity))
+			InitializeEntity({ entity, m_Scene });
+	}
+
 	m_Scene->GetRegistry().view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 		{
-			if (rigidBodyComp.runtimeBody == nullptr
-				|| rigidBodyComp.runtimeBody->GetType() != GetRigidBodyBox2DType(rigidBodyComp.type))
+			if (rigidBodyComp.runtimeBody == nullptr)
 			{
 				Entity e(entity, m_Scene);
 				InitializeEntity(e);
@@ -629,24 +696,13 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 void PhysicsEngine2D::DestroyEntity(Entity entity)
 {
 	PROFILE_FUNCTION();
-	b2Body* body = nullptr;
-	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
-		body = rigidBodyComp->runtimeBody;
-	else if (BoxCollider2DComponent* boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
-		body = (b2Body*)boxColliderComp->runtimeBody;
-	else if (CircleCollider2DComponent* colliderComp = entity.TryGetComponent<CircleCollider2DComponent>())
-		body = (b2Body*)colliderComp->runtimeBody;
-	else if (PolygonCollider2DComponent* colliderComp = entity.TryGetComponent<PolygonCollider2DComponent>())
-		body = (b2Body*)colliderComp->runtimeBody;
-	else if (CapsuleCollider2DComponent* colliderComp = entity.TryGetComponent<CapsuleCollider2DComponent>())
-		body = (b2Body*)colliderComp->runtimeBody;
-	else if (TilemapComponent* colliderComp = entity.TryGetComponent<TilemapComponent>())
-		body = (b2Body*)colliderComp->runtimeBody;
-
-	if (body)
+	entt::registry& registry = m_Scene->GetRegistry();
+	if (b2Body* body = FindBody(registry, entity.GetHandle()))
 	{
 		m_ContactListener->OnBodyDestroyed(body);
 		m_Box2DWorld->DestroyBody(body);
+		// So the component removals that follow don't destroy it again
+		ClearBodyPointers(registry, entity.GetHandle());
 	}
 
 	// Null if Box2D already destroyed it with one of its bodies
@@ -700,8 +756,10 @@ namespace
 		// against the actual shape is what makes this an exact point-in-shape query.
 		bool ReportFixture(b2Fixture* fixture) override
 		{
-			if (fixture->TestPoint(m_Point))
-				m_Entities.push_back(Entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene()));
+			entt::entity entity = (entt::entity)fixture->GetUserData().pointer;
+			// Skip bodies whose entity no longer exists
+			if (fixture->TestPoint(m_Point) && SceneManager::CurrentScene()->GetRegistry().valid(entity))
+				m_Entities.push_back(Entity(entity, SceneManager::CurrentScene()));
 			return true;
 		}
 

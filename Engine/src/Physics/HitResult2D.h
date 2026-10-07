@@ -8,7 +8,11 @@ struct HitResult2D : public b2RayCastCallback
 {
 	float ReportFixture(b2Fixture* fixture, const b2Vec2& point, const b2Vec2& normal, float fraction) override
 	{
-		entity = Entity((entt::entity)fixture->GetUserData().pointer, SceneManager::CurrentScene());
+		entt::entity handle = (entt::entity)fixture->GetUserData().pointer;
+		// Ignore bodies whose entity no longer exists and keep casting
+		if (!SceneManager::CurrentScene()->GetRegistry().valid(handle))
+			return -1.0f;
+		entity = Entity(handle, SceneManager::CurrentScene());
 
 		hit = true;
 		hitPoint = Vector2f(point.x, point.y);
@@ -32,6 +36,8 @@ public:
 	{
 		HitResult2D result;
 		result.ReportFixture(fixture, point, normal, fraction);
+		if (!result.hit)
+			return -1.0f;
 
 		m_Hits[fraction] = result;
 
