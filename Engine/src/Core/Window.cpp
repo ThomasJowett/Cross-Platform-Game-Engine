@@ -251,7 +251,18 @@ bool Window::Init(const WindowProps& props)
 		glfwSetErrorCallback(GLFWErrorCallback);
 	}
 
-	m_BaseVideoMode = *(glfwGetVideoMode(glfwGetPrimaryMonitor()));
+	// No monitor is reported while no display is online (e.g. the screen is locked), so fall back to the window's size
+	const GLFWvidmode* videoMode = nullptr;
+	if (GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor())
+		videoMode = glfwGetVideoMode(primaryMonitor);
+
+	if (videoMode)
+		m_BaseVideoMode = *videoMode;
+	else
+	{
+		ENGINE_WARN("No display found, using a {0}x{1} video mode", m_Data.width, m_Data.height);
+		m_BaseVideoMode = { (int)m_Data.width, (int)m_Data.height, 8, 8, 8, 60 };
+	}
 
 	RendererAPI::API api = Renderer::GetAPI();
 
