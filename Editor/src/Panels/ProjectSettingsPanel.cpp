@@ -102,7 +102,9 @@ void ProjectSettingsPanel::OnEvent(Event& event)
 
 void ProjectSettingsPanel::ReadProjectFile()
 {
-	if (!ProjectSerializer::Deserialize(m_ProjectData, Application::GetOpenDocument()))
+	// No project open yet: nothing to read, so don't report a missing file
+	if (Application::GetOpenDocument().empty()
+		|| !ProjectSerializer::Deserialize(m_ProjectData, Application::GetOpenDocument()))
 	{
 		// Don't leave whatever was read for the previous project sitting in memory - otherwise
 		// a project whose file fails to parse (e.g. still the old cereal-JSON .proj format)
@@ -131,7 +133,8 @@ void ProjectSettingsPanel::SaveProjectFile()
 	// ReadProjectFile) - refuse to save rather than overwriting it with empty/stale data.
 	if (!m_Loaded)
 	{
-		ENGINE_ERROR("Not saving project settings: the current project file couldn't be read");
+		if (!Application::GetOpenDocument().empty())
+			ENGINE_ERROR("Not saving project settings: the current project file couldn't be read");
 		return;
 	}
 
