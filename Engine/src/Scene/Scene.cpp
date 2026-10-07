@@ -165,13 +165,28 @@ Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 		parent = entity.GetParent();
 
 	Entity newEntity = CloneEntity(entity);
-	StartRuntimeState(newEntity);
 
-	// Physics bodies stay unparented while running, as they are at runtime start
-	bool hasRuntimeBody = m_PhysicsEngine2D && m_PhysicsEngine2D->HasBody(newEntity);
-	if (parent && !hasRuntimeBody)
+	if (parent)
+	{
 		SceneGraph::Reparent(newEntity, parent);
+		// The copy's cached world matrix is only refreshed once a frame, so update it now
+		TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>();
+		if (TransformComponent* parentTransformComp = parent.TryGetComponent<TransformComponent>(); transformComp && parentTransformComp)
+			transformComp->SetWorldMatrix(parentTransformComp->GetWorldMatrix());
 
+		// While running, physics bodies are unparented, as at runtime start: keep the copy where it is in the world
+		if (m_PhysicsEngine2D && transformComp && m_PhysicsEngine2D->HasPhysicsComponents(newEntity))
+		{
+			Vector3f position, rotation, scale;
+			transformComp->GetWorldMatrix().Decompose(position, rotation, scale);
+			SceneGraph::Unparent(newEntity);
+			transformComp->position = position;
+			transformComp->rotation = rotation;
+			transformComp->scale = scale;
+		}
+	}
+
+	StartRuntimeState(newEntity);
 	return newEntity;
 }
 

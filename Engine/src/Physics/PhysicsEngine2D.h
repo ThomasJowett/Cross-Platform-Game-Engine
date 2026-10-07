@@ -25,7 +25,7 @@ public:
 
 	void InitializeEntity(Entity entity);
 	void DestroyEntity(Entity entity);
-	bool HasBody(Entity entity);
+	bool HasPhysicsComponents(Entity entity);
 	// Registry on_destroy handler for RigidBody2D, collider and tilemap components
 	void OnPhysicsComponentRemoved(entt::registry& registry, entt::entity entity);
 

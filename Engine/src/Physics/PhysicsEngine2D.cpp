@@ -713,9 +713,9 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 	}
 }
 
-bool PhysicsEngine2D::HasBody(Entity entity)
+bool PhysicsEngine2D::HasPhysicsComponents(Entity entity)
 {
-	return FindBody(m_Scene->GetRegistry(), entity.GetHandle()) != nullptr;
+	return m_Scene->GetRegistry().any_of<PHYSICS_BODY_COMPONENTS>(entity.GetHandle());
 }
 
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
