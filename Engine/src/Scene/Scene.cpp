@@ -193,6 +193,7 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 
 	// Lets SceneManager::ChangeScene() defer instead of destroying this Scene mid-iteration.
 	m_IsUpdating = true;
+	LuaManager::StartWatchdog();
 
 	ENGINE_DEBUG("Runtime Start");
 	if (m_Dirty)
@@ -295,6 +296,7 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 			}
 		});
 
+	LuaManager::StopWatchdog();
 	m_IsUpdating = false;
 }
 
@@ -597,6 +599,7 @@ void Scene::OnUpdate(float deltaTime)
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
+	LuaManager::StartWatchdog();
 
 	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
@@ -690,8 +693,10 @@ void Scene::OnUpdate(float deltaTime)
 		}
 	}
 
+	RunDeferredActions();
 	DestroyMarkedEntities();
 
+	LuaManager::StopWatchdog();
 	m_IsUpdating = false;
 }
 
@@ -702,6 +707,7 @@ void Scene::OnFixedUpdate()
 	PROFILE_FUNCTION();
 
 	m_IsUpdating = true;
+	LuaManager::StartWatchdog();
 
 	// Physics
 	m_PhysicsEngine2D->OnFixedUpdate();
@@ -782,8 +788,10 @@ void Scene::OnFixedUpdate()
 			});
 	}
 
+	RunDeferredActions();
 	DestroyMarkedEntities();
 
+	LuaManager::StopWatchdog();
 	m_IsUpdating = false;
 }
 

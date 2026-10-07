@@ -4,11 +4,37 @@
 #include "LuaBindings.h"
 #include "sol/sol.hpp"
 
+#include <chrono>
+
 Scope<sol::state> LuaManager::s_State = nullptr;
 static std::vector<std::string> s_Modules;
 SignalBus LuaManager::s_SignalBus;
 
 static sol::function s_UnrequireFunction;
+
+static bool s_WatchdogActive = false;
+static std::chrono::steady_clock::time_point s_WatchdogDeadline;
+
+// Count hook: raising an error here unwinds to the script's protected call, ending a runaway loop
+static void WatchdogHook(lua_State* L, lua_Debug*)
+{
+	if (!s_WatchdogActive || std::chrono::steady_clock::now() < s_WatchdogDeadline)
+		return;
+	// Fresh budget for the scripts still to run this update
+	s_WatchdogDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(LuaManager::WatchdogSeconds);
+	luaL_error(L, "script ran for more than %d seconds and was stopped (infinite loop?)", LuaManager::WatchdogSeconds);
+}
+
+void LuaManager::StartWatchdog()
+{
+	s_WatchdogDeadline = std::chrono::steady_clock::now() + std::chrono::seconds(WatchdogSeconds);
+	s_WatchdogActive = true;
+}
+
+void LuaManager::StopWatchdog()
+{
+	s_WatchdogActive = false;
+}
 
 std::vector<LuaApiEntry> LuaManager::s_Identifiers = {
 	{ "CurrentEntity", "Get the entity this script is attached to", LuaApiEntry::Kind::Global, "", "" },
@@ -60,6 +86,7 @@ void LuaManager::Init()
 {
 	PROFILE_FUNCTION();
 	s_State = CreateScope<sol::state>(nullptr);
+	lua_sethook(s_State->lua_state(), WatchdogHook, LUA_MASKCOUNT, 100000);
 
 	s_State->open_libraries(
 		sol::lib::base,

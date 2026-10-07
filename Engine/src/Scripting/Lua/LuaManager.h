@@ -23,6 +23,11 @@ public:
 
 	static SignalBus& GetSignalBus() { return s_SignalBus; }
 
+	// While running, a script that takes longer than WatchdogSeconds is stopped with a Lua error
+	static constexpr int WatchdogSeconds = 5;
+	static void StartWatchdog();
+	static void StopWatchdog();
+
 private:
 	static Scope<sol::state> s_State;
 
