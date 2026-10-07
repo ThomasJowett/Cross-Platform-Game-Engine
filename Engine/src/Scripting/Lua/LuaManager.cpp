@@ -2,6 +2,7 @@
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
 #include "LuaBindings.h"
+#include "LuaCoroutines.h"
 #include "sol/sol.hpp"
 
 #include <chrono>
@@ -109,6 +110,7 @@ void LuaManager::Init()
 	Lua::BindDebug(*s_State);
 	Lua::BindSignaling(*s_State);
 	Lua::BindPathfinding(*s_State);
+	Lua::BindCoroutines(*s_State);
 
 	const char* lua_function_script =
 		R"(

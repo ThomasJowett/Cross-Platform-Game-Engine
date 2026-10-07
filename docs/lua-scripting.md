@@ -173,6 +173,63 @@ never cut the corner of a wall. A tilemap marked `isTrigger` doesn't block anyth
 
 On hex maps every step moves to one of the six neighbouring hexes, so the fourth argument has no effect.
 
+## Coroutines
+
+A coroutine is a function that can pause part-way through and carry on later, which makes
+timed sequences - cutscenes, spawn waves, "flash red for 0.2 seconds" - read as straight-line
+code. `StartCoroutine(fn, ...)` starts one, passing any extra arguments to `fn`:
+
+```lua
+function OnCreate()
+    StartCoroutine(function()
+        Log.Info("Get ready")
+        Wait(3)
+        Log.Info("Wave 1")
+        Wait(10)
+        Log.Info("Wave 2")
+    end)
+end
+```
+
+Inside a coroutine:
+
+- `coroutine.yield()` pauses until the next frame
+- `Wait(seconds)` pauses for at least that much game time, resuming on the first frame after it
+- `WaitFixed()` pauses until the next fixed update - use this for code that applies forces or
+  otherwise works with physics
+
+`StartCoroutine` runs the function straight away, up to its first pause, then returns a handle.
+After that the engine resumes it once per frame, just after your script's `OnUpdate`
+(`WaitFixed` resumes just after `OnFixedUpdate`). Pass the handle to `StopCoroutine` to stop
+it early:
+
+```lua
+local blink = nil
+
+function OnCreate()
+    blink = StartCoroutine(function()
+        local sprite = CurrentEntity:GetSpriteComponent()
+        while true do
+            sprite.Tint = Colour.new(1, 0, 0, 1)
+            Wait(0.2)
+            sprite.Tint = Colour.new(1, 1, 1, 1)
+            Wait(0.2)
+        end
+    end)
+end
+
+function OnInputAction(action, phase)
+    if action == "StopBlinking" then
+        StopCoroutine(blink)
+    end
+end
+```
+
+A script's coroutines belong to it: they stop automatically when the script is removed or its
+entity is destroyed. An error inside a coroutine is reported like any other script error and
+stops only that coroutine - the rest of the script and its other coroutines carry on. `Wait`
+and `WaitFixed` can only be used inside a coroutine started with `StartCoroutine`.
+
 ## Where to go next
 
 The [Lua API Reference](LuaAPI/index.md) documents every property/function currently exposed

@@ -21,6 +21,7 @@
 #include "SceneSerializer.h"
 #include "SceneGraph.h"
 #include "Scripting/Lua/LuaManager.h"
+#include "Scripting/Lua/LuaCoroutines.h"
 #include "Physics/HitResult2D.h"
 #include "Physics/Contact2D.h"
 
@@ -600,6 +601,7 @@ void Scene::OnUpdate(float deltaTime)
 
 	m_IsUpdating = true;
 	LuaManager::StartWatchdog();
+	Lua::AdvanceCoroutineFrame();
 
 	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
 		{
@@ -708,6 +710,7 @@ void Scene::OnFixedUpdate()
 
 	m_IsUpdating = true;
 	LuaManager::StartWatchdog();
+	Lua::AdvanceCoroutineFixedStep();
 
 	// Physics
 	m_PhysicsEngine2D->OnFixedUpdate();
