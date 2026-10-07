@@ -672,7 +672,7 @@ void Scene::OnUpdate(float deltaTime)
 
 			if (RigidBody2DComponent* rigidBody2DComp = m_Registry.try_get<RigidBody2DComponent>(entity))
 			{
-				auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+				Vector2f velocity = rigidBody2DComp->GetLinearVelocity();
 				ma_sound_set_velocity(audioSourceComponent.sound.get(), velocity.x, velocity.y, 0.0f);
 			}
 		});
@@ -685,7 +685,7 @@ void Scene::OnUpdate(float deltaTime)
 		ma_engine_listener_set_position(m_AudioEngine.get(), 0, transformComp.position.x, transformComp.position.y, transformComp.position.z);
 
 		if (RigidBody2DComponent* rigidBody2DComp = primaryListenerEntity.TryGetComponent<RigidBody2DComponent>()) {
-			auto velocity = rigidBody2DComp->runtimeBody->GetLinearVelocity();
+			Vector2f velocity = rigidBody2DComp->GetLinearVelocity();
 			ma_engine_listener_set_velocity(m_AudioEngine.get(), 0, velocity.x, velocity.y, 0.0f);
 		}
 	}
@@ -746,7 +746,9 @@ void Scene::OnFixedUpdate()
 		m_PhysicsEngine2D->RemoveOldContacts();
 		m_Registry.view<TransformComponent, RigidBody2DComponent>().each([=](auto entity, auto& transformComp, auto& rigidBodyComp)
 			{
-				rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
+				// Bodies added this step get their Box2D body at the start of the next one
+				if (rigidBodyComp.runtimeBody)
+					rigidBodyComp.runtimeBody->SetTransform(b2Vec2(transformComp.position.x, transformComp.position.y), transformComp.rotation.z);
 			});
 
 		m_Registry.view<TransformComponent, BoxCollider2DComponent>(entt::exclude<RigidBody2DComponent>).each([=](auto entity, auto& transformComp, auto& colliderComp)
