@@ -29,7 +29,9 @@ void SignalBus::Emit(const std::string& signalName, Entity sender, sol::table da
 	auto it = m_Subscribers.find(signalName);
 	if (it != m_Subscribers.end())
 	{
-		for (const auto& subscriber : it->second)
+		// Handlers may connect, disconnect or destroy listeners, which changes the live list, so walk a copy
+		std::vector<Subscriber> subscribers = it->second;
+		for (const auto& subscriber : subscribers)
 		{
 			if (!subscriber.listener.IsSceneValid())
 				continue;

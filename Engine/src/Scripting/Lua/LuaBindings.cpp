@@ -339,9 +339,9 @@ void BindSignaling(sol::state& state)
 	sol::table signal = state.create_table("Signal");
 	LuaManager::AddIdentifier("Signal", "Signal bus");
 	SetFunction(signal, "Signal", "Connect", "Connects a function to a signal",
-		[&](const std::string& signalName, Entity listener, sol::function callback)
+		[&](const std::string& signalName, Entity listener, sol::protected_function callback)
 		{
-			SignalBus::Callback cb = [callback](Entity sender, sol::table data)
+			SignalBus::Callback cb = [callback, signalName](Entity sender, sol::table data)
 				{
 					sol::state_view lua = callback.lua_state();
 					sol::table luaData = lua.create_table();
@@ -351,7 +351,13 @@ void BindSignaling(sol::state& state)
 						luaData[key] = value;
 					}
 
-					callback(sender, luaData);
+					// Protected, so an error in one handler is logged rather than unwinding through SignalBus::Emit
+					sol::protected_function_result result = callback(sender, luaData);
+					if (!result.valid())
+					{
+						sol::error error = result;
+						CLIENT_ERROR("Signal '{0}' handler failed: {1}", signalName, error.what());
+					}
 				};
 			LuaManager::GetSignalBus().Connect(signalName, listener, cb);
 		});
