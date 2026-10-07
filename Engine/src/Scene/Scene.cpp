@@ -789,6 +789,24 @@ void Scene::OnFixedUpdate()
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Scene::DeferUntilUpdateEnds(std::function<void()> action)
+{
+	if (m_IsUpdating)
+		m_DeferredActions.push_back(std::move(action));
+	else
+		action();
+}
+
+void Scene::RunDeferredActions()
+{
+	PROFILE_FUNCTION();
+	// Actions queued by these actions wait for the next update
+	std::vector<std::function<void()>> actions;
+	actions.swap(m_DeferredActions);
+	for (std::function<void()>& action : actions)
+		action();
+}
+
 void Scene::DestroyMarkedEntities()
 {
 	PROFILE_FUNCTION();

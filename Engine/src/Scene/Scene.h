@@ -1,6 +1,7 @@
 #pragma once
 
 #include <filesystem>
+#include <functional>
 #include <sstream>
 
 #include "EnTT/entt.hpp"
@@ -70,6 +71,9 @@ public:
 	bool IsSaving() const { return m_IsSaving; }
 	bool IsUpdating() const { return m_IsUpdating; }
 
+	// Runs once the current update has finished, or straight away if the scene isn't updating
+	void DeferUntilUpdateEnds(std::function<void()> action);
+
 	std::filesystem::path GetFilepath() const { return m_Filepath; }
 	void SetFilepath(std::filesystem::path filepath);
 
@@ -109,6 +113,9 @@ public:
 private:
 	// Call while m_IsUpdating is set, so entities destroyed from OnDestroy wait for the next call
 	void DestroyMarkedEntities();
+	void RunDeferredActions();
+
+	std::vector<std::function<void()>> m_DeferredActions;
 
 	entt::registry m_Registry;
 
