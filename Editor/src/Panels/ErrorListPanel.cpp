@@ -59,12 +59,14 @@ void ErrorListPanel::OnImGuiRender()
 			ImGui::TableHeadersRow();
 
 			for (size_t i = 0; i < m_ErrorList.size(); i++)
-			for(auto&& [error, selected] : m_ErrorList)
 			{
+				auto& [error, selected] = m_ErrorList[i];
+				// Errors can share a message, so give each row its own ID
+				ImGui::PushID((int)i);
 				ImGui::TableNextRow();
 				ImGui::TableSetColumnIndex(0);
 
-				if (ImGui::Selectable(m_ErrorList[i].first.message.c_str(), selected, selectable_flags))
+				if (ImGui::Selectable(error.message.c_str(), selected, selectable_flags))
 				{
 					if (!ImGui::GetIO().KeyCtrl)
 					{
@@ -102,6 +104,7 @@ void ErrorListPanel::OnImGuiRender()
 				ImGui::TextUnformatted(error.filepath.filename().string().c_str());
 				ImGui::TableSetColumnIndex(2);
 				ImGui::Text("%i", error.lineNumber);
+				ImGui::PopID();
 			}
 			ImGui::EndTable();
 		}
