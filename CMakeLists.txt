@@ -31,7 +31,10 @@ if (NOT IMGUI_PATCH_RESULT EQUAL 0)
     message(FATAL_ERROR "Failed to apply imgui WebGPU patch")
 endif()
 
-set(CMAKE_BUILD_TYPE "Debug")
+# Default to Debug; pass -DCMAKE_BUILD_TYPE=Release for an optimised build (multi-config generators pick per build)
+if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+    set(CMAKE_BUILD_TYPE "Debug" CACHE STRING "Build type" FORCE)
+endif()
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 function(group_files_by_directory FILE_LIST)
