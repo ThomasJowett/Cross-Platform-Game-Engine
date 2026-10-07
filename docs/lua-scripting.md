@@ -230,6 +230,44 @@ entity is destroyed. An error inside a coroutine is reported like any other scri
 stops only that coroutine - the rest of the script and its other coroutines carry on. `Wait`
 and `WaitFixed` can only be used inside a coroutine started with `StartCoroutine`.
 
+## Long-running work and the 5 second limit
+
+Scripts run on the same thread as the rest of the engine, so nothing else - rendering, input,
+physics - can happen until a script function returns. To stop an infinite loop freezing the
+editor or game, any script that runs for more than **5 seconds** during a single scene update is
+stopped with an error:
+
+```
+script ran for more than 5 seconds and was stopped (infinite loop?)
+```
+
+The error is reported like any other script error and the rest of the frame carries on. The
+limit is a safety net rather than a target: a frame needs to finish in about 16 ms to keep a game
+at 60 frames per second, so a script that takes anywhere near 5 seconds is already a visible
+freeze.
+
+Work that genuinely takes a long time should be spread over several frames using a
+[coroutine](#coroutines): do a small piece, call `coroutine.yield()`, and carry on next frame.
+Coroutines run on the same thread too, so a coroutine that never yields still freezes the game
+and still hits the 5 second limit - the yields are what make the difference.
+
+```lua
+function OnCreate()
+    StartCoroutine(function()
+        for y = 1, 1000 do
+            for x = 1, 1000 do
+                -- expensive work for one tile
+            end
+            coroutine.yield()  -- carry on from here next frame
+        end
+        Log.Info("Map built")
+    end)
+end
+```
+
+Each frame runs one row of the map, so the game keeps drawing while the work finishes over
+many frames.
+
 ## Where to go next
 
 The [Lua API Reference](LuaAPI/index.md) documents every property/function currently exposed
