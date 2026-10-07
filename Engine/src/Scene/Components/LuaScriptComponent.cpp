@@ -1,6 +1,7 @@
 
 #include "LuaScriptComponent.h"
 #include "Scripting/Lua/LuaManager.h"
+#include "Scripting/Lua/LuaCoroutines.h"
 #include "Scene/SceneManager.h"
 #include "Scene/Entity.h"
 #include "Scene/AssetManager.h"
@@ -31,6 +32,8 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	}
 
 	m_SolEnvironment = CreateRef<sol::environment>(LuaManager::GetState(), sol::create, LuaManager::GetState().globals());
+	m_Coroutines = CreateRef<Lua::CoroutineScheduler>();
+	Lua::InstallCoroutines(*m_SolEnvironment, m_Coroutines);
 
 	sol::protected_function_result result = LuaManager::GetState().script(script->GetSource(), *m_SolEnvironment, sol::script_pass_on_error);
 
@@ -147,6 +150,7 @@ void LuaScriptComponent::OnUpdate(float deltaTime)
 			Application::CallEvent(luaErrorEvent);
 		}
 	}
+	UpdateCoroutines(deltaTime, false);
 }
 
 void LuaScriptComponent::OnFixedUpdate()
@@ -163,6 +167,25 @@ void LuaScriptComponent::OnFixedUpdate()
 			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
 		}
+	}
+	UpdateCoroutines(0.0f, true);
+}
+
+void LuaScriptComponent::UpdateCoroutines(float deltaTime, bool fixedStep)
+{
+	PROFILE_FUNCTION();
+	if (!m_Coroutines)
+		return;
+
+	std::vector<std::string> errors;
+	m_Coroutines->Update(LuaManager::GetState().lua_state(), deltaTime, fixedStep, errors);
+
+	// Each error stopped only the coroutine that raised it
+	for (const std::string& error : errors)
+	{
+		CLIENT_ERROR("Failed to execute lua script coroutine: {0}", error);
+		LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.c_str());
+		Application::CallEvent(luaErrorEvent);
 	}
 }
 

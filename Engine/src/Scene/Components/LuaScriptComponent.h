@@ -12,6 +12,7 @@
 class Entity;
 class PhysicsEngine2D;
 class b2Fixture;
+namespace Lua { class CoroutineScheduler; }
 
 struct LuaScriptComponent
 {
@@ -85,4 +86,7 @@ private:
 	Ref<sol::protected_function> m_OnHoveredFunc;
 	Ref<sol::protected_function> m_OnUnHoveredFunc;
 	Ref<sol::protected_function> m_OnInputActionFunc;
+	Ref<Lua::CoroutineScheduler> m_Coroutines;
+
+	void UpdateCoroutines(float deltaTime, bool fixedStep);
 };
