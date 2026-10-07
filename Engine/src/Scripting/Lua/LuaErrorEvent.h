@@ -1,3 +1,4 @@
+#pragma once
 #include <Events/Event.h>
 
 class LuaErrorEvent : public Event
