@@ -33,22 +33,6 @@
 
 struct DestroyMarker {};
 
-template<typename Component>
-static void CopyComponentIfExists(entt::entity dst, entt::entity src, entt::registry& registry)
-{
-	if (registry.any_of<Component>(src))
-	{
-		Component& srcComponent = registry.get<Component>(src);
-		registry.emplace_or_replace<Component>(dst, srcComponent);
-	}
-}
-
-template<typename... Component>
-static void CopyEntity(entt::entity dst, entt::entity src, entt::registry& registry)
-{
-	(CopyComponentIfExists<Component>(dst, src, registry), ...);
-}
-
 Scene::Scene(const std::filesystem::path& filepath)
 	:m_Filepath(filepath)
 {
@@ -98,36 +82,58 @@ void Scene::InstantiateScene(const Ref<Scene> prefab, const Vector3f& position)
 Entity Scene::InstantiateEntity(const Entity prefab, const Vector3f& position)
 {
 	PROFILE_FUNCTION();
-	tinyxml2::XMLDocument doc;
-	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
-	doc.InsertFirstChild(pEntityElement);
-	SceneSerializer::SerializeEntity(pEntityElement, prefab);
-	tinyxml2::XMLPrinter printer;
-	doc.Accept(&printer);
-
-	Entity newEntity = SceneSerializer::DeserializeEntity(this, pEntityElement, true);
+	Entity newEntity = CloneEntity(prefab);
 
 	if (TransformComponent* transformComp = newEntity.TryGetComponent<TransformComponent>(); transformComp)
 		transformComp->position += position;
 
-	if (m_PhysicsEngine2D)
-		m_PhysicsEngine2D->InitializeEntity(newEntity);
+	StartRuntimeState(newEntity);
+	return newEntity;
+}
 
-	if (LuaScriptComponent* scriptComponent = newEntity.TryGetComponent<LuaScriptComponent>())
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+Entity Scene::CloneEntity(Entity source)
+{
+	PROFILE_FUNCTION();
+	tinyxml2::XMLDocument doc;
+	tinyxml2::XMLElement* pEntityElement = doc.NewElement("Entity");
+	doc.InsertFirstChild(pEntityElement);
+	SceneSerializer::SerializeEntity(pEntityElement, source);
+	return SceneSerializer::DeserializeEntity(this, pEntityElement, true);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::StartRuntimeState(Entity root)
+{
+	PROFILE_FUNCTION();
+	if (!m_PhysicsEngine2D)
+		return;
+
+	m_PhysicsEngine2D->InitializeEntity(root);
+
+	std::vector<Entity> entities = { root };
+	for (size_t i = 0; i < entities.size(); ++i)
 	{
-		bool result = scriptComponent->ParseScript(newEntity);
-		if (!result)
+		std::vector<Entity> children = SceneGraph::GetChildren(entities[i]);
+		entities.insert(entities.end(), children.begin(), children.end());
+	}
+
+	for (Entity& entity : entities)
+	{
+		if (LuaScriptComponent* scriptComponent = entity.TryGetComponent<LuaScriptComponent>(); scriptComponent && scriptComponent->script)
 		{
-			ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
+			if (!scriptComponent->ParseScript(entity))
+				ENGINE_ERROR("Failed to parse lua script {0}", scriptComponent->script->GetFilepath());
+		}
+
+		if (BehaviourTreeComponent* behaviourTreeComponent = entity.TryGetComponent<BehaviourTreeComponent>())
+		{
+			if (behaviourTreeComponent->behaviourTree)
+				behaviourTreeComponent->behaviourTree->Bind(entity);
 		}
 	}
-
-	if (BehaviourTreeComponent* behaviourTreeComponent = newEntity.TryGetComponent<BehaviourTreeComponent>())
-	{
-		if (behaviourTreeComponent->behaviourTree)
-			behaviourTreeComponent->behaviourTree->Bind(newEntity);
-	}
-	return newEntity;
 }
 
 bool Scene::RemoveEntity(Entity& entity)
@@ -155,33 +161,16 @@ bool Scene::RemoveEntity(Entity& entity)
 Entity Scene::DuplicateEntity(Entity entity, Entity parent)
 {
 	PROFILE_FUNCTION();
-	std::string name = entity.GetName();
-	Entity newEntity = CreateEntity(name);
+	if (!parent)
+		parent = entity.GetParent();
 
-	CopyEntity<COMPONENTS>(newEntity.GetHandle(), entity.GetHandle(), m_Registry);
-	if (newEntity.HasComponent<HierarchyComponent>())
-	{
-		HierarchyComponent& hierarchyComp = newEntity.GetComponent<HierarchyComponent>();
+	Entity newEntity = CloneEntity(entity);
+	StartRuntimeState(newEntity);
 
-		if (!parent && hierarchyComp.parent != entt::null)
-			parent = Entity(hierarchyComp.parent, this);
-
-		hierarchyComp.firstChild = entt::null;
-		hierarchyComp.parent = entt::null;
-		hierarchyComp.nextSibling = entt::null;
-		hierarchyComp.previousSibling = entt::null;
-	}
-
-	std::vector<Entity> children = SceneGraph::GetChildren(entity);
-
-	for (auto& child : children)
-	{
-		DuplicateEntity(child, newEntity);
-	}
-	if (parent)
-	{
+	// Physics bodies stay unparented while running, as they are at runtime start
+	bool hasRuntimeBody = m_PhysicsEngine2D && m_PhysicsEngine2D->HasBody(newEntity);
+	if (parent && !hasRuntimeBody)
 		SceneGraph::Reparent(newEntity, parent);
-	}
 
 	return newEntity;
 }
