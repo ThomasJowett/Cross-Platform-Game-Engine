@@ -50,6 +50,7 @@ struct LuaScriptComponent
 	bool IsContactListener();
 
 	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }
+	void ClearFixtures() { m_Fixtures.clear(); }
 	//const std::vector<b2Fixture*>& GetContacts() const { return m_Contacts; }
 
 private:
