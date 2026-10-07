@@ -98,11 +98,12 @@ public:
 			return false;
 		}
 
+		// Already there: nothing to add to the history, but it isn't a failure
 		if (currentPathIndex >= 0 && !paths.empty())
 		{
 			const std::filesystem::path& lastPath = paths[currentPathIndex];
 			if (lastPath == normalizedFi)
-				return false;
+				return true;
 		}
 
 		if (currentPathIndex < (int)paths.size() - 1)
