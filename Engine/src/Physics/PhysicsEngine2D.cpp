@@ -713,6 +713,11 @@ void PhysicsEngine2D::DestroyEntity(Entity entity)
 	}
 }
 
+bool PhysicsEngine2D::HasBody(Entity entity)
+{
+	return FindBody(m_Scene->GetRegistry(), entity.GetHandle()) != nullptr;
+}
+
 void PhysicsEngine2D::SetGravity(Vector2f gravity)
 {
 	PROFILE_FUNCTION();
