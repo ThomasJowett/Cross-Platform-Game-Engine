@@ -48,6 +48,9 @@ void RigidBody2DComponent::SetLinearVelocity(Vector2f velocity)
 
 Vector2f RigidBody2DComponent::GetLinearVelocity()
 {
+	// No Box2D body until physics starts, e.g. in OnCreate or just after AddRigidBody2DComponent
+	if (!runtimeBody)
+		return Vector2f(0.0f, 0.0f);
 	const b2Vec2& vel = runtimeBody->GetLinearVelocity();
 	return Vector2f(vel.x, vel.y);
 }
@@ -60,6 +63,8 @@ void RigidBody2DComponent::SetAngularVelocity(float velocity)
 
 float RigidBody2DComponent::GetAngularVelocity()
 {
+	if (!runtimeBody)
+		return 0.0f;
 	return runtimeBody->GetAngularVelocity();
 }
 
