@@ -115,6 +115,11 @@ private:
 	void DestroyMarkedEntities();
 	void RunDeferredActions();
 
+	// Copy an entity and its children through the serializer: new UUIDs and no runtime state
+	Entity CloneEntity(Entity source);
+	// While running, set up physics for the root and scripts and behaviour trees for it and its children
+	void StartRuntimeState(Entity root);
+
 	std::vector<std::function<void()>> m_DeferredActions;
 
 	entt::registry m_Registry;
