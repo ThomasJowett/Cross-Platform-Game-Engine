@@ -144,12 +144,20 @@ void PhysicsEngine2D::OnFixedUpdate()
 				Entity e(entity, m_Scene);
 				InitializeEntity(e);
 			}
-			else if (rigidBodyComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
+			else
 			{
-				rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
-				rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
-				rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
-				rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
+				// Change the existing body's type; re-initialising would leave the old body behind in the world
+				b2BodyType bodyType = (b2BodyType)GetRigidBodyBox2DType(rigidBodyComp.type);
+				if (rigidBodyComp.runtimeBody->GetType() != bodyType)
+					rigidBodyComp.runtimeBody->SetType(bodyType);
+
+				if (rigidBodyComp.type == RigidBody2DComponent::BodyType::DYNAMIC)
+				{
+					rigidBodyComp.runtimeBody->SetFixedRotation(rigidBodyComp.fixedRotation);
+					rigidBodyComp.runtimeBody->SetAngularDamping(rigidBodyComp.angularDamping);
+					rigidBodyComp.runtimeBody->SetLinearDamping(rigidBodyComp.linearDamping);
+					rigidBodyComp.runtimeBody->SetGravityScale(rigidBodyComp.gravityScale);
+				}
 			}
 			const b2Vec2& position = rigidBodyComp.runtimeBody->GetPosition();
 			transformComp.position.x = position.x;
