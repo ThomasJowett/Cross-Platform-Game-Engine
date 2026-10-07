@@ -92,6 +92,8 @@ add_definitions(
 )
 
 target_compile_definitions(Engine PUBLIC UNICODE _UNICODE)
+# sol2 type checks in every build; PUBLIC so all targets share one sol configuration
+target_compile_definitions(Engine PUBLIC SOL_ALL_SAFETIES_ON=1)
 
 if (MSVC)
     target_compile_options(Engine PRIVATE "/bigobj" "/utf-8")
