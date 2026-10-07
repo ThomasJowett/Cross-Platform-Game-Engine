@@ -12,6 +12,7 @@
 #include "Physics/HitResult2D.h"
 #include "Core/Settings.h"
 #include "LuaManager.h"
+#include "Core/Application.h"
 #include "AI/BehaviourTree.h"
 #include "Scene/SceneCamera.h"
 #include "math/Vector3f.h"
@@ -341,7 +342,12 @@ void BindSignaling(sol::state& state)
 	SetFunction(signal, "Signal", "Connect", "Connects a function to a signal",
 		[&](const std::string& signalName, Entity listener, sol::protected_function callback)
 		{
-			SignalBus::Callback cb = [callback, signalName](Entity sender, sol::table data)
+			// The file of the script that defined the handler, for the error panel
+			std::string scriptFile;
+			if (sol::environment environment = sol::get_environment(callback); environment.valid())
+				scriptFile = environment["__ScriptFile"].get_or(std::string());
+
+			SignalBus::Callback cb = [callback, signalName, scriptFile](Entity sender, sol::table data)
 				{
 					sol::state_view lua = callback.lua_state();
 					sol::table luaData = lua.create_table();
@@ -356,7 +362,12 @@ void BindSignaling(sol::state& state)
 					if (!result.valid())
 					{
 						sol::error error = result;
-						CLIENT_ERROR("Signal '{0}' handler failed: {1}", signalName, error.what());
+						CLIENT_ERROR("Signal '{0}' handler in {1} failed: {2}", signalName, scriptFile.empty() ? std::string("an unknown script") : scriptFile, error.what());
+						if (!scriptFile.empty())
+						{
+							LuaErrorEvent luaErrorEvent(scriptFile, error.what());
+							Application::CallEvent(luaErrorEvent);
+						}
 					}
 				};
 			LuaManager::GetSignalBus().Connect(signalName, listener, cb);
