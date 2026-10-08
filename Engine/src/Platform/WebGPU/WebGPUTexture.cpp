@@ -1,4 +1,5 @@
 #include "WebGPUTexture.h"
+#include "WebGPUSampler.h"
 #include "Core/Application.h"
 #include "Logging/Instrumentor.h"
 
@@ -9,45 +10,7 @@
 
 void WebGPUTexture2D::CreateSampler()
 {
-	wgpu::SamplerDescriptor samplerDesc = {};
-	switch (m_FilterMethod)
-	{
-	case Texture::FilterMethod::Linear:
-		samplerDesc.minFilter = wgpu::FilterMode::Linear;
-		samplerDesc.magFilter = wgpu::FilterMode::Linear;
-		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Linear;
-		samplerDesc.maxAnisotropy = 8;
-		break;
-	case Texture::FilterMethod::Nearest:
-		samplerDesc.minFilter = wgpu::FilterMode::Nearest;
-		samplerDesc.magFilter = wgpu::FilterMode::Nearest;
-		samplerDesc.mipmapFilter = wgpu::MipmapFilterMode::Nearest;
-		samplerDesc.maxAnisotropy = 1;
-		break;
-	default:
-		break;
-	}
-
-	switch (m_WrapMethod)
-	{
-	case Texture::WrapMethod::Clamp:
-		samplerDesc.addressModeU = wgpu::AddressMode::ClampToEdge;
-		samplerDesc.addressModeV = wgpu::AddressMode::ClampToEdge;
-		samplerDesc.addressModeW = wgpu::AddressMode::ClampToEdge;
-		break;
-	case Texture::WrapMethod::Mirror:
-		samplerDesc.addressModeU = wgpu::AddressMode::MirrorRepeat;
-		samplerDesc.addressModeV = wgpu::AddressMode::MirrorRepeat;
-		samplerDesc.addressModeW = wgpu::AddressMode::MirrorRepeat;
-		break;
-	case Texture::WrapMethod::Repeat:
-		samplerDesc.addressModeU = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeV = wgpu::AddressMode::Repeat;
-		samplerDesc.addressModeW = wgpu::AddressMode::Repeat;
-		break;
-	default:
-		break;
-	}
+	wgpu::SamplerDescriptor samplerDesc = WebGPUSampler::CreateDescriptor(m_FilterMethod, m_WrapMethod);
 
 	auto device = m_WebGPUContext->GetWebGPUDevice();
 
