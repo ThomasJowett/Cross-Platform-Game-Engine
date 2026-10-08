@@ -456,6 +456,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 			float* tint[4] = { &sprite.tint.r, &sprite.tint.g, &sprite.tint.b, &sprite.tint.a };
 			float* tilingFactor = &sprite.tilingFactor;
 
+			sprite.GetTexture();
 			if (!m_EditSpriteCommand.first)
 				m_EditSpriteCommand.second = CreateRef<EditComponentCommand<SpriteComponent>>(entity);
 			ImGui::BeginGroup();

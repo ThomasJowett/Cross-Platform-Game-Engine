@@ -22,16 +22,24 @@ struct SpriteComponent
 	SpriteComponent() = default;
 	SpriteComponent(const SpriteComponent&) = default;
 
+	// Loads the texture from texturePath on first use; the scene loader leaves it unloaded when the sprite atlas covers it
+	const Ref<Texture2D>& GetTexture()
+	{
+		if (!texture && !texturePath.empty())
+			texture = AssetManager::GetTexture(texturePath);
+		return texture;
+	}
+
 	REFLECT_LUA_BEGIN(SpriteComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("Tint", "Colour multiplied over the texture", "Colour",
 			([](Self& c) -> Colour& { return c.tint; }),
 			([](Self& c, const Colour& v) { c.tint = v; }))
 		REFLECT_LUA_PROPERTY_CUSTOM("Texture", "The texture drawn on the sprite, or nil for a plain coloured quad", "Texture2D",
-			([](Self& c) { return c.texture; }),
+			([](Self& c) { return c.GetTexture(); }),
 			([](Self& c, const Ref<Texture2D>& v) { c.texture = v; c.texturePath = v ? v->GetFilepath() : std::filesystem::path(); }))
 		REFLECT_LUA_PROPERTY_CUSTOM("TilingFactor", "How many times the texture repeats across the sprite", "number",
 			([](Self& c) { return c.tilingFactor; }),
-			([](Self& c, float v) { c.tilingFactor = v; }))
+			([](Self& c, float v) { c.tilingFactor = v; if (v != 1.0f) c.GetTexture(); }))
 	REFLECT_LUA_END()
 
 private:

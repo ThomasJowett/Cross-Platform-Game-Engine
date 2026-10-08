@@ -156,7 +156,7 @@ namespace AssetReferenceUtils
 
 		currentScene->GetRegistry().view<SpriteComponent>().each([&](SpriteComponent& sprite)
 			{
-				if (matches(sprite.texture))
+				if (matches(sprite.texture) || (!sprite.texture && NormalisePath(sprite.texturePath) == oldPathString))
 				{
 					sprite.texture = getReplacement();
 					sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
