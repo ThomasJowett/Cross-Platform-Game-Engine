@@ -68,7 +68,19 @@ IMGUI_API bool ImGui::ImageButton(Ref<Texture> texture, const ImVec2& size, cons
 	ImTextureID my_tex_id = (ImTextureID)texture->GetRendererID();
 	char str_id[32];
 	ImFormatString(str_id, sizeof(str_id), "##ImageButton_%p", my_tex_id);
-	return ImGui::ImageButton(str_id, my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), bg_col, tint_col);
+
+	// See ImGui::Image above for why this is needed on WebGPU only.
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+	bool useNearest = texture->GetFilterMethod() == Texture::FilterMethod::Nearest && RendererAPI::GetAPI() == RendererAPI::API::WebGPU;
+	if (useNearest)
+		ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerNearest, nullptr);
+#endif
+	bool pressed = ImGui::ImageButton(str_id, my_tex_id, size, ImVec2(0, 1), ImVec2(1, 0), bg_col, tint_col);
+#ifdef IMGUI_IMPL_WGPU_HAS_SAMPLER_SWITCH
+	if (useNearest)
+		ImGui::GetWindowDrawList()->AddCallback(ImGui_ImplWGPU_DrawCallback_SetSamplerLinear, nullptr);
+#endif
+	return pressed;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
