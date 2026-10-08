@@ -103,6 +103,7 @@ public:
 
 private:
 	static float AssignQuadTextureSlot(const Ref<Texture>& texture);
+	static void UseQuadSampler(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
 	static void DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId);
 
 	static void StartQuadsBatch();

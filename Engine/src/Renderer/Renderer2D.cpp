@@ -864,6 +864,20 @@ void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Textur
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+void Renderer2D::UseQuadSampler(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod)
+{
+	Ref<Sampler> sampler = Sampler::Get(filterMethod, wrapMethod);
+	if (sampler == s_Data.quadSampler)
+		return;
+
+	// Quads already in the batch keep the sampler they were submitted with
+	if (s_Data.quadIndexCount > 0)
+		NextQuadsBatch();
+	s_Data.quadSampler = sampler;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId)
 {
 	// A tiled sprite would wrap into neighbouring packed sprites, so it skips the atlas.
