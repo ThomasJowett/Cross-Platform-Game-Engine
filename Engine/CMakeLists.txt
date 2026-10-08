@@ -37,6 +37,8 @@ file (GLOB OPENGL_FILES
     src/Platform/OpenGL/OpenGLShader.h
     src/Platform/OpenGL/OpenGLUniformBuffer.cpp
     src/Platform/OpenGL/OpenGLUniformBuffer.h
+    src/Platform/OpenGL/OpenGLSampler.cpp
+    src/Platform/OpenGL/OpenGLSampler.h
 )
 
 file (GLOB WEBGPU_FILES
@@ -59,6 +61,8 @@ file (GLOB WEBGPU_FILES
     src/Platform/WebGPU/WebGPUShader.h
     src/Platform/WebGPU/WebGPUUniformBuffer.cpp
     src/Platform/WebGPU/WebGPUUniformBuffer.h
+    src/Platform/WebGPU/WebGPUSampler.cpp
+    src/Platform/WebGPU/WebGPUSampler.h
 )
 
 add_compile_options("$<$<CONFIG:DEBUG>:-DDEBUG>" "$<$<CONFIG:DEBUG>:-DENABLE_ASSERTS>")
