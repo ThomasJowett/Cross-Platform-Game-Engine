@@ -412,12 +412,15 @@ void WebGPUPipeline::CommitBindGroups()
 		if (entries.empty())
 			continue;
 
+		wgpu::BindGroupLayout layout = m_Pipeline.getBindGroupLayout(set);
 		wgpu::BindGroupDescriptor bindGroupDesc = {};
-		bindGroupDesc.layout = m_Pipeline.getBindGroupLayout(set);
+		bindGroupDesc.layout = layout;
 		bindGroupDesc.entryCount = (uint32_t)entries.size();
 		bindGroupDesc.entries = entries.data();
 
 		wgpu::BindGroup bindGroup = device.createBindGroup(bindGroupDesc);
 		rendererAPI.GetRenderPass().setBindGroup(set, bindGroup, 0, nullptr);
+		rendererAPI.ReleaseAfterSubmit(bindGroup);
+		layout.release();
 	}
 }

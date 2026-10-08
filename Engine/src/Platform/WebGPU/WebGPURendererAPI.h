@@ -33,10 +33,14 @@ public:
 	void SetCurrentPipeline(Ref<Pipeline> pipeline) { m_CurrentPipeline = pipeline; }
 	wgpu::RenderPassEncoder GetRenderPass();
 
+	// Holds a bind group used by the current pass and releases it once the pass is submitted
+	void ReleaseAfterSubmit(wgpu::BindGroup bindGroup) { m_PassBindGroups.push_back(bindGroup); }
+
 private:
 	Colour m_ClearColour = Colours::NAVY;
 	wgpu::RenderPassEncoder m_RenderPass;
 	wgpu::CommandEncoder m_CommandEncoder;
+	std::vector<wgpu::BindGroup> m_PassBindGroups;
 
 	uint32_t m_CurrentTargetWidth = 0;
 	uint32_t m_CurrentTargetHeight = 0;

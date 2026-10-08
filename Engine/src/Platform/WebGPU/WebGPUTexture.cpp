@@ -503,7 +503,9 @@ int WebGPUTexture2D::ReadPixel(uint32_t x, uint32_t y)
 	wgpu::CommandEncoder encoder = device.createCommandEncoder();
 	encoder.copyTextureToBuffer(src, dst, size);
 	wgpu::CommandBuffer cmd = encoder.finish();
+	encoder.release();
 	queue.submit(cmd);
+	cmd.release();
 
 	m_ReadPixelPending = true;
 

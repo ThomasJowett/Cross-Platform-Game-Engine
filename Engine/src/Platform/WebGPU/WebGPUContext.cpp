@@ -126,6 +126,11 @@ void WebGPUContext::SwapBuffers()
 #ifndef __EMSCRIPTEN__
 		m_Surface.present();
 #endif
+		if (m_CurrentSurfaceTexture.texture)
+		{
+			wgpuTextureRelease(m_CurrentSurfaceTexture.texture);
+			m_CurrentSurfaceTexture.texture = nullptr;
+		}
 		m_SurfaceAcquired = false;
 	}
 	if (m_NeedsResize && m_Device)

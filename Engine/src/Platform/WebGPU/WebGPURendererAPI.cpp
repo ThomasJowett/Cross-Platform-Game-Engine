@@ -269,6 +269,7 @@ void WebGPURendererAPI::EndRenderPass()
 	if (m_RenderPass)
 	{
 		m_RenderPass.end();
+		m_RenderPass.release();
 		m_RenderPass = nullptr;
 	}
 
@@ -278,8 +279,14 @@ void WebGPURendererAPI::EndRenderPass()
 		cmdBufferDescriptor.label = "Renderer Command Buffer";
 		wgpu::CommandBuffer command = m_CommandEncoder.finish(cmdBufferDescriptor);
 		m_WebGPUContext->GetQueue().submit(1, &command);
+		command.release();
+		m_CommandEncoder.release();
 		m_CommandEncoder = nullptr;
 	}
+
+	for (wgpu::BindGroup& bindGroup : m_PassBindGroups)
+		bindGroup.release();
+	m_PassBindGroups.clear();
 }
 
 void WebGPURendererAPI::DrawIndexed(uint32_t indexCount, uint32_t indexStart, uint32_t vertexOffset)

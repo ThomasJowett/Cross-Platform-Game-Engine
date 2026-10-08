@@ -188,15 +188,20 @@ void ImGuiManager::End()
 		if (renderPass) {
 			ImGui_ImplWGPU_RenderDrawData(ImGui::GetDrawData(), renderPass);
 			renderPass.end();
+			renderPass.release();
 			webGPUContext->MarkSwapchainRenderedThisFrame();
 		}
 
 		wgpu::CommandBufferDescriptor cmdBufferDescriptor = {};
 		cmdBufferDescriptor.label = "ImGui Command Buffer";
 		wgpu::CommandBuffer command = encoder.finish(cmdBufferDescriptor);
+		encoder.release();
 
 		if (command)
+		{
 			webGPUContext->GetQueue().submit(1, &command);
+			command.release();
+		}
 	}
 
 	if (api == RendererAPI::API::OpenGL && (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable))
