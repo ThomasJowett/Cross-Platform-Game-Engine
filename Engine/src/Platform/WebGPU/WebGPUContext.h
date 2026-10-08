@@ -54,7 +54,8 @@ private:
 	wgpu::TextureView m_CurrentTextureView;
 
 	bool m_SurfaceAcquired = false;
-	bool m_NeedsResize = false;
+	bool m_NeedsConfigure = false;
+	bool m_NeedsNewSurface = false;
 	bool m_Initialized = false;
 	bool m_SwapchainRenderedThisFrame = false;
 };

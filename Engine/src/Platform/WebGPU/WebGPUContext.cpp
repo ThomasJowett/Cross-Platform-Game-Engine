@@ -135,10 +135,16 @@ void WebGPUContext::SwapBuffers()
 		m_SurfaceAcquired = false;
 	}
 	WebGPUTexture2D::ProcessPendingReleases();
-	if (m_NeedsResize && m_Device)
+	if (m_NeedsNewSurface && m_Device)
+	{
+		m_Surface.release();
+		m_Surface = glfwGetWGPUSurface(m_Instance, m_WindowHandle);
+		m_NeedsNewSurface = false;
+	}
+	if (m_NeedsConfigure && m_Device)
 	{
 		m_Surface.configure(m_SurfaceConfig);
-		m_NeedsResize = false;
+		m_NeedsConfigure = false;
 	}
 
 	PollEvents();
@@ -155,7 +161,7 @@ void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 
 		// Mid-frame, defer until the acquired texture has been presented
 		if (m_SurfaceAcquired || !m_Device)
-			m_NeedsResize = true;
+			m_NeedsConfigure = true;
 		else
 			m_Surface.configure(m_SurfaceConfig);
 	}
@@ -163,8 +169,21 @@ void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 
 void WebGPUContext::SetSwapInterval(uint32_t interval)
 {
-	m_SurfaceConfig.presentMode = interval == 1 ? wgpu::PresentMode::Fifo : wgpu::PresentMode::Immediate;
+	wgpu::PresentMode presentMode = interval == 1 ? wgpu::PresentMode::Fifo : wgpu::PresentMode::Immediate;
+	if (presentMode == m_SurfaceConfig.presentMode)
+		return;
+	m_SurfaceConfig.presentMode = presentMode;
+
+#if defined(__APPLE__)
+	// Metal applies a new present mode to an existing layer late or not at all, so swap in a fresh surface
 	if (m_Device)
+		m_NeedsNewSurface = true;
+#endif
+
+	// Mid-frame, defer until the acquired texture has been presented
+	if (m_SurfaceAcquired || !m_Device || m_NeedsNewSurface)
+		m_NeedsConfigure = true;
+	else
 		m_Surface.configure(m_SurfaceConfig);
 }
 
