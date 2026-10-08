@@ -34,6 +34,11 @@ void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture);
 
 void Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture);
 
+// A texture reference plus the filter/wrap its owner samples it with
+void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
+
+void Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture, Texture::FilterMethod& filterMethod, Texture::WrapMethod& wrapMethod);
+
 std::string RelativePath(const std::filesystem::path& path);
 std::filesystem::path AbsolutePath(const char* path);
 
@@ -64,7 +69,7 @@ void LoadAssetFromArchive(Archive& archive, Ref<Asset>& asset)
 }
 
 template<typename Archive>
-void SaveTextureToArchive(Archive& archive, const Ref<Texture2D>& texture)
+void SaveTextureToArchive(Archive& archive, const Ref<Texture2D>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod)
 {
 	std::string relativePath;
 	if (texture && !texture->GetFilepath().empty())
@@ -72,33 +77,20 @@ void SaveTextureToArchive(Archive& archive, const Ref<Texture2D>& texture)
 		relativePath = texture->GetFilepath().string();
 	}
 	archive(relativePath);
-	if (!relativePath.empty())
-	{
-		archive((int)texture->GetFilterMethod());
-		archive((int)texture->GetWrapMethod());
-	}
+	archive((int)filterMethod);
+	archive((int)wrapMethod);
 }
 
 template<typename Archive>
-void LoadTextureFromArchive(Archive& archive, Ref<Texture2D>& texture)
+void LoadTextureFromArchive(Archive& archive, Ref<Texture2D>& texture, Texture::FilterMethod& filterMethod, Texture::WrapMethod& wrapMethod)
 {
 	std::string relativePath;
 	archive(relativePath);
-	if (!relativePath.empty())
-	{
-		texture = AssetManager::GetTexture(relativePath);
-		int filterMethod, wrapMethod;
-		archive(filterMethod);
-		archive(wrapMethod);
-		if (texture)
-		{
-			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
-			texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
-		}
-	}
-	else
-	{
-		texture.reset();
-	}
+	int filter, wrap;
+	archive(filter);
+	archive(wrap);
+	filterMethod = (Texture::FilterMethod)filter;
+	wrapMethod = (Texture::WrapMethod)wrap;
+	texture = relativePath.empty() ? nullptr : AssetManager::GetTexture(relativePath);
 }
 }

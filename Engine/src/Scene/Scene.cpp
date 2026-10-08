@@ -517,16 +517,16 @@ void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 		switch (widgetComp.state)
 		{
 		case WidgetComponent::WidgetState::normal:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->normalTexture, buttonComp->normalTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->normalTexture, buttonComp->normalFilterMethod, buttonComp->normalWrapMethod, buttonComp->normalTint, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::hovered:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->hoveredTexture, buttonComp->hoveredTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->hoveredTexture, buttonComp->hoveredFilterMethod, buttonComp->hoveredWrapMethod, buttonComp->hoveredTint, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::clicked:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->clickedTexture, buttonComp->clickedTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->clickedTexture, buttonComp->clickedFilterMethod, buttonComp->clickedWrapMethod, buttonComp->clickedTint, (int)entity);
 			break;
 		case WidgetComponent::WidgetState::disabled:
-			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->disabledTexture, buttonComp->disabledTint, 1.0f, (int)entity);
+			Renderer2D::DrawQuad(widgetComp.GetTransformMatrix(), buttonComp->disabledTexture, buttonComp->disabledFilterMethod, buttonComp->disabledWrapMethod, buttonComp->disabledTint, (int)entity);
 			break;
 		default:
 			break;

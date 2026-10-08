@@ -113,6 +113,29 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Textur
 	}
 }
 
+void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod)
+{
+	if (pElement && texture)
+	{
+		Encode(pElement, texture->GetFilepath());
+		pElement->SetAttribute("FilterMethod", (int)filterMethod);
+		pElement->SetAttribute("WrapMethod", (int)wrapMethod);
+	}
+}
+
+void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture, Texture::FilterMethod& filterMethod, Texture::WrapMethod& wrapMethod)
+{
+	if (pElement)
+	{
+		std::filesystem::path filepath;
+		Decode(pElement, filepath);
+		filterMethod = (Texture::FilterMethod)pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Nearest);
+		wrapMethod = (Texture::WrapMethod)pElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);
+		if (!filepath.empty())
+			texture = AssetManager::GetTexture(filepath);
+	}
+}
+
 std::string SerializationUtils::RelativePath(const std::filesystem::path& path)
 {
 	std::string relativePath = FileUtils::RelativePath(path, Application::GetOpenDocumentDirectory()).make_preferred().string();

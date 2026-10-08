@@ -52,6 +52,8 @@ public:
 
 	static void DrawQuad(const Matrix4x4& transform, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour = Colours::WHITE, float tilingFactor = 1.0f, int entityId = -1);
+	// Samples the texture with the owner's filter/wrap rather than the texture's own
+	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	// Sprite

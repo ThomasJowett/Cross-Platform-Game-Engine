@@ -22,6 +22,15 @@ struct ButtonComponent
 	Colour clickedTint = Colours::WHITE;
 	Colour disabledTint = Colours::WHITE;
 
+	Texture::FilterMethod normalFilterMethod = Texture::FilterMethod::Nearest;
+	Texture::FilterMethod hoveredFilterMethod = Texture::FilterMethod::Nearest;
+	Texture::FilterMethod clickedFilterMethod = Texture::FilterMethod::Nearest;
+	Texture::FilterMethod disabledFilterMethod = Texture::FilterMethod::Nearest;
+	Texture::WrapMethod normalWrapMethod = Texture::WrapMethod::Repeat;
+	Texture::WrapMethod hoveredWrapMethod = Texture::WrapMethod::Repeat;
+	Texture::WrapMethod clickedWrapMethod = Texture::WrapMethod::Repeat;
+	Texture::WrapMethod disabledWrapMethod = Texture::WrapMethod::Repeat;
+
 	REFLECT_LUA_BEGIN(ButtonComponent)
 		REFLECT_LUA_PROPERTY(normalTint, "Tint applied to the normal state's texture")
 		REFLECT_LUA_PROPERTY(hoveredTint, "Tint applied to the hovered state's texture")
@@ -34,20 +43,20 @@ private:
 	template<typename Archive>
 	void save(Archive& archive) const
 	{
-		SerializationUtils::SaveTextureToArchive(archive, normalTexture);
-		SerializationUtils::SaveTextureToArchive(archive, hoveredTexture);
-		SerializationUtils::SaveTextureToArchive(archive, clickedTexture);
-		SerializationUtils::SaveTextureToArchive(archive, disabledTexture);
+		SerializationUtils::SaveTextureToArchive(archive, normalTexture, normalFilterMethod, normalWrapMethod);
+		SerializationUtils::SaveTextureToArchive(archive, hoveredTexture, hoveredFilterMethod, hoveredWrapMethod);
+		SerializationUtils::SaveTextureToArchive(archive, clickedTexture, clickedFilterMethod, clickedWrapMethod);
+		SerializationUtils::SaveTextureToArchive(archive, disabledTexture, disabledFilterMethod, disabledWrapMethod);
 		archive(normalTint, hoveredTint, clickedTint, disabledTint);
 	}
 
 	template<typename Archive>
 	void load(Archive& archive)
 	{
-		SerializationUtils::LoadTextureFromArchive(archive, normalTexture);
-		SerializationUtils::LoadTextureFromArchive(archive, hoveredTexture);
-		SerializationUtils::LoadTextureFromArchive(archive, clickedTexture);
-		SerializationUtils::LoadTextureFromArchive(archive, disabledTexture);
+		SerializationUtils::LoadTextureFromArchive(archive, normalTexture, normalFilterMethod, normalWrapMethod);
+		SerializationUtils::LoadTextureFromArchive(archive, hoveredTexture, hoveredFilterMethod, hoveredWrapMethod);
+		SerializationUtils::LoadTextureFromArchive(archive, clickedTexture, clickedFilterMethod, clickedWrapMethod);
+		SerializationUtils::LoadTextureFromArchive(archive, disabledTexture, disabledFilterMethod, disabledWrapMethod);
 		archive(normalTint, hoveredTint, clickedTint, disabledTint);
 	}
 };

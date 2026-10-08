@@ -570,19 +570,19 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		if (component->normalTexture)
 		{
-			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTexture"), component->normalTexture);
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTexture"), component->normalTexture, component->normalFilterMethod, component->normalWrapMethod);
 		}
 		if (component->hoveredTexture)
 		{
-			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTexture"), component->hoveredTexture);
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("HoveredTexture"), component->hoveredTexture, component->hoveredFilterMethod, component->hoveredWrapMethod);
 		}
 		if (component->clickedTexture)
 		{
-			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTexture"), component->clickedTexture);
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("ClickedTexture"), component->clickedTexture, component->clickedFilterMethod, component->clickedWrapMethod);
 		}
 		if (component->disabledTexture)
 		{
-			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTexture"), component->disabledTexture);
+			SerializationUtils::Encode(pButtonElement->InsertNewChildElement("DisabledTexture"), component->disabledTexture, component->disabledFilterMethod, component->disabledWrapMethod);
 		}
 
 		SerializationUtils::Encode(pButtonElement->InsertNewChildElement("NormalTint"), component->normalTint);
@@ -1247,10 +1247,10 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pButtonComponent = pEntityElement->FirstChildElement("Button"))
 	{
 		ButtonComponent& component = entity.AddComponent<ButtonComponent>();
-		SerializationUtils::Decode(pButtonComponent->FirstChildElement("NormalTexture"), component.normalTexture);
-		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTexture"), component.hoveredTexture);
-		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTexture"), component.clickedTexture);
-		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTexture"), component.disabledTexture);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("NormalTexture"), component.normalTexture, component.normalFilterMethod, component.normalWrapMethod);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTexture"), component.hoveredTexture, component.hoveredFilterMethod, component.hoveredWrapMethod);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("ClickedTexture"), component.clickedTexture, component.clickedFilterMethod, component.clickedWrapMethod);
+		SerializationUtils::Decode(pButtonComponent->FirstChildElement("DisabledTexture"), component.disabledTexture, component.disabledFilterMethod, component.disabledWrapMethod);
 
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("NormalTint"), component.normalTint);
 		SerializationUtils::Decode(pButtonComponent->FirstChildElement("HoveredTint"), component.hoveredTint);

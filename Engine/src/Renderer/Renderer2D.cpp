@@ -782,6 +782,13 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 	DrawTexturedQuad(transform, texture, colour, tilingFactor, entityId);
 }
 
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod, const Colour& colour, int entityId)
+{
+	if (texture)
+		UseQuadSampler(filterMethod, wrapMethod);
+	DrawTexturedQuad(transform, texture, colour, 1.0f, entityId);
+}
+
 void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
 {
 	PROFILE_FUNCTION();

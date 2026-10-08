@@ -1246,10 +1246,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	DrawComponent<ButtonComponent>("Button", entity, [&](auto& button)
 		{
-			ImGui::Texture2DEdit("Normal", button.normalTexture);
-			ImGui::Texture2DEdit("Hovered", button.hoveredTexture);
-			ImGui::Texture2DEdit("Clicked", button.clickedTexture);
-			ImGui::Texture2DEdit("Disabled", button.disabledTexture);
+			Dirty(ImGui::Texture2DEdit("Normal", button.normalTexture, ImVec2(64.0f, 64.0f), &button.normalFilterMethod, &button.normalWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Hovered", button.hoveredTexture, ImVec2(64.0f, 64.0f), &button.hoveredFilterMethod, &button.hoveredWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Clicked", button.clickedTexture, ImVec2(64.0f, 64.0f), &button.clickedFilterMethod, &button.clickedWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Disabled", button.disabledTexture, ImVec2(64.0f, 64.0f), &button.disabledFilterMethod, &button.disabledWrapMethod));
 
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));
