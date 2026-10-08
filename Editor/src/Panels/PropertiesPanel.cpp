@@ -485,7 +485,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			}
 
-			if (ImGui::Texture2DEdit("Texture", sprite.texture)) {
+			if (ImGui::Texture2DEdit("Texture", sprite.texture, ImVec2(64.0f, 64.0f), &sprite.filterMethod, &sprite.wrapMethod)) {
 				sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
 				m_EditSpriteCommand.first = true;
 				SceneManager::CurrentScene()->MakeDirty();

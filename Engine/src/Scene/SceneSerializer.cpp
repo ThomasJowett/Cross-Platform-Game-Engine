@@ -188,13 +188,13 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 
 		tinyxml2::XMLElement* pSpriteElement = pElement->InsertNewChildElement("Sprite");
 		pSpriteElement->SetAttribute("TilingFactor", component.tilingFactor);
-		if (component.texture)
+		std::filesystem::path texturePath = component.texture ? component.texture->GetFilepath() : component.texturePath;
+		if (!texturePath.empty())
 		{
-			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texture);
-		}
-		else if (!component.texturePath.empty())
-		{
-			SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Texture"), component.texturePath);
+			tinyxml2::XMLElement* pTextureElement = pSpriteElement->InsertNewChildElement("Texture");
+			SerializationUtils::Encode(pTextureElement, texturePath);
+			pTextureElement->SetAttribute("FilterMethod", (int)component.filterMethod);
+			pTextureElement->SetAttribute("WrapMethod", (int)component.wrapMethod);
 		}
 
 		SerializationUtils::Encode(pSpriteElement->InsertNewChildElement("Tint"), component.tint);
@@ -757,12 +757,16 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 
 		tinyxml2::XMLElement* pTextureElement = pSpriteComponentElement->FirstChildElement("Texture");
 
-		if (const char* filepath = pTextureElement ? pTextureElement->Attribute("Filepath") : nullptr)
-			component.texturePath = filepath;
+		if (pTextureElement)
+		{
+			SerializationUtils::Decode(pTextureElement, component.texturePath);
+			component.filterMethod = (Texture::FilterMethod)pTextureElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Nearest);
+			component.wrapMethod = (Texture::WrapMethod)pTextureElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);
+		}
 		Ref<SpriteAtlas> atlas = Renderer2D::GetSpriteAtlas();
 		bool atlasCovers = atlas && component.tilingFactor == 1.0f && atlas->GetRegion(component.texturePath);
-		if (!atlasCovers)
-			SerializationUtils::Decode(pTextureElement, component.texture);
+		if (!atlasCovers && !component.texturePath.empty())
+			component.texture = AssetManager::GetTexture(component.texturePath);
 	}
 
 	// Animated Sprite ---------------------------------------------------------------------------------------------------
