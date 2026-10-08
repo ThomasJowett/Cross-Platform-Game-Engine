@@ -9,7 +9,7 @@ public:
 	virtual ~OpenGLSampler();
 
 	// Overrides the filter and wrap state of whatever texture is bound to this unit
-	void Bind(uint32_t unit) const;
+	virtual void Bind(uint32_t unit) const override;
 
 private:
 	uint32_t m_RendererID = 0;

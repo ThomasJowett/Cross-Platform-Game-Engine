@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "Renderer/Sampler.h"
 
 #include "TinyXml2/tinyxml2.h"
 #include "Utilities/SerializationUtils.h"
@@ -32,6 +33,8 @@ void Material::BindTextures() const
 	for (auto&& [slot, texture] : m_Textures)
 	{
 		texture->Bind(slot);
+		const TextureSampling& sampling = m_TextureSampling.count(slot) ? m_TextureSampling.at(slot) : TextureSampling();
+		Sampler::Get(sampling.filterMethod, sampling.wrapMethod)->Bind(slot);
 	}
 }
 
@@ -127,7 +130,8 @@ bool Material::SaveMaterial(const std::filesystem::path& filepath) const
 
 		pTextureElement->SetAttribute("Slot", slot);
 
-		SerializationUtils::Encode(pTextureElement, texture);
+		const TextureSampling& sampling = m_TextureSampling.count(slot) ? m_TextureSampling.at(slot) : TextureSampling();
+		SerializationUtils::Encode(pTextureElement, texture, sampling.filterMethod, sampling.wrapMethod);
 	}
 
 	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
@@ -182,6 +186,7 @@ bool Material::LoadXML(tinyxml2::XMLDocument* doc)
 	}
 
 	m_Textures.clear();
+	m_TextureSampling.clear();
 
 	SerializationUtils::Decode(pRoot->FirstChildElement("Tint"), m_Tint);
 
@@ -198,17 +203,18 @@ bool Material::LoadXML(tinyxml2::XMLDocument* doc)
 
 	while (pTextureElement)
 	{
+		uint32_t slot = 1;
+
+		pTextureElement->QueryUnsignedAttribute("Slot", &slot);
+
 		Ref<Texture2D> texture;
-		SerializationUtils::Decode(pTextureElement, texture);
+		TextureSampling& sampling = m_TextureSampling[slot];
+		SerializationUtils::Decode(pTextureElement, texture, sampling.filterMethod, sampling.wrapMethod);
 
 		if (!texture)
 		{
 			texture = Texture2D::Create("");
 		}
-
-		uint32_t slot = 1;
-
-		pTextureElement->QueryUnsignedAttribute("Slot", &slot);
 
 		AddTexture(texture, slot);
 		pTextureElement = pTextureElement->NextSiblingElement("Texture");

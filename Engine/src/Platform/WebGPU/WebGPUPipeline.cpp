@@ -274,7 +274,7 @@ void WebGPUPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t
 		bindings.push_back({ Binding::Type::UniformBuffer, binding, uniformBuffer });
 }
 
-void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
+void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, Ref<Sampler> sampler, uint32_t set)
 {
 	auto& bindings = m_Bindings[set];
 	bool found = false;
@@ -284,12 +284,13 @@ void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 		{
 			b.resource = texture;
 			b.type = Binding::Type::Texture;
+			b.sampler = sampler;
 			found = true;
 			break;
 		}
 	}
 	if (!found)
-		bindings.push_back({ Binding::Type::Texture, binding, texture });
+		bindings.push_back({ Binding::Type::Texture, binding, texture, sampler });
 }
 
 // TODO(texture-array-cleanup): binds each texture to its own slot since WGSL can't dynamically
@@ -380,7 +381,7 @@ void WebGPUPipeline::CommitBindGroups()
 					{
 						wgpu::BindGroupEntry samplerEntry = {};
 						samplerEntry.binding = b.binding + 1;
-						samplerEntry.sampler = tex->GetSampler();
+						samplerEntry.sampler = b.sampler ? std::static_pointer_cast<WebGPUSampler>(b.sampler)->GetSampler() : tex->GetSampler();
 						if (samplerEntry.sampler)
 							entries.push_back(samplerEntry);
 					}

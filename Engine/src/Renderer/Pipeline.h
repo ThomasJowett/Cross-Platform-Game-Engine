@@ -44,7 +44,8 @@ public:
 
 	virtual void Invalidate() = 0;
 	virtual void SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t binding, uint32_t set = 0) = 0;
-	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set = 0) = 0;
+	// sampler overrides the texture's own filter/wrap when given
+	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, Ref<Sampler> sampler = nullptr, uint32_t set = 0) = 0;
 
 	// Binds textures[i] at firstBinding+i, for shaders that select among several textures
 	// per-fragment (e.g. multiple font atlases). Every texture is sampled with sampler.

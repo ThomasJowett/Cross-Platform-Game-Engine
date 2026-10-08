@@ -143,21 +143,24 @@ void MaterialView::OnImGuiRender()
 		}
 
 		Ref<Texture2D> albedo = m_LocalMaterial->GetTexture(0);
-		if (ImGui::Texture2DEdit("Albedo", albedo, ImVec2(128, 128)))
+		Material::TextureSampling& albedoSampling = m_LocalMaterial->GetTextureSampling(0);
+		if (ImGui::Texture2DEdit("Albedo", albedo, ImVec2(128, 128), &albedoSampling.filterMethod, &albedoSampling.wrapMethod))
 		{
 			m_LocalMaterial->AddTexture(albedo, 0);
 			m_Dirty = true;
 		}
 
 		Ref<Texture2D> normalMap = m_LocalMaterial->GetTexture(1);
-		if (ImGui::Texture2DEdit("Normal Map", normalMap, ImVec2(128, 128)))
+		Material::TextureSampling& normalMapSampling = m_LocalMaterial->GetTextureSampling(1);
+		if (ImGui::Texture2DEdit("Normal Map", normalMap, ImVec2(128, 128), &normalMapSampling.filterMethod, &normalMapSampling.wrapMethod))
 		{
 			m_LocalMaterial->AddTexture(normalMap, 1);
 			m_Dirty = true;
 		}
 
 		Ref<Texture2D> mixMap = m_LocalMaterial->GetTexture(2);
-		if (ImGui::Texture2DEdit("Mix Map", mixMap, ImVec2(128, 128)))
+		Material::TextureSampling& mixMapSampling = m_LocalMaterial->GetTextureSampling(2);
+		if (ImGui::Texture2DEdit("Mix Map", mixMap, ImVec2(128, 128), &mixMapSampling.filterMethod, &mixMapSampling.wrapMethod))
 		{
 			m_LocalMaterial->AddTexture(mixMap, 2);
 			m_Dirty = true;
@@ -194,6 +197,8 @@ void MaterialView::OnUpdate(float deltaTime)
 	RenderCommand::Clear();
 
 	Renderer::BeginScene(Matrix4x4::Translate(Vector3f(0.0f, 0.0f, 1.5f)), m_Camera.GetProjectionMatrix());
+
+	// TODO: Add a light source here if needed
 
 	Renderer::Submit(m_Mesh, m_LocalMaterial);
 

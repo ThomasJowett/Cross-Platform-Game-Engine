@@ -175,7 +175,13 @@ void RenderCommandForQueue(const std::vector<Command>& renderQueue)
 		// binding - it's always relative to a specific pipeline's bind group), so WebGPU also needs
 		// this explicit, pipeline-scoped equivalent.
 		Ref<Texture> albedo = command.material->GetTexture(0);
-		pipeline->SetTexture(albedo ? albedo : s_RendererData.whiteTexture, 2);
+		if (albedo)
+		{
+			const Material::TextureSampling& sampling = command.material->GetTextureSampling(0);
+			pipeline->SetTexture(albedo, 2, Sampler::Get(sampling.filterMethod, sampling.wrapMethod));
+		}
+		else
+			pipeline->SetTexture(s_RendererData.whiteTexture, 2);
 
 		command.mesh->GetVertexBuffer()->Bind();
 		command.mesh->GetIndexBuffer()->Bind();

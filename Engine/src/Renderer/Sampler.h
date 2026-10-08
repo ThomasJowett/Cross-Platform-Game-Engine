@@ -12,6 +12,9 @@ public:
 	Texture::FilterMethod GetFilterMethod() const { return m_FilterMethod; }
 	Texture::WrapMethod GetWrapMethod() const { return m_WrapMethod; }
 
+	// Only does anything on OpenGL, like Texture::Bind; other backends bind samplers through a Pipeline
+	virtual void Bind(uint32_t unit) const {}
+
 	// Shared sampler for these settings, created on first use
 	static Ref<Sampler> Get(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
 	static void ClearCache();

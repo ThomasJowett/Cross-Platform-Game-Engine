@@ -18,6 +18,13 @@ class XMLDocument;
 class Material : public Asset
 {
 public:
+	// How a texture slot is sampled, saved with the material
+	struct TextureSampling
+	{
+		Texture::FilterMethod filterMethod = Texture::FilterMethod::Nearest;
+		Texture::WrapMethod wrapMethod = Texture::WrapMethod::Repeat;
+	};
+
 	Material();
 	Material(const std::filesystem::path& filepath);
 	Material(const std::filesystem::path& filepath, const std::vector<uint8_t>& data);
@@ -29,6 +36,7 @@ public:
 	Ref<Texture2D> GetTexture(uint32_t slot);
 
 	void AddTexture(Ref<Texture2D>, uint32_t slot);
+	TextureSampling& GetTextureSampling(uint32_t slot) { return m_TextureSampling[slot]; }
 
 	void SetTint(const Colour& tint) { m_Tint = tint; }
 	Colour GetTint() const { return m_Tint; }
@@ -61,6 +69,7 @@ private:
 	std::string m_Shader = "Standard";
 
 	std::unordered_map<uint32_t, Ref<Texture2D>> m_Textures;
+	std::unordered_map<uint32_t, TextureSampling> m_TextureSampling;
 
 	Colour m_Tint{ Colours::WHITE };
 

@@ -1,5 +1,4 @@
 #include "OpenGLPipeline.h"
-#include "OpenGLSampler.h"
 #include "OpenGLRendererAPI.h"
 #include "Renderer/RenderCommand.h"
 
@@ -26,13 +25,16 @@ void OpenGLPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t
 	if (uniformBuffer)
 		uniformBuffer->Bind();
 }
-void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
+void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, Ref<Sampler> sampler, uint32_t set)
 {
 	if (texture)
 	{
 		texture->Bind(binding);
-		// Use the texture's own filter/wrap, not a sampler left bound by SetTextureArray
-		glBindSampler(binding, 0);
+		// Without a sampler, use the texture's own filter/wrap rather than one left bound by an earlier draw
+		if (sampler)
+			sampler->Bind(binding);
+		else
+			glBindSampler(binding, 0);
 	}
 }
 
@@ -40,14 +42,13 @@ void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 // only need to change if SetTextureArray moves to a true array texture (see the WebGPU TODO).
 void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Sampler> sampler, uint32_t set)
 {
-	auto glSampler = std::static_pointer_cast<OpenGLSampler>(sampler);
 	for (size_t i = 0; i < textures.size(); i++)
 	{
 		if (!textures[i])
 			continue;
 		textures[i]->Bind(firstBinding + (uint32_t)i);
-		if (glSampler)
-			glSampler->Bind(firstBinding + (uint32_t)i);
+		if (sampler)
+			sampler->Bind(firstBinding + (uint32_t)i);
 	}
 }
 
