@@ -7,6 +7,7 @@
 
 #include "RenderCommand.h"
 #include "UniformBuffer.h"
+#include "Sampler.h"
 #include "Core/Asset.h"
 
 #include "Renderer/UI/MSDFData.h"
@@ -114,6 +115,8 @@ struct Renderer2DData
 	Ref<Pipeline> hairLinePipeline;
 
 	Ref<Texture2D> whiteTexture;
+	// Every textured quad in the current batch is sampled with this
+	Ref<Sampler> quadSampler;
 
 	struct CameraData
 	{
@@ -302,6 +305,7 @@ bool Renderer2D::Init()
 
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
 	s_Data.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, 1u, &whiteTextureData);
+	s_Data.quadSampler = Sampler::Get(Texture::FilterMethod::Nearest, Texture::WrapMethod::Repeat);
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
@@ -369,6 +373,7 @@ bool Renderer2D::Init()
 
 void Renderer2D::Shutdown()
 {
+	s_Data.quadSampler.reset();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -457,10 +462,8 @@ void Renderer2D::FlushQuads()
 	Ref<VertexBuffer> vertexBuffer = NextQuadVertexBuffer();
 	vertexBuffer->SetData(s_Data.quadVertexBufferBase, dataSize);
 
-	// Binding 0 is Camera below, so textures start at 1. Prefer a real texture as the sampler
-	// source over whiteTexture (Nearest) when one is active - matches FlushText's rationale.
-	Ref<Texture> samplerSource = s_Data.quadTextureSlotIndex > 1 ? s_Data.quadTextureSlots[1] : s_Data.quadTextureSlots[0];
-	s_Data.quadPipeline->SetTextureArray({ s_Data.quadTextureSlots.begin(), s_Data.quadTextureSlots.end() }, 1, samplerSource);
+	// Binding 0 is Camera below, so textures start at 1
+	s_Data.quadPipeline->SetTextureArray({ s_Data.quadTextureSlots.begin(), s_Data.quadTextureSlots.end() }, 1, s_Data.quadSampler);
 
 	s_Data.quadPipeline->Bind();
 	s_Data.quadPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
@@ -552,7 +555,8 @@ void Renderer2D::FlushText()
 	// Binding 0 is Camera below, so atlases start at 1. Prefer a real (Linear-filtered) atlas
 	// as the sampler source over whiteTexture (Nearest) when one is active.
 	Ref<Texture> samplerSource = s_Data.fontAtlasSlotIndex > 1 ? s_Data.fontAtlasSlots[1] : s_Data.fontAtlasSlots[0];
-	s_Data.textPipeline->SetTextureArray({ s_Data.fontAtlasSlots.begin(), s_Data.fontAtlasSlots.end() }, 1, samplerSource);
+	Ref<Sampler> sampler = Sampler::Get(samplerSource->GetFilterMethod(), samplerSource->GetWrapMethod());
+	s_Data.textPipeline->SetTextureArray({ s_Data.fontAtlasSlots.begin(), s_Data.fontAtlasSlots.end() }, 1, sampler);
 
 	s_Data.textPipeline->Bind();
 	s_Data.textPipeline->SetUniformBuffer(s_Data.cameraUniformBuffer, 0);
@@ -773,6 +777,13 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 /* ------------------------------------------------------------------------------------------------------------------ */
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
 {
+	if (texture)
+		UseQuadSampler(texture->GetFilterMethod(), texture->GetWrapMethod());
+	DrawTexturedQuad(transform, texture, colour, tilingFactor, entityId);
+}
+
+void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
+{
 	PROFILE_FUNCTION();
 	ENGINE_TRACE("Renderer2D: DrawQuad (texture)");
 
@@ -806,6 +817,9 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 
 	if (!subtexture)
 		return;
+
+	if (subtexture->GetTexture())
+		UseQuadSampler(subtexture->GetTexture()->GetFilterMethod(), subtexture->GetTexture()->GetWrapMethod());
 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 	{
@@ -885,13 +899,17 @@ void Renderer2D::DrawSprite(const Matrix4x4& transform, const SpriteComponent& s
 	{
 		if (const SpriteAtlas::Region* region = s_Data.activeAtlas->GetRegion(spriteComp.texturePath))
 		{
+			UseQuadSampler(spriteComp.filterMethod, spriteComp.wrapMethod);
 			DrawQuadWithUVRect(transform, s_Data.activeAtlas->GetPage(region->page), region->uvMin, region->uvMax, spriteComp.tint, entityId);
 			return;
 		}
 	}
 
 	if (spriteComp.texture)
-		DrawQuad(transform, spriteComp.texture, spriteComp.tint, spriteComp.tilingFactor, entityId);
+	{
+		UseQuadSampler(spriteComp.filterMethod, spriteComp.wrapMethod);
+		DrawTexturedQuad(transform, spriteComp.texture, spriteComp.tint, spriteComp.tilingFactor, entityId);
+	}
 	else
 		DrawQuad(transform, spriteComp.tint, entityId);
 }
