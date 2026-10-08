@@ -6,6 +6,7 @@
 
 #include <vector>
 #include "FrameBuffer.h"
+#include "Sampler.h"
 
 enum class PrimitiveTopology
 {
@@ -46,11 +47,10 @@ public:
 	virtual void SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set = 0) = 0;
 
 	// Binds textures[i] at firstBinding+i, for shaders that select among several textures
-	// per-fragment (e.g. multiple font atlases). All textures must use equivalent sampler
-	// settings - samplerSource supplies them for backends that bind one shared sampler.
+	// per-fragment (e.g. multiple font atlases). Every texture is sampled with sampler.
 	// TODO(texture-array-cleanup): "N separate bindings" is a stand-in for a real array texture -
 	// see WebGPUPipeline::SetTextureArray.
-	virtual void SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set = 0) = 0;
+	virtual void SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Sampler> sampler, uint32_t set = 0) = 0;
 
 	virtual void Bind() = 0;
 

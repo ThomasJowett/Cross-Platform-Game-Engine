@@ -1,4 +1,5 @@
 #include "OpenGLPipeline.h"
+#include "OpenGLSampler.h"
 #include "OpenGLRendererAPI.h"
 #include "Renderer/RenderCommand.h"
 
@@ -28,17 +29,26 @@ void OpenGLPipeline::SetUniformBuffer(Ref<UniformBuffer> uniformBuffer, uint32_t
 void OpenGLPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t set)
 {
 	if (texture)
+	{
 		texture->Bind(binding);
+		// Use the texture's own filter/wrap, not a sampler left bound by SetTextureArray
+		glBindSampler(binding, 0);
+	}
 }
 
 // TODO(texture-array-cleanup): GLSL's sampler2D[8] already dynamically indexes fine - this would
 // only need to change if SetTextureArray moves to a true array texture (see the WebGPU TODO).
-void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
+void OpenGLPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Sampler> sampler, uint32_t set)
 {
-	// samplerSource unused - GLSL's combined sampler2D needs no separate sampler binding.
+	auto glSampler = std::static_pointer_cast<OpenGLSampler>(sampler);
 	for (size_t i = 0; i < textures.size(); i++)
-		if (textures[i])
-			textures[i]->Bind(firstBinding + (uint32_t)i);
+	{
+		if (!textures[i])
+			continue;
+		textures[i]->Bind(firstBinding + (uint32_t)i);
+		if (glSampler)
+			glSampler->Bind(firstBinding + (uint32_t)i);
+	}
 }
 
 void OpenGLPipeline::Bind()

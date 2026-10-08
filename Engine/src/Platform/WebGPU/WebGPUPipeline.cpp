@@ -1,4 +1,5 @@
 #include "WebGPUPipeline.h"
+#include "WebGPUSampler.h"
 #include "Core/Application.h"
 #include "Renderer/Buffer.h"
 #include "Renderer/RenderCommand.h"
@@ -296,7 +297,7 @@ void WebGPUPipeline::SetTexture(Ref<Texture> texture, uint32_t binding, uint32_t
 // 8. Proper fix is a real texture_2d_array, which needs font atlases/sprite atlas pages
 // allocated as array layers instead of independent Texture2D objects (Texture.h,
 // WebGPUTexture.cpp, OpenGLTexture.cpp, Font.cpp, SpriteAtlas.cpp) - a real restructuring.
-void WebGPUPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Texture> samplerSource, uint32_t set)
+void WebGPUPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, uint32_t firstBinding, Ref<Sampler> sampler, uint32_t set)
 {
 	auto& bindings = m_Bindings[set];
 
@@ -317,7 +318,7 @@ void WebGPUPipeline::SetTextureArray(const std::vector<Ref<Texture>>& textures, 
 	for (size_t i = 0; i < textures.size(); i++)
 		upsert(Binding::Type::TextureArrayElement, firstBinding + (uint32_t)i, textures[i]);
 
-	upsert(Binding::Type::Sampler, firstBinding + (uint32_t)textures.size(), samplerSource);
+	upsert(Binding::Type::Sampler, firstBinding + (uint32_t)textures.size(), sampler);
 }
 
 void WebGPUPipeline::Bind()
@@ -398,12 +399,12 @@ void WebGPUPipeline::CommitBindGroups()
 			}
 			else if (b.type == Binding::Type::Sampler)
 			{
-				auto tex = std::static_pointer_cast<WebGPUTexture2D>(std::static_pointer_cast<Texture>(b.resource));
-				if (tex && tex->GetSampler())
+				auto sampler = std::static_pointer_cast<WebGPUSampler>(std::static_pointer_cast<Sampler>(b.resource));
+				if (sampler && sampler->GetSampler())
 				{
 					wgpu::BindGroupEntry samplerEntry = {};
 					samplerEntry.binding = b.binding;
-					samplerEntry.sampler = tex->GetSampler();
+					samplerEntry.sampler = sampler->GetSampler();
 					entries.push_back(samplerEntry);
 				}
 			}
