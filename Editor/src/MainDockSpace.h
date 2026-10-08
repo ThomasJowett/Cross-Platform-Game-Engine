@@ -22,7 +22,7 @@ public:
 
 	virtual void OnImGuiRender() override;
 
-	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFocusedPanel = focussedPanel; }
+	static void SetFocussedWindow(Layer* focussedPanel) { s_CurrentlyFocusedPanel = focussedPanel->weak_from_this(); }
 
 private:
 	void OpenProject(const std::filesystem::path& filename);
@@ -62,7 +62,7 @@ private:
 	bool m_ShowSaveOpenToolbar;
 	bool m_ShowTargetPlatformToolbar;
 
-	static Layer* s_CurrentlyFocusedPanel;
+	static std::weak_ptr<Layer> s_CurrentlyFocusedPanel;
 
 	Ref<ContentExplorerPanel> m_ContentExplorer;
 

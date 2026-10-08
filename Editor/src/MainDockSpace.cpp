@@ -48,7 +48,7 @@
 #include "Events/SceneEvent.h"
 #include "Events/ApplicationEvent.h"
 
-Layer* MainDockSpace::s_CurrentlyFocusedPanel;
+std::weak_ptr<Layer> MainDockSpace::s_CurrentlyFocusedPanel;
 
 MainDockSpace::MainDockSpace()
 	:Layer("Dockspace")
@@ -361,14 +361,15 @@ void MainDockSpace::OnImGuiRender()
 
 		if (ImGui::BeginMenu("Edit"))
 		{
-			ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel);
+			Ref<Layer> focusedPanel = s_CurrentlyFocusedPanel.lock();
+			ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get());
 
 			bool copyable = false;
 
 			if (iCopy != nullptr)
 				copyable = !iCopy->IsReadOnly();
 
-			IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel);
+			IUndoable* iUndo = dynamic_cast<IUndoable*>(focusedPanel.get());
 
 			bool undoable = false, redoable = false;
 			if (iUndo != nullptr)
@@ -534,9 +535,11 @@ void MainDockSpace::HandleKeyBoardInputs()
 	bool ctrl = io.ConfigMacOSXBehaviors ? io.KeySuper : io.KeyCtrl;
 	bool alt = io.ConfigMacOSXBehaviors ? io.KeyCtrl : io.KeyAlt;
 
+	Ref<Layer> focusedPanel = s_CurrentlyFocusedPanel.lock();
+
 	if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
 	{
-		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
+		if (ISaveable* iSave = dynamic_cast<ISaveable*>(focusedPanel.get()))
 		{
 			if (iSave->NeedsSaving())
 				iSave->Save();
@@ -546,7 +549,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	}
 	else if (ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_S))
 	{
-		if (ISaveable* iSave = dynamic_cast<ISaveable*>(s_CurrentlyFocusedPanel))
+		if (ISaveable* iSave = dynamic_cast<ISaveable*>(focusedPanel.get()))
 			iSave->SaveAs();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_N))
@@ -565,50 +568,50 @@ void MainDockSpace::HandleKeyBoardInputs()
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Z))
 	{
-		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
+		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(focusedPanel.get()))
 			if (iUndo->CanUndo())
 				iUndo->Undo();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Y))
 	{
-		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(s_CurrentlyFocusedPanel))
+		if (IUndoable* iUndo = dynamic_cast<IUndoable*>(focusedPanel.get()))
 			if (iUndo->CanRedo())
 				iUndo->Redo();
 	}
 	else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Delete))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			if (iCopy->HasSelection())
 				iCopy->Delete();
 	}
 	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_C))
 		|| (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			if (iCopy->HasSelection())
 				iCopy->Copy();
 	}
 	else if ((ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_V))
 		|| (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Insert)))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			iCopy->Paste();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_X))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			if (iCopy->HasSelection())
 				iCopy->Cut();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_D))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			if (iCopy->HasSelection())
 				iCopy->Duplicate();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_A))
 	{
-		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(s_CurrentlyFocusedPanel))
+		if (ICopyable* iCopy = dynamic_cast<ICopyable*>(focusedPanel.get()))
 			if (iCopy->HasSelection())
 				iCopy->SelectAll();
 	}
