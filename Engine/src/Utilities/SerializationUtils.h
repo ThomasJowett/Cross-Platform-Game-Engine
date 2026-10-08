@@ -30,10 +30,6 @@ void Encode(tinyxml2::XMLElement* pElement, const std::filesystem::path& filepat
 
 void Decode(tinyxml2::XMLElement const* pElement, std::filesystem::path& filepath);
 
-void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture);
-
-void Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture);
-
 // A texture reference plus the filter/wrap its owner samples it with
 void Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
 

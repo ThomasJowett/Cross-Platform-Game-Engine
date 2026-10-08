@@ -59,6 +59,9 @@ public:
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
+	Texture::FilterMethod& GetFilterMethod() { return m_FilterMethod; }
+	Texture::WrapMethod& GetWrapMethod() { return m_WrapMethod; }
+
 	void ResizeTiles() { m_Tiles.resize(m_Texture->GetNumberOfCells()); };
 
 	void SetTileProbability(size_t tile, double probability);
@@ -80,6 +83,8 @@ private:
 	uint32_t CoordsToIndex(uint32_t x, uint32_t y) const;
 	bool LoadXML(tinyxml2::XMLDocument* doc);
 	Ref<SubTexture2D> m_Texture;
+	Texture::FilterMethod m_FilterMethod = Texture::FilterMethod::Nearest;
+	Texture::WrapMethod m_WrapMethod = Texture::WrapMethod::Repeat;
 
 	std::vector<Tile> m_Tiles;
 	std::vector<std::set<Tile*>> m_BitmaskMap;

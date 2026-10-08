@@ -463,6 +463,10 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 			continue;
 		if (tilemapComp.tileset && tilemapComp.mesh)
 		{
+			// Follow the tileset's current sampling, so edits apply without a rebuild
+			Material::TextureSampling& sampling = tilemapComp.mesh->GetMaterials()[0]->GetTextureSampling(0);
+			sampling.filterMethod = tilemapComp.tileset->GetFilterMethod();
+			sampling.wrapMethod = tilemapComp.tileset->GetWrapMethod();
 			Renderer::Submit(tilemapComp.mesh, transformComp.GetWorldMatrix(), (int)entity);
 		}
 	}

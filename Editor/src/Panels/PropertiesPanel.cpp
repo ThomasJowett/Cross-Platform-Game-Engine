@@ -485,7 +485,7 @@ void PropertiesPanel::DrawComponents(Entity entity)
 				ImGui::Tooltip("Set Scale to pixel perfect scaling");
 			}
 
-			if (ImGui::Texture2DEdit("Texture", sprite.texture, ImVec2(64.0f, 64.0f), &sprite.filterMethod, &sprite.wrapMethod)) {
+			if (ImGui::Texture2DEdit("Texture", sprite.texture, sprite.filterMethod, sprite.wrapMethod)) {
 				sprite.texturePath = sprite.texture ? sprite.texture->GetFilepath() : std::filesystem::path();
 				m_EditSpriteCommand.first = true;
 				SceneManager::CurrentScene()->MakeDirty();
@@ -1246,10 +1246,10 @@ void PropertiesPanel::DrawComponents(Entity entity)
 
 	DrawComponent<ButtonComponent>("Button", entity, [&](auto& button)
 		{
-			Dirty(ImGui::Texture2DEdit("Normal", button.normalTexture, ImVec2(64.0f, 64.0f), &button.normalFilterMethod, &button.normalWrapMethod));
-			Dirty(ImGui::Texture2DEdit("Hovered", button.hoveredTexture, ImVec2(64.0f, 64.0f), &button.hoveredFilterMethod, &button.hoveredWrapMethod));
-			Dirty(ImGui::Texture2DEdit("Clicked", button.clickedTexture, ImVec2(64.0f, 64.0f), &button.clickedFilterMethod, &button.clickedWrapMethod));
-			Dirty(ImGui::Texture2DEdit("Disabled", button.disabledTexture, ImVec2(64.0f, 64.0f), &button.disabledFilterMethod, &button.disabledWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Normal", button.normalTexture, button.normalFilterMethod, button.normalWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Hovered", button.hoveredTexture, button.hoveredFilterMethod, button.hoveredWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Clicked", button.clickedTexture, button.clickedFilterMethod, button.clickedWrapMethod));
+			Dirty(ImGui::Texture2DEdit("Disabled", button.disabledTexture, button.disabledFilterMethod, button.disabledWrapMethod));
 
 			float* colourNormal[4] = { &button.normalTint.r, &button.normalTint.g, &button.normalTint.b, &button.normalTint.a };
 			Dirty(ImGui::ColorEdit4("Colour Normal", colourNormal[0]));

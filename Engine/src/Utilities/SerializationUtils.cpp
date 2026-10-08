@@ -83,36 +83,6 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, std::files
 	}
 }
 
-void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture)
-{
-	if (pElement)
-	{
-		Encode(pElement, texture->GetFilepath());
-		pElement->SetAttribute("FilterMethod", (int)texture->GetFilterMethod());
-		pElement->SetAttribute("WrapMethod", (int)texture->GetWrapMethod());
-	}
-}
-
-void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, Ref<Texture2D>& texture)
-{
-	if (pElement)
-	{
-		std::filesystem::path filepath;
-		Decode(pElement, filepath);
-		if (filepath.empty())
-			return;
-		texture = AssetManager::GetTexture(filepath);
-		if (texture)
-		{
-			int filterMethod = pElement->IntAttribute("FilterMethod", (int)Texture::FilterMethod::Nearest);
-			texture->SetFilterMethod((Texture::FilterMethod)filterMethod);
-
-			int wrapMethod = pElement->IntAttribute("WrapMethod", (int)Texture::WrapMethod::Repeat);
-			texture->SetWrapMethod((Texture::WrapMethod)wrapMethod);
-		}
-	}
-}
-
 void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const Ref<Texture2D>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod)
 {
 	if (pElement && texture)

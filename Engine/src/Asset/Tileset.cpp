@@ -95,7 +95,7 @@ bool Tileset::SaveAs(const std::filesystem::path& filepath) const
 
 	if (m_Texture && m_Texture->GetTexture())
 	{
-		SerializationUtils::Encode(pRoot->InsertNewChildElement("Texture"), m_Texture->GetTexture());
+		SerializationUtils::Encode(pRoot->InsertNewChildElement("Texture"), m_Texture->GetTexture(), m_FilterMethod, m_WrapMethod);
 	}
 
 	for (size_t i = 0; i < m_Tiles.size(); i++)
@@ -231,7 +231,7 @@ bool Tileset::LoadXML(tinyxml2::XMLDocument* doc)
 	m_Tiles.clear();
 	Ref<Texture2D> texture;
 
-	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
+	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture, m_FilterMethod, m_WrapMethod);
 
 	if (texture)
 	{

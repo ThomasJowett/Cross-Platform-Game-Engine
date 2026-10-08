@@ -119,7 +119,7 @@ void TilesetView::OnImGuiRender()
 			ImGui::TableNextRow();
 			ImGui::TableSetColumnIndex(0);
 
-			if (ImGui::Texture2DEdit("Texture", m_LocalTileset->GetSubTexture()->GetTexture()))
+			if (ImGui::Texture2DEdit("Texture", m_LocalTileset->GetSubTexture()->GetTexture(), m_LocalTileset->GetFilterMethod(), m_LocalTileset->GetWrapMethod()))
 			{
 				m_Dirty = true;
 				m_LocalTileset->SetCurrentTile(0);

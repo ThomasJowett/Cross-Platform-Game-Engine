@@ -10,7 +10,7 @@
 
 #include <filesystem>
 
-bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVec2& size, Texture::FilterMethod* filterMethod, Texture::WrapMethod* wrapMethod)
+bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, Texture::FilterMethod& filterMethod, Texture::WrapMethod& wrapMethod, const ImVec2& size)
 {
 	bool edited = false;
 	ImGui::PushID(label);
@@ -110,33 +110,27 @@ bool ImGui::Texture2DEdit(const char* label, Ref<Texture2D>& texture, const ImVe
 	if (texture)
 	{
 		ImGui::SetNextItemWidth(150);
-		Texture::FilterMethod filter = filterMethod ? *filterMethod : texture->GetFilterMethod();
+		Texture::FilterMethod filter = filterMethod;
 		std::string filterlabel = "Filter Method##" + std::string(label);
 		if (ImGui::Combo(filterlabel.c_str(), (int*)&filter,
 			"Linear\0"
 			"Nearest\0"))
 		{
-			if (filterMethod)
-				*filterMethod = filter;
-			else
-				texture->SetFilterMethod(filter);
+			filterMethod = filter;
 			edited = true;
 		}
 
 		ImGui::Tooltip("Filter Method");
 
 		ImGui::SetNextItemWidth(150);
-		Texture::WrapMethod wrap = wrapMethod ? *wrapMethod : texture->GetWrapMethod();
+		Texture::WrapMethod wrap = wrapMethod;
 		std::string wraplabel = "Wrap Method##" + std::string(label);
 		if (ImGui::Combo(wraplabel.c_str(), (int*)&wrap,
 			"Clamp\0"
 			"Mirror\0"
 			"Repeat\0"))
 		{
-			if (wrapMethod)
-				*wrapMethod = wrap;
-			else
-				texture->SetWrapMethod(wrap);
+			wrapMethod = wrap;
 			edited = true;
 		}
 

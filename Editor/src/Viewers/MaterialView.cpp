@@ -144,7 +144,7 @@ void MaterialView::OnImGuiRender()
 
 		Ref<Texture2D> albedo = m_LocalMaterial->GetTexture(0);
 		Material::TextureSampling& albedoSampling = m_LocalMaterial->GetTextureSampling(0);
-		if (ImGui::Texture2DEdit("Albedo", albedo, ImVec2(128, 128), &albedoSampling.filterMethod, &albedoSampling.wrapMethod))
+		if (ImGui::Texture2DEdit("Albedo", albedo, albedoSampling.filterMethod, albedoSampling.wrapMethod, ImVec2(128, 128)))
 		{
 			m_LocalMaterial->AddTexture(albedo, 0);
 			m_Dirty = true;
@@ -152,7 +152,7 @@ void MaterialView::OnImGuiRender()
 
 		Ref<Texture2D> normalMap = m_LocalMaterial->GetTexture(1);
 		Material::TextureSampling& normalMapSampling = m_LocalMaterial->GetTextureSampling(1);
-		if (ImGui::Texture2DEdit("Normal Map", normalMap, ImVec2(128, 128), &normalMapSampling.filterMethod, &normalMapSampling.wrapMethod))
+		if (ImGui::Texture2DEdit("Normal Map", normalMap, normalMapSampling.filterMethod, normalMapSampling.wrapMethod, ImVec2(128, 128)))
 		{
 			m_LocalMaterial->AddTexture(normalMap, 1);
 			m_Dirty = true;
@@ -160,7 +160,7 @@ void MaterialView::OnImGuiRender()
 
 		Ref<Texture2D> mixMap = m_LocalMaterial->GetTexture(2);
 		Material::TextureSampling& mixMapSampling = m_LocalMaterial->GetTextureSampling(2);
-		if (ImGui::Texture2DEdit("Mix Map", mixMap, ImVec2(128, 128), &mixMapSampling.filterMethod, &mixMapSampling.wrapMethod))
+		if (ImGui::Texture2DEdit("Mix Map", mixMap, mixMapSampling.filterMethod, mixMapSampling.wrapMethod, ImVec2(128, 128)))
 		{
 			m_LocalMaterial->AddTexture(mixMap, 2);
 			m_Dirty = true;
