@@ -91,44 +91,14 @@ void TextureView::OnImGuiRender()
 			ImGui::Tooltip("3 channels images are not supported by WebGPU");
 		}
 
-		const bool is_selected = false;
-		bool edited = false;
-		if (ImGui::BeginCombo("Wrap Method", GetWrapMethodName(m_Texture->GetWrapMethod())))
+		if (ImGui::BeginCombo("Preview Filter", GetFilterMethodName(m_PreviewFilter)))
 		{
-			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Clamp), is_selected))
+			for (Texture::FilterMethod filter : { Texture::FilterMethod::Linear, Texture::FilterMethod::Nearest })
 			{
-				m_Texture->SetWrapMethod(Texture::WrapMethod::Clamp);
-				edited = true;
-			}
-			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Mirror), is_selected))
-			{
-				m_Texture->SetWrapMethod(Texture::WrapMethod::Mirror);
-				edited = true;
-			}
-			if (ImGui::Selectable(GetWrapMethodName(Texture::WrapMethod::Repeat), is_selected))
-			{
-				m_Texture->SetWrapMethod(Texture::WrapMethod::Repeat);
-				edited = true;
+				if (ImGui::Selectable(GetFilterMethodName(filter), m_PreviewFilter == filter))
+					m_PreviewFilter = filter;
 			}
 			ImGui::EndCombo();
-		}
-		if (ImGui::BeginCombo("Filter Method", GetFilterMethodName(m_Texture->GetFilterMethod())))
-		{
-			if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Linear), is_selected))
-			{
-				m_Texture->SetFilterMethod(Texture::FilterMethod::Linear);
-				edited = true;
-			}
-			if (ImGui::Selectable(GetFilterMethodName(Texture::FilterMethod::Nearest), is_selected))
-			{
-				m_Texture->SetFilterMethod(Texture::FilterMethod::Nearest);
-				edited = true;
-			}
-			ImGui::EndCombo();
-		}
-		if (edited)
-		{
-			m_Texture->Reload();
 		}
 
 		ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 8.0f, "%.2f");
@@ -139,17 +109,6 @@ void TextureView::OnImGuiRender()
 		ImGui::EndChild();
 	}
 	ImGui::End();
-}
-
-const char* TextureView::GetWrapMethodName(Texture::WrapMethod wrappingMethod)
-{
-	switch (wrappingMethod)
-	{
-	case Texture::WrapMethod::Clamp: return "Clamp";
-	case Texture::WrapMethod::Mirror: return "Mirror";
-	case Texture::WrapMethod::Repeat: return "Repeat";
-	default: return "None";
-	}
 }
 
 const char* TextureView::GetFilterMethodName(Texture::FilterMethod filterMethod)

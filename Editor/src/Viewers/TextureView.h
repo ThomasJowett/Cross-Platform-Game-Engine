@@ -18,7 +18,6 @@ public :
 	const std::string& GetWindowName() { return m_WindowName; }
 
 private:
-	static const char* GetWrapMethodName(Texture::WrapMethod wrappingMethod);
 	static const char* GetFilterMethodName(Texture::FilterMethod filterMethod);
 
 private:
@@ -29,4 +28,5 @@ private:
 	Ref<Texture2D> m_Texture;
 
 	float m_Zoom = 1.0f;
+	Texture::FilterMethod m_PreviewFilter = Texture::FilterMethod::Nearest;
 };
