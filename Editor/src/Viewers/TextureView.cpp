@@ -91,16 +91,6 @@ void TextureView::OnImGuiRender()
 			ImGui::Tooltip("3 channels images are not supported by WebGPU");
 		}
 
-		if (ImGui::BeginCombo("Preview Filter", GetFilterMethodName(m_PreviewFilter)))
-		{
-			for (Texture::FilterMethod filter : { Texture::FilterMethod::Linear, Texture::FilterMethod::Nearest })
-			{
-				if (ImGui::Selectable(GetFilterMethodName(filter), m_PreviewFilter == filter))
-					m_PreviewFilter = filter;
-			}
-			ImGui::EndCombo();
-		}
-
 		ImGui::SliderFloat("Zoom", &m_Zoom, 0.25f, 8.0f, "%.2f");
 
 		ImGuiWindowFlags window_flags_image = ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_AlwaysVerticalScrollbar;
@@ -109,14 +99,4 @@ void TextureView::OnImGuiRender()
 		ImGui::EndChild();
 	}
 	ImGui::End();
-}
-
-const char* TextureView::GetFilterMethodName(Texture::FilterMethod filterMethod)
-{
-	switch (filterMethod)
-	{
-	case Texture::FilterMethod::Linear: return "Linear";
-	case Texture::FilterMethod::Nearest: return "Nearest";
-	default: return "None";
-	}
 }
