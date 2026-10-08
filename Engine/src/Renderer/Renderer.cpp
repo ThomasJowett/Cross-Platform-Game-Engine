@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Sampler.h"
 #include "Renderer2D.h"
 #include "RenderCommand.h"
 #include "RenderPipeline.h"
@@ -215,6 +216,7 @@ void Renderer::Shutdown()
 {
 	Renderer2D::Shutdown();
 	s_RenderPipeline.reset();
+	Sampler::ClearCache();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
