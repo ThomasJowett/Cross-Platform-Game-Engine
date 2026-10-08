@@ -281,6 +281,11 @@ WebGPUTexture2D::WebGPUTexture2D(const std::filesystem::path& filepath, const st
 	stbi_image_free(data);
 }
 
+std::vector<wgpu::Texture> WebGPUTexture2D::s_PendingTextureReleases;
+std::vector<wgpu::TextureView> WebGPUTexture2D::s_PendingTextureViewReleases;
+std::vector<wgpu::Sampler> WebGPUTexture2D::s_PendingSamplerReleases;
+std::vector<wgpu::Buffer> WebGPUTexture2D::s_PendingBufferReleases;
+
 WebGPUTexture2D::~WebGPUTexture2D()
 {
 	PROFILE_FUNCTION();
@@ -294,18 +299,31 @@ WebGPUTexture2D::~WebGPUTexture2D()
 #ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
 		ImGui_ImplWGPU_InvalidateImageBindGroups();
 #endif
-		// destroy() forces immediate GPU-side invalidation, even for a command buffer that was
-		// already submitted but not yet executed by the GPU - exactly what happens here, since a
-		// scene change can free a texture the same frame its old sprite draw call was submitted.
-		// release() alone lets wgpu-native defer the actual free until the GPU is done with it.
-		m_Texture.release();
-		m_Sampler.release();
-		m_TextureView.release();
+		s_PendingTextureReleases.push_back(m_Texture);
+		s_PendingSamplerReleases.push_back(m_Sampler);
+		s_PendingTextureViewReleases.push_back(m_TextureView);
 		if (m_DepthSampleView)
-			m_DepthSampleView.release();
+			s_PendingTextureViewReleases.push_back(m_DepthSampleView);
 		if (m_ReadbackBufferCreated)
-			m_ReadbackBuffer.release();
+			s_PendingBufferReleases.push_back(m_ReadbackBuffer);
 	}
+}
+
+void WebGPUTexture2D::ProcessPendingReleases()
+{
+	PROFILE_FUNCTION();
+	for (wgpu::Texture& texture : s_PendingTextureReleases)
+		texture.release();
+	for (wgpu::Sampler& sampler : s_PendingSamplerReleases)
+		sampler.release();
+	for (wgpu::TextureView& view : s_PendingTextureViewReleases)
+		view.release();
+	for (wgpu::Buffer& buffer : s_PendingBufferReleases)
+		buffer.release();
+	s_PendingTextureReleases.clear();
+	s_PendingSamplerReleases.clear();
+	s_PendingTextureViewReleases.clear();
+	s_PendingBufferReleases.clear();
 }
 
 void WebGPUTexture2D::SetData(const void* data)
@@ -399,16 +417,16 @@ bool WebGPUTexture2D::Reload()
 	if (!m_Filepath.empty() && m_Filepath != "NO DATA" && m_Filepath != "NULL")
 	{
 		// Same hazards as ~WebGPUTexture2D() - a stale ImGui bind-group cache entry if the new
-		// view reuses this address, and destroy() forcing invalidation of a texture a still-in-
-		// flight command buffer might reference. See that destructor for the full explanation.
+		// view reuses this address, and releasing a view ImGui still references this frame.
 #ifdef IMGUI_IMPL_WGPU_HAS_INVALIDATE_IMAGE_BIND_GROUPS
 		ImGui_ImplWGPU_InvalidateImageBindGroups();
 #endif
-		if (m_Texture) {
-			m_Texture.release();
-		}
-		if (m_Sampler) m_Sampler.release();
-		if (m_TextureView) m_TextureView.release();
+		if (m_Texture)
+			s_PendingTextureReleases.push_back(m_Texture);
+		if (m_Sampler)
+			s_PendingSamplerReleases.push_back(m_Sampler);
+		if (m_TextureView)
+			s_PendingTextureViewReleases.push_back(m_TextureView);
 
 		bool success = LoadTextureFromFile();
 		if (success)
@@ -444,14 +462,14 @@ bool WebGPUTexture2D::operator==(const Texture& other) const
 void WebGPUTexture2D::SetFilterMethod(FilterMethod filterMethod)
 {
 	m_FilterMethod = filterMethod;
-	if (m_Sampler) m_Sampler.release();
+	if (m_Sampler) s_PendingSamplerReleases.push_back(m_Sampler);
 	CreateSampler();
 }
 
 void WebGPUTexture2D::SetWrapMethod(WrapMethod wrapMethod)
 {
 	m_WrapMethod = wrapMethod;
-	if (m_Sampler) m_Sampler.release();
+	if (m_Sampler) s_PendingSamplerReleases.push_back(m_Sampler);
 	CreateSampler();
 }
 

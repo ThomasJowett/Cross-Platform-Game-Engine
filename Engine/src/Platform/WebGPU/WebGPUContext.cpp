@@ -1,4 +1,5 @@
 #include "WebGPUContext.h"
+#include "WebGPUTexture.h"
 #include "GLFW/glfw3.h"
 #include "Logging/Instrumentor.h"
 #include <glad/glad.h>
@@ -133,6 +134,7 @@ void WebGPUContext::SwapBuffers()
 		}
 		m_SurfaceAcquired = false;
 	}
+	WebGPUTexture2D::ProcessPendingReleases();
 	if (m_NeedsResize && m_Device)
 	{
 		m_Surface.configure(m_SurfaceConfig);

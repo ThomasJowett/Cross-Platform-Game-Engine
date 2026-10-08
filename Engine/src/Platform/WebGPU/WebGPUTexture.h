@@ -3,6 +3,7 @@
 #include "Asset/Texture.h"
 #include "WebGPUContext.h"
 #include <memory>
+#include <vector>
 #include <webgpu/webgpu.hpp>
 
 class WebGPUTexture2D : public Texture2D, public std::enable_shared_from_this<WebGPUTexture2D>
@@ -31,6 +32,10 @@ public:
 	virtual void SetWrapMethod(WrapMethod wrapMethod) override;
 
 	int ReadPixel(uint32_t x, uint32_t y);
+
+	// Releases handles queued by the destructor, Reload() and the sampler setters; call once per frame
+	// after the previous frame's ImGui draw data has been submitted
+	static void ProcessPendingReleases();
 
 	inline const wgpu::Texture& GetTexture() const { return m_Texture; }
 	inline const wgpu::TextureView& GetTextureView() const { return m_TextureView; }
@@ -78,4 +83,10 @@ private:
 	// Buffer::mapAsync's callback closure is only kept alive by this handle - letting it go out of scope
 	// before the C callback fires leaves the callback pointing at freed memory.
 	std::unique_ptr<wgpu::BufferMapCallback> m_ReadPixelCallbackHandle;
+
+	// Released by ProcessPendingReleases, so ImGui draw data recorded this frame never sees a freed handle
+	static std::vector<wgpu::Texture> s_PendingTextureReleases;
+	static std::vector<wgpu::TextureView> s_PendingTextureViewReleases;
+	static std::vector<wgpu::Sampler> s_PendingSamplerReleases;
+	static std::vector<wgpu::Buffer> s_PendingBufferReleases;
 };
