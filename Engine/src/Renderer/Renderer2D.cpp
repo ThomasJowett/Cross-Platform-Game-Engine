@@ -820,13 +820,24 @@ void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>
 
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId)
 {
+	if (subtexture && subtexture->GetTexture())
+		UseQuadSampler(subtexture->GetTexture()->GetFilterMethod(), subtexture->GetTexture()->GetWrapMethod());
+	DrawSubTexturedQuad(transform, subtexture, colour, entityId);
+}
+
+void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod, const Colour& colour, int entityId)
+{
+	if (subtexture && subtexture->GetTexture())
+		UseQuadSampler(filterMethod, wrapMethod);
+	DrawSubTexturedQuad(transform, subtexture, colour, entityId);
+}
+
+void Renderer2D::DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId)
+{
 	PROFILE_FUNCTION();
 
 	if (!subtexture)
 		return;
-
-	if (subtexture->GetTexture())
-		UseQuadSampler(subtexture->GetTexture()->GetFilterMethod(), subtexture->GetTexture()->GetWrapMethod());
 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 	{

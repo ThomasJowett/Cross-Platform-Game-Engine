@@ -410,7 +410,8 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 		auto&& [transformComp, spriteComp] = animatedSpriteGroup.get(entity);
 		if (spriteComp.spriteSheet && spriteComp.spriteSheet->GetSubTexture()) {
 			spriteComp.spriteSheet->GetSubTexture()->SetCurrentCell(spriteComp.currentFrame);
-			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.spriteSheet->GetSubTexture(), spriteComp.tint, (int)entity);
+			Renderer2D::DrawQuad(transformComp.GetWorldMatrix(), spriteComp.spriteSheet->GetSubTexture(), spriteComp.spriteSheet->GetFilterMethod(),
+				spriteComp.spriteSheet->GetWrapMethod(), spriteComp.tint, (int)entity);
 		}
 	}
 

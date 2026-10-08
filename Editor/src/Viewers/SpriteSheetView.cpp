@@ -130,7 +130,8 @@ void SpriteSheetView::OnImGuiRender()
 
 			ImGui::BeginChild("##Settings", ImVec2(0.0f, 0.0f));
 
-			if (ImGui::Texture2DEdit("Texture", m_LocalSpriteSheet->GetSubTexture()->GetTexture()))
+			if (ImGui::Texture2DEdit("Texture", m_LocalSpriteSheet->GetSubTexture()->GetTexture(), ImVec2(64.0f, 64.0f),
+				&m_LocalSpriteSheet->GetFilterMethod(), &m_LocalSpriteSheet->GetWrapMethod()))
 			{
 				m_Dirty = true;
 				m_LocalSpriteSheet->GetSubTexture()->RecalculateCellsDimensions();

@@ -30,12 +30,17 @@ public:
 	Ref<SubTexture2D> GetSubTexture() const { return m_Texture; }
 	void SetSubTexture(Ref<SubTexture2D> subTexture);
 
+	Texture::FilterMethod& GetFilterMethod() { return m_FilterMethod; }
+	Texture::WrapMethod& GetWrapMethod() { return m_WrapMethod; }
+
 	std::unordered_map<std::string, Animation>& GetAnimations() { return m_Animations; }
 	Animation* GetAnimation(const std::string& animationName);
 
 private:
 	Ref<SubTexture2D> m_Texture;
 	std::unordered_map<std::string, Animation> m_Animations;
+	Texture::FilterMethod m_FilterMethod = Texture::FilterMethod::Nearest;
+	Texture::WrapMethod m_WrapMethod = Texture::WrapMethod::Repeat;
 
 	bool LoadXML(tinyxml2::XMLDocument* doc);
 };

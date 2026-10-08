@@ -92,7 +92,7 @@ bool SpriteSheet::SaveAs(const std::filesystem::path& filepath) const
 
 	if (m_Texture && m_Texture->GetTexture())
 	{
-		SerializationUtils::Encode(pRoot->InsertNewChildElement("Texture"), m_Texture->GetTexture());
+		SerializationUtils::Encode(pRoot->InsertNewChildElement("Texture"), m_Texture->GetTexture(), m_FilterMethod, m_WrapMethod);
 	}
 
 	for (auto&& [name, animation] : m_Animations)
@@ -175,7 +175,7 @@ bool SpriteSheet::LoadXML(tinyxml2::XMLDocument* doc)
 
 	Ref<Texture2D> texture;
 
-	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture);
+	SerializationUtils::Decode(pRoot->FirstChildElement("Texture"), texture, m_FilterMethod, m_WrapMethod);
 
 	if (texture)
 	{

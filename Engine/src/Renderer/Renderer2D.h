@@ -55,6 +55,7 @@ public:
 	// Samples the texture with the owner's filter/wrap rather than the texture's own
 	static void DrawQuad(const Matrix4x4& transform, const Ref<Texture>& texture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod, const Colour& colour = Colours::WHITE, int entityId = -1);
 	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour = Colours::WHITE, int entityId = -1);
+	static void DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod, const Colour& colour = Colours::WHITE, int entityId = -1);
 
 	// Sprite
 	static void DrawSprite(const Matrix4x4& transform, const SpriteComponent& spriteComp, int entityId);
@@ -106,6 +107,7 @@ public:
 private:
 	static float AssignQuadTextureSlot(const Ref<Texture>& texture);
 	static void UseQuadSampler(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
+	static void DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId);
 	static void DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId);
 	static void DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId);
 
