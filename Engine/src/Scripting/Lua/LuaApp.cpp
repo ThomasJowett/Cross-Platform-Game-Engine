@@ -35,6 +35,10 @@ void BindApp(sol::state& state)
 		{ return Application::GetWindow()->RestoreWindow(); });
 	SetFunction(application, "App", "SetWindowMode", "Set the window mode (Windowed, Full_Screen or Borderless)", [](sol::this_state s, WindowMode windowMode)
 		{ return Application::GetWindow()->SetWindowMode(windowMode); });
+	SetFunction(application, "App", "SetVSync", "Turn V-Sync on or off; takes effect from the next frame and is saved to the settings", [](sol::this_state s, bool enabled)
+		{ Application::GetWindow()->SetVSync(enabled); });
+	SetFunction(application, "App", "IsVSync", "True if V-Sync is on", [](sol::this_state s)
+		{ return Application::GetWindow()->IsVSync(); });
 	SetFunction(application, "App", "GetWindowWidth", "Get the width of the application window, in pixels - the same coordinate space as Input.GetMousePos()", [](sol::this_state s)
 		{ return Application::GetGameViewportWidth(); });
 	SetFunction(application, "App", "GetWindowHeight", "Get the height of the application window, in pixels - the same coordinate space as Input.GetMousePos()", [](sol::this_state s)
