@@ -38,7 +38,21 @@ void PostProcessStack::Execute(Ref<Texture> colourTexture, Ref<Texture> depthTex
 
 	Ref<Texture> currentColour = colourTexture;
 
-	m_PostProcessData.screenSize = Vector2f(static_cast<float>(colourTexture->GetWidth()), static_cast<float>(colourTexture->GetHeight()));
+	uint32_t width = colourTexture->GetWidth();
+	uint32_t height = colourTexture->GetHeight();
+
+	if (!m_Scratch)
+	{
+		FrameBufferSpecification spec = { width, height };
+		spec.attachments = { FrameBufferTextureFormat::RGBA8 };
+		m_Scratch = FrameBuffer::Create(spec);
+	}
+	else if (m_Scratch->GetSpecification().width != width || m_Scratch->GetSpecification().height != height)
+	{
+		m_Scratch->Resize(width, height);
+	}
+
+	m_PostProcessData.screenSize = Vector2f(static_cast<float>(width), static_cast<float>(height));
 
 	m_PostProcessData.time += Application::GetDeltaTime();
 	m_PostProcessData.deltaTime = Application::GetDeltaTime();
@@ -49,7 +63,7 @@ void PostProcessStack::Execute(Ref<Texture> colourTexture, Ref<Texture> depthTex
 		Ref<FrameBuffer> outputTarget = pingIsSource ? pong : ping;
 
 		effect->Apply(currentColour, depthTexture, entityIdTexture,
-			pingIsSource ? ping : pong, pingIsSource ? pong : ping,
+			pingIsSource ? ping : pong, pingIsSource ? pong : ping, m_Scratch,
 			fullscreenQuad, m_PostProcessData, m_PostProcessUniformBuffer);
 
 		currentColour = outputTarget->GetColourAttachment(0);

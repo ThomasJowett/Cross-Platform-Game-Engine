@@ -28,8 +28,9 @@ public:
 	// UnBind() around every framebuffer it writes to (ping, pong, or both) - PostProcessStack::Execute()
 	// only tracks which of ping/pong holds the result, it doesn't open a render pass itself, since only
 	// the effect knows how many internal passes it needs.
+	// scratch holds intermediate results for effects with more than one internal pass, since ping/pong belong to the chain
 	virtual void Apply(Ref<Texture> colourTexture, Ref<Texture> depthTexture, Ref<Texture> entityIdTexture,
-		const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong,
+		const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong, const Ref<FrameBuffer> scratch,
 		Ref<Mesh> fullscreenQuad,
 		PostProcessData& data, Ref<UniformBuffer> postProcessBuffer) = 0;
 
@@ -66,4 +67,7 @@ private:
 
 	Ref<UniformBuffer> m_PostProcessUniformBuffer;
 	PostProcessData m_PostProcessData;
+
+	// Shared by every effect, created and resized to the colour texture in Execute()
+	Ref<FrameBuffer> m_Scratch;
 };

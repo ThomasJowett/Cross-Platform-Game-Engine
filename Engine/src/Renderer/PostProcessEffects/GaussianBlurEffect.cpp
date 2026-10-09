@@ -11,7 +11,7 @@ GaussianBlurEffect::GaussianBlurEffect(float strength)
 }
 
 void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTexture, Ref<Texture> entityIdTexture,
-	const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong,
+	const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong, const Ref<FrameBuffer> scratch,
 	Ref<Mesh> fullscreenQuad,
 	PostProcessData& data, Ref<UniformBuffer> postProcessBuffer)
 {
@@ -34,11 +34,11 @@ void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTex
 
 	data.customParam2 = m_Strength; // Set the strength of the blur effect
 
-	// Horizontal pass: colourTexture -> ping
+	// Horizontal pass: colourTexture -> scratch
 	data.customParam1 = true;
 	postProcessBuffer->SetData(&data, sizeof(PostProcessData));
 
-	ping->Bind();
+	scratch->Bind();
 	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 	m_Pipeline->Bind();
@@ -50,9 +50,9 @@ void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTex
 	fullscreenQuad->GetIndexBuffer()->UnBind();
 	fullscreenQuad->GetVertexBuffer()->UnBind();
 	RenderCommand::EndRenderPass();
-	ping->UnBind();
+	scratch->UnBind();
 
-	// Vertical pass: ping -> pong
+	// Vertical pass: scratch -> pong
 	data.customParam1 = false;
 	postProcessBuffer->SetData(&data, sizeof(PostProcessData));
 
@@ -60,7 +60,7 @@ void GaussianBlurEffect::Apply(Ref<Texture> colourTexture, Ref<Texture> depthTex
 	RenderCommand::StartRenderPass();
 	RenderCommand::Clear();
 	m_Pipeline->Bind();
-	m_Pipeline->SetTexture(ping->GetColourAttachment(0), 0);
+	m_Pipeline->SetTexture(scratch->GetColourAttachment(0), 0);
 	m_Pipeline->SetUniformBuffer(postProcessBuffer, 3);
 	fullscreenQuad->GetVertexBuffer()->Bind();
 	fullscreenQuad->GetIndexBuffer()->Bind();

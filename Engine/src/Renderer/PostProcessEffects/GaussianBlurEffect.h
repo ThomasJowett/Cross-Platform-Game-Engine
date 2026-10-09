@@ -9,7 +9,7 @@ public:
 	virtual ~GaussianBlurEffect() = default;
 
 	virtual void Apply(Ref<Texture> colourTexture, Ref<Texture> depthTexture, Ref<Texture> entityIdTexture,
-		const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong,
+		const Ref<FrameBuffer> ping, const Ref<FrameBuffer> pong, const Ref<FrameBuffer> scratch,
 		Ref<Mesh> fullscreenQuad,
 		PostProcessData& data, Ref<UniformBuffer> postProcessBuffer) override;
 
