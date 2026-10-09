@@ -71,10 +71,6 @@ if(APPLE)
         INSTALL_RPATH "@executable_path"
     )
 
-    add_custom_command(TARGET Editor POST_BUILD
-        COMMAND codesign --entitlements "${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist" --deep -f -s "-" "$<TARGET_BUNDLE_DIR:Editor>"
-        COMMENT "Codesigning Editor bundle with entitlements"
-    )
 else()
     add_executable(Editor ${SOURCES} ${HEADERS} Icon.ico ${RESOURCE_FILES} ${DATA_FILES})
 endif()
@@ -144,6 +140,14 @@ add_dependencies(Editor Runtime)
 target_copy_webgpu_binaries(Editor)
 
 if(APPLE)
+    # Signing must be the last POST_BUILD step, after every copy into the bundle
+    add_custom_command(TARGET Editor POST_BUILD
+        # Lets macOS show "requires macOS 11" on older versions instead of failing to launch
+        COMMAND plutil -replace LSMinimumSystemVersion -string "${CMAKE_OSX_DEPLOYMENT_TARGET}" "$<TARGET_BUNDLE_CONTENT_DIR:Editor>/Info.plist"
+        COMMAND codesign --entitlements "${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist" --deep -f -s "-" "$<TARGET_BUNDLE_DIR:Editor>"
+        COMMENT "Codesigning Editor bundle with entitlements"
+    )
+
     set_target_properties(Editor PROPERTIES INSTALL_RPATH "@executable_path")
 
     # A POST_BUILD command on the Editor target only reruns when Editor's own sources change,

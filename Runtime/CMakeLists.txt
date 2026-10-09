@@ -22,6 +22,10 @@ if(APPLE)
         BUILD_WITH_INSTALL_RPATH TRUE
         INSTALL_RPATH "@executable_path"
     )
+    # Lets macOS show "requires macOS 11" on older versions instead of failing to launch
+    add_custom_command(TARGET Runtime POST_BUILD
+        COMMAND plutil -replace LSMinimumSystemVersion -string "${CMAKE_OSX_DEPLOYMENT_TARGET}" "$<TARGET_BUNDLE_CONTENT_DIR:Runtime>/Info.plist"
+    )
 else()
     add_executable(Runtime ${SOURCES} ${DATA_FILES})
 endif()

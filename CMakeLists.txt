@@ -1,5 +1,11 @@
 cmake_minimum_required(VERSION 3.10 FATAL_ERROR)
 cmake_policy(VERSION 3.10)
+
+# Oldest macOS the builds run on, the minimum of the prebuilt wgpu-native library; must be set before project()
+if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "11.0" CACHE STRING "Minimum macOS version" FORCE)
+endif()
+
 project(Cross-Platform-Game-Engine)
 
 set(CMAKE_CXX_STANDARD 17)
