@@ -113,6 +113,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--exit-after <seconds>] "
 			<< " [--scene <path>] "
 			<< " [--headless] "
+			<< " [--fixed-step] "
 			<< " [--log <path>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
@@ -131,6 +132,7 @@ int Application::Init(int argc, char* argv[])
 	// Scripted/headless testing flags - see the matching getters in Application.h.
 	m_AutoPlay = input.CmdOptionExists("--auto-play");
 	m_Headless = input.CmdOptionExists("--headless");
+	m_FixedStep = input.CmdOptionExists("--fixed-step");
 
 	if (input.CmdOptionExists("--exit-after"))
 	{
@@ -237,9 +239,9 @@ void Application::Tick() {
 
 	AssetManager::ProcessPendingFileEvents();
 
-	double newTime = GetTime();
-	double frameTime = newTime - m_CurrentTime;
-	m_CurrentTime = newTime;
+	// --fixed-step: exactly one fixed update per frame, independent of how long the frame took
+	double frameTime = m_FixedStep ? (double)m_FixedUpdateInterval : GetTime() - m_CurrentTime;
+	m_CurrentTime += frameTime;
 
 	// --exit-after: let this frame finish normally, just don't schedule another one.
 	if (m_ExitDeadline >= 0.0 && m_CurrentTime >= m_ExitDeadline)
@@ -327,7 +329,7 @@ void Application::Run()
 		ENGINE_ERROR("Application is already running");
 	}
 
-	m_CurrentTime = GetTime();
+	m_CurrentTime = m_FixedStep ? 0.0 : GetTime();
 	m_Accumulator = 0.0;
 
 	if (m_ExitAfterSeconds >= 0.0)

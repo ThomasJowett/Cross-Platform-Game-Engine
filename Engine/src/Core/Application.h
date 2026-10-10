@@ -70,6 +70,9 @@ public:
 
 	// True if launched with --headless: no window, GPU, ImGui or settings file
 	static bool IsHeadless() { return Get().m_Headless; }
+
+	// True if launched with --fixed-step: each frame advances time by exactly one fixed update interval
+	static bool IsFixedStep() { return Get().m_FixedStep; }
 	// Scene path to load instead of the project's own default scene, from --scene <path>.
 	// Empty if not set.
 	static const std::string& GetSceneOverride() { return Get().m_SceneOverride; }
@@ -134,6 +137,7 @@ private:
 
 	bool m_AutoPlay = false;
 	bool m_Headless = false;
+	bool m_FixedStep = false;
 	std::string m_SceneOverride;
 	// Duration in seconds from --exit-after; negative means disabled. m_ExitDeadline is the
 	// absolute GetTime() value computed from it once Run() starts.
