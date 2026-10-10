@@ -90,17 +90,16 @@ void BindInput(sol::state& state)
 	SetEnum(state, "Cursors", "Cursor shapes, for Input.SetCursor", cursorItems);
 
 	SetFunction(input, "Input", "SetCursor", "Set the appearance of the cursor", [](sol::this_state s, Cursors cursor)
-		{ return Application::GetWindow()->SetCursor(cursor); });
+		{ if (Window* window = Application::GetWindow()) window->SetCursor(cursor); });
 	SetFunction(input, "Input", "DisableCursor", "Disable the cursor", [](sol::this_state s)
 		{
-			if (SceneManager::GetSceneState() == SceneState::Play)
-				return Application::GetWindow()->DisableCursor();
-			else
-				return;
+			Window* window = Application::GetWindow();
+			if (window && SceneManager::GetSceneState() == SceneState::Play)
+				window->DisableCursor();
 		});
 	SetFunction(input, "Input", "EnableCursor", "Enable the cursor", [](sol::this_state s)
-		{ return Application::GetWindow()->EnableCursor(); });
+		{ if (Window* window = Application::GetWindow()) window->EnableCursor(); });
 	SetFunction(input, "Input", "SetCursorPosition", "Set the position of the cursor", [](sol::this_state s, double xPos, double yPos)
-		{ return Application::GetWindow()->SetCursorPosition(xPos, yPos); });
+		{ if (Window* window = Application::GetWindow()) window->SetCursorPosition(xPos, yPos); });
 }
 }
