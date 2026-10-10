@@ -245,8 +245,11 @@ void Application::Tick() {
 		m_Accumulator -= m_FixedUpdateInterval;
 	}
 
-	m_Window->GetContext()->MakeCurrent();
-	m_Window->OnUpdate();
+	if (m_Window)
+	{
+		m_Window->GetContext()->MakeCurrent();
+		m_Window->OnUpdate();
+	}
 
 	// On Update 
 	{
