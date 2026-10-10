@@ -326,6 +326,10 @@ Vector3f Settings::GetDefaultVector3f(const char* section, const char* key)
 
 void Settings::SaveSettings()
 {
+	// Never initialised, as in headless runs
+	if (s_Filename.empty())
+		return;
+
 	SI_Error rc = s_Ini->SaveFile(s_Filename.c_str());
 
 	if (rc < 0)
