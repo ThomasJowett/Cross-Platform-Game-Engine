@@ -66,6 +66,8 @@ void Input::ClearInputData()
 
 bool Input::IsKeyPressedImpl(int keycode)
 {
+	if (!m_Window)
+		return false;
 	try
 	{
 		int state = glfwGetKey(m_Window, keycode);
@@ -80,6 +82,8 @@ bool Input::IsKeyPressedImpl(int keycode)
 
 bool Input::IsMouseButtonPressedImpl(int button)
 {
+	if (!m_Window)
+		return false;
 	try
 	{
 		int state = glfwGetMouseButton(m_Window, button);
@@ -94,6 +98,8 @@ bool Input::IsMouseButtonPressedImpl(int button)
 
 std::pair<double, double> Input::GetMousePosImpl()
 {
+	if (!m_Window)
+		return { 0.0, 0.0 };
 	try
 	{
 		double x, y;
