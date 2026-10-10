@@ -38,7 +38,9 @@ Ref<Shader> ShaderLibrary::Load(const std::string& name, bool postProcess, const
 		return m_Shaders[name];
 
 	Ref<Shader> shader = Shader::Create(name, fileDirectory, postProcess);
-	Add(shader);
+	// Null when headless
+	if (shader)
+		Add(shader);
 	return shader;
 }
 
