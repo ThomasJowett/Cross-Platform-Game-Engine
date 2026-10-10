@@ -74,6 +74,10 @@ Application::~Application()
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
+#ifndef __EMSCRIPTEN__
+	if (m_Headless)
+		glfwTerminate();
+#endif
 }
 
 int Application::Init(int argc, char* argv[])
