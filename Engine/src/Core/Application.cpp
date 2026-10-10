@@ -249,7 +249,7 @@ void Application::Tick() {
 	}
 
 	// Render the imgui of each of the layers
-	if (m_ImGuiManager->IsUsing())
+	if (m_ImGuiManager && m_ImGuiManager->IsUsing())
 	{
 		m_ImGuiManager->Begin();
 		{
@@ -329,7 +329,8 @@ void Application::OnEvent(Event& e)
 		return false;
 		});
 
-	m_ImGuiManager->OnEvent(e);
+	if (m_ImGuiManager)
+		m_ImGuiManager->OnEvent(e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{
