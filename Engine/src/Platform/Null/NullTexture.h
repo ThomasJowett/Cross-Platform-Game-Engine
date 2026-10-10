@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Texture.h"
+#include "Asset/Texture.h"
 
 // Texture for headless runs: reads the image size and channels but creates no GPU resource
 class NullTexture2D : public Texture2D
