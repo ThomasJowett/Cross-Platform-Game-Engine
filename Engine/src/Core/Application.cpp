@@ -165,6 +165,20 @@ int Application::Init(int argc, char* argv[])
 	Random::Init();
 	LuaManager::Init();
 
+	if (m_Headless)
+	{
+#ifndef __EMSCRIPTEN__
+		// The null platform needs no display, but keeps the timer and joystick functions working
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
+		if (glfwInit() != GLFW_TRUE)
+		{
+			ENGINE_CRITICAL("Could not initialise GLFW");
+			return EXIT_FAILURE;
+		}
+#endif
+		Input::Init(nullptr);
+	}
+
 	if (RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
 
