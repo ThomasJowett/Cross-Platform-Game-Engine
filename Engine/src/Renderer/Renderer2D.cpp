@@ -1,4 +1,5 @@
 #include "Renderer2D.h"
+#include "Logging/Instrumentor.h"
 #include "Renderer.h"
 
 #include "Buffer.h"
@@ -175,6 +176,12 @@ struct Renderer2DData
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 static Renderer2DData s_Data;
+
+// Nothing is set up to draw into when there is no renderer
+static bool IsDrawingDisabled()
+{
+	return RendererAPI::GetAPI() == RendererAPI::API::None;
+}
 
 bool Renderer2D::Init()
 {
@@ -750,6 +757,8 @@ float Renderer2D::AssignQuadTextureSlot(const Ref<Texture>& texture)
 void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	ENGINE_TRACE("Renderer2D: DrawQuad (color)");
 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
@@ -792,6 +801,8 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<Texture>& textur
 void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	ENGINE_TRACE("Renderer2D: DrawQuad (texture)");
 
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
@@ -835,6 +846,8 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& s
 void Renderer2D::DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 
 	if (!subtexture)
 		return;
@@ -868,6 +881,8 @@ void Renderer2D::DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTe
 void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 
 	if (!texture)
 		return;
@@ -898,6 +913,9 @@ void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Textur
 
 void Renderer2D::UseQuadSampler(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod)
 {
+	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	Ref<Sampler> sampler = Sampler::Get(filterMethod, wrapMethod);
 	if (sampler == s_Data.quadSampler)
 		return;
@@ -947,6 +965,8 @@ Ref<SpriteAtlas> Renderer2D::GetSpriteAtlas()
 void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, float thickness, float fade, int entityId)
 {
 	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 
 	if (s_Data.circleIndexCount >= s_Data.maxIndices)
 	{
@@ -978,10 +998,13 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const CircleRendererComp
 
 void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const float& thickness, const Colour& colour)
 {
+	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	if (s_Data.lineIndexCount >= s_Data.maxLineIndices)
 		NextLinesBatch();
 
-	////world to clip
+	//world to clip
 	Vector3f clipI;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(start.x, start.y, 0.0f);
 	Vector3f clipJ;//s_Data.cameraBuffer.viewProjectionMatrix * Vector3f(end.x, end.x, 0.0f);
 
@@ -1059,6 +1082,9 @@ void Renderer2D::DrawLine(const Vector2f& start, const Vector2f& end, const floa
 
 void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const Colour& colour, int entityId)
 {
+	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	if (s_Data.hairLineVertexCount + 2 > s_Data.maxVertices)
 		NextHairLinesBatch();
 	s_Data.hairLineVertexBufferPtr->position = start;
@@ -1173,6 +1199,9 @@ void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float
 
 void Renderer2D::DrawString(const std::string& text, const Ref<Font> font, float maxWidth, const Matrix4x4& transform, const Colour& colour, int entityId)
 {
+	PROFILE_FUNCTION();
+	if (IsDrawingDisabled())
+		return;
 	if (text.empty() || font == nullptr)
 		return;
 
