@@ -136,7 +136,9 @@ int Application::Init(int argc, char* argv[])
 			m_SceneOverride = value;
 	}
 
-	Settings::Init();
+	// Headless runs keep settings in memory so they never read or write the user's file
+	if (!m_Headless)
+		Settings::Init();
 	SetDefaultSettings();
 
 	std::string file;
