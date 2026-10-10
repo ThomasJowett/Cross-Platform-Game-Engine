@@ -168,6 +168,12 @@ int Application::Init(int argc, char* argv[])
 
 Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 {
+	if (m_Headless)
+	{
+		ENGINE_ERROR("Cannot create a window in headless mode");
+		return nullptr;
+	}
+
 	const char* windowStr = props.title.c_str();
 	Settings::SetDefaultInt(windowStr, "Window_Width", props.width);
 	Settings::SetDefaultInt(windowStr, "Window_Height", props.height);
