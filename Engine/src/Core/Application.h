@@ -85,8 +85,12 @@ public:
 	static void ClearGameViewportOverride() { Get().m_HasGameViewportOverride = false; }
 	static bool HasGameViewportOverride() { return Get().m_HasGameViewportOverride; }
 	static std::pair<double, double> GetGameViewportMousePos() { return { Get().m_GameViewportMouseX, Get().m_GameViewportMouseY }; }
-	static uint32_t GetGameViewportWidth() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportWidth : Get().GetWindowImpl()->GetWidth(); }
-	static uint32_t GetGameViewportHeight() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportHeight : Get().GetWindowImpl()->GetHeight(); }
+	static uint32_t GetGameViewportWidth();
+	static uint32_t GetGameViewportHeight();
+
+	// Viewport size reported when there is no window
+	static constexpr uint32_t HeadlessViewportWidth = 1920;
+	static constexpr uint32_t HeadlessViewportHeight = 1080;
 
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }

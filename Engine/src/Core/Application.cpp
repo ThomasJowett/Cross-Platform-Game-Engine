@@ -529,6 +529,24 @@ double Application::GetTime() const
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
+uint32_t Application::GetGameViewportWidth()
+{
+	Application& app = Get();
+	if (app.m_HasGameViewportOverride)
+		return app.m_GameViewportWidth;
+	return app.m_Window ? app.m_Window->GetWidth() : HeadlessViewportWidth;
+}
+
+uint32_t Application::GetGameViewportHeight()
+{
+	Application& app = Get();
+	if (app.m_HasGameViewportOverride)
+		return app.m_GameViewportHeight;
+	return app.m_Window ? app.m_Window->GetHeight() : HeadlessViewportHeight;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 bool Application::SetOpenDocument(const std::filesystem::path& filepath)
 {
 	return s_Instance->SetOpenDocumentImpl(filepath);
