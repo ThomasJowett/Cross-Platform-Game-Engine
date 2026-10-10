@@ -3,6 +3,7 @@
 #include "Renderer/Renderer.h"
 #include "Platform/OpenGL/OpenGLTexture.h"
 #include "Platform/WebGPU/WebGPUTexture.h"
+#include "Platform/Null/NullTexture.h"
 
 Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format, uint32_t samples, const void* pixels)
 {
@@ -10,7 +11,7 @@ Ref<Texture2D> Texture2D::Create(uint32_t width, uint32_t height, Format format,
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
-		break;
+		return CreateRef<NullTexture2D>(width, height, format);
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(width, height, format, samples, pixels);
 	case RendererAPI::API::WebGPU:
@@ -31,7 +32,7 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath)
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
-		break;
+		return CreateRef<NullTexture2D>(filepath);
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(filepath);
 	case RendererAPI::API::WebGPU:
@@ -50,7 +51,7 @@ Ref<Texture2D> Texture2D::Create(const std::filesystem::path& filepath, const st
 	switch (Renderer::GetAPI())
 	{
 	case RendererAPI::API::None:
-		break;
+		return CreateRef<NullTexture2D>(filepath, imageData);
 	case RendererAPI::API::OpenGL:
 		return CreateRef<OpenGLTexture2D>(filepath, imageData);
 	case RendererAPI::API::WebGPU:

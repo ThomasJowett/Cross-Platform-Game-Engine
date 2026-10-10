@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <string>
+#include <filesystem>
 
 #include "Core/core.h"
 
@@ -14,7 +15,8 @@
 class Logger
 {
 public:
-	static void Init();
+	// Logs to logPath, or Log.txt in the working directory when it is empty
+	static void Init(const std::filesystem::path& logPath = {});
 
 	inline static Ref<spdlog::logger>& GetEngineLogger() { return s_EngineLogger; }
 	inline static Ref<spdlog::logger>& GetClientLogger() { return s_ClientLogger; }

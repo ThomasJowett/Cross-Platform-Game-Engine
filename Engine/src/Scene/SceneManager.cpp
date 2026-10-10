@@ -139,8 +139,10 @@ bool SceneManager::FinalChangeScene()
 		return false;
 
 	// Default to the window size before notifying, so listeners with their own viewport can override it
-	const char* title = Application::GetWindow()->GetTitle();
-	s_CurrentScene->OnViewportResize(Settings::GetInt(title, "Window_Width"), Settings::GetInt(title, "Window_Height"));
+	if (Window* window = Application::GetWindow())
+		s_CurrentScene->OnViewportResize(Settings::GetInt(window->GetTitle(), "Window_Width"), Settings::GetInt(window->GetTitle(), "Window_Height"));
+	else
+		s_CurrentScene->OnViewportResize(Application::GetGameViewportWidth(), Application::GetGameViewportHeight());
 
 	SceneChangedEvent event(s_NextFilepath);
 	Application::CallEvent(event);

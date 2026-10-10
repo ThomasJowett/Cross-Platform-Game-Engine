@@ -28,10 +28,10 @@ public:
 	static Window* GetWindow() { return Get().GetWindowImpl(); }
 
 	// Set whether to show Dear ImGui
-	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
+	static void ShowImGui(bool showImgui) { if (Get().m_ImGuiManager) Get().m_ImGuiManager->SetIsUsing(showImgui); }
 
 	// Toggle whether Dear ImGui to shown
-	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
+	static void ToggleImGui() { if (Get().m_ImGuiManager) Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 
 	static LayerStack& GetLayerStack() { return Get().m_LayerStack; }
 
@@ -68,6 +68,15 @@ public:
 	// scripted/headless testing that needs the scene running without a manual Play click.
 	static bool ShouldAutoPlay() { return Get().m_AutoPlay; }
 
+	// True if launched with --headless: no window, GPU, ImGui or settings file
+	static bool IsHeadless() { return Get().m_Headless; }
+
+	// True if launched with --fixed-step: each frame advances time by exactly one fixed update interval
+	static bool IsFixedStep() { return Get().m_FixedStep; }
+
+	// Number of frames ticked since Run() started
+	static uint64_t GetFrameCount() { return Get().m_FrameCount; }
+
 	// Scene path to load instead of the project's own default scene, from --scene <path>.
 	// Empty if not set.
 	static const std::string& GetSceneOverride() { return Get().m_SceneOverride; }
@@ -83,8 +92,12 @@ public:
 	static void ClearGameViewportOverride() { Get().m_HasGameViewportOverride = false; }
 	static bool HasGameViewportOverride() { return Get().m_HasGameViewportOverride; }
 	static std::pair<double, double> GetGameViewportMousePos() { return { Get().m_GameViewportMouseX, Get().m_GameViewportMouseY }; }
-	static uint32_t GetGameViewportWidth() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportWidth : Get().GetWindowImpl()->GetWidth(); }
-	static uint32_t GetGameViewportHeight() { return Get().m_HasGameViewportOverride ? Get().m_GameViewportHeight : Get().GetWindowImpl()->GetHeight(); }
+	static uint32_t GetGameViewportWidth();
+	static uint32_t GetGameViewportHeight();
+
+	// Viewport size reported when there is no window
+	static constexpr uint32_t HeadlessViewportWidth = 1920;
+	static constexpr uint32_t HeadlessViewportHeight = 1080;
 
 private:
 	inline Window* GetWindowImpl() { return m_Window.get(); }
@@ -127,6 +140,9 @@ private:
 	double m_Accumulator = 0.0;
 
 	bool m_AutoPlay = false;
+	bool m_Headless = false;
+	bool m_FixedStep = false;
+	uint64_t m_FrameCount = 0;
 	std::string m_SceneOverride;
 	// Duration in seconds from --exit-after; negative means disabled. m_ExitDeadline is the
 	// absolute GetTime() value computed from it once Run() starts.

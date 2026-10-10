@@ -124,6 +124,8 @@ public:
 
 	uint32_t GetIndexCount() { return (uint32_t)m_Indices.size(); }
 private:
+	void CreateBuffers();
+
 	Ref<VertexBuffer> m_VertexBuffer;
 	Ref<IndexBuffer> m_IndexBuffer;
 	std::vector<Submesh> m_Submeshes;

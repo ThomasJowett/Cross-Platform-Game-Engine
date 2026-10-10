@@ -65,7 +65,8 @@ Application::~Application()
 	// Detach while members and subsystems are still alive; layers save state that uses them
 	m_LayerStack.DetachAll();
 	SceneManager::Shutdown();
-	Settings::SaveSettings();
+	if (!m_Headless)
+		Settings::SaveSettings();
 	if (m_Window) {
 		if (m_ImGuiManager) m_ImGuiManager->Shutdown();
 		Renderer::Shutdown();
@@ -73,10 +74,25 @@ Application::~Application()
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
+#ifndef __EMSCRIPTEN__
+	if (m_Headless)
+		glfwTerminate();
+#endif
 }
 
 int Application::Init(int argc, char* argv[])
 {
+	InputParser input(argc, argv);
+
+	// Resolved before the working directory changes below
+	std::filesystem::path logPath;
+	if (input.CmdOptionExists("--log"))
+	{
+		const std::string& value = input.GetCmdOption("--log");
+		if (!value.empty())
+			logPath = std::filesystem::absolute(value);
+	}
+
 	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 #ifdef __APPLE__
 	if (m_WorkingDirectory.filename() == "MacOS")
@@ -85,9 +101,7 @@ int Application::Init(int argc, char* argv[])
 	}
 #endif
 	std::filesystem::current_path(m_WorkingDirectory);
-	Logger::Init();
-
-	InputParser input(argc, argv);
+	Logger::Init(logPath);
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{
@@ -98,6 +112,9 @@ int Application::Init(int argc, char* argv[])
 			<< " [--auto-play] "
 			<< " [--exit-after <seconds>] "
 			<< " [--scene <path>] "
+			<< " [--headless] "
+			<< " [--fixed-step] "
+			<< " [--log <path>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -114,6 +131,8 @@ int Application::Init(int argc, char* argv[])
 
 	// Scripted/headless testing flags - see the matching getters in Application.h.
 	m_AutoPlay = input.CmdOptionExists("--auto-play");
+	m_Headless = input.CmdOptionExists("--headless");
+	m_FixedStep = input.CmdOptionExists("--fixed-step");
 
 	if (input.CmdOptionExists("--exit-after"))
 	{
@@ -129,7 +148,9 @@ int Application::Init(int argc, char* argv[])
 			m_SceneOverride = value;
 	}
 
-	Settings::Init();
+	// Headless runs keep settings in memory so they never read or write the user's file
+	if (!m_Headless)
+		Settings::Init();
 	SetDefaultSettings();
 
 	std::string file;
@@ -146,6 +167,20 @@ int Application::Init(int argc, char* argv[])
 	Random::Init();
 	LuaManager::Init();
 
+	if (m_Headless)
+	{
+#ifndef __EMSCRIPTEN__
+		// The null platform needs no display, but keeps the timer and joystick functions working
+		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
+		if (glfwInit() != GLFW_TRUE)
+		{
+			ENGINE_CRITICAL("Could not initialise GLFW");
+			return EXIT_FAILURE;
+		}
+#endif
+		Input::Init(nullptr);
+	}
+
 	if (RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
 
@@ -159,6 +194,12 @@ int Application::Init(int argc, char* argv[])
 
 Window* Application::CreateDesktopWindowImpl(const WindowProps& props)
 {
+	if (m_Headless)
+	{
+		ENGINE_ERROR("Cannot create a window in headless mode");
+		return nullptr;
+	}
+
 	const char* windowStr = props.title.c_str();
 	Settings::SetDefaultInt(windowStr, "Window_Width", props.width);
 	Settings::SetDefaultInt(windowStr, "Window_Height", props.height);
@@ -198,9 +239,9 @@ void Application::Tick() {
 
 	AssetManager::ProcessPendingFileEvents();
 
-	double newTime = GetTime();
-	double frameTime = newTime - m_CurrentTime;
-	m_CurrentTime = newTime;
+	// --fixed-step: exactly one fixed update per frame, independent of how long the frame took
+	double frameTime = m_FixedStep ? (double)m_FixedUpdateInterval : GetTime() - m_CurrentTime;
+	m_CurrentTime += frameTime;
 
 	// --exit-after: let this frame finish normally, just don't schedule another one.
 	if (m_ExitDeadline >= 0.0 && m_CurrentTime >= m_ExitDeadline)
@@ -230,8 +271,11 @@ void Application::Tick() {
 		m_Accumulator -= m_FixedUpdateInterval;
 	}
 
-	m_Window->GetContext()->MakeCurrent();
-	m_Window->OnUpdate();
+	if (m_Window)
+	{
+		m_Window->GetContext()->MakeCurrent();
+		m_Window->OnUpdate();
+	}
 
 	// On Update 
 	{
@@ -249,7 +293,7 @@ void Application::Tick() {
 	}
 
 	// Render the imgui of each of the layers
-	if (m_ImGuiManager->IsUsing())
+	if (m_ImGuiManager && m_ImGuiManager->IsUsing())
 	{
 		m_ImGuiManager->Begin();
 		{
@@ -275,6 +319,7 @@ void Application::Tick() {
 	}
 
 	Input::ClearInputData();
+	++m_FrameCount;
 }
 
 void Application::Run()
@@ -285,8 +330,9 @@ void Application::Run()
 		ENGINE_ERROR("Application is already running");
 	}
 
-	m_CurrentTime = GetTime();
+	m_CurrentTime = m_FixedStep ? 0.0 : GetTime();
 	m_Accumulator = 0.0;
+	m_FrameCount = 0;
 
 	if (m_ExitAfterSeconds >= 0.0)
 		m_ExitDeadline = m_CurrentTime + m_ExitAfterSeconds;
@@ -329,7 +375,8 @@ void Application::OnEvent(Event& e)
 		return false;
 		});
 
-	m_ImGuiManager->OnEvent(e);
+	if (m_ImGuiManager)
+		m_ImGuiManager->OnEvent(e);
 
 	for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
 	{
@@ -482,6 +529,24 @@ double Application::GetTime() const
 #endif // _WINDOWS
 
 	return glfwGetTime();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+uint32_t Application::GetGameViewportWidth()
+{
+	Application& app = Get();
+	if (app.m_HasGameViewportOverride)
+		return app.m_GameViewportWidth;
+	return app.m_Window ? app.m_Window->GetWidth() : HeadlessViewportWidth;
+}
+
+uint32_t Application::GetGameViewportHeight()
+{
+	Application& app = Get();
+	if (app.m_HasGameViewportOverride)
+		return app.m_GameViewportHeight;
+	return app.m_Window ? app.m_Window->GetHeight() : HeadlessViewportHeight;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

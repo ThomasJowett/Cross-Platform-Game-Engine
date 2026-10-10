@@ -391,6 +391,9 @@ void Scene::Render(const Matrix4x4& cameraTransform, const Matrix4x4& projection
 
 	SceneGraph::Traverse(m_Registry);
 
+	if (RendererAPI::GetAPI() == RendererAPI::API::None)
+		return;
+
 	Renderer::BeginScene(cameraTransform, projection);
 
 	auto spriteGroup = m_Registry.view<TransformComponent, SpriteComponent>();
@@ -501,6 +504,9 @@ void Scene::Render()
 void Scene::RenderUI(uint32_t canvasWidth, uint32_t canvasHeight)
 {
 	SceneGraph::TraverseUI(m_Registry, canvasWidth, canvasHeight);
+
+	if (RendererAPI::GetAPI() == RendererAPI::API::None)
+		return;
 
 	float halfWidth = canvasWidth / 2.0f;
 	float halfHeight = canvasHeight / 2.0f;
