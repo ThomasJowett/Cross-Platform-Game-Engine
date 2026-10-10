@@ -240,12 +240,7 @@ void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projectio
 {
 	ENGINE_TRACE("Renderer: BeginScene");
 
-	// WebGPU's clip-space Y axis points the opposite way to OpenGL's (matching Vulkan/D3D/Metal),
-	// so without this every WebGPU-rendered frame comes out vertically flipped relative to OpenGL -
-	// the whole scene upside down, physics appearing to fall the wrong way, etc. This is the single
-	// point all rendering (3D meshes, Renderer2D sprites, UI, editor gizmo overlays) gets its
-	// view-projection from, so correcting it here fixes all of those consistently in one place
-	// rather than needing a fix in every shader or render target.
+	// WebGPU's clip-space Y axis points the opposite way to OpenGL's, so flip vertically
 	Matrix4x4 correctedProjection = projection;
 	if (RendererAPI::GetAPI() == RendererAPI::API::WebGPU)
 		correctedProjection = Matrix4x4::Scale(Vector3f(1.0f, -1.0f, 1.0f)) * correctedProjection;
@@ -265,7 +260,7 @@ void Renderer::EndScene()
 	Renderer2D::EndScene();
 	//TODO: frustum culling
 
-	// Sort the opqaue front to back to reduce over draw
+	// Sort the opaque front to back to reduce over draw
 	std::sort(s_OpaqueRenderQueue.begin(), s_OpaqueRenderQueue.end(), [](Command& a, Command& b)
 		{
 			return Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, a.transform.ExtractTranslation()) <
