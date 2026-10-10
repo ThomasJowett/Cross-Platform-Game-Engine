@@ -1,9 +1,11 @@
 #include "RenderCommand.h"
 #include "Core/Settings.h"
+#include "Core/Application.h"
 #include "Logging/Instrumentor.h"
 
 #include "Platform/OpenGL/OpenGLRendererAPI.h"
 #include "Platform/WebGPU/WebGPURendererAPI.h"
+#include "Platform/Null/NullRendererAPI.h"
 
 Scope<RendererAPI> RenderCommand::s_RendererAPI = nullptr;
 
@@ -22,6 +24,9 @@ int RenderCommand::CreateRendererAPI()
 	api = "WebGPU";
 #endif
 
+	if (Application::IsHeadless())
+		api = "None";
+
 	if (api == "OpenGL")
 	{
 		RendererAPI::s_API = RendererAPI::API::OpenGL;
@@ -37,9 +42,8 @@ int RenderCommand::CreateRendererAPI()
 	else if (api == "None")
 	{
 		RendererAPI::s_API = RendererAPI::API::None;
-		CORE_ASSERT(false, "API of none is not currently supported!");
-		s_RendererAPI = nullptr;
-		return 1;
+		s_RendererAPI = CreateScope<NullRendererAPI>();
+		return 0;
 	}
 
 	ENGINE_ERROR("API: {0} is not recognised!", api);
