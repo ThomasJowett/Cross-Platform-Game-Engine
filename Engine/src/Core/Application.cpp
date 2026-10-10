@@ -319,6 +319,7 @@ void Application::Tick() {
 	}
 
 	Input::ClearInputData();
+	++m_FrameCount;
 }
 
 void Application::Run()
@@ -331,6 +332,7 @@ void Application::Run()
 
 	m_CurrentTime = m_FixedStep ? 0.0 : GetTime();
 	m_Accumulator = 0.0;
+	m_FrameCount = 0;
 
 	if (m_ExitAfterSeconds >= 0.0)
 		m_ExitDeadline = m_CurrentTime + m_ExitAfterSeconds;
