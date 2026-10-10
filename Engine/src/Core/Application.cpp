@@ -82,6 +82,17 @@ Application::~Application()
 
 int Application::Init(int argc, char* argv[])
 {
+	InputParser input(argc, argv);
+
+	// Resolved before the working directory changes below
+	std::filesystem::path logPath;
+	if (input.CmdOptionExists("--log"))
+	{
+		const std::string& value = input.GetCmdOption("--log");
+		if (!value.empty())
+			logPath = std::filesystem::absolute(value);
+	}
+
 	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
 #ifdef __APPLE__
 	if (m_WorkingDirectory.filename() == "MacOS")
@@ -90,9 +101,7 @@ int Application::Init(int argc, char* argv[])
 	}
 #endif
 	std::filesystem::current_path(m_WorkingDirectory);
-	Logger::Init();
-
-	InputParser input(argc, argv);
+	Logger::Init(logPath);
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
 	{
@@ -104,6 +113,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--exit-after <seconds>] "
 			<< " [--scene <path>] "
 			<< " [--headless] "
+			<< " [--log <path>] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}

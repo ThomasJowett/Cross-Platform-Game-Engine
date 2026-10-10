@@ -12,9 +12,9 @@
 Ref<spdlog::logger> Logger::s_EngineLogger;
 Ref<spdlog::logger> Logger::s_ClientLogger;
 
-void Logger::Init()
+void Logger::Init(const std::filesystem::path& logPath)
 {
-	std::string logFilename = (Application::GetWorkingDirectory() / "Log.txt").string();
+	std::string logFilename = (logPath.empty() ? Application::GetWorkingDirectory() / "Log.txt" : logPath).string();
 
 	std::vector<spdlog::sink_ptr>logSinks;
 	logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());					// std::cout
