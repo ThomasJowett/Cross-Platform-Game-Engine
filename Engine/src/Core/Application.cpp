@@ -65,7 +65,8 @@ Application::~Application()
 	// Detach while members and subsystems are still alive; layers save state that uses them
 	m_LayerStack.DetachAll();
 	SceneManager::Shutdown();
-	Settings::SaveSettings();
+	if (!m_Headless)
+		Settings::SaveSettings();
 	if (m_Window) {
 		if (m_ImGuiManager) m_ImGuiManager->Shutdown();
 		Renderer::Shutdown();
