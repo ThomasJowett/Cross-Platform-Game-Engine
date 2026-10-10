@@ -28,10 +28,10 @@ public:
 	static Window* GetWindow() { return Get().GetWindowImpl(); }
 
 	// Set whether to show Dear ImGui
-	static void ShowImGui(bool showImgui) { Get().m_ImGuiManager->SetIsUsing(showImgui); }
+	static void ShowImGui(bool showImgui) { if (Get().m_ImGuiManager) Get().m_ImGuiManager->SetIsUsing(showImgui); }
 
 	// Toggle whether Dear ImGui to shown
-	static void ToggleImGui() { Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
+	static void ToggleImGui() { if (Get().m_ImGuiManager) Get().m_ImGuiManager->SetIsUsing(!Get().m_ImGuiManager->IsUsing()); }
 
 	static LayerStack& GetLayerStack() { return Get().m_LayerStack; }
 
