@@ -68,6 +68,8 @@ public:
 	// scripted/headless testing that needs the scene running without a manual Play click.
 	static bool ShouldAutoPlay() { return Get().m_AutoPlay; }
 
+	// True if launched with --headless: no window, GPU, ImGui or settings file
+	static bool IsHeadless() { return Get().m_Headless; }
 	// Scene path to load instead of the project's own default scene, from --scene <path>.
 	// Empty if not set.
 	static const std::string& GetSceneOverride() { return Get().m_SceneOverride; }
@@ -127,6 +129,7 @@ private:
 	double m_Accumulator = 0.0;
 
 	bool m_AutoPlay = false;
+	bool m_Headless = false;
 	std::string m_SceneOverride;
 	// Duration in seconds from --exit-after; negative means disabled. m_ExitDeadline is the
 	// absolute GetTime() value computed from it once Run() starts.
