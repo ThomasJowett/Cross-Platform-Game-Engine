@@ -103,6 +103,7 @@ int Application::Init(int argc, char* argv[])
 			<< " [--auto-play] "
 			<< " [--exit-after <seconds>] "
 			<< " [--scene <path>] "
+			<< " [--headless] "
 			<< std::endl;
 		return EXIT_SUCCESS;
 	}
@@ -119,6 +120,7 @@ int Application::Init(int argc, char* argv[])
 
 	// Scripted/headless testing flags - see the matching getters in Application.h.
 	m_AutoPlay = input.CmdOptionExists("--auto-play");
+	m_Headless = input.CmdOptionExists("--headless");
 
 	if (input.CmdOptionExists("--exit-after"))
 	{
