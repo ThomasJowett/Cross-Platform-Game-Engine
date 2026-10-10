@@ -1,5 +1,6 @@
 #include "Mesh.h"
 #include "Scene/AssetManager.h"
+#include "RendererAPI.h"
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
@@ -23,21 +24,29 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 
 	m_Materials.push_back(material);
 
-	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(float)));
-	m_VertexBuffer->SetLayout(layout);
-
-	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
+	CreateBuffers();
 }
 
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials, const BufferLayout& layout)
 	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials), m_VertexLayout(layout)
 {
 	int stride = layout.GetStride() / sizeof(float);
-	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)m_Vertices.size() * sizeof(float));
-	m_VertexBuffer->SetLayout(layout);
-	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
+	CreateBuffers();
 
 	m_Bounds.EnclosePoints(m_Vertices.data(), (uint32_t)m_Vertices.size() / stride, stride);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Mesh::CreateBuffers()
+{
+	// Headless runs keep only the CPU-side data
+	if (RendererAPI::GetAPI() == RendererAPI::API::None)
+		return;
+
+	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(float)));
+	m_VertexBuffer->SetLayout(m_VertexLayout);
+	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
