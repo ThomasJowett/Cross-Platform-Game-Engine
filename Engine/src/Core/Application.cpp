@@ -130,7 +130,6 @@ int Application::Init(int argc, char* argv[])
 	}
 
 	// Scripted/headless testing flags - see the matching getters in Application.h.
-	m_AutoPlay = input.CmdOptionExists("--auto-play");
 	m_Headless = input.CmdOptionExists("--headless");
 	m_FixedStep = input.CmdOptionExists("--fixed-step");
 
