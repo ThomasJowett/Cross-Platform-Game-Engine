@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <filesystem>
 #include <vector>
 
 class InputParser
@@ -13,6 +14,12 @@ public:
 		{
 			this->m_Tokens.push_back(std::string(argv[i]));
 		}
+		m_WorkingDirectory = argv[0];
+	}
+
+	const std::string& RetrieveWorkingDirectory() const
+	{
+		return m_WorkingDirectory;
 	}
 
 	const std::string& GetCmdOption(const std::string& option) const
@@ -44,7 +51,7 @@ public:
 		return false;
 	}
 
-	bool File(std::string& filename)const
+	bool File(std::string& filename) const
 	{
 		if (m_Tokens.empty())
 			return false;
@@ -65,13 +72,14 @@ public:
 		return false;
 	}
 
-	bool HasFoundAllArguments()
+	bool HasFoundAllArguments() const
 	{
 		return m_TokensFound == m_Tokens.size();
 	}
 
 private:
 	std::vector<std::string> m_Tokens;
+	std::string m_WorkingDirectory;
 
 	mutable int m_TokensFound = 0;
 };
