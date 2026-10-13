@@ -10,6 +10,8 @@
 
 int main(int argc, char* argv[]);
 
+class InputParser;
+
 class Application
 {
 	using EventCallbackFn = std::function<void(Event&)>;
@@ -101,6 +103,7 @@ private:
 	void Tick();
 	void Run();
 	int Init(int argc, char* argv[]);
+	int Init(const InputParser& inputParser);
 	void OnEvent(Event& e);
 	bool OnWindowClose(WindowCloseEvent& e);
 	bool OnWindowResize(WindowResizeEvent& e);

@@ -83,6 +83,12 @@ Application::~Application()
 int Application::Init(int argc, char* argv[])
 {
 	InputParser input(argc, argv);
+	return Init(input);
+}
+
+int Application::Init(const InputParser& inputParser)
+{
+	const InputParser& input = inputParser;
 
 	// Resolved before the working directory changes below
 	std::filesystem::path logPath;
@@ -93,7 +99,7 @@ int Application::Init(int argc, char* argv[])
 			logPath = std::filesystem::absolute(value);
 	}
 
-	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(input.RetrieveWorkingDirectory())).parent_path();
 #ifdef __APPLE__
 	if (m_WorkingDirectory.filename() == "MacOS")
 	{
