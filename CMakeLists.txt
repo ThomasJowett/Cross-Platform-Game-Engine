@@ -123,6 +123,12 @@ add_subdirectory(Engine)
 add_subdirectory(Editor)
 add_subdirectory(Runtime)
 
+option(BUILD_SCENE_TESTS "Build SceneTest and register the scene tests with CTest" ON)
+if (BUILD_SCENE_TESTS AND NOT EMSCRIPTEN)
+    enable_testing()
+    add_subdirectory(Tests)
+endif()
+
 set(THIRD_PARTY_FOLDER "ThirdParty")
 if (TARGET glfw)
     set_target_properties(glfw PROPERTIES FOLDER ${THIRD_PARTY_FOLDER}/GLFW)
