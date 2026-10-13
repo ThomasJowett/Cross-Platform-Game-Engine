@@ -1,0 +1,6 @@
+<CollisionLayers>
+    <Layer Index="1" Name="World"/>
+    <Layer Index="2" Name="Player"/>
+    <Layer Index="3" Name="Enemy"/>
+    <Layer Index="4" Name="Pickup"/>
+</CollisionLayers>
