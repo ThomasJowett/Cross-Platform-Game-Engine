@@ -1,0 +1,21 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="2150502753815111101-7389356193249943467">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Quitter" ID="6770356304067973911-9179976446781809430">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/AppQuit/QuitOnFrame3.lua"/>
+    </Entity>
+</Scene>

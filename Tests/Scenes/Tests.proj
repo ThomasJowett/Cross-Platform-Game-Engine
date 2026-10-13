@@ -1,0 +1,5 @@
+<Project EngineVersion="1">
+    <DefaultScene Filepath="Scenes/AppQuitTest.scene"/>
+    <Description>Automated scene tests, run headless by SceneTest through CTest</Description>
+    <SpriteAtlasPageSize>2048</SpriteAtlasPageSize>
+</Project>
