@@ -64,10 +64,6 @@ public:
 	// Quit once the current frame has finished (see AppQuitRequestedEvent)
 	static void RequestQuit() { Get().m_QuitRequested = true; }
 
-	// True if launched with --auto-play - starts directly in Play state instead of Edit, for
-	// scripted/headless testing that needs the scene running without a manual Play click.
-	static bool ShouldAutoPlay() { return Get().m_AutoPlay; }
-
 	// True if launched with --headless: no window, GPU, ImGui or settings file
 	static bool IsHeadless() { return Get().m_Headless; }
 
@@ -139,7 +135,6 @@ private:
 	double m_CurrentTime = 0.0;
 	double m_Accumulator = 0.0;
 
-	bool m_AutoPlay = false;
 	bool m_Headless = false;
 	bool m_FixedStep = false;
 	uint64_t m_FrameCount = 0;
