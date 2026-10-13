@@ -6,9 +6,18 @@
 #include "MainDockSpace.h"
 #include "FileSystem/AssetPacker.h"
 #include "FileSystem/LuaDocGenerator.h"
+#include "Core/InputParser.h"
 
 int main(int argc, char* argv[])
 {
+	InputParser inputParser(argc, argv);
+
+	bool hasExportGame = inputParser.CmdOptionExists("--export-game");
+	bool hasGenerateDocs = inputParser.CmdOptionExists("--generate-docs");
+
+	const std::string& exportGamePath = inputParser.GetCmdOption("--export-game");
+	const std::string& generateDocsPath = inputParser.GetCmdOption("--generate-docs");
+
 	Ref<Application> app = CreateRef<Application>();
 
 	if (app == nullptr)
@@ -17,26 +26,22 @@ int main(int argc, char* argv[])
 		return EXIT_FAILURE;
 	}
 
-	int rCode = app->Init(argc, argv);
+	int rCode = app->Init(inputParser);
 	if (rCode != -1)
 		return rCode;
 
-	if (argc > 2 && std::string(argv[2]) == "--export-game" && argc > 3)
+	if (hasExportGame && !exportGamePath.empty())
 	{
 		bool show = true;
-		AssetPacker packer(&show, Application::GetOpenDocumentDirectory(), std::filesystem::path(argv[3]));
+		AssetPacker packer(&show, Application::GetOpenDocumentDirectory(), std::filesystem::path(exportGamePath));
 		packer.RunHeadlessExport();
 		std::cout << "OK" << std::endl;
 		return EXIT_SUCCESS;
 	}
 
-	// Dumps the Lua API registry (already fully populated by LuaManager::Init() inside
-	// app->Init() above) to Markdown - see LuaDocGenerator. Takes the same "some existing
-	// file as argv[1]" form as --export-game purely to satisfy Application::Init's argument
-	// validation; the file's content is never read for this flag.
-	if (argc > 2 && std::string(argv[2]) == "--generate-docs" && argc > 3)
+	if (!generateDocsPath.empty())
 	{
-		LuaDocGenerator::Generate(std::filesystem::path(argv[3]));
+		LuaDocGenerator::Generate(std::filesystem::path(generateDocsPath));
 		std::cout << "OK" << std::endl;
 		return EXIT_SUCCESS;
 	}
