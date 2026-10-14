@@ -1,10 +1,10 @@
 <p align="center">
-  <img width="128" height="128" src="assets/logo.png" alt="Engine logo">
+  <img width="128" height="128" src="assets/logo.png" alt="Attercop logo">
 </p>
 
-# Cross-Platform Game Engine
+# Attercop
 
-A cross-platform game engine written in C++, supporting OpenGL and WebGPU rendering backends.
+Attercop is a cross-platform game engine written in C++, supporting OpenGL and WebGPU rendering backends.
 
 ## Features
 

@@ -433,7 +433,7 @@ void MainDockSpace::OnImGuiRender()
 			ImGui::MenuItem(ICON_FA_CIRCLE_INFO" About", "", &about);
 			if (ImGui::MenuItem(ICON_FA_BOOK" Documentation", ""))
 			{
-				Webpage::OpenWebpage(L"https://thomasjowett.github.io/Cross-Platform-Game-Engine/");
+				Webpage::OpenWebpage(L"https://thomasjowett.github.io/AttercopEngine/");
 			}
 			ImGui::EndMenu();
 		}
@@ -470,6 +470,7 @@ void MainDockSpace::OnImGuiRender()
 
 	if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
 	{
+		ImGui::TextUnformatted("Attercop Engine");
 		ImGui::Text("Version: %i.%i.%i", VERSION_MAJOR, VERSION_MINOR, VERSION_PATCH);
 		ImGui::Text("Built on: %s", __DATE__);
 		ImGui::Text("Renderer: %s", RendererAPI::GetAPIName());
