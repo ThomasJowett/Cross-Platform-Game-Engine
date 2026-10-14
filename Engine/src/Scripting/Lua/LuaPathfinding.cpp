@@ -20,5 +20,12 @@ void BindPathfinding(sol::state& state)
 		{
 			return sol::as_table(Pathfinding::FindPath(start, goal, tilemapEntity, allowDiagonal.value_or(true)));
 		});
+
+	SetFunction(pathfinding, "Pathfinding", "GetTileCentre",
+		"GetTileCentre(tilemapEntity, column, row) - the world position of the centre of a tile of an orthogonal, isometric or hexagonal tilemap; columns and rows start at 0 in the top left",
+		[](Entity tilemapEntity, int column, int row)
+		{
+			return Pathfinding::GetTileCentre(tilemapEntity, column, row);
+		});
 }
 }
