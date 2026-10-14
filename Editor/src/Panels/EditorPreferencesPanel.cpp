@@ -20,7 +20,27 @@ EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 {
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
 
-	m_StyleFilename = (Application::GetWorkingDirectory() / "styles" / " Editor.style").string();
+	Settings::SetDefaultValue("Editor", "Theme", EditorStyles::DefaultTheme);
+
+	m_StyleFilename = (Application::GetWorkingDirectory() / "styles" / "Editor.style").string();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+// Compares the parts of a style that are written to the .style file
+static bool StyleFileContentsDiffer(const ImGuiStyle& a, const ImGuiStyle& b)
+{
+	return memcmp(a.Colors, b.Colors, sizeof(a.Colors)) != 0
+		|| a.Alpha != b.Alpha
+		|| a.WindowPadding.x != b.WindowPadding.x || a.WindowPadding.y != b.WindowPadding.y
+		|| a.WindowMinSize.x != b.WindowMinSize.x || a.WindowMinSize.y != b.WindowMinSize.y
+		|| a.FramePadding.x != b.FramePadding.x || a.FramePadding.y != b.FramePadding.y
+		|| a.FrameRounding != b.FrameRounding
+		|| a.ItemSpacing.x != b.ItemSpacing.x || a.ItemSpacing.y != b.ItemSpacing.y
+		|| a.ItemInnerSpacing.x != b.ItemInnerSpacing.x || a.ItemInnerSpacing.y != b.ItemInnerSpacing.y
+		|| a.WindowRounding != b.WindowRounding
+		|| a.ColumnsMinSpacing != b.ColumnsMinSpacing
+		|| a.ScrollbarSize != b.ScrollbarSize;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -49,7 +69,8 @@ void EditorPreferencesPanel::OnImGuiRender()
 					std::optional<std::wstring> stylePath = FileDialog::Open(L"Choose style...", { {L"Style Files", L"*.style"}, {L"Any File", L"*.*"} });
 					if (stylePath)
 					{
-						ImGui::LoadStyle(stylePath.value(), m_Style);
+						if (ImGui::LoadStyle(stylePath.value(), m_Style))
+							m_HasCustomStyle = true;
 
 						ImGuiStyle& style = ImGui::GetStyle();
 
@@ -91,9 +112,13 @@ void EditorPreferencesPanel::OnImGuiRender()
 
 void EditorPreferencesPanel::OnAttach()
 {
-	ImGui::LoadStyle(m_StyleFilename.c_str(), m_Style);
-
 	ImGuiStyle& style = ImGui::GetStyle();
+
+	EditorStyles::Apply(Settings::GetValue("Editor", "Theme"));
+	m_Style = style;
+
+	// Edits made in the style editor are layered on top of the theme
+	m_HasCustomStyle = ImGui::LoadStyle(m_StyleFilename, m_Style);
 
 	style = m_Style;
 
@@ -104,7 +129,15 @@ void EditorPreferencesPanel::OnAttach()
 
 void EditorPreferencesPanel::OnDetach()
 {
-	ImGui::SaveStyle(m_StyleFilename.c_str(), m_Style);
+	if (m_HasCustomStyle)
+	{
+		ImGui::SaveStyle(m_StyleFilename, m_Style);
+	}
+	else
+	{
+		std::error_code ec;
+		std::filesystem::remove(m_StyleFilename, ec);
+	}
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -118,7 +151,10 @@ void EditorPreferencesPanel::ShowStyleEditor()
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
 
 	if (ShowStyleSelector())
+	{
 		m_Style = style;
+		m_HasCustomStyle = false;
+	}
 
 	{ bool border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &border)) { style.WindowBorderSize = border ? 1.0f : 0.0f; } }
 	ImGui::SameLine();
@@ -181,7 +217,7 @@ void EditorPreferencesPanel::ShowStyleEditor()
 			if (ImGui::RadioButton("Alpha", alpha_flags == ImGuiColorEditFlags_AlphaPreview)) { alpha_flags = ImGuiColorEditFlags_AlphaPreview; } ImGui::SameLine();
 			if (ImGui::RadioButton("Both", alpha_flags == ImGuiColorEditFlags_AlphaPreviewHalf)) { alpha_flags = ImGuiColorEditFlags_AlphaPreviewHalf; }
 
-			ImGui::BeginChild("##colours", ImVec2(0, 0), true, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar | ImGuiWindowFlags_NavFlattened);
+			ImGui::BeginChild("##colours", ImVec2(0, 0), ImGuiChildFlags_Borders | ImGuiChildFlags_NavFlattened, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 			ImGui::PushItemWidth(-160);
 			for (int i = 0; i < ImGuiCol_COUNT; i++)
 			{
@@ -268,6 +304,9 @@ void EditorPreferencesPanel::ShowStyleEditor()
 
 	ImGui::PopItemWidth();
 
+	if (StyleFileContentsDiffer(style, m_Style))
+		m_HasCustomStyle = true;
+
 	m_Style = style;
 }
 
@@ -275,23 +314,25 @@ void EditorPreferencesPanel::ShowStyleEditor()
 
 bool EditorPreferencesPanel::ShowStyleSelector()
 {
-	static int style_idx = -1;
-	if (ImGui::Combo("Colours##Selector", &style_idx, "Phthalo - Dark\0Majorelle - Light\0Cherry - Dark\0Xiketic - Dark\0Onyx - Dark\0Mono - Dark\0Emerald - Light\0Ochre - Dark\0"))
+	std::string currentTheme = Settings::GetValue("Editor", "Theme");
+	std::string preview = m_HasCustomStyle ? currentTheme + " (modified)" : currentTheme;
+
+	bool changed = false;
+	if (ImGui::BeginCombo("Colours##Selector", preview.c_str()))
 	{
-		bool isDarkTheme = true;
-		switch (style_idx)
+		for (const EditorStyles::Theme& theme : EditorStyles::GetThemes())
 		{
-		case 0: isDarkTheme = EditorStyles::Phthalo(); break;
-		case 1: isDarkTheme = EditorStyles::Majorelle(); break;
-		case 2: isDarkTheme = EditorStyles::Cherry(); break;
-		case 3: isDarkTheme = EditorStyles::Xiketic(); break;
-		case 4: isDarkTheme = EditorStyles::Onyx(); break;
-		case 5: isDarkTheme = EditorStyles::Mono(); break;
-		case 6: isDarkTheme = EditorStyles::Emerald(); break;
-		case 7: isDarkTheme = EditorStyles::Ochre(); break;
+			bool selected = !m_HasCustomStyle && currentTheme == theme.name;
+			if (ImGui::Selectable(theme.name, selected))
+			{
+				Settings::SetValue("Editor", "Theme", theme.name);
+				ConsolePanel::SetDarkTheme(EditorStyles::Apply(theme.name));
+				changed = true;
+			}
+			if (selected)
+				ImGui::SetItemDefaultFocus();
 		}
-		ConsolePanel::SetDarkTheme(isDarkTheme);
-		return true;
+		ImGui::EndCombo();
 	}
-	return false;
+	return changed;
 }

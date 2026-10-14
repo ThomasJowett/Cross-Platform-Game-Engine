@@ -4,6 +4,224 @@
 
 #include "imgui_internal.h"
 
+const std::vector<EditorStyles::Theme>& EditorStyles::GetThemes()
+{
+	static const std::vector<Theme> themes = {
+		{ "Attercop", &EditorStyles::Attercop },
+		{ "Cobalt", &EditorStyles::Cobalt },
+		{ "Phthalo", &EditorStyles::Phthalo },
+		{ "Majorelle", &EditorStyles::Majorelle },
+		{ "Cherry", &EditorStyles::Cherry },
+		{ "Xiketic", &EditorStyles::Xiketic },
+		{ "Onyx", &EditorStyles::Onyx },
+		{ "Mono", &EditorStyles::Mono },
+		{ "Emerald", &EditorStyles::Emerald },
+		{ "Ochre", &EditorStyles::Ochre },
+	};
+	return themes;
+}
+
+bool EditorStyles::Apply(const std::string& name)
+{
+	// Reset so colours a theme doesn't set aren't left over from the previous theme
+	ImGui::StyleColorsDark();
+	for (const Theme& theme : GetThemes())
+	{
+		if (name == theme.name)
+			return theme.apply();
+	}
+	return Attercop();
+}
+
+bool EditorStyles::Attercop()
+{
+	ImVec4* colors = ImGui::GetStyle().Colors;
+
+	// Logo colours
+	const ImVec4 coral = ImVec4(1.00f, 0.376f, 0.486f, 1.00f);
+	const ImVec4 sky = ImVec4(0.60f, 0.80f, 1.00f, 1.00f);
+	const ImVec4 mint = ImVec4(0.37f, 0.86f, 0.54f, 1.00f);
+	const ImVec4 navy = ImVec4(0.18f, 0.26f, 0.41f, 1.00f);
+
+	const ImVec4 coralDeep = ImVec4(0.62f, 0.23f, 0.32f, 1.00f);
+	const ImVec4 coralBright = ImVec4(1.00f, 0.52f, 0.61f, 1.00f);
+	const ImVec4 navyBright = ImVec4(0.26f, 0.36f, 0.54f, 1.00f);
+	const ImVec4 background = ImVec4(0.106f, 0.129f, 0.188f, 1.00f);
+	const ImVec4 backgroundDark = ImVec4(0.082f, 0.102f, 0.149f, 1.00f);
+	const ImVec4 frame = ImVec4(0.149f, 0.180f, 0.251f, 1.00f);
+
+	colors[ImGuiCol_Text] = ImVec4(0.91f, 0.92f, 0.95f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.47f, 0.52f, 0.61f, 1.00f);
+	colors[ImGuiCol_WindowBg] = background;
+	colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.122f, 0.149f, 0.212f, 0.98f);
+	colors[ImGuiCol_Border] = ImVec4(navy.x, navy.y, navy.z, 0.70f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_FrameBg] = frame;
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.20f, 0.25f, 0.35f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.24f, 0.31f, 0.45f, 1.00f);
+	colors[ImGuiCol_TitleBg] = backgroundDark;
+	colors[ImGuiCol_TitleBgActive] = coralDeep;
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(backgroundDark.x, backgroundDark.y, backgroundDark.z, 0.75f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.122f, 0.149f, 0.212f, 1.00f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(backgroundDark.x, backgroundDark.y, backgroundDark.z, 0.60f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.24f, 0.29f, 0.40f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.30f, 0.37f, 0.50f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabActive] = coral;
+	colors[ImGuiCol_CheckMark] = mint;
+	colors[ImGuiCol_SliderGrab] = coral;
+	colors[ImGuiCol_SliderGrabActive] = coralBright;
+	colors[ImGuiCol_Button] = navy;
+	colors[ImGuiCol_ButtonHovered] = navyBright;
+	colors[ImGuiCol_ButtonActive] = coralDeep;
+	colors[ImGuiCol_Header] = ImVec4(coral.x, coral.y, coral.z, 0.28f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(coral.x, coral.y, coral.z, 0.45f);
+	colors[ImGuiCol_HeaderActive] = ImVec4(coral.x, coral.y, coral.z, 0.65f);
+	colors[ImGuiCol_Separator] = colors[ImGuiCol_Border];
+	colors[ImGuiCol_SeparatorHovered] = ImVec4(coral.x, coral.y, coral.z, 0.70f);
+	colors[ImGuiCol_SeparatorActive] = coral;
+	colors[ImGuiCol_ResizeGrip] = ImVec4(navy.x, navy.y, navy.z, 0.60f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(coral.x, coral.y, coral.z, 0.70f);
+	colors[ImGuiCol_ResizeGripActive] = coral;
+	colors[ImGuiCol_Tab] = ImVec4(0.125f, 0.153f, 0.216f, 1.00f);
+	colors[ImGuiCol_TabHovered] = ImVec4(coral.x, coral.y, coral.z, 0.55f);
+	colors[ImGuiCol_TabActive] = coralDeep;
+	colors[ImGuiCol_TabSelectedOverline] = coral;
+	colors[ImGuiCol_TabUnfocused] = backgroundDark;
+	colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.27f, 0.20f, 0.27f, 1.00f);
+	colors[ImGuiCol_DockingPreview] = ImVec4(coral.x, coral.y, coral.z, 0.70f);
+	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.07f, 0.08f, 0.12f, 1.00f);
+	colors[ImGuiCol_PlotLines] = sky;
+	colors[ImGuiCol_PlotLinesHovered] = coral;
+	colors[ImGuiCol_PlotHistogram] = mint;
+	colors[ImGuiCol_PlotHistogramHovered] = ImVec4(0.55f, 0.93f, 0.68f, 1.00f);
+	colors[ImGuiCol_TableHeaderBg] = frame;
+	colors[ImGuiCol_TableBorderStrong] = navy;
+	colors[ImGuiCol_TableBorderLight] = ImVec4(0.18f, 0.22f, 0.30f, 1.00f);
+	colors[ImGuiCol_TableRowBgAlt] = ImVec4(1.00f, 1.00f, 1.00f, 0.03f);
+	colors[ImGuiCol_TextSelectedBg] = ImVec4(sky.x, sky.y, sky.z, 0.30f);
+	colors[ImGuiCol_DragDropTarget] = sky;
+	colors[ImGuiCol_NavHighlight] = sky;
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.05f, 0.06f, 0.09f, 0.50f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.05f, 0.06f, 0.09f, 0.60f);
+
+	TextEditor::SetPalette(TextEditor::Palette({
+	    0xffece8e6, // Default
+	    0xff7c60ff, // Keyword
+	    0xff89dc5e, // Number
+	    0xffffcc99, // String
+	    0xffffcc99, // Char literal
+	    0xffd0cac6, // Punctuation
+	    0xffea92c7, // Preprocessor
+	    0xffe0dcd8, // Identifier
+	    0xff6bcbff, // Known identifier
+	    0xffea92c7, // Preproc identifier
+	    0xff997a6b, // Comment (single line)
+	    0xff997a6b, // Comment (multi line)
+	    0xff271b16, // Background
+	    0xff7c60ff, // Cursor
+	    0x50ffcc99, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff7a5d4f, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
+
+	return true;
+}
+
+bool EditorStyles::Cobalt()
+{
+	ImVec4* colors = ImGui::GetStyle().Colors;
+
+	const ImVec4 blue = ImVec4(0.20f, 0.47f, 0.86f, 1.00f);
+	const ImVec4 blueBright = ImVec4(0.30f, 0.57f, 0.95f, 1.00f);
+	const ImVec4 blueDeep = ImVec4(0.12f, 0.30f, 0.60f, 1.00f);
+	const ImVec4 orange = ImVec4(1.00f, 0.55f, 0.13f, 1.00f);
+	const ImVec4 orangeBright = ImVec4(1.00f, 0.66f, 0.32f, 1.00f);
+
+	colors[ImGuiCol_Text] = ImVec4(0.90f, 0.92f, 0.95f, 1.00f);
+	colors[ImGuiCol_TextDisabled] = ImVec4(0.44f, 0.49f, 0.57f, 1.00f);
+	colors[ImGuiCol_WindowBg] = ImVec4(0.075f, 0.090f, 0.120f, 1.00f);
+	colors[ImGuiCol_ChildBg] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_PopupBg] = ImVec4(0.090f, 0.108f, 0.145f, 0.98f);
+	colors[ImGuiCol_Border] = ImVec4(0.20f, 0.25f, 0.33f, 0.60f);
+	colors[ImGuiCol_BorderShadow] = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+	colors[ImGuiCol_FrameBg] = ImVec4(0.12f, 0.155f, 0.215f, 1.00f);
+	colors[ImGuiCol_FrameBgHovered] = ImVec4(0.16f, 0.23f, 0.34f, 1.00f);
+	colors[ImGuiCol_FrameBgActive] = ImVec4(0.18f, 0.29f, 0.46f, 1.00f);
+	colors[ImGuiCol_TitleBg] = ImVec4(0.055f, 0.067f, 0.090f, 1.00f);
+	colors[ImGuiCol_TitleBgActive] = ImVec4(0.085f, 0.150f, 0.265f, 1.00f);
+	colors[ImGuiCol_TitleBgCollapsed] = ImVec4(0.055f, 0.067f, 0.090f, 0.75f);
+	colors[ImGuiCol_MenuBarBg] = ImVec4(0.095f, 0.115f, 0.155f, 1.00f);
+	colors[ImGuiCol_ScrollbarBg] = ImVec4(0.055f, 0.067f, 0.090f, 0.60f);
+	colors[ImGuiCol_ScrollbarGrab] = ImVec4(0.22f, 0.28f, 0.37f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(0.28f, 0.36f, 0.48f, 1.00f);
+	colors[ImGuiCol_ScrollbarGrabActive] = blue;
+	colors[ImGuiCol_CheckMark] = orange;
+	colors[ImGuiCol_SliderGrab] = blue;
+	colors[ImGuiCol_SliderGrabActive] = orange;
+	colors[ImGuiCol_Button] = ImVec4(blue.x, blue.y, blue.z, 0.55f);
+	colors[ImGuiCol_ButtonHovered] = blueBright;
+	colors[ImGuiCol_ButtonActive] = orange;
+	colors[ImGuiCol_Header] = ImVec4(blue.x, blue.y, blue.z, 0.35f);
+	colors[ImGuiCol_HeaderHovered] = ImVec4(blue.x, blue.y, blue.z, 0.70f);
+	colors[ImGuiCol_HeaderActive] = blue;
+	colors[ImGuiCol_Separator] = colors[ImGuiCol_Border];
+	colors[ImGuiCol_SeparatorHovered] = ImVec4(orange.x, orange.y, orange.z, 0.70f);
+	colors[ImGuiCol_SeparatorActive] = orange;
+	colors[ImGuiCol_ResizeGrip] = ImVec4(blue.x, blue.y, blue.z, 0.25f);
+	colors[ImGuiCol_ResizeGripHovered] = ImVec4(orange.x, orange.y, orange.z, 0.70f);
+	colors[ImGuiCol_ResizeGripActive] = orange;
+	colors[ImGuiCol_Tab] = ImVec4(0.10f, 0.135f, 0.19f, 1.00f);
+	colors[ImGuiCol_TabHovered] = blueBright;
+	colors[ImGuiCol_TabActive] = blueDeep;
+	colors[ImGuiCol_TabSelectedOverline] = orange;
+	colors[ImGuiCol_TabUnfocused] = ImVec4(0.075f, 0.095f, 0.130f, 1.00f);
+	colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.11f, 0.19f, 0.32f, 1.00f);
+	colors[ImGuiCol_DockingPreview] = ImVec4(orange.x, orange.y, orange.z, 0.70f);
+	colors[ImGuiCol_DockingEmptyBg] = ImVec4(0.05f, 0.06f, 0.08f, 1.00f);
+	colors[ImGuiCol_PlotLines] = ImVec4(0.55f, 0.65f, 0.80f, 1.00f);
+	colors[ImGuiCol_PlotLinesHovered] = orange;
+	colors[ImGuiCol_PlotHistogram] = orange;
+	colors[ImGuiCol_PlotHistogramHovered] = orangeBright;
+	colors[ImGuiCol_TextSelectedBg] = ImVec4(orange.x, orange.y, orange.z, 0.35f);
+	colors[ImGuiCol_DragDropTarget] = orange;
+	colors[ImGuiCol_NavHighlight] = orange;
+	colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+	colors[ImGuiCol_NavWindowingDimBg] = ImVec4(0.05f, 0.06f, 0.08f, 0.50f);
+	colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.05f, 0.06f, 0.08f, 0.60f);
+
+	TextEditor::SetPalette(TextEditor::Palette({
+	    0xffe6e3e0, // Default
+	    0xffffa25c, // Keyword
+	    0xff4da0ff, // Number
+	    0xff73b6e6, // String
+	    0xff73b6e6, // Char literal
+	    0xffd0ccc8, // Punctuation
+	    0xffc086c5, // Preprocessor
+	    0xffdcd8d4, // Identifier
+	    0xffb0c94e, // Known identifier
+	    0xffc086c5, // Preproc identifier
+	    0xff99816a, // Comment (single line)
+	    0xff99816a, // Comment (multi line)
+	    0xff1f1813, // Background
+	    0xff218dff, // Cursor
+	    0x60218dff, // Selection
+	    0x800020ff, // ErrorMarker
+	    0x40f08000, // Breakpoint
+	    0xff705a4a, // Line number
+	    0x40000000, // Current line fill
+	    0x40808080, // Current line fill (inactive)
+	    0x40a0a0a0, // Current line edge
+	}));
+
+	return true;
+}
+
 bool EditorStyles::Phthalo()
 {
 	ImVec4* colors = ImGui::GetStyle().Colors;
