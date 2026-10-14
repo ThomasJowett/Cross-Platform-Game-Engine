@@ -134,6 +134,8 @@ set_target_properties(Editor PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURREN
 if (EMSCRIPTEN)
     set_target_properties(Editor PROPERTIES SUFFIX ".html")
     target_link_options(Editor PRIVATE "--preload-file" "${CMAKE_CURRENT_SOURCE_DIR}/data@/data")
+    target_link_options(Editor PRIVATE "--shell-file" "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
+    set_property(TARGET Editor APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
 endif()
 
 add_dependencies(Editor Runtime)

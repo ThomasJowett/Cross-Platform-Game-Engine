@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Attercop</title>
+	<style>
+		html, body {
+			margin: 0;
+			height: 100%;
+			overflow: hidden;
+			background: #1b2130;
+		}
+
+		#canvas {
+			display: block;
+			width: 100vw;
+			height: 100vh;
+			border: 0;
+			outline: none;
+		}
+
+		#loading {
+			position: fixed;
+			inset: 0;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+			gap: 18px;
+			color: #e8eaf2;
+			font: 15px system-ui, -apple-system, "Segoe UI", sans-serif;
+			background: #1b2130;
+		}
+
+		#loading .name {
+			font-size: 28px;
+			font-weight: 600;
+			letter-spacing: 0.04em;
+		}
+
+		#loading .bar {
+			width: 240px;
+			height: 4px;
+			border-radius: 2px;
+			background: #2e4369;
+			overflow: hidden;
+		}
+
+		#loading .fill {
+			width: 0;
+			height: 100%;
+			background: #ff607c;
+			transition: width 0.2s;
+		}
+
+		#loading .status {
+			color: #7a86a0;
+			font-size: 13px;
+			min-height: 1em;
+		}
+	</style>
+</head>
+<body>
+	<canvas id="canvas" tabindex="-1" oncontextmenu="event.preventDefault()"></canvas>
+	<div id="loading">
+		<div class="name">Attercop</div>
+		<div class="bar"><div class="fill" id="progress"></div></div>
+		<div class="status" id="status">Loading…</div>
+	</div>
+	<script>
+		const loading = document.getElementById('loading');
+		const progress = document.getElementById('progress');
+		const status = document.getElementById('status');
+
+		function showError(text) {
+			loading.style.display = 'flex';
+			progress.style.width = '0';
+			status.style.color = '#ff607c';
+			status.textContent = text;
+		}
+
+		if (!navigator.gpu)
+			showError('This browser does not support WebGPU. Try a recent version of Chrome or Edge.');
+
+		var Module = {
+			canvas: document.getElementById('canvas'),
+			print: (...args) => console.log(...args),
+			printErr: (...args) => console.error(...args),
+			setStatus: (text) => {
+				if (!text) {
+					loading.style.display = 'none';
+					Module.canvas.focus();
+					return;
+				}
+				const match = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+				if (match) {
+					progress.style.width = (100 * parseInt(match[2]) / parseInt(match[4])) + '%';
+					status.textContent = match[1].trim();
+				} else {
+					status.textContent = text;
+				}
+			},
+			totalDependencies: 0,
+			monitorRunDependencies: (left) => {
+				Module.totalDependencies = Math.max(Module.totalDependencies, left);
+				if (left)
+					Module.setStatus('Preparing… (' + (Module.totalDependencies - left) + '/' + Module.totalDependencies + ')');
+			}
+		};
+
+		window.onerror = () => showError('Something went wrong, see the browser console for details.');
+	</script>
+	{{{ SCRIPT }}}
+</body>
+</html>
