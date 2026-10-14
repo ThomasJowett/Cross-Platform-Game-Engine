@@ -42,7 +42,7 @@ jobs:
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -DENABLE_UNITY_BUILD=ON
+          -DATTERCOP_ENABLE_UNITY_BUILD=ON
           -S ${{ github.workspace }}
 
       - name: Build

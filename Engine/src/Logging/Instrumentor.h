@@ -60,4 +60,4 @@
 #define PROFILE_VALUE(text, value)
 #define PROFILE_ALLOC(ptr, size)
 #define PROFILE_FREE(ptr)
-#endif // ENABLE_PROFILING
+#endif // ATCP_ENABLE_TRACY
