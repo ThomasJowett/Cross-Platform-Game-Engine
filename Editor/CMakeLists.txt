@@ -63,7 +63,7 @@ if(APPLE)
     set_target_properties(Editor PROPERTIES 
         BUNDLE True
         MACOSX_BUNDLE_GUI_IDENTIFIER "com.Jowett.Thomas.Editor"
-        MACOSX_BUNDLE_BUNDLE_NAME "Editor"
+        MACOSX_BUNDLE_BUNDLE_NAME "Attercop Editor"
         MACOSX_BUNDLE_BUNDLE_VERSION "0.0.1"
         MACOSX_BUNDLE_SHORT_VERSION_STRING "0.0.1"
         XCODE_ATTRIBUTE_CODE_SIGN_ENTITLEMENTS "${CMAKE_CURRENT_SOURCE_DIR}/entitlements.plist"
@@ -155,7 +155,7 @@ if(APPLE)
     # inside Editor.app. A stamp file tracked as this custom command's OUTPUT, depending on
     # Runtime's actual binary as an input, reruns the copy whenever Runtime.app itself is newer,
     # regardless of what triggered the build. Editor.app's own location is written as a plain
-    # path (matching MACOSX_BUNDLE_BUNDLE_NAME/RUNTIME_OUTPUT_DIRECTORY above) rather than via
+    # path (matching the target name/RUNTIME_OUTPUT_DIRECTORY above) rather than via
     # $<TARGET_BUNDLE_CONTENT_DIR:Editor> - referencing Editor's target here at all, genex or
     # not, makes CMake add an implicit dependency on it, which cycles against Editor depending
     # on this copy target below.

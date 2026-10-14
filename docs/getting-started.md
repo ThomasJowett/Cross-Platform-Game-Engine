@@ -1,9 +1,9 @@
 # Getting Started
 
 This page assumes you already have the Editor - either downloaded from the
-[Releases](https://github.com/ThomasJowett/Cross-Platform-Game-Engine/releases) page, or built
+[Releases](https://github.com/ThomasJowett/AttercopEngine/releases) page, or built
 from source. If you're building from source instead, see the
-[repo README](https://github.com/ThomasJowett/Cross-Platform-Game-Engine#getting-started) for
+[repo README](https://github.com/ThomasJowett/AttercopEngine#getting-started) for
 prerequisites and build instructions.
 
 ## Creating a project

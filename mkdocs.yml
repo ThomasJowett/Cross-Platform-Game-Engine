@@ -1,7 +1,7 @@
-site_name: Cross-Platform Game Engine
+site_name: Attercop
 site_description: Documentation and Lua API reference for the engine.
 # Assumes the default GitHub Pages URL for this repo - update if a custom domain is set up.
-site_url: https://thomasjowett.github.io/Cross-Platform-Game-Engine/
+site_url: https://thomasjowett.github.io/AttercopEngine/
 
 # docs/ is hand-written (index.md, getting-started.md, ...) - edit those directly. Only
 # docs/LuaAPI/ is generated (by Editor's --generate-docs flag / the GenerateLuaDocs CMake

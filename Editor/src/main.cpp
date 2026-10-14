@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 		return EXIT_SUCCESS;
 	}
 
-	std::string windowTitle = std::string("Editor - ") + RendererAPI::GetAPIName();
+	std::string windowTitle = std::string("Attercop Editor - ") + RendererAPI::GetAPIName();
 	Window* window = app->CreateDesktopWindow(WindowProps(windowTitle, 1920, 1080, 100, 100));
 
 	if (!window)
