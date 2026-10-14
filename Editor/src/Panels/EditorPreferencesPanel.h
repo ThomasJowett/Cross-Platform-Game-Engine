@@ -22,6 +22,8 @@ private:
 	ImGuiStyle m_Style;
 
 	std::string m_StyleFilename;
+	// True when the style has been edited away from the selected theme and needs saving to m_StyleFilename
+	bool m_HasCustomStyle = false;
 
 	bool m_VSnyc;
 };
