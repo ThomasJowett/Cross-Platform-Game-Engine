@@ -30,6 +30,6 @@ foreach(scene ${TEST_SCENES})
     get_filename_component(name ${scene} NAME_WE)
     add_test(NAME ${name}
         COMMAND SceneTest --project ${CMAKE_CURRENT_SOURCE_DIR}/Scenes/Tests.proj --scene ${scene}
-            --frames 600 --timeout 30 --require-verdict --log ${CMAKE_CURRENT_BINARY_DIR}/logs/${name}.txt)
+            --frames 6000 --timeout 30 --require-verdict --log ${CMAKE_CURRENT_BINARY_DIR}/logs/${name}.txt)
     set_tests_properties(${name} PROPERTIES TIMEOUT 60 LABELS scene)
 endforeach()
