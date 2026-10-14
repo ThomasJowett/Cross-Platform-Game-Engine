@@ -27,6 +27,13 @@ void SceneTestLayer::OnAttach()
 
 void SceneTestLayer::OnUpdate(float deltaTime)
 {
+	// Updates the world transforms, as the Runtime does every frame, and draws nothing without a renderer
+	if (!m_Options.display)
+	{
+		if (Scene* scene = SceneManager::CurrentScene())
+			scene->Render();
+	}
+
 	if (++m_Frames == m_Options.maxFrames)
 	{
 		CLIENT_INFO("SceneTest: reached the frame limit of {0}", m_Options.maxFrames);
