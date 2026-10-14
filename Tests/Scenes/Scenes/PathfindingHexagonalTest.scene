@@ -1,0 +1,57 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="0"/>
+    <Entity Name="Camera" ID="4712128852136459333-6613812840851947673">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="12" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Level" ID="12736496262939004471-15523137368101252074">
+        <Transform>
+            <Position X="-5.625" Y="4.15625" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Tilemap Filepath="Tilesets/PathfindingHex.tileset" TilesWide="16" TilesHigh="10" TileWidth="32" TileHeight="28" Orientation="Hexagonal" IsTrigger="false">
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,2,
+2,1,1,2,2,2,2,2,1,2,2,2,2,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+<Tint R="1" G="1" B="1" A="1"/></Tilemap>
+    </Entity>
+    <Entity Name="Goal Marker" ID="7710621888044212487-7711293902356254904">
+        <Transform>
+            <Position X="0" Y="0" Z="0.2"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.34999999" Y="0.34999999" Z="1"/>
+        </Transform>
+        <CircleRenderer Radius="0.5" Thickness="1" Fade="0.02">
+            <Colour R="0" G="1" B="0" A="0"/>
+        </CircleRenderer>
+    </Entity>
+    <Entity Name="Agent" ID="5188276060563659575-15555744392750191629">
+        <Transform>
+            <Position X="-4.875" Y="2.84375" Z="0.1"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <CircleCollider2D Radius="0.49000001" IsTrigger="false">
+            <Offset X="0" Y="0"/>
+        </CircleCollider2D>
+        <CircleRenderer Radius="0.5" Thickness="1" Fade="0.02">
+            <Colour R="0.2" G="0.5" B="1" A="1"/>
+        </CircleRenderer>
+        <LuaScript Filepath="Scripts/Pathfinding/HexagonalGoals.lua"/>
+    </Entity>
+</Scene>

@@ -1,0 +1,47 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="8589286926681979397-1842189056606045451">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Controller" ID="4253780032107721274-3083536105352091157">
+        <Transform>
+            <Position X="0" Y="8" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EntityCopies/CloneEntity.lua"/>
+    </Entity>
+    <Entity Name="Source" ID="1777778803460397737-5983400809284627602">
+        <Transform>
+            <Position X="-3" Y="5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.4" B="0.9" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <Entity Name="Source Child" ID="4253061130596239457-7963038037984679166">
+            <Transform>
+                <Position X="0" Y="1" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="0.5" Y="0.5" Z="1"/>
+            </Transform>
+            <Sprite TilingFactor="1">
+                <Tint R="0.9" G="0.6" B="0.2" A="1"/>
+            </Sprite>
+            <LuaScript Filepath="Scripts/EntityCopies/CopiedChildMarker.lua"/>
+        </Entity>
+    </Entity>
+</Scene>

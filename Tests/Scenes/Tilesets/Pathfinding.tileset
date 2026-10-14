@@ -1,0 +1,4 @@
+<Tileset EngineVersion="1" TileWidth="16" TileHeight="16">
+    <Texture Filepath="Sprites/Tiles/Pathfinding_Tile.png" FilterMethod="1" WrapMethod="2"/>
+    <Tile Id="1" Probability="1" Shape="1"/>
+</Tileset>

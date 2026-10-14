@@ -1,0 +1,73 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="8160262809099360828-8214063234961612279">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="3383771885803888221-3390659322230354807">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">EnTT hazard: scripts removed mid-update. Counter 2 removes Counter 1 and 3's scripts; the others must update exactly once per frame. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="3460886250400055147-2731753502427459317">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EnttHazards/ScriptRemovalDuringUpdate.lua"/>
+    </Entity>
+    <Entity Name="Counter 1" ID="491202267690117478-2013040957216720470">
+        <Transform>
+            <Position X="-3" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.7" G="0.7" B="0.7" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/UpdateCounter.lua"/>
+    </Entity>
+    <Entity Name="Counter 2" ID="7003598565761034705-8939702207973748016">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.7" G="0.7" B="0.7" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/UpdateCounter.lua"/>
+    </Entity>
+    <Entity Name="Counter 3" ID="2866473973474912720-5689106267114834636">
+        <Transform>
+            <Position X="3" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.7" G="0.7" B="0.7" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/UpdateCounter.lua"/>
+    </Entity>
+    <Entity Name="Counter 4" ID="7101875890409226853-6565013657712977059">
+        <Transform>
+            <Position X="6" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.7" G="0.7" B="0.7" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/UpdateCounter.lua"/>
+    </Entity>
+</Scene>

@@ -1,0 +1,44 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="3695738865757206687-691504962100881872">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="3929549895999753436-441515851168230271">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Removing a body's RigidBody2D and collider at runtime, destroying it, then raycasting where it was. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="6043246262263842512-3089010307440239745">
+        <Transform>
+            <Position X="0" Y="5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Regressions/RemoveBodyComponents.lua"/>
+    </Entity>
+    <Entity Name="Block" ID="853884550673324304-439666879261855965">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.3" G="0.9" B="0.3" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+</Scene>

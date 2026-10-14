@@ -1,0 +1,9 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard/>
+    <Root>
+        <Sequence>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SucceedForTwoSeconds.lua"/>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SpinUntilAborted.lua"/>
+        </Sequence>
+    </Root>
+</BehaviourTree>

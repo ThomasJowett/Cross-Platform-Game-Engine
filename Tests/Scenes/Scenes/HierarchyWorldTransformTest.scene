@@ -1,0 +1,29 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="0"/>
+    <Entity Name="Main Camera" ID="8200000000000000000-8200000000000000000">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="12" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="8200000000000000001-8200000000000000001">
+        <Transform>
+            <Position X="-8" Y="6" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Child transforms follow their parent's position, rotation and scale, through several levels and after being moved to a new parent.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="8200000000000000002-8200000000000000002">
+        <Transform>
+            <Position X="0" Y="8" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Hierarchy/WorldTransforms.lua"/>
+    </Entity>
+</Scene>

@@ -1,0 +1,405 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="1026847926404610461-6839596180442651345">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="2258728696626565719-1287010195568088798">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.60000002" Y="0.60000002" Z="1"/>
+        </Transform>
+        <Text MaxWidth="40">Collision Layers test: grey = running, green = pass, red = fail. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Legend" ID="945351111358374057-6831454145019129197">
+        <Transform>
+            <Position X="-15.8" Y="-8" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.44999999" Y="0.44999999" Z="1"/>
+        </Transform>
+        <Text MaxWidth="60">Top: falling dynamic body. Middle: static target (yellow = trigger). Each column states its expected result.<Colour R="0.80000001" G="0.80000001" B="0.80000001" A="1"/></Text>
+    </Entity>
+    <Entity Name="Label 1 Default vs Default" ID="5030118478018109776-5446332115853614978">
+        <Transform>
+            <Position X="-15.8" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">1 Default vs Default - expect HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Default vs Default" ID="293143515607798169-864186096263678574">
+        <Transform>
+            <Position X="-14.4" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectContact.lua"/>
+    </Entity>
+    <Entity Name="Target Default vs Default" ID="2145917995920697483-5552642720119322321">
+        <Transform>
+            <Position X="-14.4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 2 Player vs World" ID="5176572018665656243-6604115266222097961">
+        <Transform>
+            <Position X="-12.6" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">2 Player vs World - expect HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Player vs World" ID="6468581141273039753-3869387381345962230">
+        <Transform>
+            <Position X="-11.2" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectContact.lua"/>
+    </Entity>
+    <Entity Name="Target Player vs World" ID="4143222138124291040-2565856380474498476">
+        <Transform>
+            <Position X="-11.2" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="2" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 3 Player mask skips World" ID="8017880294935156107-6998762617471362847">
+        <Transform>
+            <Position X="-9.3999996" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">3 Player mask skips World - expect NO HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Player mask skips World" ID="1472597238169086909-3897929836277613434">
+        <Transform>
+            <Position X="-8" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="65533">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectNoContact.lua"/>
+    </Entity>
+    <Entity Name="Target Player mask skips World" ID="2562910770574305398-1985918923296309552">
+        <Transform>
+            <Position X="-8" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="2" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 4 World mask skips Player" ID="7041990410826934883-942723427174387577">
+        <Transform>
+            <Position X="-6.1999998" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">4 World mask skips Player - expect NO HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller World mask skips Player" ID="3504210894617719057-3311000352010168215">
+        <Transform>
+            <Position X="-4.8000002" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectNoContact.lua"/>
+    </Entity>
+    <Entity Name="Target World mask skips Player" ID="3172431589140685843-2439774329912543747">
+        <Transform>
+            <Position X="-4.8000002" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="2" Mask="65531">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 5 Pickup trigger sees Player" ID="400759557860619647-4237446567370404816">
+        <Transform>
+            <Position X="-3" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">5 Pickup trigger sees Player - expect HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Pickup trigger sees Player" ID="1151318126898855557-8506673322251918668">
+        <Transform>
+            <Position X="-1.6" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectContact.lua"/>
+    </Entity>
+    <Entity Name="Target Pickup trigger sees Player" ID="726803524325187859-2704092307918063857">
+        <Transform>
+            <Position X="-1.6" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.94999999" G="0.80000001" B="0.1" A="0.5"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="true" Layer="16" Mask="4">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 6 Pickup trigger skips Player" ID="5798178739033726258-8166850865409773434">
+        <Transform>
+            <Position X="0.2" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">6 Pickup trigger skips Player - expect NO HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Pickup trigger skips Player" ID="3335494386281140929-1773549186211207615">
+        <Transform>
+            <Position X="1.6" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectNoContact.lua"/>
+    </Entity>
+    <Entity Name="Target Pickup trigger skips Player" ID="641533053211955696-6099077637550581145">
+        <Transform>
+            <Position X="1.6" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.94999999" G="0.80000001" B="0.1" A="0.5"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="true" Layer="16" Mask="65531">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 7 Player mask Nothing" ID="7130296919575202446-9087064645299426381">
+        <Transform>
+            <Position X="3.4000001" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">7 Player mask Nothing - expect NO HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Player mask Nothing" ID="7888913547867799345-7991901255055716088">
+        <Transform>
+            <Position X="4.8000002" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="0">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectNoContact.lua"/>
+    </Entity>
+    <Entity Name="Target Player mask Nothing" ID="3506045623077649104-4181971900251588409">
+        <Transform>
+            <Position X="4.8000002" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 8 Enemy circle vs polygon" ID="7693310826810980143-1500219244697461825">
+        <Transform>
+            <Position X="6.5999999" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">8 Enemy circle vs polygon - expect NO HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Enemy circle vs polygon" ID="3276793867839745544-6181274954292674734">
+        <Transform>
+            <Position X="8" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <CircleCollider2D Radius="0.5" IsTrigger="false" Layer="8" Mask="65535">
+            <Offset X="0" Y="0"/>
+        </CircleCollider2D>
+        <CircleRenderer Radius="0.5" Thickness="1" Fade="0.0049999999">
+            <Colour R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </CircleRenderer>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectNoContact.lua"/>
+    </Entity>
+    <Entity Name="Target Enemy circle vs polygon" ID="6473149855255013509-6304614435198113865">
+        <Transform>
+            <Position X="8" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <PolygonCollider2D IsTrigger="false" Layer="2" Mask="65527">
+            <Offset X="0" Y="0"/>
+            <Vertex X="-0.5" Y="-0.5"/>
+            <Vertex X="0.5" Y="-0.5"/>
+            <Vertex X="0.5" Y="0.5"/>
+            <Vertex X="-0.5" Y="0.5"/>
+        </PolygonCollider2D>
+    </Entity>
+    <Entity Name="Label 9 Enemy capsule vs World" ID="658571918376805803-5856640982517285491">
+        <Transform>
+            <Position X="9.8000002" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">9 Enemy capsule vs World - expect HIT<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Faller Enemy capsule vs World" ID="4926570769079582209-2257982254735691220">
+        <Transform>
+            <Position X="11.2" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.7019608" G="0.7019608" B="0.7019608" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <CapsuleCollider2D Direction="0" Radius="0.34999999" Height="1" IsTrigger="false" Layer="8" Mask="65535">
+            <Offset X="0" Y="0"/>
+        </CapsuleCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/ExpectContact.lua"/>
+    </Entity>
+    <Entity Name="Target Enemy capsule vs World" ID="4263597925018681071-2489829209256754679">
+        <Transform>
+            <Position X="11.2" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="2" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.30000001" G="0.30000001" B="0.34999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="2" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Label 10 Lua API" ID="8535227093834884838-6347173737306457640">
+        <Transform>
+            <Position X="13" Y="7" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.40000001" Y="0.40000001" Z="1"/>
+        </Transform>
+        <Text MaxWidth="7">10 Lua Layer / Mask / CollidesWithLayer<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Lua API Check" ID="2025592422697026105-2990980314085646639">
+        <Transform>
+            <Position X="14.4" Y="4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.69999999" G="0.69999999" B="0.69999999" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="4" Mask="18">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <LuaScript Filepath="Scripts/CollisionLayers/LayerApiCheck.lua"/>
+    </Entity>
+</Scene>

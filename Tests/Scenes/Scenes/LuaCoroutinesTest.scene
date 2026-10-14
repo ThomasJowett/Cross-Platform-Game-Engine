@@ -1,0 +1,109 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="6975252108533923619-586377601967702554">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Reporter" ID="418330468720367773-2214561680313497716">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/CoroutineReporter.lua"/>
+    </Entity>
+    <Entity Name="Test Sequence" ID="1413843881561914627-9073905303549994287">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestSequence.lua"/>
+    </Entity>
+    <Entity Name="Test Wait" ID="8905445836284205709-1981289526479775370">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestWait.lua"/>
+    </Entity>
+    <Entity Name="Test Stop" ID="7215189886292417092-6542889139367793740">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestStop.lua"/>
+    </Entity>
+    <Entity Name="Test Error" ID="3778391793334559389-5227301106168398264">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestError.lua"/>
+    </Entity>
+    <Entity Name="Test WaitFixed" ID="4309126401929572548-3678979457279649820">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestWaitFixed.lua"/>
+    </Entity>
+    <Entity Name="Test WaitOutside" ID="2071166839539773042-2643738034553439908">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestWaitOutside.lua"/>
+    </Entity>
+    <Entity Name="Test DestroyEntity" ID="4154585705806576631-1776995500106804508">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestDestroyEntity.lua"/>
+    </Entity>
+    <Entity Name="Test DestroyEntityChecker" ID="5099885871805010115-7956162396624951086">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestDestroyEntityChecker.lua"/>
+    </Entity>
+    <Entity Name="Test RemoveScript" ID="8951965328020705368-3741576538151294796">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestRemoveScript.lua"/>
+    </Entity>
+    <Entity Name="Test RemoveScriptChecker" ID="4277555655321959404-4267648018295905332">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestRemoveScriptChecker.lua"/>
+    </Entity>
+    <Entity Name="Test Arguments" ID="76437679245599134-3254253082447625780">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/LuaCoroutines/TestArguments.lua"/>
+    </Entity>
+</Scene>

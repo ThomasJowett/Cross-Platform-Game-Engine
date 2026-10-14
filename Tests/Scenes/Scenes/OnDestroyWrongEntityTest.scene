@@ -1,0 +1,62 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="5033025614183801856-3687857907453149540">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="874961564154522362-4813652764794795383">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">EnTT hazard: OnDestroy fired for the wrong entity. Victim is destroyed; both bystanders should stay alive with no OnDestroy. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="843917157717586698-6611197881667503927">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EnttHazards/OnDestroyWrongEntity.lua"/>
+    </Entity>
+    <Entity Name="Victim" ID="4942026621709532267-6799383317592493538">
+        <Transform>
+            <Position X="-4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.9" G="0.2" B="0.2" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/OnDestroyLogger.lua"/>
+    </Entity>
+    <Entity Name="Bystander 1" ID="4077908315604266553-3811720075645016776">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.9" B="0.2" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/OnDestroyLogger.lua"/>
+    </Entity>
+    <Entity Name="Bystander 2" ID="6513815130972649640-3502164328800764700">
+        <Transform>
+            <Position X="4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.4" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/OnDestroyLogger.lua"/>
+    </Entity>
+</Scene>

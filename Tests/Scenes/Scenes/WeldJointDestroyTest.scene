@@ -1,0 +1,75 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="2782515162868888147-6086489932850137559">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="7969660371267714795-6001557516962662372">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Physics handle hazard: destroying a welded child, then its parent. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="3101103620078477566-7338113338063846328">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EnttHazards/WeldJointDestroy.lua"/>
+    </Entity>
+    <Entity Name="Weld Parent" ID="5274948328539750346-5690142667137491859">
+        <Transform>
+            <Position X="0" Y="2" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.4" B="0.9" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+        <Entity Name="Welded Child" ID="5664747837072435900-8365246200176211945">
+            <Transform>
+                <Position X="1" Y="0" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="1" Y="1" Z="1"/>
+            </Transform>
+            <Sprite TilingFactor="1">
+                <Tint R="0.9" G="0.6" B="0.2" A="1"/>
+            </Sprite>
+            <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+            <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+                <Offset X="0" Y="0"/>
+                <Size X="0.5" Y="0.5"/>
+            </BoxCollider2D>
+            <WeldJoint2D CollideConnected="false" Damping="0" Stiffness="0"/>
+        </Entity>
+    </Entity>
+    <Entity Name="Floor" ID="6224437299739697637-3911424271900435661">
+        <Transform>
+            <Position X="0" Y="-3" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="8" Y="0.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.3" G="0.3" B="0.35" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+</Scene>
