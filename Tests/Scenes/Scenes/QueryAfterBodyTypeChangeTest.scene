@@ -1,0 +1,44 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="5610842614782548280-559878093869102071">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="3755056916315298990-3211413582038799228">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Changing a body's Type at runtime, destroying it, then raycasting where it was. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="8293560282405762742-2144008709681415698">
+        <Transform>
+            <Position X="0" Y="5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Regressions/ChangeBodyType.lua"/>
+    </Entity>
+    <Entity Name="Shifter" ID="4374769929257512915-2733717968592868503">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.9" G="0.3" B="0.3" A="1"/>
+        </Sprite>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+</Scene>

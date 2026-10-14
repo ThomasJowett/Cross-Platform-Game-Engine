@@ -1,0 +1,193 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Camera" ID="7100000000000000001-7100000000000000001">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="14" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Sequence" ID="7100000000000000100-7100000000000000100">
+        <Transform>
+            <Position X="-9" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/Sequence.behaviourtree"/>
+    </Entity>
+    <Entity Name="Sequence Label" ID="7100000000000000200-7100000000000000200">
+        <Transform>
+            <Position X="-9.8759871" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Sequence<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Mem Sequence" ID="7100000000000000101-7100000000000000101">
+        <Transform>
+            <Position X="-6" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/MemSequence.behaviourtree"/>
+    </Entity>
+    <Entity Name="Mem Sequence Label" ID="7100000000000000201-7100000000000000201">
+        <Transform>
+            <Position X="-6.8449993" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Mem Sequence<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Selector" ID="7100000000000000102-7100000000000000102">
+        <Transform>
+            <Position X="-3" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/Selector.behaviourtree"/>
+    </Entity>
+    <Entity Name="Selector Label" ID="7100000000000000202-7100000000000000202">
+        <Transform>
+            <Position X="-3.7369564" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Selector<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Stateful Selector" ID="7100000000000000103-7100000000000000103">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/StatefulSelector.behaviourtree"/>
+    </Entity>
+    <Entity Name="Stateful Selector Label" ID="7100000000000000203-7100000000000000203">
+        <Transform>
+            <Position X="-0.67521691" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Stateful Selector<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Parallel" ID="7100000000000000104-7100000000000000104">
+        <Transform>
+            <Position X="3" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/ParallelSequence.behaviourtree"/>
+    </Entity>
+    <Entity Name="Parallel Label" ID="7100000000000000204-7100000000000000204">
+        <Transform>
+            <Position X="2.3517935" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Parallel<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Decorators" ID="7100000000000000105-7100000000000000105">
+        <Transform>
+            <Position X="6" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/Decorators.behaviourtree"/>
+    </Entity>
+    <Entity Name="Decorators Label" ID="7100000000000000205-7100000000000000205">
+        <Transform>
+            <Position X="5.0909462" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Decorators<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Expect Red" ID="7100000000000000106-7100000000000000106">
+        <Transform>
+            <Position X="9" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/DecoratorsExpectRed.behaviourtree"/>
+    </Entity>
+    <Entity Name="Expect Red Label" ID="7100000000000000206-7100000000000000206">
+        <Transform>
+            <Position X="8.0307493" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Expect Red<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="New Tasks" ID="7100000000000000107-7100000000000000107">
+        <Transform>
+            <Position X="-1.5" Y="-4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/NewTasks.behaviourtree"/>
+        <LuaScript Filepath="Scripts/BehaviourTrees/SignalListener.lua"/>
+    </Entity>
+    <Entity Name="New Tasks Label" ID="7100000000000000207-7100000000000000207">
+        <Transform>
+            <Position X="-2.4731917" Y="-5.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">New Tasks<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Halt" ID="7100000000000000108-7100000000000000108">
+        <Transform>
+            <Position X="1.5" Y="-4" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <BehaviourTree Filepath="BehaviourTrees/Halt.behaviourtree"/>
+    </Entity>
+    <Entity Name="Halt Label" ID="7100000000000000208-7100000000000000208">
+        <Transform>
+            <Position X="1.0668292" Y="-5.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Halt<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Referee" ID="7100000000000000900-7100000000000000900">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/BehaviourTrees/Referee.lua"/>
+    </Entity>
+</Scene>

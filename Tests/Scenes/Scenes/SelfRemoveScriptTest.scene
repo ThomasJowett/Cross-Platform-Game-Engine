@@ -1,0 +1,48 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="4602901082765396081-128120417324506329">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="6858712816722046284-4803716055669162827">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">EnTT hazard: a script removes its own LuaScriptComponent inside OnUpdate. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Watcher" ID="5761352923402591234-3905980750056679888">
+        <Transform>
+            <Position X="-4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EnttHazards/SelfRemoveWatcher.lua"/>
+    </Entity>
+    <Entity Name="Self Remover" ID="5238059602669604085-3333048464512743544">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.9" G="0.6" B="0.2" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/EnttHazards/SelfRemoveScript.lua"/>
+    </Entity>
+    <Entity Name="Watcher 2" ID="2383416952929182281-8989783909956202078">
+        <Transform>
+            <Position X="4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/EnttHazards/SelfRemoveWatcher.lua"/>
+    </Entity>
+</Scene>

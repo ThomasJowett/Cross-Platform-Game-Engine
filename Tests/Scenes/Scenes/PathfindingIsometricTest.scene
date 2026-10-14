@@ -1,0 +1,62 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="0"/>
+    <Entity Name="Camera" ID="7023646418445998953-11057699771802723582">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="13" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Level" ID="4247597587064290621-2457925259611419118">
+        <Transform>
+            <Position X="-2.5" Y="4.75" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Tilemap Filepath="Tilesets/PathfindingIso.tileset" TilesWide="24" TilesHigh="14" TileWidth="32" TileHeight="32" Orientation="Isometric" IsTrigger="false">
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,
+2,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,2,
+2,1,1,2,2,1,1,2,1,1,1,1,1,1,1,2,1,1,1,2,1,1,1,2,
+2,1,1,2,1,1,1,2,2,2,2,2,1,1,1,2,1,1,1,2,1,1,1,2,
+2,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,1,1,1,2,
+2,1,1,2,2,2,2,2,2,2,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,1,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,2,
+2,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,2,2,2,
+2,1,1,1,1,1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,1,1,1,2,
+2,1,1,1,1,1,2,1,1,1,1,2,2,2,2,2,2,2,1,1,1,1,1,2,
+2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,
+2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,2,
+2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2
+<Tint R="1" G="1" B="1" A="1"/></Tilemap>
+        <RigidBody2D BodyType="0" FixedRotation="false" GravityScale="1" AngularDamping="0" LinearDamping="0"/>
+    </Entity>
+    <Entity Name="Goal Marker" ID="1597091074114278392-13448248701773115055">
+        <Transform>
+            <Position X="0" Y="0" Z="0.2"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.30000001" Y="0.30000001" Z="1"/>
+        </Transform>
+        <CircleRenderer Radius="0.5" Thickness="1" Fade="0.02">
+            <Colour R="0" G="1" B="0" A="0"/>
+        </CircleRenderer>
+    </Entity>
+    <Entity Name="Agent" ID="9791764239471392644-12921726519628192221">
+        <Transform>
+            <Position X="-2.5" Y="4" Z="0.1"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.34999999" Y="0.34999999" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="2" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <CircleCollider2D Radius="0.5" IsTrigger="false">
+            <Offset X="0" Y="0"/>
+        </CircleCollider2D>
+        <CircleRenderer Radius="0.5" Thickness="1" Fade="0.02">
+            <Colour R="0.2" G="0.5" B="1" A="1"/>
+        </CircleRenderer>
+        <LuaScript Filepath="Scripts/Pathfinding/IsometricGoals.lua"/>
+    </Entity>
+</Scene>

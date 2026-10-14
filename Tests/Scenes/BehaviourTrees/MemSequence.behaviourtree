@@ -1,0 +1,13 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard/>
+    <Root>
+        <MemSequence>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetRed.lua"/>
+            <Wait WaitTime="1"/>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetGreen.lua"/>
+            <Wait WaitTime="1"/>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetBlue.lua"/>
+            <Wait WaitTime="1"/>
+        </MemSequence>
+    </Root>
+</BehaviourTree>

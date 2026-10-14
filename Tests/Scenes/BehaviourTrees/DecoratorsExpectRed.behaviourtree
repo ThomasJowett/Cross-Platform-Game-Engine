@@ -1,0 +1,45 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard>
+        <Bool Key="Flag" Value="true"/>
+        <Bool Key="OtherFlag" Value="false"/>
+        <Int Key="RepeatCount" Value="0"/>
+    </Blackboard>
+    <Root>
+        <Selector>
+            <MemSequence>
+                <BlackboardBoolDecorator Key="Flag" IsSet="false">
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Succeed.lua"/>
+                </BlackboardBoolDecorator>
+                <InverterDecorator>
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Fail.lua"/>
+                </InverterDecorator>
+                <SucceederDecorator>
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Fail.lua"/>
+                </SucceederDecorator>
+                <InverterDecorator>
+                    <FailerDecorator>
+                        <CustomTask Filepath="Scripts/BehaviourTrees/Succeed.lua"/>
+                    </FailerDecorator>
+                </InverterDecorator>
+                <RepeaterDecorator Limit="3">
+                    <CustomTask Filepath="Scripts/BehaviourTrees/CountTick.lua"/>
+                </RepeaterDecorator>
+                <UntilSuccessDecorator>
+                    <CustomTask Filepath="Scripts/BehaviourTrees/SucceedEveryThird.lua"/>
+                </UntilSuccessDecorator>
+                <UntilFailureDecorator>
+                    <CustomTask Filepath="Scripts/BehaviourTrees/FailEveryThird.lua"/>
+                </UntilFailureDecorator>
+                <BlackboardBoolDecorator Key="Flag" IsSet="true">
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Succeed.lua"/>
+                </BlackboardBoolDecorator>
+                <BlackboardCompareDecorator Key1="Flag" Key2="OtherFlag" IsEqual="false">
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Succeed.lua"/>
+                </BlackboardCompareDecorator>
+                <CustomTask Filepath="Scripts/BehaviourTrees/SetGreen.lua"/>
+                <Wait WaitTime="2"/>
+            </MemSequence>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetRed.lua"/>
+        </Selector>
+    </Root>
+</BehaviourTree>

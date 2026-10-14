@@ -1,0 +1,95 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="5032365621436211547-436517749827309360">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="5042643235393328839-446550292635081667">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Signal handlers that destroy their own entity or connect new handlers during Emit. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="803683620814002643-155396439541338221">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Regressions/SignalHandlerDestroy.lua"/>
+    </Entity>
+    <Entity Name="Listener 1" ID="338313023371658352-8549872075560720484">
+        <Transform>
+            <Position X="-5" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.7" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+    <Entity Name="Listener 2" ID="243112178305860953-1057688221747181105">
+        <Transform>
+            <Position X="-2" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.7" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+    <Entity Name="Listener 3" ID="7888065036531277690-444514565027372303">
+        <Transform>
+            <Position X="1" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.7" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+    <Entity Name="Listener 4" ID="2980582267888088190-488683206998892860">
+        <Transform>
+            <Position X="4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.7" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+    <Entity Name="Listener 5" ID="6813038297521813203-1774753584733933161">
+        <Transform>
+            <Position X="7" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.2" G="0.7" B="0.9" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+    <Entity Name="Connector" ID="8559939088045287645-4641051488854339546">
+        <Transform>
+            <Position X="10" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="0.9" G="0.7" B="0.2" A="1"/>
+        </Sprite>
+        <LuaScript Filepath="Scripts/Regressions/SignalSelfDestroyListener.lua"/>
+    </Entity>
+</Scene>

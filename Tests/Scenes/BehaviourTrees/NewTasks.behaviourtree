@@ -1,0 +1,22 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard>
+        <Bool Key="Flag" Value="false"/>
+    </Blackboard>
+    <Root>
+        <MemSequence>
+            <SetBlackboard Key="Flag" Type="Bool" Value="true"/>
+            <BlackboardBoolDecorator Key="Flag" IsSet="true">
+                <CustomTask Filepath="Scripts/BehaviourTrees/SetGreen.lua"/>
+            </BlackboardBoolDecorator>
+            <RandomWait MinTime="0.5" MaxTime="1.5"/>
+            <SetBlackboard Key="Flag" Type="Bool" Value="false"/>
+            <InverterDecorator>
+                <BlackboardBoolDecorator Key="Flag" IsSet="true">
+                    <CustomTask Filepath="Scripts/BehaviourTrees/Succeed.lua"/>
+                </BlackboardBoolDecorator>
+            </InverterDecorator>
+            <EmitSignal Signal="BTTestPing"/>
+            <RandomWait MinTime="0.5" MaxTime="1.5"/>
+        </MemSequence>
+    </Root>
+</BehaviourTree>

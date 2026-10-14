@@ -1,0 +1,65 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="0"/>
+    <Entity Name="Main Camera" ID="8100000000000000000-8100000000000000000">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="12" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="8100000000000000001-8100000000000000001">
+        <Transform>
+            <Position X="-8" Y="6" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Ray casts and point queries against static blocks: the first hit, every hit in order, the hit point and normal, and misses.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="8100000000000000002-8100000000000000002">
+        <Transform>
+            <Position X="0" Y="8" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Physics/RayCastQueries.lua"/>
+    </Entity>
+    <Entity Name="Near Block" ID="8100000000000000003-8100000000000000003">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="Far Block" ID="8100000000000000004-8100000000000000004">
+        <Transform>
+            <Position X="4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+    <Entity Name="High Block" ID="8100000000000000005-8100000000000000005">
+        <Transform>
+            <Position X="0" Y="5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+        <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+            <Offset X="0" Y="0"/>
+            <Size X="0.5" Y="0.5"/>
+        </BoxCollider2D>
+    </Entity>
+</Scene>

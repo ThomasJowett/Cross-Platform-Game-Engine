@@ -1,0 +1,9 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard/>
+    <Root>
+        <Selector>
+            <CustomTask Filepath="Scripts/BehaviourTrees/ToggleRedBlueAndFail.lua"/>
+            <Wait WaitTime="1"/>
+        </Selector>
+    </Root>
+</BehaviourTree>

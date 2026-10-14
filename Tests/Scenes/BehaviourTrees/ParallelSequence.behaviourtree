@@ -1,0 +1,14 @@
+<BehaviourTree EngineVersion="1">
+    <Blackboard/>
+    <Root>
+        <MemSequence>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetWhite.lua"/>
+            <ParallelSequence SuccessOnAll="false" FailOnAll="true">
+                <Wait WaitTime="2"/>
+                <CustomTask Filepath="Scripts/BehaviourTrees/Spin.lua"/>
+            </ParallelSequence>
+            <CustomTask Filepath="Scripts/BehaviourTrees/SetYellow.lua"/>
+            <Wait WaitTime="1"/>
+        </MemSequence>
+    </Root>
+</BehaviourTree>
