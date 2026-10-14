@@ -19,6 +19,18 @@
 
 #include "stb_image.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/html5.h>
+
+static EM_BOOL FitWindowToCanvas(int, const EmscriptenUiEvent*, void* userData)
+{
+	double width, height;
+	if (emscripten_get_element_css_size("#canvas", &width, &height) == EMSCRIPTEN_RESULT_SUCCESS)
+		glfwSetWindowSize((GLFWwindow*)userData, (int)width, (int)height);
+	return EM_FALSE;
+}
+#endif
+
 #include "Core/Settings.h"
 #include "imgui.h"
 
@@ -239,6 +251,17 @@ bool Window::Init(const WindowProps& props)
 	m_Data.posX = Settings::GetInt(props.title.c_str(), "Window_Position_X");
 	m_Data.posY = Settings::GetInt(props.title.c_str(), "Window_Position_Y");
 	m_Data.mode = WindowMode::WINDOWED;
+
+#ifdef __EMSCRIPTEN__
+	// Match the canvas size set by the page's CSS
+	double canvasWidth, canvasHeight;
+	if (emscripten_get_element_css_size("#canvas", &canvasWidth, &canvasHeight) == EMSCRIPTEN_RESULT_SUCCESS
+		&& canvasWidth > 0.0 && canvasHeight > 0.0)
+	{
+		m_Data.width = (uint32_t)canvasWidth;
+		m_Data.height = (uint32_t)canvasHeight;
+	}
+#endif
 
 	ENGINE_INFO("Creating Window {0} {1} {2}", m_Data.title, m_Data.width, m_Data.height);
 
@@ -533,6 +556,10 @@ bool Window::Init(const WindowProps& props)
 				data.eventCallback(event);
 			});
 	}
+#ifdef __EMSCRIPTEN__
+	// Follow the browser window when the page resizes the canvas
+	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, m_Window, EM_FALSE, FitWindowToCanvas);
+#endif
 	return true;
 }
 
