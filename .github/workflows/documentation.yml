@@ -6,7 +6,7 @@ name: Build and deploy documentation
 # this workflow run - nothing is ever committed back to the repo.
 on:
   push:
-    branches: ["master"]
+    branches: ["main"]
     paths:
       - "Engine/src/Scripting/Lua/**"
       - "Engine/src/Scene/Components/**"
