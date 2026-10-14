@@ -79,4 +79,23 @@ std::vector<Vector2f> FindPath(Vector2f start, Vector2f goal, Entity tilemapEnti
 
 	return path;
 }
+
+Vector2f GetTileCentre(Entity tilemapEntity, int column, int row)
+{
+	if (!tilemapEntity.IsSceneValid())
+	{
+		CLIENT_ERROR("Pathfinding.GetTileCentre: invalid tilemap entity");
+		return Vector2f();
+	}
+
+	TilemapComponent* tilemap = tilemapEntity.TryGetComponent<TilemapComponent>();
+	if (!tilemap || !tilemap->SupportsPathfinding())
+	{
+		CLIENT_ERROR("Pathfinding.GetTileCentre: entity has no orthogonal, isometric or hexagonal TilemapComponent");
+		return Vector2f();
+	}
+
+	TilemapSpace space(tilemapEntity.GetComponent<TransformComponent>());
+	return space.LocalToWorld(tilemap->CellToLocal(Astar::GridCoord(column, row)));
+}
 }
