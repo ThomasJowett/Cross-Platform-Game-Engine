@@ -51,15 +51,15 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 
 // TODO(texture-array-cleanup): 8-slot if-chain workaround for WGSL's lack of dynamic indexing -
 // see the TODO on WebGPUPipeline::SetTextureArray.
-fn sampleFontAtlas(index: i32, uv: vec2<f32>) -> vec3<f32> {
-    if (index == 0) { return textureSample(u_FontAtlas0, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 1) { return textureSample(u_FontAtlas1, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 2) { return textureSample(u_FontAtlas2, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 3) { return textureSample(u_FontAtlas3, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 4) { return textureSample(u_FontAtlas4, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 5) { return textureSample(u_FontAtlas5, u_FontAtlasSampler, uv).rgb; }
-    else if (index == 6) { return textureSample(u_FontAtlas6, u_FontAtlasSampler, uv).rgb; }
-    else { return textureSample(u_FontAtlas7, u_FontAtlasSampler, uv).rgb; }
+fn sampleFontAtlas(index: i32, uv: vec2<f32>, ddx: vec2<f32>, ddy: vec2<f32>) -> vec3<f32> {
+    if (index == 0) { return textureSampleGrad(u_FontAtlas0, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 1) { return textureSampleGrad(u_FontAtlas1, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 2) { return textureSampleGrad(u_FontAtlas2, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 3) { return textureSampleGrad(u_FontAtlas3, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 4) { return textureSampleGrad(u_FontAtlas4, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 5) { return textureSampleGrad(u_FontAtlas5, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else if (index == 6) { return textureSampleGrad(u_FontAtlas6, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
+    else { return textureSampleGrad(u_FontAtlas7, u_FontAtlasSampler, uv, ddx, ddy).rgb; }
 }
 
 fn fontAtlasSize(index: i32) -> vec2<f32> {
@@ -89,7 +89,10 @@ fn fs_main(input: VertexOutput) -> FragmentOutput {
     var output: FragmentOutput;
 
     let texIndex = i32(input.texIndex);
-    let msd = sampleFontAtlas(texIndex, input.texCoord);
+    // Derivatives taken outside the per-pixel atlas branch, which WGSL requires for implicit-LOD sampling
+    let ddx = dpdx(input.texCoord);
+    let ddy = dpdy(input.texCoord);
+    let msd = sampleFontAtlas(texIndex, input.texCoord, ddx, ddy);
     let sd = median3(msd.r, msd.g, msd.b);
     let screenPxDistance = screenPxRange(texIndex, input.texCoord) * (sd - 0.5);
     let opacity = clamp(screenPxDistance + 0.5, 0.0, 1.0);
