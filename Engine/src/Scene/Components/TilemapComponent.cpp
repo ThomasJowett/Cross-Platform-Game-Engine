@@ -127,7 +127,7 @@ void TilemapComponent::Rebuild()
 
 	std::weak_ptr<RebuildState> weakState = rebuildState;
 
-	std::thread([
+	auto rebuildJob = [
 		weakState, rid, tilesCopy, tw, th, tWidth, tHeight, orient, col,
 		maxTileIndex, tileCoords, spriteWidth, spriteHeight, tilesetTex
 	]() {
@@ -304,7 +304,14 @@ void TilemapComponent::Rebuild()
 				state->hasResult = true;
 			}
 		}
-	}).detach();
+	};
+
+#ifdef __EMSCRIPTEN__
+	// No threads in the web build; the result is still picked up by UpdateRebuild
+	rebuildJob();
+#else
+	std::thread(std::move(rebuildJob)).detach();
+#endif
 }
 
 void TilemapComponent::UpdateRebuild()
