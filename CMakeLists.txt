@@ -12,7 +12,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if (EMSCRIPTEN)
-    add_link_options("-sUSE_GLFW=3" "-sUSE_WEBGPU=1" "-sASYNCIFY" "-sALLOW_MEMORY_GROWTH=1" "-sNO_EXIT_RUNTIME=1" "-sASSERTIONS=1")
+    add_link_options("-sUSE_GLFW=3" "-sUSE_WEBGPU=1" "-sASYNCIFY" "-sALLOW_MEMORY_GROWTH=1" "-sNO_EXIT_RUNTIME=1")
+    # Configure a separate build directory with -DCMAKE_BUILD_TYPE=Release for a much smaller, faster web build
+    add_link_options("$<$<CONFIG:Debug>:-sASSERTIONS=1>" "$<$<CONFIG:Release>:-O2>")
 endif()
 
 option(ATTERCOP_ENABLE_UNITY_BUILD "Enable unity build" OFF)
