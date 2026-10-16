@@ -80,7 +80,9 @@
 			status.textContent = text;
 		}
 
-		if (!navigator.gpu)
+		if (location.protocol === 'file:')
+			showError('This page has to be served over HTTP, for example with "python3 -m http.server" in its folder.');
+		else if (!navigator.gpu)
 			showError('This browser does not support WebGPU. Try a recent version of Chrome or Edge.');
 
 		var Module = {
