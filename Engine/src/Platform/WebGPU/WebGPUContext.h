@@ -36,6 +36,7 @@ public:
 
 private:
 	void SetupSurface();
+	bool IsPresentModeSupported(wgpu::PresentMode presentMode);
 
 	GLFWwindow* m_WindowHandle;
 	wgpu::Instance m_Instance;

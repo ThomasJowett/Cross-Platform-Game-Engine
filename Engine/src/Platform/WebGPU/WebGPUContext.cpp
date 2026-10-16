@@ -187,6 +187,31 @@ void WebGPUContext::SetSwapInterval(uint32_t interval)
 		m_Surface.configure(m_SurfaceConfig);
 }
 
+bool WebGPUContext::IsPresentModeSupported(wgpu::PresentMode presentMode)
+{
+#ifdef __EMSCRIPTEN__
+	// Browsers only present with Fifo, and Emscripten doesn't implement surface capabilities
+	return presentMode == wgpu::PresentMode::Fifo;
+#else
+	if (!m_Adapter)
+		return presentMode == wgpu::PresentMode::Fifo;
+
+	wgpu::SurfaceCapabilities capabilities = {};
+	m_Surface.getCapabilities(m_Adapter, &capabilities);
+	bool supported = false;
+	for (size_t i = 0; i < capabilities.presentModeCount; ++i)
+	{
+		if (capabilities.presentModes[i] == (WGPUPresentMode)presentMode)
+		{
+			supported = true;
+			break;
+		}
+	}
+	capabilities.freeMembers();
+	return supported;
+#endif
+}
+
 void WebGPUContext::MakeCurrent() {}
 
 wgpu::Device WebGPUContext::GetWebGPUDevice() { return m_Device; }
