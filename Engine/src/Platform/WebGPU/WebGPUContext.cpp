@@ -40,8 +40,10 @@ void WebGPUContext::Init()
 
 		                          m_Adapter = adapter;
 
-		                          wgpu::AdapterProperties properties = {};
-		                          m_Adapter.getProperties(&properties);
+		                          WGPUAdapterInfo info = {};
+		                          wgpuAdapterGetInfo(m_Adapter, &info);
+		                          ENGINE_INFO("Graphics Card: {0}", info.description && *info.description ? info.description : (info.vendor ? info.vendor : "Unknown Adapter"));
+		                          wgpuAdapterInfoFreeMembers(info);
 
 		                          wgpu::DeviceDescriptor deviceDesc = {};
 		                          deviceDesc.label = "Main Device";
@@ -170,6 +172,11 @@ void WebGPUContext::ResizeBuffers(uint32_t width, uint32_t height)
 void WebGPUContext::SetSwapInterval(uint32_t interval)
 {
 	wgpu::PresentMode presentMode = interval == 1 ? wgpu::PresentMode::Fifo : wgpu::PresentMode::Immediate;
+	if (presentMode != wgpu::PresentMode::Fifo && !IsPresentModeSupported(presentMode))
+	{
+		ENGINE_WARN("Present mode {0} isn't supported by the surface, using Fifo", (int)presentMode);
+		presentMode = wgpu::PresentMode::Fifo;
+	}
 	if (presentMode == m_SurfaceConfig.presentMode)
 		return;
 	m_SurfaceConfig.presentMode = presentMode;
