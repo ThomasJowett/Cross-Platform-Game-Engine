@@ -6,6 +6,14 @@
 
 namespace ProjectSerializer
 {
+	// Overwrites an unreadable project file with a default project
+	static bool ReplaceWithDefaultProject(ProjectData& data, const std::filesystem::path& filepath)
+	{
+		ENGINE_WARN("Replacing {0} with a new project file", filepath.string());
+		data = ProjectData();
+		return Serialize(data, filepath);
+	}
+
 	bool Serialize(const ProjectData& data, const std::filesystem::path& filepath)
 	{
 		tinyxml2::XMLDocument doc;
@@ -25,18 +33,24 @@ namespace ProjectSerializer
 
 	bool Deserialize(ProjectData& data, const std::filesystem::path& filepath)
 	{
+		if (filepath.empty() || !std::filesystem::exists(filepath))
+		{
+			ENGINE_ERROR("Could not find project file: {0}", filepath.string());
+			return false;
+		}
+
 		tinyxml2::XMLDocument doc;
 		if (doc.LoadFile(filepath.string().c_str()) != tinyxml2::XML_SUCCESS)
 		{
 			ENGINE_ERROR("Could not load project file: {0}, {1} on line {2}", filepath.string(), doc.ErrorName(), doc.ErrorLineNum());
-			return false;
+			return ReplaceWithDefaultProject(data, filepath);
 		}
 
 		tinyxml2::XMLElement* pRoot = doc.FirstChildElement("Project");
 		if (!pRoot)
 		{
-			ENGINE_ERROR("Not a valid project file. Could not find Project node");
-			return false;
+			ENGINE_ERROR("Not a valid project file, could not find the Project node: {0}", filepath.string());
+			return ReplaceWithDefaultProject(data, filepath);
 		}
 
 		if (const char* version = pRoot->Attribute("EngineVersion"); version && atoi(version) != VERSION)
