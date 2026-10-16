@@ -11,6 +11,7 @@
 #include <imgui.h>
 
 #include "Core/Application.h"
+#include "Utilities/FileUtils.h"
 #include "Core/InputMappings.h"
 #include "Physics/CollisionLayers.h"
 #include "ProjectSerializer.h"
@@ -194,7 +195,7 @@ std::unordered_set<std::filesystem::path> AssetPacker::GetTexturePathsStillNeede
 		if (pElement)
 		{
 			if (const char* filepath = pElement->Attribute("Filepath"))
-				paths.insert((m_ProjectDirectory / filepath).lexically_normal());
+				paths.insert((m_ProjectDirectory / FileUtils::ToProjectRelative(filepath, m_ProjectDirectory)).lexically_normal());
 		}
 	};
 

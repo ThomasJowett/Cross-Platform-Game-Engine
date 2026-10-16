@@ -219,6 +219,12 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 	m_Registry.view<LuaScriptComponent>().each(
 		[this](const auto entity, auto& scriptComponent)
 		{
+			if (!scriptComponent.script)
+			{
+				ENGINE_WARN("{0} has a Lua Script component with no script", Entity{ entity, this }.GetName());
+				return;
+			}
+
 			bool result = scriptComponent.ParseScript(Entity{ entity, this });
 			if (result)
 			{

@@ -14,5 +14,8 @@
 
 #include "spdlog/version.h"
 #include "cereal/version.hpp"
+// Lua is compiled as C
+extern "C" {
 #include "lua/lua.h"
+}
 #include "box2d/b2_common.h"

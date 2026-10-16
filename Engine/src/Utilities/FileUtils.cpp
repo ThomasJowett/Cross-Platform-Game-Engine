@@ -1,5 +1,10 @@
 #include "FileUtils.h"
 
+#include <algorithm>
+#include <cctype>
+#include <string>
+#include <vector>
+
 std::filesystem::path FileUtils::RelativePath(const std::filesystem::path& path, const std::filesystem::path& relative_to)
 {
     // create absolute paths
@@ -37,4 +42,62 @@ std::filesystem::path FileUtils::RelativePath(const std::filesystem::path& path,
     }
 
     return result;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool FileUtils::IsAbsolutePath(const std::filesystem::path& path)
+{
+	if (path.is_absolute() || path.has_root_directory())
+		return true;
+
+	const std::string pathString = path.generic_string();
+	return pathString.size() >= 3 && std::isalpha((unsigned char)pathString[0]) && pathString[1] == ':'
+		&& (pathString[2] == '/' || pathString[2] == '\\');
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+std::filesystem::path FileUtils::ToProjectRelative(const std::filesystem::path& path, const std::filesystem::path& projectDirectory)
+{
+	if (projectDirectory.empty() || !IsAbsolutePath(path))
+		return path;
+
+	std::filesystem::path projectRoot = std::filesystem::absolute(projectDirectory).lexically_normal();
+	if (path.is_absolute())
+	{
+		std::filesystem::path relative = path.lexically_normal().lexically_relative(projectRoot);
+		if (!relative.empty() && *relative.begin() != "..")
+			return relative;
+	}
+
+	if (std::filesystem::exists(path))
+		return path;
+
+	std::string pathString = path.generic_string();
+	std::replace(pathString.begin(), pathString.end(), '\\', '/');
+
+	std::vector<std::string> parts;
+	size_t start = 0;
+	while (start <= pathString.size())
+	{
+		size_t end = pathString.find('/', start);
+		if (end == std::string::npos)
+			end = pathString.size();
+		std::string part = pathString.substr(start, end - start);
+		if (!part.empty() && !(part.size() == 2 && part[1] == ':'))
+			parts.push_back(part);
+		start = end + 1;
+	}
+
+	for (size_t first = 0; first < parts.size(); ++first)
+	{
+		std::filesystem::path tail;
+		for (size_t i = first; i < parts.size(); ++i)
+			tail /= parts[i];
+		if (std::filesystem::exists(projectRoot / tail))
+			return tail;
+	}
+
+	return path;
 }

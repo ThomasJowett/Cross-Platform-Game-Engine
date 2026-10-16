@@ -107,9 +107,9 @@ void ProjectSettingsPanel::ReadProjectFile()
 		|| !ProjectSerializer::Deserialize(m_ProjectData, Application::GetOpenDocument()))
 	{
 		// Don't leave whatever was read for the previous project sitting in memory - otherwise
-		// a project whose file fails to parse (e.g. still the old cereal-JSON .proj format)
-		// looks like it "has" the last successfully-opened project's settings, and hitting
-		// Save would write that other project's data into this one's file.
+		// a project whose file fails to parse looks like it "has" the last successfully-opened
+		// project's settings, and hitting Save would write that other project's data into this
+		// one's file.
 		m_ProjectData = ProjectData();
 		m_DefaultScenePath.clear();
 		memset(m_DescriptionBuffer, 0, sizeof(m_DescriptionBuffer));

@@ -34,24 +34,15 @@
 
 The same editor and the same projects, on every platform.
 
-<table>
-  <tr>
-    <td align="center"><b>Windows</b></td>
-    <td align="center"><b>macOS</b></td>
-  </tr>
-  <tr>
-    <td><img src="docs/assets/screenshots/windows.png" alt="Attercop on Windows"></td>
-    <td><img src="docs/assets/screenshots/macos.png" alt="Attercop on macOS"></td>
-  </tr>
-  <tr>
-    <td align="center"><b>Linux</b></td>
-    <td align="center"><b>Web</b></td>
-  </tr>
-  <tr>
-    <td><img src="docs/assets/screenshots/linux.png" alt="Attercop on Linux"></td>
-    <td><img src="docs/assets/screenshots/web.png" alt="Attercop in the browser"></td>
-  </tr>
-</table>
+<p align="center">
+  <img src="docs/assets/screenshots/windows.png" alt="Attercop on Windows" title="Windows" width="49%">
+  <img src="docs/assets/screenshots/linux.png" alt="Attercop on Linux" title="Linux" width="49%">
+</p>
+<p align="center">
+  <img src="docs/assets/screenshots/macos.png" alt="Attercop on macOS" title="macOS" width="49%">
+  <img src="docs/assets/screenshots/web.png" alt="Attercop in the browser" title="Web" width="49%">
+</p>
+<p align="center"><sub>Windows · Linux · macOS · Web</sub></p>
 
 ## Features
 
@@ -75,13 +66,19 @@ The same editor and the same projects, on every platform.
 
 **📜 Lua scripting**
 
-Attach a script to any entity and give it behaviour:
+Attach a script to any entity and give it behaviour. Input actions ("Move", "Jump") are set up
+once in the project's input mappings, so the same script works with a keyboard or a gamepad:
 
 ```lua
-function OnUpdate(deltaTime)
-    local transform = CurrentEntity:GetTransformComponent()
-    if Input.IsKeyPressed('D') then
-        transform.Position = transform.Position + Vec3.new(3.0 * deltaTime, 0, 0)
+function OnFixedUpdate()
+    local body = CurrentEntity:GetRigidBody2DComponent()
+    local move = InputAction.Move:GetAxis2D()
+    body:SetLinearVelocity(Vec2.new(move.x * 5.0, body:GetLinearVelocity().y))
+end
+
+function OnInputAction(action, phase)
+    if action == "Jump" and phase == "Started" then
+        CurrentEntity:GetRigidBody2DComponent():ApplyImpulse(Vec2.new(0, 8))
     end
 end
 ```

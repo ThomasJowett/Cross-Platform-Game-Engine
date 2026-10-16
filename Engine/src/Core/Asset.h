@@ -6,6 +6,7 @@
 #include "Core/VirtualFileSystem.h"
 #include "Core/Application.h"
 #include "Utilities/FileWatcher.h"
+#include "Utilities/FileUtils.h"
 #include "Logging/Instrumentor.h"
 
 #include <filesystem>
@@ -36,12 +37,13 @@ public:
 		PROFILE_FUNCTION();
 		CORE_ASSERT(!Exists(resource->GetFilepath()), "Asset already exists!");
 		if(!resource->GetFilepath().empty())
-			m_Assets[resource->GetFilepath()] = resource;
+			m_Assets[ToKey(resource->GetFilepath())] = resource;
 	}
 
-	void Remove(const std::filesystem::path& filepath)
+	void Remove(const std::filesystem::path& path)
 	{
 		PROFILE_FUNCTION();
+		const std::filesystem::path filepath = ToKey(path);
 		auto it = m_Assets.find(filepath);
 		if (it != m_Assets.end())
 		{
@@ -54,9 +56,10 @@ public:
 	}
 
 	template<typename T>
-	Ref<T> Load(const std::filesystem::path& filepath, Ref<VirtualFileSystem> vfs)
+	Ref<T> Load(const std::filesystem::path& path, Ref<VirtualFileSystem> vfs)
 	{
 		PROFILE_FUNCTION();
+		const std::filesystem::path filepath = ToKey(path);
 		if (Exists(filepath))
 			return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 
@@ -99,24 +102,27 @@ public:
 		return std::dynamic_pointer_cast<T>(asset);
 	}
 
-	Ref<Asset> Get(const std::filesystem::path& filepath)
+	Ref<Asset> Get(const std::filesystem::path& path)
 	{
 		PROFILE_FUNCTION();
+		const std::filesystem::path filepath = ToKey(path);
 		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
 		return m_Assets[filepath].lock();
 	}
 
 	template<typename T>
-	Ref<T> Get(const std::filesystem::path& filepath)
+	Ref<T> Get(const std::filesystem::path& path)
 	{
 		PROFILE_FUNCTION();
+		const std::filesystem::path filepath = ToKey(path);
 		CORE_ASSERT(Exists(filepath), "Asset does not Exist!");
 		return std::dynamic_pointer_cast<T>(m_Assets[filepath].lock());
 	}
 
-	bool Exists(const std::filesystem::path& filepath)
+	bool Exists(const std::filesystem::path& path)
 	{
 		PROFILE_FUNCTION();
+		const std::filesystem::path filepath = ToKey(path);
 		if (m_Assets.find(filepath) != m_Assets.end())
 			return m_Assets[filepath].use_count() > 0;
 		return false;
@@ -142,5 +148,11 @@ public:
 	}
 
 private:
+	// Assets are keyed by their project-relative path, however they were requested
+	static std::filesystem::path ToKey(const std::filesystem::path& path)
+	{
+		return FileUtils::ToProjectRelative(path, Application::GetOpenDocumentDirectory());
+	}
+
 	std::unordered_map<std::filesystem::path, std::weak_ptr<Asset>> m_Assets;
 };
