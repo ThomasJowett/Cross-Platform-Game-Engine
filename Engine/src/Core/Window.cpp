@@ -65,10 +65,17 @@ void Window::SetVSync(bool enabled)
 {
 	PROFILE_FUNCTION();
 
+#ifdef __EMSCRIPTEN__
+	// The browser paces frames to the display, so V-Sync is always on
+	if (!enabled)
+		ENGINE_INFO("V-Sync can't be turned off in a browser");
+	m_Data.vSync = true;
+#else
 	m_Context->SetSwapInterval(enabled ? 1 : 0);
 
 	Settings::SetBool("Display", "V-Sync", enabled);
 	m_Data.vSync = enabled;
+#endif
 }
 
 bool Window::IsVSync() const
