@@ -78,6 +78,11 @@ public:
 	void DisableCursor();
 	void EnableCursor();
 
+	// Keeps mouse movement coming while a button is held, even outside the window, with the cursor visible as a move icon.
+	// In a browser this avoids the pointer lock that DisableCursor needs; on desktop it's the same as DisableCursor.
+	void CaptureMouse();
+	void ReleaseMouse();
+
 	void SetCursorPosition(double xpos, double ypos);
 
 	void SetWindowMode(WindowMode mode, unsigned int width = 0, unsigned int height = 0);
@@ -105,6 +110,9 @@ private:
 
 	GLFWwindow* m_Window;
 	GLFWvidmode m_BaseVideoMode;
+
+	// DisableCursor turned on ImGuiConfigFlags_NoMouseCursorChange, so EnableCursor turns it off again
+	bool m_BlockedCursorChange = false;
 	WindowData m_Data;
 
 	struct WindowModeParams {

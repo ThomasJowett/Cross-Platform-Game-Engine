@@ -21,6 +21,28 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/html5.h>
+
+EM_JS(void, Window_TrackPointer, (), {
+	Module.canvas.addEventListener('pointerdown', (event) => { Module.lastPointerId = event.pointerId; });
+});
+
+EM_JS(void, Window_CaptureMouse, (), {
+	const canvas = Module.canvas;
+	canvas.style.cursor = 'move';
+	try {
+		if (Module.lastPointerId !== undefined)
+			canvas.setPointerCapture(Module.lastPointerId);
+	} catch (err) {
+		// The button was already released
+	}
+});
+
+EM_JS(void, Window_ReleaseMouse, (), {
+	const canvas = Module.canvas;
+	canvas.style.cursor = '';
+	if (Module.lastPointerId !== undefined && canvas.hasPointerCapture(Module.lastPointerId))
+		canvas.releasePointerCapture(Module.lastPointerId);
+});
 #endif
 
 #include "Core/Settings.h"
@@ -226,6 +248,13 @@ void Window::DisableCursor()
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+
+	// Stops ImGui resetting the cursor, which in a browser cancels the pointer lock before it's granted
+	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange))
+	{
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+		m_BlockedCursorChange = true;
+	}
 }
 
 void Window::EnableCursor()
@@ -233,6 +262,32 @@ void Window::EnableCursor()
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+
+	if (m_BlockedCursorChange)
+	{
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+		m_BlockedCursorChange = false;
+	}
+}
+
+void Window::CaptureMouse()
+{
+#ifdef __EMSCRIPTEN__
+	Window_CaptureMouse();
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+#else
+	DisableCursor();
+#endif
+}
+
+void Window::ReleaseMouse()
+{
+#ifdef __EMSCRIPTEN__
+	Window_ReleaseMouse();
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+#else
+	EnableCursor();
+#endif
 }
 
 void Window::SetCursorPosition(double xpos, double ypos)
@@ -545,6 +600,10 @@ bool Window::Init(const WindowProps& props)
 			initJoysticks();
 		}
 	}
+#ifdef __EMSCRIPTEN__
+	// CaptureMouse needs the pointer that pressed the button
+	Window_TrackPointer();
+#endif
 	{
 		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int numDropped, const char** filenames)
 			{
