@@ -154,6 +154,10 @@ void MainDockSpace::OnAttach()
 		OpenProject(Application::GetOpenDocument());
 	}
 
+#ifdef __EMSCRIPTEN__
+	m_RecentWebProjects = WebProject::GetRecentProjects();
+#endif
+
 	std::string recentProjectsStr = Settings::GetValue("Files", "Recent_Files");
 
 	std::vector<std::string> recentProjectsList = SplitString(recentProjectsStr, ',');
@@ -525,6 +529,9 @@ bool MainDockSpace::OnOpenProject(AppOpenDocumentChangedEvent& event)
 {
 	HistoryManager::Reset();
 	OpenProject(Application::Get().GetOpenDocument());
+#ifdef __EMSCRIPTEN__
+	m_RecentWebProjects = WebProject::GetRecentProjects();
+#endif
 
 	return false;
 }

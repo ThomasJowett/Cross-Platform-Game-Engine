@@ -68,6 +68,9 @@ private:
 	Ref<ContentExplorerPanel> m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
+#ifdef __EMSCRIPTEN__
+	std::vector<std::string> m_RecentWebProjects;
+#endif
 
 	PlayPauseToolbar m_PlayPauseToolbar;
 	SaveOpenToolbar m_SaveOpenToolbar;

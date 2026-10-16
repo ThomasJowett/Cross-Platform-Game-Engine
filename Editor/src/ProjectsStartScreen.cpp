@@ -54,6 +54,24 @@ void ProjectsStartScreen::OnImGuiRender()
 			ImGui::Columns(2);
 			ImGui::TextUnformatted("Recent Projects...");
 
+#ifdef __EMSCRIPTEN__
+			for (const std::string& name : m_RecentWebProjects)
+			{
+				ImGui::PushID(name.c_str());
+				if (ImGui::Button(name.c_str()))
+				{
+					std::optional<std::filesystem::path> projectFile = WebProject::OpenRecent(name);
+					if (projectFile)
+					{
+						OpenProject(projectFile.value());
+						ImGui::PopID();
+						break;
+					}
+				}
+				ImGui::PopID();
+			}
+#endif
+
 			for (const std::filesystem::path& project : m_RecentProjects)
 			{
 				ImGui::PushID(project.string().c_str());
@@ -145,6 +163,11 @@ void ProjectsStartScreen::OnImGuiRender()
 
 void ProjectsStartScreen::OnAttach()
 {
+#ifdef __EMSCRIPTEN__
+	m_RecentWebProjects = WebProject::GetRecentProjects();
+	return;
+#endif
+
 	std::string recentProjectsStr = Settings::GetValue("Files", "Recent_Files");
 
 	std::vector<std::string> recentProjectsList = SplitString(recentProjectsStr, ',');

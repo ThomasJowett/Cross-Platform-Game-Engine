@@ -463,6 +463,8 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 		if (filepath.extension() != ".proj")
 			return true;
 
+#ifndef __EMSCRIPTEN__
+		// The web Editor keeps its own recent projects, since in-memory paths don't survive a reload
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
@@ -489,6 +491,7 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 			recentFiles.append(fileStr + ',');
 			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
 		}
+#endif
 
 		AssetManager::CleanUp();
 		AssetManager::Init(m_OpenDocumentDirectory);
