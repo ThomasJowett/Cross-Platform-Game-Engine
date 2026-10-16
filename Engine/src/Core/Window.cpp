@@ -21,14 +21,6 @@
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/html5.h>
-
-static EM_BOOL FitWindowToCanvas(int, const EmscriptenUiEvent*, void* userData)
-{
-	double width, height;
-	if (emscripten_get_element_css_size("#canvas", &width, &height) == EMSCRIPTEN_RESULT_SUCCESS)
-		glfwSetWindowSize((GLFWwindow*)userData, (int)width, (int)height);
-	return EM_FALSE;
-}
 #endif
 
 #include "Core/Settings.h"
@@ -563,10 +555,6 @@ bool Window::Init(const WindowProps& props)
 				data.eventCallback(event);
 			});
 	}
-#ifdef __EMSCRIPTEN__
-	// Follow the browser window when the page resizes the canvas
-	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, m_Window, EM_FALSE, FitWindowToCanvas);
-#endif
 	return true;
 }
 
