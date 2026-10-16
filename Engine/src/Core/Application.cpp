@@ -107,6 +107,13 @@ int Application::Init(const InputParser& inputParser)
 	}
 #endif
 	std::filesystem::current_path(m_WorkingDirectory);
+
+	m_SettingsDirectory = m_WorkingDirectory;
+#ifdef __EMSCRIPTEN__
+	// The web Editor's page mounts IndexedDB storage here, so settings survive a reload
+	if (std::filesystem::is_directory("/persistent"))
+		m_SettingsDirectory = "/persistent";
+#endif
 	Logger::Init(logPath);
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
@@ -578,4 +585,11 @@ const std::filesystem::path& Application::GetOpenDocumentDirectory()
 const std::filesystem::path& Application::GetWorkingDirectory()
 {
 	return s_Instance->m_WorkingDirectory;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+const std::filesystem::path& Application::GetSettingsDirectory()
+{
+	return s_Instance->m_SettingsDirectory;
 }

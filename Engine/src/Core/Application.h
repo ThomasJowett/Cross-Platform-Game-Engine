@@ -58,6 +58,9 @@ public:
 	// Get the directory that the application was launched from
 	static const std::filesystem::path& GetWorkingDirectory();
 
+	// Get the directory that settings, layout and styles are saved to
+	static const std::filesystem::path& GetSettingsDirectory();
+
 	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
 
@@ -131,6 +134,7 @@ private:
 	std::filesystem::path m_OpenDocument;
 	std::filesystem::path m_OpenDocumentDirectory;
 	std::filesystem::path m_WorkingDirectory;
+	std::filesystem::path m_SettingsDirectory;
 
 	static EventCallbackFn s_EventCallback;
 

@@ -40,7 +40,7 @@ void ImGuiManager::Init()
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-	m_IniFile = std::filesystem::path(Application::GetWorkingDirectory() / "imgui.ini").string();
+	m_IniFile = std::filesystem::path(Application::GetSettingsDirectory() / "imgui.ini").string();
 
 	io.IniFilename = m_IniFile.c_str();
 
