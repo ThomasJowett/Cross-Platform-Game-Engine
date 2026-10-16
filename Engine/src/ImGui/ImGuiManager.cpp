@@ -58,6 +58,10 @@ void ImGuiManager::Init()
 
 		if (ImGui_ImplGlfw_InitForOther(window, true))
 		{
+#ifdef __EMSCRIPTEN__
+			// Browser wheel events for ImGui, plus resizing the window to the canvas on page resize and fullscreen
+			ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
+#endif
 			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 			Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);
