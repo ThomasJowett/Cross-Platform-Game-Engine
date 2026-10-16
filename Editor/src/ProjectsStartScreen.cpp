@@ -8,6 +8,7 @@
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/WebProject.h"
 
 #include "ProjectData.h"
 #include "ProjectSerializer.h"
@@ -88,10 +89,21 @@ void ProjectsStartScreen::OnImGuiRender()
 			m_CreateProject = ImGui::Button(ICON_FA_FOLDER_PLUS" New Project");
 			if (ImGui::Button(ICON_FA_FOLDER_OPEN" Browse Local"))
 			{
+#ifdef __EMSCRIPTEN__
+				std::optional<std::filesystem::path> fileToOpen = WebProject::OpenFolder();
+#else
 				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
+#endif
 				if (fileToOpen.has_value())
 					OpenProject(fileToOpen.value());
 			}
+#ifdef __EMSCRIPTEN__
+			if (!WebProject::CanWriteToDisk())
+			{
+				ImGui::Spacing();
+				ImGui::TextWrapped("This browser can only read project folders. Use File > Download Project to keep your changes, or open the Editor in Chrome or Edge to save straight to disk.");
+			}
+#endif
 		}
 		else
 		{
@@ -119,7 +131,15 @@ void ProjectsStartScreen::OnImGuiRender()
 
 			if (ImGui::Button("Blank Project"))
 			{
+#ifdef __EMSCRIPTEN__
+				// The project is named after the chosen empty folder
+				std::optional<std::filesystem::path> projectFolder = WebProject::ChooseNewProjectFolder();
+				std::optional<std::filesystem::path> dialogPath;
+				if (projectFolder)
+					dialogPath = projectFolder.value() / (projectFolder->filename().string() + ".proj");
+#else
 				std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Choose Project Location...", { {L"Project File (*.proj)", L"*.proj"} });
+#endif
 
 				if (!dialogPath)
 				{
@@ -153,7 +173,10 @@ void ProjectsStartScreen::OnImGuiRender()
 					newScene->Save(false);
 
 					if (ProjectSerializer::Serialize(data, projectPath))
+					{
+						WebProject::Sync();
 						OpenProject(projectPath);
+					}
 				}
 			}
 		}
