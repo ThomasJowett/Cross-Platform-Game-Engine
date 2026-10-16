@@ -47,9 +47,19 @@ int main(int argc, char* argv[])
 		resourcesDir = exeDir.parent_path() / "Resources";
 		metadataSource = resourcesDir / "game.meta";
 	}
+#elif defined(__EMSCRIPTEN__)
+	// Fetched from next to the page by Resources/Web/runtime_pre.js, in the same layout as a macOS export
+	isAppBundle = true;
+	resourcesDir = "/game";
+	metadataSource = resourcesDir / "game.meta";
 #endif
 
 	std::ifstream exe(metadataSource, std::ios::binary | std::ios::ate);
+	if (!exe)
+	{
+		ENGINE_ERROR("Could not open game data: {0}", metadataSource.string());
+		return EXIT_FAILURE;
+	}
 	std::streamoff exeSize = exe.tellg();
 	exe.seekg(exeSize - sizeof(AssetBundleFooter));
 
@@ -118,7 +128,11 @@ int main(int argc, char* argv[])
 
 	RenderCommand::SetClearColour(Colours::GREY);
 
+#ifdef __EMSCRIPTEN__
+	Application::SetOpenDocument(metadataSource);
+#else
 	Application::SetOpenDocument(argv[0]);
+#endif
 
 	if (Ref<SpriteAtlas> atlas = AssetManager::GetAsset<SpriteAtlas>("Generated/SpriteAtlas/Manifest.atlas"))
 		Renderer2D::SetSpriteAtlas(atlas);
