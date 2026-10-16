@@ -21,6 +21,7 @@ EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
 
 	Settings::SetDefaultValue("Editor", "Theme", EditorStyles::DefaultTheme);
+	Settings::SetDefaultBool("Editor", "Lock_Cursor_When_Looking", false);
 
 	m_StyleFilename = (Application::GetSettingsDirectory() / "styles" / "Editor.style").string();
 }
@@ -98,6 +99,11 @@ void EditorPreferencesPanel::OnImGuiRender()
 		{
 #ifdef __EMSCRIPTEN__
 			ImGui::TextDisabled("V-Sync is always on in the browser");
+
+			bool lockCursor = Settings::GetBool("Editor", "Lock_Cursor_When_Looking");
+			if (ImGui::Checkbox("Lock the cursor when looking around", &lockCursor))
+				Settings::SetBool("Editor", "Lock_Cursor_When_Looking", lockCursor);
+			ImGui::Tooltip("Right-drag in a 3D viewport can turn without limit, but the browser shows a \"Press Esc\" message each time.\nWhen off, the cursor stays visible and turning stops at the edge of the screen.");
 #else
 			m_VSnyc = Application::GetWindow()->IsVSync();
 			if (ImGui::Checkbox("V-Sync", &m_VSnyc))
