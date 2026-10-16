@@ -63,7 +63,9 @@ void SerializationUtils::Encode(tinyxml2::XMLElement* pElement, const std::files
 {
 	if (!filepath.empty())
 	{
-		std::filesystem::path finalPath = filepath;
+		std::filesystem::path finalPath = FileUtils::ToProjectRelative(filepath, Application::GetOpenDocumentDirectory());
+		if (FileUtils::IsAbsolutePath(finalPath))
+			ENGINE_WARN("Saving an absolute path, {0} is outside the project so it won't be found on other machines or in exported games", finalPath.string());
 		finalPath.make_preferred();
 		std::string finalPathString = finalPath.string();
 		std::replace(finalPathString.begin(), finalPathString.end(), '\\', '/');
@@ -78,7 +80,7 @@ void SerializationUtils::Decode(tinyxml2::XMLElement const* pElement, std::files
 		const char* relativePath = pElement->Attribute("Filepath");
 		if (relativePath)
 		{
-			filepath = relativePath;
+			filepath = FileUtils::ToProjectRelative(relativePath, Application::GetOpenDocumentDirectory());
 		}
 	}
 }

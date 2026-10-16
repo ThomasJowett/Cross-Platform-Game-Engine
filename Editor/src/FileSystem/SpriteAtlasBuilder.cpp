@@ -6,6 +6,7 @@
 #include "ProjectSerializer.h"
 
 #include "Core/Application.h"
+#include "Utilities/FileUtils.h"
 #include "Asset/SpriteAtlas.h"
 #include "Scene/AssetManager.h"
 #include "Renderer/Renderer2D.h"
@@ -71,7 +72,7 @@ std::vector<std::filesystem::path> SpriteAtlasBuilder::DiscoverSpriteTextures()
 			float tilingFactor = 1.0f;
 			pSprite->QueryFloatAttribute("TilingFactor", &tilingFactor);
 
-			bool& wantsAtlas = pathWantsAtlas[filepath];
+			bool& wantsAtlas = pathWantsAtlas[FileUtils::ToProjectRelative(filepath, Application::GetOpenDocumentDirectory()).generic_string()];
 			wantsAtlas = wantsAtlas || tilingFactor == 1.0f;
 		}
 	}
