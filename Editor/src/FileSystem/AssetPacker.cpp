@@ -31,6 +31,22 @@ struct AssetBundleFooter
 
 constexpr const char* BUNDLE_MAGIC = "GMBUNDLE";
 
+// Writes the game's title, default scene and a footer for a bundle kept in a separate assets.pak
+static void WriteExternalBundleMetadata(const std::filesystem::path& metadataPath, const std::string& gameName, const std::string& defaultScene)
+{
+	std::ofstream metadataFile(metadataPath, std::ios::binary);
+	metadataFile.write(gameName.c_str(), gameName.size());
+	metadataFile.write(defaultScene.data(), defaultScene.size());
+
+	AssetBundleFooter footer;
+	footer.zipSize = 0;
+	footer.gameTitleSize = gameName.size();
+	footer.defaultSceneSize = defaultScene.size();
+	footer.externalBundle = 1;
+	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
+	metadataFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+}
+
 AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory)
     : Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
 {
@@ -516,18 +532,7 @@ void AssetPacker::ExportGameToAppBundle()
 	}
 	m_Progress.store(0.6f);
 
-	std::ofstream metadataFile(resourcesPath / "game.meta", std::ios::binary);
-	metadataFile.write(m_GameName.string().c_str(), m_GameName.string().size());
-	metadataFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
-
-	AssetBundleFooter footer;
-	footer.zipSize = 0;
-	footer.gameTitleSize = m_GameName.string().size();
-	footer.defaultSceneSize = m_Data.defaultScene.size();
-	footer.externalBundle = 1;
-	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
-	metadataFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
-	metadataFile.close();
+	WriteExternalBundleMetadata(resourcesPath / "game.meta", m_GameName.string(), m_Data.defaultScene);
 	m_Progress.store(0.7f);
 
 	// The template's Info.plist still names the bundle/executable "Runtime" - give the exported
