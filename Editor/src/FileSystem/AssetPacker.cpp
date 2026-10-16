@@ -86,7 +86,7 @@ void AssetPacker::OnImGuiRender()
 		if (m_CurrentStage == Stage::DiscoveringAssets)
 		{
 			ImGui::Text("Select assets to pack into the bundle:");
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
 			ImGui::Checkbox("Embed asset bundle in executable", &m_EmbedBundle);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("When disabled, the asset bundle is exported as a separate .pak file next to the executable instead of being appended to it.");
