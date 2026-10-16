@@ -10,6 +10,7 @@
 #include "imgui/imgui.h"
 
 #include <cstring>
+#include "FileSystem/WebProject.h"
 
 namespace
 {
@@ -203,6 +204,8 @@ void InputMappingsPanel::SaveMappingsFile()
 	InputMappings::Save(m_Actions, filepath);
 	InputActionSystem::SetActions(m_Actions);
 	m_Dirty = false;
+
+	WebProject::Sync();
 }
 
 bool InputMappingsPanel::PollForCapture(InputBinding& binding)

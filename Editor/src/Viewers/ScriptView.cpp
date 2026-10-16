@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <cstring>
 #include <string>
+#include "FileSystem/WebProject.h"
 
 ScriptView::ScriptView(bool* show, const std::filesystem::path& filepath)
 	:View("ScriptView"), m_Show(show), m_FilePath(filepath)
@@ -282,6 +283,8 @@ void ScriptView::Save()
 	}
 
 	m_Script->Load(m_FilePath);
+
+	WebProject::Sync();
 }
 
 void ScriptView::SaveAs()

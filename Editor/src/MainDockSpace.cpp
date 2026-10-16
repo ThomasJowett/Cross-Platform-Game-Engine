@@ -12,6 +12,7 @@
 #include "IconsFontAwesome5Brands.h"
 #include "FileSystem/FileDialog.h"
 #include "FileSystem/Webpage.h"
+#include "FileSystem/WebProject.h"
 
 #include "ProjectsStartScreen.h"
 
@@ -195,6 +196,11 @@ void MainDockSpace::OnEvent(Event& event)
 {
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChangedEvent>(BIND_EVENT_FN(MainDockSpace::OnOpenProject));
+	dispatcher.Dispatch<SceneSavedEvent>([](SceneSavedEvent& e)
+		{
+			WebProject::Sync();
+			return false;
+		});
 	dispatcher.Dispatch<SceneChangedEvent>([](SceneChangedEvent e)
 		{
 			HistoryManager::Reset();
