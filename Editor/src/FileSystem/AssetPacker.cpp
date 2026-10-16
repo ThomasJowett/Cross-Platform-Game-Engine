@@ -105,6 +105,11 @@ void AssetPacker::OnImGuiRender()
 
 			if (ImGui::Button("Pack Selected Assets"))
 			{
+#ifdef __EMSCRIPTEN__
+				// No threads in the web build
+				m_Progress.store(0.0f);
+				PackAssets();
+#else
 				m_PackThread = std::thread(
 				    [this]()
 				    {
@@ -112,6 +117,7 @@ void AssetPacker::OnImGuiRender()
 					    m_Progress.store(0.0f);
 					    PackAssets();
 				    });
+#endif
 			}
 
 			ImGui::SameLine();
