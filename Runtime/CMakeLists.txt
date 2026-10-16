@@ -47,7 +47,10 @@ if (EMSCRIPTEN)
     set_target_properties(Runtime PROPERTIES SUFFIX ".html")
     target_link_options(Runtime PRIVATE "--preload-file" "${CMAKE_CURRENT_SOURCE_DIR}/../Editor/data@/data")
     target_link_options(Runtime PRIVATE "--shell-file" "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
-    set_property(TARGET Runtime APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
+    target_link_options(Runtime PRIVATE "--pre-js" "${CMAKE_SOURCE_DIR}/Resources/Web/runtime_pre.js")
+    set_property(TARGET Runtime APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html"
+        "${CMAKE_SOURCE_DIR}/Resources/Web/runtime_pre.js")
 endif()
 
 if(NOT APPLE)
