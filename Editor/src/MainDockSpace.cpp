@@ -219,6 +219,7 @@ void MainDockSpace::OnEvent(Event& event)
 void MainDockSpace::OnUpdate(float deltaTime)
 {
 	RenderCommand::Clear();
+	WebProject::Update(deltaTime);
 }
 
 void MainDockSpace::OnImGuiRender()
