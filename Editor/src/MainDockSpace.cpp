@@ -321,6 +321,18 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
+#ifdef __EMSCRIPTEN__
+				for (const std::string& name : m_RecentWebProjects)
+				{
+					ImGui::PushID(name.c_str());
+					if (ImGui::MenuItem(name.c_str()))
+					{
+						if (std::optional<std::filesystem::path> projectFile = WebProject::OpenRecent(name))
+							Application::SetOpenDocument(projectFile.value());
+					}
+					ImGui::PopID();
+				}
+#endif
 				// ImGui::MenuItem's ID defaults to its label text - two recent projects with the
 				// same filename (in different folders) would otherwise collide, so scope each
 				// one's ID to its full path instead.
@@ -342,7 +354,11 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FILE_EXPORT" Export Game", nullptr, nullptr, true))
 			{
-#ifdef _WINDOWS
+#ifdef __EMSCRIPTEN__
+				// Built in memory and downloaded as a .zip
+				std::filesystem::path projectName = Application::GetOpenDocument().stem();
+				std::optional<std::wstring> exportLocation = (std::filesystem::temp_directory_path() / "Export" / projectName).wstring();
+#elif defined(_WINDOWS)
 				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Executable", L"*.exe"} });
 #elif defined(__APPLE__)
 				std::optional<std::wstring> exportLocation = FileDialog::SaveAs(L"Export Game...", { {L"Application", L"*.app"} });
@@ -354,6 +370,15 @@ void MainDockSpace::OnImGuiRender()
 					Application::GetLayerStack().AddOverlay(CreateRef<AssetPacker>(&m_ShowAssetPacker, Application::GetOpenDocumentDirectory(), exportLocation.value()));
 				}
 			}
+#ifdef __EMSCRIPTEN__
+			if (ImGui::MenuItem(ICON_FA_DOWNLOAD" Download Project", nullptr, nullptr, !Application::GetOpenDocument().empty()))
+			{
+				WebProject::DownloadAsZip(Application::GetOpenDocumentDirectory());
+			}
+			ImGui::Tooltip(WebProject::IsReadOnly(Application::GetOpenDocumentDirectory())
+				? "This browser can't save to the project folder, download it to keep your changes"
+				: "Download the whole project as a .zip");
+#endif
 			if (ImGui::MenuItem(ICON_FA_ARROWS_ROTATE" Rebuild Sprite Atlas"))
 			{
 				SpriteAtlasBuilder::Rebuild();
@@ -519,8 +544,12 @@ void MainDockSpace::OpenProject(const std::filesystem::path& filename)
 	const std::string& sceneOverride = Application::GetSceneOverride();
 	const std::string& sceneToLoad = !sceneOverride.empty() ? sceneOverride : data.defaultScene;
 
+	std::filesystem::path scenePath = sceneToLoad;
+	if (sceneOverride.empty() && scenePath.is_relative())
+		scenePath = projectDirectory / scenePath;
+
 	if (!sceneToLoad.empty())
-		SceneManager::ChangeScene(std::filesystem::path(sceneToLoad));
+		SceneManager::ChangeScene(scenePath);
 	else
 		SceneManager::ChangeScene("");
 }
