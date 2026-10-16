@@ -805,6 +805,15 @@ ContentExplorerPanel::ContentExplorerPanel(bool* show)
 	m_TextFilter = new ImGuiTextFilter();
 }
 
+// std::filesystem::absolute throws on an empty path with libstdc++, so keep "no project" empty
+static std::filesystem::path GetProjectRootPath()
+{
+	const std::filesystem::path& directory = Application::GetOpenDocumentDirectory();
+	return directory.empty() ? directory : std::filesystem::absolute(directory);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
 ContentExplorerPanel::~ContentExplorerPanel()
 {
 	delete m_TextFilter;
@@ -819,7 +828,7 @@ void ContentExplorerPanel::OnAttach()
 	m_ZoomLevel = (ZoomLevel)Settings::GetInt("ContentExplorer", "ZoomLevel");
 	m_SortingMode = (Sorting)Settings::GetInt("ContentExplorer", "SortingMode");
 
-	m_History.SetRootPath(std::filesystem::absolute(Application::GetOpenDocumentDirectory()));
+	m_History.SetRootPath(GetProjectRootPath());
 
 	m_FileWatcher.Start([this](std::string path, FileStatus status)
 		{
@@ -839,7 +848,7 @@ void ContentExplorerPanel::OnEvent(Event& event)
 	EventDispatcher dispatcher(event);
 	dispatcher.Dispatch<AppOpenDocumentChangedEvent>([this](AppOpenDocumentChangedEvent& e)
 		{
-			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			std::filesystem::path rootPath = GetProjectRootPath();
 			m_History.Clear();
 			m_History.SetRootPath(rootPath);
 			m_CurrentPath = rootPath;
@@ -1127,7 +1136,7 @@ void ContentExplorerPanel::OnImGuiRender()
 		// Split path control
 		else
 		{
-			std::filesystem::path rootPath = std::filesystem::absolute(Application::GetOpenDocumentDirectory());
+			std::filesystem::path rootPath = GetProjectRootPath();
 			std::vector<std::string> rootSplitPath = SplitString(rootPath.string(), std::filesystem::path::preferred_separator);
 			
 			const int numTabs = (int)m_CurrentSplitPath.size();
