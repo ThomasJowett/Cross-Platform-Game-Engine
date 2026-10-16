@@ -15,6 +15,7 @@
 #include "Core/InputMappings.h"
 #include "Physics/CollisionLayers.h"
 #include "ProjectSerializer.h"
+#include "WebProject.h"
 
 #include <algorithm>
 #include <iterator>
@@ -390,7 +391,9 @@ void AssetPacker::PackAssets()
 	}
 
 	mz_zip_writer_end(&zip);
-#ifdef __APPLE__
+#ifdef __EMSCRIPTEN__
+	ExportGameToWeb();
+#elif defined(__APPLE__)
 	ExportGameToAppBundle();
 #else
 	ExportGameToExecutable();
@@ -576,6 +579,82 @@ void AssetPacker::ExportGameToAppBundle()
 	m_CurrentStage = Stage::Done;
 
 	ENGINE_INFO("Exported game to {0}", destinationBundle.string());
+}
+
+void AssetPacker::ExportGameToWeb()
+{
+	PROFILE_FUNCTION();
+	m_CurrentStage = Stage::ExportingGame;
+	m_Progress.store(0.0f);
+
+	std::string gameTitle = m_GameName.stem().string();
+	std::filesystem::path gameDirectory = m_ExportDirectory / gameTitle;
+	std::error_code ec;
+	std::filesystem::remove_all(gameDirectory, ec);
+	std::filesystem::create_directories(gameDirectory, ec);
+
+	// The same layout as a macOS export, loaded by Resources/Web/runtime_pre.js
+	std::filesystem::rename(m_ExportDirectory / "packed_assets.zip", gameDirectory / "assets.pak", ec);
+	if (ec)
+	{
+		ENGINE_ERROR("Could not move asset bundle: {0}", ec.message());
+		m_CurrentStage = Stage::Done;
+		return;
+	}
+	WriteExternalBundleMetadata(gameDirectory / "game.meta", m_GameName.string(), m_Data.defaultScene);
+	m_Progress.store(0.2f);
+
+	// The web Runtime is deployed next to the Editor (see Editor/CMakeLists.txt)
+	const char* runtimeFiles[] = { "Runtime.html", "Runtime.js", "Runtime.wasm", "Runtime.data" };
+	for (size_t i = 0; i < std::size(runtimeFiles); ++i)
+	{
+		if (!WebProject::FetchToFile(runtimeFiles[i], gameDirectory / runtimeFiles[i]))
+		{
+			ENGINE_ERROR("Could not get {0} from the server, is the web Runtime deployed next to the Editor?", runtimeFiles[i]);
+			m_CurrentStage = Stage::Done;
+			return;
+		}
+		m_Progress.store(0.2f + 0.6f * (float)(i + 1) / (float)std::size(runtimeFiles));
+	}
+
+	// The Runtime's page becomes index.html, with the game's title in place of the engine's
+	{
+		std::ifstream pageIn(gameDirectory / "Runtime.html");
+		std::string page((std::istreambuf_iterator<char>(pageIn)), {});
+		pageIn.close();
+
+		std::string escapedTitle;
+		for (char c : gameTitle)
+		{
+			switch (c)
+			{
+			case '&': escapedTitle += "&amp;"; break;
+			case '<': escapedTitle += "&lt;"; break;
+			case '>': escapedTitle += "&gt;"; break;
+			default: escapedTitle += c; break;
+			}
+		}
+
+		// The page title and the loading screen's name; matched as text since Release builds minify the page
+		const std::string placeholder = ">Attercop<";
+		const std::string replacement = ">" + escapedTitle + "<";
+		for (size_t pos = page.find(placeholder); pos != std::string::npos; pos = page.find(placeholder, pos + replacement.size()))
+			page.replace(pos, placeholder.size(), replacement);
+
+		std::ofstream pageOut(gameDirectory / "index.html", std::ios::binary | std::ios::trunc);
+		pageOut << page;
+	}
+	std::filesystem::remove(gameDirectory / "Runtime.html", ec);
+	m_Progress.store(0.9f);
+
+	// itch.io and similar hosts need index.html at the top of the zip
+	WebProject::DownloadAsZip(gameDirectory, false);
+	std::filesystem::remove_all(gameDirectory, ec);
+
+	m_Progress.store(1.0f);
+	m_CurrentStage = Stage::Done;
+
+	ENGINE_INFO("Exported game {0} as a download", gameTitle);
 }
 
 void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
