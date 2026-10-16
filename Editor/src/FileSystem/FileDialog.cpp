@@ -365,22 +365,10 @@ EM_ASYNC_JS(char*, TriggerWebMultiFileDialog, (), {
 	}
 });
 
-EM_ASYNC_JS(char*, TriggerWebSaveFileDialog, (), {
-	try {
-		const fileHandle = await window.showSaveFilePicker();
-
-		const virtualPath = "project/" + fileHandle.name;
-
-		const byteCount = (new TextEncoder().encode(virtualPath)).length + 1;
-		const pointer = _malloc(byteCount);
-		stringToUTF8(virtualPath, pointer, byteCount);
-		return pointer;
-	}
-	catch (err) {
-		if (err.name === 'AbortError') return 0;
-		console.error("File Dialog error: ", err);
-		return 0;
-	}
+// Resources/Web/editor_pre.js maps the chosen file to a path inside the open project, or to one that's copied out on sync
+EM_ASYNC_JS(char*, TriggerWebSaveFileDialog, (const char* extension), {
+	const path = await AttercopWeb.chooseSavePath(UTF8ToString(extension));
+	return path ? AttercopWeb.toC(path) : 0;
 });
 
 std::optional<std::wstring> FileDialog::Open(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
@@ -416,7 +404,17 @@ std::optional<std::vector<std::wstring>> FileDialog::MultiOpen(const wchar_t *ti
 
 std::optional<std::wstring> FileDialog::SaveAs(const wchar_t *title, const std::vector<DialogFilterItem>& filters)
 {
-	char* virtualPathPtr = TriggerWebSaveFileDialog();
+	// "*.material" -> ".material"
+	std::string extension;
+	if (!filters.empty())
+	{
+		std::string spec = std::wstring_convert<std::codecvt_utf8<wchar_t>>().to_bytes(filters.front().Spec);
+		size_t dot = spec.find('.');
+		if (dot != std::string::npos && spec.find('*', dot) == std::string::npos)
+			extension = spec.substr(dot, spec.find(';', dot) - dot);
+	}
+
+	char* virtualPathPtr = TriggerWebSaveFileDialog(extension.c_str());
 	if (virtualPathPtr)
 	{
 		std::string virtualPath(virtualPathPtr);
