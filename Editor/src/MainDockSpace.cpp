@@ -312,9 +312,7 @@ void MainDockSpace::OnImGuiRender()
 			}
 			if (ImGui::MenuItem(ICON_FA_FOLDER_OPEN" Open Project...", "Ctrl + O"))
 			{
-				std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
-				if (fileToOpen.has_value())
-					Application::Get().SetOpenDocument(fileToOpen.value());
+				OpenProjectDialog();
 			}
 			if (ImGui::BeginMenu(ICON_FA_FOLDER_OPEN" Open Recent"))
 			{
@@ -564,9 +562,7 @@ void MainDockSpace::HandleKeyBoardInputs()
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_O))
 	{
-		std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
-		if (fileToOpen)
-			Application::Get().SetOpenDocument(fileToOpen.value());
+		OpenProjectDialog();
 	}
 	else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_Z))
 	{
@@ -617,4 +613,15 @@ void MainDockSpace::HandleKeyBoardInputs()
 			if (iCopy->HasSelection())
 				iCopy->SelectAll();
 	}
+}
+
+void MainDockSpace::OpenProjectDialog()
+{
+#ifdef __EMSCRIPTEN__
+	std::optional<std::filesystem::path> fileToOpen = WebProject::OpenFolder();
+#else
+	std::optional<std::wstring> fileToOpen = FileDialog::Open(L"Open Project...", { {L"Project Files (*.proj)", L"*.proj"}, {L"Any File", L"*.*"} });
+#endif
+	if (fileToOpen)
+		Application::Get().SetOpenDocument(fileToOpen.value());
 }
