@@ -318,6 +318,11 @@ void AssetPacker::PackAssets()
 
 	std::filesystem::path outputZipPath = m_ExportDirectory / "packed_assets.zip";
 
+#ifdef __EMSCRIPTEN__
+	std::error_code ec;
+	std::filesystem::create_directories(m_ExportDirectory, ec);
+#endif
+
 	if (!mz_zip_writer_init_file(&zip, outputZipPath.string().c_str(), 0))
 	{
 		ENGINE_ERROR("Failed to initialize zip writer: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
