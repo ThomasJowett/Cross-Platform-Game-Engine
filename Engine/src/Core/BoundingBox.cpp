@@ -61,7 +61,7 @@ void BoundingBox::Merge(const Vector3f& point)
 
 Vector3f BoundingBox::Center() const
 {
-	return (m_Min - m_Max) * 0.5f;
+	return (m_Min + m_Max) * 0.5f;
 }
 
 void BoundingBox::Invalidate()
