@@ -14,7 +14,7 @@
 #include "ViewerManager.h"
 
 class StaticMeshView :
-	public View
+	public View, public ISaveable
 {
 public:
 	StaticMeshView(bool* show, std::filesystem::path filepath);
@@ -24,6 +24,11 @@ public:
 	virtual void OnImGuiRender() override;
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnFixedUpdate() override;
+	// Inherited via ISaveable
+	virtual void Save() override;
+	virtual void SaveAs() override;
+	virtual bool NeedsSaving() override { return m_Dirty; }
+
 private:
 	bool* m_Show;
 
@@ -34,6 +39,8 @@ private:
 	bool m_WindowHovered = false;
 	bool m_WindowFocussed = false;
 	bool m_CursorDisabled;
+	// Edited copy of the mesh's default materials, only written back on save
+	std::vector<Ref<Material>> m_Materials;
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
 	Vector2f m_RelativeMousePosition;

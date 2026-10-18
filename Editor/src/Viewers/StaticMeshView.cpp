@@ -154,3 +154,44 @@ void StaticMeshView::OnUpdate(float deltaTime)
 void StaticMeshView::OnFixedUpdate()
 {
 }
+
+void StaticMeshView::Save()
+{
+	if (!m_Mesh || !m_Mesh->GetMesh())
+		return;
+
+	// Write a copy so the cached asset only changes once the file has been written
+	Ref<Mesh> mesh = CreateRef<Mesh>(*m_Mesh->GetMesh());
+	mesh->SetMaterials(m_Materials);
+
+	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath);
+	if (!MeshSerializer::Serialize(absolutePath, mesh, MeshLayout::StaticMesh))
+		return;
+
+	if (Ref<StaticMesh> savedMesh = AssetManager::GetAsset<StaticMesh>(m_FilePath))
+	{
+		m_Mesh = savedMesh;
+		if (m_Mesh->GetMesh())
+			m_Mesh->GetMesh()->SetMaterials(m_Materials);
+	}
+
+	m_Dirty = false;
+
+	WebProject::Sync();
+}
+
+void StaticMeshView::SaveAs()
+{
+	auto ext = m_FilePath.extension();
+	std::optional<std::wstring> dialogPath = FileDialog::SaveAs(L"Save As...", { {L"Static Mesh File", std::wstring(L"*") + ConvertToWideChar(ext.string())} });
+
+	if (dialogPath)
+	{
+		std::filesystem::path newPath = dialogPath.value();
+		if (!newPath.has_extension())
+			newPath.replace_extension(ext);
+
+		m_FilePath = FileUtils::RelativePath(newPath, Application::GetOpenDocumentDirectory());
+		Save();
+	}
+}
