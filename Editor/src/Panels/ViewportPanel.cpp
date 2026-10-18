@@ -1473,4 +1473,28 @@ void ViewportPanel::HandleKeyboardInputs()
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_T))
 			m_Operation = OperationMode::Universal;
 	}
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+BoundingBox ViewportPanel::GetLocalBounds(Entity entity) const
+{
+	if (entity.HasComponent<SpriteComponent, AnimatedSpriteComponent, CircleRendererComponent>())
+		return BoundingBox(Vector3f(-0.5f, -0.5f, 0.0f), Vector3f(0.5f, 0.5f, 0.0f));
+
+	if (auto comp = entity.TryGetComponent<StaticMeshComponent>(); comp && comp->mesh && comp->mesh->GetMesh())
+		return comp->mesh->GetBounds();
+	if (auto comp = entity.TryGetComponent<PrimitiveComponent>(); comp && comp->mesh)
+		return comp->mesh->GetBounds();
+	if (auto comp = entity.TryGetComponent<TilemapComponent>(); comp && comp->mesh)
+		return comp->mesh->GetBounds();
+
+	if (auto boxColliderComp = entity.TryGetComponent<BoxCollider2DComponent>())
+	{
+		const TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
+		Vector3f offset(boxColliderComp->offset.x / transformComp.scale.x, boxColliderComp->offset.y / transformComp.scale.y, 0.0f);
+		Vector3f halfSize(boxColliderComp->size.x, boxColliderComp->size.y, 0.0f);
+		return BoundingBox(offset - halfSize, offset + halfSize);
+	}
+
+	return BoundingBox(Vector3f(), Vector3f());
+}
 }
