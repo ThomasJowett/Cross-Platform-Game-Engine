@@ -45,6 +45,8 @@ public:
 	{
 		uint32_t drawCalls = 0;
 		uint32_t meshCount = 0;
+		// Meshes and submeshes skipped for being off screen
+		uint32_t culledMeshCount = 0;
 	};
 
 	static const Stats& GetStats();

@@ -23,6 +23,8 @@ struct Command
 	uint32_t vertexOffset = 0;
 	Matrix4x4 transform;
 	int entityId = -1;
+	// In the same space as the vertices, before transform; an invalid box is never culled
+	BoundingBox bounds;
 };
 
 struct RendererData
@@ -57,6 +59,8 @@ struct SceneData
 
 	ConstantBuffer constantBuffer;
 	ModelBuffer modelBuffer;
+
+	Frustum frustum;
 
 	Ref<UniformBuffer> constantUniformBuffer;
 
@@ -253,7 +257,8 @@ void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projectio
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
 
 	// The Y flip doesn't change what's visible, so the frustum uses the unflipped projection
-	Renderer2D::SetFrustum(Frustum(projection * view));
+	s_SceneData.frustum = Frustum(projection * view);
+	Renderer2D::SetFrustum(s_SceneData.frustum);
 	Renderer2D::BeginScene();
 }
 
@@ -263,7 +268,17 @@ void Renderer::EndScene()
 {
 	ENGINE_TRACE("Renderer: EndScene (opaque={0}, trans={1})", s_OpaqueRenderQueue.size(), s_TransparentRenderQueue.size());
 	Renderer2D::EndScene();
-	//TODO: frustum culling
+
+	// Frustum culling, before sorting so hidden commands aren't sorted either
+	auto isCulled = [](const Command& command) {
+		return !s_SceneData.frustum.Intersects(command.bounds, command.transform);
+	};
+	for (std::vector<Command>* queue : { &s_OpaqueRenderQueue, &s_TransparentRenderQueue })
+	{
+		auto firstCulled = std::remove_if(queue->begin(), queue->end(), isCulled);
+		s_RendererData.stats.culledMeshCount += (uint32_t)std::distance(firstCulled, queue->end());
+		queue->erase(firstCulled, queue->end());
+	}
 
 	// Sort the opaque front to back to reduce over draw
 	std::sort(s_OpaqueRenderQueue.begin(), s_OpaqueRenderQueue.end(), [](Command& a, Command& b)
@@ -311,7 +326,8 @@ void Renderer::SetTargetSamples(uint32_t samples)
 
 /* ------------------------------------------------------------------------------------------------------------------ */
 
-void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform, int entityId, uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset)
+static void QueueCommand(const Ref<Mesh>& mesh, const Ref<Material>& material, const Matrix4x4& transform, int entityId,
+	uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset, const BoundingBox& bounds)
 {
 	if (!mesh)
 		return;
@@ -325,6 +341,7 @@ void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const 
 	command.material = material ? material.get() : Material::GetDefaultMaterial().get();
 	command.mesh = mesh.get();
 	command.transform = transform;
+	command.bounds = bounds;
 
 	if (command.material->IsTransparent())
 	{
@@ -336,19 +353,27 @@ void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const 
 	}
 }
 
+void Renderer::Submit(const Ref<Mesh> mesh, const Ref<Material> material, const Matrix4x4& transform, int entityId, uint32_t indexCount, uint32_t startIndex, uint32_t vertexOffset)
+{
+	if (!mesh)
+		return;
+
+	// Only the whole mesh has known bounds, a partial range is never culled
+	BoundingBox bounds = indexCount == 0 ? mesh->GetBounds() : BoundingBox();
+	QueueCommand(mesh, material, transform, entityId, indexCount, startIndex, vertexOffset, bounds);
+}
+
 void Renderer::Submit(const Ref<Mesh> mesh, const Matrix4x4& transform, int entityId)
 {
-	for (const auto& submesh : mesh->GetSubmeshes())
-	{
-		Submit(mesh, mesh->GetMaterials()[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
-	}
+	Submit(mesh, mesh->GetMaterials(), transform, entityId);
 }
 
 void Renderer::Submit(const Ref<Mesh> mesh, const std::vector<Ref<Material>>& materials, const Matrix4x4& transform, int entityId)
 {
 	for (const auto& submesh : mesh->GetSubmeshes())
 	{
-		Submit(mesh, materials[submesh.materialIndex], transform * submesh.transform, entityId, submesh.indexCount, submesh.firstIndex, submesh.vertexOffset);
+		QueueCommand(mesh, materials[submesh.materialIndex], transform * submesh.transform, entityId,
+			submesh.indexCount, submesh.firstIndex, submesh.vertexOffset, submesh.boundingBox);
 	}
 }
 
