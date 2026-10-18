@@ -788,17 +788,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// Static Mesh------------------------------------------------------------------------------------------------------------
 	DrawComponent<StaticMeshComponent>(ICON_FA_SHAPES" Static Mesh", entity, [=](auto& staticMesh)
 		{
-			std::filesystem::path meshFilepath;
-			if (staticMesh.mesh)
-				meshFilepath = staticMesh.mesh->GetFilepath();
-
-			if (ImGui::FileSelect("Static Mesh", meshFilepath, FileType::MESH))
+			if(ImGui::AssetEdit<StaticMesh>("Static Mesh", staticMesh.mesh, nullptr, FileType::MESH))
 			{
-				std::filesystem::path relativePath = FileUtils::RelativePath(meshFilepath, Application::GetOpenDocumentDirectory());
-				staticMesh.SetMesh(AssetManager::GetAsset<StaticMesh>(relativePath));
-
+				staticMesh.SetMesh(staticMesh.mesh, false);
 				SceneManager::CurrentScene()->MakeDirty();
 			}
+
 			if (staticMesh.mesh) {
 				for (size_t i = 0; i < staticMesh.materialOverrides.size(); ++i)
 				{
