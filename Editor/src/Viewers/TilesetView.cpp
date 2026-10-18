@@ -10,6 +10,7 @@
 #include "ViewerManager.h"
 
 #include <cmath>
+#include "FileSystem/WebProject.h"
 
 TilesetView::TilesetView(bool* show, std::filesystem::path filepath)
 	:View("TilesetView"), m_Show(show), m_Filepath(filepath)
@@ -456,6 +457,8 @@ void TilesetView::Save()
 	m_LocalTileset->Save();
 	m_Tileset->Load(m_Filepath);
 	m_Dirty = false;
+
+	WebProject::Sync();
 }
 
 void TilesetView::SaveAs()

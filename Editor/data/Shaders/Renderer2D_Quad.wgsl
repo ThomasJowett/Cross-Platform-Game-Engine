@@ -51,21 +51,24 @@ fn vs_main(input: VertexInput) -> VertexOutput {
 
 // TODO(texture-array-cleanup): 8-slot if-chain workaround for WGSL's lack of dynamic indexing -
 // see the TODO on WebGPUPipeline::SetTextureArray.
-fn sampleQuadTexture(index: i32, uv: vec2<f32>) -> vec4<f32> {
-    if (index == 0) { return textureSample(u_Texture0, u_Sampler, uv); }
-    else if (index == 1) { return textureSample(u_Texture1, u_Sampler, uv); }
-    else if (index == 2) { return textureSample(u_Texture2, u_Sampler, uv); }
-    else if (index == 3) { return textureSample(u_Texture3, u_Sampler, uv); }
-    else if (index == 4) { return textureSample(u_Texture4, u_Sampler, uv); }
-    else if (index == 5) { return textureSample(u_Texture5, u_Sampler, uv); }
-    else if (index == 6) { return textureSample(u_Texture6, u_Sampler, uv); }
-    else { return textureSample(u_Texture7, u_Sampler, uv); }
+fn sampleQuadTexture(index: i32, uv: vec2<f32>, ddx: vec2<f32>, ddy: vec2<f32>) -> vec4<f32> {
+    if (index == 0) { return textureSampleGrad(u_Texture0, u_Sampler, uv, ddx, ddy); }
+    else if (index == 1) { return textureSampleGrad(u_Texture1, u_Sampler, uv, ddx, ddy); }
+    else if (index == 2) { return textureSampleGrad(u_Texture2, u_Sampler, uv, ddx, ddy); }
+    else if (index == 3) { return textureSampleGrad(u_Texture3, u_Sampler, uv, ddx, ddy); }
+    else if (index == 4) { return textureSampleGrad(u_Texture4, u_Sampler, uv, ddx, ddy); }
+    else if (index == 5) { return textureSampleGrad(u_Texture5, u_Sampler, uv, ddx, ddy); }
+    else if (index == 6) { return textureSampleGrad(u_Texture6, u_Sampler, uv, ddx, ddy); }
+    else { return textureSampleGrad(u_Texture7, u_Sampler, uv, ddx, ddy); }
 }
 
 @fragment
 fn fs_main(input: VertexOutput) -> FragmentOutput {
     var output: FragmentOutput;
-    output.frag_colour = sampleQuadTexture(i32(input.texIndex), input.texCoord) * input.colour;
+    // Derivatives taken outside the per-pixel texture branch, which WGSL requires for implicit-LOD sampling
+    let ddx = dpdx(input.texCoord);
+    let ddy = dpdy(input.texCoord);
+    output.frag_colour = sampleQuadTexture(i32(input.texIndex), input.texCoord, ddx, ddy) * input.colour;
 
     if(output.frag_colour.a <= 0.0001) {
         discard;

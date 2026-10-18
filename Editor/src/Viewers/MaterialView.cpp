@@ -11,6 +11,7 @@
 #include "Renderer/Renderer.h"
 #include "Asset/Texture.h"
 #include "ImGui/ImGuiUtilities.h"
+#include "FileSystem/WebProject.h"
 
 MaterialView::MaterialView(bool* show, std::filesystem::path filepath)
 	:View("MaterialView"), m_Show(show), m_FilePath(filepath), m_Camera(-1.0f, 1.0f, -1.0f, 1.0f)
@@ -213,6 +214,8 @@ void MaterialView::Save()
 	m_Material->Load(m_FilePath);
 	m_LocalMaterial = CreateRef<Material>(*m_Material);
 	m_Dirty = false;
+
+	WebProject::Sync();
 }
 
 void MaterialView::SaveAs()

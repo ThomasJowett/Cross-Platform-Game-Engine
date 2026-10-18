@@ -16,7 +16,7 @@ static std::string s_Filename;
 void Settings::Init()
 {
 	PROFILE_FUNCTION();
-	s_Filename = (Application::GetWorkingDirectory() / "Settings.ini").string();
+	s_Filename = (Application::GetSettingsDirectory() / "Settings.ini").string();
 
 	s_Ini->SetUnicode();
 

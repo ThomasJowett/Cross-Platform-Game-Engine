@@ -7,6 +7,7 @@
 #include "Logging/Instrumentor.h"
 #include "Core/Application.h"
 #include "Core/Cursor.h"
+#include "Core/Settings.h"
 
 ViewportCameraController::ViewportCameraController()
 	:m_2DCamera(-m_AspectRatio * m_ZoomLevel, m_AspectRatio* m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel),
@@ -238,4 +239,31 @@ void ViewportCameraController::Yaw(float angle)
 void ViewportCameraController::Pan() {
 	m_2DCameraPosition.x -= m_MouseRelativeVelocity.x * (m_ZoomLevel / (m_ViewPortSize.x * 0.5f / m_AspectRatio));
 	m_2DCameraPosition.y += m_MouseRelativeVelocity.y * (m_ZoomLevel / (m_ViewPortSize.y * 0.5f));
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void ViewportCameraController::BeginMouseLook()
+{
+	// Locking the cursor in a browser shows a "Press Esc" banner every time, so it's optional there
+#ifdef __EMSCRIPTEN__
+	if (!Settings::GetBool("Editor", "Lock_Cursor_When_Looking"))
+	{
+		Application::GetWindow()->CaptureMouse();
+		return;
+	}
+#endif
+	Application::GetWindow()->DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
+}
+
+void ViewportCameraController::EndMouseLook()
+{
+#ifdef __EMSCRIPTEN__
+	if (!Settings::GetBool("Editor", "Lock_Cursor_When_Looking"))
+	{
+		Application::GetWindow()->ReleaseMouse();
+		return;
+	}
+#endif
+	Application::GetWindow()->EnableCursor();
 }

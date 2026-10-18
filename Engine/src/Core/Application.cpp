@@ -107,6 +107,13 @@ int Application::Init(const InputParser& inputParser)
 	}
 #endif
 	std::filesystem::current_path(m_WorkingDirectory);
+
+	m_SettingsDirectory = m_WorkingDirectory;
+#ifdef __EMSCRIPTEN__
+	// The web Editor's page mounts IndexedDB storage here, so settings survive a reload
+	if (std::filesystem::is_directory("/persistent"))
+		m_SettingsDirectory = "/persistent";
+#endif
 	Logger::Init(logPath);
 
 	if (input.CmdOptionExists("-h") || input.CmdOptionExists("--help"))
@@ -456,6 +463,8 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 		if (filepath.extension() != ".proj")
 			return true;
 
+#ifndef __EMSCRIPTEN__
+		// The web Editor keeps its own recent projects, since in-memory paths don't survive a reload
 		std::string recentFiles = Settings::GetValue("Files", "Recent_Files");
 
 		std::vector<std::string> recentFilesList = SplitString(recentFiles, ',');
@@ -482,6 +491,7 @@ bool Application::SetOpenDocumentImpl(const std::filesystem::path& filepath)
 			recentFiles.append(fileStr + ',');
 			Settings::SetValue("Files", "Recent_Files", recentFiles.c_str());
 		}
+#endif
 
 		AssetManager::CleanUp();
 		AssetManager::Init(m_OpenDocumentDirectory);
@@ -578,4 +588,11 @@ const std::filesystem::path& Application::GetOpenDocumentDirectory()
 const std::filesystem::path& Application::GetWorkingDirectory()
 {
 	return s_Instance->m_WorkingDirectory;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+const std::filesystem::path& Application::GetSettingsDirectory()
+{
+	return s_Instance->m_SettingsDirectory;
 }

@@ -10,6 +10,7 @@
 #include "Scene/SceneManager.h"
 #include "Viewers/ViewerManager.h"
 #include "Utilities/FileUtils.h"
+#include "FileSystem/WebProject.h"
 
 ProjectSettingsPanel::ProjectSettingsPanel(bool* show)
 	:m_Show(show), Layer("Project Settings Panel")
@@ -142,6 +143,8 @@ void ProjectSettingsPanel::SaveProjectFile()
 	m_ProjectData.description = m_DescriptionBuffer;
 
 	ProjectSerializer::Serialize(m_ProjectData, Application::GetOpenDocument());
+
+	WebProject::Sync();
 }
 
 void ProjectSettingsPanel::ReadCollisionLayersFile()
@@ -178,6 +181,8 @@ void ProjectSettingsPanel::SaveCollisionLayersFile()
 
 	CollisionLayers::SetNames(m_CollisionLayers);
 	m_CollisionLayersDirty = false;
+
+	WebProject::Sync();
 }
 
 void ProjectSettingsPanel::DrawCollisionLayers()

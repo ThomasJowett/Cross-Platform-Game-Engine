@@ -26,6 +26,7 @@ public:
 
 private:
 	void OpenProject(const std::filesystem::path& filename);
+	void OpenProjectDialog();
 	bool OnOpenProject(AppOpenDocumentChangedEvent& event);
 
 	void HandleKeyBoardInputs();
@@ -67,6 +68,9 @@ private:
 	Ref<ContentExplorerPanel> m_ContentExplorer;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
+#ifdef __EMSCRIPTEN__
+	std::vector<std::string> m_RecentWebProjects;
+#endif
 
 	PlayPauseToolbar m_PlayPauseToolbar;
 	SaveOpenToolbar m_SaveOpenToolbar;

@@ -6,6 +6,7 @@
 #include "ImGui/ImGuiTextureEdit.h"
 #include "ImGui/ImGuiUtilities.h"
 #include "Utilities/AssetReferenceUtils.h"
+#include "FileSystem/WebProject.h"
 
 SpriteSheetView::SpriteSheetView(bool* show, std::filesystem::path filepath)
 	:View("SpriteSheetView"), m_Show(show), m_Filepath(filepath)
@@ -417,6 +418,8 @@ void SpriteSheetView::Save()
 	m_PendingAnimationRenames.clear();
 
 	m_Dirty = false;
+
+	WebProject::Sync();
 }
 
 void SpriteSheetView::SaveAs()

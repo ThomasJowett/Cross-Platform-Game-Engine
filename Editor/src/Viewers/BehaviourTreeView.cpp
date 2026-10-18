@@ -18,6 +18,7 @@
 #include <algorithm>
 #include <functional>
 #include <unordered_map>
+#include "FileSystem/WebProject.h"
 
 namespace
 {
@@ -1563,6 +1564,8 @@ void BehaviourTreeView::Save()
 		m_SavedUndoIndex = m_UndoIndex;
 	else
 		ENGINE_ERROR("Failed to save behaviour tree {0}", m_SavePath);
+
+	WebProject::Sync();
 }
 
 void BehaviourTreeView::SaveAs()

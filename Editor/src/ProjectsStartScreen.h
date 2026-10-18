@@ -23,4 +23,8 @@ private:
 	bool m_CanGoBack;
 
 	std::vector<std::filesystem::path> m_RecentProjects;
+#ifdef __EMSCRIPTEN__
+	// Project folders kept by the browser, which only exist on disk until reopened
+	std::vector<std::string> m_RecentWebProjects;
+#endif
 };

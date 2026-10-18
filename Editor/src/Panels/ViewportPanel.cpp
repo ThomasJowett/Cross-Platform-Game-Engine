@@ -109,14 +109,14 @@ void ViewportPanel::OnUpdate(float deltaTime)
 
 	if (m_ViewportHovered && rightMouseDown && !m_CursorDisabled)
 	{
-		Application::GetWindow()->DisableCursor(); //TODO: Fix the issue that disabling the cursor jumps the mouse position
+		ViewportCameraController::BeginMouseLook();
 		m_CursorDisabled = true;
 	}
 
 	else if (m_CursorDisabled && !rightMouseDown)
 	{
 		m_CursorDisabled = false;
-		Application::GetWindow()->EnableCursor();
+		ViewportCameraController::EndMouseLook();
 	}
 
 	FrameBufferSpecification spec = m_Framebuffer->GetSpecification();

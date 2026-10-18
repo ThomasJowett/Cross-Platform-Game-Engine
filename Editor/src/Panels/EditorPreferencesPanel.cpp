@@ -21,8 +21,9 @@ EditorPreferencesPanel::EditorPreferencesPanel(bool* show)
 	m_VSnyc = Settings::GetBool("Display", "V-Sync");
 
 	Settings::SetDefaultValue("Editor", "Theme", EditorStyles::DefaultTheme);
+	Settings::SetDefaultBool("Editor", "Lock_Cursor_When_Looking", false);
 
-	m_StyleFilename = (Application::GetWorkingDirectory() / "styles" / "Editor.style").string();
+	m_StyleFilename = (Application::GetSettingsDirectory() / "styles" / "Editor.style").string();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -96,12 +97,21 @@ void EditorPreferencesPanel::OnImGuiRender()
 		}
 		if (ImGui::TreeNode("Display"))
 		{
+#ifdef __EMSCRIPTEN__
+			ImGui::TextDisabled("V-Sync is always on in the browser");
+
+			bool lockCursor = Settings::GetBool("Editor", "Lock_Cursor_When_Looking");
+			if (ImGui::Checkbox("Lock the cursor when looking around", &lockCursor))
+				Settings::SetBool("Editor", "Lock_Cursor_When_Looking", lockCursor);
+			ImGui::Tooltip("Right-drag in a 3D viewport can turn without limit, but the browser shows a \"Press Esc\" message each time.\nWhen off, the cursor stays visible and turning stops at the edge of the screen.");
+#else
 			m_VSnyc = Application::GetWindow()->IsVSync();
 			if (ImGui::Checkbox("V-Sync", &m_VSnyc))
 			{
 				Settings::SetBool("Display", "V-Sync", m_VSnyc);
 				Application::GetWindow()->SetVSync(m_VSnyc);
 			}
+#endif
 			ImGui::TreePop();
 		}
 	}
@@ -129,6 +139,13 @@ void EditorPreferencesPanel::OnAttach()
 
 void EditorPreferencesPanel::OnDetach()
 {
+	SaveStyleFile();
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void EditorPreferencesPanel::SaveStyleFile()
+{
 	if (m_HasCustomStyle)
 	{
 		ImGui::SaveStyle(m_StyleFilename, m_Style);
@@ -150,10 +167,12 @@ void EditorPreferencesPanel::ShowStyleEditor()
 
 	ImGui::PushItemWidth(ImGui::GetWindowWidth() * 0.50f);
 
+	bool changed = false;
 	if (ShowStyleSelector())
 	{
 		m_Style = style;
 		m_HasCustomStyle = false;
+		changed = true;
 	}
 
 	{ bool border = (style.WindowBorderSize > 0.0f); if (ImGui::Checkbox("WindowBorder", &border)) { style.WindowBorderSize = border ? 1.0f : 0.0f; } }
@@ -305,9 +324,20 @@ void EditorPreferencesPanel::ShowStyleEditor()
 	ImGui::PopItemWidth();
 
 	if (StyleFileContentsDiffer(style, m_Style))
+	{
 		m_HasCustomStyle = true;
+		changed = true;
+	}
 
 	m_Style = style;
+
+#ifdef __EMSCRIPTEN__
+	// A browser tab is never detached cleanly, so save as soon as the style changes
+	if (changed)
+		SaveStyleFile();
+#else
+	(void)changed;
+#endif
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -17,6 +17,7 @@ public:
 private:
 	void ShowStyleEditor();
 	bool ShowStyleSelector();
+	void SaveStyleFile();
 private:
 	bool* m_Show;
 	ImGuiStyle m_Style;

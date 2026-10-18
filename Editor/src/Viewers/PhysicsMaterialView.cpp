@@ -7,6 +7,7 @@
 
 #include "imgui/imgui.h"
 #include "ImGui/ImGuiUtilities.h"
+#include "FileSystem/WebProject.h"
 
 PhysicsMaterialView::PhysicsMaterialView(bool* show, std::filesystem::path filepath)
 	:View("PhysicsMaterialView"), m_Show(show), m_FilePath(filepath)
@@ -78,6 +79,8 @@ void PhysicsMaterialView::Save()
 {
 	m_PhysicsMaterial->Save();
 	m_Dirty = false;
+
+	WebProject::Sync();
 }
 
 void PhysicsMaterialView::SaveAs()

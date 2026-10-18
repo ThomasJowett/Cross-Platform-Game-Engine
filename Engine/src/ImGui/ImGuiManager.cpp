@@ -40,7 +40,7 @@ void ImGuiManager::Init()
 
 	io.ConfigWindowsMoveFromTitleBarOnly = true;
 
-	m_IniFile = std::filesystem::path(Application::GetWorkingDirectory() / "imgui.ini").string();
+	m_IniFile = std::filesystem::path(Application::GetSettingsDirectory() / "imgui.ini").string();
 
 	io.IniFilename = m_IniFile.c_str();
 
@@ -58,6 +58,10 @@ void ImGuiManager::Init()
 
 		if (ImGui_ImplGlfw_InitForOther(window, true))
 		{
+#ifdef __EMSCRIPTEN__
+			// Browser wheel events for ImGui, plus resizing the window to the canvas on page resize and fullscreen
+			ImGui_ImplGlfw_InstallEmscriptenCallbacks(window, "#canvas");
+#endif
 			Ref<GraphicsContext> context = Application::GetWindow()->GetContext();
 
 			Ref<WebGPUContext> webGPUContext = std::dynamic_pointer_cast<WebGPUContext>(context);

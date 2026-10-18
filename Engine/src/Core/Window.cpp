@@ -22,13 +22,27 @@
 #ifdef __EMSCRIPTEN__
 #include <emscripten/html5.h>
 
-static EM_BOOL FitWindowToCanvas(int, const EmscriptenUiEvent*, void* userData)
-{
-	double width, height;
-	if (emscripten_get_element_css_size("#canvas", &width, &height) == EMSCRIPTEN_RESULT_SUCCESS)
-		glfwSetWindowSize((GLFWwindow*)userData, (int)width, (int)height);
-	return EM_FALSE;
-}
+EM_JS(void, Window_TrackPointer, (), {
+	Module.canvas.addEventListener('pointerdown', (event) => { Module.lastPointerId = event.pointerId; });
+});
+
+EM_JS(void, Window_CaptureMouse, (), {
+	const canvas = Module.canvas;
+	canvas.style.cursor = 'move';
+	try {
+		if (Module.lastPointerId !== undefined)
+			canvas.setPointerCapture(Module.lastPointerId);
+	} catch (err) {
+		// The button was already released
+	}
+});
+
+EM_JS(void, Window_ReleaseMouse, (), {
+	const canvas = Module.canvas;
+	canvas.style.cursor = '';
+	if (Module.lastPointerId !== undefined && canvas.hasPointerCapture(Module.lastPointerId))
+		canvas.releasePointerCapture(Module.lastPointerId);
+});
 #endif
 
 #include "Core/Settings.h"
@@ -65,10 +79,17 @@ void Window::SetVSync(bool enabled)
 {
 	PROFILE_FUNCTION();
 
+#ifdef __EMSCRIPTEN__
+	// The browser paces frames to the display, so V-Sync is always on
+	if (!enabled)
+		ENGINE_INFO("V-Sync can't be turned off in a browser");
+	m_Data.vSync = true;
+#else
 	m_Context->SetSwapInterval(enabled ? 1 : 0);
 
 	Settings::SetBool("Display", "V-Sync", enabled);
 	m_Data.vSync = enabled;
+#endif
 }
 
 bool Window::IsVSync() const
@@ -227,6 +248,13 @@ void Window::DisableCursor()
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags |= ImGuiConfigFlags_NoMouse;
+
+	// Stops ImGui resetting the cursor, which in a browser cancels the pointer lock before it's granted
+	if (!(io.ConfigFlags & ImGuiConfigFlags_NoMouseCursorChange))
+	{
+		io.ConfigFlags |= ImGuiConfigFlags_NoMouseCursorChange;
+		m_BlockedCursorChange = true;
+	}
 }
 
 void Window::EnableCursor()
@@ -234,6 +262,32 @@ void Window::EnableCursor()
 	glfwSetInputMode(m_Window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 	ImGuiIO& io = ImGui::GetIO();
 	io.ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+
+	if (m_BlockedCursorChange)
+	{
+		io.ConfigFlags &= ~ImGuiConfigFlags_NoMouseCursorChange;
+		m_BlockedCursorChange = false;
+	}
+}
+
+void Window::CaptureMouse()
+{
+#ifdef __EMSCRIPTEN__
+	Window_CaptureMouse();
+	ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_NoMouse;
+#else
+	DisableCursor();
+#endif
+}
+
+void Window::ReleaseMouse()
+{
+#ifdef __EMSCRIPTEN__
+	Window_ReleaseMouse();
+	ImGui::GetIO().ConfigFlags &= ~ImGuiConfigFlags_NoMouse;
+#else
+	EnableCursor();
+#endif
 }
 
 void Window::SetCursorPosition(double xpos, double ypos)
@@ -546,6 +600,10 @@ bool Window::Init(const WindowProps& props)
 			initJoysticks();
 		}
 	}
+#ifdef __EMSCRIPTEN__
+	// CaptureMouse needs the pointer that pressed the button
+	Window_TrackPointer();
+#endif
 	{
 		glfwSetDropCallback(m_Window, [](GLFWwindow* window, int numDropped, const char** filenames)
 			{
@@ -556,10 +614,6 @@ bool Window::Init(const WindowProps& props)
 				data.eventCallback(event);
 			});
 	}
-#ifdef __EMSCRIPTEN__
-	// Follow the browser window when the page resizes the canvas
-	emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, m_Window, EM_FALSE, FitWindowToCanvas);
-#endif
 	return true;
 }
 

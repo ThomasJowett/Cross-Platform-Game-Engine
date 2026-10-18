@@ -27,6 +27,10 @@ public:
 
 	void LookAt(Vector3f focalPoint, float distance);
 
+	// Start and stop taking over the mouse to look around; locks the cursor unless the web Editor's preference says not to
+	static void BeginMouseLook();
+	static void EndMouseLook();
+
 private:
 
 	void Walk(float d);

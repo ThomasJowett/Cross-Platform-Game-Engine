@@ -1,0 +1,66 @@
+name: Web build
+
+# Builds the Release web Editor and Runtime with Emscripten and uploads them as an artifact,
+# ready to serve with any static web server (see design/web-build.md).
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Newer releases replace -sUSE_WEBGPU=1 with the emdawnwebgpu port
+  EMSCRIPTEN_VERSION: 3.1.74
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: "recursive"
+
+      - name: Set up Emscripten
+        uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: ${{ env.EMSCRIPTEN_VERSION }}
+          actions-cache-folder: emsdk-cache
+
+      - name: Configure CMake
+        run: emcmake cmake -B build_web -DCMAKE_BUILD_TYPE=Release -S .
+
+      # Building Editor builds Runtime too, and copies it next to the Editor for Export Game
+      - name: Build
+        run: cmake --build build_web --target Editor --parallel 4
+
+      - name: Collect output
+        run: |
+          mkdir -p web
+          cp build_web/Editor/Editor.{html,js,wasm,data} build_web/Editor/Runtime.{html,js,wasm,data} build_web/Editor/favicon.png web/
+          ls -l web
+
+      # itch.io rejects any single file over 200 MB
+      - name: Check file sizes
+        run: |
+          limit=$((200 * 1024 * 1024))
+          for file in web/*.wasm; do
+            size=$(stat -c %s "$file")
+            echo "$file: $((size / 1024 / 1024)) MB"
+            if [ "$size" -gt "$limit" ]; then
+              echo "::error file=$file::$file is over itch.io's 200 MB limit"
+              exit 1
+            fi
+          done
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: attercop-web
+          path: web
+          retention-days: 14

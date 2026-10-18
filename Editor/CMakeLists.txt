@@ -135,7 +135,24 @@ if (EMSCRIPTEN)
     set_target_properties(Editor PROPERTIES SUFFIX ".html")
     target_link_options(Editor PRIVATE "--preload-file" "${CMAKE_CURRENT_SOURCE_DIR}/data@/data")
     target_link_options(Editor PRIVATE "--shell-file" "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
-    set_property(TARGET Editor APPEND PROPERTY LINK_DEPENDS "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html")
+    target_link_options(Editor PRIVATE "--pre-js" "${CMAKE_SOURCE_DIR}/Resources/Web/editor_pre.js" "-lidbfs.js")
+    set_property(TARGET Editor APPEND PROPERTY LINK_DEPENDS
+        "${CMAKE_SOURCE_DIR}/Resources/Web/shell.html"
+        "${CMAKE_SOURCE_DIR}/Resources/Web/editor_pre.js")
+
+    # Export Game fetches the web Runtime from next to the Editor
+    add_custom_command(TARGET Editor POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "$<TARGET_FILE_DIR:Runtime>/Runtime.html"
+            "$<TARGET_FILE_DIR:Runtime>/Runtime.js"
+            "$<TARGET_FILE_DIR:Runtime>/Runtime.wasm"
+            "$<TARGET_FILE_DIR:Runtime>/Runtime.data"
+            "$<TARGET_FILE_DIR:Editor>"
+        COMMAND ${CMAKE_COMMAND} -E copy
+            "${CMAKE_CURRENT_SOURCE_DIR}/data/Icons/Logo.png"
+            "$<TARGET_FILE_DIR:Editor>/favicon.png"
+        COMMENT "Copying the web Runtime and the tab icon next to the Editor"
+    )
 endif()
 
 add_dependencies(Editor Runtime)

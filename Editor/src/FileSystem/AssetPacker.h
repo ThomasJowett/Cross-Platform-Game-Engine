@@ -40,6 +40,7 @@ private:
 	void PackAssets();
 	void ExportGameToExecutable();
 	void ExportGameToAppBundle();
+	void ExportGameToWeb();
 
 	void DrawAssetTree(Ref<AssetNode> node);
 

@@ -15,6 +15,7 @@
 #include "Core/InputMappings.h"
 #include "Physics/CollisionLayers.h"
 #include "ProjectSerializer.h"
+#include "WebProject.h"
 
 #include <algorithm>
 #include <iterator>
@@ -30,6 +31,22 @@ struct AssetBundleFooter
 };
 
 constexpr const char* BUNDLE_MAGIC = "GMBUNDLE";
+
+// Writes the game's title, default scene and a footer for a bundle kept in a separate assets.pak
+static void WriteExternalBundleMetadata(const std::filesystem::path& metadataPath, const std::string& gameName, const std::string& defaultScene)
+{
+	std::ofstream metadataFile(metadataPath, std::ios::binary);
+	metadataFile.write(gameName.c_str(), gameName.size());
+	metadataFile.write(defaultScene.data(), defaultScene.size());
+
+	AssetBundleFooter footer;
+	footer.zipSize = 0;
+	footer.gameTitleSize = gameName.size();
+	footer.defaultSceneSize = defaultScene.size();
+	footer.externalBundle = 1;
+	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
+	metadataFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
+}
 
 AssetPacker::AssetPacker(bool* show, const std::filesystem::path& projectDirectory, const std::filesystem::path& exportDirectory)
     : Layer("Asset Packer"), m_Show(show), m_ProjectDirectory(projectDirectory), m_ExportDirectory(exportDirectory)
@@ -70,7 +87,7 @@ void AssetPacker::OnImGuiRender()
 		if (m_CurrentStage == Stage::DiscoveringAssets)
 		{
 			ImGui::Text("Select assets to pack into the bundle:");
-#ifndef __APPLE__
+#if !defined(__APPLE__) && !defined(__EMSCRIPTEN__)
 			ImGui::Checkbox("Embed asset bundle in executable", &m_EmbedBundle);
 			if (ImGui::IsItemHovered())
 				ImGui::SetTooltip("When disabled, the asset bundle is exported as a separate .pak file next to the executable instead of being appended to it.");
@@ -89,6 +106,11 @@ void AssetPacker::OnImGuiRender()
 
 			if (ImGui::Button("Pack Selected Assets"))
 			{
+#ifdef __EMSCRIPTEN__
+				// No threads in the web build
+				m_Progress.store(0.0f);
+				PackAssets();
+#else
 				m_PackThread = std::thread(
 				    [this]()
 				    {
@@ -96,6 +118,7 @@ void AssetPacker::OnImGuiRender()
 					    m_Progress.store(0.0f);
 					    PackAssets();
 				    });
+#endif
 			}
 
 			ImGui::SameLine();
@@ -302,6 +325,11 @@ void AssetPacker::PackAssets()
 
 	std::filesystem::path outputZipPath = m_ExportDirectory / "packed_assets.zip";
 
+#ifdef __EMSCRIPTEN__
+	std::error_code ec;
+	std::filesystem::create_directories(m_ExportDirectory, ec);
+#endif
+
 	if (!mz_zip_writer_init_file(&zip, outputZipPath.string().c_str(), 0))
 	{
 		ENGINE_ERROR("Failed to initialize zip writer: {0}", mz_zip_get_error_string(mz_zip_get_last_error(&zip)));
@@ -363,7 +391,9 @@ void AssetPacker::PackAssets()
 	}
 
 	mz_zip_writer_end(&zip);
-#ifdef __APPLE__
+#ifdef __EMSCRIPTEN__
+	ExportGameToWeb();
+#elif defined(__APPLE__)
 	ExportGameToAppBundle();
 #else
 	ExportGameToExecutable();
@@ -516,18 +546,7 @@ void AssetPacker::ExportGameToAppBundle()
 	}
 	m_Progress.store(0.6f);
 
-	std::ofstream metadataFile(resourcesPath / "game.meta", std::ios::binary);
-	metadataFile.write(m_GameName.string().c_str(), m_GameName.string().size());
-	metadataFile.write(m_Data.defaultScene.data(), m_Data.defaultScene.size());
-
-	AssetBundleFooter footer;
-	footer.zipSize = 0;
-	footer.gameTitleSize = m_GameName.string().size();
-	footer.defaultSceneSize = m_Data.defaultScene.size();
-	footer.externalBundle = 1;
-	std::memcpy(footer.magic, BUNDLE_MAGIC, sizeof(footer.magic));
-	metadataFile.write(reinterpret_cast<const char*>(&footer), sizeof(footer));
-	metadataFile.close();
+	WriteExternalBundleMetadata(resourcesPath / "game.meta", m_GameName.string(), m_Data.defaultScene);
 	m_Progress.store(0.7f);
 
 	// The template's Info.plist still names the bundle/executable "Runtime" - give the exported
@@ -560,6 +579,82 @@ void AssetPacker::ExportGameToAppBundle()
 	m_CurrentStage = Stage::Done;
 
 	ENGINE_INFO("Exported game to {0}", destinationBundle.string());
+}
+
+void AssetPacker::ExportGameToWeb()
+{
+	PROFILE_FUNCTION();
+	m_CurrentStage = Stage::ExportingGame;
+	m_Progress.store(0.0f);
+
+	std::string gameTitle = m_GameName.stem().string();
+	std::filesystem::path gameDirectory = m_ExportDirectory / gameTitle;
+	std::error_code ec;
+	std::filesystem::remove_all(gameDirectory, ec);
+	std::filesystem::create_directories(gameDirectory, ec);
+
+	// The same layout as a macOS export, loaded by Resources/Web/runtime_pre.js
+	std::filesystem::rename(m_ExportDirectory / "packed_assets.zip", gameDirectory / "assets.pak", ec);
+	if (ec)
+	{
+		ENGINE_ERROR("Could not move asset bundle: {0}", ec.message());
+		m_CurrentStage = Stage::Done;
+		return;
+	}
+	WriteExternalBundleMetadata(gameDirectory / "game.meta", m_GameName.string(), m_Data.defaultScene);
+	m_Progress.store(0.2f);
+
+	// The web Runtime is deployed next to the Editor (see Editor/CMakeLists.txt)
+	const char* runtimeFiles[] = { "Runtime.html", "Runtime.js", "Runtime.wasm", "Runtime.data" };
+	for (size_t i = 0; i < std::size(runtimeFiles); ++i)
+	{
+		if (!WebProject::FetchToFile(runtimeFiles[i], gameDirectory / runtimeFiles[i]))
+		{
+			ENGINE_ERROR("Could not get {0} from the server, is the web Runtime deployed next to the Editor?", runtimeFiles[i]);
+			m_CurrentStage = Stage::Done;
+			return;
+		}
+		m_Progress.store(0.2f + 0.6f * (float)(i + 1) / (float)std::size(runtimeFiles));
+	}
+
+	// The Runtime's page becomes index.html, with the game's title in place of the engine's
+	{
+		std::ifstream pageIn(gameDirectory / "Runtime.html");
+		std::string page((std::istreambuf_iterator<char>(pageIn)), {});
+		pageIn.close();
+
+		std::string escapedTitle;
+		for (char c : gameTitle)
+		{
+			switch (c)
+			{
+			case '&': escapedTitle += "&amp;"; break;
+			case '<': escapedTitle += "&lt;"; break;
+			case '>': escapedTitle += "&gt;"; break;
+			default: escapedTitle += c; break;
+			}
+		}
+
+		// The page title and the loading screen's name; matched as text since Release builds minify the page
+		const std::string placeholder = ">Attercop<";
+		const std::string replacement = ">" + escapedTitle + "<";
+		for (size_t pos = page.find(placeholder); pos != std::string::npos; pos = page.find(placeholder, pos + replacement.size()))
+			page.replace(pos, placeholder.size(), replacement);
+
+		std::ofstream pageOut(gameDirectory / "index.html", std::ios::binary | std::ios::trunc);
+		pageOut << page;
+	}
+	std::filesystem::remove(gameDirectory / "Runtime.html", ec);
+	m_Progress.store(0.9f);
+
+	// itch.io and similar hosts need index.html at the top of the zip
+	WebProject::DownloadAsZip(gameDirectory, false);
+	std::filesystem::remove_all(gameDirectory, ec);
+
+	m_Progress.store(1.0f);
+	m_CurrentStage = Stage::Done;
+
+	ENGINE_INFO("Exported game {0} as a download", gameTitle);
 }
 
 void AssetPacker::DrawAssetTree(Ref<AssetNode> node)
