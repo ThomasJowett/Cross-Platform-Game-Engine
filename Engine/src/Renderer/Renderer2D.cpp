@@ -1,4 +1,5 @@
 #include "Renderer2D.h"
+#include "Core/Frustum.h"
 #include "Logging/Instrumentor.h"
 #include "Renderer.h"
 
@@ -118,6 +119,7 @@ struct Renderer2DData
 	Ref<Texture2D> whiteTexture;
 	// Every textured quad in the current batch is sampled with this
 	Ref<Sampler> quadSampler;
+	Ref<Sampler> pendingQuadSampler;
 
 	struct CameraData
 	{
@@ -166,6 +168,8 @@ struct Renderer2DData
 
 	Vector3f quadVertexPositions[4];
 
+	Frustum frustum;
+
 	uint32_t screenWidth = 1920, screenHeight = 1080;
 
 	Ref<SpriteAtlas> activeAtlas;
@@ -181,6 +185,19 @@ static Renderer2DData s_Data;
 static bool IsDrawingDisabled()
 {
 	return RendererAPI::GetAPI() == RendererAPI::API::None;
+}
+
+// Fills in the quad's corners, false when they're all off screen
+static bool TransformQuadCorners(const Matrix4x4& transform, Vector3f corners[4])
+{
+	for (size_t i = 0; i < 4; i++)
+		corners[i] = transform * s_Data.quadVertexPositions[i];
+
+	if (s_Data.frustum.Intersects(corners, 4))
+		return true;
+
+	s_Data.statistics.culledQuadCount++;
+	return false;
 }
 
 bool Renderer2D::Init()
@@ -313,6 +330,7 @@ bool Renderer2D::Init()
 	uint32_t whiteTextureData = Colour(Colours::WHITE).HexValue();
 	s_Data.whiteTexture = Texture2D::Create(1, 1, Texture2D::Format::RGBA, 1u, &whiteTextureData);
 	s_Data.quadSampler = Sampler::Get(Texture::FilterMethod::Nearest, Texture::WrapMethod::Repeat);
+	s_Data.pendingQuadSampler = s_Data.quadSampler;
 
 	s_Data.quadShader = Shader::Create("Renderer2D_Quad");
 	s_Data.circleShader = Shader::Create("Renderer2D_Circle");
@@ -381,6 +399,7 @@ bool Renderer2D::Init()
 void Renderer2D::Shutdown()
 {
 	s_Data.quadSampler.reset();
+	s_Data.pendingQuadSampler.reset();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -394,6 +413,13 @@ void Renderer2D::SetTargetSamples(uint32_t samples)
 
 void Renderer2D::OnWindowResize(uint32_t width, uint32_t height)
 {
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Renderer2D::SetFrustum(const Frustum& frustum)
+{
+	s_Data.frustum = frustum;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -761,6 +787,10 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 		return;
 	ENGINE_TRACE("Renderer2D: DrawQuad (color)");
 
+	Vector3f corners[4];
+	if (!TransformQuadCorners(transform, corners))
+		return;
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
@@ -770,7 +800,7 @@ void Renderer2D::DrawQuad(const Matrix4x4& transform, const Colour& colour, int 
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
+		s_Data.quadVertexBufferPtr->position = corners[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
 		s_Data.quadVertexBufferPtr->texIndex = texIndex;
@@ -805,6 +835,12 @@ void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>
 		return;
 	ENGINE_TRACE("Renderer2D: DrawQuad (texture)");
 
+	Vector3f corners[4];
+	if (!TransformQuadCorners(transform, corners))
+		return;
+
+	ApplyQuadSampler();
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
@@ -814,7 +850,7 @@ void Renderer2D::DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
+		s_Data.quadVertexBufferPtr->position = corners[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = tilingFactor * texCoords[i];
 		s_Data.quadVertexBufferPtr->texIndex = texIndex;
@@ -852,6 +888,12 @@ void Renderer2D::DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTe
 	if (!subtexture)
 		return;
 
+	Vector3f corners[4];
+	if (!TransformQuadCorners(transform, corners))
+		return;
+
+	ApplyQuadSampler();
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 	{
 		NextQuadsBatch();
@@ -863,7 +905,7 @@ void Renderer2D::DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTe
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
+		s_Data.quadVertexBufferPtr->position = corners[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
 		s_Data.quadVertexBufferPtr->texIndex = texIndex;
@@ -887,6 +929,12 @@ void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Textur
 	if (!texture)
 		return;
 
+	Vector3f corners[4];
+	if (!TransformQuadCorners(transform, corners))
+		return;
+
+	ApplyQuadSampler();
+
 	if (s_Data.quadIndexCount >= s_Data.maxIndices)
 		NextQuadsBatch();
 
@@ -896,7 +944,7 @@ void Renderer2D::DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Textur
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		s_Data.quadVertexBufferPtr->position = transform * s_Data.quadVertexPositions[i];
+		s_Data.quadVertexBufferPtr->position = corners[i];
 		s_Data.quadVertexBufferPtr->colour = colour;
 		s_Data.quadVertexBufferPtr->texCoords = texCoords[i];
 		s_Data.quadVertexBufferPtr->texIndex = texIndex;
@@ -916,14 +964,18 @@ void Renderer2D::UseQuadSampler(Texture::FilterMethod filterMethod, Texture::Wra
 	PROFILE_FUNCTION();
 	if (IsDrawingDisabled())
 		return;
-	Ref<Sampler> sampler = Sampler::Get(filterMethod, wrapMethod);
-	if (sampler == s_Data.quadSampler)
+	s_Data.pendingQuadSampler = Sampler::Get(filterMethod, wrapMethod);
+}
+
+void Renderer2D::ApplyQuadSampler()
+{
+	if (s_Data.pendingQuadSampler == s_Data.quadSampler)
 		return;
 
 	// Quads already in the batch keep the sampler they were submitted with
 	if (s_Data.quadIndexCount > 0)
 		NextQuadsBatch();
-	s_Data.quadSampler = sampler;
+	s_Data.quadSampler = s_Data.pendingQuadSampler;
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -968,6 +1020,10 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 	if (IsDrawingDisabled())
 		return;
 
+	Vector3f corners[4];
+	if (!TransformQuadCorners(transform, corners))
+		return;
+
 	if (s_Data.circleIndexCount >= s_Data.maxIndices)
 	{
 		NextCirclesBatch();
@@ -975,7 +1031,7 @@ void Renderer2D::DrawCircle(const Matrix4x4& transform, const Colour& colour, fl
 
 	for (size_t i = 0; i < 4; i++)
 	{
-		s_Data.circleVertexBufferPtr->worldPosition = transform * s_Data.quadVertexPositions[i];
+		s_Data.circleVertexBufferPtr->worldPosition = corners[i];
 		s_Data.circleVertexBufferPtr->localPosition = s_Data.quadVertexPositions[i] * 2.0f;
 		s_Data.circleVertexBufferPtr->colour = colour;
 		s_Data.circleVertexBufferPtr->thickness = thickness;

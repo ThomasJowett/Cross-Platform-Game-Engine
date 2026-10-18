@@ -11,6 +11,8 @@
 #include "Scene/Components/SpriteComponent.h"
 #include "Scene/Components/CircleRendererComponent.h"
 
+class Frustum;
+
 class Renderer2D
 {
 public:
@@ -22,6 +24,10 @@ public:
 	static void SetTargetSamples(uint32_t samples);
 
 	static void OnWindowResize(uint32_t width, uint32_t height);
+
+	// Quads and circles wholly outside this are skipped, Renderer::BeginScene sets it from the camera
+	static void SetFrustum(const Frustum& frustum);
+
 	static void BeginScene();
 	static void EndScene();
 
@@ -96,6 +102,8 @@ public:
 		uint32_t quadCount = 0;
 		uint32_t lineCount = 0;
 		uint32_t hairLineCount = 0;
+		// Quads and circles skipped for being off screen
+		uint32_t culledQuadCount = 0;
 
 		uint32_t GetTotalVertexCount() { return quadCount * 4; }
 		uint32_t GetTotalIndexCount() { return quadCount * 6; }
@@ -106,7 +114,9 @@ public:
 
 private:
 	static float AssignQuadTextureSlot(const Ref<Texture>& texture);
+	// Requests the sampler for the next textured quads, it's only switched to once a visible one is drawn
 	static void UseQuadSampler(Texture::FilterMethod filterMethod, Texture::WrapMethod wrapMethod);
+	static void ApplyQuadSampler();
 	static void DrawSubTexturedQuad(const Matrix4x4& transform, const Ref<SubTexture2D>& subtexture, const Colour& colour, int entityId);
 	static void DrawTexturedQuad(const Matrix4x4& transform, const Ref<Texture>& texture, const Colour& colour, float tilingFactor, int entityId);
 	static void DrawQuadWithUVRect(const Matrix4x4& transform, const Ref<Texture>& texture, const Vector2f& uvMin, const Vector2f& uvMax, const Colour& colour, int entityId);

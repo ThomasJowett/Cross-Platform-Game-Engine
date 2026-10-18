@@ -1,4 +1,5 @@
 #include "Renderer.h"
+#include "Core/Frustum.h"
 #include "Sampler.h"
 #include "Renderer2D.h"
 #include "RenderCommand.h"
@@ -245,10 +246,14 @@ void Renderer::BeginScene(const Matrix4x4& transform, const Matrix4x4& projectio
 	if (RendererAPI::GetAPI() == RendererAPI::API::WebGPU)
 		correctedProjection = Matrix4x4::Scale(Vector3f(1.0f, -1.0f, 1.0f)) * correctedProjection;
 
-	s_SceneData.constantBuffer.viewProjectionMatrix = (correctedProjection * Matrix4x4::Inverse(transform)).GetTranspose();
+	Matrix4x4 view = Matrix4x4::Inverse(transform);
+	s_SceneData.constantBuffer.viewProjectionMatrix = (correctedProjection * view).GetTranspose();
 	s_SceneData.constantBuffer.eyePosition = transform.ExtractTranslation();
 
 	s_SceneData.constantUniformBuffer->SetData(&s_SceneData.constantBuffer, sizeof(SceneData::ConstantBuffer));
+
+	// The Y flip doesn't change what's visible, so the frustum uses the unflipped projection
+	Renderer2D::SetFrustum(Frustum(projection * view));
 	Renderer2D::BeginScene();
 }
 
