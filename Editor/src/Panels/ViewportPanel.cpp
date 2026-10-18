@@ -944,64 +944,11 @@ void ViewportPanel::OnImGuiRender()
 					if (m_Operation == OperationMode::Rotate)
 						snapValue = 10.0f;
 
-					float bounds[6];
-
-					if (selectedEntity.HasComponent<SpriteComponent>()
-						|| selectedEntity.HasComponent<AnimatedSpriteComponent>()
-						|| selectedEntity.HasComponent<CircleRendererComponent>())
-					{
-						bounds[0] = -0.5f;
-						bounds[1] = -0.5f;
-						bounds[2] = 0.0f;
-						bounds[3] = 0.5f;
-						bounds[4] = 0.5f;
-						bounds[5] = 0.0f;
-					}
-					else if (selectedEntity.HasComponent<StaticMeshComponent, PrimitiveComponent, TilemapComponent>())
-					{
-						const BoundingBox* box = nullptr;
-						if (auto comp = selectedEntity.TryGetComponent<StaticMeshComponent>())
-						{
-							if (comp->mesh)
-								box = &comp->mesh->GetBounds();
-						}
-						else if (auto comp = selectedEntity.TryGetComponent<PrimitiveComponent>())
-						{
-							if (comp->mesh)
-								box = &comp->mesh->GetBounds();
-						}
-						else if (auto comp = selectedEntity.TryGetComponent<TilemapComponent>())
-						{
-							if (comp->mesh)
-								box = &comp->mesh->GetBounds();
-						}
-
-						if (box)
-						{
-							bounds[0] = box->Min().x;
-							bounds[1] = box->Min().y;
-							bounds[2] = box->Min().z;
-							bounds[3] = box->Max().x;
-							bounds[4] = box->Max().y;
-							bounds[5] = box->Max().z;
-						}
-					}
-					else if (selectedEntity.HasComponent<BoxCollider2DComponent>())
-					{
-						BoxCollider2DComponent& boxColliderComp = selectedEntity.GetComponent<BoxCollider2DComponent>();
-						TransformComponent& transformComp = selectedEntity.GetComponent<TransformComponent>();
-
-						bounds[0] = -boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
-						bounds[1] = -boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
-						bounds[2] = 0.0f;
-						bounds[3] = boxColliderComp.size.x + (boxColliderComp.offset.x / transformComp.scale.x);
-						bounds[4] = boxColliderComp.size.y + (boxColliderComp.offset.y / transformComp.scale.y);
-						bounds[5] = 0.0f;
-					}
-					else
-					{
-						memset(bounds, 0, sizeof(bounds));
-					}
+					BoundingBox localBounds = GetLocalBounds(selectedEntity);
+					float bounds[6] = {
+						localBounds.Min().x, localBounds.Min().y, localBounds.Min().z,
+						localBounds.Max().x, localBounds.Max().y, localBounds.Max().z
+					};
 
 					float snapValues[3] = { snapValue, snapValue, snapValue };
 
