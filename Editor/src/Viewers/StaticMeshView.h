@@ -10,7 +10,8 @@
 #include "Renderer/FrameBuffer.h"
 #include "imgui/imgui.h"
 
-#include "ViewportCameraController.h"
+#include "Interfaces/ISaveable.h"
+#include "OrbitCameraController.h"
 #include "ViewerManager.h"
 
 class StaticMeshView :
@@ -26,6 +27,8 @@ public:
 	virtual void OnFixedUpdate() override;
 private:
 	void DrawDetailsPanel();
+	void DrawViewport();
+
 	// Inherited via ISaveable
 	virtual void Save() override;
 	virtual void SaveAs() override;
@@ -38,17 +41,23 @@ private:
 
 	Ref<StaticMesh> m_Mesh;
 
-	bool m_WindowHovered = false;
-	bool m_WindowFocussed = false;
-	bool m_CursorDisabled;
 	// Edited copy of the mesh's default materials, only written back on save
 	std::vector<Ref<Material>> m_Materials;
+
+	bool m_Dirty = false;
+
 	ImVec2 m_ViewportSize;
 	Ref<FrameBuffer> m_Framebuffer;
-	Vector2f m_RelativeMousePosition;
 
-	ViewportCameraController m_CameraController;
+	OrbitCameraController m_CameraController;
 	BoundingBox m_Bounds;
+	bool m_NeedsFraming = true;
+
+	bool m_MouseLooking = false;
+	Vector2f m_LastMousePosition;
+	int m_IgnoreMouseFrames = 0;
 
 	Ref<Mesh> m_GridMesh;
+	Ref<Material> m_GridMaterial;
+	bool m_ShowGrid = true;
 };
