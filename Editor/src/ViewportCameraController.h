@@ -1,6 +1,24 @@
 #pragma once
 
 #include "Renderer/Camera.h"
+#include "math/Quaternion.h"
+
+// Axis aligned views for the view menus, pitch and yaw in radians
+struct AxisView
+{
+	const char* name;
+	float pitch;
+	float yaw;
+};
+
+inline constexpr AxisView s_AxisViews[] = {
+	{ "Front",  0.0f,            0.0f },
+	{ "Left",   0.0f,            -(float)PIDIV2 },
+	{ "Right",  0.0f,            (float)PIDIV2 },
+	{ "Top",    -(float)PIDIV2,  0.0f },
+	{ "Bottom", (float)PIDIV2,   0.0f },
+	{ "Back",   0.0f,            (float)PI }
+};
 
 class ViewportCameraController
 {
@@ -26,6 +44,9 @@ public:
 	void SwitchCamera(bool is3D);
 
 	void LookAt(Vector3f focalPoint, float distance);
+
+	// Rotate the 3D camera to face along the given angles, keeping the point it was looking at in view
+	void SetView(float pitch, float yaw);
 
 	// Start and stop taking over the mouse to look around; locks the cursor unless the web Editor's preference says not to
 	static void BeginMouseLook();

@@ -183,6 +183,23 @@ void ViewportCameraController::LookAt(Vector3f focalPoint, float distance)
 	}
 }
 
+void ViewportCameraController::SetView(float pitch, float yaw)
+{
+	// No focal point is tracked, so assume it's as far along the view as the world origin is
+	float distance = m_3DCameraPosition.Magnitude();
+	if (distance < 1.0f)
+		distance = 10.0f;
+	Vector3f focalPoint = m_3DCameraPosition + (m_Forward * distance);
+
+	m_3DCameraRotation = Vector3f(pitch, yaw, 0.0f);
+	Matrix4x4 rotation = Matrix4x4::Rotate(Quaternion(m_3DCameraRotation));
+	m_Forward = rotation * Vector3f(0.0f, 0.0f, -1.0f);
+	m_Right = rotation * Vector3f(1.0f, 0.0f, 0.0f);
+	m_Up = rotation * Vector3f(0.0f, 1.0f, 0.0f);
+
+	m_3DCameraPosition = focalPoint - (m_Forward * distance);
+}
+
 void ViewportCameraController::Walk(float d)
 {
 	m_3DCameraPosition = (d * m_Forward) + m_3DCameraPosition;
