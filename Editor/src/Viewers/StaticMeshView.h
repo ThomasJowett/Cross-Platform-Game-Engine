@@ -24,6 +24,8 @@ public:
 	virtual void OnImGuiRender() override;
 	virtual void OnUpdate(float deltaTime) override;
 	virtual void OnFixedUpdate() override;
+private:
+	void DrawDetailsPanel();
 	// Inherited via ISaveable
 	virtual void Save() override;
 	virtual void SaveAs() override;
@@ -46,6 +48,7 @@ private:
 	Vector2f m_RelativeMousePosition;
 
 	ViewportCameraController m_CameraController;
+	BoundingBox m_Bounds;
 
 	Ref<Mesh> m_GridMesh;
 };

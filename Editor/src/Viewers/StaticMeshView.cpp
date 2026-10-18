@@ -106,6 +106,44 @@ void StaticMeshView::OnImGuiRender()
 	ImGui::End();
 
 	ImGui::PopStyleVar();
+void StaticMeshView::DrawDetailsPanel()
+{
+	if (!m_Mesh || !m_Mesh->GetMesh())
+	{
+		ImGui::TextUnformatted("Could not load mesh");
+		return;
+	}
+
+	Ref<Mesh> mesh = m_Mesh->GetMesh();
+
+	if (ImGui::CollapsingHeader("Materials", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		for (size_t i = 0; i < m_Materials.size(); ++i)
+		{
+			Ref<Material> previous = m_Materials[i];
+			std::string label = "Material " + std::to_string(i);
+			ImGui::AssetEdit<Material>(label.c_str(), m_Materials[i], Material::GetDefaultMaterial(), FileType::MATERIAL);
+
+			if (!m_Materials[i])
+				m_Materials[i] = Material::GetDefaultMaterial();
+
+			if (m_Materials[i] != previous)
+				m_Dirty = true;
+		}
+	}
+
+	if (ImGui::CollapsingHeader("Mesh Info", ImGuiTreeNodeFlags_DefaultOpen))
+	{
+		uint32_t floatsPerVertex = mesh->GetVertexLayout().GetStride() / sizeof(float);
+		uint32_t vertexCount = floatsPerVertex ? (uint32_t)mesh->GetVertexList().size() / floatsPerVertex : 0;
+		Vector3f size = m_Bounds.IsValid() ? m_Bounds.Max() - m_Bounds.Min() : Vector3f();
+
+		ImGui::Text("Vertices: %u", vertexCount);
+		ImGui::Text("Triangles: %u", mesh->GetIndexCount() / 3);
+		ImGui::Text("Submeshes: %u", (uint32_t)mesh->GetSubmeshes().size());
+		ImGui::Text("Size: %.3f x %.3f x %.3f", size.x, size.y, size.z);
+	}
+}
 }
 
 void StaticMeshView::OnUpdate(float deltaTime)
