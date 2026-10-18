@@ -901,7 +901,7 @@ void ViewportPanel::OnImGuiRender()
 				{
 					if (m_HierarchyPanel->IsFocused())
 					{
-						m_CameraController.LookAt(transformComp->GetWorldPosition(), transformComp->scale.x); // TODO: get the bounds of the object and offset the camera by that amount
+						FrameSelectedEntity();
 						m_HierarchyPanel->HasFocused();
 					}
 
@@ -1419,7 +1419,11 @@ void ViewportPanel::HandleKeyboardInputs()
 			m_Operation = OperationMode::Scale;
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_T))
 			m_Operation = OperationMode::Universal;
+		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGuiKey_F) && SceneManager::GetSceneState() != SceneState::Play)
+			FrameSelectedEntity();
 	}
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 BoundingBox ViewportPanel::GetLocalBounds(Entity entity) const
@@ -1444,4 +1448,28 @@ BoundingBox ViewportPanel::GetLocalBounds(Entity entity) const
 
 	return BoundingBox(Vector3f(), Vector3f());
 }
+
+void ViewportPanel::FrameSelectedEntity()
+{
+	Entity entity = m_HierarchyPanel->GetSelectedEntity();
+	if (!entity.IsSceneValid())
+		return;
+
+	const TransformComponent* transformComp = entity.TryGetComponent<TransformComponent>();
+	if (!transformComp)
+		return;
+
+	BoundingBox localBounds = GetLocalBounds(entity);
+	Vector3f min = localBounds.Min();
+	Vector3f max = localBounds.Max();
+
+	// Enclose all eight transformed corners, so rotation and scale are accounted for
+	BoundingBox worldBounds;
+	for (int corner = 0; corner < 8; ++corner)
+	{
+		Vector3f point((corner & 1) ? max.x : min.x, (corner & 2) ? max.y : min.y, (corner & 4) ? max.z : min.z);
+		worldBounds.Merge(transformComp->GetWorldMatrix() * point);
+	}
+
+	m_CameraController.Frame(worldBounds);
 }

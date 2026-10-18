@@ -63,6 +63,8 @@ private:
 
 	// Bounds of what the entity draws, in its own space before its transform
 	BoundingBox GetLocalBounds(Entity entity) const;
+	void FrameSelectedEntity();
+
 private:
 	bool* m_Show;
 	bool m_WindowHovered = false;
