@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Renderer/Camera.h"
+#include "Core/BoundingBox.h"
 #include "math/Quaternion.h"
 
 // Axis aligned views for the view menus, pitch and yaw in radians
@@ -43,7 +44,8 @@ public:
 
 	void SwitchCamera(bool is3D);
 
-	void LookAt(Vector3f focalPoint, float distance);
+	// Centre on the bounds and pull back, or zoom out in 2D, until they fit in view
+	void Frame(const BoundingBox& bounds);
 
 	// Rotate the 3D camera to face along the given angles, keeping the point it was looking at in view
 	void SetView(float pitch, float yaw);

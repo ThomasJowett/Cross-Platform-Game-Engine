@@ -172,14 +172,37 @@ void ViewportCameraController::SwitchCamera(bool is3D)
 	}
 }
 
-void ViewportCameraController::LookAt(Vector3f focalPoint, float distance)
+void ViewportCameraController::Frame(const BoundingBox& bounds)
 {
+	Vector3f centre = bounds.Center();
+	Vector3f halfSize = (bounds.Max() - bounds.Min()) * 0.5f;
+
 	if (m_Is3DCamera)
-		m_3DCameraPosition = focalPoint - (distance * m_Forward);
+	{
+		float radius = halfSize.Magnitude();
+		if (radius <= 0.0f)
+			radius = 0.5f;
+
+		float halfFovY = m_FovY * 0.5f;
+		float halfFovX = atanf(tanf(halfFovY) * m_AspectRatio);
+		float distance = radius / sinf(std::min(halfFovX, halfFovY));
+
+		// Keep the near plane from cutting into small objects
+		distance = std::max(distance, radius + m_PerspectiveNearDepth);
+
+		m_3DCameraPosition = centre - (distance * m_Forward);
+	}
 	else
 	{
-		m_2DCameraPosition = focalPoint;
-		m_2DCameraPosition.z = 0.0f;
+		m_2DCameraPosition = Vector3f(centre.x, centre.y, 0.0f);
+
+		float zoomLevel = std::max(halfSize.y, halfSize.x / m_AspectRatio) * 1.1f;
+		if (zoomLevel > 0.0f)
+		{
+			m_ZoomLevel = std::clamp(zoomLevel, 0.25f, 1000.0f);
+			m_2DCamera.SetProjection(-m_AspectRatio * m_ZoomLevel, m_AspectRatio * m_ZoomLevel, -m_ZoomLevel, m_ZoomLevel);
+			m_TranslationSpeed = m_ZoomLevel;
+		}
 	}
 }
 
