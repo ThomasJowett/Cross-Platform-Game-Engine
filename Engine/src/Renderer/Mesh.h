@@ -125,6 +125,8 @@ public:
 	uint32_t GetIndexCount() { return (uint32_t)m_Indices.size(); }
 private:
 	void CreateBuffers();
+	// Encloses every submesh's vertices in mesh space, after the submesh's transform
+	void CalculateBounds();
 
 	Ref<VertexBuffer> m_VertexBuffer;
 	Ref<IndexBuffer> m_IndexBuffer;

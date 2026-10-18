@@ -7,20 +7,17 @@
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, Ref<Material> material, const BufferLayout& layout)
 	:m_Vertices(vertices), m_Indices(indices), m_VertexLayout(layout)
 {
-	const float* v = (float*)m_Vertices.data();
-	// Generate the bounding box
-	int stride = layout.GetStride() / sizeof(float);
-	m_Bounds.EnclosePoints(v, (uint32_t)m_Vertices.size() / stride, stride);
-
 	Submesh submesh;
 	submesh.firstIndex = 0;
 	submesh.vertexOffset = 0;
 	submesh.indexCount = (uint32_t)indices.size();
-	submesh.boundingBox = m_Bounds;
 	submesh.materialIndex = 0;
 	submesh.localTransform = Matrix4x4();
 	submesh.transform = Matrix4x4();
 	m_Submeshes.push_back(submesh);
+
+	CalculateBounds();
+	m_Submeshes[0].boundingBox = m_Bounds;
 
 	m_Materials.push_back(material);
 
@@ -30,10 +27,8 @@ Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indi
 Mesh::Mesh(const std::vector<float>& vertices, const std::vector<uint32_t>& indices, const std::vector<Submesh>& submeshes, const std::vector<Ref<Material>>& materials, const BufferLayout& layout)
 	:m_Vertices(vertices), m_Indices(indices), m_Submeshes(submeshes), m_Materials(materials), m_VertexLayout(layout)
 {
-	int stride = layout.GetStride() / sizeof(float);
 	CreateBuffers();
-
-	m_Bounds.EnclosePoints(m_Vertices.data(), (uint32_t)m_Vertices.size() / stride, stride);
+	CalculateBounds();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -47,6 +42,35 @@ void Mesh::CreateBuffers()
 	m_VertexBuffer = VertexBuffer::Create(m_Vertices.data(), (uint32_t)(m_Vertices.size() * sizeof(float)));
 	m_VertexBuffer->SetLayout(m_VertexLayout);
 	m_IndexBuffer = IndexBuffer::Create(m_Indices.data(), (uint32_t)m_Indices.size());
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Mesh::CalculateBounds()
+{
+	uint32_t stride = m_VertexLayout.GetStride() / sizeof(float);
+	if (stride < 3)
+		return;
+
+	m_Bounds.Invalidate();
+
+	// Submeshes are drawn with their own transform, so their vertices are enclosed after it's applied
+	for (const Submesh& submesh : m_Submeshes)
+	{
+		uint32_t lastIndex = std::min(submesh.firstIndex + submesh.indexCount, (uint32_t)m_Indices.size());
+		for (uint32_t i = submesh.firstIndex; i < lastIndex; ++i)
+		{
+			size_t offset = (size_t)(m_Indices[i] + submesh.vertexOffset) * stride;
+			if (offset + 2 >= m_Vertices.size())
+				continue;
+
+			Vector3f position(m_Vertices[offset], m_Vertices[offset + 1], m_Vertices[offset + 2]);
+			m_Bounds.Merge(submesh.transform * position);
+		}
+	}
+
+	if (!m_Bounds.IsValid())
+		m_Bounds.EnclosePoints(m_Vertices.data(), (uint32_t)m_Vertices.size() / stride, stride);
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
