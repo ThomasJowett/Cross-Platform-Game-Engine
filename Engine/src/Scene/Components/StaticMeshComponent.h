@@ -15,7 +15,7 @@ struct StaticMeshComponent
 	StaticMeshComponent(Ref<StaticMesh> mesh)
 		:mesh(mesh) {}
 
-	void SetMesh(const Ref<StaticMesh> newMesh)
+	void SetMesh(const Ref<StaticMesh> newMesh, bool updateMaterialOverrides = true)
 	{
 		if (!newMesh)
 		{
@@ -27,7 +27,9 @@ struct StaticMeshComponent
 		if (mesh->GetMesh())
 		{
 			materialOverrides.resize(mesh->GetMesh()->GetSubmeshes().size());
-
+			if (!updateMaterialOverrides)
+				return;
+			
 			const auto& materials = mesh->GetMesh()->GetMaterials();
 
 			for (size_t i = 0; i < mesh->GetMesh()->GetSubmeshes().size(); ++i)
