@@ -750,6 +750,16 @@ void ViewportPanel::OnImGuiRender()
 				ImGui::EndMenu();
 			}
 
+			if (ImGui::BeginMenu("View", !m_Is2DMode))
+			{
+				for (const AxisView& view : s_AxisViews)
+				{
+					if (ImGui::MenuItem(view.name))
+						m_CameraController.SetView(view.pitch, view.yaw);
+				}
+				ImGui::EndMenu();
+			}
+
 			ImGui::EndMenuBar();
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
 		}
@@ -816,7 +826,9 @@ void ViewportPanel::OnImGuiRender()
 		m_RelativeMousePosition = { mouse_pos.x - window_pos.x, mouse_pos.y - window_pos.y };
 		if ((ImGui::IsMouseClicked(ImGuiMouseButton_Left) || ImGui::IsMouseClicked(ImGuiMouseButton_Right)))
 		{
-			m_MousePositionBeginClick = m_RelativeMousePosition;
+			// Clicks on a window overlapping the viewport start outside it, mouse look clears hover so counts as inside
+			bool clickedViewport = m_WindowHovered || m_CursorDisabled;
+			m_MousePositionBeginClick = clickedViewport ? m_RelativeMousePosition : Vector2f(-1.0f, -1.0f);
 		}
 
 		m_ViewportHovered = (m_WindowHovered
