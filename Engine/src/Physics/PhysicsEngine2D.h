@@ -23,7 +23,8 @@ public:
 	void RemoveOldContacts();
 	ContactListener2D* GetContactListener() { return m_ContactListener.get(); }
 
-	void InitializeEntity(Entity entity);
+	// Creates the bodies and joints for an entity and everything below it
+	void InitializeEntity(Entity root);
 	void DestroyEntity(Entity entity);
 	bool HasPhysicsComponents(Entity entity);
 	// Registry on_destroy handler for RigidBody2D, collider and tilemap components
@@ -38,6 +39,8 @@ public:
 
 
 private:
+	void InitializeBody(Entity entity);
+
 	// Declared before the world so it outlives it
 	Scope<b2DestructionListener> m_DestructionListener = nullptr;
 	Scope<b2World> m_Box2DWorld = nullptr;

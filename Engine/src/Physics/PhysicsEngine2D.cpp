@@ -86,6 +86,44 @@ static b2Body* FindBody(entt::registry& registry, entt::entity entity)
 	return nullptr;
 }
 
+// Worked out from the hierarchy, as the cached world matrix is only refreshed when the scene renders
+static Matrix4x4 ComputeWorldMatrix(entt::registry& registry, entt::entity entity)
+{
+	Matrix4x4 matrix = registry.get<TransformComponent>(entity).GetLocalMatrix();
+	HierarchyComponent* hierarchyComp = registry.try_get<HierarchyComponent>(entity);
+	while (hierarchyComp && hierarchyComp->parent != entt::null)
+	{
+		entt::entity parent = hierarchyComp->parent;
+		if (TransformComponent* parentTransformComp = registry.try_get<TransformComponent>(parent))
+			matrix = parentTransformComp->GetLocalMatrix() * matrix;
+		hierarchyComp = registry.try_get<HierarchyComponent>(parent);
+	}
+	return matrix;
+}
+
+struct Pose2D
+{
+	Vector3f position;
+	float angle;
+	Vector2f scale;
+};
+
+// A mirrored transform keeps its flip on x rather than turning half way
+static Pose2D GetWorldPose(entt::registry& registry, entt::entity entity)
+{
+	Matrix4x4 world = ComputeWorldMatrix(registry, entity);
+	float a = world(0, 0), b = world(1, 0), c = world(0, 1), d = world(1, 1);
+	float scaleX = std::sqrt(a * a + b * b);
+	float scaleY = std::sqrt(c * c + d * d);
+	float angle = std::atan2(b, a);
+	if (a * d - b * c < 0.0f)
+	{
+		scaleX = -scaleX;
+		angle = std::atan2(-b, -a);
+	}
+	return { world.ExtractTranslation(), angle, Vector2f(scaleX, scaleY) };
+}
+
 // Forget an entity's destroyed body and its fixtures
 static void ClearBodyPointers(entt::registry& registry, entt::entity entity)
 {
@@ -151,24 +189,23 @@ PhysicsEngine2D::PhysicsEngine2D(const Vector2f& gravity, Scene* scene)
 
 	m_WorldBody = m_Box2DWorld->CreateBody(&worldBodyDef);
 
-	m_Scene->GetRegistry().view<TransformComponent>(entt::exclude<HierarchyComponent>).each(
-		[this](const auto physicsEntity, auto& transformComp)
-		{
-			InitializeEntity({ physicsEntity, m_Scene });
-		});
-
 	auto& registry = m_Scene->GetRegistry();
 
-	auto view = registry.view<TransformComponent, HierarchyComponent>();
+	// Collected first, as initialising unparents rigid bodies
+	std::vector<entt::entity> roots;
+	for (auto entityHandle : registry.view<TransformComponent>(entt::exclude<HierarchyComponent>))
+		roots.push_back(entityHandle);
 
+	auto view = registry.view<TransformComponent, HierarchyComponent>();
 	for (auto entityHandle : view)
 	{
 		auto& hierarchyComp = view.get<HierarchyComponent>(entityHandle);
 		if (hierarchyComp.parent == entt::null && hierarchyComp.isActive)
-		{
-			InitializeEntity({ entityHandle, m_Scene });
-		}
+			roots.push_back(entityHandle);
 	}
+
+	for (entt::entity root : roots)
+		InitializeEntity({ root, m_Scene });
 }
 
 PhysicsEngine2D::~PhysicsEngine2D()
@@ -246,33 +283,43 @@ void PhysicsEngine2D::RemoveOldContacts()
 	m_ContactListener->RemoveOld();
 }
 
-void PhysicsEngine2D::InitializeEntity(Entity entity)
+void PhysicsEngine2D::InitializeEntity(Entity root)
 {
 	PROFILE_FUNCTION();
+	// Collected first, as initialising unparents rigid bodies
+	std::vector<Entity> entities = { root };
+	for (size_t i = 0; i < entities.size(); ++i)
+	{
+		std::vector<Entity> children = SceneGraph::GetChildren(entities[i]);
+		entities.insert(entities.end(), children.begin(), children.end());
+	}
+
+	for (Entity& entity : entities)
+		InitializeBody(entity);
+}
+
+void PhysicsEngine2D::InitializeBody(Entity entity)
+{
+	PROFILE_FUNCTION();
+	entt::registry& registry = m_Scene->GetRegistry();
+	if (!entity.HasComponent<TransformComponent>() || FindBody(registry, entity.GetHandle()))
+		return;
+
 	b2Body* body = nullptr;
 	TransformComponent& transformComp = entity.GetComponent<TransformComponent>();
 
 	HierarchyComponent* hierarchyComp = entity.TryGetComponent<HierarchyComponent>();
+	const entt::entity parent = hierarchyComp ? hierarchyComp->parent : entt::null;
 
-	entt::entity parent = entt::null;
-	entt::entity firstChild = entt::null;
-	entt::entity nextSibling = entt::null;
-
-	if (hierarchyComp && hierarchyComp->parent != entt::null)
+	// Rigid bodies leave the scene graph so physics can move them, keeping their place in the world
+	if (parent != entt::null && entity.HasComponent<RigidBody2DComponent>())
 	{
-		parent = hierarchyComp->parent;
-		firstChild = hierarchyComp->firstChild;
-		nextSibling = hierarchyComp->nextSibling;
-		Vector3f position;
-		Vector3f rotation;
-		Vector3f scale;
-		Matrix4x4 transform = transformComp.GetWorldMatrix();
-
-		transformComp.GetWorldMatrix().Decompose(position, rotation, scale);
+		Pose2D pose = GetWorldPose(registry, entity.GetHandle());
 		SceneGraph::Unparent(entity);
-		transformComp.position = position;
-		transformComp.rotation = rotation;
-		transformComp.scale = scale;
+		transformComp.position = pose.position;
+		transformComp.rotation.z = pose.angle;
+		transformComp.scale.x = pose.scale.x;
+		transformComp.scale.y = pose.scale.y;
 	}
 
 	if (RigidBody2DComponent* rigidBodyComp = entity.TryGetComponent<RigidBody2DComponent>())
@@ -296,6 +343,12 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 	}
 	else if (entity.HasComponent<COLLIDER_COMPONENTS>())
 	{
+		if (parent != entt::null)
+		{
+			ENGINE_WARN("{0} has a collider but no Rigid Body 2D, so it has no physics body while it has a parent", entity.GetName());
+			return;
+		}
+
 		b2BodyDef bodyDef;
 		bodyDef.type = b2BodyType::b2_kinematicBody;
 		bodyDef.position = b2Vec2(transformComp.position.x, transformComp.position.y);
@@ -416,14 +469,14 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			topShape.m_radius = scaledRadius;
 			topShape.m_p.Set(capsuleColliderComp.offset.x, capsuleColliderComp.offset.y + halfHeight - scaledRadius);
 
-			b2FixtureDef topCirclefixtureDef;
-			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
-			topCirclefixtureDef.shape = &topShape;
-			topCirclefixtureDef.isSensor = capsuleColliderComp.isTrigger;
-			SetCollisionFilter(topCirclefixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
+			b2FixtureDef topCircleFixtureDef;
+			topCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+			topCircleFixtureDef.shape = &topShape;
+			topCircleFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+			SetCollisionFilter(topCircleFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
 
-			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
-			b2Fixture* fixture = body->CreateFixture(&topCirclefixtureDef);
+			SetPhysicsMaterial(topCircleFixtureDef, capsuleColliderComp.physicsMaterial);
+			b2Fixture* fixture = body->CreateFixture(&topCircleFixtureDef);
 
 			if (luaScriptComponent)
 				luaScriptComponent->m_Fixtures.push_back(fixture);
@@ -473,14 +526,14 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 			topShape.m_radius = scaledRadius;
 			topShape.m_p.Set(capsuleColliderComp.offset.x + halfHeight - scaledRadius, capsuleColliderComp.offset.y);
 
-			b2FixtureDef topCirclefixtureDef;
-			topCirclefixtureDef.shape = &topShape;
-			topCirclefixtureDef.isSensor = capsuleColliderComp.isTrigger;
-			SetCollisionFilter(topCirclefixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
-			topCirclefixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
+			b2FixtureDef topCircleFixtureDef;
+			topCircleFixtureDef.shape = &topShape;
+			topCircleFixtureDef.isSensor = capsuleColliderComp.isTrigger;
+			SetCollisionFilter(topCircleFixtureDef, capsuleColliderComp.layer, capsuleColliderComp.mask);
+			topCircleFixtureDef.userData.pointer = (uintptr_t)entity.GetHandle();
 
-			SetPhysicsMaterial(topCirclefixtureDef, capsuleColliderComp.physicsMaterial);
-			b2Fixture* fixture = body->CreateFixture(&topCirclefixtureDef);
+			SetPhysicsMaterial(topCircleFixtureDef, capsuleColliderComp.physicsMaterial);
+			b2Fixture* fixture = body->CreateFixture(&topCircleFixtureDef);
 
 			if (luaScriptComponent)
 				luaScriptComponent->m_Fixtures.push_back(fixture);
@@ -678,18 +731,6 @@ void PhysicsEngine2D::InitializeEntity(Entity entity)
 		jointDef.stiffness = weldJointComp->stiffness;
 		jointDef.userData.pointer = (uintptr_t)entity.GetHandle();
 		weldJointComp->joint = (b2WeldJoint*)m_Box2DWorld->CreateJoint(&jointDef);
-	}
-
-	// Initialize the first child
-	if (firstChild != entt::null)
-	{
-		InitializeEntity({ firstChild, m_Scene });
-	}
-
-	// Initialize the next sibling
-	if (nextSibling != entt::null)
-	{
-		InitializeEntity({ nextSibling, m_Scene });
 	}
 }
 

@@ -31,8 +31,9 @@ Saved as a `<RigidBody2D>` element inside the entity's `<Entity>` element. Attri
 | `LinearDamping` | attribute | float | `0` |
 
 `FixedRotation`, `GravityScale` and both damping values only affect Dynamic bodies. Entities
-with a rigid body are detached from their parent when the game starts, so physics can move
-them freely.
+with a rigid body are detached from their parent when the game starts or they are spawned,
+keeping their place in the world, so physics can move them freely. Their children stay
+attached and move with them.
 
 ```lua
 function OnFixedUpdate()
