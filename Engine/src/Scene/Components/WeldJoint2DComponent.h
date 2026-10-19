@@ -3,6 +3,7 @@
 #include "cereal/cereal.hpp"
 
 #include "math/Vector2f.h"
+#include "Physics/RuntimePointer.h"
 #include "Scripting/Lua/LuaBindings.h"
 
 class b2Body;
@@ -17,10 +18,10 @@ struct WeldJoint2DComponent
 	entt::entity entityA;
 	entt::entity entityB;
 
-	b2Body* bodyA;
-	b2Body* bodyB;
+	b2Body* bodyA = nullptr;
+	b2Body* bodyB = nullptr;
 
-	b2WeldJoint* joint = nullptr;
+	RuntimePointer<b2WeldJoint> joint;
 	REFLECT_LUA_BEGIN(WeldJoint2DComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("CollideConnected", "Whether the two welded bodies can still collide with each other", "boolean",
 			([](Self& c) { return c.collideConnected; }),

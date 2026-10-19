@@ -10,6 +10,7 @@
 #include <vector>
 #include "Scripting/Lua/LuaBindings.h"
 #include "Physics/CollisionLayers.h"
+#include "Physics/RuntimePointer.h"
 
 class b2Body;
 
@@ -31,10 +32,9 @@ struct PolygonCollider2DComponent
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	b2Body* runtimeBody = nullptr;
+	RuntimePointer<b2Body> runtimeBody;
 
 	PolygonCollider2DComponent() = default;
-	PolygonCollider2DComponent(const PolygonCollider2DComponent&) = default;
 	REFLECT_LUA_BEGIN(PolygonCollider2DComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vec2",
 			([](Self& c) -> Vector2f& { return c.offset; }),

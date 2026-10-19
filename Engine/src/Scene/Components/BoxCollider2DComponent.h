@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cereal/cereal.hpp"
+#include "Physics/RuntimePointer.h"
 
 #include "math/Vector2f.h"
 #include "Asset/PhysicsMaterial.h"
@@ -23,10 +24,9 @@ struct BoxCollider2DComponent
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	b2Body* runtimeBody = nullptr;
+	RuntimePointer<b2Body> runtimeBody;
 
 	BoxCollider2DComponent() = default;
-	BoxCollider2DComponent(const BoxCollider2DComponent&) = default;
 	REFLECT_LUA_BEGIN(BoxCollider2DComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vec2",
 			([](Self& c) -> Vector2f& { return c.offset; }),

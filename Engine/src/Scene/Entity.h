@@ -43,6 +43,17 @@ public:
 		return m_Scene->m_Registry.emplace_or_replace<T>(m_EntityHandle, std::forward<Args>(args)...);
 	}
 
+	// Add a copy of a component, or copy-assign it onto the existing one so that keeps its runtime state
+	template<typename T>
+	T& AssignComponent(const T& component)
+	{
+		m_Scene->MakeDirty();
+		entt::registry& registry = m_Scene->m_Registry;
+		if (!registry.all_of<T>(m_EntityHandle))
+			return registry.emplace<T>(m_EntityHandle, component);
+		return registry.patch<T>(m_EntityHandle, [&component](T& existing) { existing = component; });
+	}
+
 	void AddChild(Entity child);
 
 	void Destroy();

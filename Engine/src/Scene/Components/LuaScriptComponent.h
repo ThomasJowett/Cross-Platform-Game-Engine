@@ -18,8 +18,9 @@ struct LuaScriptComponent
 {
 	LuaScriptComponent() = default;
 	LuaScriptComponent(const std::filesystem::path& filepath);
-	LuaScriptComponent(const LuaScriptComponent&) = default;
-	LuaScriptComponent& operator=(const LuaScriptComponent&) = default;
+	// Copies carry only the script; Create() sets up a Lua environment for the copy's own entity
+	LuaScriptComponent(const LuaScriptComponent& other);
+	LuaScriptComponent& operator=(const LuaScriptComponent& other);
 	// Moves leave the source without a Lua environment, so destroying it doesn't call OnDestroy
 	LuaScriptComponent(LuaScriptComponent&&) = default;
 	LuaScriptComponent& operator=(LuaScriptComponent&&) = default;
@@ -30,6 +31,9 @@ struct LuaScriptComponent
 	bool created = false;
 
 	bool ParseScript(Entity entity);
+
+	// Calls OnCreate once, parsing the script first if this component has no Lua environment
+	void Create(Entity entity);
 
 	void OnCreate();
 	void OnDestroy();
@@ -89,4 +93,5 @@ private:
 	Ref<Lua::CoroutineScheduler> m_Coroutines;
 
 	void UpdateCoroutines(float deltaTime, bool fixedStep);
+	void ResetEnvironment();
 };

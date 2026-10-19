@@ -84,7 +84,7 @@ public:
 	}
 	virtual void Redo() override
 	{
-		m_Entity.AddOrReplaceComponent<T>(m_NewComponent);
+		m_Entity.AssignComponent<T>(m_NewComponent);
 	}
 	virtual void End() override
 	{
@@ -108,7 +108,7 @@ public:
 	// Inherited via HistoryRecord
 	virtual void Undo() override
 	{
-		m_Entity.AddOrReplaceComponent<T>(m_RemovedComponent);
+		m_Entity.AssignComponent<T>(m_RemovedComponent);
 	}
 	virtual void Redo() override
 	{
@@ -145,10 +145,10 @@ public:
 
 	void Undo() {
 		// Replace the new entity with the old
-		m_Entity.AddOrReplaceComponent<T>(m_OldComponent);
+		m_Entity.AssignComponent<T>(m_OldComponent);
 	}
 
 	void Redo() {
-		m_Entity.AddOrReplaceComponent<T>(m_NewComponent);
+		m_Entity.AssignComponent<T>(m_NewComponent);
 	}
 };

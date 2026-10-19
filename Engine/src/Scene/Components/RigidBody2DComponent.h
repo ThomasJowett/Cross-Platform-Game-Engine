@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cereal/cereal.hpp"
+#include "Physics/RuntimePointer.h"
 #include "Scripting/Lua/LuaBindings.h"
 
 class b2Body;
@@ -22,10 +23,9 @@ struct RigidBody2DComponent
 	float angularDamping = 0.0f;
 	float linearDamping = 0.0f;
 
-	b2Body* runtimeBody = nullptr;
+	RuntimePointer<b2Body> runtimeBody;
 
 	RigidBody2DComponent() = default;
-	RigidBody2DComponent(const RigidBody2DComponent&) = default;
 	RigidBody2DComponent(BodyType type, bool fixedRotation)
 		:type(type), fixedRotation(fixedRotation) {}
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "cereal/cereal.hpp"
+#include "Physics/RuntimePointer.h"
 
 #include "math/Vector2f.h"
 
@@ -29,10 +30,9 @@ struct CapsuleCollider2DComponent
 
 	Ref<PhysicsMaterial> physicsMaterial;
 
-	b2Body* runtimeBody = nullptr;
+	RuntimePointer<b2Body> runtimeBody;
 
 	CapsuleCollider2DComponent() = default;
-	CapsuleCollider2DComponent(const CapsuleCollider2DComponent&) = default;
 	REFLECT_LUA_BEGIN(CapsuleCollider2DComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("Offset", "Offset of the shape from the entity's position", "Vec2",
 			([](Self& c) -> Vector2f& { return c.offset; }),

@@ -13,12 +13,63 @@ LuaScriptComponent::LuaScriptComponent(const std::filesystem::path& filepath)
 	script = AssetManager::GetAsset<LuaScript>(filepath);
 }
 
+LuaScriptComponent::LuaScriptComponent(const LuaScriptComponent& other)
+	: script(other.script)
+{
+}
+
+LuaScriptComponent& LuaScriptComponent::operator=(const LuaScriptComponent& other)
+{
+	// Same script: keep the running environment
+	if (this != &other && script != other.script)
+	{
+		ResetEnvironment();
+		script = other.script;
+	}
+	return *this;
+}
+
 LuaScriptComponent::~LuaScriptComponent()
 {
 	if (m_SolEnvironment && LuaManager::IsValid())
 	{
 		OnDestroy();
 	}
+}
+
+void LuaScriptComponent::ResetEnvironment()
+{
+	if (m_SolEnvironment && LuaManager::IsValid())
+		OnDestroy();
+
+	m_SolEnvironment.reset();
+	m_OnCreateFunc.reset();
+	m_OnDestroyFunc.reset();
+	m_OnUpdateFunc.reset();
+	m_OnFixedUpdateFunc.reset();
+	m_OnDebugRenderFunc.reset();
+	m_OnBeginContactFunc.reset();
+	m_OnEndContactFunc.reset();
+	m_OnPressedFunc.reset();
+	m_OnReleasedFunc.reset();
+	m_OnHoveredFunc.reset();
+	m_OnUnHoveredFunc.reset();
+	m_OnInputActionFunc.reset();
+	m_Coroutines.reset();
+	created = false;
+}
+
+void LuaScriptComponent::Create(Entity entity)
+{
+	if (created)
+		return;
+	created = true;
+
+	// A failed parse still leaves an environment, so a broken script isn't parsed again every frame
+	if (!m_SolEnvironment && script && !ParseScript(entity))
+		return;
+
+	OnCreate();
 }
 
 bool LuaScriptComponent::ParseScript(Entity entity)

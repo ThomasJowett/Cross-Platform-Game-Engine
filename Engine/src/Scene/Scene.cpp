@@ -630,13 +630,9 @@ void Scene::OnUpdate(float deltaTime)
 				animatedSpriteComp.Animate(deltaTime);
 		});
 
-	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& luaScriptComp)
+	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([this, deltaTime](auto entity, auto& luaScriptComp)
 		{
-			if (!luaScriptComp.created)
-			{
-				luaScriptComp.OnCreate();
-				luaScriptComp.created = true;
-			}
+			luaScriptComp.Create(Entity{ entity, this });
 			luaScriptComp.OnUpdate(deltaTime);
 
 			for (const InputActionEvent& inputActionEvent : InputActionSystem::GetPendingEvents())
@@ -738,11 +734,7 @@ void Scene::OnFixedUpdate()
 
 	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([=](auto entity, auto& luaScriptComp)
 		{
-			if (!luaScriptComp.created)
-			{
-				luaScriptComp.OnCreate();
-				luaScriptComp.created = true;
-			}
+			luaScriptComp.Create(Entity{ entity, this });
 			luaScriptComp.OnFixedUpdate();
 			if (luaScriptComp.IsContactListener() && !m_PhysicsEngine2D->GetContactListener()->m_Contacts.empty())
 			{
