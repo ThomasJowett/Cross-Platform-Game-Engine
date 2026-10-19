@@ -65,6 +65,7 @@ void AudioView::OnAttach()
 	ma_uint64 frameCount = 0;
 	if (ma_decoder_get_length_in_pcm_frames(&decoder, &frameCount) != MA_SUCCESS) {
 		ENGINE_ERROR("Failed to get frame count for audio file: {0}", m_Filepath);
+		free(buffer);
 		return;
 	}
 
