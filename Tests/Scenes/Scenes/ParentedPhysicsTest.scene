@@ -1,0 +1,95 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="0"/>
+    <Entity Name="Title" ID="7100-7101">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Parented physics: rigid bodies leave the scene graph in place; nothing else does. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Controller" ID="7102-7103">
+        <Transform>
+            <Position X="0" Y="-50" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/Physics/ParentedPhysics.lua"/>
+    </Entity>
+    <Entity Name="Group" ID="7112-7113">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Entity Name="Child Body" ID="7106-7107">
+            <Transform>
+                <Position X="2" Y="0" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="1" Y="1" Z="1"/>
+            </Transform>
+            <Sprite TilingFactor="1">
+                <Tint R="1" G="1" B="1" A="1"/>
+            </Sprite>
+            <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+            <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+                <Offset X="0" Y="0"/>
+                <Size X="0.5" Y="0.5"/>
+            </BoxCollider2D>
+            <Entity Name="Body Hat" ID="7104-7105">
+                <Transform>
+                    <Position X="0" Y="1" Z="0"/>
+                    <Rotation X="0" Y="0" Z="0"/>
+                    <Scale X="1" Y="1" Z="1"/>
+                </Transform>
+                <Sprite TilingFactor="1">
+                    <Tint R="1" G="1" B="1" A="1"/>
+                </Sprite>
+            </Entity>
+        </Entity>
+        <Entity Name="Sibling Body" ID="7108-7109">
+            <Transform>
+                <Position X="6" Y="0" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="1" Y="1" Z="1"/>
+            </Transform>
+            <Sprite TilingFactor="1">
+                <Tint R="1" G="1" B="1" A="1"/>
+            </Sprite>
+            <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+            <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+                <Offset X="0" Y="0"/>
+                <Size X="0.5" Y="0.5"/>
+            </BoxCollider2D>
+        </Entity>
+        <Entity Name="Sibling Sprite" ID="7110-7111">
+            <Transform>
+                <Position X="8" Y="0" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="1" Y="1" Z="1"/>
+            </Transform>
+            <Sprite TilingFactor="1">
+                <Tint R="1" G="1" B="1" A="1"/>
+            </Sprite>
+        </Entity>
+    </Entity>
+    <Entity Name="Flipped" ID="7116-7117">
+        <Transform>
+            <Position X="20" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="-1" Y="1" Z="1"/>
+        </Transform>
+        <Entity Name="Flipped Body" ID="7114-7115">
+            <Transform>
+                <Position X="2" Y="0" Z="0"/>
+                <Rotation X="0" Y="0" Z="0"/>
+                <Scale X="1" Y="1" Z="1"/>
+            </Transform>
+            <RigidBody2D BodyType="0" FixedRotation="true" GravityScale="0" AngularDamping="0" LinearDamping="0"/>
+            <BoxCollider2D IsTrigger="false" Layer="1" Mask="65535">
+                <Offset X="0" Y="0"/>
+                <Size X="0.5" Y="0.5"/>
+            </BoxCollider2D>
+        </Entity>
+    </Entity>
+</Scene>
