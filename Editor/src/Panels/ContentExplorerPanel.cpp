@@ -20,6 +20,7 @@
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/ExternalEditor.h"
 
 #include "Importers/ImportManager.h"
 
@@ -702,6 +703,22 @@ void ContentExplorerPanel::ItemContextMenu(size_t index, bool isDirectory, const
 			}
 		}
 
+		if (!isDirectory)
+		{
+			switch (ViewerManager::GetFileType(m_CurrentSelectedPath))
+			{
+			case FileType::SCRIPT:
+			case FileType::TEXT:
+			case FileType::IMAGE:
+			case FileType::AUDIO:
+			case FileType::FONT:
+				ExternalEditor::MenuItem(m_CurrentSelectedPath);
+				break;
+			default:
+				break;
+			}
+		}
+
 		if (ImGui::Selectable("Rename") && m_NumberSelected == 1)
 		{
 			m_Renaming = true;
@@ -1279,7 +1296,25 @@ void ContentExplorerPanel::OnImGuiRender()
 			{
 			case ContentExplorerPanel::ZoomLevel::List:
 			{
-				CalculateBrowsingDataTableSizes(ImGui::GetWindowSize());
+				if (!ImGui::BeginChild("List View"))
+				{
+					ImGui::EndChild();
+					break;
+				}
+
+				if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(4))
+				{
+					if (m_History.GoForward())
+						m_ForceRescan = true;
+				}
+
+				if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(3))
+				{
+					if (m_History.GoBack())
+						m_ForceRescan = true;
+				}
+
+				CalculateBrowsingDataTableSizes(ImGui::GetContentRegionAvail());
 				ImGui::Columns(m_NumBrowsingColumns);
 				int cntEntries = 0;
 				//Directories -------------------------------------------------------------------------------
@@ -1432,6 +1467,16 @@ void ContentExplorerPanel::OnImGuiRender()
 					}
 					ImGui::PopID();
 				}
+				ImGui::Columns(1);
+
+				if (ImGui::BeginPopupContextWindow("Right click menu",
+					ImGuiPopupFlags_NoOpenOverExistingPopup | ImGuiPopupFlags_MouseButtonRight))
+				{
+					RightClickMenu();
+					ImGui::EndPopup();
+				}
+
+				ImGui::EndChild();
 				break;
 			}
 			case ContentExplorerPanel::ZoomLevel::Thumbnails:
