@@ -862,6 +862,7 @@ void ContentExplorerPanel::OnEvent(Event& event)
 
 void ContentExplorerPanel::OnUpdate(float deltaTime)
 {
+	m_Thumbnails.Update();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
@@ -927,8 +928,10 @@ void ContentExplorerPanel::OnImGuiRender()
 		m_LastSelectedFile = -1;
 		m_LastSelectedDir = -1;
 
-		if (m_TextureLibrary.Size() > 100)
-			m_TextureLibrary.Clear();
+		m_Thumbnails.CancelPending();
+		m_Thumbnails.RemoveStale();
+		if (m_Thumbnails.Size() > 100)
+			m_Thumbnails.Clear();
 	}
 
 	ImGui::SetNextWindowSize(ImVec2(640, 700), ImGuiCond_FirstUseEver);
@@ -1520,12 +1523,16 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::PushID((int)i);
 						ImGui::PushFont(Fonts::Icons);
 
-						// try to get the image to display the thumbnail
-						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE)
+						// only request thumbnails for images that are on screen, show the file icon until loaded
+						const ThumbnailCache::Thumbnail* thumbnail = nullptr;
+						if (ViewerManager::GetFileType(m_Files[i]) == FileType::IMAGE && ImGui::IsRectVisible({ thumbnailSize, thumbnailSize }))
+							thumbnail = m_Thumbnails.Get(m_Files[i]);
+
+						if (thumbnail)
 						{
-							Ref<Texture2D> icon = m_TextureLibrary.Load(m_Files[i], nullptr);
-							uint32_t textureHeight = icon->GetHeight();
-							uint32_t textureWidth = icon->GetWidth();
+							Ref<Texture2D> icon = thumbnail->texture;
+							uint32_t textureHeight = thumbnail->sourceHeight;
+							uint32_t textureWidth = thumbnail->sourceWidth;
 
 							if (textureHeight == textureWidth)
 							{

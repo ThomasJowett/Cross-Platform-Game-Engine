@@ -7,8 +7,8 @@
 #include "FileSystem/Directory.h"
 #include "Utilities/FileWatcher.h"
 #include "Interfaces/ICopyable.h"
-#include "Asset/Texture.h"
 #include "Viewers/ViewerManager.h"
+#include "FileSystem/ThumbnailCache.h"
 
 #include "imgui/imgui.h"
 
@@ -186,7 +186,7 @@ private:
 private:
 	bool* m_Show;
 
-	TextureLibrary2D m_TextureLibrary;
+	ThumbnailCache m_Thumbnails{ 256 };
 
 	std::vector<std::filesystem::path> m_Dirs, m_Files;
 	std::filesystem::path m_CurrentPath;
