@@ -63,6 +63,7 @@ void ViewportPanel::OnAttach()
 	Settings::SetDefaultBool("Viewport", "ShowCollision", false);
 	Settings::SetDefaultBool("Viewport", "ShowFps", true);
 	Settings::SetDefaultBool("Viewport", "ShowStats", false);
+	Settings::SetDefaultBool("Viewport", "ShowBoundingBoxes", false);
 	Settings::SetDefaultBool("Viewport", "ShowGrid", false);
 	Settings::SetDefaultBool("Viewport", "ShowShadows", true);
 	Settings::SetDefaultBool("Viewport", "ShowLighting", true);
@@ -72,6 +73,7 @@ void ViewportPanel::OnAttach()
 	m_ShowCollision = Settings::GetBool("Viewport", "ShowCollision");
 	m_ShowFrameRate = Settings::GetBool("Viewport", "ShowFps");
 	m_ShowStats = Settings::GetBool("Viewport", "ShowStats");
+	m_ShowBoundingBoxes = Settings::GetBool("Viewport", "ShowBoundingBoxes");
 	m_ShowGrid = Settings::GetBool("Viewport", "ShowGrid");
 	m_ShowShadows = Settings::GetBool("Viewport", "ShowShadows");
 	m_ShowLighting = Settings::GetBool("Viewport", "ShowLighting");
@@ -85,6 +87,7 @@ void ViewportPanel::OnDetach()
 	Settings::SetBool("Viewport", "ShowCollision", m_ShowCollision);
 	Settings::SetBool("Viewport", "ShowFps", m_ShowFrameRate);
 	Settings::SetBool("Viewport", "ShowStats", m_ShowStats);
+	Settings::SetBool("Viewport", "ShowBoundingBoxes", m_ShowBoundingBoxes);
 	Settings::SetBool("Viewport", "ShowGrid", m_ShowGrid);
 	Settings::SetBool("Viewport", "ShowShadows", m_ShowShadows);
 	Settings::SetBool("Viewport", "ShowLighting", m_ShowLighting);
@@ -544,6 +547,9 @@ void ViewportPanel::OnUpdate(float deltaTime)
 					* Matrix4x4::RotateY((float)PIDIV2) * scale, 60, pointLightComp.colour, (int)entity);
 			});
 
+		if (m_ShowBoundingBoxes)
+			DrawBoundingBoxes();
+
 		Renderer2D::FlushHairLines();
 
 		if (m_ShowGrid)
@@ -742,6 +748,7 @@ void ViewportPanel::OnImGuiRender()
 					SceneManager::CurrentScene()->SetShowDebug(m_ShowCollision);
 				ImGui::MenuItem("FPS", "", &m_ShowFrameRate);
 				ImGui::MenuItem("Statistics", "", &m_ShowStats);
+				ImGui::MenuItem("Bounding Boxes", "", &m_ShowBoundingBoxes);
 				ImGui::MenuItem("Grid", "", &m_ShowGrid);
 				ImGui::MenuItem("Shadows", "", &m_ShowShadows, false);
 				ImGui::MenuItem("Lighting", "", &m_ShowLighting, false);
@@ -1449,6 +1456,52 @@ BoundingBox ViewportPanel::GetLocalBounds(Entity entity) const
 	}
 
 	return BoundingBox(Vector3f(), Vector3f());
+}
+
+static void DrawBox(const BoundingBox& box, const Matrix4x4& transform, const Colour& colour, int entityId)
+{
+	if (!box.IsValid())
+		return;
+
+	Vector3f min = box.Min();
+	Vector3f max = box.Max();
+
+	// Bit 0, 1 and 2 of a corner's index pick max over min for x, y and z
+	Vector3f corners[8];
+	for (int i = 0; i < 8; ++i)
+		corners[i] = transform * Vector3f((i & 1) ? max.x : min.x, (i & 2) ? max.y : min.y, (i & 4) ? max.z : min.z);
+
+	// Each edge joins two corners that differ in exactly one bit
+	for (int i = 0; i < 8; ++i)
+	{
+		for (int bit : { 1, 2, 4 })
+		{
+			if (!(i & bit))
+				Renderer2D::DrawHairLine(corners[i], corners[i | bit], colour, entityId);
+		}
+	}
+}
+
+void ViewportPanel::DrawBoundingBoxes()
+{
+	const Colour boxColour = Colours::YELLOW;
+	Scene* scene = SceneManager::CurrentScene();
+
+	scene->GetRegistry().view<TransformComponent>().each([this, scene, &boxColour](const auto entityHandle, auto& transformComp)
+		{
+			Entity entity(entityHandle, scene);
+			const Matrix4x4& transform = transformComp.GetWorldMatrix();
+
+			if (auto staticMeshComp = entity.TryGetComponent<StaticMeshComponent>(); staticMeshComp && staticMeshComp->mesh && staticMeshComp->mesh->GetMesh())
+			{
+				for (const Submesh& submesh : staticMeshComp->mesh->GetMesh()->GetSubmeshes())
+					DrawBox(submesh.boundingBox, transform * submesh.transform, boxColour, (int)entityHandle);
+			}
+			else if (entity.HasComponent<PrimitiveComponent, TilemapComponent, SpriteComponent, AnimatedSpriteComponent, CircleRendererComponent>())
+			{
+				DrawBox(GetLocalBounds(entity), transform, boxColour, (int)entityHandle);
+			}
+		});
 }
 
 void ViewportPanel::FrameSelectedEntity()

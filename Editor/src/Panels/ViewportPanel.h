@@ -64,6 +64,8 @@ private:
 	// Bounds of what the entity draws, in its own space before its transform
 	BoundingBox GetLocalBounds(Entity entity) const;
 	void FrameSelectedEntity();
+	// What frustum culling tests: one box per submesh for static meshes, otherwise one per entity
+	void DrawBoundingBoxes();
 
 private:
 	bool* m_Show;
@@ -88,6 +90,7 @@ private:
 	bool m_ShowFrameRate = true;
 	bool m_ShowGrid = false;
 	bool m_ShowStats = false;
+	bool m_ShowBoundingBoxes = false;
 	bool m_ShowShadows = true;
 	bool m_ShowLighting = true;
 	bool m_ShowReflections = true;
