@@ -14,6 +14,7 @@
 #include "Core/KeyCodes.h"
 #include "Renderer/Renderer2D.h"
 #include "Renderer/Renderer.h"
+#include "Core/Frustum.h"
 #include "Renderer/RenderCommand.h"
 #include "Utilities/MathUtils.h"
 #include "Scene/Components.h"
@@ -1271,14 +1272,15 @@ void ViewportPanel::OnImGuiRender()
 
 		if (m_ShowStats)
 		{
-			char statsLines[7][32];
+			char statsLines[8][32];
 			snprintf(statsLines[0], sizeof(statsLines[0]), "Draw Calls: %i", Renderer2D::GetStats().drawCalls + Renderer::GetStats().drawCalls);
 			snprintf(statsLines[1], sizeof(statsLines[1]), "Quad Count: %i", Renderer2D::GetStats().quadCount);
 			snprintf(statsLines[2], sizeof(statsLines[2]), "Culled Quads: %i", Renderer2D::GetStats().culledQuadCount);
 			snprintf(statsLines[3], sizeof(statsLines[3]), "Line Count: %i", Renderer2D::GetStats().lineCount);
 			snprintf(statsLines[4], sizeof(statsLines[4]), "Hair Line Count: %i", Renderer2D::GetStats().hairLineCount);
-			snprintf(statsLines[5], sizeof(statsLines[5]), "Mesh Count: %i", Renderer::GetStats().meshCount);
-			snprintf(statsLines[6], sizeof(statsLines[6]), "Culled Meshes: %i", Renderer::GetStats().culledMeshCount);
+			snprintf(statsLines[5], sizeof(statsLines[5]), "Culled Hair Lines: %i", Renderer2D::GetStats().culledHairLineCount);
+			snprintf(statsLines[6], sizeof(statsLines[6]), "Mesh Count: %i", Renderer::GetStats().meshCount);
+			snprintf(statsLines[7], sizeof(statsLines[7]), "Culled Meshes: %i", Renderer::GetStats().culledMeshCount);
 
 			ImVec2 statsBoxSize(0.0f, 0.0f);
 			for (const char* line : statsLines)
@@ -1460,7 +1462,8 @@ BoundingBox ViewportPanel::GetLocalBounds(Entity entity) const
 
 static void DrawBox(const BoundingBox& box, const Matrix4x4& transform, const Colour& colour, int entityId)
 {
-	if (!box.IsValid())
+	// Skipped whole when off screen, before any of its edges are worked out
+	if (!box.IsValid() || !Renderer::GetFrustum().Intersects(box, transform))
 		return;
 
 	Vector3f min = box.Min();

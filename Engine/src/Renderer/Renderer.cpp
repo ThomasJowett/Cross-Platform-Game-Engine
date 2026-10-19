@@ -307,6 +307,11 @@ Ref<UniformBuffer> Renderer::GetConstantUniformBuffer()
 	return s_SceneData.constantUniformBuffer;
 }
 
+const Frustum& Renderer::GetFrustum()
+{
+	return s_SceneData.frustum;
+}
+
 const Renderer::Stats& Renderer::GetStats()
 {
 	return s_RendererData.stats;

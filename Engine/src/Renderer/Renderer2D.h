@@ -104,6 +104,7 @@ public:
 		uint32_t hairLineCount = 0;
 		// Quads and circles skipped for being off screen
 		uint32_t culledQuadCount = 0;
+		uint32_t culledHairLineCount = 0;
 
 		uint32_t GetTotalVertexCount() { return quadCount * 4; }
 		uint32_t GetTotalIndexCount() { return quadCount * 6; }

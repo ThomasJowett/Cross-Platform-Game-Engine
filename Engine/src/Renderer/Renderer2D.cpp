@@ -1141,6 +1141,14 @@ void Renderer2D::DrawHairLine(const Vector3f& start, const Vector3f& end, const 
 	PROFILE_FUNCTION();
 	if (IsDrawingDisabled())
 		return;
+
+	const Vector3f points[2] = { start, end };
+	if (!s_Data.frustum.Intersects(points, 2))
+	{
+		s_Data.statistics.culledHairLineCount++;
+		return;
+	}
+
 	if (s_Data.hairLineVertexCount + 2 > s_Data.maxVertices)
 		NextHairLinesBatch();
 	s_Data.hairLineVertexBufferPtr->position = start;

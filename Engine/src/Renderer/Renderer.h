@@ -10,6 +10,7 @@
 #include "Scene/Components/StaticMeshComponent.h"
 
 class Scene;
+class Frustum;
 class FrameBuffer;
 class Renderer
 {
@@ -21,6 +22,9 @@ public:
 	static void EndScene();
 
 	static Ref<UniformBuffer> GetConstantUniformBuffer();
+
+	// Camera frustum of the current scene, set by BeginScene
+	static const Frustum& GetFrustum();
 
 	// Sample count new mesh pipelines are created with - callers must set this before submitting
 	// any draws that need it (it does not retroactively rebuild already-cached pipelines).
