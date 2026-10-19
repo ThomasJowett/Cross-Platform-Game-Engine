@@ -4,6 +4,7 @@
 
 #include "IconsFontAwesome6.h"
 #include "MainDockSpace.h"
+#include "FileSystem/ExternalEditor.h"
 #include "stb_image.h"
 #include "stb_image_write.h"
 #include "Utilities/AssetReferenceUtils.h"
@@ -33,11 +34,21 @@ void TextureView::OnImGuiRender()
 
 	ImGui::SetNextWindowSize(ImVec2(std::max(displaySize.x, 400.0f), std::max(displaySize.y + 200, 400.0f)), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ExternalEditor::IsSupported() ? ImGuiWindowFlags_MenuBar : ImGuiWindowFlags_None))
 	{
 		if (ImGui::IsWindowFocused())
 		{
 			MainDockSpace::SetFocussedWindow(this);
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ExternalEditor::MenuItem(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath));
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
 		}
 
 		std::string size = "Size: " + std::to_string(m_Texture->GetWidth()) + "x" + std::to_string(m_Texture->GetHeight());

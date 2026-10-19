@@ -8,6 +8,7 @@
 #include "Renderer/RenderCommand.h"
 
 #include "MainDockSpace.h"
+#include "FileSystem/ExternalEditor.h"
 
 #include "IconsFontAwesome6.h"
 #include "imgui/imgui.h"
@@ -38,11 +39,21 @@ void FontView::OnImGuiRender()
 		return;
 	}
 
-	if(ImGui::Begin(m_WindowName.c_str(), m_Show))
+	if(ImGui::Begin(m_WindowName.c_str(), m_Show, ExternalEditor::IsSupported() ? ImGuiWindowFlags_MenuBar : ImGuiWindowFlags_None))
 	{
 		if(ImGui::IsWindowFocused())
 		{
 			MainDockSpace::SetFocussedWindow(this);
+		}
+
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ExternalEditor::MenuItem(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath));
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
 		}
 
 		m_Framebuffer->Bind();

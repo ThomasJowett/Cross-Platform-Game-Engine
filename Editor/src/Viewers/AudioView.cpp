@@ -4,6 +4,7 @@
 #include <imgui.h>
 #include <miniaudio/miniaudio.h>
 #include <MainDockSpace.h>
+#include <FileSystem/ExternalEditor.h>
 #include <Asset/AudioClip.h>
 
 constexpr uint32_t VOLUME_HISTORY_LENGTH = 500;
@@ -121,10 +122,20 @@ void AudioView::OnImGuiRender()
 		return;
 	}
 
-	ImGui::SetNextWindowSize(ImVec2(800, 280), ImGuiCond_FirstUseEver);
+	ImGui::SetNextWindowSize(ImVec2(800, 300), ImGuiCond_FirstUseEver);
 
-	if (ImGui::Begin(m_WindowName.c_str(), m_Show))
+	if (ImGui::Begin(m_WindowName.c_str(), m_Show, ExternalEditor::IsSupported() ? ImGuiWindowFlags_MenuBar : ImGuiWindowFlags_None))
 	{
+		if (ImGui::BeginMenuBar())
+		{
+			if (ImGui::BeginMenu("File"))
+			{
+				ExternalEditor::MenuItem(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_Filepath));
+				ImGui::EndMenu();
+			}
+			ImGui::EndMenuBar();
+		}
+
 		ma_sound_get_cursor_in_seconds(m_Sound.get(), &m_PlaybackTime);
 
 		float fullWidth = ImGui::GetContentRegionAvail().x;

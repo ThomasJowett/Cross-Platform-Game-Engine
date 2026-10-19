@@ -5,6 +5,7 @@
 #include "IconsFontAwesome6.h"
 
 #include "FileSystem/FileDialog.h"
+#include "FileSystem/ExternalEditor.h"
 #include "Core/Settings.h"
 #include "ViewerManager.h"
 #include "Scripting/Lua/LuaManager.h"
@@ -150,6 +151,8 @@ void ScriptView::OnImGuiRender()
 					Save();
 				if (ImGui::MenuItem(ICON_FA_FILE_SIGNATURE" Save As", "Ctrl + Shift + S"))
 					SaveAs();
+				ImGui::Separator();//---------------------------------------------------------------
+				ExternalEditor::MenuItem(std::filesystem::absolute(Application::GetOpenDocumentDirectory() / m_FilePath));
 				ImGui::EndMenu();
 			}
 
