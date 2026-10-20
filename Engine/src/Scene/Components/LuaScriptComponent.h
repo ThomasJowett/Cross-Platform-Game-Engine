@@ -52,6 +52,9 @@ struct LuaScriptComponent
 
 	void OnInputAction(const std::string& actionName, const std::string& phase);
 
+	void OnAnimationEvent(const std::string& eventName, const std::string& animationName);
+	void OnAnimationFinished(const std::string& animationName);
+
 	bool IsContactListener();
 
 	const std::vector<b2Fixture*>& GetFixtures() const { return m_Fixtures; }
@@ -90,6 +93,8 @@ private:
 	Ref<sol::protected_function> m_OnHoveredFunc;
 	Ref<sol::protected_function> m_OnUnHoveredFunc;
 	Ref<sol::protected_function> m_OnInputActionFunc;
+	Ref<sol::protected_function> m_OnAnimationEventFunc;
+	Ref<sol::protected_function> m_OnAnimationFinishedFunc;
 	Ref<Lua::CoroutineScheduler> m_Coroutines;
 
 	void UpdateCoroutines(float deltaTime, bool fixedStep);
