@@ -43,5 +43,5 @@ private:
 	Texture::FilterMethod m_FilterMethod = Texture::FilterMethod::Nearest;
 	Texture::WrapMethod m_WrapMethod = Texture::WrapMethod::Repeat;
 
-	bool LoadXML(tinyxml2::XMLDocument* doc);
+	bool LoadXML(tinyxml2::XMLDocument* doc, const std::filesystem::path& filepath);
 };
