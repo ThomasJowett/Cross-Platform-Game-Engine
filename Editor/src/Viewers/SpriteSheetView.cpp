@@ -335,6 +335,15 @@ void SpriteSheetView::OnImGuiRender()
 				ImGui::TreePop();
 			}
 
+			if (Animation* currentAnimation = m_LocalSpriteSheet->GetAnimation(m_PreviewSprite.animation))
+			{
+				if (ImGui::TreeNodeEx("Events", ImGuiTreeNodeFlags_DefaultOpen))
+				{
+					DrawEventStrip(*currentAnimation);
+					ImGui::TreePop();
+				}
+			}
+
 			ImGui::EndChild();
 
 			ImGui::TableSetColumnIndex(1);
@@ -406,6 +415,129 @@ void SpriteSheetView::OnImGuiRender()
 		}
 	}
 	ImGui::End();
+}
+
+void SpriteSheetView::DrawEventStrip(Animation& animation)
+{
+	Ref<SubTexture2D> subTexture = m_LocalSpriteSheet->GetSubTexture();
+	if (!subTexture->GetTexture() || subTexture->GetSpriteWidth() == 0 || subTexture->GetSpriteHeight() == 0)
+		return;
+
+	const float thumbnailWidth = 64.0f;
+	const ImVec2 thumbnailSize(thumbnailWidth, thumbnailWidth * (float)subTexture->GetSpriteHeight() / (float)subTexture->GetSpriteWidth());
+	const ImVec4 errorColour(0.9f, 0.3f, 0.3f, 1.0f);
+	const ImU32 playingColour = ImColor(ImVec4(0.9f, 0.6f, 0.1f, 1.0f));
+
+	std::optional<std::pair<uint32_t, std::string>> removedEvent;
+	std::optional<std::pair<uint32_t, std::string>> renamedEvent; // frame and old name, new name in m_EventNameBuffer
+
+	size_t mostEventsOnAFrame = 0;
+	for (uint32_t frame = 0; frame < animation.GetFrameCount(); ++frame)
+		mostEventsOnAFrame = std::max(mostEventsOnAFrame, (size_t)std::count_if(animation.GetEvents().begin(), animation.GetEvents().end(),
+			[frame](const AnimationEvent& event) { return event.frame == frame; }));
+
+	float stripHeight = thumbnailSize.y + ImGui::GetTextLineHeightWithSpacing()
+		+ ImGui::GetFrameHeightWithSpacing() * (float)(mostEventsOnAFrame + 1) + ImGui::GetStyle().ScrollbarSize + ImGui::GetStyle().WindowPadding.y;
+	ImGui::BeginChild("##EventStrip", ImVec2(0.0f, stripHeight), false, ImGuiWindowFlags_HorizontalScrollbar);
+
+	for (uint32_t frame = 0; frame < animation.GetFrameCount(); ++frame)
+	{
+		if (frame > 0)
+			ImGui::SameLine();
+
+		ImGui::PushID((int)frame);
+		ImGui::BeginGroup();
+
+		ImVec2 thumbnailPos = ImGui::GetCursorScreenPos();
+		subTexture->SetCurrentCell(animation.GetStartFrame() + frame);
+		ImGui::Image(subTexture, thumbnailSize, ImVec4(1, 1, 1, 1), ImVec4(0.5f, 0.5f, 0.5f, 0.5f));
+		if (m_PreviewSprite.currentFrame == animation.GetStartFrame() + frame)
+			ImGui::GetWindowDrawList()->AddRect(thumbnailPos, ImVec2(thumbnailPos.x + thumbnailSize.x, thumbnailPos.y + thumbnailSize.y), playingColour, 0.0f, 0, 2.0f);
+		ImGui::Text("%u", frame);
+
+		int eventIndex = 0;
+		for (const AnimationEvent& event : animation.GetEvents())
+		{
+			if (event.frame != frame)
+				continue;
+
+			ImGui::PushID(eventIndex++);
+			bool editing = m_IsEditingEvent && m_EditingEventAnimation == &animation && m_EditingEventFrame == frame && m_EditingEventName == event.name;
+			char displayBuffer[256] = "";
+			char* buffer = editing ? m_EventNameBuffer : displayBuffer;
+			if (!editing)
+				strncpy(displayBuffer, event.name.c_str(), sizeof(displayBuffer) - 1);
+
+			bool invalid = editing && (buffer[0] == '\0' || (event.name != buffer && animation.HasEvent(frame, buffer)));
+			if (invalid)
+				ImGui::PushStyleColor(ImGuiCol_Text, errorColour);
+			ImGui::SetNextItemWidth(thumbnailSize.x - ImGui::GetFrameHeight() - ImGui::GetStyle().ItemSpacing.x);
+			ImGui::InputText("##eventName", buffer, sizeof(m_EventNameBuffer), ImGuiInputTextFlags_AutoSelectAll);
+			if (invalid)
+				ImGui::PopStyleColor();
+
+			if (ImGui::IsItemActivated())
+			{
+				m_IsEditingEvent = true;
+				m_EditingEventAnimation = &animation;
+				m_EditingEventFrame = frame;
+				m_EditingEventName = event.name;
+				strncpy(m_EventNameBuffer, event.name.c_str(), sizeof(m_EventNameBuffer) - 1);
+				m_EventNameBuffer[sizeof(m_EventNameBuffer) - 1] = '\0';
+			}
+			if (ImGui::IsItemDeactivated() && editing)
+			{
+				if (!invalid && event.name != m_EventNameBuffer)
+					renamedEvent = { frame, event.name };
+				else
+					m_IsEditingEvent = false;
+			}
+			if (invalid)
+				ImGui::Tooltip(buffer[0] == '\0' ? "Event names can't be empty" : "This frame already has an event with that name");
+			else
+				ImGui::Tooltip("Calls OnAnimationEvent(eventName, animationName) in this entity's script");
+
+			ImGui::SameLine();
+			if (ImGui::Button(ICON_FA_XMARK, ImVec2(ImGui::GetFrameHeight(), 0.0f)))
+				removedEvent = { frame, event.name };
+			ImGui::Tooltip("Remove event");
+			ImGui::PopID();
+		}
+
+		if (ImGui::Button(ICON_FA_PLUS"##addEvent", ImVec2(thumbnailSize.x, 0.0f)))
+		{
+			std::string name = "Event";
+			for (int suffix = 1; animation.HasEvent(frame, name); ++suffix)
+				name = "Event (" + std::to_string(suffix) + ")";
+			animation.AddEvent(frame, name);
+			m_Dirty = true;
+		}
+		ImGui::Tooltip("Add an event on this frame");
+
+		ImGui::EndGroup();
+		ImGui::PopID();
+	}
+
+	ImGui::EndChild();
+
+	if (renamedEvent)
+	{
+		animation.RenameEvent(renamedEvent->first, renamedEvent->second, m_EventNameBuffer);
+		m_IsEditingEvent = false;
+		m_Dirty = true;
+	}
+	if (removedEvent)
+	{
+		animation.RemoveEvent(removedEvent->first, removedEvent->second);
+		m_Dirty = true;
+	}
+
+	uint32_t hiddenEvents = 0;
+	for (const AnimationEvent& event : animation.GetEvents())
+		if (event.frame >= animation.GetFrameCount())
+			++hiddenEvents;
+	if (hiddenEvents > 0)
+		ImGui::TextColored(errorColour, "%u event(s) are past the last frame and won't fire", hiddenEvents);
 }
 
 void SpriteSheetView::Save()
