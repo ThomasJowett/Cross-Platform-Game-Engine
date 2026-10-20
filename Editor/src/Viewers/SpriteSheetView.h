@@ -30,6 +30,7 @@ private:
 	static bool CompareHoldTimeReverse(std::pair<std::string, Animation*>& first, std::pair<std::string, Animation*>& second);
 
 	void GetListOfAnimations();
+	void DrawEventStrip(Animation& animation);
 	bool* m_Show;
 
 	std::filesystem::path m_Filepath;
@@ -47,6 +48,13 @@ private:
 	std::vector<std::pair<std::string, Animation*>> m_AnimationsSorted;
 
 	char m_InputBuffer[1024] = "";
+
+	// Event name being edited in the frame strip
+	const Animation* m_EditingEventAnimation = nullptr;
+	uint32_t m_EditingEventFrame = 0;
+	std::string m_EditingEventName;
+	bool m_IsEditingEvent = false;
+	char m_EventNameBuffer[256] = "";
 
 	// Animation renames (old name, new name) not yet propagated to the scene - applied in Save().
 	std::vector<std::pair<std::string, std::string>> m_PendingAnimationRenames;
