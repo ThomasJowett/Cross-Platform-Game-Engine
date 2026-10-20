@@ -624,11 +624,46 @@ void Scene::OnUpdate(float deltaTime)
 	LuaManager::StartWatchdog();
 	Lua::AdvanceCoroutineFrame();
 
-	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& animatedSpriteComp)
+	struct PendingAnimationEvents
+	{
+		entt::entity entity;
+		std::string animationName;
+		std::vector<FiredAnimationEvent> events;
+	};
+	std::vector<PendingAnimationEvents> pendingAnimationEvents;
+
+	m_Registry.view<AnimatedSpriteComponent>(entt::exclude<DestroyMarker>).each([&pendingAnimationEvents, deltaTime](auto entity, auto& animatedSpriteComp)
 		{
-			if (animatedSpriteComp.spriteSheet)
-				animatedSpriteComp.Animate(deltaTime);
+			if (!animatedSpriteComp.spriteSheet)
+				return;
+
+			std::vector<FiredAnimationEvent> events = animatedSpriteComp.Animate(deltaTime);
+			if (!events.empty())
+				pendingAnimationEvents.push_back({ entity, animatedSpriteComp.animation, std::move(events) });
 		});
+
+	// Called after the view so scripts can add or remove components while handling them
+	for (PendingAnimationEvents& pending : pendingAnimationEvents)
+	{
+		for (const FiredAnimationEvent& event : pending.events)
+		{
+			if (!m_Registry.valid(pending.entity) || m_Registry.all_of<DestroyMarker>(pending.entity))
+				break;
+			// Stop once a script has switched clips, so the old clip's later events don't follow
+			AnimatedSpriteComponent* animatedSpriteComp = m_Registry.try_get<AnimatedSpriteComponent>(pending.entity);
+			if (!animatedSpriteComp || animatedSpriteComp->animation != pending.animationName)
+				break;
+			LuaScriptComponent* luaScriptComp = m_Registry.try_get<LuaScriptComponent>(pending.entity);
+			if (!luaScriptComp)
+				break;
+
+			luaScriptComp->Create(Entity{ pending.entity, this });
+			if (event.type == FiredAnimationEvent::Type::Event)
+				luaScriptComp->OnAnimationEvent(event.name, pending.animationName);
+			else
+				luaScriptComp->OnAnimationFinished(pending.animationName);
+		}
+	}
 
 	m_Registry.view<LuaScriptComponent>(entt::exclude<DestroyMarker>).each([this, deltaTime](auto entity, auto& luaScriptComp)
 		{
