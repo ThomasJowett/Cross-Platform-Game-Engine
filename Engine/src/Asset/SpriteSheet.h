@@ -23,7 +23,8 @@ public:
 	bool Save() const;
 	bool SaveAs(const std::filesystem::path& filepath) const;
 
-	void AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime);
+	// Returns the added animation, whose name gets a numbered suffix if it is taken
+	Animation& AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime);
 	void RemoveAnimation(std::string name);
 	void RenameAnimation(const std::string& oldName, const std::string& newName);
 

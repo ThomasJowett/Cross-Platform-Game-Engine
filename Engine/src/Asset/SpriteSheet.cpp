@@ -111,7 +111,7 @@ bool SpriteSheet::SaveAs(const std::filesystem::path& filepath) const
 	return error == tinyxml2::XML_SUCCESS;
 }
 
-void SpriteSheet::AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime)
+Animation& SpriteSheet::AddAnimation(std::string name, uint32_t startFrame, uint32_t frameCount, float holdTime)
 {
 	if (m_Animations.find(name) != m_Animations.end())
 	{
@@ -122,7 +122,7 @@ void SpriteSheet::AddAnimation(std::string name, uint32_t startFrame, uint32_t f
 		}
 		name = name + " (" + std::to_string(index) + ")";
 	}
-	m_Animations.insert({ name, Animation(startFrame, frameCount, holdTime) });
+	return m_Animations.insert({ name, Animation(startFrame, frameCount, holdTime) }).first->second;
 }
 
 void SpriteSheet::RemoveAnimation(std::string name)
