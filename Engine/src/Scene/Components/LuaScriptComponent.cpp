@@ -55,6 +55,8 @@ void LuaScriptComponent::ResetEnvironment()
 	m_OnHoveredFunc.reset();
 	m_OnUnHoveredFunc.reset();
 	m_OnInputActionFunc.reset();
+	m_OnAnimationEventFunc.reset();
+	m_OnAnimationFinishedFunc.reset();
 	m_Coroutines.reset();
 	created = false;
 }
@@ -150,6 +152,14 @@ bool LuaScriptComponent::ParseScript(Entity entity)
 	m_OnInputActionFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnInputAction"]);
 	if (!m_OnInputActionFunc->valid())
 		m_OnInputActionFunc.reset();
+
+	m_OnAnimationEventFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnAnimationEvent"]);
+	if (!m_OnAnimationEventFunc->valid())
+		m_OnAnimationEventFunc.reset();
+
+	m_OnAnimationFinishedFunc = CreateRef<sol::protected_function>((*m_SolEnvironment)["OnAnimationFinished"]);
+	if (!m_OnAnimationFinishedFunc->valid())
+		m_OnAnimationFinishedFunc.reset();
 
 	LuaManager::GetState().collect_garbage();
 	return true;
@@ -371,6 +381,40 @@ void LuaScriptComponent::OnInputAction(const std::string& actionName, const std:
 		{
 			sol::error error = result;
 			CLIENT_ERROR("Failed to execute lua script 'OnInputAction': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnAnimationEvent(const std::string& eventName, const std::string& animationName)
+{
+	PROFILE_FUNCTION();
+	if (m_OnAnimationEventFunc)
+	{
+		sol::protected_function_result result = m_OnAnimationEventFunc->call(eventName, animationName);
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnAnimationEvent': {0}", error.what());
+
+			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
+			Application::CallEvent(luaErrorEvent);
+		}
+	}
+}
+
+void LuaScriptComponent::OnAnimationFinished(const std::string& animationName)
+{
+	PROFILE_FUNCTION();
+	if (m_OnAnimationFinishedFunc)
+	{
+		sol::protected_function_result result = m_OnAnimationFinishedFunc->call(animationName);
+		if (!result.valid())
+		{
+			sol::error error = result;
+			CLIENT_ERROR("Failed to execute lua script 'OnAnimationFinished': {0}", error.what());
 
 			LuaErrorEvent luaErrorEvent(script->GetFilepath().string(), error.what());
 			Application::CallEvent(luaErrorEvent);
