@@ -103,6 +103,13 @@ bool SpriteSheet::SaveAs(const std::filesystem::path& filepath) const
 		pAnimation->SetAttribute("StartFrame", animation.GetStartFrame());
 		pAnimation->SetAttribute("FrameCount", animation.GetFrameCount());
 		pAnimation->SetAttribute("HoldTime", animation.GetHoldTime());
+
+		for (const AnimationEvent& event : animation.GetEvents())
+		{
+			tinyxml2::XMLElement* pEvent = pAnimation->InsertNewChildElement("Event");
+			pEvent->SetAttribute("Frame", event.frame);
+			pEvent->SetAttribute("Name", event.name.c_str());
+		}
 	}
 
 	std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / filepath);
