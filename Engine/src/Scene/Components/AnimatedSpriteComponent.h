@@ -10,6 +10,13 @@
 #include "Utilities/SerializationUtils.h"
 #include "Scripting/Lua/LuaBindings.h"
 
+struct FiredAnimationEvent
+{
+	enum class Type { Event, Finished };
+	Type type = Type::Event;
+	std::string name; // empty for Finished
+};
+
 struct AnimatedSpriteComponent
 {
 	Colour tint{ 1.0f, 1.0f,1.0f,1.0f };
@@ -20,7 +27,8 @@ struct AnimatedSpriteComponent
 	AnimatedSpriteComponent() = default;
 	AnimatedSpriteComponent(const AnimatedSpriteComponent& other) = default;
 
-	void Animate(float deltaTime);
+	// Returns the events crossed this call in frame order, plus Finished each time the last frame ends
+	std::vector<FiredAnimationEvent> Animate(float deltaTime);
 	REFLECT_LUA_BEGIN(AnimatedSpriteComponent)
 		REFLECT_LUA_PROPERTY_CUSTOM("Tint", "Colour multiplied over the sprite sheet", "Colour",
 			([](Self& c) -> Colour& { return c.tint; }),
@@ -35,6 +43,10 @@ struct AnimatedSpriteComponent
 
 private:
 	float m_CurrentFrameTime = 0.0f;
+	// Clip Animate last played, so a change of clip restarts it at frame 0
+	std::string m_PlayingAnimation;
+
+	void EnterFrame(const Animation& animationRef, std::vector<FiredAnimationEvent>& fired) const;
 
 	friend cereal::access;
 	template<typename Archive>
