@@ -157,7 +157,7 @@ Animation* SpriteSheet::GetAnimation(const std::string& animationName)
 	return nullptr;
 }
 
-bool SpriteSheet::LoadXML(tinyxml2::XMLDocument* doc)
+bool SpriteSheet::LoadXML(tinyxml2::XMLDocument* doc, const std::filesystem::path& filepath)
 {
 	tinyxml2::XMLElement* pRoot = doc->FirstChildElement("SpriteSheet");
 
@@ -200,7 +200,26 @@ bool SpriteSheet::LoadXML(tinyxml2::XMLDocument* doc)
 		pAnimation->QueryUnsignedAttribute("StartFrame", &startFrame);
 		pAnimation->QueryUnsignedAttribute("FrameCount", &frameCount);
 
-		AddAnimation(name, startFrame, frameCount, holdTime);
+		Animation& animation = AddAnimation(name, startFrame, frameCount, holdTime);
+
+		tinyxml2::XMLElement* pEvent = pAnimation->FirstChildElement("Event");
+		while (pEvent)
+		{
+			uint32_t frame = 0;
+			pEvent->QueryUnsignedAttribute("Frame", &frame);
+			const char* eventName = pEvent->Attribute("Name");
+
+			if (!eventName || eventName[0] == '\0')
+			{
+				ENGINE_WARN("Skipping animation event with no name in sprite sheet {0}, animation '{1}', frame {2}", filepath, name, frame);
+			}
+			else if (!animation.AddEvent(frame, eventName))
+			{
+				ENGINE_WARN("Skipping duplicate animation event '{0}' in sprite sheet {1}, animation '{2}', frame {3}", eventName, filepath, name, frame);
+			}
+
+			pEvent = pEvent->NextSiblingElement("Event");
+		}
 
 		pAnimation = pAnimation->NextSiblingElement("Animation");
 	}
