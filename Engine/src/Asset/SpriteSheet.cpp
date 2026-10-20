@@ -30,7 +30,7 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath)
 
 	if (doc.LoadFile(absolutePath.string().c_str()) == tinyxml2::XML_SUCCESS)
 	{
-		if (!LoadXML(&doc))
+		if (!LoadXML(&doc, filepath))
 		{
 			ENGINE_ERROR("Could not load spritesheet file: {0}", absolutePath);
 			return false;
@@ -52,7 +52,7 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath, const std::vector<
 	tinyxml2::XMLDocument doc;
 	if (doc.Parse((const char*)data.data(), data.size()) == tinyxml2::XML_SUCCESS)
 	{
-		if (!LoadXML(&doc))
+		if (!LoadXML(&doc, filepath))
 		{
 			ENGINE_ERROR("Could not load spritesheet from memory: {0}", filepath);
 			return false;
@@ -65,7 +65,7 @@ bool SpriteSheet::Load(const std::filesystem::path& filepath, const std::vector<
 	}
 	m_Filepath = filepath;
 	m_Filepath.make_preferred();
-	return false;
+	return true;
 }
 
 bool SpriteSheet::Save() const
