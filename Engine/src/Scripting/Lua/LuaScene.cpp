@@ -8,6 +8,7 @@
 #include "Asset/StaticMesh.h"
 #include "Asset/Tileset.h"
 #include "Asset/PhysicsMaterial.h"
+#include "Asset/AudioClip.h"
 #include "Renderer/Renderer.h"
 
 #include "Renderer/PostProcessEffects/GaussianBlurEffect.h"
@@ -103,6 +104,10 @@ void BindScene(sol::state& state)
 	SetFunction(assetManager, "AssetManager", "GetTileset", "Load a tileset by project-relative path", [](std::string_view path) -> Ref<Tileset>
 		{
 			return AssetManager::GetAsset<Tileset>(path);
+		});
+	SetFunction(assetManager, "AssetManager", "GetAudioClip", "Load an audio clip by project-relative path", [](std::string_view path) -> Ref<AudioClip>
+		{
+			return AssetManager::GetAsset<AudioClip>(path);
 		});
 
 	sol::usertype<Material> material_type = state.new_usertype<Material>("Material");
