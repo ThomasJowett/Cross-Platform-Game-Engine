@@ -31,13 +31,10 @@ public:
 	{
 		std::lock_guard<std::mutex> lock(m_Mutex);
 		m_PathToWatch = pathToWatch;
-		if (std::filesystem::exists(pathToWatch))
-		{
-			for (auto& file : std::filesystem::recursive_directory_iterator(m_PathToWatch))
+		ForEachFile([this](const std::filesystem::path& path, std::filesystem::file_time_type lastWriteTime)
 			{
-				m_Paths[file.path().string()] = std::filesystem::last_write_time(file);
-			}
-		}
+				m_Paths[path.string()] = lastWriteTime;
+			});
 	}
 
 	void RunCheck()
@@ -49,14 +46,15 @@ public:
 
 			std::lock_guard<std::mutex> lock(m_Mutex);
 
-			if (!std::filesystem::exists(m_PathToWatch))
+			std::error_code error;
+			if (!std::filesystem::exists(m_PathToWatch, error))
 				continue;
 
 			auto it = m_Paths.begin();
 			while (it != m_Paths.end())
 			{
 				// Check if file has been erased
-				if (!std::filesystem::exists(it->first))
+				if (!std::filesystem::exists(it->first, error) && !error)
 				{
 					m_Callback(it->first, FileStatus::Erased);
 					it = m_Paths.erase(it);
@@ -68,26 +66,21 @@ public:
 			}
 
 			// Check if a file was created or modified
-			for (const std::filesystem::directory_entry& file : std::filesystem::recursive_directory_iterator(m_PathToWatch))
-			{
-				auto lastWriteTime = std::filesystem::last_write_time(file);
-
-				// File Created
-				if (!Contains(file.path().string()))
+			ForEachFile([this](const std::filesystem::path& path, std::filesystem::file_time_type lastWriteTime)
 				{
-					m_Paths[file.path().string()] = lastWriteTime;
-					m_Callback(file.path().string(), FileStatus::Created);
-				}
-				// File modified
-				else
-				{
-					if (m_Paths[file.path().string()] != lastWriteTime)
+					// File Created
+					if (!Contains(path.string()))
 					{
-						m_Paths[file.path().string()] = lastWriteTime;
-						m_Callback(file.path().string(), FileStatus::Modified);
+						m_Paths[path.string()] = lastWriteTime;
+						m_Callback(path.string(), FileStatus::Created);
 					}
-				}
-			}
+					// File modified
+					else if (m_Paths[path.string()] != lastWriteTime)
+					{
+						m_Paths[path.string()] = lastWriteTime;
+						m_Callback(path.string(), FileStatus::Modified);
+					}
+				});
 		}
 	}
 
@@ -106,6 +99,25 @@ public:
 	}
 	
 private:
+	// Files can move or vanish mid-scan, so skip any that error; the next scan picks them up
+	template<typename Func>
+	void ForEachFile(Func func)
+	{
+		std::error_code error;
+		std::filesystem::recursive_directory_iterator end;
+		for (std::filesystem::recursive_directory_iterator it(m_PathToWatch, std::filesystem::directory_options::skip_permission_denied, error);
+			!error && it != end; it.increment(error))
+		{
+			std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(it->path(), error);
+			if (error)
+			{
+				error.clear();
+				continue;
+			}
+			func(it->path(), lastWriteTime);
+		}
+	}
+
 	bool Contains(const std::string& key)
 	{
 		auto el = m_Paths.find(key);
