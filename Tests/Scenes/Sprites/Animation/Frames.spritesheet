@@ -1,0 +1,20 @@
+<SpriteSheet EngineVersion="1" SpriteWidth="16" SpriteHeight="16">
+    <Texture Filepath="Sprites/Animation/Frames.png" FilterMethod="1" WrapMethod="2"/>
+    <Animation Name="Attack" StartFrame="0" FrameCount="4" HoldTime="0.05">
+        <Event Frame="0" Name="Start"/>
+        <Event Frame="1" Name=""/>
+        <Event Frame="1" Name="Footstep"/>
+        <Event Frame="2" Name="Active"/>
+        <Event Frame="2" Name="Sound"/>
+        <Event Frame="2" Name="Active"/>
+        <Event Frame="3" Name="Footstep"/>
+        <Event Frame="9" Name="PastTheEnd"/>
+    </Animation>
+    <Animation Name="Idle" StartFrame="0" FrameCount="2" HoldTime="0.05">
+        <Event Frame="0" Name="IdleStart"/>
+    </Animation>
+    <Animation Name="Hit" StartFrame="2" FrameCount="2" HoldTime="0.05">
+        <Event Frame="0" Name="Destroy"/>
+        <Event Frame="0" Name="AfterDestroy"/>
+    </Animation>
+</SpriteSheet>

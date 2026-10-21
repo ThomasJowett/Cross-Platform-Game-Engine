@@ -1,0 +1,33 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Main Camera" ID="3938864858396959585-5133496138365503044">
+        <Transform>
+            <Position X="0" Y="0" Z="20"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="0" OrthoSize="22" OrthoNear="-1" OrthoFar="-28" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Title" ID="5809175742490145811-4866269288655383718">
+        <Transform>
+            <Position X="-15.8" Y="9.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.6" Y="0.6" Z="1"/>
+        </Transform>
+        <Text MaxWidth="45">Animation events: OnAnimationFinished switches Attack to Idle, which must restart at frame 0. Details in the console.<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Switcher" ID="1417868988518695529-359669490820845461">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="4" Y="4" Z="1"/>
+        </Transform>
+        <AnimatedSprite Animation="Attack">
+            <SpriteSheet Filepath="Sprites/Animation/Frames.spritesheet"/>
+            <Tint R="1" G="1" B="1" A="1"/>
+        </AnimatedSprite>
+        <LuaScript Filepath="Scripts/AnimationEvents/AnimationEventSwitch.lua"/>
+    </Entity>
+</Scene>
