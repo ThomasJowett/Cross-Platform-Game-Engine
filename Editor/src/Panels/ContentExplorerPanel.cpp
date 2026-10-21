@@ -1765,9 +1765,13 @@ void ContentExplorerPanel::OnImGuiRender()
 						ItemContextMenu(i, true, dirName);
 
 						ImGui::TableSetColumnIndex(1);
-						if (!m_ForceRescan)
+						std::error_code error;
+						std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(m_Dirs[i], error);
+						if (error)
+							m_ForceRescan = true; // Renamed or deleted outside the editor
+						else if (!m_ForceRescan)
 						{
-							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Dirs[i]));
+							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(lastWriteTime);
 
 							char buff[20];
 							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", localtime(&cftime));
@@ -1828,10 +1832,16 @@ void ContentExplorerPanel::OnImGuiRender()
 						ItemContextMenu(i, false, filename);
 						CreateDragDropSource(i);
 
+						std::error_code error;
+						std::filesystem::file_time_type lastWriteTime = std::filesystem::last_write_time(m_Files[i], error);
+						std::uintmax_t fileSize = error ? 0 : std::filesystem::file_size(m_Files[i], error);
+						if (error)
+							m_ForceRescan = true; // Renamed or deleted outside the editor
+
 						ImGui::TableSetColumnIndex(1);
 						if (!m_ForceRescan)
 						{
-							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(std::filesystem::last_write_time(m_Files[i]));
+							std::time_t cftime = to_time_t<std::filesystem::file_time_type>(lastWriteTime);
 
 							char buff[20];
 							strftime(buff, 20, "%d/%m/%Y %H:%M:%S", std::localtime(&cftime));
@@ -1842,7 +1852,7 @@ void ContentExplorerPanel::OnImGuiRender()
 						ImGui::TableSetColumnIndex(2);
 						if (!m_ForceRescan)
 						{
-							ImGui::Text("%iKB", (int)ceil(std::filesystem::file_size(m_Files[i]) / 1000.0f));
+							ImGui::Text("%iKB", (int)ceil(fileSize / 1000.0f));
 						}
 					}
 
