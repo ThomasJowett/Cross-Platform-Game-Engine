@@ -1218,7 +1218,12 @@ void PropertiesPanel::DrawComponents(Entity entity)
 	// State Machine ------------------------------------------------------------------------------------------------------------------
 	DrawComponent<StateMachineComponent>(ICON_FA_DIAGRAM_PROJECT" State Machine", entity, [](auto& stateMachine)
 		{
-			//ImGui::FileSelect("State Machine", );
+			std::filesystem::path absolutePath = stateMachine.filepath.empty() ? std::filesystem::path() : Application::GetOpenDocumentDirectory() / stateMachine.filepath;
+			if (ImGui::FileSelect("State Machine", absolutePath, FileType::STATEMACHINE))
+			{
+				stateMachine.filepath = FileUtils::RelativePath(absolutePath, Application::GetOpenDocumentDirectory());
+				stateMachine.stateMachine = StateMachineSerializer::Load(stateMachine.filepath);
+			}
 		});
 
 	DrawComponent<BillboardComponent>(ICON_FA_SIGN_HANGING" Billboard", entity, [](auto& billboard)
