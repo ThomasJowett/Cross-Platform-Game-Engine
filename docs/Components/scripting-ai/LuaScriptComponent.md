@@ -14,6 +14,8 @@ The script can define any of these functions, and the engine calls the ones it f
 | `OnBeginContact(other, normal, point)` / `OnEndContact(other)` | when a collider on this entity starts or stops touching another |
 | `OnPressed()` / `OnReleased()` / `OnHovered()` / `OnUnHovered()` | on a UI [Button](../ui/ButtonComponent.md) |
 | `OnInputAction(actionName, phase)` | when an input action from the project's input mappings fires |
+| `OnAnimationEvent(eventName, animationName)` | when this entity's [Animated Sprite](../rendering/AnimatedSpriteComponent.md) reaches a frame with an event on it |
+| `OnAnimationFinished(animationName)` | when the last frame of this entity's Animated Sprite animation has finished showing, once per loop |
 
 `CurrentEntity` inside the script is the entity it's attached to. See
 [Lua Scripting](../../lua-scripting.md) for worked examples.
