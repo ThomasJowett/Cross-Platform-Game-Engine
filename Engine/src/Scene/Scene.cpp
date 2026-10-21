@@ -33,6 +33,30 @@
 
 struct DestroyMarker {};
 
+// Load a clip into sound, from the bundle when there is one, otherwise from the project directory
+static bool InitSound(ma_engine* engine, const AudioClip& clip, ma_uint32 flags, ma_sound* sound, Ref<BundleAudioStream>& bundleStream)
+{
+	ma_result result;
+	if (AssetManager::HasBundle())
+	{
+		bundleStream = CreateRef<BundleAudioStream>();
+		bundleStream->Init(clip.GetFilepath(), (flags & MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM) != 0);
+		result = ma_sound_init_from_data_source(engine, bundleStream->GetDataSource(), flags, NULL, sound);
+	}
+	else
+	{
+		std::filesystem::path absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / clip.GetFilepath());
+		result = ma_sound_init_from_file(engine, absolutePath.string().c_str(), flags, NULL, NULL, sound);
+	}
+
+	if (result != MA_SUCCESS)
+	{
+		ENGINE_ERROR("Failed to load audio file: {0}", clip.GetFilepath());
+		return false;
+	}
+	return true;
+}
+
 Scene::Scene(const std::filesystem::path& filepath)
 	:m_Filepath(filepath)
 {
@@ -263,25 +287,7 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 				ma_uint32 flags = audioSourceComponent.stream ? MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_STREAM : MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE;
 				if (audioSourceComponent.loop)
 					flags |= MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_LOOPING;
-				if (AssetManager::HasBundle())
-				{
-					std::vector<uint8_t> data;
-					AssetManager::GetFileData(audioSourceComponent.audioClip->GetFilepath(), data);
-					audioSourceComponent.bundleStream = CreateRef<BundleAudioStream>();
-					audioSourceComponent.bundleStream->Init(audioSourceComponent.audioClip->GetFilepath(), audioSourceComponent.stream);
-
-					if (ma_sound_init_from_data_source(m_AudioEngine.get(), audioSourceComponent.bundleStream->GetDataSource(), flags, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
-					{
-						ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
-					}
-				}
-				else if (auto absolutePath = std::filesystem::absolute(Application::GetOpenDocumentDirectory() / audioSourceComponent.audioClip->GetFilepath());
-					ma_sound_init_from_file(
-						m_AudioEngine.get(), absolutePath.string().c_str(),
-						flags, NULL, NULL, audioSourceComponent.sound.get()) != MA_SUCCESS)
-				{
-					ENGINE_ERROR("Failed to load audio file: {0}", audioSourceComponent.audioClip->GetFilepath());
-				}
+				InitSound(m_AudioEngine.get(), *audioSourceComponent.audioClip, flags, audioSourceComponent.sound.get(), audioSourceComponent.bundleStream);
 
 				if (audioSourceComponent.sound)
 				{
