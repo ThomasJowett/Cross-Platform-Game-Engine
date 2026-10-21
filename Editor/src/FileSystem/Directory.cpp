@@ -11,7 +11,7 @@ std::vector<std::filesystem::path> Directory::GetDirectories(const std::filesyst
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 		{
-			if (entry.is_directory())
+			if (entry.is_directory() && !IsHidden(entry.path()))
 				result.push_back(entry.path());
 		}
 
@@ -34,7 +34,7 @@ std::vector<std::filesystem::path> Directory::GetFiles(const std::filesystem::pa
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
 		{
-			if (entry.is_regular_file())
+			if (entry.is_regular_file() && !IsHidden(entry.path()))
 				result.push_back(entry.path());
 		}
 
@@ -55,21 +55,23 @@ std::vector<std::filesystem::path> Directory::GetFilesRecursive(const std::files
 
 	try
 	{
-		if (!wantedExtensions.empty())
+		std::filesystem::recursive_directory_iterator end;
+		for (std::filesystem::recursive_directory_iterator it(path, std::filesystem::directory_options::skip_permission_denied); it != end; ++it)
 		{
-			for (const auto& entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
+			if (IsHidden(it->path()))
 			{
-				if (entry.is_regular_file() && std::find(wantedExtensions.begin(), wantedExtensions.end(), entry.path().extension()) != wantedExtensions.end())
-					result.push_back(entry.path());
+				it.disable_recursion_pending();
+				continue;
 			}
-		}
-		else
-		{
-			for (const auto& entry : std::filesystem::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
-			{
-				if (entry.is_regular_file() && std::find(unwantedExtensions.begin(), unwantedExtensions.end(), entry.path().extension()) == unwantedExtensions.end())
-					result.push_back(entry.path());
-			}
+			if (!it->is_regular_file())
+				continue;
+
+			std::filesystem::path extension = it->path().extension();
+			bool wanted = !wantedExtensions.empty()
+				? std::find(wantedExtensions.begin(), wantedExtensions.end(), extension) != wantedExtensions.end()
+				: std::find(unwantedExtensions.begin(), unwantedExtensions.end(), extension) == unwantedExtensions.end();
+			if (wanted)
+				result.push_back(it->path());
 		}
 
 		SortingHelper::Sort(result, sorting);
@@ -79,6 +81,14 @@ std::vector<std::filesystem::path> Directory::GetFilesRecursive(const std::files
 		CLIENT_ERROR(e.what());
 	}
 	return result;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+bool Directory::IsHidden(const std::filesystem::path& path)
+{
+	std::string filename = path.filename().string();
+	return !filename.empty() && filename[0] == '.';
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

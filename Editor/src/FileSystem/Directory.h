@@ -40,5 +40,8 @@ public:
 	static std::vector<std::filesystem::path> GetFilesRecursive(const std::filesystem::path& path, 
 		std::vector<std::string> wantedExtensions, std::vector<std::string> unwantedExtensions = std::vector<std::string>(), Sorting sorting = Sorting::ALPHABETIC);
 
+	// Dot-prefixed names such as .DS_Store, which Finder also hides
+	static bool IsHidden(const std::filesystem::path& path);
+
 	static std::filesystem::path GetNextNewFileName(const std::filesystem::path& directory, const std::string& filename, const std::string& extension);
 };
