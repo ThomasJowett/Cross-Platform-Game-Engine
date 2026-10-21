@@ -338,6 +338,10 @@ void Scene::OnRuntimeStop()
 			}
 		});
 
+	for (OneShotSound& oneShot : m_OneShotSounds)
+		ma_sound_uninit(oneShot.sound.get());
+	m_OneShotSounds.clear();
+
 	ma_engine_uninit(m_AudioEngine.get());
 	m_AudioEngine.reset();
 
@@ -752,6 +756,14 @@ void Scene::OnUpdate(float deltaTime)
 			ma_engine_listener_set_velocity(m_AudioEngine.get(), 0, velocity.x, velocity.y, 0.0f);
 		}
 	}
+
+	m_OneShotSounds.erase(std::remove_if(m_OneShotSounds.begin(), m_OneShotSounds.end(), [](OneShotSound& oneShot)
+		{
+			if (!ma_sound_at_end(oneShot.sound.get()))
+				return false;
+			ma_sound_uninit(oneShot.sound.get());
+			return true;
+		}), m_OneShotSounds.end());
 
 	RunDeferredActions();
 	DestroyMarkedEntities();
@@ -1176,6 +1188,38 @@ Vector3f Scene::WorldToScreenPoint(Vector3f worldPosition)
 	auto [cameraTransform, projection] = GetPrimaryCameraViewProjection();
 	Vector2f viewportSize((float)Application::GetGameViewportWidth(), (float)Application::GetGameViewportHeight());
 	return MathUtils::WorldToScreenSpace(Matrix4x4::Inverse(cameraTransform), projection, worldPosition, viewportSize);
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+void Scene::PlaySoundAtLocation(const Ref<AudioClip>& clip, const Vector3f& position, float volume)
+{
+	if (!m_AudioEngine)
+	{
+		ENGINE_WARN("PlaySoundAtLocation: the scene isn't running");
+		return;
+	}
+	if (!clip)
+	{
+		ENGINE_ERROR("PlaySoundAtLocation: no audio clip given");
+		return;
+	}
+
+	OneShotSound oneShot{ CreateRef<ma_sound>() };
+	if (!InitSound(m_AudioEngine.get(), *clip, MA_RESOURCE_MANAGER_DATA_SOURCE_FLAG_DECODE, oneShot.sound.get(), oneShot.bundleStream))
+		return;
+
+	// Same attenuation as an AudioSourceComponent's defaults
+	AudioSourceComponent defaults;
+	ma_sound_set_volume(oneShot.sound.get(), volume);
+	ma_sound_set_min_distance(oneShot.sound.get(), defaults.minDistance);
+	ma_sound_set_max_distance(oneShot.sound.get(), defaults.maxDistance);
+	ma_sound_set_rolloff(oneShot.sound.get(), defaults.rolloff);
+	ma_sound_set_attenuation_model(oneShot.sound.get(), ma_attenuation_model_linear);
+	ma_sound_set_position(oneShot.sound.get(), position.x, position.y, position.z);
+	ma_sound_start(oneShot.sound.get());
+
+	m_OneShotSounds.push_back(std::move(oneShot));
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

@@ -15,6 +15,9 @@ class Camera;
 class Matrix4x4;
 struct HitResult2D;
 struct ma_engine;
+struct ma_sound;
+class AudioClip;
+class BundleAudioStream;
 
 class Scene
 {
@@ -108,6 +111,9 @@ public:
 	Vector3f ScreenToWorldPoint(Vector2f screenPosition, float worldZ = 0.0f);
 	Vector3f WorldToScreenPoint(Vector3f worldPosition);
 
+	// Play a clip once at a world position; only while the scene is running
+	void PlaySoundAtLocation(const Ref<AudioClip>& clip, const Vector3f& position, float volume = 1.0f);
+
 	void OnEntityDestroyed(Entity entity);
 
 private:
@@ -139,6 +145,13 @@ private:
 	Vector2f m_Gravity = { 0.0f, -9.81f };
 
 	Ref<ma_engine> m_AudioEngine;
+
+	struct OneShotSound
+	{
+		Ref<ma_sound> sound;
+		Ref<BundleAudioStream> bundleStream;
+	};
+	std::vector<OneShotSound> m_OneShotSounds;
 
 	uint32_t m_PixelsPerUnit = 16;
 
