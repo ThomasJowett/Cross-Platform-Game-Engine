@@ -132,6 +132,9 @@ bool ImGui::FileEdit(const char* label, std::filesystem::path& filepath, FileTyp
 	case FileType::BEHAVIOURTREE:
 		filters = { {L"Behaviour Tree (.behaviourtree)", L"*.behaviourtree"} };
 		break;
+	case FileType::STATEMACHINE:
+		filters = { {L"State Machine (.statemachine)", L"*.statemachine"} };
+		break;
 	default:
 		filters = { {L"Any", L"*.*"} };
 		break;
