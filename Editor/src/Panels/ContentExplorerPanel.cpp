@@ -10,6 +10,8 @@
 #include "Asset/PhysicsMaterial.h"
 #include "AI/BehaviourTreeSerializer.h"
 #include "AI/BehaviourTree.h"
+#include "AI/StateMachine.h"
+#include "AI/StateMachineSerializer.h"
 #include "Core/Settings.h"
 #include "Utilities/AssetReferenceUtils.h"
 #include "Utilities/FileUtils.h"
@@ -433,6 +435,18 @@ void ContentExplorerPanel::CreateNewBehaviourTree()
 	m_CurrentSelectedPath = newBehaviourTree;
 }
 
+void ContentExplorerPanel::CreateNewStateMachine()
+{
+	std::filesystem::path newStateMachine = Directory::GetNextNewFileName(m_CurrentPath, "New State Machine", ".statemachine");
+
+	StateMachine stateMachine;
+
+	StateMachineSerializer::Serialize(newStateMachine, &stateMachine);
+
+	m_ForceRescan = true;
+	m_CurrentSelectedPath = newStateMachine;
+}
+
 /* ------------------------------------------------------------------------------------------------------------------ */
 
 std::filesystem::path ContentExplorerPanel::GetPathForSplitPathIndex(int index)
@@ -622,6 +636,12 @@ void ContentExplorerPanel::CreateNewMenu()
 	if (ImGui::Selectable((GetFileIconForFileType(FileType::BEHAVIOURTREE) + "\tBehaviour Tree").c_str()))
 	{
 		CreateNewBehaviourTree();
+		m_Renaming = true;
+	}
+
+	if (ImGui::Selectable((GetFileIconForFileType(FileType::STATEMACHINE) + "\tState Machine").c_str()))
+	{
+		CreateNewStateMachine();
 		m_Renaming = true;
 	}
 }

@@ -162,6 +162,7 @@ public:
 	void CreateNewSpriteSheet(const std::filesystem::path* path = nullptr);
 	void CreateNewPhysicsMaterial();
 	void CreateNewBehaviourTree();
+	void CreateNewStateMachine();
 
 private:
 	std::filesystem::path GetPathForSplitPathIndex(int index);
