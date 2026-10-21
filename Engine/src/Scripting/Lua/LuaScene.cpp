@@ -82,6 +82,8 @@ void BindScene(sol::state& state)
 	SetFunction(scene_type, "Scene", "ScreenToWorldPoint", "Convert a screen position, such as Input.GetMousePos(), to world space using the primary camera; optional Z plane, default 0", [](Scene& scene, Vector2f screenPosition, sol::optional<float> worldZ)
 		{ return scene.ScreenToWorldPoint(screenPosition, worldZ.value_or(0.0f)); });
 	SetFunction(scene_type, "Scene", "WorldToScreenPoint", "Convert a world position to a screen position using the primary camera", &Scene::WorldToScreenPoint);
+	SetFunction(scene_type, "Scene", "PlaySoundAtLocation", "Play an audio clip once at a world position; optional volume, default 1", [](Scene& scene, const Ref<AudioClip>& clip, const Vector3f& position, sol::optional<float> volume)
+		{ scene.PlaySoundAtLocation(clip, position, volume.value_or(1.0f)); });
 
 	sol::table assetManager = state.create_table("AssetManager");
 	LuaManager::AddIdentifier("AssetManager", "Load assets by project-relative path");
