@@ -345,7 +345,8 @@ void AssetPacker::PackAssets()
 		{
 			for (const auto& entry : std::filesystem::directory_iterator(dir))
 			{
-				filesToPack.push_back(entry.path());
+				if (!Directory::IsHidden(entry.path()))
+					filesToPack.push_back(entry.path());
 			}
 		}
 	};
