@@ -44,7 +44,7 @@ An entity is just an ID and a name. Everything else it does comes from the compo
 | --- | --- | --- |
 | [Lua Script](scripting-ai/LuaScriptComponent.md) | `<LuaScript>` | Runs a Lua script on the entity. |
 | [Behaviour Tree](scripting-ai/BehaviourTreeComponent.md) | `<BehaviourTree>` | Runs a behaviour tree on the entity, for AI decisions. |
-| [State Machine](scripting-ai/StateMachineComponent.md) | `<StateMachine>` | Placeholder for state machine AI. |
+| [State Machine](scripting-ai/StateMachineComponent.md) | `<StateMachine>` | Runs a state machine on the entity, switching between named states driven by Lua scripts. |
 
 ## Audio
 

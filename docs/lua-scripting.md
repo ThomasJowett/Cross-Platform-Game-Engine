@@ -32,6 +32,9 @@ A behaviour tree's **Custom Task** node also runs a Lua script, with its own set
 (`OnStateEntry`, `OnStateUpdate`, `OnStateExit`) and a `Blackboard` global. See
 [Behaviour Trees](behaviour-trees.md#custom-task-scripts).
 
+A [state machine](state-machines.md#state-scripts) state uses the same three functions, with a
+`StateMachine` global for changing state.
+
 ## Reading and writing components
 
 Every component type `X` gets `CurrentEntity:AddX()`, `CurrentEntity:GetX()`,

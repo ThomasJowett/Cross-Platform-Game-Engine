@@ -14,7 +14,7 @@ Attercop is a cross-platform game engine written in C++, supporting OpenGL and W
 - 2D and 3D rendering, including sprites, text (MSDF font atlases), and static meshes
 - Built-in 2D physics via Box2D
 - Lua scripting support
-- Visual behaviour tree editor for AI
+- Visual behaviour tree and state machine editors for AI
 - Scene and asset serialization
 
 ## Architecture
@@ -25,6 +25,7 @@ Attercop is a cross-platform game engine written in C++, supporting OpenGL and W
 
 - [Getting Started](getting-started.md) - creating a project and exporting a game with the Editor
 - [Behaviour Trees](behaviour-trees.md) - building AI decisions visually, and scripting custom tasks
+- [State Machines](state-machines.md) - switching an entity between named states, each run by a Lua script
 - [Lua Scripting](lua-scripting.md) - worked examples for giving entities behaviour
 - [Components](Components/index.md) - what each component does, its scene file format and its Lua API
 - [Scene Files](scene-files.md) - the `.scene` XML format, for writing or generating scenes by hand
