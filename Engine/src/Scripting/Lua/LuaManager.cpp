@@ -4,8 +4,11 @@
 #include "LuaBindings.h"
 #include "LuaCoroutines.h"
 #include "sol/sol.hpp"
+#include "Scene/AssetManager.h"
 
 #include <chrono>
+#include <fstream>
+#include <sstream>
 
 Scope<sol::state> LuaManager::s_State = nullptr;
 static std::vector<std::string> s_Modules;
@@ -42,35 +45,55 @@ std::vector<LuaApiEntry> LuaManager::s_Identifiers = {
 	{ "CurrentScene", "The currently loaded Scene", LuaApiEntry::Kind::Global, "", "" }
 };
 
-int LoadFileRequire(lua_State* L) {
+static constexpr int k_ModuleNotFound = -1;
+
+// Pushes the module's chunk, or an error or "not found" message; returns the load status or k_ModuleNotFound
+static int LoadModule(lua_State* L)
+{
 	PROFILE_FUNCTION();
-	// use sol2 stack API to pull
-	// "first argument"
-	std::string path = sol::stack::get<std::string>(L, 1);
+	const std::string name = sol::stack::get<std::string>(L, 1);
+	const std::filesystem::path& projectDirectory = Application::GetOpenDocumentDirectory();
 
-	std::filesystem::path filepath = Application::GetOpenDocumentDirectory();
-
-	if (std::filesystem::exists(filepath / path))
+	for (const std::filesystem::path& candidate : { std::filesystem::path(name), std::filesystem::path(name + ".lua") })
 	{
-		filepath /= path;
+		std::string source;
+		const std::filesystem::path filepath = projectDirectory / candidate;
+		if (std::filesystem::is_regular_file(filepath))
+		{
+			std::ifstream file(filepath, std::ios::binary);
+			std::stringstream buffer;
+			buffer << file.rdbuf();
+			source = buffer.str();
+		}
+		else if (std::vector<uint8_t> data; AssetManager::FileExistsInBundle(candidate.generic_string())
+			&& AssetManager::GetFileData(candidate.generic_string(), data))
+		{
+			source.assign(data.begin(), data.end());
+		}
+		else
+		{
+			continue;
+		}
+
+		const std::string chunkName = "@" + candidate.generic_string();
+		int status = luaL_loadbuffer(L, source.data(), source.size(), chunkName.c_str());
+		if (status == LUA_OK)
+			s_Modules.push_back(name);
+		return status;
 	}
-	else if (std::filesystem::exists(filepath / std::string(path + ".lua")))
-	{
-		filepath /= std::string(path + ".lua");
-	}
 
-	if (!filepath.empty())
-	{
-		luaL_loadfile(L, filepath.string().c_str());
-		s_Modules.push_back(path);
+	sol::stack::push(L, "\n\tno file '" + name + "' in the project folder or asset bundle");
+	return k_ModuleNotFound;
+}
+
+// package.searchers entry for require("Scripts/Module"), from the project folder or the asset bundle
+int LoadFileRequire(lua_State* L)
+{
+	// No C++ objects here: lua_error longjmps past this frame
+	int status = LoadModule(L);
+	if (status == LUA_OK || status == k_ModuleNotFound)
 		return 1;
-	}
-	else
-	{
-		sol::stack::push(
-			L, "Make sure to search from the project directory");
-		return 1;
-	}
+	return lua_error(L);
 }
 
 void UnloadModules()
