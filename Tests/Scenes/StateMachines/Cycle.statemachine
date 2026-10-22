@@ -1,0 +1,9 @@
+<StateMachine EngineVersion="1" InitialState="Red">
+    <Entry x="0" y="0"/>
+    <State Name="Red" Filepath="Scripts/StateMachines/CycleColours.lua" x="200" y="0"/>
+    <State Name="Green" Filepath="Scripts/StateMachines/CycleColours.lua" x="440" y="-100"/>
+    <State Name="Blue" Filepath="Scripts/StateMachines/CycleColours.lua" x="440" y="100"/>
+    <Transition From="Red" To="Green"/>
+    <Transition From="Green" To="Blue"/>
+    <Transition From="Blue" To="Red"/>
+</StateMachine>

@@ -1,0 +1,8 @@
+<StateMachine EngineVersion="1" InitialState="Start">
+    <Entry x="0" y="0"/>
+    <State Name="Start" Filepath="Scripts/StateMachines/PassThrough.lua" x="200" y="0"/>
+    <State Name="Bounce" Filepath="Scripts/StateMachines/PassThrough.lua" x="440" y="0"/>
+    <State Name="Settled" Filepath="Scripts/StateMachines/Settled.lua" x="680" y="0"/>
+    <Transition From="Start" To="Bounce"/>
+    <Transition From="Bounce" To="Settled"/>
+</StateMachine>
