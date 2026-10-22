@@ -157,6 +157,12 @@ void Scene::StartRuntimeState(Entity root)
 			if (behaviourTreeComponent->behaviourTree)
 				behaviourTreeComponent->behaviourTree->Bind(entity);
 		}
+
+		if (StateMachineComponent* stateMachineComponent = entity.TryGetComponent<StateMachineComponent>())
+		{
+			if (stateMachineComponent->stateMachine)
+				stateMachineComponent->stateMachine->Bind(entity);
+		}
 	}
 }
 
@@ -266,6 +272,13 @@ void Scene::OnRuntimeStart(bool createSnapshot)
 		{
 			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->Bind(Entity{ entity, this });
+		});
+
+	m_Registry.view<StateMachineComponent>().each(
+		[this](const auto entity, auto& stateMachineComponent)
+		{
+			if (stateMachineComponent.stateMachine)
+				stateMachineComponent.stateMachine->Bind(Entity{ entity, this });
 		});
 
 	m_PhysicsEngine2D = CreateScope<PhysicsEngine2D>(m_Gravity, this);
@@ -696,6 +709,12 @@ void Scene::OnUpdate(float deltaTime)
 		{
 			if (behaviourTreeComponent.behaviourTree)
 				behaviourTreeComponent.behaviourTree->update(deltaTime);
+		});
+
+	m_Registry.view<StateMachineComponent>(entt::exclude<DestroyMarker>).each([deltaTime](auto entity, auto& stateMachineComponent)
+		{
+			if (stateMachineComponent.stateMachine)
+				stateMachineComponent.stateMachine->Update(deltaTime);
 		});
 
 	m_Registry.view<AudioSourceComponent>(entt::exclude<DestroyMarker>).each([this](auto entity, auto& audioSourceComponent)
