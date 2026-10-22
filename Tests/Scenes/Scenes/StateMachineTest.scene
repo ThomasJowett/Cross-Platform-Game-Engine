@@ -1,0 +1,117 @@
+<Scene EngineVersion="1">
+    <Gravity X="0" Y="-9.8100004"/>
+    <Entity Name="Camera" ID="7200000000000000001-7200000000000000001">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <Camera Primary="true" FixedAspectRatio="false">
+            <SceneCamera ProjectionType="1" OrthoSize="14" OrthoNear="-1" OrthoFar="1" PerspectiveNear="0.0099999998" PerspectiveFar="1000" FOV="45"/>
+        </Camera>
+    </Entity>
+    <Entity Name="Cycle" ID="7200000000000000100-7200000000000000100">
+        <Transform>
+            <Position X="-8" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <StateMachine Filepath="StateMachines/Cycle.statemachine"/>
+    </Entity>
+    <Entity Name="Cycle Label" ID="7200000000000000200-7200000000000000200">
+        <Transform>
+            <Position X="-8.5" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Cycle<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Spin" ID="7200000000000000101-7200000000000000101">
+        <Transform>
+            <Position X="-4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <StateMachine Filepath="StateMachines/SpinAndRest.statemachine"/>
+    </Entity>
+    <Entity Name="Spin Label" ID="7200000000000000201-7200000000000000201">
+        <Transform>
+            <Position X="-4.4" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Spin<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Switch" ID="7200000000000000102-7200000000000000102">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <StateMachine Filepath="StateMachines/Switch.statemachine"/>
+        <LuaScript Filepath="Scripts/StateMachines/SwitchToggler.lua"/>
+    </Entity>
+    <Entity Name="Switch Label" ID="7200000000000000202-7200000000000000202">
+        <Transform>
+            <Position X="-0.6000000000000001" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Switch<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Chain" ID="7200000000000000103-7200000000000000103">
+        <Transform>
+            <Position X="4" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <StateMachine Filepath="StateMachines/Chain.statemachine"/>
+    </Entity>
+    <Entity Name="Chain Label" ID="7200000000000000203-7200000000000000203">
+        <Transform>
+            <Position X="3.5" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Chain<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Runaway" ID="7200000000000000104-7200000000000000104">
+        <Transform>
+            <Position X="8" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1.5" Y="1.5" Z="1"/>
+        </Transform>
+        <Sprite TilingFactor="1">
+            <Tint R="1" G="1" B="1" A="1"/>
+        </Sprite>
+        <StateMachine Filepath="StateMachines/Runaway.statemachine"/>
+    </Entity>
+    <Entity Name="Runaway Label" ID="7200000000000000204-7200000000000000204">
+        <Transform>
+            <Position X="7.3" Y="-1.5" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="0.5" Y="0.5" Z="1"/>
+        </Transform>
+        <Text MaxWidth="5">Runaway<Colour R="1" G="1" B="1" A="1"/></Text>
+    </Entity>
+    <Entity Name="Referee" ID="7200000000000000900-7200000000000000900">
+        <Transform>
+            <Position X="0" Y="0" Z="0"/>
+            <Rotation X="0" Y="0" Z="0"/>
+            <Scale X="1" Y="1" Z="1"/>
+        </Transform>
+        <LuaScript Filepath="Scripts/StateMachines/Referee.lua"/>
+    </Entity>
+</Scene>

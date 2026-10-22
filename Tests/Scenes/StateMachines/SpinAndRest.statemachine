@@ -1,0 +1,7 @@
+<StateMachine EngineVersion="1" InitialState="Spin">
+    <Entry x="0" y="0"/>
+    <State Name="Spin" Filepath="Scripts/StateMachines/Spin.lua" x="200" y="0"/>
+    <State Name="Rest" Filepath="Scripts/StateMachines/Rest.lua" x="440" y="0"/>
+    <Transition From="Spin" To="Rest"/>
+    <Transition From="Rest" To="Spin"/>
+</StateMachine>
