@@ -499,7 +499,9 @@ void SceneSerializer::SerializeEntity(tinyxml2::XMLElement* pElement, Entity ent
 	if (entity.HasComponent<StateMachineComponent>())
 	{
 		StateMachineComponent const& component = entity.GetComponent<StateMachineComponent>();
+
 		tinyxml2::XMLElement* pStateMachineElement = pElement->InsertNewChildElement("StateMachine");
+		SerializationUtils::Encode(pStateMachineElement, component.filepath);
 	}
 
 	if (entity.HasComponent<LuaScriptComponent>())
@@ -1173,6 +1175,10 @@ Entity SceneSerializer::DeserializeEntity(Scene* scene, tinyxml2::XMLElement* pE
 	if (tinyxml2::XMLElement const* pStateMachineComponentElement = pEntityElement->FirstChildElement("StateMachine"))
 	{
 		StateMachineComponent& component = entity.AddComponent<StateMachineComponent>();
+
+		SerializationUtils::Decode(pStateMachineComponentElement, component.filepath);
+		if (!component.filepath.empty())
+			component.stateMachine = StateMachineSerializer::Load(component.filepath);
 	}
 
 	// LuaScript ---------------------------------------------------------------------------------------------------
