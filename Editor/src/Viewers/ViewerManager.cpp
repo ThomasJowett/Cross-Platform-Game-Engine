@@ -10,6 +10,7 @@
 #include "PhysicsMaterialView.h"
 #include "FontView.h"
 #include "BehaviourTreeView.h"
+#include "StateMachineView.h"
 #include "Scene/SceneManager.h"
 #include "AudioView.h"
 
@@ -107,6 +108,7 @@ void ViewerManager::OpenViewer(const std::filesystem::path& assetPath)
 	case FileType::PHYSICSMATERIAL:	OpenAssetViewer<PhysicsMaterialView>(assetPath);	return;
 	case FileType::FONT:			OpenAssetViewer<FontView>(assetPath);				return;
 	case FileType::BEHAVIOURTREE:	OpenAssetViewer<BehaviourTreeView>(assetPath);			return;
+	case FileType::STATEMACHINE:	OpenAssetViewer<StateMachineView>(assetPath);			return;
 	default: return;
 	}
 }
@@ -207,6 +209,11 @@ FileType ViewerManager::GetFileType(const std::filesystem::path& assetPath)
 	{
 		return FileType::BEHAVIOURTREE;
 	}
+
+	if (strcmp(ext, ".statemachine") == 0)
+	{
+		return FileType::STATEMACHINE;
+	}
 	return FileType::UNKNOWN;
 }
 
@@ -288,11 +295,11 @@ std::vector<std::string> ViewerManager::GetExtensions(FileType fileType)
 		extensions.push_back(".behaviourtree");
 		break;
 	}
-    case FileType::STATEMACHINE:
-    {
-        extensions.push_back(".statemachine");
-        break;
-    }
+	case FileType::STATEMACHINE:
+	{
+		extensions.push_back(".statemachine");
+		break;
+	}
 	}
 	return extensions;
 }
