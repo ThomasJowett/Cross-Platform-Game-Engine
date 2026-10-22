@@ -77,6 +77,7 @@ bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileT
 
 	bool edited = false;
 
+	ImGui::BeginGroup();
 	if(ImGui::BeginCombo(label, filename.c_str()))
 	{
 		for(std::filesystem::path& file : Directory::GetFilesRecursive(Application::GetOpenDocumentDirectory(), ViewerManager::GetExtensions(filetype)))
@@ -98,6 +99,24 @@ bool ImGui::FileSelect(const char* label, std::filesystem::path& filepath, FileT
 		{
 			ViewerManager::OpenViewer(filepath);
 		}
+	}
+	ImGui::EndGroup();
+
+	// Accepts files of this type dragged from the content explorer
+	if (ImGui::BeginDragDropTarget())
+	{
+		if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_AcceptPeekOnly))
+		{
+			std::filesystem::path* file = (std::filesystem::path*)payload->Data;
+			std::vector<std::string> extensions = ViewerManager::GetExtensions(filetype);
+			if (std::find(extensions.begin(), extensions.end(), file->extension().string()) != extensions.end()
+				&& ImGui::AcceptDragDropPayload("Asset", ImGuiDragDropFlags_None))
+			{
+				filepath = *file;
+				edited = true;
+			}
+		}
+		ImGui::EndDragDropTarget();
 	}
 	return edited;
 }
