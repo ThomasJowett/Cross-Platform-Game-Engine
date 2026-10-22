@@ -107,8 +107,8 @@ void RegisterComponent(sol::state& state)
 			CheckEntityValid(entity, function.c_str(), state);
 			if (!entity.HasComponent<Component>())
 				throw std::runtime_error(ScriptLocation(state) + entity.GetName() + " has no " + Handle::s_LuaName + " to remove");
-			// The scene may be running this very script or tree, so wait until its update has finished
-			if constexpr (std::is_same_v<Component, LuaScriptComponent> || std::is_same_v<Component, BehaviourTreeComponent>)
+			// The scene may be running this very script, tree or state machine, so wait until its update has finished
+			if constexpr (std::is_same_v<Component, LuaScriptComponent> || std::is_same_v<Component, BehaviourTreeComponent> || std::is_same_v<Component, StateMachineComponent>)
 			{
 				entity.GetScene()->DeferUntilUpdateEnds([entity]() mutable
 					{
