@@ -2,6 +2,7 @@ nav:
   - index.md
   - getting-started.md
   - behaviour-trees.md
+  - state-machines.md
   - lua-scripting.md
   - collision-layers.md
   - Components
