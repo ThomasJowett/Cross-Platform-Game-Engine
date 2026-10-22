@@ -99,7 +99,8 @@ int Application::Init(const InputParser& inputParser)
 			logPath = std::filesystem::absolute(value);
 	}
 
-	m_WorkingDirectory = std::filesystem::weakly_canonical(std::filesystem::path(input.RetrieveWorkingDirectory())).parent_path();
+	m_ExecutablePath = std::filesystem::weakly_canonical(std::filesystem::path(input.RetrieveWorkingDirectory()));
+	m_WorkingDirectory = m_ExecutablePath.parent_path();
 #ifdef __APPLE__
 	if (m_WorkingDirectory.filename() == "MacOS")
 	{
@@ -595,4 +596,11 @@ const std::filesystem::path& Application::GetWorkingDirectory()
 const std::filesystem::path& Application::GetSettingsDirectory()
 {
 	return s_Instance->m_SettingsDirectory;
+}
+
+/* ------------------------------------------------------------------------------------------------------------------ */
+
+const std::filesystem::path& Application::GetExecutablePath()
+{
+	return s_Instance->m_ExecutablePath;
 }

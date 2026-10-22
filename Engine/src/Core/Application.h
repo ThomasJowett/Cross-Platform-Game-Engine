@@ -61,6 +61,9 @@ public:
 	// Get the directory that settings, layout and styles are saved to
 	static const std::filesystem::path& GetSettingsDirectory();
 
+	// Absolute path of the running executable, resolved before the working directory changes
+	static const std::filesystem::path& GetExecutablePath();
+
 	// Calls an event
 	static void CallEvent(Event& event) { s_EventCallback(event); }
 
@@ -135,6 +138,7 @@ private:
 	std::filesystem::path m_OpenDocumentDirectory;
 	std::filesystem::path m_WorkingDirectory;
 	std::filesystem::path m_SettingsDirectory;
+	std::filesystem::path m_ExecutablePath;
 
 	static EventCallbackFn s_EventCallback;
 

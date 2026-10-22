@@ -36,11 +36,12 @@ int main(int argc, char* argv[])
 	// Linux exe can - AssetPacker::ExportGameToAppBundle() instead ships a "game.meta" (the same
 	// footer/title/scene layout, just in its own file) and "assets.pak" in Contents/
 	// Resources next to the executable in Contents/MacOS.
-	std::filesystem::path metadataSource = argv[0];
+	const std::filesystem::path& executablePath = Application::GetExecutablePath();
+	std::filesystem::path metadataSource = executablePath;
 	bool isAppBundle = false;
 	std::filesystem::path resourcesDir;
 #ifdef __APPLE__
-	std::filesystem::path exeDir = std::filesystem::weakly_canonical(std::filesystem::path(argv[0])).parent_path();
+	std::filesystem::path exeDir = executablePath.parent_path();
 	isAppBundle = exeDir.filename() == "MacOS";
 	if (isAppBundle)
 	{
@@ -89,7 +90,7 @@ int main(int argc, char* argv[])
 			bundlePath = resourcesDir / "assets.pak";
 		else
 		{
-			bundlePath = std::filesystem::path(argv[0]);
+			bundlePath = executablePath;
 			bundlePath.replace_extension(".pak");
 		}
 
