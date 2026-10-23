@@ -1,7 +1,5 @@
 #include "Application.h"
 
-#include "GLFW/glfw3.h"
-
 #include "Logging/Instrumentor.h"
 #include "Settings.h"
 #include "InputParser.h"
@@ -76,10 +74,6 @@ Application::~Application()
 	}
 	AssetManager::Shutdown();
 	LuaManager::Shutdown();
-#ifndef __EMSCRIPTEN__
-	if (m_Headless)
-		glfwTerminate();
-#endif
 }
 
 int Application::Init(int argc, char* argv[])
@@ -183,18 +177,7 @@ int Application::Init(const InputParser& inputParser)
 	LuaManager::Init();
 
 	if (m_Headless)
-	{
-#ifndef __EMSCRIPTEN__
-		// The null platform needs no display, but keeps the timer and joystick functions working
-		glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_NULL);
-		if (glfwInit() != GLFW_TRUE)
-		{
-			ENGINE_CRITICAL("Could not initialise GLFW");
-			return EXIT_FAILURE;
-		}
-#endif
 		Input::Init(nullptr);
-	}
 
 	if (RenderCommand::CreateRendererAPI() != 0)
 		return EXIT_FAILURE;
@@ -528,9 +511,9 @@ void Application::SetDefaultSettings()
 
 double Application::GetTime() const
 {
-	static const auto start_time = std::chrono::steady_clock::now();
+	static const auto s_StartTime = std::chrono::steady_clock::now();
 	const auto now = std::chrono::steady_clock::now();
-	return std::chrono::duration<double>(now - start_time).count();
+	return std::chrono::duration<double>(now - s_StartTime).count();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */

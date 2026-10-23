@@ -127,6 +127,9 @@ double Input::GetMouseXImpl()
 
 bool Input::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 {
+	if (!m_Window)
+		return false;
+
 	Joysticks::Joystick joystick = Joysticks::GetJoystick(joystickSlot);
 #ifndef __EMSCRIPTEN__
 	if (joystick.isMapped)
@@ -152,6 +155,9 @@ bool Input::IsJoystickButtonPressedImpl(int joystickSlot, int button)
 
 double Input::GetJoystickAxisImpl(int joystickSlot, int axis)
 {
+	if (!m_Window)
+		return 0.0;
+
 #ifndef __EMSCRIPTEN__
 	GLFWgamepadstate state;
 
