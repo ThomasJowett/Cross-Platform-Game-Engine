@@ -290,7 +290,7 @@ void Renderer::EndScene()
 	// Sort the transparent back to front to render transparent correctly
 	std::sort(s_TransparentRenderQueue.begin(), s_TransparentRenderQueue.end(), [](Command& a, Command& b)
 		{
-			return Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, a.transform.ExtractTranslation()) <
+			return Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, a.transform.ExtractTranslation()) >
 				Vector3f::Distance(s_SceneData.constantBuffer.eyePosition, b.transform.ExtractTranslation());
 		});
 
