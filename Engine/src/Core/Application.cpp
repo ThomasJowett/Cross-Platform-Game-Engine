@@ -24,6 +24,8 @@
 #include "Utilities/StringUtils.h"
 #include "Scripting/Lua/LuaManager.h"
 
+#include <chrono>
+
 #ifndef DEBUG
 #pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 #endif // !DEBUG
@@ -526,25 +528,9 @@ void Application::SetDefaultSettings()
 
 double Application::GetTime() const
 {
-#ifdef _WINDOWS
-	static LARGE_INTEGER s_frequency;
-	//check to see if the application can read the frequency
-	static BOOL s_use_qpc = QueryPerformanceFrequency(&s_frequency);
-	if (s_use_qpc)
-	{
-		//most accurate method of getting system time
-		LARGE_INTEGER now;
-		QueryPerformanceCounter(&now);
-		return (double)((now.QuadPart * 1000) / s_frequency.QuadPart) / 1000.0;
-	}
-	else
-	{
-		//same value but only updates 64 times a second
-		return (double)GetTickCount64();
-	}
-#endif // _WINDOWS
-
-	return glfwGetTime();
+	static const auto start_time = std::chrono::steady_clock::now();
+	const auto now = std::chrono::steady_clock::now();
+	return std::chrono::duration<double>(now - start_time).count();
 }
 
 /* ------------------------------------------------------------------------------------------------------------------ */
