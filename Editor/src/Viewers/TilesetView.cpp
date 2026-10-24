@@ -41,10 +41,10 @@ void TilesetView::OnImGuiRender()
 	{
 		if (m_Dirty)
 		{
-			ImGui::OpenPopup("Save Prompt");
+			ImGui::OpenPopup(("Save Prompt " + m_WindowName).c_str());
 		}
 
-		if (ImGui::BeginPopupModal("Save Prompt"))
+		if (ImGui::BeginPopupModal(("Save Prompt " + m_WindowName).c_str()))
 		{
 			ImGui::TextUnformatted("Save unsaved changes?");
 			if (ImGui::Button("Save"))
